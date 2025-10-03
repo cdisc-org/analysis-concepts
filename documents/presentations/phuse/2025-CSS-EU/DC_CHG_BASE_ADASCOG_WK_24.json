@@ -1,0 +1,35 @@
+
+  {
+    "id": "ENDP-102",
+    "name": "Change From Baseline in ADAS-Cog Total Score at Week 24",
+    "type": "change",
+    "parameters": {
+      "required": [
+        "patient_id", 
+        "baseline_adas_cog_score", 
+        "week24_adas_cog_score", 
+        "baseline_date", 
+        "assessment_date"
+      ],
+      "optional": []
+    },
+    "algorithm": {
+      "steps": [
+        {"step": 1, "action": "Verify baseline_adas_cog_score is a valid measurement at Week 0"},
+        {"step": 2, "action": "Calculate days_from_baseline = (assessment_date - baseline_date) in days"},
+        {"step": 3, "action": "Verify days_from_baseline is within [161, 175] days (24 weeks ± 7 days)"},
+        {"step": 4, "action": "Calculate change_score = week24_adas_cog_score - baseline_adas_cog_score"}
+      ],
+      "result": "Return change in ADAS-Cog score from baseline to Week 24"
+    },
+    "output": {
+      "dataType": "number",
+      "units": "points",
+      "interpretation": "Negative values indicate improvement in cognitive function; positive values indicate worsening"
+    },
+    "validationRules": [
+      "baseline_adas_cog_score and week24_adas_cog_score must be between 0 and 70 inclusive",
+      "assessment_date must be after baseline_date",
+      "days_from_baseline must be within acceptable range [161, 175]"
+    ]
+  }
