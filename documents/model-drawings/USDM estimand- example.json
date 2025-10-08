@@ -1,0 +1,1254 @@
+{
+  "style": {
+    "font-family": "sans-serif",
+    "background-color": "#ffffff",
+    "background-image": "",
+    "background-size": "100%",
+    "node-color": "#ffffff",
+    "border-width": 4,
+    "border-color": "#000000",
+    "radius": 50,
+    "node-padding": 5,
+    "node-margin": 2,
+    "outside-position": "auto",
+    "node-icon-image": "",
+    "node-background-image": "",
+    "icon-position": "inside",
+    "icon-size": 64,
+    "caption-position": "inside",
+    "caption-max-width": 200,
+    "caption-color": "#000000",
+    "caption-font-size": 50,
+    "caption-font-weight": "normal",
+    "label-position": "inside",
+    "label-display": "pill",
+    "label-color": "#000000",
+    "label-background-color": "#ffffff",
+    "label-border-color": "#000000",
+    "label-border-width": 4,
+    "label-font-size": 40,
+    "label-padding": 5,
+    "label-margin": 4,
+    "directionality": "directed",
+    "detail-position": "inline",
+    "detail-orientation": "parallel",
+    "arrow-width": 5,
+    "arrow-color": "#000000",
+    "margin-start": 5,
+    "margin-end": 5,
+    "margin-peer": 20,
+    "attachment-start": "normal",
+    "attachment-end": "normal",
+    "relationship-icon-image": "",
+    "type-color": "#000000",
+    "type-background-color": "#ffffff",
+    "type-border-color": "#000000",
+    "type-border-width": 0,
+    "type-font-size": 16,
+    "type-padding": 5,
+    "property-position": "outside",
+    "property-alignment": "colon",
+    "property-color": "#000000",
+    "property-font-size": 16,
+    "property-font-weight": "normal"
+  },
+  "nodes": [
+    {
+      "id": "n0",
+      "position": {
+        "x": 775.4773859872437,
+        "y": 599.9999999999999
+      },
+      "caption": "StudyDesign",
+      "labels": [
+        "USDM"
+      ],
+      "properties": {
+        "studyId": "DM-2024-001",
+        "phase": "3",
+        "design": "Randomized, double-blind, placebo-controlled",
+        "duration": "24 weeks",
+        "indication": "Type 2 Diabetes Mellitus"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n1",
+      "position": {
+        "x": 508.44430827417773,
+        "y": 300.62029376496935
+      },
+      "caption": "Objective",
+      "labels": [
+        "USDM"
+      ],
+      "properties": {
+        "objectiveId": "OBJ-PRI-01",
+        "level": "PRIMARY",
+        "description": "Evaluate efficacy of Drug X 10mg vs placebo on glycemic control in adults with Type 2 Diabetes"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n2",
+      "position": {
+        "x": 1410.8299338964098,
+        "y": -381.70294857785495
+      },
+      "caption": "Estimand",
+      "labels": [
+        "USDM",
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "estimandId": "EST-PRI-01",
+        "name": "Primary Efficacy Estimand",
+        "description": "Treatment effect on HbA1c in T2DM patients with mixed ICE handling strategies",
+        "representationFormat": "STRUCTURED",
+        "clinicalQuestion": "What is the mean difference in HbA1c change from baseline to week 24 between Drug X 10mg and placebo in adults with Type 2 Diabetes, including the effects of rescue antidiabetic medication use and regardless of treatment discontinuation due to adverse events?",
+        "clinicalQuestionRationale": "Reflects real-world effectiveness (including rescue) while accounting for tolerability (hypothetical scenario without AE discontinuation)",
+        "dcoText": null
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#FF6B6B",
+        "border-width": 6,
+        "property-font-weight": "bold",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n3",
+      "position": {
+        "x": 2170.99516958446,
+        "y": -170.64076198868884
+      },
+      "caption": "Treatment",
+      "labels": [
+        "USDM",
+        "EstimandAttribute",
+        "Attribute 1",
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "condition": "Drug X 10mg once daily vs Placebo once daily",
+        "regimen": "Oral administration with standard background metformin therapy",
+        "administration": "Once daily in morning",
+        "backgroundTreatment": "Stable metformin ≥1500mg/day",
+        "includesDiscontinuation": false,
+        "includesAddlTreatment": true,
+        "description": "Drug X 10mg added to background metformin, including effects of rescue medication use"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n4",
+      "position": {
+        "x": 1683.3151193531614,
+        "y": 46.15877959674387
+      },
+      "caption": "Population",
+      "labels": [
+        "USDM",
+        "EstimandAttribute",
+        "Attribute 2",
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "name": "Full Analysis Set",
+        "definition": "All randomized patients with baseline and ≥1 post-baseline HbA1c",
+        "flag": "FASFL",
+        "inclusionCriteria": "Adults ≥18 years with T2DM, HbA1c 7.5-10.5% at baseline, on stable metformin ≥1500mg/day for ≥8 weeks",
+        "principalStratum": "N/A - whole randomized population",
+        "statoId": "STATO:0000372",
+        "statoLabel": "intention to treat analysis"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n5",
+      "position": {
+        "x": 125.21333962564177,
+        "y": 138.9634708811131
+      },
+      "caption": "Endpoint",
+      "labels": [
+        "USDM"
+      ],
+      "properties": {
+        "endpointId": "EP-001",
+        "name": "Glycated Hemoglobin A1c",
+        "description": "Hemoglobin A1c (HbA1c) as a measure of glycemic control",
+        "measure": "HbA1c",
+        "unit": "percent",
+        "direction": "lower is better",
+        "category": "efficacy"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n6",
+      "position": {
+        "x": 432.0172933528558,
+        "y": -167.84048284610094
+      },
+      "caption": "Variable",
+      "labels": [
+        "USDM",
+        "EstimandAttribute",
+        "Attribute 3",
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "basedOnEndpoint": "EP-001",
+        "timeframe": "Baseline to Week 24",
+        "timepoint": "Week 24",
+        "derivation": "Change from baseline to Week 24",
+        "paramcd": "CHG",
+        "includesComposite": false,
+        "compositeComponents": null
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n7",
+      "position": {
+        "x": 1244.7498213029626,
+        "y": 801.1900899190111
+      },
+      "caption": "ICE Handling",
+      "labels": [
+        "USDM",
+        "EstimandAttribute",
+        "Attribute 4",
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "summary": "Two ICEs with different strategies: (1) Rescue antidiabetic medication use handled by Treatment Policy strategy; (2) Treatment discontinuation due to adverse events handled by Hypothetical strategy"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n8",
+      "position": {
+        "x": 1219.375780045072,
+        "y": 321.93269456658123
+      },
+      "caption": "Population Summary",
+      "labels": [
+        "USDM",
+        "EstimandAttribute",
+        "Attribute 5",
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "type": "Difference in means",
+        "statisticalMeasure": "Least squares mean difference",
+        "comparison": "Drug X 10mg - Placebo",
+        "statoId": "STATO:0000041",
+        "statoLabel": "least squares mean"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n9",
+      "position": {
+        "x": 508.44430827417773,
+        "y": 1492.1150002640634
+      },
+      "caption": "ICE: Rescue Med",
+      "labels": [
+        "USDM",
+        "ICE Definition",
+        "High-Level"
+      ],
+      "properties": {
+        "iceId": "ICE001",
+        "name": "Rescue Medication Use",
+        "description": "Initiation of rescue antidiabetic medication due to inadequate glycemic control",
+        "event": "Start of additional antidiabetic medication",
+        "timing": "Any time after randomization until week 24",
+        "timingCategory": "recurring",
+        "reason": "Inadequate glycemic control (FPG >270 mg/dL or HbA1c >10%)",
+        "reasonCategory": "LoE",
+        "magnitude": "Any dose/duration of rescue medication",
+        "precedence": 2
+      },
+      "style": {
+        "node-color": "#D8BFD8",
+        "border-color": "#8B008B",
+        "property-color": "#8B008B"
+      }
+    },
+    {
+      "id": "n10",
+      "position": {
+        "x": 1199.3828400307816,
+        "y": 1517.6182049184135
+      },
+      "caption": "ICE: Tx Disc AE",
+      "labels": [
+        "USDM",
+        "ICE Definition",
+        "High-Level"
+      ],
+      "properties": {
+        "iceId": "ICE002",
+        "name": "Treatment Discontinuation due to AE",
+        "description": "Permanent cessation of randomized study drug due to adverse event",
+        "event": "Permanent stop of randomized treatment",
+        "timing": "Any time after first dose until week 24",
+        "timingCategory": "early",
+        "reason": "Treatment-emergent adverse event requiring discontinuation",
+        "reasonCategory": "AE",
+        "magnitude": "N/A - binary event",
+        "precedence": 1
+      },
+      "style": {
+        "node-color": "#D8BFD8",
+        "border-color": "#8B008B",
+        "property-color": "#8B008B"
+      }
+    },
+    {
+      "id": "n11",
+      "position": {
+        "x": 321.1031210214864,
+        "y": 1167.6305455921272
+      },
+      "caption": "ICE Type: Rescue",
+      "labels": [
+        "Metadata",
+        "Technical Spec"
+      ],
+      "properties": {
+        "iceTypeId": "ICE001_TECH",
+        "name": "Rescue Medication Detection Specification",
+        "detectionCriteria": {
+          "sourceBC": "BC_CM_001",
+          "sourceDomain": "CM",
+          "triggerField": "CMCAT",
+          "triggerValue": "ANTIDIABETIC AGENTS",
+          "exclusions": "Background metformin excluded",
+          "timingCheck": "CMSTDTC > RFXSTDTC"
+        },
+        "categorization": {
+          "primaryCategory": "AddTreatment",
+          "reasonCategory": "LoE"
+        },
+        "dataRequirements": {
+          "collectPostICE": true,
+          "requiredFields": [
+            "HbA1c",
+            "FPG"
+          ],
+          "followUpDuration": "until Week 24"
+        },
+        "precedenceRules": {
+          "priority": 2,
+          "overrides": []
+        }
+      },
+      "style": {
+        "node-color": "#D8BFD8",
+        "border-color": "#8B008B",
+        "border-width": 4
+      }
+    },
+    {
+      "id": "n12",
+      "position": {
+        "x": 812.454828108527,
+        "y": 1074.1562271466837
+      },
+      "caption": "ICE Type: Tx Disc",
+      "labels": [
+        "Metadata",
+        "Technical Spec"
+      ],
+      "properties": {
+        "iceTypeId": "ICE002_TECH",
+        "name": "Treatment Discontinuation Detection Specification",
+        "detectionCriteria": {
+          "sourceBC": "BC_DS_001",
+          "sourceDomain": "DS",
+          "triggerField": "DSDECOD",
+          "triggerValue": "ADVERSE EVENT",
+          "timingCheck": "DSSTDTC > RFXSTDTC AND DSSTDTC <= RFENDTC"
+        },
+        "categorization": {
+          "primaryCategory": "TxDiscontinuation",
+          "reasonCategory": "AE"
+        },
+        "dataRequirements": {
+          "collectPostICE": true,
+          "requiredFields": [
+            "HbA1c",
+            "Safety assessments"
+          ],
+          "followUpDuration": "until Week 24"
+        },
+        "precedenceRules": {
+          "priority": 1,
+          "overrides": [
+            "ICE001"
+          ]
+        }
+      },
+      "style": {
+        "node-color": "#D8BFD8",
+        "border-color": "#8B008B",
+        "border-width": 4
+      }
+    },
+    {
+      "id": "n13",
+      "position": {
+        "x": 3075,
+        "y": 550
+      },
+      "caption": "Strategy: Tx Policy",
+      "labels": [
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "strategyId": "STRAT-001",
+        "type": "Treatment Policy",
+        "appliesTo": "ICE001",
+        "rationale": "Reflects real-world effectiveness including rescue medication as part of the therapeutic approach",
+        "hypotheticalScenario": null,
+        "compositeDefinition": null,
+        "timeRestriction": null,
+        "stratumDefinition": null
+      },
+      "style": {
+        "node-color": "#FFE5B4",
+        "border-color": "#FFA500",
+        "property-color": "#FFA500"
+      }
+    },
+    {
+      "id": "n14",
+      "position": {
+        "x": 2975.0686769282506,
+        "y": 851.1028717325412
+      },
+      "caption": "Strategy: Hypothetical",
+      "labels": [
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "strategyId": "STRAT-002",
+        "type": "Hypothetical",
+        "appliesTo": "ICE002",
+        "rationale": "Estimate treatment effect if patients could tolerate treatment without AE discontinuation, reflecting pharmacological efficacy",
+        "hypotheticalScenario": "What would HbA1c change be if patients continued treatment without discontinuation due to adverse events",
+        "compositeDefinition": null,
+        "timeRestriction": null,
+        "stratumDefinition": null
+      },
+      "style": {
+        "node-color": "#FFE5B4",
+        "border-color": "#FFA500",
+        "property-color": "#FFA500"
+      }
+    },
+    {
+      "id": "n15",
+      "position": {
+        "x": 2197.6027390309846,
+        "y": 180.81910433663973
+      },
+      "caption": "Analysis Concept",
+      "labels": [
+        "Metadata",
+        "Estimator",
+        "Executable"
+      ],
+      "properties": {
+        "analysisId": "AC-PRIM-01",
+        "version": "1.0",
+        "name": "Primary Efficacy Analysis",
+        "description": "ANCOVA on HbA1c change with multiple imputation for hypothetical strategy"
+      },
+      "style": {
+        "node-color": "#E6E6FA",
+        "border-color": "#9370DB",
+        "property-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n16",
+      "position": {
+        "x": 2623.462150934818,
+        "y": 533.8437949879266
+      },
+      "caption": "inputSpec",
+      "labels": [
+        "AC Property"
+      ],
+      "properties": {
+        "dataset": "ADEFF",
+        "variables": [
+          "CHG",
+          "BASE",
+          "TRT01P",
+          "USUBJID",
+          "AVISITN",
+          "ICE01F",
+          "ICE02F"
+        ],
+        "filters": [
+          "FASFL='Y'",
+          "AVISITN=24"
+        ],
+        "analysisSet": "FAS",
+        "iceHandling": {
+          "ICE001": "Include all data (Treatment Policy)",
+          "ICE002": "Use imputed values post-discontinuation (Hypothetical)"
+        }
+      },
+      "style": {
+        "node-color": "#E6E6FA",
+        "border-color": "#9370DB",
+        "property-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n17",
+      "position": {
+        "x": 2277.2397873606424,
+        "y": 599.9999999999999
+      },
+      "caption": "Computation",
+      "labels": [
+        "AC Property"
+      ],
+      "properties": {
+        "method": "ANCOVA with Multiple Imputation",
+        "model": "CHG ~ TRT01P + BASE + STRATA",
+        "covariates": [
+          "BASE",
+          "STRATA"
+        ],
+        "statoId": "STATO:0000183"
+      },
+      "style": {
+        "node-color": "#E6E6FA",
+        "border-color": "#9370DB",
+        "property-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n18",
+      "position": {
+        "x": 1833.7333292208607,
+        "y": 603.9320880352725
+      },
+      "caption": "outputSpec",
+      "labels": [
+        "AC Property"
+      ],
+      "properties": {
+        "structure": "ARRAY_OF_ESTIMATES",
+        "fields": [
+          "LSMEAN_DIFF",
+          "SE",
+          "CI_LOWER_95",
+          "CI_UPPER_95",
+          "P_VALUE"
+        ],
+        "precision": "0.01"
+      },
+      "style": {
+        "node-color": "#E6E6FA",
+        "border-color": "#9370DB",
+        "property-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n19",
+      "position": {
+        "x": 2047.2875359041002,
+        "y": 1350
+      },
+      "caption": "DIFF",
+      "labels": [
+        "DataNode",
+        "MainEstimate"
+      ],
+      "properties": {
+        "parameter": "LSMEAN_DIFF",
+        "value": -0.82,
+        "unit": "percent",
+        "STATO": "STATO:0000453",
+        "label": "LS mean difference (Drug X - Placebo)"
+      },
+      "style": {
+        "node-color": "#F0F8FF",
+        "border-color": "#4682B4",
+        "property-color": "#4682B4"
+      }
+    },
+    {
+      "id": "n20",
+      "position": {
+        "x": 2610.3421929591377,
+        "y": 1216.8582681631506
+      },
+      "caption": "SE",
+      "labels": [
+        "DataNode"
+      ],
+      "properties": {
+        "parameter": "SE",
+        "value": 0.12,
+        "unit": "percent",
+        "STATO": "STATO:0000037"
+      },
+      "style": {
+        "node-color": "#F0F8FF",
+        "border-color": "#4682B4",
+        "property-color": "#4682B4"
+      }
+    },
+    {
+      "id": "n21",
+      "position": {
+        "x": 2804.2363495841173,
+        "y": 1164.2522680913435
+      },
+      "caption": "CI",
+      "labels": [
+        "DataNode"
+      ],
+      "properties": {
+        "parameter": "CI_95",
+        "lower": -1.05,
+        "upper": -0.59,
+        "level": "95%",
+        "STATO": "STATO:0000196"
+      },
+      "style": {
+        "node-color": "#F0F8FF",
+        "border-color": "#4682B4",
+        "property-color": "#4682B4"
+      }
+    },
+    {
+      "id": "n22",
+      "position": {
+        "x": 2400.7284337894357,
+        "y": 1250
+      },
+      "caption": "P_VALUE",
+      "labels": [
+        "DataNode"
+      ],
+      "properties": {
+        "parameter": "P_VALUE",
+        "value": "<0.0001",
+        "STATO": "STATO:0000175"
+      },
+      "style": {
+        "node-color": "#F0F8FF",
+        "border-color": "#4682B4",
+        "property-color": "#4682B4"
+      }
+    },
+    {
+      "id": "n23",
+      "position": {
+        "x": 193.73184083381238,
+        "y": 599.9999999999999
+      },
+      "caption": "BC: Concomitant Meds",
+      "labels": [
+        "USDM",
+        "BiomedicalConcept"
+      ],
+      "properties": {
+        "bcId": "BC_CM_001",
+        "code": "C71306",
+        "codeSystem": "NCIt",
+        "concept": "Concomitant Medication",
+        "domain": "CM",
+        "iceDetection": true,
+        "detectsICE": [
+          "ICE001"
+        ]
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#228B22",
+        "border-width": 5,
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n24",
+      "position": {
+        "x": 574.2872960682325,
+        "y": 801.1900899190111
+      },
+      "caption": "BC: Disposition",
+      "labels": [
+        "USDM",
+        "BiomedicalConcept"
+      ],
+      "properties": {
+        "bcId": "BC_DS_001",
+        "code": "C73558",
+        "codeSystem": "NCIt",
+        "concept": "Subject Disposition",
+        "domain": "DS",
+        "iceDetection": true,
+        "detectsICE": [
+          "ICE002"
+        ]
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#228B22",
+        "border-width": 5,
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n25",
+      "position": {
+        "x": 1960.5083146732397,
+        "y": 1755.2827505330145
+      },
+      "caption": "ICE Occurrence",
+      "labels": [
+        "DataNode",
+        "Instance"
+      ],
+      "properties": {
+        "usubjid": "001-0001",
+        "iceDefId": "ICE001",
+        "astdt": "2024-04-15",
+        "aendt": null,
+        "actualReason": "FPG >270 mg/dL",
+        "appliedStrategy": "Treatment Policy"
+      },
+      "style": {
+        "node-color": "#FFE4E1",
+        "border-color": "#DC143C"
+      }
+    },
+    {
+      "id": "n26",
+      "position": {
+        "x": 3075,
+        "y": 1555.3162976365545
+      },
+      "caption": "Impact Assessment",
+      "labels": [
+        "Process",
+        "Executable"
+      ],
+      "properties": {
+        "assessmentId": "IMPACT-001",
+        "assessmentRules": {
+          "rescueMed": "IF BC_CM_001 triggers ICE001 THEN mark subsequent HbA1c with ICE01F='Y'",
+          "txDiscAE": "IF BC_DS_001 triggers ICE002 THEN mark subsequent HbA1c with ICE02F='Y' and flag for imputation"
+        },
+        "precedenceLogic": "IF subject has both ICEs, apply ICE002 strategy (precedence=1)"
+      },
+      "style": {
+        "node-color": "#E0FFFF",
+        "border-color": "#008B8B"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "id": "n0",
+      "fromId": "n0",
+      "toId": "n1",
+      "type": "HAS_OBJECTIVE",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n1",
+      "fromId": "n0",
+      "toId": "n2",
+      "type": "HAS_ESTIMAND",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n2",
+      "fromId": "n1",
+      "toId": "n2",
+      "type": "DEFINES_ESTIMAND",
+      "properties": {
+        "description": "Objective defines estimand; estimand contains clinicalQuestion property"
+      },
+      "style": {
+        "arrow-color": "#FF6B6B",
+        "arrow-width": 5
+      }
+    },
+    {
+      "id": "n3",
+      "fromId": "n1",
+      "toId": "n5",
+      "type": "HAS_ENDPOINT",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n4",
+      "fromId": "n6",
+      "toId": "n5",
+      "type": "BASED_ON",
+      "properties": {
+        "description": "Variable is the change in HbA1c, based on the HbA1c endpoint"
+      },
+      "style": {
+        "arrow-color": "#4CAF50",
+        "arrow-width": 3
+      }
+    },
+    {
+      "id": "n5",
+      "fromId": "n2",
+      "toId": "n3",
+      "type": "ATTR_1_TREATMENT",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FF0000",
+        "arrow-width": 5
+      }
+    },
+    {
+      "id": "n6",
+      "fromId": "n2",
+      "toId": "n4",
+      "type": "ATTR_2_POPULATION",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FF0000",
+        "arrow-width": 5
+      }
+    },
+    {
+      "id": "n7",
+      "fromId": "n2",
+      "toId": "n6",
+      "type": "ATTR_3_VARIABLE",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FF0000",
+        "arrow-width": 5
+      }
+    },
+    {
+      "id": "n8",
+      "fromId": "n2",
+      "toId": "n7",
+      "type": "ATTR_4_ICE_HANDLING",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FF0000",
+        "arrow-width": 5
+      }
+    },
+    {
+      "id": "n9",
+      "fromId": "n2",
+      "toId": "n8",
+      "type": "ATTR_5_POP_SUMMARY",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FF0000",
+        "arrow-width": 5
+      }
+    },
+    {
+      "id": "n10",
+      "fromId": "n7",
+      "toId": "n9",
+      "type": "INCLUDES_ICE",
+      "properties": {},
+      "style": {
+        "arrow-color": "#8B008B",
+        "arrow-width": 4
+      }
+    },
+    {
+      "id": "n11",
+      "fromId": "n7",
+      "toId": "n10",
+      "type": "INCLUDES_ICE",
+      "properties": {},
+      "style": {
+        "arrow-color": "#8B008B",
+        "arrow-width": 4
+      }
+    },
+    {
+      "id": "n12",
+      "fromId": "n9",
+      "toId": "n11",
+      "type": "TECHNICAL_SPEC",
+      "properties": {},
+      "style": {
+        "arrow-color": "#8B008B",
+        "arrow-width": 4
+      }
+    },
+    {
+      "id": "n13",
+      "fromId": "n10",
+      "toId": "n12",
+      "type": "TECHNICAL_SPEC",
+      "properties": {},
+      "style": {
+        "arrow-color": "#8B008B",
+        "arrow-width": 4
+      }
+    },
+    {
+      "id": "n14",
+      "fromId": "n9",
+      "toId": "n13",
+      "type": "HANDLED_BY",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FFA500",
+        "arrow-width": 4
+      }
+    },
+    {
+      "id": "n15",
+      "fromId": "n10",
+      "toId": "n14",
+      "type": "HANDLED_BY",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FFA500",
+        "arrow-width": 4
+      }
+    },
+    {
+      "id": "n16",
+      "fromId": "n2",
+      "toId": "n15",
+      "type": "ESTIMATED_BY",
+      "properties": {
+        "description": "Estimand estimated by main estimator"
+      },
+      "style": {
+        "arrow-color": "#9370DB",
+        "arrow-width": 4
+      }
+    },
+    {
+      "id": "n17",
+      "fromId": "n6",
+      "toId": "n16",
+      "type": "INFORMS_INPUT",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n18",
+      "fromId": "n3",
+      "toId": "n16",
+      "type": "INFORMS_INPUT",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n19",
+      "fromId": "n13",
+      "toId": "n16",
+      "type": "DEFINES_DATA_HANDLING",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FFA500"
+      }
+    },
+    {
+      "id": "n20",
+      "fromId": "n14",
+      "toId": "n16",
+      "type": "DEFINES_DATA_HANDLING",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FFA500"
+      }
+    },
+    {
+      "id": "n21",
+      "fromId": "n4",
+      "toId": "n16",
+      "type": "INFORMS_INPUT",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n22",
+      "fromId": "n15",
+      "toId": "n16",
+      "type": "HAS_INPUT_SPEC",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n23",
+      "fromId": "n15",
+      "toId": "n17",
+      "type": "HAS_COMPUTATION",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n24",
+      "fromId": "n15",
+      "toId": "n18",
+      "type": "HAS_OUTPUT_SPEC",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n25",
+      "fromId": "n8",
+      "toId": "n18",
+      "type": "DETERMINES_OUTPUT",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n26",
+      "fromId": "n17",
+      "toId": "n19",
+      "type": "PRODUCES",
+      "properties": {},
+      "style": {
+        "arrow-color": "#4682B4",
+        "arrow-width": 4
+      }
+    },
+    {
+      "id": "n27",
+      "fromId": "n17",
+      "toId": "n20",
+      "type": "PRODUCES",
+      "properties": {},
+      "style": {
+        "arrow-color": "#4682B4"
+      }
+    },
+    {
+      "id": "n28",
+      "fromId": "n17",
+      "toId": "n21",
+      "type": "PRODUCES",
+      "properties": {},
+      "style": {
+        "arrow-color": "#4682B4"
+      }
+    },
+    {
+      "id": "n29",
+      "fromId": "n17",
+      "toId": "n22",
+      "type": "PRODUCES",
+      "properties": {},
+      "style": {
+        "arrow-color": "#4682B4"
+      }
+    },
+    {
+      "id": "n30",
+      "fromId": "n18",
+      "toId": "n19",
+      "type": "DEFINES_STRUCTURE",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB",
+        "arrow-width": 4
+      }
+    },
+    {
+      "id": "n31",
+      "fromId": "n18",
+      "toId": "n20",
+      "type": "DEFINES_STRUCTURE",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n32",
+      "fromId": "n18",
+      "toId": "n21",
+      "type": "DEFINES_STRUCTURE",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n33",
+      "fromId": "n18",
+      "toId": "n22",
+      "type": "DEFINES_STRUCTURE",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n34",
+      "fromId": "n0",
+      "toId": "n23",
+      "type": "HAS_BC",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n35",
+      "fromId": "n0",
+      "toId": "n24",
+      "type": "HAS_BC",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n36",
+      "fromId": "n9",
+      "toId": "n25",
+      "type": "INSTANTIATES",
+      "properties": {},
+      "style": {
+        "arrow-color": "#8B008B"
+      }
+    },
+    {
+      "id": "n37",
+      "fromId": "n25",
+      "toId": "n26",
+      "type": "ASSESSED_BY",
+      "properties": {},
+      "style": {
+        "arrow-color": "#008B8B"
+      }
+    },
+    {
+      "id": "n38",
+      "fromId": "n26",
+      "toId": "n19",
+      "type": "IMPACTS",
+      "properties": {},
+      "style": {
+        "arrow-color": "#DC143C"
+      }
+    },
+    {
+      "id": "n39",
+      "fromId": "n13",
+      "toId": "n26",
+      "type": "APPLIED_IN",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FFA500"
+      }
+    },
+    {
+      "id": "n40",
+      "fromId": "n14",
+      "toId": "n26",
+      "type": "APPLIED_IN",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FFA500"
+      }
+    },
+    {
+      "id": "n41",
+      "fromId": "n16",
+      "toId": "n26",
+      "type": "USES_ASSESSMENT",
+      "properties": {},
+      "style": {
+        "arrow-color": "#008B8B"
+      }
+    },
+    {
+      "id": "n42",
+      "fromId": "n11",
+      "toId": "n23",
+      "type": "DETECTED_VIA",
+      "properties": {},
+      "style": {
+        "arrow-color": "#228B22",
+        "arrow-width": 4
+      }
+    },
+    {
+      "id": "n43",
+      "fromId": "n12",
+      "toId": "n24",
+      "type": "DETECTED_VIA",
+      "properties": {},
+      "style": {
+        "arrow-color": "#228B22",
+        "arrow-width": 4
+      }
+    }
+  ]
+}
