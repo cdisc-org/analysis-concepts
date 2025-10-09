@@ -1,0 +1,335 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/ac-schema-v1.0.json",
+  "title": "Universal Analysis Concept Schema",
+  "description": "JSON Schema for Analysis Concept metadata - Version 1.0",
+  "version": "1.0",
+  "type": "object",
+  
+  "required": [
+    "AC_ID",
+    "AC_NAME",
+    "AC_PURPOSE",
+    "ONTOLOGY",
+    "INPUTS",
+    "OUTPUTS",
+    "METHOD",
+    "CONTEXT",
+    "METADATA"
+  ],
+  
+  "properties": {
+    "AC_ID": {
+      "type": "string",
+      "pattern": "^[A-Z]_AC_[0-9]{3}$",
+      "description": "Unique identifier for this AC (e.g., D_AC_001, M_AC_015)",
+      "examples": ["D_AC_001", "M_AC_015", "A_AC_003"]
+    },
+    
+    "AC_NAME": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Short descriptive name for the analysis"
+    },
+    
+    "AC_PURPOSE": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Purpose/objective of this analysis"
+    },
+    
+    "ONTOLOGY": {
+      "type": "object",
+      "description": "Semantic classification using STATO ontology",
+      "required": ["STATO_IRI", "STATO_LABEL"],
+      "properties": {
+        "STATO_IRI": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^http://purl\\.obolibrary\\.org/obo/STATO_[0-9]{7}$",
+          "description": "Primary STATO concept IRI",
+          "examples": ["http://purl.obolibrary.org/obo/STATO_0000474"]
+        },
+        "STATO_LABEL": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable label from STATO",
+          "examples": ["baseline value identification datum", "mixed model for repeated measures"]
+        },
+        "ADDITIONAL_IRIS": {
+          "type": "array",
+          "description": "Optional additional ontology references",
+          "items": {
+            "$ref": "#/definitions/ontology_reference"
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false
+    },
+    
+    "INPUTS": {
+      "type": "array",
+      "description": "Input specification (what goes into this analysis)",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/input"
+      }
+    },
+    
+    "OUTPUTS": {
+      "type": "array",
+      "description": "Output specification (what comes out of this analysis)",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/output"
+      }
+    },
+    
+    "METHOD": {
+      "type": "object",
+      "description": "Method specification",
+      "required": ["IMPLEMENTATION"],
+      "properties": {
+        "IMPLEMENTATION": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Reference to implementation (function/procedure/code)",
+          "examples": ["stats::lm", "nlme::lme", "custom_function.identify_baseline"]
+        },
+        "PARAMETERS": {
+          "type": "object",
+          "description": "Method parameters (key-value pairs)",
+          "default": {}
+        }
+      },
+      "additionalProperties": false
+    },
+    
+    "CONTEXT": {
+      "type": "object",
+      "description": "Execution context",
+      "required": ["POPULATION", "TIMING"],
+      "properties": {
+        "POPULATION": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Analysis population",
+          "examples": ["Full Analysis Set", "Safety Population", "Per Protocol Set"]
+        },
+        "TIMING": {
+          "type": "array",
+          "description": "Analysis timing/visits",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "examples": [
+            ["Week 2", "Week 4", "Week 8"],
+            ["Pre-dose"],
+            ["All post-baseline visits"]
+          ]
+        },
+        "GROUPING": {
+          "type": "array",
+          "description": "Grouping/stratification variables (optional)",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false
+    },
+    
+    "METADATA": {
+      "type": "object",
+      "description": "Metadata for tracking",
+      "required": ["VERSION", "CREATED_DATE", "CREATED_BY"],
+      "properties": {
+        "VERSION": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$",
+          "description": "Version number (major.minor)",
+          "examples": ["1.0", "2.1"]
+        },
+        "CREATED_DATE": {
+          "type": "string",
+          "format": "date",
+          "description": "Date AC was created (YYYY-MM-DD)"
+        },
+        "CREATED_BY": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Person who created this AC"
+        },
+        "LAST_MODIFIED_DATE": {
+          "type": "string",
+          "format": "date",
+          "description": "Date AC was last modified (YYYY-MM-DD)"
+        },
+        "LAST_MODIFIED_BY": {
+          "type": "string",
+          "description": "Person who last modified this AC"
+        },
+        "STATUS": {
+          "type": "string",
+          "enum": [
+            "Draft",
+            "In Progress",
+            "Complete",
+            "Deprecated"
+          ],
+          "description": "Current status of the AC"
+        },
+        "REVIEW_STATUS": {
+          "type": "string",
+          "enum": [
+            "Not Started",
+            "Under Review",
+            "Approved",
+            "Rejected"
+          ],
+          "description": "Review/approval status"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  
+  "additionalProperties": false,
+  
+  "definitions": {
+    "ontology_reference": {
+      "type": "object",
+      "description": "Reference to an ontology term",
+      "required": ["IRI", "ONTOLOGY", "LABEL"],
+      "properties": {
+        "IRI": {
+          "type": "string",
+          "format": "uri",
+          "description": "Ontology term IRI"
+        },
+        "ONTOLOGY": {
+          "type": "string",
+          "description": "Ontology name",
+          "examples": ["STATO", "OBI", "OBCS"]
+        },
+        "LABEL": {
+          "type": "string",
+          "description": "Human-readable label"
+        }
+      },
+      "additionalProperties": false
+    },
+    
+    "input": {
+      "type": "object",
+      "description": "Input specification for an AC",
+      "required": [
+        "INPUT_ID",
+        "SOURCE_VARIABLE",
+        "ROLE",
+        "REQUIRED",
+        "DATA_TYPE"
+      ],
+      "properties": {
+        "INPUT_ID": {
+          "type": "string",
+          "pattern": "^IN_[0-9]{3}$",
+          "description": "Unique input identifier within this AC",
+          "examples": ["IN_001", "IN_002"]
+        },
+        "SOURCE_AC": {
+          "type": ["string", "null"],
+          "pattern": "^([A-Z]_AC_[0-9]{3}|null)$",
+          "description": "Source AC ID (null if from source data)",
+          "examples": ["D_AC_001", "M_AC_015", null]
+        },
+        "SOURCE_VARIABLE": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Variable name from source",
+          "examples": ["AVAL", "CHG", "TRT01P", "USUBJID"]
+        },
+        "ROLE": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Semantic role in this analysis",
+          "examples": [
+            "dependent_variable",
+            "covariate",
+            "fixed_effect_treatment",
+            "random_effect_subject",
+            "grouping_variable",
+            "measurement_value",
+            "baseline_value"
+          ]
+        },
+        "REQUIRED": {
+          "type": "boolean",
+          "description": "Is this input required?"
+        },
+        "DATA_TYPE": {
+          "type": "string",
+          "enum": ["Numeric", "Character", "Date", "Integer", "Boolean"],
+          "description": "Data type of the input"
+        },
+        "STATO_IRI": {
+          "type": "string",
+          "format": "uri",
+          "description": "STATO classification for this input",
+          "examples": ["http://purl.obolibrary.org/obo/STATO_0000474"]
+        }
+      },
+      "additionalProperties": false
+    },
+    
+    "output": {
+      "type": "object",
+      "description": "Output specification for an AC",
+      "required": [
+        "OUTPUT_ID",
+        "VARIABLE_NAME",
+        "DESCRIPTION",
+        "DATA_TYPE"
+      ],
+      "properties": {
+        "OUTPUT_ID": {
+          "type": "string",
+          "pattern": "^OUT_[0-9]{3}$",
+          "description": "Unique output identifier within this AC",
+          "examples": ["OUT_001", "OUT_002"]
+        },
+        "VARIABLE_NAME": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name of output variable",
+          "examples": ["BASE", "CHG", "LSMEAN", "PVAL"]
+        },
+        "DESCRIPTION": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Description of this output"
+        },
+        "DATA_TYPE": {
+          "type": "string",
+          "enum": ["Numeric", "Character", "Date", "Integer", "Boolean"],
+          "description": "Data type of the output"
+        },
+        "STATO_IRI": {
+          "type": "string",
+          "format": "uri",
+          "description": "STATO classification for this output",
+          "examples": [
+            "http://purl.obolibrary.org/obo/STATO_0000474",
+            "http://purl.obolibrary.org/obo/STATO_0000343",
+            "http://purl.obolibrary.org/obo/STATO_0000051"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

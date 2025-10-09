@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Universal Analysis Concept Template",
+  "description": "Template for all analysis concepts. All ACs follow structure: f(inputs) → outputs",
+  "version": "1.0",
+  
+  "AC_ID": "",
+  "AC_NAME": "",
+  "AC_PURPOSE": "",
+  
+  "ONTOLOGY": {
+    "STATO_IRI": "",
+    "STATO_LABEL": "",
+    "ADDITIONAL_IRIS": [
+      {
+        "IRI": "",
+        "ONTOLOGY": "",
+        "LABEL": ""
+      }
+    ]
+  },
+  
+  "INPUTS": [
+    {
+      "INPUT_ID": "",
+      "SOURCE_AC": null,
+      "SOURCE_VARIABLE": "",
+      "ROLE": "",
+      "REQUIRED": true,
+      "DATA_TYPE": "",
+      "STATO_IRI": ""
+    }
+  ],
+  
+  "OUTPUTS": [
+    {
+      "OUTPUT_ID": "",
+      "VARIABLE_NAME": "",
+      "DESCRIPTION": "",
+      "DATA_TYPE": "",
+      "STATO_IRI": ""
+    }
+  ],
+  
+  "METHOD": {
+    "IMPLEMENTATION": "",
+    "PARAMETERS": {}
+  },
+  
+  "CONTEXT": {
+    "POPULATION": "",
+    "TIMING": [],
+    "GROUPING": []
+  },
+  
+  "METADATA": {
+    "VERSION": "1.0",
+    "CREATED_DATE": "",
+    "CREATED_BY": "",
+    "LAST_MODIFIED_DATE": "",
+    "LAST_MODIFIED_BY": "",
+    "STATUS": "",
+    "REVIEW_STATUS": ""
+  }
+}

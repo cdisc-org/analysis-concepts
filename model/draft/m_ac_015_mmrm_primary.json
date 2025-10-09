@@ -1,0 +1,200 @@
+{
+  "AC_ID": "M_AC_015",
+  "AC_NAME": "MMRM Change from Baseline MADRS Primary Analysis",
+  "AC_PURPOSE": "Estimate treatment effect on depression symptoms over time using mixed model repeated measures",
+  
+  "ONTOLOGY": {
+    "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000544",
+    "STATO_LABEL": "mixed model for repeated measures",
+    "ADDITIONAL_IRIS": [
+      {
+        "IRI": "http://purl.obolibrary.org/obo/STATO_0000188",
+        "ONTOLOGY": "STATO",
+        "LABEL": "mixed model analysis"
+      },
+      {
+        "IRI": "http://purl.obolibrary.org/obo/STATO_0000364",
+        "ONTOLOGY": "STATO",
+        "LABEL": "restricted maximum likelihood estimation"
+      }
+    ]
+  },
+  
+  "INPUTS": [
+    {
+      "INPUT_ID": "OUT_002",
+      "SOURCE_AC": "D_AC_002",
+      "SOURCE_VARIABLE": "CHG",
+      "ROLE": "dependent_variable",
+      "REQUIRED": true,
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000175"
+    },
+    {
+      "INPUT_ID": "OUT_001",
+      "SOURCE_AC": "D_AC_001",
+      "SOURCE_VARIABLE": "BASE",
+      "ROLE": "covariate",
+      "REQUIRED": true,
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000474"
+    },
+    {
+      "INPUT_ID": "IN_003",
+      "SOURCE_AC": null,
+      "SOURCE_VARIABLE": "TRT01P",
+      "ROLE": "fixed_effect_treatment",
+      "REQUIRED": true,
+      "DATA_TYPE": "Character",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000251"
+    },
+    {
+      "INPUT_ID": "IN_004",
+      "SOURCE_AC": null,
+      "SOURCE_VARIABLE": "AVISIT",
+      "ROLE": "fixed_effect_time",
+      "REQUIRED": true,
+      "DATA_TYPE": "Character",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000251"
+    },
+    {
+      "INPUT_ID": "IN_005",
+      "SOURCE_AC": null,
+      "SOURCE_VARIABLE": "USUBJID",
+      "ROLE": "random_effect_subject",
+      "REQUIRED": true,
+      "DATA_TYPE": "Character",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000001"
+    },
+    {
+      "INPUT_ID": "IN_006",
+      "SOURCE_AC": null,
+      "SOURCE_VARIABLE": "SITEGRP",
+      "ROLE": "fixed_effect_stratification",
+      "REQUIRED": false,
+      "DATA_TYPE": "Character",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000251"
+    }
+  ],
+  
+  "OUTPUTS": [
+    {
+      "OUTPUT_ID": "OUT_001",
+      "VARIABLE_NAME": "LSMEAN",
+      "DESCRIPTION": "Least squares mean for each treatment by visit",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000343"
+    },
+    {
+      "OUTPUT_ID": "OUT_002",
+      "VARIABLE_NAME": "LSMEAN_SE",
+      "DESCRIPTION": "Standard error of LS mean",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000262"
+    },
+    {
+      "OUTPUT_ID": "OUT_003",
+      "VARIABLE_NAME": "LSMEAN_DIFF",
+      "DESCRIPTION": "LS mean difference between treatments",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000175"
+    },
+    {
+      "OUTPUT_ID": "OUT_004",
+      "VARIABLE_NAME": "LSMEAN_DIFF_SE",
+      "DESCRIPTION": "Standard error of LS mean difference",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000262"
+    },
+    {
+      "OUTPUT_ID": "OUT_005",
+      "VARIABLE_NAME": "CI_LOWER",
+      "DESCRIPTION": "Lower bound of 95% confidence interval for difference",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000315"
+    },
+    {
+      "OUTPUT_ID": "OUT_006",
+      "VARIABLE_NAME": "CI_UPPER",
+      "DESCRIPTION": "Upper bound of 95% confidence interval for difference",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000314"
+    },
+    {
+      "OUTPUT_ID": "OUT_007",
+      "VARIABLE_NAME": "PVAL",
+      "DESCRIPTION": "P-value for treatment effect at each visit",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000051"
+    },
+    {
+      "OUTPUT_ID": "OUT_008",
+      "VARIABLE_NAME": "DF",
+      "DESCRIPTION": "Degrees of freedom",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000069"
+    },
+    {
+      "OUTPUT_ID": "OUT_009",
+      "VARIABLE_NAME": "FIXED_EFFECTS_ESTIMATES",
+      "DESCRIPTION": "Parameter estimates for all fixed effects",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000144"
+    },
+    {
+      "OUTPUT_ID": "OUT_010",
+      "VARIABLE_NAME": "COVARIANCE_PARAMETERS",
+      "DESCRIPTION": "Estimated covariance structure parameters",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000179"
+    },
+    {
+      "OUTPUT_ID": "OUT_011",
+      "VARIABLE_NAME": "AIC",
+      "DESCRIPTION": "Akaike Information Criterion",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000319"
+    },
+    {
+      "OUTPUT_ID": "OUT_012",
+      "VARIABLE_NAME": "BIC",
+      "DESCRIPTION": "Bayesian Information Criterion",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000081"
+    }
+  ],
+  
+  "METHOD": {
+    "IMPLEMENTATION": "nlme::lme",
+    "PARAMETERS": {
+      "fixed_formula": "CHG ~ TRT01P + AVISIT + TRT01P*AVISIT + BASE + BASE*AVISIT + SITEGRP",
+      "random_formula": "~1|USUBJID",
+      "covariance_structure": "unstructured",
+      "estimation_method": "REML",
+      "df_method": "kenward-roger",
+      "confidence_level": 0.95,
+      "contrasts": [
+        {
+          "name": "Treatment vs Placebo at Week 12",
+          "specification": "TRT01P='Active' - TRT01P='Placebo' when AVISIT='Week 12'"
+        }
+      ]
+    }
+  },
+  
+  "CONTEXT": {
+    "POPULATION": "Full Analysis Set",
+    "TIMING": ["Week 2", "Week 4", "Week 6", "Week 8", "Week 12"],
+    "GROUPING": []
+  },
+  
+  "METADATA": {
+    "VERSION": "2.1",
+    "CREATED_DATE": "2024-08-15",
+    "CREATED_BY": "Lead Statistician",
+    "LAST_MODIFIED_DATE": "2024-10-08",
+    "LAST_MODIFIED_BY": "Lead Statistician",
+    "STATUS": "In Progress",
+    "REVIEW_STATUS": "Under Review"
+  }
+}

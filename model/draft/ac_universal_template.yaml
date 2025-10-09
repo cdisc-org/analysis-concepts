@@ -1,0 +1,81 @@
+# ============================================
+# UNIVERSAL ANALYSIS CONCEPT (AC) TEMPLATE
+# Version 1.0
+# ============================================
+# This template applies to ALL analysis concepts regardless of type
+# All ACs follow this structure: f(inputs) → outputs
+
+# Unique identifier for this AC
+AC_ID: ""
+
+# Short descriptive name
+AC_NAME: ""
+
+# Purpose/objective of this analysis
+AC_PURPOSE: ""
+
+# Semantic classification using ontology
+ONTOLOGY:
+  # Primary STATO concept IRI
+  STATO_IRI: ""
+  # Human-readable label from STATO
+  STATO_LABEL: ""
+  # Optional: additional ontology references
+  ADDITIONAL_IRIS:
+    - IRI: ""
+      ONTOLOGY: ""
+      LABEL: ""
+
+# Input specification (what goes into this analysis)
+INPUTS:
+  - INPUT_ID: ""
+    # Source AC ID (null if from source data)
+    SOURCE_AC: null
+    # Variable name from source
+    SOURCE_VARIABLE: ""
+    # Semantic role in this analysis
+    ROLE: ""
+    # Is this input required?
+    REQUIRED: true
+    # Data type
+    DATA_TYPE: ""
+    # STATO classification for this input
+    STATO_IRI: ""
+
+# Output specification (what comes out of this analysis)
+OUTPUTS:
+  - OUTPUT_ID: ""
+    # Name of output variable
+    VARIABLE_NAME: ""
+    # Description of this output
+    DESCRIPTION: ""
+    # Data type of output
+    DATA_TYPE: ""
+    # STATO classification for this output
+    STATO_IRI: ""
+
+# Method specification
+METHOD:
+  # Reference to implementation (function/procedure/code)
+  IMPLEMENTATION: ""
+  # Method parameters (key-value pairs)
+  PARAMETERS: {}
+
+# Execution context
+CONTEXT:
+  # Analysis population
+  POPULATION: ""
+  # Analysis timing/visits
+  TIMING: []
+  # Grouping/stratification variables (optional)
+  GROUPING: []
+
+# Metadata for tracking
+METADATA:
+  VERSION: "1.0"
+  CREATED_DATE: ""
+  CREATED_BY: ""
+  LAST_MODIFIED_DATE: ""
+  LAST_MODIFIED_BY: ""
+  STATUS: ""
+  REVIEW_STATUS: ""

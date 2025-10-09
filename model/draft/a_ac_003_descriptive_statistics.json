@@ -1,0 +1,124 @@
+{
+  "AC_ID": "A_AC_003",
+  "AC_NAME": "Descriptive Statistics CHG MADRS by Treatment and Visit",
+  "AC_PURPOSE": "Summarize change from baseline MADRS by treatment group and visit",
+  
+  "ONTOLOGY": {
+    "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000251",
+    "STATO_LABEL": "descriptive statistical calculation datum",
+    "ADDITIONAL_IRIS": []
+  },
+  
+  "INPUTS": [
+    {
+      "INPUT_ID": "IN_001",
+      "SOURCE_AC": "D_AC_002",
+      "SOURCE_VARIABLE": "CHG",
+      "ROLE": "analysis_variable",
+      "REQUIRED": true,
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000175"
+    },
+    {
+      "INPUT_ID": "IN_002",
+      "SOURCE_AC": null,
+      "SOURCE_VARIABLE": "TRT01P",
+      "ROLE": "grouping_variable",
+      "REQUIRED": true,
+      "DATA_TYPE": "Character",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000251"
+    },
+    {
+      "INPUT_ID": "IN_003",
+      "SOURCE_AC": null,
+      "SOURCE_VARIABLE": "AVISIT",
+      "ROLE": "grouping_variable",
+      "REQUIRED": true,
+      "DATA_TYPE": "Character",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000251"
+    }
+  ],
+  
+  "OUTPUTS": [
+    {
+      "OUTPUT_ID": "OUT_001",
+      "VARIABLE_NAME": "N",
+      "DESCRIPTION": "Number of non-missing observations",
+      "DATA_TYPE": "Integer",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000047"
+    },
+    {
+      "OUTPUT_ID": "OUT_002",
+      "VARIABLE_NAME": "MEAN",
+      "DESCRIPTION": "Arithmetic mean",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000401"
+    },
+    {
+      "OUTPUT_ID": "OUT_003",
+      "VARIABLE_NAME": "SD",
+      "DESCRIPTION": "Standard deviation",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000037"
+    },
+    {
+      "OUTPUT_ID": "OUT_004",
+      "VARIABLE_NAME": "MEDIAN",
+      "DESCRIPTION": "Median value",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000497"
+    },
+    {
+      "OUTPUT_ID": "OUT_005",
+      "VARIABLE_NAME": "MIN",
+      "DESCRIPTION": "Minimum value",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000137"
+    },
+    {
+      "OUTPUT_ID": "OUT_006",
+      "VARIABLE_NAME": "MAX",
+      "DESCRIPTION": "Maximum value",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000136"
+    },
+    {
+      "OUTPUT_ID": "OUT_007",
+      "VARIABLE_NAME": "Q1",
+      "DESCRIPTION": "First quartile",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000372"
+    },
+    {
+      "OUTPUT_ID": "OUT_008",
+      "VARIABLE_NAME": "Q3",
+      "DESCRIPTION": "Third quartile",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000371"
+    }
+  ],
+  
+  "METHOD": {
+    "IMPLEMENTATION": "stats::summary_statistics",
+    "PARAMETERS": {
+      "statistics": ["n", "mean", "sd", "median", "min", "max", "q1", "q3"],
+      "na_rm": true
+    }
+  },
+  
+  "CONTEXT": {
+    "POPULATION": "Full Analysis Set",
+    "TIMING": ["All post-baseline visits"],
+    "GROUPING": ["TRT01P", "AVISIT"]
+  },
+  
+  "METADATA": {
+    "VERSION": "1.0",
+    "CREATED_DATE": "2024-10-08",
+    "CREATED_BY": "Lead Statistician",
+    "LAST_MODIFIED_DATE": "2024-10-08",
+    "LAST_MODIFIED_BY": "Lead Statistician",
+    "STATUS": "Complete",
+    "REVIEW_STATUS": "Approved"
+  }
+}
