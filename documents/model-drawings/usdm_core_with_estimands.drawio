@@ -1,0 +1,72 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36" version="28.2.5">
+  <diagram name="USDM Supplement - Estimand Framework" id="usdm-supplement">
+    <mxGraphModel dx="1742" dy="703" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-1" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;USDM v4.0 CORE MODEL with Estimand Framework Integration&lt;/b&gt;&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="440" y="130" width="700" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-4" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;Objective&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ id: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ description: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ level: Code&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ endpoints: String&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;fillColor=#FFE5CC;strokeColor=#D79B00;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="250" y="210" width="220" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-5" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;Estimand&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ id: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ name: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ description: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ estimandRole: Code&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ clinicalQuestion: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ summaryMeasure: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ constructionDate: Date&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;fillColor=#FFCCCC;strokeColor=#CC0000;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="690" y="190" width="240" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-6" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;Endpoint&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ id: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ name: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ description: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ purpose: Code&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ level: Code&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ measure: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ unit: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ timeframe: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ direction: Code&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;fillColor=#FFE5CC;strokeColor=#D79B00;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="240" y="480" width="240" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-7" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;SensitivityAnalysis&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ id: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ name: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ sensitivityType: Code&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ purpose: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ description: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ assumptionTested: String&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;fillColor=#FFE5CC;strokeColor=#D79B00;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="200" width="230" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-8" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;StudyDesignPopulation&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ id: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ name: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ description: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ plannedEnrollmentNumber: Integer&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ populationAge: Code&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ populationSex: Code&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;fillColor=#D5E8D4;strokeColor=#82B366;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="850" y="560" width="280" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-9" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;EligibilityCriteria&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ id: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ name: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ description: String&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=11;fontFamily=Helvetica;html=1;fillColor=#D5E8D4;strokeColor=#82B366;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="850" y="805" width="280" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-10" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;AnalysisPopulation&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ id: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ name: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ description: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ condition: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ label: Code&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ purpose: String&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;fillColor=#D5E8D4;strokeColor=#82B366;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="550" y="560" width="280" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-11" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;BiomedicalConcept&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ id: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ name: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ code: Code&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ category: Code&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ dataType: String&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;fillColor=#D5E8D4;strokeColor=#82B366;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="245" y="790" width="230" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-17" value="definesEstimand 1..*" style="endArrow=open;endSize=12;dashed=0;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#CC0000;" edge="1" parent="1" source="BWWzPkDhNDJeXBN9GXi3-4" target="BWWzPkDhNDJeXBN9GXi3-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-18" value="addressesEndpoint 1..*" style="endArrow=open;endSize=12;dashed=0;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" edge="1" parent="1" source="BWWzPkDhNDJeXBN9GXi3-4" target="BWWzPkDhNDJeXBN9GXi3-6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-19" value="hasVariable 1&#xa;(Attribute 3)" style="endArrow=open;endSize=12;dashed=0;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=3;strokeColor=#CC0000;" edge="1" parent="1" source="BWWzPkDhNDJeXBN9GXi3-5" target="BWWzPkDhNDJeXBN9GXi3-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-20" value="hasSensitivityAnalysis 0..*" style="endArrow=open;endSize=12;dashed=0;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#CC0000;" edge="1" parent="1" source="BWWzPkDhNDJeXBN9GXi3-5" target="BWWzPkDhNDJeXBN9GXi3-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-21" value="targetsPopulation 1&#xa;(informs Attr 2)" style="endArrow=open;endSize=12;dashed=1;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#CC0000;" edge="1" parent="1" source="BWWzPkDhNDJeXBN9GXi3-5" target="BWWzPkDhNDJeXBN9GXi3-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-22" value="operationalizesEstimand 0..1" style="endArrow=open;endSize=12;dashed=1;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#82B366;" edge="1" parent="1" source="BWWzPkDhNDJeXBN9GXi3-10" target="BWWzPkDhNDJeXBN9GXi3-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-23" value="measuredBy 1..*" style="endArrow=open;endSize=12;dashed=0;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" edge="1" parent="1" source="BWWzPkDhNDJeXBN9GXi3-6" target="BWWzPkDhNDJeXBN9GXi3-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-25" value="eligibilityCriteria 1" style="endArrow=open;endSize=12;dashed=0;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" edge="1" parent="1" source="BWWzPkDhNDJeXBN9GXi3-8" target="BWWzPkDhNDJeXBN9GXi3-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-33" value="&lt;b&gt;ICH E9(R1) Estimand Framework&lt;/b&gt;&lt;br&gt;&lt;br&gt;Estimand defines treatment effect&lt;br&gt;&lt;br&gt;&lt;b&gt;5 mandatory attributes:&lt;/b&gt;&lt;br&gt;1. Treatment&lt;br&gt;2. Population (targets StudyDesignPopulation)&lt;br&gt;3. Variable (= Endpoint)&lt;br&gt;4. ICE Handling&lt;br&gt;5. Population Summary&lt;br&gt;&lt;br&gt;See supplement for detailed framework" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#FFF9E6;strokeColor=#D79B00;align=left;verticalAlign=top;fontSize=11;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="1500" y="190" width="280" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-34" value="&lt;b&gt;Population Types&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;StudyDesignPopulation:&lt;/b&gt;&lt;br&gt;• Defines eligibility criteria&lt;br&gt;• Who CAN be enrolled&lt;br&gt;• Informs Estimand Attribute 2&lt;br&gt;&lt;br&gt;&lt;b&gt;AnalysisPopulation:&lt;/b&gt;&lt;br&gt;• Operationalizes estimand population&lt;br&gt;• Which patients + which observations&lt;br&gt;• Aligned with ICE strategies&lt;br&gt;• E.g., Full Analysis Set (FAS)" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#E8F5E9;strokeColor=#82B366;align=left;verticalAlign=top;fontSize=11;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="1500" y="450" width="280" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="BWWzPkDhNDJeXBN9GXi3-35" value="&lt;b&gt;SensitivityAnalysis&lt;/b&gt;&lt;br&gt;&lt;br&gt;Tests untestable assumptions&lt;br&gt;of estimand&lt;br&gt;&lt;br&gt;• Mandatory for PRIMARY estimands&lt;br&gt;• Cardinality: 2..* (at least 2)&lt;br&gt;• Targets same estimand&lt;br&gt;&lt;br&gt;Chain: Estimand → SensitivityAnalysis&lt;br&gt;→ AnalysisConcept&lt;br&gt;&lt;br&gt;See supplement for analysis chain" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#FFF9E6;strokeColor=#D79B00;align=left;verticalAlign=top;fontSize=11;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="1500" y="700" width="280" height="220" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
