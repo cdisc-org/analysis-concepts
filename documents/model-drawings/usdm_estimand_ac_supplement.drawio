@@ -104,7 +104,7 @@
           <mxGeometry x="1260" y="442" width="230" height="125" as="geometry" />
         </mxCell>
         <mxCell id="strategy-assumptions" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;StrategyAssumptions&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ tested: String[]&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ untestable: String[]&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ implications: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ dataRequirements: String&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=11;fontFamily=Helvetica;html=1;fillColor=#FFF9C4;strokeColor=#F57C00;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="1620" y="448" width="230" height="105" as="geometry" />
+          <mxGeometry x="1620" y="452" width="230" height="105" as="geometry" />
         </mxCell>
         <mxCell id="data-collect" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;DataCollectionSpecification&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ id: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ postICEBehavior: Code&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ requiredConceptIds: String[]&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ requiredActivityIds: String[]&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ conditionalLogic: String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ mandatoryForStrategy: Boolean&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=11;fontFamily=Helvetica;html=1;fillColor=#FFE082;strokeColor=#F57C00;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="1260" y="610" width="230" height="145" as="geometry" />
@@ -205,23 +205,21 @@
         <mxCell id="rel-12" value="assessedBy 1" style="endArrow=open;endSize=12;dashed=0;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#006064;" parent="1" source="ice-occurrence" target="ice-impact" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="rel-tech-bc" value="sourceConceptId&#xa;references" style="endArrow=open;endSize=10;dashed=1;html=1;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;strokeWidth=1;strokeColor=#666666;dashPattern=2 4;" parent="1" source="ice-tech" target="other-core" edge="1">
-          <mxGeometry x="0.2" y="-10" relative="1" as="geometry">
+        <mxCell id="rel-tech-bc" value="sourceConceptId&#xa;references" style="endArrow=open;endSize=10;dashed=1;html=1;exitX=0.004;exitY=0.807;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;strokeWidth=1;strokeColor=#666666;dashPattern=2 4;exitPerimeter=0;" parent="1" source="ice-tech" target="other-core" edge="1">
+          <mxGeometry x="-0.2642" relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1550" y="182" />
-              <mxPoint x="1550" y="100" />
-              <mxPoint x="720" y="100" />
-              <mxPoint x="720" y="885" />
+              <mxPoint x="1570" y="270" />
+              <mxPoint x="1570" y="950" />
             </Array>
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="rel-24" value="requiresConcepts&#xa;requiredActivityIds" style="endArrow=open;endSize=10;dashed=1;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;strokeWidth=1;strokeColor=#666666;dashPattern=2 4;" parent="1" source="data-collect" target="other-core" edge="1">
-          <mxGeometry x="-0.5" y="-15" relative="1" as="geometry">
+          <mxGeometry x="-0.6933" y="-20" relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="1200" y="682" />
-              <mxPoint x="1200" y="950" />
-              <mxPoint x="680" y="935" />
+              <mxPoint x="1200" y="1007" />
+              <mxPoint x="700" y="1007" />
             </Array>
             <mxPoint as="offset" />
           </mxGeometry>
@@ -290,59 +288,56 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="rel-25" value="" style="endArrow=open;endSize=8;dashed=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeWidth=1;strokeColor=#999999;dashPattern=2 4;entryX=0.073;entryY=-0.028;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="attr-1" target="analysis-input" edge="1">
+        <mxCell id="rel-25" value="" style="endArrow=open;endSize=8;dashed=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeWidth=1;strokeColor=#999999;dashPattern=2 4;entryX=0.125;entryY=0.015;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="attr-1" target="analysis-input" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="550" y="1190" as="targetPoint" />
             <Array as="points">
               <mxPoint x="1080" y="198" />
               <mxPoint x="1070" y="910" />
-              <mxPoint x="678" y="1090" />
+              <mxPoint x="690" y="1030" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="rel-26" value="" style="endArrow=open;endSize=8;dashed=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;strokeWidth=1;strokeColor=#999999;dashPattern=2 4;" parent="1" source="attr-2" target="analysis-input" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1050" y="350" />
-              <mxPoint x="1050" y="830" />
-              <mxPoint x="720" y="1200" />
+              <mxPoint x="1100" y="350" />
+              <mxPoint x="1100" y="940" />
+              <mxPoint x="720" y="1130" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="rel-27" value="" style="endArrow=open;endSize=8;dashed=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=1;strokeColor=#999999;dashPattern=2 4;" parent="1" source="attr-5" target="analysis-output" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1120" y="917" />
-              <mxPoint x="1120" y="1200" />
-              <mxPoint x="1350" y="1200" />
+              <mxPoint x="1350" y="831" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="rel-28" value="" style="endArrow=open;endSize=8;dashed=1;html=1;exitX=-0.006;exitY=0.55;exitDx=0;exitDy=0;entryX=0.899;entryY=0.016;entryDx=0;entryDy=0;strokeWidth=1;strokeColor=#999999;dashPattern=2 4;exitPerimeter=0;entryPerimeter=0;" parent="1" source="ice-strategy" target="analysis-input" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1220" y="510" />
-              <mxPoint x="1220" y="1100" />
-              <mxPoint x="876" y="1200" />
+              <mxPoint x="1240" y="510" />
+              <mxPoint x="1240" y="1000" />
+              <mxPoint x="876" y="1100" />
+              <mxPoint x="876" y="1280" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="rel-29" value="" style="endArrow=open;endSize=8;dashed=1;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=1;strokeColor=#999999;dashPattern=2 4;" parent="1" source="ice-impact" target="analysis-input" edge="1">
+        <mxCell id="rel-29" value="" style="endArrow=open;endSize=8;dashed=1;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.796;entryY=-0.023;entryDx=0;entryDy=0;strokeWidth=1;strokeColor=#999999;dashPattern=2 4;entryPerimeter=0;" parent="1" source="ice-impact" target="analysis-input" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1550" y="690" />
-              <mxPoint x="1550" y="1130" />
-              <mxPoint x="920" y="1330" />
+              <mxPoint x="1980" y="850" />
+              <mxPoint x="850" y="1030" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="rel-sens-ice" value="evaluatesAssumption 1" style="endArrow=open;endSize=12;dashed=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#F57C00;dashPattern=8 8;" parent="1" source="sensitivity" target="attr-4" edge="1">
-          <mxGeometry x="-0.3213" y="-15" relative="1" as="geometry">
+          <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="650" y="744" />
-              <mxPoint x="700" y="744" />
+              <mxPoint x="710" y="820" />
+              <mxPoint x="710" y="660" />
             </Array>
-            <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
       </root>
