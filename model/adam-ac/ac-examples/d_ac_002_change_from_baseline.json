@@ -1,0 +1,78 @@
+{
+  "AC_ID": "D_AC_002",
+  "AC_NAME": "Change from Baseline MADRS",
+  "AC_PURPOSE": "Calculate change from baseline in MADRS total score",
+  
+  "ONTOLOGY": {
+    "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000175",
+    "STATO_LABEL": "difference",
+    "ADDITIONAL_IRIS": [
+      {
+        "IRI": "http://purl.obolibrary.org/obo/STATO_0000002",
+        "ONTOLOGY": "STATO",
+        "LABEL": "data transformation"
+      }
+    ]
+  },
+  
+  "INPUTS": [
+    {
+      "INPUT_ID": "IN_001",
+      "SOURCE_AC": null,
+      "SOURCE_AC_TEMPLATE": null,
+      "SOURCE_VARIABLE": "AVAL",
+      "SOURCE_CLASS_VARIABLE": "AVAL",
+      "ROLE": "post_baseline_value",
+      "REQUIRED": true,
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000251"
+    },
+    {
+      "INPUT_ID": "OUT_001",
+      "SOURCE_AC": "D_AC_001",
+      "SOURCE_AC_TEMPLATE": "T_AC_001",
+      "SOURCE_VARIABLE": "BASE",
+      "SOURCE_CLASS_VARIABLE": "BASE",
+      "ROLE": "baseline_value",
+      "REQUIRED": true,
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000474"
+    }
+  ],
+  
+  "OUTPUTS": [
+    {
+      "OUTPUT_ID": "OUT_002",
+      "VARIABLE_NAME": "CHG",
+      "CLASS_VARIABLE_NAME": "CHG",
+      "DESCRIPTION": "Change from baseline (AVAL - BASE)",
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000175"
+    }
+  ],
+  
+  "METHOD": {
+    "IMPLEMENTATION": "base::subtract",
+    "PARAMETERS": {
+      "operation": "subtract",
+      "formula": "AVAL - BASE",
+      "missing_handling": "propagate"
+    }
+  },
+  
+  "CONTEXT": {
+    "POPULATION": "Full Analysis Set",
+    "TIMING": ["All post-baseline visits"],
+    "GROUPING": []
+  },
+  
+  "METADATA": {
+    "VERSION": "1.0",
+    "CREATED_DATE": "2024-10-08",
+    "CREATED_BY": "Lead Statistician",
+    "LAST_MODIFIED_DATE": "2024-10-08",
+    "LAST_MODIFIED_BY": "Lead Statistician",
+    "STATUS": "Complete",
+    "REVIEW_STATUS": "Approved"
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "AC_ID": "D_AC_001",
+  "AC_NAME": "Baseline MADRS Flag",
+  "AC_PURPOSE": "Identify and flag baseline MADRS assessment for each subject",
+  "ONTOLOGY": {
+    "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000474",
+    "STATO_LABEL": "baseline value identification datum"
+  },
+  "INPUTS": [
+    {
+      "INPUT_ID": "IN_001",
+      "SOURCE_AC": null,
+      "SOURCE_AC_TEMPLATE": null,
+      "SOURCE_VARIABLE": "AVAL",
+      "SOURCE_CLASS_VARIABLE": "AVAL",
+      "ROLE": "measurement_value",
+      "REQUIRED": true,
+      "DATA_TYPE": "Numeric",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000251"
+    },
+    {
+      "INPUT_ID": "IN_002",
+      "SOURCE_AC": null,
+      "SOURCE_AC_TEMPLATE": null,
+      "SOURCE_VARIABLE": "ADT",
+      "SOURCE_CLASS_VARIABLE": "ADT",
+      "ROLE": "measurement_date",
+      "REQUIRED": true,
+      "DATA_TYPE": "Date",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000093"
+    },
+    {
+      "INPUT_ID": "IN_003",
+      "SOURCE_AC": null,
+      "SOURCE_AC_TEMPLATE": null,
+      "SOURCE_VARIABLE": "TRTSDT",
+      "SOURCE_CLASS_VARIABLE": "TRTSDT",
+      "ROLE": "reference_date",
+      "REQUIRED": true,
+      "DATA_TYPE": "Date",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000093"
+    },
+    {
+      "INPUT_ID": "IN_004",
+      "SOURCE_AC": null,
+      "SOURCE_AC_TEMPLATE": null,
+      "SOURCE_VARIABLE": "USUBJID",
+      "SOURCE_CLASS_VARIABLE": "USUBJID",
+      "ROLE": "subject_identifier",
+      "REQUIRED": true,
+      "DATA_TYPE": "Character",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000001"
+    }
+  ],
+  "OUTPUTS": [
+    {
+      "OUTPUT_ID": "OUT_001",
+      "VARIABLE_NAME": "BASFL",
+      "CLASS_VARIABLE_NAME": "ABLFL",
+      "DESCRIPTION": "Baseline flag ('Y' for baseline observation, null otherwise)",
+      "DATA_TYPE": "Character",
+      "STATO_IRI": "http://purl.obolibrary.org/obo/STATO_0000474"
+    }
+  ],
+  "METHOD": {
+    "IMPLEMENTATION": "custom_function.flag_baseline",
+    "PARAMETERS": {
+      "selection_rule": "last",
+      "temporal_constraint": "ADT <= TRTSDT",
+      "grouping": "USUBJID",
+      "flag_value": "Y",
+      "missing_handling": "exclude"
+    }
+  },
+  "CONTEXT": {
+    "POPULATION": "Full Analysis Set",
+    "TIMING": [
+      "Pre-dose"
+    ],
+    "GROUPING": []
+  }
+}

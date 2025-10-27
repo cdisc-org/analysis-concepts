@@ -1,0 +1,429 @@
+{
+  "studyId": "DM-2024-001",
+  "studyTitle": "Phase 3 Study of Drug X vs Placebo in Type 2 Diabetes",
+  "studyPhase": "PHASE_3",
+    
+  "objective": {
+    "id": "OBJ-PRIMARY-001",
+    "level": "PRIMARY",
+    "description": "To evaluate the efficacy of Drug X 10mg once daily versus placebo on glycemic control in patients with Type 2 Diabetes Mellitus inadequately controlled on metformin monotherapy",
+    "endpoints": ["EP-HBA1C-001"]
+  },
+
+  "endpoint": {
+    "id": "EP-HBA1C-001",
+    "name": "HbA1c Change from Baseline",
+    "description": "Change in HbA1c from baseline to Week 24",
+    "measure": "HbA1c",
+    "unit": "%",
+    "timeframe": "From Baseline to Week 24",
+    "derivation": "Change from baseline",
+    "direction": "LOWER_IS_BETTER",
+    "purpose": "EFFICACY",
+    "level": "PRIMARY"
+  },
+
+  "estimand": {
+    "id": "EST-PRIMARY-001",
+    "name": "Primary Efficacy Estimand - Treatment Policy",
+    "description": "Effect of Drug X on HbA1c change reflecting treatment policy regardless of rescue medication use or treatment discontinuation",
+    "estimandRole": "PRIMARY",
+    "estimandType": "PRIMARY",
+    "clinicalQuestion": "What is the effect of Drug X compared to placebo on HbA1c change from baseline to Week 24, regardless of whether patients require rescue medication or discontinue study treatment?",
+    "decisionRationale": "This estimand reflects real-world effectiveness where patients may need additional glucose-lowering therapy or may discontinue treatment. This aligns with regulatory preference for treatment policy strategy for primary analysis in diabetes trials.",
+    "alternativesConsidered": [
+      "Hypothetical strategy (if rescue not taken) - considered for supplementary analysis",
+      "While on treatment strategy - not chosen as primary due to informative censoring concerns"
+    ],
+    "stakeholderInput": "FDA guidance on diabetes trials recommends treatment policy for primary estimand. Patient advocacy groups emphasized importance of real-world effectiveness data.",
+    "constructionDate": "2024-01-15",
+    
+    "attributes": {
+      "treatment": {
+        "id": "ATTR-TRT-001",
+        "condition": "Drug X 10mg once daily versus placebo once daily",
+        "regimen": "Once daily oral administration",
+        "dose": "10mg",
+        "frequency": "QD",
+        "administration": "Oral, with or without food",
+        "backgroundTreatment": "Stable metformin ≥1500mg/day for ≥8 weeks prior to randomization",
+        "includesDiscontinuation": true,
+        "includesAddlTreatment": true,
+        "description": "Drug X 10mg or matching placebo added to stable background metformin, including effects of rescue medication use and treatment discontinuation"
+      },
+
+      "population": {
+        "id": "ATTR-POP-001",
+        "description": "Adults with Type 2 Diabetes inadequately controlled on metformin",
+        "populationType": "FULL_ANALYSIS_SET",
+        "principalStratumDef": "N/A",
+        "baselineSubgroup": "None specified",
+        "analysisSetFlag": "FASFL",
+        "definition": "All randomized patients with baseline and at least one post-baseline HbA1c assessment",
+        "inclusionCriteria": "Adults ≥18 years with T2DM, HbA1c 7.5-10.5% at screening, on stable metformin ≥1500mg/day for ≥8 weeks",
+        "statoId": "STATO:0000372",
+        "statoLabel": "full analysis set"
+      },
+
+      "variable": {
+        "id": "ATTR-VAR-001",
+        "basedOnEndpoint": "EP-HBA1C-001",
+        "timeframe": "From Baseline to Week 24",
+        "timepoint": "Week 24",
+        "referenceTimepoint": "Baseline",
+        "derivation": "Change from baseline",
+        "paramcd": "CHG",
+        "includesComposite": false,
+        "compositeComponents": []
+      },
+
+      "iceHandling": {
+        "id": "ATTR-ICE-001",
+        "summary": "Three intercurrent events defined with treatment policy strategy",
+        "strategyJustification": "Treatment policy chosen to reflect real-world effectiveness including rescue medication and treatment discontinuation as part of treatment effect",
+        "dataImplications": "All data collected regardless of ICE occurrence. Post-ICE measurements included in analysis.",
+        "numberOfICEs": 3,
+        
+        "intercurrentEvents": [
+          {
+            "id": "ICE-RESCUE-001",
+            "name": "Initiation of Rescue Antidiabetic Medication",
+            "description": "Use of additional glucose-lowering medication beyond study drug and background metformin due to inadequate glycemic control",
+            "event": "Start of any additional antidiabetic medication",
+            "timing": "Any time after randomization",
+            "timingCategory": "RECURRING",
+            "reason": "Inadequate glycemic control (FPG >240mg/dL on two consecutive visits or HbA1c >10%)",
+            "reasonCategory": "LACK_OF_EFFICACY",
+            "magnitude": "Any dose or duration",
+            "precedence": 2,
+            
+            "technicalSpecification": {
+              "id": "ICE-TECH-001",
+              "sourceConceptId": "BC_CM_001",
+              "sourceDomain": "CM",
+              "triggerField": "CMCAT",
+              "triggerValue": "ANTIDIABETIC AGENTS",
+              "timingCheck": "(CMSTDTC > RFXSTDTC) AND (CMDECOD NOT IN ('METFORMIN', 'DRUG X', 'PLACEBO'))",
+              "primaryCategory": "ADDITIONAL_TREATMENT",
+              "collectPostICE": true,
+              "programmingAgnostic": false,
+              "requiredFields": ["CMSTDTC", "CMDECOD", "CMCAT", "CMONGO"]
+            },
+            
+            "strategy": {
+              "id": "ICE-STRAT-001",
+              "strategyType": "TREATMENT_POLICY",
+              "rationale": "Reflects real-world effectiveness where patients may require rescue medication as part of diabetes management",
+              "hypotheticalScenario": "N/A - not applicable for treatment policy",
+              "assumptions": {
+                "tested": [
+                  "Missing data is missing at random (MAR)",
+                  "Rescue medication use is part of treatment effect"
+                ],
+                "untestable": [
+                  "Pattern of missingness after rescue initiation",
+                  "Counterfactual outcomes without rescue"
+                ],
+                "implications": "All post-rescue data included in analysis. No imputation of counterfactual outcomes needed.",
+                "dataRequirements": "Continue HbA1c assessments after rescue initiation per protocol schedule"
+              }
+            },
+            
+            "dataCollectionSpec": {
+              "id": "DATA-COLL-001",
+              "postICEBehavior": "CONTINUE_COLLECTION",
+              "requiredConceptIds": ["BC_LB_001"],
+              "requiredActivityIds": ["ACT_HBA1C_ASSESSMENT"],
+              "conditionalLogic": "Continue all efficacy assessments per protocol regardless of rescue use",
+              "mandatoryForStrategy": true
+            }
+          },
+          
+          {
+            "id": "ICE-DISC-AE-001",
+            "name": "Treatment Discontinuation due to Adverse Event",
+            "description": "Permanent cessation of randomized study drug due to treatment-emergent adverse event",
+            "event": "Permanent stop of randomized treatment (Drug X or placebo)",
+            "timing": "Any time after first dose",
+            "timingCategory": "EARLY",
+            "reason": "Treatment-emergent adverse event leading to discontinuation",
+            "reasonCategory": "ADVERSE_EVENT",
+            "magnitude": "N/A - binary event",
+            "precedence": 1,
+            
+            "technicalSpecification": {
+              "id": "ICE-TECH-002",
+              "sourceConceptId": "BC_DS_001",
+              "sourceDomain": "DS",
+              "triggerField": "DSDECOD",
+              "triggerValue": "ADVERSE EVENT",
+              "timingCheck": "(DSSTDTC > RFXSTDTC) AND (DSTERM = 'COMPLETED' OR DSTERM = 'DISCONTINUED')",
+              "primaryCategory": "TREATMENT_DISCONTINUATION",
+              "collectPostICE": true,
+              "programmingAgnostic": false,
+              "requiredFields": ["DSSTDTC", "DSDECOD", "DSTERM"]
+            },
+            
+            "strategy": {
+              "id": "ICE-STRAT-002",
+              "strategyType": "TREATMENT_POLICY",
+              "rationale": "Treatment discontinuation due to AE is part of the tolerability profile and treatment effect",
+              "hypotheticalScenario": "N/A",
+              "assumptions": {
+                "tested": [
+                  "Post-discontinuation outcomes reflect natural disease progression",
+                  "MAR assumption for post-discontinuation missing data"
+                ],
+                "untestable": [
+                  "What outcomes would have been if treatment continued",
+                  "Relationship between AE severity and subsequent glucose control"
+                ],
+                "implications": "Include all available data post-discontinuation. Handle missing data via MMRM or MI under MAR.",
+                "dataRequirements": "Attempt to collect HbA1c at scheduled visits even after discontinuation"
+              }
+            },
+            
+            "dataCollectionSpec": {
+              "id": "DATA-COLL-002",
+              "postICEBehavior": "CONTINUE_COLLECTION",
+              "requiredConceptIds": ["BC_LB_001", "BC_AE_001"],
+              "requiredActivityIds": ["ACT_HBA1C_ASSESSMENT", "ACT_SAFETY_FOLLOWUP"],
+              "conditionalLogic": "Continue efficacy assessments; enhanced AE monitoring for 30 days post-discontinuation",
+              "mandatoryForStrategy": true
+            }
+          },
+          
+          {
+            "id": "ICE-DISC-LOE-001",
+            "name": "Treatment Discontinuation due to Lack of Efficacy",
+            "description": "Permanent cessation of study drug due to insufficient glucose-lowering effect",
+            "event": "Permanent stop of randomized treatment",
+            "timing": "Any time during treatment period, typically after Week 12",
+            "timingCategory": "LATE",
+            "reason": "Insufficient efficacy (persistent hyperglycemia despite treatment)",
+            "reasonCategory": "LACK_OF_EFFICACY",
+            "magnitude": "N/A - binary event",
+            "precedence": 1,
+            
+            "technicalSpecification": {
+              "id": "ICE-TECH-003",
+              "sourceConceptId": "BC_DS_001",
+              "sourceDomain": "DS",
+              "triggerField": "DSDECOD",
+              "triggerValue": "LACK OF EFFICACY",
+              "timingCheck": "DSSTDTC > RFXSTDTC",
+              "primaryCategory": "TREATMENT_DISCONTINUATION",
+              "collectPostICE": true,
+              "programmingAgnostic": false,
+              "requiredFields": ["DSSTDTC", "DSDECOD"]
+            },
+            
+            "strategy": {
+              "id": "ICE-STRAT-003",
+              "strategyType": "TREATMENT_POLICY",
+              "rationale": "Lack of efficacy leading to discontinuation is an important component of treatment effect",
+              "hypotheticalScenario": "N/A",
+              "assumptions": {
+                "tested": [
+                  "Discontinuation due to LoE is related to treatment assignment",
+                  "Post-discontinuation data reflects treatment failure"
+                ],
+                "untestable": [
+                  "Whether patients would have shown delayed response if continued"
+                ],
+                "implications": "Include all available post-discontinuation data as observed",
+                "dataRequirements": "Continue HbA1c collection per protocol even after discontinuation"
+              }
+            },
+            
+            "dataCollectionSpec": {
+              "id": "DATA-COLL-003",
+              "postICEBehavior": "CONTINUE_COLLECTION",
+              "requiredConceptIds": ["BC_LB_001"],
+              "requiredActivityIds": ["ACT_HBA1C_ASSESSMENT"],
+              "conditionalLogic": "Maintain efficacy assessment schedule regardless of discontinuation",
+              "mandatoryForStrategy": true
+            }
+          }
+        ]
+      },
+
+      "populationSummary": {
+        "id": "ATTR-SUM-001",
+        "summaryType": "DIFFERENCE_IN_MEANS",
+        "statisticalMeasure": "Least squares mean difference",
+        "comparisonType": "Drug X - Placebo",
+        "statoId": "STATO:0000424",
+        "statoLabel": "least squares mean"
+      }
+    }
+  },
+
+  "sensitivityAnalyses": [
+    {
+      "id": "SENS-001",
+      "name": "Tipping Point Analysis for Missing Data",
+      "sensitivityType": "MISSING_DATA",
+      "purpose": "Assess robustness of primary analysis to departures from MAR assumption",
+      "assumptionTested": "Missing at random (MAR) assumption for post-ICE data",
+      "description": "Controlled multiple imputation with sensitivity parameters varying assumptions about missing data mechanism"
+    },
+    {
+      "id": "SENS-002",
+      "name": "Per-Protocol Analysis",
+      "sensitivityType": "POPULATION",
+      "purpose": "Evaluate efficacy in patients without major protocol deviations",
+      "assumptionTested": "Effect in compliant population similar to ITT population",
+      "description": "Analysis restricted to patients who completed ≥80% of planned treatment period without major protocol violations"
+    },
+    {
+      "id": "SENS-003",
+      "name": "Pattern Mixture Model",
+      "sensitivityType": "MISSING_DATA",
+      "purpose": "Model missing data using pattern-mixture approach with different assumptions by ICE type",
+      "assumptionTested": "Missing data pattern differs by reason for missingness",
+      "description": "Separate imputation models for patients discontinuing due to AE vs LoE vs completing study"
+    }
+  ],
+
+  "mainAnalysisConcept": {
+    "id": "AC-PRIMARY-001",
+    "name": "Primary Efficacy Analysis - MMRM",
+    "version": "1.0",
+    "analysisRole": "MAIN",
+    "relatedEstimandId": "EST-PRIMARY-001",
+    "implementsAttributes": ["ATTR-TRT-001", "ATTR-POP-001", "ATTR-VAR-001", "ATTR-ICE-001", "ATTR-SUM-001"],
+    "programmingAgnostic": false,
+    
+    "inputSpec": {
+      "id": "INPUT-001",
+      "datasetName": "ADEFF",
+      "variables": ["CHG", "BASE", "TRT01P", "AVISITN", "USUBJID"],
+      "whereConditions": [
+        "FASFL = 'Y'",
+        "PARAMCD = 'HBA1C'",
+        "AVISITN IN (4, 8, 12, 16, 24)"
+      ],
+      "iceFlags": [
+        "RESCUEFL",
+        "DISCAEFL",
+        "DISCLOEFL"
+      ],
+      "analysisSet": "FAS",
+      "iceHandling": "Include all data regardless of ICE occurrence per treatment policy strategy"
+    },
+    
+    "computation": {
+      "id": "COMP-001",
+      "method": {
+        "methodType": "MMRM",
+        "modelSpecification": "CHG ~ BASE + TRT01P + AVISITN + BASE*AVISITN + TRT01P*AVISITN",
+        "covariates": ["BASE", "AVISITN", "BASE*AVISITN", "TRT01P*AVISITN"],
+        "estimation": "REML",
+        "covarianceStructure": "UNSTRUCTURED",
+        "statoCode": "STATO:0000352",
+        "statoLabel": "mixed model for repeated measures"
+      }
+    },
+    
+    "outputSpec": {
+      "id": "OUTPUT-001",
+      "outputStructure": "ARRAY_OF_ESTIMATES",
+      "parameters": [
+        "LSM_DRUGX",
+        "LSM_PLACEBO", 
+        "DIFF",
+        "SE",
+        "CI_LOWER",
+        "CI_UPPER",
+        "P_VALUE"
+      ],
+      "precision": "0.01",
+      "confidenceLevel": "95%",
+      "confidenceIntervals": ["TWO_SIDED"]
+    },
+    
+    "imputationMethod": null
+  },
+
+  "sensitivityAnalysisConcepts": [
+    {
+      "id": "AC-SENS-001",
+      "name": "Sensitivity Analysis - Tipping Point",
+      "analysisRole": "SENSITIVITY",
+      "relatedEstimandId": "EST-PRIMARY-001",
+      "relatedSensitivityId": "SENS-001",
+      
+      "imputationMethod": {
+        "id": "IMPUTE-001",
+        "imputationType": "MULTIPLE_IMPUTATION_CONTROLLED",
+        "numberOfImputations": 100,
+        "imputationModel": "FCS with sensitivity parameter delta",
+        "treatmentArmSpecific": true,
+        "marAssumption": "MNAR",
+        "assumptions": {
+          "missingnessType": "MNAR",
+          "auxiliaryVariables": ["BASE", "FPG", "BMI"],
+          "sensitivityParameters": {
+            "delta_range": [-0.5, 0.5],
+            "delta_increment": 0.1,
+            "applied_to": "POST_ICE_MISSING"
+          }
+        }
+      }
+    }
+  ],
+
+  "studyDesignPopulation": {
+    "id": "STUDYPOP-001",
+    "name": "Type 2 Diabetes Inadequately Controlled on Metformin",
+    "plannedEnrollmentNumber": 450,
+    "eligibilityCriteria": {
+      "inclusion": [
+        "Age ≥18 years",
+        "Diagnosis of Type 2 Diabetes Mellitus ≥6 months",
+        "HbA1c 7.5-10.5% at screening",
+        "On stable metformin ≥1500mg/day for ≥8 weeks",
+        "BMI 25-45 kg/m²"
+      ],
+      "exclusion": [
+        "Type 1 diabetes or secondary diabetes",
+        "Use of any antidiabetic medication other than metformin within 8 weeks",
+        "eGFR <60 mL/min/1.73m²",
+        "History of diabetic ketoacidosis or hyperosmolar state"
+      ]
+    }
+  },
+
+  "analysisPopulations": [
+    {
+      "id": "ANPOP-FAS-001",
+      "name": "Full Analysis Set",
+      "description": "All randomized patients with baseline and ≥1 post-baseline HbA1c",
+      "condition": "RANDFL = 'Y' AND BASEFL = 'Y' AND POST_BASE_CNT >= 1",
+      "label": "FAS",
+      "purpose": "Primary efficacy analysis population per ICH E9 principles"
+    },
+    {
+      "id": "ANPOP-PPS-001", 
+      "name": "Per Protocol Set",
+      "description": "FAS patients without major protocol deviations",
+      "condition": "FASFL = 'Y' AND PPROTFL = 'Y'",
+      "label": "PPS",
+      "purpose": "Sensitivity analysis to assess robustness"
+    }
+  ],
+
+  "metadata": {
+    "version": "1.0",
+    "createdDate": "2024-01-15",
+    "createdBy": "John Smith, Senior Biostatistician",
+    "lastModifiedDate": "2024-03-20",
+    "lastModifiedBy": "Jane Doe, Statistical Lead",
+    "status": "FINAL",
+    "reviewStatus": "APPROVED",
+    "regulatoryMilestone": "End of Phase 2 Meeting with FDA",
+    "protocolVersion": "Amendment 1",
+    "sapVersion": "Final SAP v2.0"
+  }
+}
