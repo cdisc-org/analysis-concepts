@@ -177,7 +177,7 @@ METADATA:
   SOURCE: "CDISC ADaM Analysis Concepts"
 ```
 
-**Why?** Lifecycle management, governance, and version control.
+Just an example - not important for our model discussions
 
 ---
 
