@@ -1,0 +1,201 @@
+# ============================================
+# ADAS-Cog Descriptive Summary Statistics
+# ACStudyInstance Metadata
+# ============================================
+# Descriptive statistics for ADAS-Cog Total Score (ACTOT) and Change from Baseline
+# Stratified by treatment group and analysis visit
+# Per Protocol Table 14-3.01
+# ============================================
+
+AC_ID: S_AC_001
+AC_TEMPLATE: T_AC_009
+AC_NAME: ADAS-Cog Descriptive Summary Statistics
+AC_PURPOSE: Calculate descriptive statistics for ADAS-Cog Total Score stratified by treatment and visit
+
+# Semantic classification using STATO ontology
+ONTOLOGY:
+  STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000251
+  STATO_LABEL: continuous data
+  ADDITIONAL_IRIS:
+    - IRI: http://purl.obolibrary.org/obo/STATO_0000037
+      ONTOLOGY: STATO
+      LABEL: statistical data item
+
+# Input specification
+INPUTS:
+  - INPUT_ID: S_AC_001_IN_001
+    SOURCE_AC: D_AC_005
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: AVAL
+    SOURCE_VARIABLE: AVAL
+    ROLE: analysis_variable
+    DESCRIPTION: ADAS-Cog Total Score (ACTOT) analysis value at baseline and post-baseline visits
+    REQUIRED: true
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000251
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: S_AC_001_IN_002
+    SOURCE_AC: D_AC_003
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: CHG
+    SOURCE_VARIABLE: CHG
+    ROLE: analysis_variable
+    DESCRIPTION: Change from baseline in ADAS-Cog Total Score at Week 24
+    REQUIRED: true
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000175
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: S_AC_001_IN_003
+    SOURCE_AC: null
+    SOURCE_CLASS_DATASET: "Basic Data Structure"
+    SOURCE_DATASET: "ADQSADAS"
+    SOURCE_CLASS_VARIABLE: TRTP
+    SOURCE_VARIABLE: TRTP
+    ROLE: grouping_variable
+    DESCRIPTION: Planned Treatment for grouping
+    REQUIRED: true
+    DATA_TYPE: Character
+    MEASUREMENT_SCALE: nominal
+    STATO_IRI: null
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: S_AC_001_IN_004
+    SOURCE_AC: null
+    SOURCE_CLASS_DATASET: "Basic Data Structure"
+    SOURCE_DATASET: "ADQSADAS"
+    SOURCE_CLASS_VARIABLE: AVISIT
+    SOURCE_VARIABLE: AVISIT
+    ROLE: grouping_variable
+    DESCRIPTION: Analysis Visit for grouping
+    REQUIRED: true
+    DATA_TYPE: Character
+    MEASUREMENT_SCALE: nominal
+    STATO_IRI: null
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: S_AC_001_IN_005
+    SOURCE_AC: null
+    SOURCE_CLASS_DATASET: "Basic Data Structure"
+    SOURCE_DATASET: "ADQSADAS"
+    SOURCE_CLASS_VARIABLE: null
+    SOURCE_VARIABLE: EFFFL
+    ROLE: population_flag
+    DESCRIPTION: Efficacy Population Flag
+    REQUIRED: true
+    DATA_TYPE: Character
+    MEASUREMENT_SCALE: nominal
+    STATO_IRI: null
+    SELECTION_CRITERIA: "EFFFL = 'Y'"
+
+  - INPUT_ID: S_AC_001_IN_006
+    SOURCE_AC: null
+    SOURCE_CLASS_DATASET: "Basic Data Structure"
+    SOURCE_DATASET: "ADQSADAS"
+    SOURCE_CLASS_VARIABLE: PARAMCD
+    SOURCE_VARIABLE: PARAMCD
+    ROLE: parameter
+    DESCRIPTION: Parameter Code
+    REQUIRED: true
+    DATA_TYPE: Character
+    MEASUREMENT_SCALE: nominal
+    STATO_IRI: null
+    SELECTION_CRITERIA: "PARAMCD = 'ACTOT'"
+
+# Output specification
+OUTPUTS:
+  - OUTPUT_ID: S_AC_001_OUT_001
+    VARIABLE_NAME: N
+    DESCRIPTION: Number of non-missing observations by treatment and visit
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: count
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000047
+    CARDINALITY: multiple
+    BY_VARIABLES: ["TRTP", "AVISIT"]
+
+  - OUTPUT_ID: S_AC_001_OUT_002
+    VARIABLE_NAME: MEAN
+    DESCRIPTION: Arithmetic mean by treatment and visit
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000401
+    CARDINALITY: multiple
+    BY_VARIABLES: ["TRTP", "AVISIT"]
+
+  - OUTPUT_ID: S_AC_001_OUT_003
+    VARIABLE_NAME: SD
+    DESCRIPTION: Standard deviation by treatment and visit
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000562
+    CARDINALITY: multiple
+    BY_VARIABLES: ["TRTP", "AVISIT"]
+
+  - OUTPUT_ID: S_AC_001_OUT_004
+    VARIABLE_NAME: MEDIAN
+    DESCRIPTION: Median by treatment and visit
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000465
+    CARDINALITY: multiple
+    BY_VARIABLES: ["TRTP", "AVISIT"]
+
+  - OUTPUT_ID: S_AC_001_OUT_005
+    VARIABLE_NAME: MIN
+    DESCRIPTION: Minimum value by treatment and visit
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000138
+    CARDINALITY: multiple
+    BY_VARIABLES: ["TRTP", "AVISIT"]
+
+  - OUTPUT_ID: S_AC_001_OUT_006
+    VARIABLE_NAME: MAX
+    DESCRIPTION: Maximum value by treatment and visit
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000137
+    CARDINALITY: multiple
+    BY_VARIABLES: ["TRTP", "AVISIT"]
+
+  - OUTPUT_ID: S_AC_001_OUT_007
+    VARIABLE_NAME: Q1
+    DESCRIPTION: First quartile (25th percentile) by treatment and visit
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000167
+    CARDINALITY: multiple
+    BY_VARIABLES: ["TRTP", "AVISIT"]
+
+  - OUTPUT_ID: S_AC_001_OUT_008
+    VARIABLE_NAME: Q3
+    DESCRIPTION: Third quartile (75th percentile) by treatment and visit
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000168
+    CARDINALITY: multiple
+    BY_VARIABLES: ["TRTP", "AVISIT"]
+
+# Method specification
+METHOD:
+  IMPLEMENTATION: stats::descriptive
+  PARAMETERS:
+    statistics: ["n", "mean", "sd", "median", "min", "max", "q1", "q3"]
+    missing_handling: exclude
+    description: "Calculate univariate descriptive statistics by treatment group and analysis visit"
+
+# Metadata for tracking
+METADATA:
+  VERSION: "1.0"
+  CREATED_DATE: "2025-11-05"
+  CREATED_BY: "CDISC Analysis Concepts Team"
+  LAST_MODIFIED_DATE: "2025-11-05"
+  LAST_MODIFIED_BY: "CDISC Analysis Concepts Team"
+  STATUS: Active
+  REVIEW_STATUS: Draft
+  SOURCE: "CDISC Pilot Study Protocol Table 14-3.01"

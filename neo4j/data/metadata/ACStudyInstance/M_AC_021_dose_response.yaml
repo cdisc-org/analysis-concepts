@@ -1,0 +1,181 @@
+# ============================================
+# ADAS-Cog Dose Response Analysis - Linear Model
+# ACStudyInstance Metadata
+# ============================================
+# Analysis for dose response of ADAS-Cog changes from baseline at Week 24
+# Version 1.0
+
+AC_ID: "M_AC_021"
+AC_TEMPLATE: "T_AC_007"
+AC_NAME: "ADAS-Cog Dose Response Analysis - Linear Model"
+AC_PURPOSE: "Test for dose-response relationship in ADAS-Cog change from baseline at Week 24 using linear model with continuous dose predictor"
+
+# Semantic classification using STATO ontology
+ONTOLOGY:
+  STATO_IRI: "http://purl.obolibrary.org/obo/STATO_0000464"
+  STATO_LABEL: "linear mixed model"
+
+# Input specification
+INPUTS:
+  - INPUT_ID: "M_AC_021_IN_001"
+    SOURCE_AC: "D_AC_003"
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: "CHG"
+    SOURCE_VARIABLE: "CHG"
+    ROLE: "dependent_variable"
+    DESCRIPTION: "Change from baseline in ADAS-Cog (11) Total Score"
+    REQUIRED: true
+    DATA_TYPE: "Numeric"
+    MEASUREMENT_SCALE: "continuous"
+    STATO_IRI: "http://purl.obolibrary.org/obo/STATO_0000175"
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: "M_AC_021_IN_002"
+    SOURCE_AC: null
+    SOURCE_CLASS_DATASET: "Basic Data Structure"
+    SOURCE_DATASET: "ADQSADAS"
+    SOURCE_CLASS_VARIABLE: "TRTPN"
+    SOURCE_VARIABLE: "TRTPN"
+    ROLE: "fixed_effect"
+    DESCRIPTION: "Dose as continuous variable (0 for placebo; 54 for low dose; 81 for high dose)"
+    REQUIRED: true
+    DATA_TYPE: "Numeric"
+    MEASUREMENT_SCALE: "continuous"
+    STATO_IRI: "http://purl.obolibrary.org/obo/STATO_0000468"
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: "M_AC_021_IN_003"
+    SOURCE_AC: null
+    SOURCE_CLASS_DATASET: "Basic Data Structure"
+    SOURCE_DATASET: "ADQSADAS"
+    SOURCE_CLASS_VARIABLE: "SITEGRy"
+    SOURCE_VARIABLE: "SITEGR1"
+    ROLE: "fixed_effect"
+    DESCRIPTION: "Site group"
+    REQUIRED: true
+    DATA_TYPE: "Character"
+    MEASUREMENT_SCALE: "categorical"
+    STATO_IRI: "http://purl.obolibrary.org/obo/STATO_0000468"
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: "M_AC_021_IN_004"
+    SOURCE_AC: null
+    SOURCE_CLASS_DATASET: "Basic Data Structure"
+    SOURCE_DATASET: "ADQSADAS"
+    SOURCE_CLASS_VARIABLE: null
+    SOURCE_VARIABLE: "EFFFL"
+    ROLE: "population_flag"
+    DESCRIPTION: "Efficacy Population Flag"
+    REQUIRED: true
+    DATA_TYPE: "Character"
+    MEASUREMENT_SCALE: "nominal"
+    STATO_IRI: null
+    SELECTION_CRITERIA: "EFFFL = 'Y'"
+
+  - INPUT_ID: "M_AC_021_IN_005"
+    SOURCE_AC: null
+    SOURCE_CLASS_DATASET: "Basic Data Structure"
+    SOURCE_DATASET: "ADQSADAS"
+    SOURCE_CLASS_VARIABLE: "ANLzzFL"
+    SOURCE_VARIABLE: "ANL01FL"
+    ROLE: "population_flag"
+    DESCRIPTION: "Analysis Flag 01"
+    REQUIRED: true
+    DATA_TYPE: "Character"
+    MEASUREMENT_SCALE: "nominal"
+    STATO_IRI: null
+    SELECTION_CRITERIA: "ANL01FL = 'Y'"
+
+  - INPUT_ID: "M_AC_021_IN_006"
+    SOURCE_AC: null
+    SOURCE_CLASS_DATASET: "Basic Data Structure"
+    SOURCE_DATASET: "ADQSADAS"
+    SOURCE_CLASS_VARIABLE: "PARAMCD"
+    SOURCE_VARIABLE: "PARAMCD"
+    ROLE: "parameter"
+    DESCRIPTION: "Parameter Code"
+    REQUIRED: true
+    DATA_TYPE: "Character"
+    MEASUREMENT_SCALE: "nominal"
+    STATO_IRI: null
+    SELECTION_CRITERIA: "PARAMCD = 'ATOT'"
+
+  - INPUT_ID: "M_AC_021_IN_007"
+    SOURCE_AC: null
+    SOURCE_CLASS_DATASET: "Basic Data Structure"
+    SOURCE_DATASET: "ADQSADAS"
+    SOURCE_CLASS_VARIABLE: "AVISIT"
+    SOURCE_VARIABLE: "AVISIT"
+    ROLE: "grouping_variable"
+    DESCRIPTION: "Analysis Visit for filtering"
+    REQUIRED: true
+    DATA_TYPE: "Character"
+    MEASUREMENT_SCALE: "nominal"
+    STATO_IRI: null
+    SELECTION_CRITERIA: "AVISIT = 'Week 24'"
+
+# Output specification
+OUTPUTS:
+  - OUTPUT_ID: "M_AC_021_OUT_001"
+    VARIABLE_NAME: "DOSE_EFFECT"
+    DESCRIPTION: "Dose coefficient (slope) - linear effect of dose on CHG"
+    DATA_TYPE: "Numeric"
+    MEASUREMENT_SCALE: "continuous"
+    ROLE: "model parameter estimate"
+    STATO_IRI: "http://purl.obolibrary.org/obo/STATO_0000144"
+    CARDINALITY: single
+
+  - OUTPUT_ID: "M_AC_021_OUT_002"
+    VARIABLE_NAME: "DOSE_EFFECT_SE"
+    DESCRIPTION: "Standard error of dose coefficient"
+    DATA_TYPE: "Numeric"
+    MEASUREMENT_SCALE: "continuous"
+    ROLE: "standard error of estimate"
+    STATO_IRI: "http://purl.obolibrary.org/obo/STATO_0000562"
+    CARDINALITY: single
+
+  - OUTPUT_ID: "M_AC_021_OUT_003"
+    VARIABLE_NAME: "PVAL"
+    DESCRIPTION: "P-value for dose effect (Type III SS for treatment dose)"
+    DATA_TYPE: "Numeric"
+    MEASUREMENT_SCALE: "continuous"
+    ROLE: "p-value for two-sided test"
+    STATO_IRI: "http://purl.obolibrary.org/obo/STATO_0000662"
+    CARDINALITY: single
+
+  - OUTPUT_ID: "M_AC_021_OUT_004"
+    VARIABLE_NAME: "F_STAT"
+    DESCRIPTION: "F-statistic for dose effect"
+    DATA_TYPE: "Numeric"
+    MEASUREMENT_SCALE: "continuous"
+    ROLE: "F-statistic"
+    STATO_IRI: "http://purl.obolibrary.org/obo/STATO_0000282"
+    CARDINALITY: single
+
+  - OUTPUT_ID: "M_AC_021_OUT_005"
+    VARIABLE_NAME: "R_SQUARED"
+    DESCRIPTION: "R-squared for model fit"
+    DATA_TYPE: "Numeric"
+    MEASUREMENT_SCALE: "continuous"
+    ROLE: "coefficient of determination"
+    STATO_IRI: "http://purl.obolibrary.org/obo/STATO_0000564"
+    CARDINALITY: single
+
+# Method specification
+METHOD:
+  ANALYSIS_METHOD: "linear_model"
+  MODEL_FORMULA: "CHG = DOSE + SITEGR1"
+  PARAMETERS:
+    type3_ss: true
+
+# Metadata for tracking
+METADATA:
+  VERSION: "1.0"
+  CREATED_DATE: "2025-11-04"
+  CREATED_BY: "CDISC Analysis Concepts Team"
+  LAST_MODIFIED_DATE: "2025-11-04"
+  LAST_MODIFIED_BY: "CDISC Analysis Concepts Team"
+  STATUS: "Active"
+  REVIEW_STATUS: "Approved"
+  SOURCE: "CDISC Pilot Study Define-XML ARM v1"

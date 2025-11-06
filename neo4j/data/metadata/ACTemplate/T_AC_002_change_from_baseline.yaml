@@ -1,0 +1,104 @@
+# ============================================
+# AC TEMPLATE: CHANGE FROM BASELINE
+# ============================================
+# Generic template for calculating change from baseline
+# Formula: CHG = AVAL - BASE
+# Applicable to any continuous measurement where change is of interest
+# ============================================
+
+AC_ID: T_AC_002
+AC_NAME: Change from Baseline
+AC_PURPOSE: Calculate change from baseline for analysis parameter
+
+ONTOLOGY:
+  STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000175
+  STATO_LABEL: difference
+  ADDITIONAL_IRIS:
+    - IRI: http://purl.obolibrary.org/obo/STATO_0000002
+      ONTOLOGY: STATO
+      LABEL: data transformation
+
+INPUTS:
+  - INPUT_ID: T_AC_002_IN_001
+    SOURCE_AC_TEMPLATE: null
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: AVAL
+    SOURCE_VARIABLE: null
+    ROLE: post_baseline_value
+    DESCRIPTION: Analysis value at post-baseline timepoint
+    REQUIRED: true
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000251
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: T_AC_002_IN_002
+    SOURCE_AC_TEMPLATE: null
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: BASE
+    SOURCE_VARIABLE: null
+    ROLE: baseline_value
+    DESCRIPTION: Baseline value for the parameter
+    REQUIRED: true
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000474
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: T_AC_002_IN_003
+    SOURCE_AC_TEMPLATE: null
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: USUBJID
+    SOURCE_VARIABLE: null
+    ROLE: grouping_variable
+    DESCRIPTION: Unique Subject Identifier for grouping
+    REQUIRED: true
+    DATA_TYPE: Character
+    MEASUREMENT_SCALE: nominal
+    STATO_IRI: null
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: T_AC_002_IN_004
+    SOURCE_AC_TEMPLATE: null
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: AVISIT
+    SOURCE_VARIABLE: null
+    ROLE: grouping_variable
+    DESCRIPTION: Analysis Visit for grouping
+    REQUIRED: true
+    DATA_TYPE: Character
+    MEASUREMENT_SCALE: nominal
+    STATO_IRI: null
+    SELECTION_CRITERIA: null
+
+OUTPUTS:
+  - OUTPUT_ID: T_AC_002_OUT_001
+    VARIABLE_NAME: CHG
+    DESCRIPTION: Change from baseline (AVAL - BASE)
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000175
+    CARDINALITY: multiple
+    BY_VARIABLES: null  # Specified in instance (e.g., ["USUBJID", "AVISIT", "PARAMCD"])
+
+METHOD:
+  IMPLEMENTATION: base::subtract
+  PARAMETERS:
+    operation: subtract
+    formula: "AVAL - BASE"
+    missing_handling: propagate
+    description: "Simple arithmetic subtraction: post-baseline value minus baseline value"
+
+METADATA:
+  VERSION: "1.0"
+  CREATED_DATE: "2025-11-05"
+  CREATED_BY: "CDISC Analysis Concepts Team"
+  LAST_MODIFIED_DATE: "2025-11-05"
+  LAST_MODIFIED_BY: "CDISC Analysis Concepts Team"
+  STATUS: Active
+  REVIEW_STATUS: Template
+  SOURCE: "CDISC ADaM Analysis Concepts"

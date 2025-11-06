@@ -1,0 +1,102 @@
+# ============================================
+# AC TEMPLATE: SDTM TO BASE MAPPING
+# ============================================
+# Generic template for identifying baseline values from SDTM domain
+# Uses --STRESN for numeric result and --BLFL for baseline flag
+# Maps baseline records to ADaM BASE variable
+# ============================================
+
+AC_ID: T_AC_004
+AC_NAME: SDTM to Baseline Value (BASE) Mapping
+AC_PURPOSE: Derive BASE from SDTM source measurement where baseline flag is set
+
+ONTOLOGY:
+  STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000330
+  STATO_LABEL: identity transformation
+  ADDITIONAL_IRIS:
+    - IRI: http://purl.obolibrary.org/obo/STATO_0000002
+      ONTOLOGY: STATO
+      LABEL: data transformation
+
+INPUTS:
+  - INPUT_ID: T_AC_004_IN_001
+    SOURCE_AC_TEMPLATE: null
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: --STRESN
+    SOURCE_VARIABLE: null
+    ROLE: baseline_value
+    DESCRIPTION: Numeric result value from SDTM domain
+    REQUIRED: true
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000474
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: T_AC_004_IN_002
+    SOURCE_AC_TEMPLATE: null
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: --BLFL
+    SOURCE_VARIABLE: null
+    ROLE: baseline_flag
+    DESCRIPTION: Baseline flag indicating baseline measurement
+    REQUIRED: true
+    DATA_TYPE: Character
+    MEASUREMENT_SCALE: nominal
+    STATO_IRI: null
+    SELECTION_CRITERIA: "--BLFL = 'Y'"
+
+  - INPUT_ID: T_AC_004_IN_003
+    SOURCE_AC_TEMPLATE: null
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: USUBJID
+    SOURCE_VARIABLE: null
+    ROLE: grouping_variable
+    DESCRIPTION: Unique Subject Identifier for grouping
+    REQUIRED: true
+    DATA_TYPE: Character
+    MEASUREMENT_SCALE: nominal
+    STATO_IRI: null
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: T_AC_004_IN_004
+    SOURCE_AC_TEMPLATE: null
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: PARAMCD
+    SOURCE_VARIABLE: null
+    ROLE: parameter
+    DESCRIPTION: Parameter Code for filtering
+    REQUIRED: true
+    DATA_TYPE: Character
+    MEASUREMENT_SCALE: nominal
+    STATO_IRI: null
+    SELECTION_CRITERIA: null
+
+OUTPUTS:
+  - OUTPUT_ID: T_AC_004_OUT_001
+    VARIABLE_NAME: BASE
+    DESCRIPTION: Baseline value for parameter
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000474
+    CARDINALITY: multiple
+    BY_VARIABLES: null  # Specified in instance (e.g., ["USUBJID", "PARAMCD"])
+
+METHOD:
+  IMPLEMENTATION: base::copy
+  PARAMETERS:
+    operation: copy
+    description: "Direct mapping from SDTM source value to ADaM BASE where baseline flag is set"
+
+METADATA:
+  VERSION: "1.0"
+  CREATED_DATE: "2025-11-05"
+  CREATED_BY: "CDISC Analysis Concepts Team"
+  LAST_MODIFIED_DATE: "2025-11-05"
+  LAST_MODIFIED_BY: "CDISC Analysis Concepts Team"
+  STATUS: Active
+  REVIEW_STATUS: Template
+  SOURCE: "CDISC ADaM Analysis Concepts"

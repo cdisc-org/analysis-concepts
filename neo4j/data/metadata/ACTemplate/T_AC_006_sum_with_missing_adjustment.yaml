@@ -1,0 +1,103 @@
+# ============================================
+# AC TEMPLATE: SUM WITH MISSING VALUE ADJUSTMENT
+# ============================================
+# Generic template for summing multiple component scores with missing value adjustment
+# Applicable to questionnaires and scales where partial data can be adjusted
+# Uses threshold-based logic for missing data handling
+# ============================================
+
+AC_ID: T_AC_006
+AC_NAME: Sum with Missing Value Adjustment
+AC_PURPOSE: Calculate total score from multiple components with missing value adjustment logic
+
+ONTOLOGY:
+  STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000390
+  STATO_LABEL: sum
+  ADDITIONAL_IRIS:
+    - IRI: http://purl.obolibrary.org/obo/STATO_0000002
+      ONTOLOGY: STATO
+      LABEL: data transformation
+
+INPUTS:
+  - INPUT_ID: T_AC_006_IN_001
+    SOURCE_AC_TEMPLATE: null
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: AVAL
+    SOURCE_VARIABLE: null
+    ROLE: component_score
+    DESCRIPTION: Component item score for summation
+    REQUIRED: false
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000251
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: T_AC_006_IN_002
+    SOURCE_AC_TEMPLATE: null
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: AVAL
+    SOURCE_VARIABLE: null
+    ROLE: component_score
+    DESCRIPTION: Component item score for summation
+    REQUIRED: false
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000251
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: T_AC_006_IN_003
+    SOURCE_AC_TEMPLATE: null
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: USUBJID
+    SOURCE_VARIABLE: null
+    ROLE: grouping_variable
+    DESCRIPTION: Unique Subject Identifier for grouping
+    REQUIRED: true
+    DATA_TYPE: Character
+    MEASUREMENT_SCALE: nominal
+    STATO_IRI: null
+    SELECTION_CRITERIA: null
+
+  - INPUT_ID: T_AC_006_IN_004
+    SOURCE_AC_TEMPLATE: null
+    SOURCE_CLASS_DATASET: null
+    SOURCE_DATASET: null
+    SOURCE_CLASS_VARIABLE: AVISIT
+    SOURCE_VARIABLE: null
+    ROLE: grouping_variable
+    DESCRIPTION: Analysis Visit for grouping
+    REQUIRED: true
+    DATA_TYPE: Character
+    MEASUREMENT_SCALE: nominal
+    STATO_IRI: null
+    SELECTION_CRITERIA: null
+
+OUTPUTS:
+  - OUTPUT_ID: T_AC_006_OUT_001
+    VARIABLE_NAME: AVAL
+    DESCRIPTION: Total score with missing value adjustment
+    DATA_TYPE: Numeric
+    MEASUREMENT_SCALE: continuous
+    STATO_IRI: http://purl.obolibrary.org/obo/STATO_0000390
+    CARDINALITY: multiple
+    BY_VARIABLES: null  # Specified in instance (e.g., ["USUBJID", "AVISIT"])
+
+METHOD:
+  IMPLEMENTATION: custom::sum_with_missing_adjustment
+  PARAMETERS:
+    operation: sum_with_missing_value_adjustment
+    formula: "IF COUNT(missing_items) > threshold THEN missing ELSE SUM(available_items) × (total_scale / available_scale)"
+    description: "Sum of component items with missing value adjustment. If missing count exceeds threshold, total is missing. Otherwise, adjust sum by ratio of total scale range to available item ranges."
+
+METADATA:
+  VERSION: "1.0"
+  CREATED_DATE: "2025-11-05"
+  CREATED_BY: "CDISC Analysis Concepts Team"
+  LAST_MODIFIED_DATE: "2025-11-05"
+  LAST_MODIFIED_BY: "CDISC Analysis Concepts Team"
+  STATUS: Active
+  REVIEW_STATUS: Template
+  SOURCE: "CDISC ADaM Analysis Concepts"
