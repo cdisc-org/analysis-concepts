@@ -14,7 +14,7 @@ This example uses **M_AC_021 (ADAS-Cog Dose Response Analysis)** to show how com
 
 ```mermaid
 flowchart TD
-    subgraph Layer1["🗣️ LAYER 1: Human-Facing - Readable"]
+    subgraph Layer1["🗣️ LAYER 1: Readable"]
         direction TB
         H1["Who: Statisticians and Analysts compose analyses"]
         H2["Format: Natural Language Phrases composed from Building Blocks"]
@@ -22,7 +22,7 @@ flowchart TD
         H1 --> H2 --> H3
     end
 
-    subgraph Layer2["⚙️ LAYER 2: Machine Binding - Structured"]
+    subgraph Layer2["⚙️ LAYER 2: Structured"]
         direction TB
         M1["Who: System automatically generates bindings from phrases"]
         M2["Format: Structured YAML Bindings mapping to data elements"]
@@ -30,7 +30,7 @@ flowchart TD
         M1 --> M2 --> M3
     end
 
-    subgraph Layer3["💻 LAYER 3: Execution - Code"]
+    subgraph Layer3["💻 LAYER 3: Exec Code"]
         direction TB
         E1["Who: System automatically generates code from bindings"]
         E2["Format: SAS, R, or Python executable code"]
@@ -45,14 +45,20 @@ flowchart TD
     style Layer2 fill:#e3f2fd,stroke:#2196f3,stroke-width:3px
     style Layer3 fill:#fff3e0,stroke:#ff9800,stroke-width:3px
 
-    classDef humanBox fill:#c8e6c9,stroke:#388e3c,stroke-width:2px,min-width:1000px
-    classDef machineBox fill:#bbdefb,stroke:#1976d2,stroke-width:2px,min-width:1000px
-    classDef codeBox fill:#ffe0b2,stroke:#f57c00,stroke-width:2px,min-width:1000px
+classDef humanBox fill:#c8e6c9,stroke:#388e3c,stroke-width:2px,padding:15px
+classDef machineBox fill:#bbdefb,stroke:#1976d2,stroke-width:2px,padding:15px
+classDef codeBox fill:#ffe0b2,stroke:#f57c00,stroke-width:2px,padding:15px
 
     class H1,H2,H3 humanBox
     class M1,M2,M3 machineBox
     class E1,E2,E3 codeBox
 ```
+
+
+### NEW
+
+
+
 
 **Key Insights:**
 
