@@ -10,6 +10,56 @@ This document demonstrates a **hybrid approach** to analysis specification that 
 
 This example uses **M_AC_021 (ADAS-Cog Dose Response Analysis)** to show how complex statistical analyses can be expressed as phrases while remaining fully executable.
 
+### Architecture Overview
+
+```mermaid
+flowchart TD
+    subgraph Layer1["🗣️ LAYER 1: Human-Facing (Readable)"]
+        direction TB
+        H1["<b>Who:</b> Statisticians & Analysts"]
+        H2["<b>Format:</b> Natural Language Phrases with Building Blocks"]
+        H3["Example: <i>using linear model for<br/>change in ADAS-Cog Total Score from baseline to Week 24<br/>with dose as continuous predictor adjusting for site group</i>"]
+        H1 --> H2 --> H3
+    end
+
+    subgraph Layer2["⚙️ LAYER 2: Machine Binding (Structured)"]
+        direction TB
+        M1["<b>Who:</b> System - Automatic Generation"]
+        M2["<b>Format:</b> Structured YAML Bindings"]
+        M3["<b>Functions:</b><br/>• Resolve BC/Derived Measure → Dataset<br/>• Map CLASS Variables → Sponsor Variables<br/>• Link to D_ACs for traceability<br/>• Validate data compatibility"]
+        M1 --> M2 --> M3
+    end
+
+    subgraph Layer3["💻 LAYER 3: Execution (Code)"]
+        direction TB
+        E1["<b>Who:</b> System - Automatic Generation"]
+        E2["<b>Format:</b> SAS / R / Python Code"]
+        E3["<b>Output:</b> Executable, Consistent, Traceable"]
+        E1 --> E2 --> E3
+    end
+
+    Layer1 ==>|"System automatically<br/>generates bindings"| Layer2
+    Layer2 ==>|"System automatically<br/>generates code"| Layer3
+
+    style Layer1 fill:#e1f5e1,stroke:#4caf50,stroke-width:3px
+    style Layer2 fill:#e3f2fd,stroke:#2196f3,stroke-width:3px
+    style Layer3 fill:#fff3e0,stroke:#ff9800,stroke-width:3px
+
+    classDef humanBox fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
+    classDef machineBox fill:#bbdefb,stroke:#1976d2,stroke-width:2px
+    classDef codeBox fill:#ffe0b2,stroke:#f57c00,stroke-width:2px
+
+    class H1,H2,H3 humanBox
+    class M1,M2,M3 machineBox
+    class E1,E2,E3 codeBox
+```
+
+**Key Insights:**
+
+- ✅ **Phrases are readable but executable**: Human writes natural language, system ensures executability
+- ✅ **Three layers separate concerns**: Readability (Layer 1), Data binding (Layer 2), Implementation (Layer 3)
+- ✅ **Automation**: Human only interacts with Layer 1; Layers 2 & 3 are auto-generated
+
 ---
 
 ## 1. Building Block Library
