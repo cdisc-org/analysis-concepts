@@ -332,6 +332,12 @@ COMPOSITION_PATTERNS:
 
 Here's how the M_AC_021 dose-response analysis looks using the phrase-based approach:
 
+### Rendered Phrase (Building Blocks in Bold)
+
+Test for dose-response relationship **using linear model** for **change in ADAS-Cog (11) Total Score from baseline to Week 24** with **dose as continuous predictor** **adjusting for site group** **in efficacy population** **at Week 24** **where ADAS-Cog total score records are analyzed**, reporting **dose effect estimate with standard error**, **F-statistic, p-value**, and **R-squared**.
+
+### YAML Specification
+
 ```yaml
 # ============================================
 # M_AC_021: ADAS-Cog Dose Response Analysis
@@ -715,7 +721,701 @@ EXECUTION_SPECIFICATION:
 
 ---
 
-## 4. Template-Level Phrase Specification
+## 4. Envisioned Process: From Standards Templates to Sponsor Instances
+
+This section describes the practical workflow for how standards organizations deliver reusable templates and how sponsors instantiate them for their specific studies.
+
+### 4.1 Standards Organization Deliverables
+
+The standards organization (e.g., CDISC working groups) delivers **reusable templates** that reference abstract concepts rather than sponsor-specific implementations:
+
+**What Standards Deliver:**
+
+1. **Analysis Concept Templates** (e.g., T_AC_007: Linear Model)
+   - Defined using building blocks and phrases
+   - Reference **ADaM CLASS Variables** (CHG, BASE, AVAL, TRT01A, etc.)
+   - Reference **ADaM CLASS Datasets** (BDS structure, OCCDS structure, etc.)
+   - Specify requirements, not implementations
+
+2. **Biomedical Concept → SDTM Domain Mappings (Atomic BCs Only)**
+   - Example: "ADAS-Cog Q1" → SDTM QS domain
+   - Example: "ADAS-Cog Q2" → SDTM QS domain
+   - Example: "Systolic Blood Pressure" → SDTM VS domain
+   - These are **atomic BCs** (collected data), not derived measures
+   - Standards can only map to **standardized SDTM**, not sponsor-specific ADaM datasets
+   - Note: "ADAS-Cog Total Score" is NOT a BC - it's a derived measure created by sponsors via D_ACs
+
+3. **ADaM IG CLASS Variables & CLASS Datasets**
+   - CLASS variables define abstract requirements (data type, role, measurement scale)
+   - CLASS datasets define abstract structures (BDS, OCCDS, ADSL, etc.)
+   - These are **specifications**, not actual datasets
+
+**What Standards CANNOT Deliver:**
+
+- Sponsor-specific dataset names (ADQSADAS, ADTTE_STUDY123, etc.)
+- BC → Sponsor ADaM dataset mappings (this is sponsor-specific)
+- Actual variable names in sponsor datasets
+
+**Example Template Requirement:**
+```yaml
+OUTCOME_REQUIREMENT:
+  phrase: "change in {parameter} from baseline to {timepoint}"
+  building_block: BB_OUTCOME_001
+  requires:
+    - CLASS_variable: CHG
+      data_type: Numeric
+      measurement_scale: continuous
+      role: dependent_variable
+    - parameter_source: ["biomedical_concept", "derived_measure"]
+      # Can be either an atomic BC (e.g., "Systolic Blood Pressure")
+      # OR a derived measure from D_AC (e.g., "ADAS-Cog Total Score" from D_AC_003)
+```
+
+**Note**: Template says "I need a variable of CLASS CHG for a parameter" but doesn't specify:
+- Whether that parameter is an atomic BC or a derived measure
+- Which actual dataset or variable name to use
+- This flexibility allows the same template to work with both collected and derived data
+
+---
+
+### 4.2 Sponsor Setup Phase (One-Time per Study)
+
+Before instantiating any templates, the sponsor establishes the infrastructure connecting their data to standard concepts:
+
+#### Step 1: Create Sponsor Model
+
+The sponsor documents their actual study datasets and variables in the **Sponsor Model**:
+
+```yaml
+# Example: Sponsor's ADQSADAS dataset
+SPONSOR_DATASET:
+  dataset_name: ADQSADAS
+  data_structure: BDS  # Maps to CLASS Dataset structure
+  variables:
+    - variable_name: CHG
+      variable_label: "Change from Baseline"
+      data_type: Numeric
+      measurement_scale: continuous
+    - variable_name: AVAL
+      variable_label: "Analysis Value"
+      data_type: Numeric
+    - variable_name: BASE
+      variable_label: "Baseline Value"
+      data_type: Numeric
+    # ... etc.
+```
+
+#### Step 2: Map Biomedical Concepts → Sponsor ADaM Datasets
+
+The sponsor maps **atomic BCs** (collected data) to their specific ADaM datasets. This can often be **inferred from SDTM mappings**:
+
+**Inference Logic:**
+```
+Standards say: BC "ADAS-Cog Q1" → SDTM QS
+Sponsor reasoning: My QS data → ADQSADAS dataset
+Therefore: BC "ADAS-Cog Q1" → ADQSADAS
+(Same for Q2, Q3, ..., Q11)
+```
+
+**Sponsor BC Mapping:**
+```yaml
+BC_TO_DATASET_MAPPING:
+  # Atomic BCs (collected directly)
+  - biomedical_concept: "ADAS-Cog Q1"
+    sdtm_domain: QS  # From standards
+    sponsor_adam_dataset: ADQSADAS  # Sponsor-specific
+
+  - biomedical_concept: "ADAS-Cog Q2"
+    sdtm_domain: QS
+    sponsor_adam_dataset: ADQSADAS
+
+  # ... Q3-Q11
+
+  - biomedical_concept: "Systolic Blood Pressure"
+    sdtm_domain: VS
+    sponsor_adam_dataset: ADVS
+```
+
+**Important**: This maps only **atomic BCs** (individual questions, vital signs, lab tests, etc.). Derived measures like "ADAS-Cog Total Score" are NOT BCs - they are outputs of D_ACs (see Step 3).
+
+#### Step 3: Define Derivation Analysis Concepts (D_AC)
+
+For **derived measures** that are computed from atomic BCs, sponsor creates D_ACs:
+
+**Example: ADAS-Cog Total Score (a derived measure)**
+
+```yaml
+# D_AC_003: Derive ADAS-Cog Total Score from individual questions (atomic BCs)
+DERIVATION_AC:
+  ac_id: D_AC_003
+  ac_name: "Change from Baseline ADAS-Cog (11)"
+
+  inputs:
+    - BC: "ADAS-Cog Q1"  # Atomic BC (individual question)
+    - BC: "ADAS-Cog Q2"  # Atomic BC
+    # ... Q3-Q11 (all atomic BCs)
+    - BC: "ADAS-Cog Baseline Total"  # Atomic BC
+
+  outputs:
+    - variable: CHG
+      dataset: ADQSADAS
+      derivation: "AVAL - BASE"  # Where AVAL = sum(Q1-Q11)
+      derived_measure: "ADAS-Cog Total Score"  # This is a DERIVED MEASURE, not a BC
+```
+
+**Key Point**: D_ACs define **how derived measures are created** from atomic BCs using derivation logic. The outputs are **derived measures**, not BCs.
+
+#### Step 4: Create Data Catalog (Sponsor Variables → CLASS Variables)
+
+The sponsor establishes **OF_CLASS relationships** mapping their actual variables to ADaM CLASS variables:
+
+**Data Catalog:**
+```yaml
+DATA_CATALOG:
+  dataset: ADQSADAS
+  variables:
+    - sponsor_variable: CHG
+      OF_CLASS: CHG  # ADaM IG CLASS variable
+      validated: true  # Meets CLASS requirements
+
+    - sponsor_variable: AVAL
+      OF_CLASS: AVAL
+      validated: true
+
+    - sponsor_variable: BASE
+      OF_CLASS: BASE
+      validated: true
+
+    - sponsor_variable: TRTPN
+      OF_CLASS: TRTPN
+      validated: true
+```
+
+**Validation Checks:**
+- Does sponsor variable meet data type requirement? ✓
+- Does sponsor variable meet measurement scale requirement? ✓
+- Does sponsor variable meet role requirement? ✓
+
+**Manual Mapping (for non-compliant variables):**
+```yaml
+    - sponsor_variable: CHANGE_FROM_BL  # Non-standard name
+      OF_CLASS: CHG  # Manually mapped
+      validated: true
+      notes: "Our legacy name for change from baseline"
+```
+
+---
+
+### 4.3 Template Instantiation Process (The Magic Happens Here)
+
+When a sponsor wants to instantiate a template for their study, they interact with a **simple authoring interface**. The system does the heavy lifting.
+
+#### What the User Does (Simple):
+
+**Step 1: Select Template**
+```
+User selects: T_AC_007 (Linear Model)
+```
+
+**Step 2: Compose Phrase from Building Blocks**
+```
+User composes:
+[change in ADAS-Cog Total Score from baseline to Week 24]  ← Select outcome block
+with [dose as continuous predictor]                        ← Select predictor block
+[adjusting for site group]                                 ← Select covariate block
+[in efficacy population]                                   ← Select population block
+[at Week 24]                                               ← Select temporal block
+```
+
+**Step 3: Fill Slots**
+```
+Outcome block asks:
+- Parameter source? → User chooses: "Derived Measure" (vs "Biomedical Concept")
+- Select derived measure → User selects: "ADAS-Cog Total Score" (from D_AC_003)
+- Timepoint? → User enters: "Week 24"
+
+Predictor block asks:
+- Variable? → User selects from dropdown: TRTPN
+
+Covariate block asks:
+- Covariate? → User selects from dropdown: SITEGR1
+
+Population block asks:
+- Population? → User selects: "Efficacy" (maps to EFFFL)
+```
+
+**Note**: The UI presents **Option B** - two separate choices:
+- If user selects "Biomedical Concept": Show dropdown of atomic BCs (ADAS-Cog Q1, Systolic BP, etc.)
+- If user selects "Derived Measure": Show dropdown of D_AC outputs (ADAS-Cog Total Score, BMI, etc.)
+
+**That's it!** The user never writes formulas, never manually constructs bindings.
+
+#### What the System Does (Automatic):
+
+**Step 1: Resolve Derived Measure → Dataset**
+
+```
+User selected: Derived Measure = "ADAS-Cog Total Score" (from D_AC_003)
+
+System lookup:
+  D_AC_CATALOG[D_AC_003].outputs → ADQSADAS dataset, CHG variable
+
+Result:
+  Dataset = ADQSADAS
+  Source derivation = D_AC_003
+  Traceability to atomic BCs = ["ADAS-Cog Q1", "Q2", ..., "Q11"] (via D_AC_003)
+```
+
+**Step 2: Resolve CLASS Variables → Sponsor Variables**
+
+```
+Template requires: CLASS variable CHG for the outcome
+
+System lookup:
+  D_AC_003 already specifies CHG in ADQSADAS
+  DATA_CATALOG[ADQSADAS]["CHG"] confirms OF_CLASS: CHG
+
+Result: Variable = CHG in ADQSADAS (validated)
+```
+
+**Alternative - If User Selected Atomic BC:**
+
+```
+User selected: Biomedical Concept = "Systolic Blood Pressure"
+
+System lookup:
+  BC_TO_DATASET_MAPPING["Systolic Blood Pressure"] → ADVS
+
+Result:
+  Dataset = ADVS
+  No source derivation (atomic BC)
+```
+
+**Step 4: Auto-Generate Model Formula**
+
+```
+Template: Linear model requires formula pattern "OUTCOME ~ PREDICTOR + COVARIATE"
+
+System constructs:
+  OUTCOME = CHG (from Step 2)
+  PREDICTOR = TRTPN (user selected)
+  COVARIATE = SITEGR1 (user selected)
+
+Result: formula = "CHG ~ TRTPN + SITEGR1"
+```
+
+**Step 5: Generate Complete Bindings**
+
+```yaml
+BINDINGS:
+  OUTCOME_BINDING:
+    phrase_text: "change in ADAS-Cog Total Score from baseline to Week 24"
+    phrase_block: BB_OUTCOME_001
+    parameter_type: "derived_measure"  # Not an atomic BC
+    parameter_name: "ADAS-Cog Total Score"  # User selected
+    source_derivation: D_AC_003  # Provides traceability to atomic BCs (Q1-Q11)
+    dataset: ADQSADAS  # Auto-resolved from D_AC_003
+    variable: CHG  # Auto-resolved from D_AC_003
+    variable_class: CHG  # From OF_CLASS relationship
+    # ... all other details auto-populated
+
+  METHOD_BINDING:
+    phrase_block: BB_METHOD_001
+    phrase_text: "using linear model"
+    model_formula: "CHG ~ TRTPN + SITEGR1"  # Auto-constructed
+    parameters:  # From building block defaults
+      type3_ss: true
+      estimation_method: "REML"
+```
+
+**Note**: By referencing `source_derivation: D_AC_003`, we automatically have traceability to the atomic BCs (ADAS-Cog Q1-Q11) without repeating them. D_AC_003 contains the full derivation logic.
+
+**Step 6: Generate Code**
+
+From the complete bindings, generate executable SAS/R/Python code:
+
+```sas
+/* Auto-generated from phrase-based specification */
+DATA analysis_data;
+  SET adqsadas;
+  WHERE EFFFL = 'Y'
+    AND AVISIT = 'Week 24'
+    AND PARAMCD = 'ATOT';
+RUN;
+
+PROC GLM DATA=analysis_data;
+  CLASS SITEGR1;
+  MODEL CHG = TRTPN SITEGR1 / SOLUTION SS3;
+  /* ... */
+RUN;
+```
+
+**Key Insight**: User provided 5-6 high-level selections. System generated complete analysis specification with bindings and code.
+
+---
+
+### 4.4 Two Paths for Variable Resolution
+
+The system supports both automatic and manual variable resolution:
+
+#### Path 1: Automatic Resolution (Preferred)
+
+**When OF_CLASS relationships exist in the Data Catalog:**
+
+```
+Template needs: CLASS variable CHG
+System queries: DATA_CATALOG WHERE OF_CLASS = 'CHG' AND dataset = ADQSADAS
+Finds: sponsor_variable = 'CHG'
+Result: Automatically bound ✓
+```
+
+**Requirements:**
+- Sponsor has established OF_CLASS relationships
+- Variables pass validation (correct data type, measurement scale)
+- Dataset is correct (from BC mapping)
+
+**User Experience:** Completely automatic, no manual input needed
+
+#### Path 2: Manual Mapping (Fallback)
+
+**When OF_CLASS relationships don't exist or sponsor has custom structures:**
+
+```
+Template needs: CLASS variable CHG
+System queries: DATA_CATALOG WHERE OF_CLASS = 'CHG' AND dataset = ADQSADAS
+Finds: No match ✗
+System prompts: "Select a variable to serve as CHG in ADQSADAS"
+User selects: "CHANGE_FROM_BASELINE"
+System validates:
+  - Data type = Numeric? ✓
+  - Measurement scale = continuous? ✓
+  - Role = change from baseline? ✓
+Result: Manually bound and validated ✓
+```
+
+**The system still validates that sponsor's variable meets CLASS requirements!**
+
+**Validation Rules:**
+```yaml
+CLASS_VARIABLE_CHG_REQUIREMENTS:
+  data_type: Numeric
+  measurement_scale: continuous
+  role: "change from baseline"
+  calculation: "analysis value - baseline value"
+
+User's variable: CHANGE_FROM_BASELINE
+  data_type: Numeric ✓
+  measurement_scale: continuous ✓
+
+Validation: PASS → Can be used as CHG
+```
+
+**Mixed Scenarios:**
+
+Realistic case: Some variables auto-resolve, others need manual mapping:
+
+```
+✓ CHG → auto-resolved (has OF_CLASS)
+✓ TRTPN → auto-resolved (has OF_CLASS)
+✗ SITEGR1 → manual mapping needed (sponsor calls it "SITE_GROUP_1")
+  User maps: SITE_GROUP_1 → CLASS: SITEGRy
+  System validates and accepts ✓
+```
+
+---
+
+### 4.5 The Role of Biomedical Concepts and Derived Measures
+
+**Key Distinction:**
+- **Biomedical Concepts (BCs)**: Atomic concepts representing collected data (individual questions, vital signs, lab tests)
+- **Derived Measures**: Outputs of D_ACs, computed from atomic BCs (totals, aggregates, composites)
+
+Both serve as the **critical bridge** between abstract templates and concrete data:
+
+#### Functions:
+
+**1. Dataset Resolution**
+
+Templates reference BCs or derived measures, not datasets:
+```yaml
+Template: "need CHG for derived measure 'ADAS-Cog Total Score'"
+Not: "need CHG from ADQSADAS"  # Too specific!
+```
+
+For atomic BCs:
+```
+BC "ADAS-Cog Q1" → SDTM QS → Sponsor's ADQSADAS
+```
+
+For derived measures:
+```
+Derived measure "ADAS-Cog Total Score" → D_AC_003 → ADQSADAS (from D_AC output)
+```
+
+**2. Semantic Clarity**
+
+Clinical meaning vs technical representation:
+```
+"ADAS-Cog Total Score" (derived measure) is more meaningful than "PARAMCD = 'ATOT'"
+"Systolic Blood Pressure" (atomic BC) is more meaningful than "VSTESTCD = 'SYSBP'"
+```
+
+**3. Derivation Traceability**
+
+D_ACs show how derived measures are computed from atomic BCs:
+```
+D_AC_003: "ADAS-Cog Total Score" (derived measure)
+  ← inputs: ADAS-Cog Q1, Q2, ..., Q11 (atomic BCs)
+  ← calculation: sum of item scores
+  ← output: CHG variable in ADQSADAS
+```
+
+Templates can reference derived measures:
+```yaml
+OUTCOME:
+  parameter_type: "derived_measure"
+  parameter_name: "ADAS-Cog Total Score"
+  source_derivation: D_AC_003  # Automatic traceability to atomic BCs
+```
+
+**4. Reusability Across Studies**
+
+Different sponsors may have different dataset names:
+- Sponsor A: ADQSADAS
+- Sponsor B: ADQSCOG
+- Sponsor C: ADEFFI
+
+But all:
+- Map the same atomic BCs (ADAS-Cog Q1-Q11) to their datasets
+- Create the same derived measures (ADAS-Cog Total Score) via D_ACs
+- Use the same templates referencing these concepts
+
+Templates remain the same across sponsors!
+
+#### Data Hierarchy Example:
+
+```
+Atomic BCs (collected directly):
+├── ADAS-Cog Q1: Word Recall
+├── ADAS-Cog Q2: Naming Objects
+├── ADAS-Cog Q3-Q11: ... (individual questions)
+├── Systolic Blood Pressure
+├── Weight
+└── Height
+
+         ↓ (D_ACs derive from atomic BCs)
+
+Derived Measures (D_AC outputs):
+├── ADAS-Cog Total Score at Week 24
+│   └── D_AC: Sum(Q1-Q11) at Week 24
+├── Change in ADAS-Cog from Baseline to Week 24
+│   └── D_AC_003: (Total at Week 24) - (Baseline Total)
+└── BMI (Body Mass Index)
+    └── D_AC: Weight(kg) / Height(m)²
+
+         ↓ (Templates can reference either level)
+
+Templates:
+├── Can use atomic BCs (e.g., "change in Systolic BP")
+└── Can use derived measures (e.g., "change in ADAS-Cog Total Score")
+```
+
+Templates referencing **derived measures** automatically inherit traceability to the atomic BCs through the D_AC.
+
+---
+
+### 4.6 Concrete Workflow Examples
+
+Let's walk through three realistic scenarios:
+
+#### Example 1: Best Case - Full ADaM Compliance
+
+**Scenario**: Sponsor follows ADaM IG perfectly, all variables have OF_CLASS relationships.
+
+**Sponsor Setup:**
+```yaml
+DATA_CATALOG:
+  dataset: ADQSADAS
+  adam_class_dataset: BDS
+  variables:
+    - CHG: {OF_CLASS: CHG, validated: true}
+    - AVAL: {OF_CLASS: AVAL, validated: true}
+    - BASE: {OF_CLASS: BASE, validated: true}
+    - TRTPN: {OF_CLASS: TRTPN, validated: true}
+    - SITEGR1: {OF_CLASS: SITEGRy, validated: true}
+    - EFFFL: {OF_CLASS: EFFFLy, validated: true}
+
+BC_MAPPING:
+  # Atomic BCs only
+  - "ADAS-Cog Q1": ADQSADAS
+  - "ADAS-Cog Q2": ADQSADAS
+  # ... Q3-Q11
+  - "Systolic Blood Pressure": ADVS
+
+D_AC_CATALOG:
+  - D_AC_003:
+      name: "Change from Baseline ADAS-Cog (11)"
+      inputs: ["ADAS-Cog Q1", "Q2", ..., "Q11"]  # Atomic BCs
+      outputs:
+        - derived_measure: "ADAS-Cog Total Score"
+          dataset: ADQSADAS
+          variable: CHG
+```
+
+**Template Instantiation:**
+```
+User action:
+  - Select T_AC_007, compose phrase
+  - Parameter source: "Derived Measure"
+  - Select derived measure: "ADAS-Cog Total Score" (from D_AC_003)
+
+System resolution:
+  1. D_AC_003 → ADQSADAS, CHG variable ✓ (automatic)
+  2. CHG class validation ✓ (automatic via OF_CLASS)
+  3. TRTPN class → TRTPN variable ✓ (automatic)
+  4. SITEGRy class → SITEGR1 variable ✓ (automatic)
+  5. Generate formula: "CHG ~ TRTPN + SITEGR1" ✓ (automatic)
+  6. Generate code ✓ (automatic)
+  7. Traceability to atomic BCs (Q1-Q11) via D_AC_003 ✓ (automatic)
+
+User effort: 5 minutes of clicking/selecting
+Result: Complete M_AC_021 instance with full bindings and executable code
+```
+
+**This is the ideal state!**
+
+#### Example 2: Mixed Case - Partial Compliance
+
+**Scenario**: Sponsor mostly follows ADaM IG but has some custom variable names.
+
+**Sponsor Setup:**
+```yaml
+DATA_CATALOG:
+  dataset: ADQSADAS
+  variables:
+    - CHG: {OF_CLASS: CHG, validated: true}  ✓ Standard
+    - AVAL: {OF_CLASS: AVAL, validated: true}  ✓ Standard
+    - BASE: {OF_CLASS: BASE, validated: true}  ✓ Standard
+    - DOSE_NUM: {OF_CLASS: TRTPN, validated: true, note: "Custom name"}  ⚠ Manual map
+    - SITE_GROUP: {OF_CLASS: SITEGRy, validated: true, note: "Custom name"}  ⚠ Manual map
+    - EFFICACY_FLG: {OF_CLASS: EFFFLy, validated: true, note: "Custom name"}  ⚠ Manual map
+```
+
+**Template Instantiation:**
+```
+User action: Select T_AC_007, compose phrase
+System resolution:
+  1. BC → ADQSADAS ✓ (automatic)
+  2. CHG class → CHG variable ✓ (automatic via OF_CLASS)
+  3. TRTPN class → DOSE_NUM variable ✓ (automatic via OF_CLASS - mapping was pre-established)
+  4. SITEGRy class → SITE_GROUP ✓ (automatic via OF_CLASS)
+  5. Generate formula: "CHG ~ DOSE_NUM + SITE_GROUP" ✓ (automatic)
+
+User effort: 5 minutes (same as Example 1 because OF_CLASS mapping was done during setup)
+Result: Complete instance with custom variable names but standard structure
+```
+
+**Key Point**: Even with custom names, if OF_CLASS relationships were established during setup, instantiation is still automatic!
+
+#### Example 3: Custom Case - Legacy Data Structure
+
+**Scenario**: Sponsor has legacy data that doesn't perfectly align with ADaM IG. No OF_CLASS relationships exist yet.
+
+**Sponsor Setup:**
+```yaml
+DATA_CATALOG:
+  dataset: LEGACY_ADAS_DATA  # Not following BDS structure exactly
+  variables:
+    - CHANGE_FROM_BL  # No OF_CLASS yet
+    - POSTBL_VALUE  # No OF_CLASS yet
+    - BL_VALUE  # No OF_CLASS yet
+    - TRT_DOSE_MG  # Dose in mg, not numeric codes
+    - INVESTIGATOR_SITE  # Site identifier, not grouped
+```
+
+**Template Instantiation:**
+```
+User action: Select T_AC_007, compose phrase, pick BC
+System resolution:
+  1. BC → LEGACY_ADAS_DATA ✓ (sponsor pre-configured)
+  2. CHG class → ❌ No OF_CLASS found
+     System prompts: "Select variable to use as CHG"
+     User selects: "CHANGE_FROM_BL"
+     System validates:
+       - Data type = Numeric? ✓
+       - Represents change from baseline? ✓
+       - Calculation = post-baseline - baseline? ✓
+     System accepts and creates OF_CLASS relationship ✓
+
+  3. TRTPN class → ❌ No OF_CLASS found
+     System prompts: "Select variable for dose as continuous predictor"
+     User selects: "TRT_DOSE_MG"
+     System validates:
+       - Data type = Numeric? ✓
+       - Represents treatment/dose? ✓
+     System accepts ✓
+     Note: User may need to specify coding (0, 54, 81 mg)
+
+  4. SITEGRy class → ❌ No OF_CLASS found
+     System prompts: "Select variable for site group"
+     User problem: "I only have INVESTIGATOR_SITE (individual sites, not grouped)"
+     Options:
+       a) User creates derived variable SITE_GROUP grouping sites
+       b) User uses INVESTIGATOR_SITE as-is (may result in too many levels)
+       c) User selects different covariate (e.g., country)
+     User chooses: Create SITE_GROUP (via separate D_AC)
+     System accepts ✓
+
+  5. Generate formula: "CHANGE_FROM_BL ~ TRT_DOSE_MG + SITE_GROUP" ✓
+
+User effort: 30-60 minutes (manual mapping and potential data prep)
+Result: Complete instance, and OF_CLASS relationships now established for future use!
+```
+
+**Key Points:**
+- System validates sponsor variables meet CLASS requirements
+- Manual mapping creates OF_CLASS relationships for future reuse
+- May expose data prep needs (e.g., need to derive SITE_GROUP)
+- First template instantiation is harder, subsequent ones easier
+
+---
+
+### 4.7 Summary: Division of Responsibilities
+
+| Responsibility | Standards Body | Sponsor (One-Time Setup) | Sponsor (Per Template) | System (Automatic) |
+|----------------|----------------|--------------------------|------------------------|-------------------|
+| Define templates with CLASS variables | ✓ | | | |
+| Define building blocks | ✓ | | | |
+| BC → SDTM mappings (atomic BCs only) | ✓ | | | |
+| BC → Sponsor ADaM dataset mappings (atomic BCs) | | ✓ | | |
+| Create Sponsor Model (datasets & variables) | | ✓ | | |
+| Define D_ACs for derived measures | | ✓ | | |
+| Establish OF_CLASS relationships | | ✓ (preferred) | Optional (fallback) | |
+| Select template | | | ✓ | |
+| Compose phrase from building blocks | | | ✓ | |
+| Fill slots (atomic BC or derived measure, timepoint, etc.) | | | ✓ | |
+| Resolve atomic BC → dataset | | | | ✓ |
+| Resolve derived measure → dataset (via D_AC) | | | | ✓ |
+| Resolve CLASS var → sponsor var | | | | ✓ (if OF_CLASS exists) |
+| Generate model formula | | | | ✓ |
+| Generate bindings (with traceability) | | | | ✓ |
+| Generate code | | | | ✓ |
+| Validate variable compatibility | | | | ✓ |
+
+**The Key Insight:**
+
+The upfront work (Sponsor Model, BC mappings, OF_CLASS relationships, D_ACs) is done **once per study**. After that:
+
+- Template instantiation is **fast** (minutes)
+- Most bindings are **automatic**
+- Code generation is **automatic**
+- Consistency is **guaranteed**
+
+The human reads and writes **phrases**. The system handles **bindings and code**.
+
+---
+
+## 5. Template-Level Phrase Specification
 
 The template (T_AC_007) can also be expressed in phrase form with placeholders:
 
