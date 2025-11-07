@@ -14,7 +14,7 @@ This example uses **M_AC_021 (ADAS-Cog Dose Response Analysis)** to show how com
 
 ```mermaid
 flowchart TD
-    subgraph Layer1["LAYER 1: Human-Facing - Readable"]
+    subgraph Layer1["Layer 1: Human-Facing"]
         direction TB
         H1["Who: Statisticians and Analysts"]
         H2["Format: Natural Language Phrases with Building Blocks"]
@@ -22,7 +22,7 @@ flowchart TD
         H1 --> H2 --> H3
     end
 
-    subgraph Layer2["LAYER 2: Machine Binding - Structured"]
+    subgraph Layer2["Layer 2: Machine Binding"]
         direction TB
         M1["Who: System - Automatic Generation"]
         M2["Format: Structured YAML Bindings"]
@@ -30,7 +30,7 @@ flowchart TD
         M1 --> M2 --> M3
     end
 
-    subgraph Layer3["LAYER 3: Execution - Code"]
+    subgraph Layer3["Layer 3: Execution"]
         direction TB
         E1["Who: System - Automatic Generation"]
         E2["Format: SAS, R, or Python Code"]
