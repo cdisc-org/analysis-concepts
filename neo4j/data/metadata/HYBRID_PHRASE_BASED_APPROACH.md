@@ -14,27 +14,27 @@ This example uses **M_AC_021 (ADAS-Cog Dose Response Analysis)** to show how com
 
 ```mermaid
 flowchart TD
-    subgraph Layer1["Layer 1: Human-Facing"]
+    subgraph Layer1["🗣️ LAYER 1: Human-Facing - Readable"]
         direction TB
-        H1["Who: Statisticians and Analysts"]
-        H2["Format: Natural Language Phrases with Building Blocks"]
-        H3["Example: using linear model for change in ADAS-Cog Total Score<br/>from baseline to Week 24 with dose as continuous predictor"]
+        H1["Who: Statisticians and Analysts compose analyses"]
+        H2["Format: Natural Language Phrases composed from Building Blocks"]
+        H3["Example: using linear model for change in ADAS-Cog Total Score from baseline to Week 24<br/>with dose as continuous predictor adjusting for site group"]
         H1 --> H2 --> H3
     end
 
-    subgraph Layer2["Layer 2: Machine Binding"]
+    subgraph Layer2["⚙️ LAYER 2: Machine Binding - Structured"]
         direction TB
-        M1["Who: System - Automatic Generation"]
-        M2["Format: Structured YAML Bindings"]
-        M3["Functions: Resolve BC/Derived Measure to Dataset,<br/>Map CLASS Variables to Sponsor Variables,<br/>Link to D_ACs for traceability, Validate compatibility"]
+        M1["Who: System automatically generates bindings from phrases"]
+        M2["Format: Structured YAML Bindings mapping to data elements"]
+        M3["Functions: Resolve BC/Derived Measure to Dataset, Map CLASS Variables to Sponsor Variables,<br/>Link to D_ACs for traceability, Validate data compatibility"]
         M1 --> M2 --> M3
     end
 
-    subgraph Layer3["Layer 3: Execution"]
+    subgraph Layer3["💻 LAYER 3: Execution - Code"]
         direction TB
-        E1["Who: System - Automatic Generation"]
-        E2["Format: SAS, R, or Python Code"]
-        E3["Output: Executable, Consistent, Traceable"]
+        E1["Who: System automatically generates code from bindings"]
+        E2["Format: SAS, R, or Python executable code"]
+        E3["Output: Executable, Consistent, Traceable analysis programs"]
         E1 --> E2 --> E3
     end
 
