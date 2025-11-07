@@ -45,9 +45,9 @@ flowchart TD
     style Layer2 fill:#e3f2fd,stroke:#2196f3,stroke-width:3px
     style Layer3 fill:#fff3e0,stroke:#ff9800,stroke-width:3px
 
-    classDef humanBox fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
-    classDef machineBox fill:#bbdefb,stroke:#1976d2,stroke-width:2px
-    classDef codeBox fill:#ffe0b2,stroke:#f57c00,stroke-width:2px
+    classDef humanBox fill:#c8e6c9,stroke:#388e3c,stroke-width:4px
+    classDef machineBox fill:#bbdefb,stroke:#1976d2,stroke-width:4px
+    classDef codeBox fill:#ffe0b2,stroke:#f57c00,stroke-width:4px
 
     class H1,H2,H3 humanBox
     class M1,M2,M3 machineBox
