@@ -16,24 +16,38 @@ The separation of concerns allows the same abstract analysis concepts to be reus
 
 ```mermaid
 graph TB
-    subgraph "Layer 1: Building Blocks (Templates)"
-        BB1[Building Block<br/>BB.OUTCOME.CHG_PARAM_TIME<br/>template: change in {parameter}<br/>from baseline to {timepoint}<br/>category: Outcome<br/>slots: parameter, timepoint]
-        BB2[Building Block<br/>BB.PREDICTOR.TRT_CONTINUOUS<br/>template: with {treatment}<br/>as continuous predictor<br/>category: Predictor]
-        BB3[Building Block<br/>BB.METHOD.LINEAR_MODEL<br/>template: using linear model<br/>category: Method]
+    subgraph "Layer 1: Building Blocks"
+        BB1["BB.OUTCOME.CHG_PARAM_TIME
+        Category: Outcome
+        template with slots"]
+        BB2["BB.PREDICTOR.TRT_CONTINUOUS
+        Category: Predictor"]
+        BB3["BB.METHOD.LINEAR_MODEL
+        Category: Method"]
     end
 
     subgraph "Layer 2: Abstract Concepts"
-        DC1[Derivation Concept<br/>DC.CHANGE_FROM_BASELINE<br/>type: DerivedMeasure<br/>adam_class: CHG<br/>inputs → method → outputs]
-        DC2[Derivation Concept<br/>DC.TREATMENT_NUMERIC<br/>type: Predictor<br/>adam_class: TRT01PN]
-        AC1[Analysis Concept<br/>AC.LINEAR_MODEL_DOSE_RESPONSE<br/>type: ModelBased<br/>inputs → method → outputs<br/>result_dimensions]
+        DC1["DC.CHANGE_FROM_BASELINE
+        type: DerivedMeasure
+        inputs → method → outputs"]
+        DC2["DC.TREATMENT_NUMERIC
+        type: Predictor"]
+        AC1["AC.LINEAR_MODEL_DOSE_RESPONSE
+        type: ModelBased
+        inputs → method → outputs"]
     end
 
-    subgraph "Layer 3: Concrete Implementation"
-        DS[Dataset: ADQSADAS<br/>type: ADaM BDS]
-        V1[Variable: CHG<br/>implements: DC.CHANGE_FROM_BASELINE<br/>of_class: CHG<br/>length: 8, format: 8.2]
-        V2[Variable: TRTPN<br/>implements: DC.TREATMENT_NUMERIC<br/>of_class: TRT01PN]
-        AI[Analysis Instance: M_ADAS_001<br/>implements: AC.LINEAR_MODEL_DOSE_RESPONSE<br/>variable_bindings<br/>statistical_options]
-        AO[Analysis Output<br/>cube_structure:<br/>  dimension_values<br/>  measures<br/>  attributes]
+    subgraph "Layer 3: Implementation"
+        DS["Dataset: ADQSADAS
+        type: ADaM BDS"]
+        V1["Variable: CHG
+        implements DC.CHANGE_FROM_BASELINE"]
+        V2["Variable: TRTPN
+        implements DC.TREATMENT_NUMERIC"]
+        AI["Analysis Instance: M_ADAS_001
+        implements AC.LINEAR_MODEL_DOSE_RESPONSE"]
+        AO["Analysis Output
+        SDMX/CUBE structure"]
     end
 
     BB1 -.maps_to.-> DC1
