@@ -1,0 +1,585 @@
+# ===========================================================================
+# CONCEPTS: Abstract Semantic Definitions with Inputs/Method/Outputs
+# ===========================================================================
+#
+# This file defines abstract analysis concepts with their expected data types,
+# semantic roles, and method parameters at the ADaM Class level.
+#
+# Key Principle: Concepts define the "WHAT" and "WHY" independent of
+# implementation. All attributes from ADaM Class Variable definitions
+# (dataType, role, core) are included here.
+#
+# Structure:
+#   - Derivation Concepts (DCs): Computed measures with inputs → method → outputs
+#   - Analysis Concepts (ACs): Statistical models with inputs → method → outputs
+#
+# ===========================================================================
+
+# ===========================================================================
+# DERIVATION CONCEPTS (DCs)
+# ===========================================================================
+
+derivation_concepts:
+
+  # -------------------------------------------------------------------------
+  # Change from Baseline
+  # -------------------------------------------------------------------------
+
+  - id: DC.CHANGE_FROM_BASELINE
+    label: "Change from Baseline"
+    description: "Difference between analysis value and baseline value"
+    type: DerivedMeasure
+
+    # ADaM Class Variable attributes (concept-level)
+    adam_class_variable: CHG
+    adam_class_uri: "https://standards.cdisc.org/adamig/v1-3/variable/CHG"
+    adam_data_structure: "Basic Data Structure (BDS)"
+    adam_variable_set: "Analysis Timing Variables"
+    adam_core: "Expected"
+    dataType: float
+    role: Qualifier
+
+    inputs:
+      - name: analysis_value
+        label: "Analysis Value"
+        description: "Value at analysis timepoint"
+        required: true
+        dataType: float
+        role: Qualifier
+        adam_class_variable: AVAL
+        adam_class_uri: "https://standards.cdisc.org/adamig/v1-3/variable/AVAL"
+        parameter_role: minuend
+
+      - name: baseline_value
+        label: "Baseline Value"
+        description: "Value at baseline"
+        required: true
+        dataType: float
+        role: Qualifier
+        adam_class_variable: BASE
+        adam_class_uri: "https://standards.cdisc.org/adamig/v1-3/variable/BASE"
+        parameter_role: subtrahend
+
+    method:
+      type: subtraction
+      formula: "minuend - subtrahend"
+      description: "Compute difference from baseline"
+
+    outputs:
+      - name: change_value
+        label: "Change Value"
+        description: "Computed change from baseline"
+        dataType: float
+        role: Qualifier
+        adam_class_variable: CHG
+
+  # -------------------------------------------------------------------------
+  # Analysis Value
+  # -------------------------------------------------------------------------
+
+  - id: DC.ANALYSIS_VALUE
+    label: "Analysis Value"
+    description: "Value of parameter at analysis timepoint"
+    type: Measure
+
+    adam_class_variable: AVAL
+    adam_class_uri: "https://standards.cdisc.org/adamig/v1-3/variable/AVAL"
+    adam_data_structure: "BDS"
+    adam_variable_set: "Analysis Value Variables"
+    adam_core: "Required"
+    dataType: float
+    role: Qualifier
+
+  # -------------------------------------------------------------------------
+  # Baseline Value
+  # -------------------------------------------------------------------------
+
+  - id: DC.BASELINE_VALUE
+    label: "Baseline Value"
+    description: "Value at baseline timepoint"
+    type: Measure
+
+    adam_class_variable: BASE
+    adam_class_uri: "https://standards.cdisc.org/adamig/v1-3/variable/BASE"
+    adam_data_structure: "BDS"
+    adam_variable_set: "Analysis Timing Variables"
+    adam_core: "Expected"
+    dataType: float
+    role: Qualifier
+
+  # -------------------------------------------------------------------------
+  # Parameter
+  # -------------------------------------------------------------------------
+
+  - id: DC.PARAMETER
+    label: "Parameter"
+    description: "Parameter being analyzed"
+    type: Descriptor
+
+    adam_class_variable: PARAM
+    adam_class_uri: "https://standards.cdisc.org/adamig/v1-3/variable/PARAM"
+    adam_data_structure: "BDS"
+    adam_variable_set: "PARAMCD Variables"
+    adam_core: "Required"
+    dataType: text
+    role: Identifier
+
+  # -------------------------------------------------------------------------
+  # Parameter Code
+  # -------------------------------------------------------------------------
+
+  - id: DC.PARAMETER_CODE
+    label: "Parameter Code"
+    description: "Short code for parameter"
+    type: Descriptor
+
+    adam_class_variable: PARAMCD
+    adam_class_uri: "https://standards.cdisc.org/adamig/v1-3/variable/PARAMCD"
+    adam_data_structure: "BDS"
+    adam_variable_set: "PARAMCD Variables"
+    adam_core: "Required"
+    dataType: text
+    role: Identifier
+
+  # -------------------------------------------------------------------------
+  # Analysis Visit
+  # -------------------------------------------------------------------------
+
+  - id: DC.ANALYSIS_VISIT
+    label: "Analysis Visit"
+    description: "Analysis timepoint"
+    type: Temporal
+
+    adam_class_variable: AVISIT
+    adam_class_uri: "https://standards.cdisc.org/adamig/v1-3/variable/AVISIT"
+    adam_data_structure: "BDS"
+    adam_variable_set: "Analysis Timing Variables"
+    adam_core: "Expected"
+    dataType: text
+    role: Timing
+
+  # -------------------------------------------------------------------------
+  # Treatment (Numeric)
+  # -------------------------------------------------------------------------
+
+  - id: DC.TREATMENT_NUMERIC
+    label: "Treatment (Numeric)"
+    description: "Numeric treatment code for dose-response"
+    type: Predictor
+
+    adam_class_variable: TRT01PN
+    adam_class_uri: "https://standards.cdisc.org/adamig/v1-3/variable/TRT01PN"
+    adam_data_structure: "ADSL"
+    adam_variable_set: "Treatment Variables"
+    adam_core: "Expected"
+    dataType: integer
+    role: RecordQualifier
+
+  # -------------------------------------------------------------------------
+  # Treatment (Categorical)
+  # -------------------------------------------------------------------------
+
+  - id: DC.TREATMENT_CATEGORICAL
+    label: "Treatment (Categorical)"
+    description: "Treatment groups as categories"
+    type: Predictor
+
+    adam_class_variable: TRT01A
+    adam_class_uri: "https://standards.cdisc.org/adamig/v1-3/variable/TRT01A"
+    adam_data_structure: "ADSL"
+    adam_variable_set: "Treatment Variables"
+    adam_core: "Expected"
+    dataType: text
+    role: RecordQualifier
+
+  # -------------------------------------------------------------------------
+  # Site Group
+  # -------------------------------------------------------------------------
+
+  - id: DC.SITE_GROUP
+    label: "Site Group"
+    description: "Pooled site grouping"
+    type: Covariate
+
+    adam_class_variable: SITEGR1
+    adam_class_uri: "https://standards.cdisc.org/adamig/v1-3/variable/SITEGR1"
+    adam_data_structure: "ADSL"
+    adam_variable_set: "Treatment and Trial Variables"
+    adam_core: "Permissible"
+    dataType: text
+    role: RecordQualifier
+
+  # -------------------------------------------------------------------------
+  # Efficacy Population Flag
+  # -------------------------------------------------------------------------
+
+  - id: DC.EFFICACY_POPULATION
+    label: "Efficacy Population Flag"
+    description: "Flag indicating efficacy population"
+    type: PopulationFlag
+
+    adam_class_variable: EFFFL
+    adam_class_uri: "https://standards.cdisc.org/adamig/v1-3/variable/EFFFL"
+    adam_data_structure: "ADSL"
+    adam_variable_set: "Population Flags"
+    adam_core: "Permissible"
+    dataType: text
+    role: RecordQualifier
+
+  # -------------------------------------------------------------------------
+  # Analysis Flag 01
+  # -------------------------------------------------------------------------
+
+  - id: DC.ANALYSIS_FLAG_01
+    label: "Analysis Flag 01"
+    description: "Record included in analysis"
+    type: AnalysisFlag
+
+    adam_class_variable: ANL01FL
+    adam_class_uri: "https://standards.cdisc.org/adamig/v1-3/variable/ANL01FL"
+    adam_data_structure: "BDS"
+    adam_variable_set: "Analysis Flags"
+    adam_core: "Permissible"
+    dataType: text
+    role: RecordQualifier
+
+
+# ===========================================================================
+# ANALYSIS CONCEPTS (ACs)
+# ===========================================================================
+
+analysis_concepts:
+
+  # -------------------------------------------------------------------------
+  # Linear Model for Dose Response
+  # -------------------------------------------------------------------------
+
+  - id: AC.LINEAR_MODEL_DOSE_RESPONSE
+    label: "Linear Model for Dose Response"
+    description: "Test for linear dose-response relationship using regression"
+    type: ModelBased
+    category: efficacy_analysis
+
+    inputs:
+      - name: outcome
+        label: "Outcome Variable"
+        description: "Dependent variable"
+        role: Outcome
+        required: true
+        dataType: float
+        accepts_concepts:
+          - DC.CHANGE_FROM_BASELINE
+          - DC.ANALYSIS_VALUE
+        example: "Change in ADAS-Cog Total Score from baseline to Week 24"
+
+      - name: primary_predictor
+        label: "Primary Predictor"
+        description: "Main treatment or dose variable"
+        role: FixedEffect
+        required: true
+        dataType: integer
+        accepts_concepts:
+          - DC.TREATMENT_NUMERIC
+        example: "Treatment dose as continuous numeric (0, 54, 81)"
+
+      - name: covariates
+        label: "Covariates"
+        description: "Adjustment variables"
+        role: FixedEffect
+        required: false
+        multiple: true
+        dataType: [float, text]
+        accepts_concepts:
+          - DC.BASELINE_VALUE
+          - DC.SITE_GROUP
+        example: "Baseline score, Site group"
+
+      - name: population
+        label: "Population"
+        description: "Record selection criteria"
+        role: RecordFilter
+        required: true
+        dataType: text
+        accepts_concepts:
+          - DC.EFFICACY_POPULATION
+          - DC.ANALYSIS_FLAG_01
+        example: "EFFFL='Y' and ANL01FL='Y'"
+
+    method:
+      type: linear_regression
+      model_formula: "Outcome ~ Primary_Predictor + Covariate"
+      estimation_method: "OLS"
+      description: "Fit linear regression model"
+
+      # Abstract method parameters (concept-level)
+      parameters:
+        - name: outcome
+          description: "Dependent variable in regression"
+          required: true
+          dataType: float
+          parameter_role: dependent_variable
+          maps_to_input: outcome
+
+        - name: primary_predictor
+          description: "Main independent variable"
+          required: true
+          dataType: [integer, float]
+          parameter_role: independent_variable
+          maps_to_input: primary_predictor
+
+        - name: covariate
+          description: "Adjustment variable"
+          required: false
+          multiple: true
+          dataType: [float, text]
+          parameter_role: adjustment_variable
+          maps_to_input: covariates
+
+      interactions:
+        - variables: ["primary_predictor", "covariate"]
+          type: two_way
+          optional: true
+          notation: "Primary_Predictor:Covariate"
+          description: "Test treatment-by-covariate interaction"
+
+      statistical_options:
+        - name: type3_tests
+          type: boolean
+          default: true
+          allowed_values: [true, false]
+          description: "Use Type III sum of squares for hypothesis tests"
+
+        - name: alpha
+          type: numeric
+          default: 0.05
+          allowed_values: [0.01, 0.05, 0.10]
+          description: "Significance level for hypothesis tests"
+
+        - name: confidence_level
+          type: numeric
+          default: 0.95
+          allowed_values: [0.90, 0.95, 0.99]
+          description: "Confidence level for interval estimates"
+
+        - name: multiple_comparison_method
+          type: categorical
+          default: "none"
+          allowed_values:
+            - "none"
+            - "Bonferroni"
+            - "Tukey"
+            - "Dunnett"
+            - "Holm"
+            - "Hochberg"
+            - "Sidak"
+          description: "Method for adjusting p-values for multiple comparisons"
+
+        - name: missing_data_approach
+          type: categorical
+          default: "complete_case"
+          allowed_values:
+            - "complete_case"
+            - "LOCF"
+            - "BOCF"
+            - "multiple_imputation"
+          description: "How to handle missing data"
+
+      assumptions:
+        - linearity
+        - independence
+        - homoscedasticity
+        - normality_of_residuals
+
+    outputs:
+      - name: coefficient_estimates
+        description: "Regression coefficients"
+        dataType: float
+        applies_to_dimensions: [POPULATION, TIMING, CONTRAST]
+        includes:
+          - intercept
+          - slope_primary_predictor
+          - covariate_effects
+
+      - name: standard_errors
+        description: "Standard errors for coefficients"
+        dataType: float
+        applies_to_dimensions: [POPULATION, TIMING, CONTRAST]
+
+      - name: test_statistics
+        description: "t-statistics or F-statistics"
+        dataType: float
+        applies_to_dimensions: [POPULATION, TIMING, CONTRAST]
+
+      - name: p_values
+        description: "P-values for significance tests"
+        dataType: float
+        applies_to_dimensions: [POPULATION, TIMING, CONTRAST]
+
+      - name: confidence_intervals
+        description: "Confidence intervals for coefficients"
+        dataType: float
+        applies_to_dimensions: [POPULATION, TIMING, CONTRAST]
+
+      - name: model_fit
+        description: "Model diagnostics"
+        dataType: float
+        applies_to_dimensions: [POPULATION, TIMING]
+        includes:
+          - r_squared
+          - adjusted_r_squared
+          - residual_plots
+
+    # Result dimensional structure (abstract)
+    result_dimensions:
+      - name: POPULATION
+        role: population
+        contextType: population
+        required: true
+        description: "Analysis population for result stratification"
+
+      - name: TIMING
+        role: timing
+        contextType: timing
+        required: true
+        ordered: true
+        description: "Analysis timepoint for result stratification"
+
+      - name: CONTRAST
+        role: contrast
+        contextType: contrast
+        required: true
+        description: "Statistical contrast being tested"
+
+  # -------------------------------------------------------------------------
+  # ANCOVA Model
+  # -------------------------------------------------------------------------
+
+  - id: AC.ANCOVA
+    label: "Analysis of Covariance (ANCOVA)"
+    description: "ANCOVA with baseline as covariate"
+    type: ModelBased
+    category: efficacy_analysis
+
+    inputs:
+      - name: outcome
+        label: "Outcome Variable"
+        description: "Dependent variable"
+        role: Outcome
+        required: true
+        dataType: float
+        accepts_concepts:
+          - DC.CHANGE_FROM_BASELINE
+          - DC.ANALYSIS_VALUE
+
+      - name: treatment
+        label: "Treatment Variable"
+        description: "Treatment groups"
+        role: FixedEffect
+        required: true
+        dataType: text
+        accepts_concepts:
+          - DC.TREATMENT_CATEGORICAL
+
+      - name: baseline_covariate
+        label: "Baseline Covariate"
+        description: "Baseline value as covariate"
+        role: FixedEffect
+        required: true
+        dataType: float
+        accepts_concepts:
+          - DC.BASELINE_VALUE
+
+      - name: population
+        label: "Population"
+        description: "Record selection"
+        role: RecordFilter
+        required: true
+
+    method:
+      type: analysis_of_covariance
+      model_formula: "Outcome ~ Treatment + Baseline_Covariate"
+      estimation_method: "OLS"
+
+      parameters:
+        - name: outcome
+          parameter_role: dependent_variable
+          maps_to_input: outcome
+
+        - name: treatment
+          parameter_role: independent_variable
+          maps_to_input: treatment
+
+        - name: baseline_covariate
+          parameter_role: adjustment_variable
+          maps_to_input: baseline_covariate
+
+      statistical_options:
+        - name: type3_tests
+          type: boolean
+          default: true
+          allowed_values: [true, false]
+
+        - name: alpha
+          type: numeric
+          default: 0.05
+          allowed_values: [0.01, 0.05, 0.10]
+
+        - name: ls_means
+          type: boolean
+          default: true
+          allowed_values: [true, false]
+          description: "Compute least squares means"
+
+    outputs:
+      - name: treatment_effects
+        description: "Treatment group effects"
+        dataType: float
+        applies_to_dimensions: [POPULATION, TREATMENT, TIMING]
+
+      - name: ls_means
+        description: "Least squares means by treatment"
+        dataType: float
+        applies_to_dimensions: [POPULATION, TREATMENT, TIMING]
+
+      - name: pairwise_comparisons
+        description: "Treatment comparisons"
+        dataType: float
+        applies_to_dimensions: [POPULATION, CONTRAST, TIMING]
+
+      - name: model_fit
+        description: "Model diagnostics"
+        dataType: float
+        applies_to_dimensions: [POPULATION, TIMING]
+        includes:
+          - r_squared
+          - adjusted_r_squared
+          - aic
+          - bic
+
+    # Result dimensional structure (abstract)
+    result_dimensions:
+      - name: POPULATION
+        role: population
+        contextType: population
+        required: true
+        description: "Analysis population for result stratification"
+
+      - name: TREATMENT
+        role: grouping
+        contextType: grouping
+        required: true
+        ordered: true
+        description: "Treatment groups for comparison"
+
+      - name: TIMING
+        role: timing
+        contextType: timing
+        required: true
+        ordered: true
+        description: "Analysis timepoint for result stratification"
+
+      - name: CONTRAST
+        role: contrast
+        contextType: contrast
+        required: true
+        description: "Pairwise treatment comparisons"

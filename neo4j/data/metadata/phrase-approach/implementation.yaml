@@ -1,0 +1,765 @@
+# ===========================================================================
+# IMPLEMENTATION: Concrete Dataset and Variable Mappings
+# ===========================================================================
+#
+# This file contains concrete sponsor-specific implementations that map
+# to abstract concepts. It includes:
+#   - Sponsor datasets with actual variable names
+#   - Length, format, and display specifications
+#   - Where clauses and selection criteria
+#   - Origin and derivation sources
+#   - Analysis instances with variable bindings
+#
+# Key Principle: Implementation defines the "HOW" and "WHERE" with
+# study-specific details. All semantic attributes (dataType, role) are
+# defined at concept level.
+#
+# ===========================================================================
+
+# ===========================================================================
+# SPONSOR DATASETS AND VARIABLES
+# ===========================================================================
+
+datasets:
+
+  # -------------------------------------------------------------------------
+  # ADQSADAS: ADAS-Cog Analysis Dataset
+  # -------------------------------------------------------------------------
+
+  - name: ADQSADAS
+    label: "ADAS-Cog Analysis Dataset"
+    description: "Analysis dataset for ADAS-Cog questionnaire"
+    type: ADaM
+    based_on_class: "Basic Data Structure (BDS)"
+
+    variables:
+
+      # Change from Baseline
+      - name: CHG
+        label: "Change from Baseline"
+        implements_concept: DC.CHANGE_FROM_BASELINE
+        of_class: CHG
+        length: 8
+        displayFormat: "8.2"
+
+        origin:
+          type: Derived
+          method: MTH.CHANGE_FROM_BASELINE
+          source_items:
+            - IT.ADQSADAS.AVAL
+            - IT.ADQSADAS.BASE
+
+        description: "Change in ADAS-Cog total score from baseline (AVAL - BASE)"
+
+      # Baseline Value
+      - name: BASE
+        label: "Baseline Value"
+        implements_concept: DC.BASELINE_VALUE
+        of_class: BASE
+        length: 8
+        displayFormat: "8.2"
+
+        origin:
+          type: Derived
+          description: "Value at baseline visit (AVISIT='Baseline')"
+
+        description: "ADAS-Cog total score at baseline"
+
+      # Analysis Value
+      - name: AVAL
+        label: "Analysis Value"
+        implements_concept: DC.ANALYSIS_VALUE
+        of_class: AVAL
+        length: 8
+        displayFormat: "8.2"
+
+        origin:
+          type: Predecessor
+          source: "ADQSADAS.AVAL"
+
+        description: "ADAS-Cog total score at analysis visit"
+
+      # Parameter
+      - name: PARAM
+        label: "Parameter"
+        implements_concept: DC.PARAMETER
+        of_class: PARAM
+        length: 200
+
+        whereClauses:
+          - condition: "PARAM = 'ADAS-Cog (11) Total Score'"
+
+        codeList: CL.PARAM.ADAS
+
+        description: "Parameter being analyzed"
+
+      # Parameter Code
+      - name: PARAMCD
+        label: "Parameter Code"
+        implements_concept: DC.PARAMETER_CODE
+        of_class: PARAMCD
+        length: 8
+
+        whereClauses:
+          - condition: "PARAMCD = 'ADAS11'"
+
+        codeList: CL.PARAMCD.ADAS
+
+        description: "Short parameter code"
+
+      # Analysis Visit
+      - name: AVISIT
+        label: "Analysis Visit"
+        implements_concept: DC.ANALYSIS_VISIT
+        of_class: AVISIT
+        length: 40
+
+        codeList: CL.AVISIT
+
+        description: "Analysis visit identifier (Baseline, Week 8, Week 16, Week 24)"
+
+      # Treatment Numeric
+      - name: TRTPN
+        label: "Planned Treatment (N)"
+        implements_concept: DC.TREATMENT_NUMERIC
+        of_class: TRT01PN
+        length: 8
+
+        coding:
+          - code: 0
+            decode: "Placebo"
+          - code: 54
+            decode: "Xanomeline Low Dose"
+          - code: 81
+            decode: "Xanomeline High Dose"
+
+        description: "Numeric treatment code for dose-response modeling"
+
+      # Treatment Categorical
+      - name: TRT01A
+        label: "Actual Treatment"
+        implements_concept: DC.TREATMENT_CATEGORICAL
+        of_class: TRT01A
+        length: 40
+
+        codeList: CL.TRT01A
+
+        description: "Treatment groups as text"
+
+      # Site Group
+      - name: SITEGR1
+        label: "Pooled Site Group 1"
+        implements_concept: DC.SITE_GROUP
+        of_class: SITEGR1
+        length: 20
+
+        description: "Site grouping for stratification"
+
+      # Efficacy Population Flag
+      - name: EFFFL
+        label: "Efficacy Population Flag"
+        implements_concept: DC.EFFICACY_POPULATION
+        of_class: EFFFL
+        length: 1
+
+        codeList: CL.NY
+
+        description: "Flag indicating subject is in efficacy population (Y/N)"
+
+      # Analysis Flag 01
+      - name: ANL01FL
+        label: "Analysis Flag 01"
+        implements_concept: DC.ANALYSIS_FLAG_01
+        of_class: ANL01FL
+        length: 1
+
+        codeList: CL.NY
+
+        description: "Flag indicating record included in analysis 01 (Y/N)"
+
+  # -------------------------------------------------------------------------
+  # ADSL: Subject-Level Analysis Dataset
+  # -------------------------------------------------------------------------
+
+  - name: ADSL
+    label: "Subject-Level Analysis Dataset"
+    description: "One record per subject"
+    type: ADaM
+    based_on_class: "ADSL"
+
+    variables:
+
+      # Efficacy Population Flag
+      - name: EFFFL
+        label: "Efficacy Population Flag"
+        implements_concept: DC.EFFICACY_POPULATION
+        of_class: EFFFL
+        length: 1
+
+        codeList: CL.NY
+
+      # Treatment Numeric
+      - name: TRT01PN
+        label: "Planned Treatment for Period 01 (N)"
+        implements_concept: DC.TREATMENT_NUMERIC
+        of_class: TRT01PN
+        length: 8
+
+        coding:
+          - code: 0
+            decode: "Placebo"
+          - code: 54
+            decode: "Xanomeline Low Dose"
+          - code: 81
+            decode: "Xanomeline High Dose"
+
+      # Site Group
+      - name: SITEGR1
+        label: "Pooled Site Group 1"
+        implements_concept: DC.SITE_GROUP
+        of_class: SITEGR1
+        length: 20
+
+
+# ===========================================================================
+# ANALYSIS INSTANCES
+# ===========================================================================
+
+analysis_instances:
+
+  # -------------------------------------------------------------------------
+  # M_ADAS_001: ADAS-Cog Dose Response
+  # -------------------------------------------------------------------------
+
+  - id: M_ADAS_001
+    name: "ADAS-Cog Dose Response Analysis"
+    description: "Linear model testing for dose-response relationship in ADAS-Cog change from baseline at Week 24"
+    implements_concept: AC.LINEAR_MODEL_DOSE_RESPONSE
+
+    # Variable bindings map abstract input roles to concrete variables
+    variable_bindings:
+
+      outcome:
+        source: IT.ADQSADAS.CHG
+        dataset: ADQSADAS
+        variable: CHG
+        concept: DC.CHANGE_FROM_BASELINE
+        description: "Change from baseline in ADAS-Cog total score"
+
+      primary_predictor:
+        source: IT.ADQSADAS.TRTPN
+        dataset: ADQSADAS
+        variable: TRTPN
+        concept: DC.TREATMENT_NUMERIC
+        description: "Treatment as continuous numeric (0, 54, 81)"
+
+      covariates:
+        - source: IT.ADQSADAS.BASE
+          dataset: ADQSADAS
+          variable: BASE
+          concept: DC.BASELINE_VALUE
+          description: "Baseline ADAS-Cog score"
+
+        - source: IT.ADQSADAS.SITEGR1
+          dataset: ADQSADAS
+          variable: SITEGR1
+          concept: DC.SITE_GROUP
+          description: "Pooled site group"
+
+      population:
+        filters:
+          - variable: EFFFL
+            operator: "="
+            value: "Y"
+            concept: DC.EFFICACY_POPULATION
+            description: "Efficacy population"
+
+          - variable: ANL01FL
+            operator: "="
+            value: "Y"
+            concept: DC.ANALYSIS_FLAG_01
+            description: "Analysis record flag"
+
+          - variable: AVISIT
+            operator: "="
+            value: "Week 24"
+            concept: DC.ANALYSIS_VISIT
+            description: "Week 24 visit"
+
+          - variable: PARAMCD
+            operator: "="
+            value: "ADAS11"
+            concept: DC.PARAMETER_CODE
+            description: "ADAS-Cog (11) parameter"
+
+    # Method parameter bindings (concrete sources for abstract parameters)
+    method_parameter_bindings:
+
+      # For AC.LINEAR_MODEL_DOSE_RESPONSE
+      outcome:
+        source: IT.ADQSADAS.CHG
+        description: "Change from baseline"
+
+      primary_predictor:
+        source: IT.ADQSADAS.TRTPN
+        description: "Treatment numeric"
+
+      covariate:
+        sources:
+          - IT.ADQSADAS.BASE
+          - IT.ADQSADAS.SITEGR1
+        description: "Baseline and site group"
+
+    # Selected statistical options (from allowed values in concept)
+    statistical_options_selected:
+      type3_tests: true
+      alpha: 0.05
+      confidence_level: 0.95
+      multiple_comparison_method: "none"
+      missing_data_approach: "complete_case"
+
+    # Software-specific execution details
+    execution:
+      software: SAS
+      procedure: PROC GLM
+
+      code_template: |
+        PROC GLM DATA=ADQSADAS;
+          WHERE EFFFL='Y' AND ANL01FL='Y' AND AVISIT='Week 24' AND PARAMCD='ADAS11';
+          CLASS SITEGR1;
+          MODEL CHG = TRTPN BASE SITEGR1 / SS3 SOLUTION;
+          ESTIMATE 'Dose Response' TRTPN 1;
+        RUN;
+
+      alternative_implementations:
+        r: |
+          library(dplyr)
+          library(broom)
+
+          # Filter data
+          analysis_data <- adqsadas %>%
+            filter(EFFFL == 'Y', ANL01FL == 'Y', AVISIT == 'Week 24', PARAMCD == 'ADAS11')
+
+          # Fit model
+          model <- lm(CHG ~ TRTPN + BASE + SITEGR1, data = analysis_data)
+
+          # Get results
+          summary(model)
+          tidy(model, conf.int = TRUE, conf.level = 0.95)
+
+  # -------------------------------------------------------------------------
+  # M_ADAS_002: ADAS-Cog Treatment Comparison (ANCOVA)
+  # -------------------------------------------------------------------------
+
+  - id: M_ADAS_002
+    name: "ADAS-Cog Treatment Comparison (ANCOVA)"
+    description: "ANCOVA comparing treatment groups with baseline as covariate"
+    implements_concept: AC.ANCOVA
+
+    variable_bindings:
+
+      outcome:
+        source: IT.ADQSADAS.CHG
+        dataset: ADQSADAS
+        variable: CHG
+        concept: DC.CHANGE_FROM_BASELINE
+
+      treatment:
+        source: IT.ADQSADAS.TRT01A
+        dataset: ADQSADAS
+        variable: TRT01A
+        concept: DC.TREATMENT_CATEGORICAL
+
+      baseline_covariate:
+        source: IT.ADQSADAS.BASE
+        dataset: ADQSADAS
+        variable: BASE
+        concept: DC.BASELINE_VALUE
+
+      population:
+        filters:
+          - variable: EFFFL
+            operator: "="
+            value: "Y"
+            concept: DC.EFFICACY_POPULATION
+
+          - variable: ANL01FL
+            operator: "="
+            value: "Y"
+            concept: DC.ANALYSIS_FLAG_01
+
+          - variable: AVISIT
+            operator: "="
+            value: "Week 24"
+            concept: DC.ANALYSIS_VISIT
+
+          - variable: PARAMCD
+            operator: "="
+            value: "ADAS11"
+            concept: DC.PARAMETER_CODE
+
+    method_parameter_bindings:
+      outcome:
+        source: IT.ADQSADAS.CHG
+
+      treatment:
+        source: IT.ADQSADAS.TRT01A
+
+      baseline_covariate:
+        source: IT.ADQSADAS.BASE
+
+    statistical_options_selected:
+      type3_tests: true
+      alpha: 0.05
+      ls_means: true
+
+    execution:
+      software: SAS
+      procedure: PROC GLM
+
+      code_template: |
+        PROC GLM DATA=ADQSADAS;
+          WHERE EFFFL='Y' AND ANL01FL='Y' AND AVISIT='Week 24' AND PARAMCD='ADAS11';
+          CLASS TRT01A;
+          MODEL CHG = TRT01A BASE / SS3 SOLUTION;
+          LSMEANS TRT01A / PDIFF CL ALPHA=0.05;
+        RUN;
+
+
+# ===========================================================================
+# ANALYSIS OUTPUT BINDINGS (SDMX/CUBE Structure)
+# ===========================================================================
+#
+# Maps abstract Analysis Concept outputs to concrete result structures
+# following the SDMX/CUBE approach and normalized analysis results model.
+#
+# Structure:
+#   - Dimensions: Identify observations (population, treatment, timing, contrast)
+#   - Measures: Quantify observations (estimates, p-values, CIs)
+#   - Attributes: Describe observations (methods, adjustments)
+#
+# This provides the complete Inputs → Method → Outputs chain at
+# implementation level, complementing the concept-level definitions.
+#
+# ===========================================================================
+
+analysis_output_bindings:
+
+  # -------------------------------------------------------------------------
+  # M_ADAS_001: ADAS-Cog Dose Response Analysis Outputs
+  # -------------------------------------------------------------------------
+
+  - analysis_id: M_ADAS_001
+    implements_concept: AC.LINEAR_MODEL_DOSE_RESPONSE
+    description: "Output structure for linear dose-response analysis"
+
+    # Cube structure defines dimensional organization of results
+    cube_structure:
+
+      # Dimension values (concrete implementation - structure defined in concept)
+      dimension_values:
+        - name: POPULATION
+          contextVariable: POPULATION
+          values:
+            - "Full Analysis Set"
+
+        - name: TIMING
+          contextVariable: AVISIT
+          values:
+            - "Week 24"
+          ordered: true
+
+        - name: CONTRAST
+          contextVariable: CONTRAST
+          values:
+            - "Dose Response (per unit increase)"
+
+      # Measures that quantify the results
+      measures:
+        - output_id: OUT.M_ADAS_001.BETA
+          variable_name: BETA_COEFFICIENT
+          label: "Dose Response Coefficient"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000144"
+          statoLabel: "regression coefficient"
+          unit: "points per mg"
+          precision: 4
+          description: "Slope coefficient for continuous treatment effect"
+
+        - output_id: OUT.M_ADAS_001.SE
+          variable_name: SE
+          label: "Standard Error"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000262"
+          statoLabel: "standard error"
+          precision: 4
+          description: "Standard error of coefficient estimate"
+
+        - output_id: OUT.M_ADAS_001.CI_LOWER
+          variable_name: CI_LOWER
+          label: "95% CI Lower Bound"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000315"
+          statoLabel: "confidence interval lower bound"
+          precision: 4
+          description: "Lower bound of 95% confidence interval"
+
+        - output_id: OUT.M_ADAS_001.CI_UPPER
+          variable_name: CI_UPPER
+          label: "95% CI Upper Bound"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000314"
+          statoLabel: "confidence interval upper bound"
+          precision: 4
+          description: "Upper bound of 95% confidence interval"
+
+        - output_id: OUT.M_ADAS_001.PVAL
+          variable_name: PVAL
+          label: "P-value"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000051"
+          statoLabel: "p-value"
+          precision: 4
+          description: "P-value for test of dose-response"
+
+        - output_id: OUT.M_ADAS_001.TSTAT
+          variable_name: TSTAT
+          label: "T-statistic"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000176"
+          statoLabel: "t-statistic"
+          precision: 3
+          description: "T-statistic for coefficient test"
+
+        - output_id: OUT.M_ADAS_001.DF
+          variable_name: DF
+          label: "Degrees of Freedom"
+          dataType: Integer
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000069"
+          statoLabel: "degrees of freedom"
+          description: "Degrees of freedom for test"
+
+      # Attributes that describe the results
+      attributes:
+        - name: ADJUSTMENT
+          role: condition
+          contextType: condition
+          contextVariable: ADJUSTMENT
+          value: "Adjusted for baseline score and site group"
+          description: "Covariates included in model"
+
+        - name: ESTIMATION_METHOD
+          value: "Ordinary Least Squares"
+          description: "Estimation method used"
+
+        - name: CONFIDENCE_LEVEL
+          value: 0.95
+          dataType: Numeric
+          description: "Confidence level for intervals"
+
+    # Result generation rules
+    result_generation:
+      resultId_pattern: "RES_{analysis_id}_{output_id}_{sequence}"
+      description: "Pattern for generating unique result identifiers"
+
+      # Cardinality: how many results per output
+      cardinality:
+        BETA_COEFFICIENT: 1
+        SE: 1
+        CI_LOWER: 1
+        CI_UPPER: 1
+        PVAL: 1
+        TSTAT: 1
+        DF: 1
+
+    # Metadata for provenance
+    result_metadata:
+      studyId: "CDISCPILOT01"
+      analysisVersion: "1.0"
+      generatedBy: "analysis_pipeline"
+      description: "Single dose-response test at Week 24"
+
+  # -------------------------------------------------------------------------
+  # M_ADAS_002: ADAS-Cog Treatment Comparison (ANCOVA) Outputs
+  # -------------------------------------------------------------------------
+
+  - analysis_id: M_ADAS_002
+    implements_concept: AC.ANCOVA
+    description: "Output structure for ANCOVA with treatment groups"
+
+    cube_structure:
+
+      # Dimension values (concrete implementation - structure defined in concept)
+      dimension_values:
+        - name: POPULATION
+          contextVariable: POPULATION
+          values:
+            - "Full Analysis Set"
+
+        - name: TREATMENT
+          contextVariable: TRT01P
+          values:
+            - "Placebo"
+            - "Xanomeline Low Dose"
+            - "Xanomeline High Dose"
+          ordered: true
+          order: [1, 2, 3]
+
+        - name: TIMING
+          contextVariable: AVISIT
+          values:
+            - "Week 24"
+
+        - name: CONTRAST
+          contextVariable: CONTRAST
+          values:
+            - "Xanomeline Low Dose - Placebo"
+            - "Xanomeline High Dose - Placebo"
+
+      measures:
+        # Treatment-specific estimates (apply to TREATMENT dimension)
+        - output_id: OUT.M_ADAS_002.LSMEAN
+          variable_name: LSMEAN
+          label: "Least Squares Mean"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000343"
+          statoLabel: "least squares mean"
+          unit: "points"
+          precision: 2
+          applies_to_dimension: TREATMENT
+          description: "Adjusted mean for each treatment group"
+
+        - output_id: OUT.M_ADAS_002.LSMEAN_SE
+          variable_name: LSMEAN_SE
+          label: "LS Mean Standard Error"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000262"
+          statoLabel: "standard error"
+          unit: "points"
+          precision: 2
+          applies_to_dimension: TREATMENT
+          description: "Standard error of LS mean"
+
+        # Comparison estimates (apply to CONTRAST dimension)
+        - output_id: OUT.M_ADAS_002.LSMEAN_DIFF
+          variable_name: LSMEAN_DIFF
+          label: "LS Mean Difference"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000175"
+          statoLabel: "difference"
+          unit: "points"
+          precision: 2
+          applies_to_dimension: CONTRAST
+          description: "Difference in LS means between treatments"
+
+        - output_id: OUT.M_ADAS_002.DIFF_SE
+          variable_name: DIFF_SE
+          label: "Difference Standard Error"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000262"
+          statoLabel: "standard error"
+          precision: 2
+          applies_to_dimension: CONTRAST
+          description: "Standard error of difference"
+
+        - output_id: OUT.M_ADAS_002.CI_LOWER
+          variable_name: CI_LOWER
+          label: "95% CI Lower Bound"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000315"
+          statoLabel: "confidence interval lower bound"
+          precision: 2
+          applies_to_dimension: CONTRAST
+          description: "Lower bound of 95% CI for difference"
+
+        - output_id: OUT.M_ADAS_002.CI_UPPER
+          variable_name: CI_UPPER
+          label: "95% CI Upper Bound"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000314"
+          statoLabel: "confidence interval upper bound"
+          precision: 2
+          applies_to_dimension: CONTRAST
+          description: "Upper bound of 95% CI for difference"
+
+        - output_id: OUT.M_ADAS_002.PVAL
+          variable_name: PVAL
+          label: "P-value"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000051"
+          statoLabel: "p-value"
+          precision: 4
+          applies_to_dimension: CONTRAST
+          description: "P-value for pairwise comparison"
+
+        # Model fit statistics (no dimensions - single values)
+        - output_id: OUT.M_ADAS_002.R_SQUARED
+          variable_name: R_SQUARED
+          label: "R-squared"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000282"
+          statoLabel: "coefficient of determination"
+          precision: 3
+          applies_to_dimension: null
+          description: "Proportion of variance explained"
+
+        - output_id: OUT.M_ADAS_002.AIC
+          variable_name: AIC
+          label: "Akaike Information Criterion"
+          dataType: Numeric
+          statoIri: "http://purl.obolibrary.org/obo/STATO_0000319"
+          statoLabel: "Akaike information criterion"
+          precision: 1
+          applies_to_dimension: null
+          description: "Model selection criterion"
+
+      attributes:
+        - name: ADJUSTMENT
+          contextType: condition
+          contextVariable: ADJUSTMENT
+          value: "Adjusted for baseline ADAS-Cog score"
+          description: "Baseline covariate"
+
+        - name: ESTIMATION_METHOD
+          value: "Ordinary Least Squares"
+          description: "Estimation method"
+
+        - name: CONFIDENCE_LEVEL
+          value: 0.95
+          dataType: Numeric
+          description: "Confidence level for intervals"
+
+        - name: TYPE3_TESTS
+          value: true
+          dataType: Boolean
+          description: "Type III sum of squares used"
+
+    result_generation:
+      resultId_pattern: "RES_{analysis_id}_{output_id}_{context_hash}"
+
+      # Cardinality for multi-dimensional results
+      cardinality:
+        LSMEAN: 3              # One per treatment group
+        LSMEAN_SE: 3
+        LSMEAN_DIFF: 2         # Two pairwise comparisons
+        DIFF_SE: 2
+        CI_LOWER: 2
+        CI_UPPER: 2
+        PVAL: 2
+        R_SQUARED: 1           # Single model fit statistic
+        AIC: 1
+
+      # Context combinations specify dimensional relationships
+      context_combinations:
+        LSMEAN:
+          dimensions: [POPULATION, TREATMENT, TIMING]
+          description: "LS mean for each treatment at Week 24"
+
+        LSMEAN_DIFF:
+          dimensions: [POPULATION, CONTRAST, TIMING]
+          description: "Difference for each contrast at Week 24"
+
+    result_metadata:
+      studyId: "CDISCPILOT01"
+      analysisVersion: "1.0"
+      description: "ANCOVA with three treatment groups at Week 24"
