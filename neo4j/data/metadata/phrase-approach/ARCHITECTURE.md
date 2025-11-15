@@ -16,66 +16,247 @@ The separation of concerns allows the same abstract analysis concepts to be reus
 
 ```mermaid
 graph TB
-    subgraph "Layer 1: Building Blocks"
-        BB1["BB.OUTCOME.CHG_PARAM_TIME
-        Category: Outcome
-        template with slots"]
-        BB2["BB.PREDICTOR.TRT_CONTINUOUS
-        Category: Predictor"]
-        BB3["BB.METHOD.LINEAR_MODEL
-        Category: Method"]
+    subgraph Study["Study Level"]
+        STU["Study: CDISCPILOT01
+        sponsor: CDISC
+        name: CDISC Pilot Study"]
     end
 
-    subgraph "Layer 2: Abstract Concepts"
+    subgraph Composition["Natural Language Composition"]
+        SENT["Sentence
+        id: SENT_M_ADAS_001
+        text: Test using linear model for...
+        composed_from multiple Phrases"]
+
+        P1["Phrase 1
+        building_block: BB.METHOD.LINEAR_MODEL
+        text: using linear model"]
+
+        P2["Phrase 2
+        building_block: BB.OUTCOME.CHG_PARAM_TIME
+        text: change in ADAS-Cog from baseline to Week 24
+        slot_fillings: {parameter: ADAS-Cog, timepoint: Week 24}"]
+
+        P3["Phrase 3
+        building_block: BB.PREDICTOR.TRT_CONTINUOUS
+        text: with treatment as continuous predictor"]
+    end
+
+    subgraph BuildingBlocks["Layer 1: Building Blocks (Reusable Templates)"]
+        BB1["BB.OUTCOME.CHG_PARAM_TIME
+        category: Outcome
+        template: change in {parameter} from baseline to {timepoint}
+        slots: [parameter, timepoint]
+        maps_to: DC.CHANGE_FROM_BASELINE"]
+
+        BB2["BB.PREDICTOR.TRT_CONTINUOUS
+        category: Predictor
+        template: with {treatment} as continuous predictor
+        maps_to: DC.TREATMENT_NUMERIC"]
+
+        BB3["BB.METHOD.LINEAR_MODEL
+        category: Method
+        template: using linear model
+        maps_to: AC.LINEAR_MODEL_DOSE_RESPONSE"]
+
+        BB4["BB.COVARIATE.ADJUST_FOR
+        category: Covariate
+        template: adjusting for {baseline} and {site}"]
+    end
+
+    subgraph Concepts["Layer 2: Abstract Concepts"]
         DC1["DC.CHANGE_FROM_BASELINE
         type: DerivedMeasure
-        inputs → method → outputs"]
+        adam_class_variable: CHG
+        dataType: float, role: Qualifier
+
+        inputs:
+          • analysis_value (minuend)
+          • baseline_value (subtrahend)
+
+        method: subtraction
+        formula: minuend - subtrahend
+
+        outputs:
+          • change_value"]
+
         DC2["DC.TREATMENT_NUMERIC
-        type: Predictor"]
+        type: Predictor
+        adam_class_variable: TRT01PN
+        dataType: integer"]
+
+        DC3["DC.BASELINE_VALUE
+        type: Measure
+        adam_class_variable: BASE
+        dataType: float"]
+
+        DC4["DC.SITE_GROUP
+        type: Covariate
+        adam_class_variable: SITEGR1
+        dataType: text"]
+
         AC1["AC.LINEAR_MODEL_DOSE_RESPONSE
         type: ModelBased
-        inputs → method → outputs"]
+        category: efficacy_analysis
+
+        inputs:
+          • outcome: accepts [DC.CHANGE_FROM_BASELINE, DC.ANALYSIS_VALUE]
+          • primary_predictor: accepts [DC.TREATMENT_NUMERIC]
+          • covariates: accepts [DC.BASELINE_VALUE, DC.SITE_GROUP]
+
+        method:
+          type: linear_regression
+          formula: Outcome ~ Primary_Predictor + Covariate
+          estimation: OLS
+
+        statistical_options:
+          • alpha: [0.01, 0.05, 0.10]
+          • confidence_level: [0.90, 0.95, 0.99]
+
+        result_dimensions:
+          • POPULATION (required)
+          • TIMING (ordered)
+          • CONTRAST
+
+        outputs:
+          • coefficient_estimates [POPULATION, TIMING, CONTRAST]
+          • p_values [POPULATION, TIMING, CONTRAST]
+          • model_fit [POPULATION, TIMING]"]
     end
 
-    subgraph "Layer 3: Implementation"
+    subgraph Implementation["Layer 3: Concrete Implementation"]
         DS["Dataset: ADQSADAS
-        type: ADaM BDS"]
+        label: ADAS-Cog Analysis Dataset
+        type: ADaM BDS
+        based_on_class: Basic Data Structure"]
+
         V1["Variable: CHG
-        implements DC.CHANGE_FROM_BASELINE"]
+        label: Change from Baseline
+        implements: DC.CHANGE_FROM_BASELINE
+        of_class: CHG
+        dataType: float
+        origin: Derived (AVAL - BASE)"]
+
         V2["Variable: TRTPN
-        implements DC.TREATMENT_NUMERIC"]
-        AI["Analysis Instance: M_ADAS_001
-        implements AC.LINEAR_MODEL_DOSE_RESPONSE"]
-        AO["Analysis Output
-        SDMX/CUBE structure"]
+        label: Planned Treatment (N)
+        implements: DC.TREATMENT_NUMERIC
+        of_class: TRT01PN
+        dataType: integer
+        coding: {0: Placebo, 54: Low, 81: High}"]
+
+        V3["Variable: BASE
+        implements: DC.BASELINE_VALUE
+        dataType: float"]
+
+        V4["Variable: SITEGR1
+        implements: DC.SITE_GROUP
+        dataType: text"]
+
+        AI["AnalysisInstance: M_ADAS_001
+        name: ADAS-Cog Dose Response Analysis
+        implements: AC.LINEAR_MODEL_DOSE_RESPONSE
+
+        variable_bindings:
+          • outcome → CHG (DC.CHANGE_FROM_BASELINE)
+          • primary_predictor → TRTPN (DC.TREATMENT_NUMERIC)
+          • covariates → [BASE, SITEGR1]
+
+        population_filters:
+          • EFFFL='Y', ANL01FL='Y'
+          • AVISIT='Week 24'
+          • PARAMCD='ADAS11'
+
+        statistical_options_selected:
+          • alpha: 0.05
+          • confidence_level: 0.95"]
+
+        AO["AnalysisOutputBinding
+        analysis_id: M_ADAS_001
+
+        dimension_values:
+          • POPULATION: Full Analysis Set
+          • TIMING: Week 24
+          • CONTRAST: Dose Response
+
+        measures (with STATO URIs):
+          • BETA_COEFFICIENT
+          • STANDARD_ERROR
+          • P_VALUE
+          • CI_LOWER, CI_UPPER
+
+        attributes:
+          • adjustment: baseline + site
+          • estimation_method: OLS"]
     end
 
+    %% Study relationships
+    STU -->|HAS_ANALYSIS| AI
+    STU -->|HAS_DESCRIPTION| SENT
+
+    %% Sentence composition
+    SENT -->|COMPOSED_OF| P1
+    SENT -->|COMPOSED_OF| P2
+    SENT -->|COMPOSED_OF| P3
+    SENT -.describes.-> AI
+
+    %% Phrase to Building Block
+    P1 -->|USES_TEMPLATE| BB3
+    P2 -->|USES_TEMPLATE| BB1
+    P3 -->|USES_TEMPLATE| BB2
+
+    %% Building Block to Concept mappings
     BB1 -.maps_to.-> DC1
     BB2 -.maps_to.-> DC2
     BB3 -.maps_to.-> AC1
+    BB4 -.maps_to.-> DC3
+    BB4 -.maps_to.-> DC4
 
-    AC1 -.accepts.-> DC1
-    AC1 -.accepts.-> DC2
+    %% Analysis Concept accepts Derivation Concepts
+    AC1 -.accepts_as_outcome.-> DC1
+    AC1 -.accepts_as_predictor.-> DC2
+    AC1 -.accepts_as_covariate.-> DC3
+    AC1 -.accepts_as_covariate.-> DC4
 
+    %% Dataset contains Variables
     DS -->|contains| V1
     DS -->|contains| V2
+    DS -->|contains| V3
+    DS -->|contains| V4
+
+    %% Variables implement Derivation Concepts
     V1 -.implements.-> DC1
     V2 -.implements.-> DC2
+    V3 -.implements.-> DC3
+    V4 -.implements.-> DC4
 
+    %% Analysis Instance relationships
     AI -.implements.-> AC1
-    AI -.uses.-> V1
-    AI -.uses.-> V2
+    AI -.binds_outcome_to.-> V1
+    AI -.binds_predictor_to.-> V2
+    AI -.binds_covariate_to.-> V3
+    AI -.binds_covariate_to.-> V4
     AI -->|produces| AO
 
+    %% Styling
+    style STU fill:#ff9800,stroke:#e65100,color:#000
+    style SENT fill:#ffeb3b,stroke:#f57f17,color:#000
+    style P1 fill:#fff59d,stroke:#f9a825,color:#000
+    style P2 fill:#fff59d,stroke:#f9a825,color:#000
+    style P3 fill:#fff59d,stroke:#f9a825,color:#000
     style BB1 fill:#4fc3f7,stroke:#0277bd,color:#000
     style BB2 fill:#4fc3f7,stroke:#0277bd,color:#000
     style BB3 fill:#4fc3f7,stroke:#0277bd,color:#000
+    style BB4 fill:#4fc3f7,stroke:#0277bd,color:#000
     style DC1 fill:#4dd0e1,stroke:#00838f,color:#000
     style DC2 fill:#4dd0e1,stroke:#00838f,color:#000
+    style DC3 fill:#4dd0e1,stroke:#00838f,color:#000
+    style DC4 fill:#4dd0e1,stroke:#00838f,color:#000
     style AC1 fill:#00acc1,stroke:#006064,color:#fff
     style DS fill:#81c784,stroke:#2e7d32,color:#000
     style V1 fill:#aed581,stroke:#558b2f,color:#000
     style V2 fill:#aed581,stroke:#558b2f,color:#000
+    style V3 fill:#aed581,stroke:#558b2f,color:#000
+    style V4 fill:#aed581,stroke:#558b2f,color:#000
     style AI fill:#9575cd,stroke:#4527a0,color:#fff
     style AO fill:#ba68c8,stroke:#6a1b9a,color:#fff
 ```
