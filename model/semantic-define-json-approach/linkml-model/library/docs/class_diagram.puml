@@ -1,0 +1,201 @@
+@startuml
+skinparam nodesep 10
+hide circle
+hide empty members
+class "BuildingBlock" [[{Reusable phrase template for analysis sentence composition. Represents a template with parameter placeholders that can be filled during Step 1 of the workflow to compose human-readable analysis sentences.}]] {
+    {field} template : string  
+    {field} mapsToDataConcept : string  [0..*]
+    {field} requiresAnalysisConcept : string  [0..*]
+    {field} examples : string  [0..*]
+    {field} OID : string  
+    {field} conceptType : string  
+    {field} name(i) : string  
+    {field} description(i) : string  
+    {field} semanticRole(i) : string  
+    {field} label(i) : string  
+    {field} statoIRI(i) : uriorcurie  
+}
+class "TemplateParameter" [[{Parameter definition for building block templates. Defines a placeholder in a phrase template that must be filled during sentence composition.}]] {
+    {field} name : string  
+    {field} description : string  
+    {field} semanticType : uriorcurie  
+    {field} required : boolean  
+    {field} cardinality : string  
+    {field} examples : string  [0..*]
+}
+"BuildingBlock" *--> "1..*" "TemplateParameter" : "parameters"
+class "ConceptLibrary" [[{Root container for a library of reified concepts. Can contain any combination of AnalysisConcepts, DerivationConcepts, BuildingBlocks, BiomedicalConcepts, and Methods.}]] {
+    {field} libraryOID : string  
+    {field} libraryName : string  
+    {field} version : string  
+}
+abstract "ReifiedConcept" [[{Abstract base class for all reified concepts (AnalysisConcept, DerivationConcept, BuildingBlock, BiomedicalConcept). Defines shared properties inherited by all concept types.}]] {
+    {field} OID : string  
+    {field} name : string  
+    {field} description : string  
+    {field} conceptType : string  
+    {field} semanticRole : string  
+    {field} label : string  
+    {field} statoIRI : uriorcurie  
+}
+class "DerivationConcept" [[{Abstract data semantic specification. Represents a reusable derivation concept that can be implemented by study-specific variables. Contains data semantics including data type, ADaM class, and optional derivation specifications. Also called DataConcept.}]] {
+    {field} adClass : AdamClassEnum  
+    {field} dataType : DataTypeEnum  
+    {field} mapsToVariable : string  [0..*]
+    {field} OID : string  
+    {field} conceptType : string  
+    {field} name(i) : string  
+    {field} description(i) : string  
+    {field} semanticRole(i) : string  
+    {field} label(i) : string  
+    {field} statoIRI(i) : uriorcurie  
+}
+class "BiomedicalConcept" [[{Clinical semantic concept representing biomedical domain knowledge. Defines abstract clinical semantics without implementation mappings. Related to SDTM and ADaM variables through implementsConcept relationships in study instances.}]] {
+    {field} biomedicalDomain : string  
+    {field} relatedDataConcepts : string  [0..*]
+    {field} implementationGuidance : string  
+    {field} OID : string  
+    {field} conceptType : string  
+    {field} name(i) : string  
+    {field} description(i) : string  
+    {field} semanticRole(i) : string  
+    {field} label(i) : string  
+    {field} statoIRI(i) : uriorcurie  
+}
+class "AnalysisConcept" [[{Statistical analysis pattern specification. Represents a reusable analysis concept that can be instantiated in specific studies. Contains statistical semantics including required inputs, expected outputs, and analysis methods.}]] {
+    {field} purpose : string  
+    {field} requiresPopulation : boolean  
+    {field} allowedDataConcepts : string  [0..*]
+    {field} OID : string  
+    {field} conceptType : string  
+    {field} name(i) : string  
+    {field} description(i) : string  
+    {field} semanticRole(i) : string  
+    {field} label(i) : string  
+    {field} statoIRI(i) : uriorcurie  
+}
+"ConceptLibrary" *--> "0..*" "ReifiedConcept" : "concepts"
+"ReifiedConcept" ^-- "DerivationConcept"
+"ReifiedConcept" ^-- "BuildingBlock"
+"ReifiedConcept" ^-- "BiomedicalConcept"
+"ReifiedConcept" ^-- "AnalysisConcept"
+class "BuildingBlockReference" [[{Reference to a building block with semantic role and parameter mappings. Used by AnalysisConcept to declare which building blocks are needed for sentence composition.}]] {
+    {field} buildingBlockRef : string  
+    {field} semanticRole : string  
+    {field} description : string  
+    {field} required : boolean  
+}
+class "ParameterMapping" [[{Bidirectional mapping between building block parameters and concept inputs/outputs. A building block parameter can either provide an input to the concept OR describe an output from the concept.}]] {
+    {field} buildingBlockParameter : string  
+    {field} mapsToInput : string  
+    {field} mapsToOutput : string  
+    {field} mappingType : MappingTypeEnum  
+    {field} description : string  
+}
+"BuildingBlockReference" *--> "0..*" "ParameterMapping" : "parameterMappings"
+class "MethodReference" [[{Reference to a statistical method with semantic role.}]] {
+    {field} methodOID : string  
+    {field} semanticRole : string  
+    {field} description : string  
+}
+"AnalysisConcept" *--> "0..*" "MethodReference" : "methodReferences"
+abstract "AbstractMethod" [[{Abstract base class for all methods (StatisticalMethod, DerivationMethod). Defines shared properties inherited by all method types, including support for multi-language implementations.}]] {
+    {field} OID : string  
+    {field} name : string  
+    {field} description : string  
+    {field} methodType : string  
+    {field} methodCategory : MethodCategoryEnum  
+    {field} semanticRole : string  
+    {field} statoIRI : uriorcurie  
+}
+class "MethodImplementation" [[{Implementation of a method in a specific programming language.}]] {
+    {field} language : ImplementationLanguageEnum  
+    {field} library : string  
+    {field} procedure : string  
+    {field} code : string  
+    {field} description : string  
+}
+"AbstractMethod" *--> "0..*" "MethodImplementation" : "implementations"
+class "DerivationConceptReference" [[{Reference to a derivation concept with semantic role.}]] {
+    {field} derivationConceptOID : string  
+    {field} semanticRole : string  
+    {field} description : string  
+}
+"AnalysisConcept" *--> "0..*" "DerivationConceptReference" : "requiredDerivationConcepts"
+"DerivationConcept" *--> "0..*" "DerivationConceptReference" : "requiredDerivationConcepts"
+class "BiomedicalConceptReference" [[{Reference to a biomedical concept with semantic role.}]] {
+    {field} biomedicalConceptOID : string  
+    {field} semanticRole : string  
+    {field} description : string  
+}
+class "ConceptOutput" [[{Output specification for analysis or data concepts. Defines what results or derived values are produced by an analysis or data derivation.}]] {
+    {field} OID : string  
+    {field} name : string  
+    {field} semanticRole : string  
+    {field} description : string  
+    {field} dataType : DataTypeEnum  
+    {field} interpretation : string  
+    {field} cardinality : string  
+    {field} semanticType : uriorcurie  
+    {field} statoIRI : uriorcurie  
+}
+class "ConceptInput" [[{Input specification for analysis or data concepts. Defines what data or information is required as input to an analysis or data derivation.}]] {
+    {field} OID : string  
+    {field} name : string  
+    {field} semanticRole : string  
+    {field} description : string  
+    {field} dataType : DataTypeEnum  
+    {field} required : boolean  
+    {field} cardinality : string  
+    {field} implementsConcept : string  [0..*]
+    {field} conceptRef : string  [0..*]
+    {field} semanticType : uriorcurie  
+}
+class "DerivationMethod" [[{Lightweight formula-based derivation method. Used by DerivationConcept when the concept represents a derived value computed via mathematical formula (e.g., CHG = AVAL - BASE).}]] {
+    {field} formula : string  
+    {field} methodType : string  
+    {field} OID(i) : string  
+    {field} name(i) : string  
+    {field} description(i) : string  
+    {field} methodCategory(i) : MethodCategoryEnum  
+    {field} semanticRole(i) : string  
+    {field} statoIRI(i) : uriorcurie  
+}
+"DerivationConcept" *--> "0..*" "BiomedicalConceptReference" : "requiredBiomedicalConcepts"
+"DerivationConcept" *--> "1..*" "ConceptOutput" : "outputs"
+"DerivationConcept" *--> "1..*" "ConceptInput" : "inputs"
+"DerivationConcept" *--> "0..1" "DerivationMethod" : "derivationMethod"
+"AbstractMethod" ^-- "DerivationMethod"
+class "StatisticalMethod" [[{Statistical analysis method specification. Includes formal mathematical specification and multi-language implementations for complex statistical analyses like ANCOVA, t-tests, regression models, etc.}]] {
+    {field} statisticalMethodType : MethodTypeEnum  
+    {field} modelFamily : string  
+    {field} linkFunction : string  
+    {field} modelFormulation : string  
+    {field} assumptions : string  [0..*]
+    {field} methodType : string  
+    {field} methodCategory : MethodCategoryEnum  
+    {field} OID(i) : string  
+    {field} name(i) : string  
+    {field} description(i) : string  
+    {field} semanticRole(i) : string  
+    {field} statoIRI(i) : uriorcurie  
+}
+"AnalysisConcept" *--> "1..*" "ConceptOutput" : "outputs"
+"StatisticalMethod" *--> "1..*" "ConceptOutput" : "outputs"
+"AbstractMethod" ^-- "StatisticalMethod"
+"ConceptLibrary" *--> "0..*" "AbstractMethod" : "methods"
+"AnalysisConcept" *--> "1..*" "ConceptInput" : "inputs"
+class "CodelistReference" [[{Reference to a controlled terminology codelist.}]] {
+    {field} codelistOID : string  
+    {field} description : string  
+}
+"BiomedicalConcept" *--> "0..1" "CodelistReference" : "ctCodelistRef"
+"AnalysisConcept" *--> "0..*" "BuildingBlockReference" : "requiredBuildingBlocks"
+"AnalysisConcept" *--> "0..*" "BiomedicalConceptReference" : "requiredBiomedicalConcepts"
+class "AnalysisConceptReference" [[{Reference to an analysis concept with semantic role.}]] {
+    {field} analysisConceptOID : string  
+    {field} semanticRole : string  
+    {field} description : string  
+}
+"AnalysisConcept" *--> "0..*" "AnalysisConceptReference" : "requiredAnalysisConcepts"
+@enduml

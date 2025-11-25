@@ -1,0 +1,66 @@
+id: https://test.org/inheritance
+name: inheritance-test
+title: Inheritance Test Schema
+version: 1.0.0
+
+default_prefix: test
+default_range: string
+
+imports:
+  - linkml:types
+
+enums:
+  TypeEnum:
+    description: Type discriminator
+    permissible_values:
+      type_a:
+        description: Type A
+      type_b:
+        description: Type B
+
+classes:
+  BaseClass:
+    abstract: true
+    description: Abstract base
+    slots:
+      - id
+      - name
+      - object_type
+    slot_usage:
+      id:
+        required: true
+        identifier: true
+      name:
+        required: true
+      object_type:
+        required: true
+        range: TypeEnum
+        designates_type: true
+
+  TypeA:
+    is_a: BaseClass
+    description: Type A class
+    slot_usage:
+      object_type:
+        equals_string: "type_a"
+
+  TypeB:
+    is_a: BaseClass
+    description: Type B class
+    slot_usage:
+      object_type:
+        equals_string: "type_b"
+
+slots:
+  id:
+    identifier: true
+    range: string
+
+  name:
+    range: string
+
+  object_type:
+    description: Type discriminator
+    required: true
+    range: TypeEnum
+    designates_type: true

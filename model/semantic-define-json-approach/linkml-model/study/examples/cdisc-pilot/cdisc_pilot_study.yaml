@@ -1,0 +1,861 @@
+# CDISC Pilot Study Implementation
+#
+# Complete study implementation example demonstrating three analyses from the
+# CDISC Pilot study (Table 14-3.01, ADAS-Cog analyses):
+#   1. Summary Statistics by Visit (descriptive with LOCF)
+#   2. ANCOVA with Pairwise Comparisons (confirmatory)
+#   3. ANCOVA Dose-Response Analysis (exploratory)
+#
+# This file shows:
+# - ADaM dataset structures (ADSL, ADQSADAS)
+# - Study variables implementing library DerivationConcepts
+# - Study analyses implementing library AnalysisConcepts
+# - Parameter bindings connecting analyses to study data
+# - CUBE output structures for result tables
+#
+# Reference: CDISC Pilot Study ADaM Define-XML, Table 14-3.01
+
+studyOID: "STUDY.CDISC.PILOT"
+studyName: "CDISC Pilot Study - ADAS-Cog Analyses"
+studyVersion: "1.0"
+studyDescription: >-
+  Implementation of three ADAS-Cog analyses from the CDISC Pilot study
+  demonstrating descriptive statistics, ANCOVA with pairwise comparisons,
+  and ANCOVA dose-response analysis patterns.
+
+libraryReferences:
+  - libraryOID: "LIB.CDISC.PILOT.AC"
+    libraryName: "CDISC Pilot Analysis Concepts"
+    version: "1.0"
+
+  - libraryOID: "LIB.CDISC.PILOT.BB"
+    libraryName: "CDISC Pilot Building Blocks"
+    version: "1.0"
+
+  - libraryOID: "LIB.CDISC.PILOT.DC"
+    libraryName: "CDISC Pilot Derivation Concepts"
+    version: "1.0"
+
+# ==========================================================================
+# Data Structure Definitions (ADaM Datasets)
+# ==========================================================================
+
+dataStructures:
+  # ------------------------------------------------------------------------
+  # ADSL - Subject-Level Analysis Dataset
+  # ------------------------------------------------------------------------
+  - OID: "IG.ADSL"
+    name: "ADSL"
+    label: "Subject-Level Analysis Dataset"
+    description: >-
+      Subject-level analysis dataset containing one record per subject with
+      demographic, treatment, and population flag variables.
+
+    structure: "one record per subject"
+    datasetClass: "SUBJECT LEVEL"
+
+    variables:
+      - OID: "IT.ADSL.USUBJID"
+        name: "USUBJID"
+        label: "Unique Subject Identifier"
+        dataType: "text"
+        length: 50
+        role: "Identifier"
+        core: "Required"
+
+      - OID: "IT.ADSL.STUDYID"
+        name: "STUDYID"
+        label: "Study Identifier"
+        dataType: "text"
+        length: 20
+        role: "Identifier"
+        core: "Required"
+
+      - OID: "IT.ADSL.SUBJID"
+        name: "SUBJID"
+        label: "Subject Identifier for the Study"
+        dataType: "text"
+        length: 10
+        role: "Identifier"
+        core: "Required"
+
+      - OID: "IT.ADSL.TRT01P"
+        name: "TRT01P"
+        label: "Planned Treatment for Period 01"
+        dataType: "text"
+        length: 100
+        role: "Categorization"
+        core: "Required"
+        implementsDerivationConcept: "DC.TREATMENT.PLANNED"
+
+      - OID: "IT.ADSL.TRT01PN"
+        name: "TRT01PN"
+        label: "Planned Treatment for Period 01 (N)"
+        dataType: "integer"
+        role: "Categorization"
+        core: "Required"
+        implementsDerivationConcept: "DC.TREATMENT.PLANNED"
+
+      - OID: "IT.ADSL.TRTSDT"
+        name: "TRTSDT"
+        label: "Date of First Exposure to Treatment"
+        dataType: "date"
+        role: "Timing"
+        core: "Expected"
+
+      - OID: "IT.ADSL.AGE"
+        name: "AGE"
+        label: "Age"
+        dataType: "integer"
+        role: "Categorization"
+        core: "Expected"
+
+      - OID: "IT.ADSL.SEX"
+        name: "SEX"
+        label: "Sex"
+        dataType: "text"
+        length: 1
+        role: "Categorization"
+        core: "Expected"
+        codeList: "CL.SEX"
+
+      - OID: "IT.ADSL.SITEID"
+        name: "SITEID"
+        label: "Study Site Identifier"
+        dataType: "text"
+        length: 10
+        role: "Categorization"
+        core: "Expected"
+
+      - OID: "IT.ADSL.EFFFL"
+        name: "EFFFL"
+        label: "Efficacy Population Flag"
+        dataType: "text"
+        length: 1
+        role: "Categorization"
+        core: "Required"
+        implementsDerivationConcept: "DC.POPULATION.EFFICACY_FLAG"
+        valueList:
+          - "Y"
+          - "N"
+
+      - OID: "IT.ADSL.RANDFL"
+        name: "RANDFL"
+        label: "Randomized Population Flag"
+        dataType: "text"
+        length: 1
+        role: "Categorization"
+        core: "Expected"
+        valueList:
+          - "Y"
+          - "N"
+
+  # ------------------------------------------------------------------------
+  # ADQSADAS - ADAS-Cog Analysis Dataset
+  # ------------------------------------------------------------------------
+  - OID: "IG.ADQSADAS"
+    name: "ADQSADAS"
+    label: "ADAS-Cog Analysis Dataset"
+    description: >-
+      Analysis dataset for ADAS-Cog assessments containing scores at each
+      visit, baseline values, and change from baseline. Structure follows
+      ADaM BDS (Basic Data Structure) with one record per subject per
+      parameter per analysis visit.
+
+    structure: "one record per subject per parameter per visit"
+    datasetClass: "BASIC DATA STRUCTURE"
+
+    variables:
+      # Identifiers
+      - OID: "IT.ADQSADAS.USUBJID"
+        name: "USUBJID"
+        label: "Unique Subject Identifier"
+        dataType: "text"
+        length: 50
+        role: "Identifier"
+        core: "Required"
+
+      - OID: "IT.ADQSADAS.STUDYID"
+        name: "STUDYID"
+        label: "Study Identifier"
+        dataType: "text"
+        length: 20
+        role: "Identifier"
+        core: "Required"
+
+      # Parameter variables
+      - OID: "IT.ADQSADAS.PARAMCD"
+        name: "PARAMCD"
+        label: "Parameter Code"
+        dataType: "text"
+        length: 8
+        role: "Topic"
+        core: "Required"
+        valueList:
+          - "ACTOT11"  # ADAS-Cog (11) Total Score
+
+      - OID: "IT.ADQSADAS.PARAM"
+        name: "PARAM"
+        label: "Parameter"
+        dataType: "text"
+        length: 200
+        role: "Synonym Qualifier"
+        core: "Required"
+        implementsConcept: "BC.ASSESSMENT.COGNITIVE"
+
+      # Analysis value variables
+      - OID: "IT.ADQSADAS.AVAL"
+        name: "AVAL"
+        label: "Analysis Value"
+        dataType: "float"
+        role: "Result Qualifier"
+        core: "Expected"
+        implementsDerivationConcept: "DC.ADASCOG.SCORE"
+
+      - OID: "IT.ADQSADAS.BASE"
+        name: "BASE"
+        label: "Baseline Value"
+        dataType: "float"
+        role: "Result Qualifier"
+        core: "Expected"
+        implementsDerivationConcept: "DC.ADASCOG.BASELINE"
+
+      - OID: "IT.ADQSADAS.CHG"
+        name: "CHG"
+        label: "Change from Baseline"
+        dataType: "float"
+        role: "Result Qualifier"
+        core: "Expected"
+        implementsDerivationConcept: "DC.ADASCOG.CHANGE_FROM_BASELINE"
+
+      # Visit variables
+      - OID: "IT.ADQSADAS.AVISIT"
+        name: "AVISIT"
+        label: "Analysis Visit"
+        dataType: "text"
+        length: 50
+        role: "Timing"
+        core: "Expected"
+        implementsDerivationConcept: "DC.VISIT.ANALYSIS_VISIT"
+        valueList:
+          - "Baseline"
+          - "Week 8"
+          - "Week 16"
+          - "Week 24"
+
+      - OID: "IT.ADQSADAS.AVISITN"
+        name: "AVISITN"
+        label: "Analysis Visit (N)"
+        dataType: "integer"
+        role: "Timing"
+        core: "Expected"
+        implementsDerivationConcept: "DC.VISIT.ANALYSIS_VISIT"
+
+      - OID: "IT.ADQSADAS.ADT"
+        name: "ADT"
+        label: "Analysis Date"
+        dataType: "date"
+        role: "Timing"
+        core: "Expected"
+
+      # Treatment variables (from ADSL)
+      - OID: "IT.ADQSADAS.TRTP"
+        name: "TRTP"
+        label: "Planned Treatment"
+        dataType: "text"
+        length: 100
+        role: "Categorization"
+        core: "Expected"
+        mergedFrom: "IT.ADSL.TRT01P"
+
+      - OID: "IT.ADQSADAS.TRTPN"
+        name: "TRTPN"
+        label: "Planned Treatment (N)"
+        dataType: "integer"
+        role: "Categorization"
+        core: "Expected"
+        mergedFrom: "IT.ADSL.TRT01PN"
+
+      - OID: "IT.ADQSADAS.SITEID"
+        name: "SITEID"
+        label: "Study Site Identifier"
+        dataType: "text"
+        length: 10
+        role: "Categorization"
+        core: "Expected"
+        mergedFrom: "IT.ADSL.SITEID"
+
+      # Flags
+      - OID: "IT.ADQSADAS.ABLFL"
+        name: "ABLFL"
+        label: "Baseline Record Flag"
+        dataType: "text"
+        length: 1
+        role: "Record Qualifier"
+        core: "Expected"
+        implementsDerivationConcept: "DC.BASELINE.FLAG"
+        valueList:
+          - "Y"
+
+      - OID: "IT.ADQSADAS.ANL01FL"
+        name: "ANL01FL"
+        label: "Analysis 1 Record Flag"
+        dataType: "text"
+        length: 1
+        role: "Record Qualifier"
+        core: "Permissible"
+        description: "Flag for Analysis 1 (summary statistics)"
+        valueList:
+          - "Y"
+
+      - OID: "IT.ADQSADAS.ANL02FL"
+        name: "ANL02FL"
+        label: "Analysis 2 Record Flag"
+        dataType: "text"
+        length: 1
+        role: "Record Qualifier"
+        core: "Permissible"
+        description: "Flag for Analysis 2 (ANCOVA pairwise, Week 24 with LOCF)"
+        valueList:
+          - "Y"
+
+      - OID: "IT.ADQSADAS.ANL03FL"
+        name: "ANL03FL"
+        label: "Analysis 3 Record Flag"
+        dataType: "text"
+        length: 1
+        role: "Record Qualifier"
+        core: "Permissible"
+        description: "Flag for Analysis 3 (dose-response, Week 24 with LOCF)"
+        valueList:
+          - "Y"
+
+      # LOCF imputation indicator
+      - OID: "IT.ADQSADAS.DTYPE"
+        name: "DTYPE"
+        label: "Derivation Type"
+        dataType: "text"
+        length: 8
+        role: "Record Qualifier"
+        core: "Permissible"
+        valueList:
+          - "LOCF"
+
+# ==========================================================================
+# Study Analyses
+# ==========================================================================
+
+studyAnalyses:
+  # ------------------------------------------------------------------------
+  # Analysis 1: Summary Statistics by Visit
+  # ------------------------------------------------------------------------
+  - OID: "ANALYSIS.01.DESCRIPTIVE.SUMMARY"
+    name: "Summary Statistics for ADAS-Cog by Visit with LOCF"
+    label: "Analysis 1: Descriptive summary"
+    description: >-
+      Summary statistics (n, mean, SD, median, min, max) for ADAS-Cog (11)
+      total score at Baseline, Week 8, Week 16, and Week 24, as well as
+      change from baseline at post-baseline visits. Uses efficacy population
+      with LOCF imputation for missing values.
+
+    implementsConcept: "AC.DESCRIPTIVE.SUMMARY_BY_VISIT"
+    reason: "Descriptive analysis to characterize ADAS-Cog score distribution over time"
+    purpose: "Exploratory"
+
+    analysisPopulations:
+      - OID: "POP.ANALYSIS.01.EFFICACY"
+        name: "Efficacy Population"
+        description: "Subjects with EFFFL='Y'"
+        condition: "EFFFL = 'Y'"
+        referencesVariable: "IT.ADSL.EFFFL"
+
+    analysisDatasets:
+      - dataStructureRef: "IG.ADQSADAS"
+        selectionCriteria: "PARAMCD='ACTOT11' and ANL01FL='Y'"
+
+    parameterBindings:
+      # Outcome specification
+      - OID: "BINDING.01.OUTCOME"
+        buildingBlockRef: "BB.OUTCOME.SCORE_AT_VISIT"
+        semanticRole: "outcome_specification"
+        parameterMappings:
+          - buildingBlockParameter: "score"
+            boundToVariable: "IT.ADQSADAS.AVAL"
+            mappingRationale: "ADAS-Cog total score at each visit"
+
+          - buildingBlockParameter: "visit"
+            boundToVariable: "IT.ADQSADAS.AVISIT"
+            mappingRationale: "Analysis visit (Baseline, Week 8, 16, 24)"
+
+      # Baseline reference
+      - OID: "BINDING.01.BASELINE"
+        parameterName: "baseline_score"
+        boundToVariable: "IT.ADQSADAS.BASE"
+        semanticRole: "reference_measurement"
+        mappingRationale: "Baseline score for change calculation"
+
+      # Treatment grouping
+      - OID: "BINDING.01.TREATMENT"
+        parameterName: "treatment"
+        boundToVariable: "IT.ADQSADAS.TRTP"
+        semanticRole: "grouping_factor"
+        mappingRationale: "Stratification by planned treatment"
+
+      # Population
+      - OID: "BINDING.01.POPULATION"
+        buildingBlockRef: "BB.POPULATION.EFFICACY"
+        semanticRole: "population_specification"
+        parameterMappings:
+          - buildingBlockParameter: "population_flag"
+            boundToVariable: "IT.ADSL.EFFFL"
+            literalValue: "Y"
+            mappingRationale: "Efficacy population indicator"
+
+      # Imputation method
+      - OID: "BINDING.01.IMPUTATION"
+        buildingBlockRef: "BB.IMPUTATION.LOCF"
+        semanticRole: "method_specification"
+        parameterMappings:
+          - buildingBlockParameter: "require_baseline"
+            literalValue: "true"
+
+          - buildingBlockParameter: "require_post_baseline"
+            literalValue: "true"
+
+    outputs:
+      - outputRef: "CUBE.ANALYSIS.01.SUMMARY_STATS"
+
+  # ------------------------------------------------------------------------
+  # Analysis 2: ANCOVA with Pairwise Comparisons
+  # ------------------------------------------------------------------------
+  - OID: "ANALYSIS.02.ANCOVA.PAIRWISE"
+    name: "ANCOVA of Change from Baseline with Pairwise Comparisons"
+    label: "Analysis 2: ANCOVA pairwise comparisons"
+    description: >-
+      ANCOVA of change from baseline in ADAS-Cog (11) at Week 24 with LOCF
+      imputation. Model includes baseline score, site, and treatment as
+      independent variables. All pairwise comparisons among the 3 treatment
+      groups are performed and evaluated at significance level of 0.05.
+
+    implementsConcept: "AC.ANCOVA.PAIRWISE_COMPARISONS"
+    reason: "Primary confirmatory analysis comparing treatments on cognitive change"
+    purpose: "Primary Efficacy"
+
+    analysisPopulations:
+      - OID: "POP.ANALYSIS.02.EFFICACY"
+        name: "Efficacy Population"
+        description: "Subjects with EFFFL='Y'"
+        condition: "EFFFL = 'Y'"
+        referencesVariable: "IT.ADSL.EFFFL"
+
+    analysisDatasets:
+      - dataStructureRef: "IG.ADQSADAS"
+        selectionCriteria: "PARAMCD='ACTOT11' and ANL02FL='Y' and AVISITN=24"
+
+    parameterBindings:
+      # Outcome specification
+      - OID: "BINDING.02.OUTCOME"
+        buildingBlockRef: "BB.OUTCOME.CHANGE_FROM_BASELINE_AT_VISIT"
+        semanticRole: "outcome_specification"
+        parameterMappings:
+          - buildingBlockParameter: "change_from_baseline"
+            boundToVariable: "IT.ADQSADAS.CHG"
+            mappingRationale: "Change from baseline (with LOCF where DTYPE='LOCF')"
+
+          - buildingBlockParameter: "analysis_visit"
+            literalValue: "Week 24"
+            mappingRationale: "Target analysis timepoint"
+
+      # ANCOVA method
+      - OID: "BINDING.02.METHOD"
+        buildingBlockRef: "BB.METHOD.ANCOVA"
+        semanticRole: "analysis_method_specification"
+        parameterMappings:
+          - buildingBlockParameter: "treatment"
+            boundToVariable: "IT.ADQSADAS.TRTP"
+            mappingRationale: "Treatment as categorical factor"
+
+          - buildingBlockParameter: "dependent_variable"
+            boundToVariable: "IT.ADQSADAS.CHG"
+            mappingRationale: "Change from baseline as dependent variable"
+
+      # Covariates
+      - OID: "BINDING.02.COVARIATES"
+        buildingBlockRef: "BB.COVARIATE.BASELINE_AND_SITE"
+        semanticRole: "covariate_adjustment_specification"
+        parameterMappings:
+          - buildingBlockParameter: "baseline_score"
+            boundToVariable: "IT.ADQSADAS.BASE"
+            mappingRationale: "Baseline ADAS-Cog as covariate"
+
+          - buildingBlockParameter: "site"
+            boundToVariable: "IT.ADQSADAS.SITEID"
+            mappingRationale: "Study site as categorical covariate"
+
+      # Pairwise comparisons
+      - OID: "BINDING.02.COMPARISONS"
+        buildingBlockRef: "BB.COMPARISON.PAIRWISE_TREATMENTS"
+        semanticRole: "method_specification"
+        parameterMappings:
+          - buildingBlockParameter: "significance_level"
+            literalValue: "0.05"
+            mappingRationale: "Alpha = 0.05 for pairwise tests"
+
+          - buildingBlockParameter: "confidence_level"
+            literalValue: "0.95"
+            mappingRationale: "95% confidence intervals"
+
+      # Population
+      - OID: "BINDING.02.POPULATION"
+        buildingBlockRef: "BB.POPULATION.EFFICACY"
+        semanticRole: "population_specification"
+        parameterMappings:
+          - buildingBlockParameter: "population_flag"
+            boundToVariable: "IT.ADSL.EFFFL"
+            literalValue: "Y"
+
+      # Imputation
+      - OID: "BINDING.02.IMPUTATION"
+        buildingBlockRef: "BB.IMPUTATION.LOCF"
+        semanticRole: "method_specification"
+        parameterMappings:
+          - buildingBlockParameter: "require_baseline"
+            literalValue: "true"
+
+          - buildingBlockParameter: "require_post_baseline"
+            literalValue: "true"
+
+    outputs:
+      - outputRef: "CUBE.ANALYSIS.02.ANCOVA_PAIRWISE"
+
+  # ------------------------------------------------------------------------
+  # Analysis 3: ANCOVA Dose-Response
+  # ------------------------------------------------------------------------
+  - OID: "ANALYSIS.03.ANCOVA.DOSE_RESPONSE"
+    name: "ANCOVA Dose-Response Analysis"
+    label: "Analysis 3: ANCOVA dose-response"
+    description: >-
+      ANCOVA of change from baseline in ADAS-Cog (11) at Week 24 with LOCF
+      imputation. Model includes baseline score, site, and treatment dose
+      (as continuous variable) as independent variables. Test for non-zero
+      coefficient of treatment dose assesses linear dose-response relationship.
+      No interaction terms.
+
+    implementsConcept: "AC.ANCOVA.DOSE_RESPONSE"
+    reason: "Exploratory analysis to assess dose-response relationship"
+    purpose: "Exploratory"
+
+    analysisPopulations:
+      - OID: "POP.ANALYSIS.03.EFFICACY"
+        name: "Efficacy Population"
+        description: "Subjects with EFFFL='Y'"
+        condition: "EFFFL = 'Y'"
+        referencesVariable: "IT.ADSL.EFFFL"
+
+    analysisDatasets:
+      - dataStructureRef: "IG.ADQSADAS"
+        selectionCriteria: "PARAMCD='ACTOT11' and ANL03FL='Y' and AVISITN=24"
+
+    parameterBindings:
+      # Outcome specification
+      - OID: "BINDING.03.OUTCOME"
+        buildingBlockRef: "BB.OUTCOME.CHANGE_FROM_BASELINE_AT_VISIT"
+        semanticRole: "outcome_specification"
+        parameterMappings:
+          - buildingBlockParameter: "change_from_baseline"
+            boundToVariable: "IT.ADQSADAS.CHG"
+            mappingRationale: "Change from baseline (with LOCF where DTYPE='LOCF')"
+
+          - buildingBlockParameter: "analysis_visit"
+            literalValue: "Week 24"
+            mappingRationale: "Target analysis timepoint"
+
+      # ANCOVA method with continuous treatment
+      - OID: "BINDING.03.METHOD"
+        buildingBlockRef: "BB.METHOD.ANCOVA_CONTINUOUS_TREATMENT"
+        semanticRole: "analysis_method_specification"
+        parameterMappings:
+          - buildingBlockParameter: "treatment_dose"
+            boundToVariable: "IT.ADQSADAS.TRTPN"
+            mappingRationale: "Treatment dose as continuous variable (0, 54, 81 mg)"
+
+          - buildingBlockParameter: "dependent_variable"
+            boundToVariable: "IT.ADQSADAS.CHG"
+            mappingRationale: "Change from baseline as dependent variable"
+
+      # Covariates
+      - OID: "BINDING.03.COVARIATES"
+        buildingBlockRef: "BB.COVARIATE.BASELINE_AND_SITE"
+        semanticRole: "covariate_adjustment_specification"
+        parameterMappings:
+          - buildingBlockParameter: "baseline_score"
+            boundToVariable: "IT.ADQSADAS.BASE"
+            mappingRationale: "Baseline ADAS-Cog as covariate"
+
+          - buildingBlockParameter: "site"
+            boundToVariable: "IT.ADQSADAS.SITEID"
+            mappingRationale: "Study site as categorical covariate"
+
+      # Dose-response test
+      - OID: "BINDING.03.TEST"
+        buildingBlockRef: "BB.TEST.DOSE_RESPONSE"
+        semanticRole: "method_specification"
+        parameterMappings:
+          - buildingBlockParameter: "null_hypothesis"
+            literalValue: "coefficient = 0"
+            mappingRationale: "Test for non-zero dose coefficient"
+
+          - buildingBlockParameter: "significance_level"
+            literalValue: "0.05"
+            mappingRationale: "Alpha = 0.05"
+
+      # Population
+      - OID: "BINDING.03.POPULATION"
+        buildingBlockRef: "BB.POPULATION.EFFICACY"
+        semanticRole: "population_specification"
+        parameterMappings:
+          - buildingBlockParameter: "population_flag"
+            boundToVariable: "IT.ADSL.EFFFL"
+            literalValue: "Y"
+
+      # Imputation
+      - OID: "BINDING.03.IMPUTATION"
+        buildingBlockRef: "BB.IMPUTATION.LOCF"
+        semanticRole: "method_specification"
+        parameterMappings:
+          - buildingBlockParameter: "require_baseline"
+            literalValue: "true"
+
+          - buildingBlockParameter: "require_post_baseline"
+            literalValue: "true"
+
+    outputs:
+      - outputRef: "CUBE.ANALYSIS.03.DOSE_RESPONSE"
+
+# ==========================================================================
+# Analysis Output Datasets (CUBE Structures)
+# ==========================================================================
+
+analysisOutputDatasets:
+  # ------------------------------------------------------------------------
+  # Output for Analysis 1: Summary Statistics
+  # ------------------------------------------------------------------------
+  - OID: "CUBE.ANALYSIS.01.SUMMARY_STATS"
+    name: "Summary Statistics by Treatment and Visit"
+    label: "Table 14-3.01 (Summary portion)"
+    description: >-
+      Summary statistics table showing n, mean, SD, median, min, max for
+      ADAS-Cog (11) at each visit by treatment group.
+
+    analysisRef: "ANALYSIS.01.DESCRIPTIVE.SUMMARY"
+
+    dimensions:
+      - OID: "DIM.01.TREATMENT"
+        name: "Treatment"
+        label: "Treatment Group"
+        dimensionType: "classification"
+        referencesVariable: "IT.ADQSADAS.TRTP"
+        order: 1
+        members:
+          - value: "Placebo"
+            order: 1
+          - value: "Xanomeline Low Dose"
+            order: 2
+          - value: "Xanomeline High Dose"
+            order: 3
+
+      - OID: "DIM.01.VISIT"
+        name: "Visit"
+        label: "Analysis Visit"
+        dimensionType: "temporal"
+        referencesVariable: "IT.ADQSADAS.AVISIT"
+        order: 2
+        members:
+          - value: "Baseline"
+            order: 0
+          - value: "Week 8"
+            order: 8
+          - value: "Week 16"
+            order: 16
+          - value: "Week 24"
+            order: 24
+
+      - OID: "DIM.01.STATISTIC"
+        name: "Statistic"
+        label: "Summary Statistic"
+        dimensionType: "statistic"
+        order: 3
+        members:
+          - value: "n"
+            label: "Number of Subjects"
+            order: 1
+          - value: "Mean"
+            label: "Mean"
+            order: 2
+          - value: "SD"
+            label: "Standard Deviation"
+            order: 3
+          - value: "Median"
+            label: "Median"
+            order: 4
+          - value: "Min"
+            label: "Minimum"
+            order: 5
+          - value: "Max"
+            label: "Maximum"
+            order: 6
+
+    measures:
+      - OID: "MEASURE.01.VALUE"
+        name: "StatisticValue"
+        label: "Statistic Value"
+        dataType: "float"
+        description: "Numeric value of the summary statistic"
+
+      - OID: "MEASURE.01.DISPLAY"
+        name: "DisplayValue"
+        label: "Display Value"
+        dataType: "text"
+        description: "Formatted display value (e.g., '24.5 (8.2)')"
+
+  # ------------------------------------------------------------------------
+  # Output for Analysis 2: ANCOVA Pairwise Comparisons
+  # ------------------------------------------------------------------------
+  - OID: "CUBE.ANALYSIS.02.ANCOVA_PAIRWISE"
+    name: "ANCOVA Results with Pairwise Comparisons"
+    label: "Table 14-3.01 (ANCOVA pairwise)"
+    description: >-
+      ANCOVA results showing LS means by treatment and pairwise comparisons
+      with differences, 95% CIs, and p-values.
+
+    analysisRef: "ANALYSIS.02.ANCOVA.PAIRWISE"
+
+    dimensions:
+      - OID: "DIM.02.TREATMENT"
+        name: "Treatment"
+        label: "Treatment Group"
+        dimensionType: "classification"
+        referencesVariable: "IT.ADQSADAS.TRTP"
+        order: 1
+        members:
+          - value: "Placebo"
+            order: 1
+          - value: "Xanomeline Low Dose"
+            order: 2
+          - value: "Xanomeline High Dose"
+            order: 3
+
+      - OID: "DIM.02.COMPARISON"
+        name: "Comparison"
+        label: "Treatment Comparison"
+        dimensionType: "comparison"
+        order: 2
+        members:
+          - value: "Low Dose vs Placebo"
+            order: 1
+          - value: "High Dose vs Placebo"
+            order: 2
+          - value: "High Dose vs Low Dose"
+            order: 3
+
+      - OID: "DIM.02.STATISTIC"
+        name: "Statistic"
+        label: "ANCOVA Statistic"
+        dimensionType: "statistic"
+        order: 3
+        members:
+          - value: "n"
+            label: "Number of Subjects"
+            order: 1
+          - value: "LS Mean"
+            label: "Least Squares Mean"
+            order: 2
+          - value: "SE"
+            label: "Standard Error"
+            order: 3
+          - value: "Difference"
+            label: "LS Mean Difference"
+            order: 4
+          - value: "CI Lower"
+            label: "95% CI Lower Bound"
+            order: 5
+          - value: "CI Upper"
+            label: "95% CI Upper Bound"
+            order: 6
+          - value: "p-value"
+            label: "P-value"
+            order: 7
+
+    measures:
+      - OID: "MEASURE.02.VALUE"
+        name: "StatisticValue"
+        label: "Statistic Value"
+        dataType: "float"
+        description: "Numeric value of the ANCOVA statistic"
+
+      - OID: "MEASURE.02.DISPLAY"
+        name: "DisplayValue"
+        label: "Display Value"
+        dataType: "text"
+        description: "Formatted display value (e.g., '-3.5 (-7.2, 0.1)')"
+
+  # ------------------------------------------------------------------------
+  # Output for Analysis 3: Dose-Response
+  # ------------------------------------------------------------------------
+  - OID: "CUBE.ANALYSIS.03.DOSE_RESPONSE"
+    name: "ANCOVA Dose-Response Results"
+    label: "Table 14-3.01 (Dose-response)"
+    description: >-
+      ANCOVA dose-response results showing regression coefficient for
+      treatment dose, standard error, t-statistic, 95% CI, and p-value.
+
+    analysisRef: "ANALYSIS.03.ANCOVA.DOSE_RESPONSE"
+
+    dimensions:
+      - OID: "DIM.03.PARAMETER"
+        name: "Parameter"
+        label: "Model Parameter"
+        dimensionType: "classification"
+        order: 1
+        members:
+          - value: "Treatment Dose"
+            label: "Treatment Dose (continuous)"
+            order: 1
+
+      - OID: "DIM.03.STATISTIC"
+        name: "Statistic"
+        label: "Regression Statistic"
+        dimensionType: "statistic"
+        order: 2
+        members:
+          - value: "Coefficient"
+            label: "Dose Coefficient"
+            order: 1
+          - value: "SE"
+            label: "Standard Error"
+            order: 2
+          - value: "t-value"
+            label: "T-statistic"
+            order: 3
+          - value: "CI Lower"
+            label: "95% CI Lower Bound"
+            order: 4
+          - value: "CI Upper"
+            label: "95% CI Upper Bound"
+            order: 5
+          - value: "p-value"
+            label: "P-value"
+            order: 6
+
+    measures:
+      - OID: "MEASURE.03.VALUE"
+        name: "StatisticValue"
+        label: "Statistic Value"
+        dataType: "float"
+        description: "Numeric value of the regression statistic"
+
+      - OID: "MEASURE.03.DISPLAY"
+        name: "DisplayValue"
+        label: "Display Value"
+        dataType: "text"
+        description: "Formatted display value"

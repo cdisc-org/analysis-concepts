@@ -1,0 +1,367 @@
+# CDISC Pilot Study - Analysis Concepts
+#
+# This file contains library AnalysisConcept definitions based on the CDISC Pilot
+# study analyses. These are abstract, reusable patterns that can be instantiated
+# in study-specific implementations.
+#
+# Reference: CDISC Pilot Study, Table 14-3.01 (ADAS-Cog analyses)
+
+libraryOID: "LIB.CDISC.PILOT.AC"
+libraryName: "CDISC Pilot Analysis Concepts"
+version: "1.0"
+
+concepts:
+  # ==========================================================================
+  # Analysis 1: Descriptive Summary Statistics
+  # ==========================================================================
+  - OID: "AC.DESCRIPTIVE.SUMMARY_BY_VISIT"
+    name: "Summary Statistics by Visit"
+    conceptType: "analysis_concept"
+    semanticRole: "descriptive_analysis_pattern"
+    label: "Descriptive summary with LOCF"
+    description: >-
+      Descriptive summary statistics (n, mean, SD, median, min, max) for an
+      assessment score at specified visits including baseline, with Last
+      Observation Carried Forward (LOCF) imputation for missing values.
+      Also includes change from baseline statistics.
+
+    purpose: >-
+      Generate summary statistics for efficacy assessments at each visit to
+      describe the distribution of scores and changes over time by treatment group.
+
+    requiredBuildingBlocks:
+      - buildingBlockRef: "BB.OUTCOME.SCORE_AT_VISIT"
+        semanticRole: "outcome_specification"
+        required: true
+        parameterMappings:
+          - buildingBlockParameter: "score"
+            mapsToInput: "AC.DESCRIPTIVE.SUMMARY_BY_VISIT.INPUT.SCORE"
+            mappingType: "provides_input"
+
+          - buildingBlockParameter: "visit"
+            mapsToInput: "AC.DESCRIPTIVE.SUMMARY_BY_VISIT.INPUT.VISIT"
+            mappingType: "provides_input"
+
+      - buildingBlockRef: "BB.POPULATION.EFFICACY"
+        semanticRole: "population_specification"
+        required: true
+
+      - buildingBlockRef: "BB.IMPUTATION.LOCF"
+        semanticRole: "method_specification"
+        required: true
+
+    inputs:
+      - OID: "AC.DESCRIPTIVE.SUMMARY_BY_VISIT.INPUT.SCORE"
+        name: "assessment_score"
+        semanticRole: "analyzed_variable"
+        dataType: "float"
+        required: true
+        description: "Assessment score value at each visit"
+        implementsConcept:
+          - "DC.ASSESSMENT.SCORE"
+
+      - OID: "AC.DESCRIPTIVE.SUMMARY_BY_VISIT.INPUT.BASELINE_SCORE"
+        name: "baseline_score"
+        semanticRole: "reference_measurement"
+        dataType: "float"
+        required: true
+        description: "Baseline assessment score for change calculation"
+        implementsConcept:
+          - "DC.BASELINE.VALUE"
+
+      - OID: "AC.DESCRIPTIVE.SUMMARY_BY_VISIT.INPUT.VISIT"
+        name: "visit"
+        semanticRole: "temporal_selector"
+        dataType: "text"
+        required: true
+        description: "Analysis visit identifier"
+
+      - OID: "AC.DESCRIPTIVE.SUMMARY_BY_VISIT.INPUT.TREATMENT"
+        name: "treatment"
+        semanticRole: "grouping_factor"
+        dataType: "text"
+        required: true
+        description: "Treatment group for stratification"
+
+    outputs:
+      - OID: "AC.DESCRIPTIVE.SUMMARY_BY_VISIT.OUTPUT.N"
+        name: "n"
+        semanticRole: "sample_size"
+        dataType: "integer"
+        description: "Number of subjects with non-missing values"
+
+      - OID: "AC.DESCRIPTIVE.SUMMARY_BY_VISIT.OUTPUT.MEAN"
+        name: "mean"
+        semanticRole: "central_tendency"
+        dataType: "float"
+        description: "Arithmetic mean"
+
+      - OID: "AC.DESCRIPTIVE.SUMMARY_BY_VISIT.OUTPUT.SD"
+        name: "sd"
+        semanticRole: "dispersion"
+        dataType: "float"
+        description: "Standard deviation"
+
+      - OID: "AC.DESCRIPTIVE.SUMMARY_BY_VISIT.OUTPUT.MEDIAN"
+        name: "median"
+        semanticRole: "central_tendency"
+        dataType: "float"
+        description: "Median value"
+
+      - OID: "AC.DESCRIPTIVE.SUMMARY_BY_VISIT.OUTPUT.MIN"
+        name: "min"
+        semanticRole: "range_bound"
+        dataType: "float"
+        description: "Minimum value"
+
+      - OID: "AC.DESCRIPTIVE.SUMMARY_BY_VISIT.OUTPUT.MAX"
+        name: "max"
+        semanticRole: "range_bound"
+        dataType: "float"
+        description: "Maximum value"
+
+  # ==========================================================================
+  # Analysis 2: ANCOVA with Pairwise Comparisons
+  # ==========================================================================
+  - OID: "AC.ANCOVA.PAIRWISE_COMPARISONS"
+    name: "ANCOVA with Pairwise Treatment Comparisons"
+    conceptType: "analysis_concept"
+    semanticRole: "confirmatory_analysis_pattern"
+    label: "ANCOVA pairwise comparisons"
+    description: >-
+      Analysis of covariance (ANCOVA) of change from baseline with pairwise
+      comparisons among all treatment groups. Model includes baseline score,
+      site, and treatment as independent variables. All pairwise comparisons
+      are evaluated at specified significance level.
+
+    purpose: >-
+      Compare treatment groups on change from baseline using ANCOVA, with
+      pairwise tests to identify which specific groups differ significantly.
+
+    requiredBuildingBlocks:
+      - buildingBlockRef: "BB.OUTCOME.CHANGE_FROM_BASELINE_AT_VISIT"
+        semanticRole: "outcome_specification"
+        required: true
+        parameterMappings:
+          - buildingBlockParameter: "score"
+            mapsToInput: "AC.ANCOVA.PAIRWISE_COMPARISONS.INPUT.CHANGE"
+            mappingType: "provides_input"
+
+          - buildingBlockParameter: "visit"
+            mapsToInput: "AC.ANCOVA.PAIRWISE_COMPARISONS.INPUT.VISIT"
+            mappingType: "provides_input"
+
+      - buildingBlockRef: "BB.METHOD.ANCOVA"
+        semanticRole: "analysis_method_specification"
+        required: true
+
+      - buildingBlockRef: "BB.COVARIATE.BASELINE_AND_SITE"
+        semanticRole: "covariate_adjustment_specification"
+        required: true
+
+      - buildingBlockRef: "BB.COMPARISON.PAIRWISE_TREATMENTS"
+        semanticRole: "method_specification"
+        required: true
+
+    inputs:
+      - OID: "AC.ANCOVA.PAIRWISE_COMPARISONS.INPUT.CHANGE"
+        name: "change_from_baseline"
+        semanticRole: "dependent_variable"
+        dataType: "float"
+        required: true
+        description: "Change from baseline in assessment score"
+        implementsConcept:
+          - "DC.CHANGE.FROM.BASELINE"
+
+      - OID: "AC.ANCOVA.PAIRWISE_COMPARISONS.INPUT.BASELINE"
+        name: "baseline_score"
+        semanticRole: "baseline_covariate"
+        dataType: "float"
+        required: true
+        description: "Baseline score as covariate"
+        implementsConcept:
+          - "DC.BASELINE.VALUE"
+
+      - OID: "AC.ANCOVA.PAIRWISE_COMPARISONS.INPUT.SITE"
+        name: "site"
+        semanticRole: "confounding_adjuster"
+        dataType: "text"
+        required: true
+        description: "Study site as covariate"
+
+      - OID: "AC.ANCOVA.PAIRWISE_COMPARISONS.INPUT.TREATMENT"
+        name: "treatment"
+        semanticRole: "primary_predictor"
+        dataType: "text"
+        required: true
+        description: "Treatment group (categorical)"
+
+      - OID: "AC.ANCOVA.PAIRWISE_COMPARISONS.INPUT.VISIT"
+        name: "analysis_visit"
+        semanticRole: "temporal_selector"
+        dataType: "text"
+        required: true
+        description: "Target analysis visit"
+
+    outputs:
+      - OID: "AC.ANCOVA.PAIRWISE_COMPARISONS.OUTPUT.LS_MEAN"
+        name: "ls_mean"
+        semanticRole: "adjusted_means"
+        dataType: "float"
+        description: "Least squares mean by treatment group"
+
+      - OID: "AC.ANCOVA.PAIRWISE_COMPARISONS.OUTPUT.LS_MEAN_SE"
+        name: "ls_mean_se"
+        semanticRole: "uncertainty_estimate"
+        dataType: "float"
+        description: "Standard error of LS mean"
+
+      - OID: "AC.ANCOVA.PAIRWISE_COMPARISONS.OUTPUT.DIFF"
+        name: "ls_mean_diff"
+        semanticRole: "effect_estimate"
+        dataType: "float"
+        description: "Pairwise difference in LS means"
+
+      - OID: "AC.ANCOVA.PAIRWISE_COMPARISONS.OUTPUT.CI_LOWER"
+        name: "ci_lower"
+        semanticRole: "confidence_interval"
+        dataType: "float"
+        description: "Lower bound of 95% CI for difference"
+
+      - OID: "AC.ANCOVA.PAIRWISE_COMPARISONS.OUTPUT.CI_UPPER"
+        name: "ci_upper"
+        semanticRole: "confidence_interval"
+        dataType: "float"
+        description: "Upper bound of 95% CI for difference"
+
+      - OID: "AC.ANCOVA.PAIRWISE_COMPARISONS.OUTPUT.P_VALUE"
+        name: "p_value"
+        semanticRole: "statistical_evidence"
+        dataType: "float"
+        description: "P-value for pairwise comparison"
+
+    methodReferences:
+      - methodOID: "METHOD.ANCOVA.TYPE3"
+        semanticRole: "primary_method"
+        description: "Type III ANCOVA"
+
+  # ==========================================================================
+  # Analysis 3: ANCOVA Dose-Response Test
+  # ==========================================================================
+  - OID: "AC.ANCOVA.DOSE_RESPONSE"
+    name: "ANCOVA Dose-Response Analysis"
+    conceptType: "analysis_concept"
+    semanticRole: "exploratory_analysis_pattern"
+    label: "ANCOVA dose-response"
+    description: >-
+      Analysis of covariance (ANCOVA) with treatment modeled as a continuous
+      variable to test for dose-response relationship. Model includes baseline
+      score, site, and treatment (as continuous dose) as independent variables.
+      Tests for non-zero coefficient of treatment dose without interaction terms.
+
+    purpose: >-
+      Test for linear dose-response relationship between treatment dose and
+      change from baseline, adjusted for baseline and site.
+
+    requiredBuildingBlocks:
+      - buildingBlockRef: "BB.OUTCOME.CHANGE_FROM_BASELINE_AT_VISIT"
+        semanticRole: "outcome_specification"
+        required: true
+        parameterMappings:
+          - buildingBlockParameter: "score"
+            mapsToInput: "AC.ANCOVA.DOSE_RESPONSE.INPUT.CHANGE"
+            mappingType: "provides_input"
+
+      - buildingBlockRef: "BB.METHOD.ANCOVA_CONTINUOUS_TREATMENT"
+        semanticRole: "analysis_method_specification"
+        required: true
+
+      - buildingBlockRef: "BB.COVARIATE.BASELINE_AND_SITE"
+        semanticRole: "covariate_adjustment_specification"
+        required: true
+
+      - buildingBlockRef: "BB.TEST.DOSE_RESPONSE"
+        semanticRole: "method_specification"
+        required: true
+
+    inputs:
+      - OID: "AC.ANCOVA.DOSE_RESPONSE.INPUT.CHANGE"
+        name: "change_from_baseline"
+        semanticRole: "dependent_variable"
+        dataType: "float"
+        required: true
+        description: "Change from baseline in assessment score"
+        implementsConcept:
+          - "DC.CHANGE.FROM.BASELINE"
+
+      - OID: "AC.ANCOVA.DOSE_RESPONSE.INPUT.BASELINE"
+        name: "baseline_score"
+        semanticRole: "baseline_covariate"
+        dataType: "float"
+        required: true
+        description: "Baseline score as covariate"
+        implementsConcept:
+          - "DC.BASELINE.VALUE"
+
+      - OID: "AC.ANCOVA.DOSE_RESPONSE.INPUT.SITE"
+        name: "site"
+        semanticRole: "confounding_adjuster"
+        dataType: "text"
+        required: true
+        description: "Study site as covariate"
+
+      - OID: "AC.ANCOVA.DOSE_RESPONSE.INPUT.DOSE"
+        name: "treatment_dose"
+        semanticRole: "primary_predictor"
+        dataType: "float"
+        required: true
+        description: "Treatment dose as continuous variable"
+
+      - OID: "AC.ANCOVA.DOSE_RESPONSE.INPUT.VISIT"
+        name: "analysis_visit"
+        semanticRole: "temporal_selector"
+        dataType: "text"
+        required: true
+        description: "Target analysis visit"
+
+    outputs:
+      - OID: "AC.ANCOVA.DOSE_RESPONSE.OUTPUT.DOSE_COEFFICIENT"
+        name: "dose_coefficient"
+        semanticRole: "effect_estimate"
+        dataType: "float"
+        description: "Regression coefficient for dose"
+
+      - OID: "AC.ANCOVA.DOSE_RESPONSE.OUTPUT.COEFFICIENT_SE"
+        name: "coefficient_se"
+        semanticRole: "uncertainty_estimate"
+        dataType: "float"
+        description: "Standard error of dose coefficient"
+
+      - OID: "AC.ANCOVA.DOSE_RESPONSE.OUTPUT.T_VALUE"
+        name: "t_value"
+        semanticRole: "statistical_evidence"
+        dataType: "float"
+        description: "T-statistic for dose coefficient"
+
+      - OID: "AC.ANCOVA.DOSE_RESPONSE.OUTPUT.P_VALUE"
+        name: "p_value"
+        semanticRole: "statistical_evidence"
+        dataType: "float"
+        description: "P-value for test of non-zero dose coefficient"
+
+      - OID: "AC.ANCOVA.DOSE_RESPONSE.OUTPUT.CI_LOWER"
+        name: "ci_lower"
+        semanticRole: "confidence_interval"
+        dataType: "float"
+        description: "Lower bound of 95% CI for dose coefficient"
+
+      - OID: "AC.ANCOVA.DOSE_RESPONSE.OUTPUT.CI_UPPER"
+        name: "ci_upper"
+        semanticRole: "confidence_interval"
+        dataType: "float"
+        description: "Upper bound of 95% CI for dose coefficient"
+
+    methodReferences:
+      - methodOID: "METHOD.ANCOVA.TYPE3"
+        semanticRole: "primary_method"
+        description: "Type III ANCOVA with continuous treatment"

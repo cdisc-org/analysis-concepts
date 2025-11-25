@@ -1,0 +1,637 @@
+# Define-JSON Study Implementation Schema
+#
+# This LinkML schema defines study-specific implementation structures that reference
+# the abstract concepts defined in the library model.
+#
+# Key Classes:
+# - StudyImplementation: Root container for study-specific analysis implementations
+# - DataStructureDefinition: ADaM dataset structure (ItemGroupDef with ItemDefs)
+# - StudyAnalysis: Instantiated analysis referencing library AnalysisConcept
+# - AnalysisOutputDataset: CUBE structure for analysis results
+# - StudyVariable: Maps dataset variables to library DerivationConcepts
+# - AnalysisParameterBinding: Binds building block parameters to study variables
+
+id: https://cdisc.org/study-implementation
+name: define-json-study-implementation
+title: Define-JSON Study Implementation Model
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  cdisc: https://cdisc.org/
+  obo: http://purl.obolibrary.org/obo/
+  schema: http://schema.org/
+
+default_prefix: cdisc
+
+imports:
+  - linkml:types
+
+# ==============================================================================
+# Root Container
+# ==============================================================================
+
+classes:
+  StudyImplementation:
+    description: >-
+      Root container for a study's analysis implementation.
+      References concepts from the library model and provides study-specific
+      instantiations, variable mappings, and result structures.
+    slots:
+      - studyOID
+      - studyName
+      - libraryReferences
+      - dataStructures
+      - studyAnalyses
+      - analysisOutputDatasets
+    slot_usage:
+      studyOID:
+        required: true
+        identifier: true
+      studyName:
+        required: true
+
+  # ==============================================================================
+  # Library References
+  # ==============================================================================
+
+  LibraryReference:
+    description: >-
+      Reference to an external concept library.
+      Links study implementation to library concepts via OID references.
+    slots:
+      - libraryOID
+      - libraryName
+      - libraryVersion
+      - libraryURI
+    slot_usage:
+      libraryOID:
+        required: true
+      libraryName:
+        required: true
+
+  # ==============================================================================
+  # Data Structure Definitions (ADaM Datasets)
+  # ==============================================================================
+
+  DataStructureDefinition:
+    description: >-
+      ADaM dataset structure definition (equivalent to ItemGroupDef).
+      Defines the structure of an analysis dataset including variables,
+      records, and metadata.
+    slots:
+      - OID
+      - name
+      - description
+      - label
+      - domain
+      - dataClass
+      - structure
+      - purpose
+      - keys
+      - variables
+    slot_usage:
+      OID:
+        required: true
+        identifier: true
+        pattern: "^IG\\."
+      name:
+        required: true
+      dataClass:
+        required: true
+      structure:
+        required: true
+
+  StudyVariable:
+    description: >-
+      Study variable definition (equivalent to ItemDef).
+      Maps dataset variables to library DerivationConcepts and provides
+      study-specific metadata.
+    slots:
+      - OID
+      - name
+      - description
+      - label
+      - dataType
+      - length
+      - displayFormat
+      - implementsDerivationConcept
+      - implementsBiomedicalConcept
+      - valueList
+      - codelistRef
+      - role
+      - mandatory
+    slot_usage:
+      OID:
+        required: true
+        identifier: true
+        pattern: "^IT\\."
+      name:
+        required: true
+      dataType:
+        required: true
+
+  # ==============================================================================
+  # Study Analyses
+  # ==============================================================================
+
+  StudyAnalysis:
+    description: >-
+      Instantiated analysis for a specific study.
+      References a library AnalysisConcept and binds its parameters to
+      study-specific variables and populations.
+    slots:
+      - analysisOID
+      - analysisName
+      - description
+      - implementsConcept
+      - composedSentence
+      - parameterBindings
+      - populationRef
+      - datasetRefs
+      - outputs
+      - methodExecutions
+    slot_usage:
+      analysisOID:
+        required: true
+        identifier: true
+        pattern: "^ANALYSIS\\."
+      analysisName:
+        required: true
+      implementsConcept:
+        required: true
+        description: Reference to AnalysisConcept OID from library
+
+  AnalysisParameterBinding:
+    description: >-
+      Binds a building block parameter to a study-specific value.
+      The value can be a variable reference, a literal value, or a computed expression.
+    slots:
+      - buildingBlockRef
+      - parameterName
+      - boundToVariable
+      - literalValue
+      - expression
+      - description
+    slot_usage:
+      buildingBlockRef:
+        required: true
+        description: Reference to BuildingBlock OID from library
+      parameterName:
+        required: true
+
+  AnalysisOutput:
+    description: >-
+      Reference to where analysis output is located in result datasets.
+      Maps abstract concept outputs to concrete result locations.
+    slots:
+      - conceptOutputRef
+      - resultLocation
+      - displayFormat
+      - description
+    slot_usage:
+      conceptOutputRef:
+        required: true
+        description: Reference to ConceptOutput OID from library AnalysisConcept
+
+  MethodExecution:
+    description: >-
+      Specification of how a method should be executed for this analysis.
+      References library Method and provides execution parameters.
+    slots:
+      - methodRef
+      - selectedLanguage
+      - executionOrder
+      - parameters
+      - description
+    slot_usage:
+      methodRef:
+        required: true
+        description: Reference to Method OID from library
+
+  # ==============================================================================
+  # Analysis Output Datasets (CUBE)
+  # ==============================================================================
+
+  AnalysisOutputDataset:
+    description: >-
+      CUBE structure for analysis results.
+      Defines the structure of output datasets containing analysis results.
+    slots:
+      - OID
+      - name
+      - description
+      - label
+      - sourceAnalyses
+      - dimensions
+      - measures
+      - structure
+    slot_usage:
+      OID:
+        required: true
+        identifier: true
+        pattern: "^CUBE\\."
+      name:
+        required: true
+
+  ResultDimension:
+    description: >-
+      Dimension in a CUBE result structure.
+      Defines a categorical grouping variable in the results.
+    slots:
+      - name
+      - label
+      - dataType
+      - codelistRef
+      - order
+
+  ResultMeasure:
+    description: >-
+      Measure in a CUBE result structure.
+      Defines a numeric or categorical result value.
+    slots:
+      - name
+      - label
+      - dataType
+      - statisticType
+      - analysisOutputRef
+      - displayFormat
+    slot_usage:
+      name:
+        required: true
+
+  # ==============================================================================
+  # Supporting Classes
+  # ==============================================================================
+
+  PopulationReference:
+    description: >-
+      Reference to analysis population.
+    slots:
+      - populationOID
+      - populationName
+      - description
+      - whereClause
+
+  DatasetReference:
+    description: >-
+      Reference to dataset used in analysis.
+    slots:
+      - datasetOID
+      - datasetName
+      - role
+      - description
+
+  ValueList:
+    description: >-
+      List of permissible values for a variable.
+    slots:
+      - values
+      - codelistRef
+
+# ==============================================================================
+# Slots Definitions
+# ==============================================================================
+
+slots:
+  # Root slots
+  studyOID:
+    description: Study identifier
+    range: string
+
+  studyName:
+    description: Study name
+    range: string
+
+  libraryReferences:
+    description: References to concept libraries
+    multivalued: true
+    range: LibraryReference
+    inlined_as_list: true
+
+  dataStructures:
+    description: Dataset structure definitions
+    multivalued: true
+    range: DataStructureDefinition
+    inlined_as_list: true
+
+  studyAnalyses:
+    description: Study-specific analysis instances
+    multivalued: true
+    range: StudyAnalysis
+    inlined_as_list: true
+
+  analysisOutputDatasets:
+    description: Analysis result CUBE structures
+    multivalued: true
+    range: AnalysisOutputDataset
+    inlined_as_list: true
+
+  # Library reference slots
+  libraryOID:
+    description: Library identifier
+    range: string
+
+  libraryName:
+    description: Library name
+    range: string
+
+  libraryVersion:
+    description: Library version
+    range: string
+
+  libraryURI:
+    description: URI to library location
+    range: uri
+
+  # Common identifier slots
+  OID:
+    description: Unique identifier with type-specific prefix
+    range: string
+    identifier: true
+
+  name:
+    description: Human-readable name
+    range: string
+
+  description:
+    description: Detailed description
+    range: string
+
+  label:
+    description: Short display label
+    range: string
+
+  # Dataset structure slots
+  domain:
+    description: SDTM/ADaM domain code
+    range: string
+
+  dataClass:
+    description: ADaM data class (ADSL, BDS, OCCDS, etc.)
+    range: AdamDataClassEnum
+
+  structure:
+    description: Dataset structure type
+    range: DataStructureEnum
+
+  purpose:
+    description: Purpose of the dataset
+    range: string
+
+  keys:
+    description: Key variables for dataset
+    multivalued: true
+    range: string
+
+  variables:
+    description: Variables in dataset
+    multivalued: true
+    range: StudyVariable
+    inlined_as_list: true
+
+  # Variable slots
+  dataType:
+    description: Data type
+    range: DataTypeEnum
+
+  length:
+    description: Variable length
+    range: integer
+
+  displayFormat:
+    description: Display format specification
+    range: string
+
+  implementsDerivationConcept:
+    description: Reference to DerivationConcept OID from library
+    multivalued: true
+    range: string
+
+  implementsBiomedicalConcept:
+    description: Reference to BiomedicalConcept OID from library
+    multivalued: true
+    range: string
+
+  valueList:
+    description: Permissible values
+    range: ValueList
+
+  codelistRef:
+    description: Reference to codelist
+    range: string
+
+  role:
+    description: Variable role (e.g., IDENTIFIER, TIMING, RESULT)
+    range: string
+
+  mandatory:
+    description: Whether variable is mandatory
+    range: boolean
+
+  # Analysis slots
+  analysisOID:
+    description: Analysis identifier
+    range: string
+
+  analysisName:
+    description: Analysis name
+    range: string
+
+  implementsConcept:
+    description: Reference to AnalysisConcept OID from library
+    range: string
+
+  composedSentence:
+    description: Human-readable analysis sentence composed from building blocks
+    range: string
+
+  parameterBindings:
+    description: Parameter bindings for building blocks
+    multivalued: true
+    range: AnalysisParameterBinding
+    inlined_as_list: true
+
+  populationRef:
+    description: Reference to analysis population
+    range: PopulationReference
+
+  datasetRefs:
+    description: References to datasets used in analysis
+    multivalued: true
+    range: DatasetReference
+    inlined_as_list: true
+
+  outputs:
+    description: Analysis output specifications
+    multivalued: true
+    range: AnalysisOutput
+    inlined_as_list: true
+
+  methodExecutions:
+    description: Method execution specifications
+    multivalued: true
+    range: MethodExecution
+    inlined_as_list: true
+
+  # Parameter binding slots
+  buildingBlockRef:
+    description: Reference to BuildingBlock OID from library
+    range: string
+
+  parameterName:
+    description: Name of parameter in building block
+    range: string
+
+  boundToVariable:
+    description: Reference to variable OID that provides parameter value
+    range: string
+
+  literalValue:
+    description: Literal value for parameter
+    range: string
+
+  expression:
+    description: Expression to compute parameter value
+    range: string
+
+  # Output slots
+  conceptOutputRef:
+    description: Reference to ConceptOutput OID from library
+    range: string
+
+  resultLocation:
+    description: Location of result in output dataset (e.g., CUBE.RESULT.variable)
+    range: string
+
+  # Method execution slots
+  methodRef:
+    description: Reference to Method OID from library
+    range: string
+
+  selectedLanguage:
+    description: Programming language to use for execution
+    range: ImplementationLanguageEnum
+
+  executionOrder:
+    description: Order of execution when multiple methods
+    range: integer
+
+  parameters:
+    description: Execution parameters
+    range: string
+
+  # CUBE slots
+  sourceAnalyses:
+    description: Analyses that populate this CUBE
+    multivalued: true
+    range: string
+
+  dimensions:
+    description: CUBE dimensions
+    multivalued: true
+    range: ResultDimension
+    inlined_as_list: true
+
+  measures:
+    description: CUBE measures
+    multivalued: true
+    range: ResultMeasure
+    inlined_as_list: true
+
+  # Dimension/Measure slots
+  order:
+    description: Display order
+    range: integer
+
+  statisticType:
+    description: Type of statistic (e.g., mean, p-value, CI)
+    range: string
+
+  analysisOutputRef:
+    description: Reference to AnalysisOutput that populates this measure
+    range: string
+
+  # Population slots
+  populationOID:
+    description: Population identifier
+    range: string
+
+  populationName:
+    description: Population name
+    range: string
+
+  whereClause:
+    description: Filtering expression for population
+    range: string
+
+  # Dataset reference slots
+  datasetOID:
+    description: Dataset identifier
+    range: string
+
+  datasetName:
+    description: Dataset name
+    range: string
+
+  # Value list slots
+  values:
+    description: List of permissible values
+    multivalued: true
+    range: string
+
+# ==============================================================================
+# Enumerations
+# ==============================================================================
+
+enums:
+  AdamDataClassEnum:
+    description: ADaM dataset classes
+    permissible_values:
+      ADSL:
+        description: Subject-level analysis dataset
+      BDS:
+        description: Basic data structure
+      OCCDS:
+        description: Occurrence data structure
+      ADAE:
+        description: Adverse events analysis dataset
+      ADCM:
+        description: Concomitant medications analysis dataset
+
+  DataStructureEnum:
+    description: Dataset structure types
+    permissible_values:
+      one_record_per_subject:
+        description: One record per subject (ADSL)
+      one_record_per_subject_per_parameter:
+        description: One record per subject per parameter (BDS)
+      one_record_per_subject_per_event:
+        description: One record per subject per event (OCCDS)
+
+  DataTypeEnum:
+    description: Standard data types
+    permissible_values:
+      text:
+        description: Character/text data
+      integer:
+        description: Integer numeric data
+      float:
+        description: Floating point numeric data
+      date:
+        description: Date value
+      datetime:
+        description: Date-time value
+      boolean:
+        description: Boolean/logical value
+
+  ImplementationLanguageEnum:
+    description: Programming languages for method execution
+    permissible_values:
+      R:
+        description: R statistical language
+      SAS:
+        description: SAS programming language
+      Python:
+        description: Python programming language
+      Julia:
+        description: Julia programming language
