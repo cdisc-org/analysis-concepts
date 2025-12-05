@@ -1,0 +1,10 @@
+adam_class_variable,class_datatype,adam_variable,adam_dataset,relationship
+PARAM,string,PARAM,ADQSADAS,of_class
+PARAMCD,CodedValue,PARAMCD,ADQSADAS,of_class
+USUBJID,string,USUBJID,ADQSADAS,of_class
+AVISIT,string,AVISIT,ADQSADAS,of_class
+AVISITN,numeric,AVISITN,ADQSADAS,of_class
+AVAL,numeric,AVAL,ADQSADAS,of_class
+CHG,numeric,CHG,ADQSADAS,of_class
+BASE,numeric,BASE,ADQSADAS,of_class
+ITTFL,string,ITTFL,ADQSADAS,of_class
