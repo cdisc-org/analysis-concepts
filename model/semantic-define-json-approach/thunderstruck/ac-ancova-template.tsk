@@ -1,0 +1,355 @@
+// =============================================================================
+// Analysis Concept: ANCOVA (Library Template)
+// =============================================================================
+//
+// Template ID: T_AC_ANCOVA
+// Name: ANCOVA_ChangeFromBaseline
+// Description: ANCOVA analysis of change from baseline with baseline, site,
+//              and treatment as covariates
+//
+// Source: analysis_concept_cube_ac_library.drawio
+//
+// This is a LIBRARY-LEVEL template - attribute values are NOT bound.
+// Study-level instances (in ac-ancova-study-instance.tsk) bind specific values.
+//
+// Pattern: Template/Instance separation (principle D3: Progressive Refinement)
+// =============================================================================
+
+
+// =============================================================================
+// IMPORT DATA CONCEPTS
+// =============================================================================
+//
+// Import DataConcepts from concepts-data.tsk.
+// These are PURE semantic definitions - they contain no ADaM/SDTM/USDM mappings.
+// The mappings are declared separately in model-mappings.tsk where external
+// model elements point TO these concepts.
+
+import concepts-data.Subject
+import concepts-data.Treatment
+import concepts-data.Site
+import concepts-data.Parameter
+import concepts-data.Visit
+import concepts-data.ChangeValue
+import concepts-data.BaselineValue
+import concepts-data.ITTFlag
+import concepts-data.EfficacyFlag
+import concepts-data.ImputationMethod
+import concepts-data.LeastSquaresMean
+import concepts-data.StandardError
+import concepts-data.ConfidenceLower
+import concepts-data.ConfidenceUpper
+import concepts-data.PValue
+import concepts-data.TreatmentDifference
+
+
+// =============================================================================
+// INPUT CUBE: ancova_input
+// =============================================================================
+//
+// Represents the input data structure for ANCOVA analysis.
+// Subject-level observations with treatment, site, baseline, and change values.
+//
+// UNIVERSAL CONNECTOR PATTERN:
+//
+// When defining a new AC or DC, the dimensions/measures/attributes are
+// "instances" of DataConcepts - they declare "is_a" relationships pointing
+// TO the abstract semantic concepts.
+//
+//     ┌─────────────────┐
+//     │  DataConcept    │  <- Pure semantic definition (concepts-data.tsk)
+//     │  (e.g. Subject) │
+//     └────────▲────────┘
+//              │ is_a
+//     ┌────────┴────────┐
+//     │   Dimension     │  <- Instance in this cube
+//     │   subject       │
+//     │                 │
+//     └─────────────────┘
+//
+// The DataConcept is the hub. Both:
+//   - Cube elements (here) point to it via is_a
+//   - External model variables (model-mappings.tsk) point to it via is_a
+//
+// Resolution happens by following:
+//   Dimension -> is_a -> DataConcept <- is_a <- ADaM Variable
+//
+
+cube ANCOVAInput "Input dataset for ANCOVA analysis" {
+    namespace: "http://cdisc.org/ac/template/T_AC_ANCOVA#",
+
+    structure: {
+        // =====================================================================
+        // DIMENSIONS - Instances of DataConcepts
+        // =====================================================================
+        //
+        // Each dimension is an "instance" of a DataConcept for this analysis.
+        // The is_a relationship points TO the concept (not the other way around).
+        //
+        // To resolve to ADaM: follow is_a to DataConcept, then find the
+        // ADaM variable in model-mappings.tsk that also points to that concept.
+
+        dimensions: [
+            // Subject identifier - instance of Subject concept
+            // Resolution: subject -> Subject <- USUBJID (ADaM)
+            subject: Identifier is_a Subject,
+
+            // Treatment group (FACTOR in the model) - instance of Treatment concept
+            // Resolution: treatment -> Treatment <- TRT01A/TRTP (ADaM)
+            treatment: CodedValue is_a Treatment,
+
+            // Clinical site - instance of Site concept
+            // Resolution: site -> Site <- SITEID (ADaM)
+            site: CodedValue is_a Site
+        ],
+
+        // =====================================================================
+        // MEASURES - Instances of DataConcepts
+        // =====================================================================
+
+        measures: [
+            // Change from baseline (DEPENDENT variable in model)
+            // Resolution: change_value -> ChangeValue <- CHG (ADaM)
+            // Role: dependent - this is the response variable
+            change_value: Numeric is_a ChangeValue,
+
+            // Baseline value (COVARIATE in model)
+            // Resolution: baseline_value -> BaselineValue <- BASE (ADaM)
+            // Role: covariate - adjustment variable
+            baseline_value: Numeric is_a BaselineValue
+        ],
+
+        // =====================================================================
+        // ATTRIBUTES - Instances of DataConcepts
+        // =====================================================================
+        // At template level, values are EMPTY (placeholders)
+        // Study instances bind concrete values via slice fix clause
+
+        attributes: [
+            // Parameter being analyzed - instance of Parameter concept
+            // Resolution: parameter -> Parameter <- PARAMCD (ADaM)
+            parameter: CodedValue is_a Parameter,
+
+            // Analysis timepoint - instance of Visit concept
+            // Resolution: timepoint -> Visit <- AVISIT (ADaM)
+            timepoint: Text is_a Visit,
+
+            // Population flag - instance of EfficacyFlag concept
+            // Resolution: population_flag -> EfficacyFlag <- EFFFL (ADaM)
+            population_flag: Flag is_a EfficacyFlag,
+
+            // Imputation method - instance of ImputationMethod concept
+            imputation_method: CodedValue is_a ImputationMethod
+        ]
+    }
+}
+
+
+// =============================================================================
+// OUTPUT CUBE 1: Treatment Results
+// =============================================================================
+//
+// First output structure - LS Means per treatment group.
+// Aggregated from subject-level to treatment-level.
+//
+// This demonstrates the DUAL OUTPUT pattern from the draw.io diagram:
+// One method produces two output cubes with different aggregation levels.
+//
+
+cube TreatmentResults "LS Means by Treatment Group" {
+    namespace: "http://cdisc.org/ac/template/T_AC_ANCOVA#",
+
+    structure: {
+        // Aggregated to treatment level (subject dimension collapsed)
+        dimensions: [
+            treatment: CodedValue is_a Treatment
+        ],
+
+        // Statistical output measures - instances of DataConcepts
+        measures: [
+            // LS Mean estimate - instance of LeastSquaresMean concept
+            // Resolution: lsmean -> LeastSquaresMean <- AnalysisResult.estimate (ARS)
+            lsmean: Numeric is_a LeastSquaresMean,
+
+            // Standard error of LS Mean - instance of StandardError concept
+            // Resolution: lsmean_se -> StandardError <- AnalysisResult.standardError (ARS)
+            lsmean_se: Numeric is_a StandardError,
+
+            // Lower confidence limit - instance of ConfidenceLower concept
+            // Resolution: ci_lower -> ConfidenceLower <- AnalysisResult.confidenceInterval.lower (ARS)
+            ci_lower: Numeric is_a ConfidenceLower,
+
+            // Upper confidence limit - instance of ConfidenceUpper concept
+            // Resolution: ci_upper -> ConfidenceUpper <- AnalysisResult.confidenceInterval.upper (ARS)
+            ci_upper: Numeric is_a ConfidenceUpper
+        ],
+
+        attributes: [
+            // Context inherited from input slice
+            parameter: CodedValue is_a Parameter,
+            timepoint: Text is_a Visit,
+            population_flag: Flag is_a EfficacyFlag
+        ]
+    }
+}
+
+
+// =============================================================================
+// OUTPUT CUBE 2: Comparison Results
+// =============================================================================
+//
+// Second output structure - Pairwise treatment comparisons.
+// Contains treatment differences, p-values, and confidence intervals.
+//
+
+cube ComparisonResults "Pairwise Treatment Comparisons" {
+    namespace: "http://cdisc.org/ac/template/T_AC_ANCOVA#",
+
+    structure: {
+        // Two-dimensional: treatment vs. comparison group
+        dimensions: [
+            treatment: CodedValue is_a Treatment,
+            comparison_group: CodedValue is_a Treatment
+        ],
+
+        // Comparison output measures - instances of DataConcepts
+        measures: [
+            // LS Mean difference between groups - instance of TreatmentDifference concept
+            // Resolution: lsmean_diff -> TreatmentDifference <- AnalysisResult.contrast (ARS)
+            lsmean_diff: Numeric is_a TreatmentDifference,
+
+            // P-value for the comparison - instance of PValue concept
+            // Resolution: p_value -> PValue <- AnalysisResult.pValue (ARS)
+            p_value: Numeric is_a PValue,
+
+            // Confidence interval for the difference
+            ci_lower: Numeric is_a ConfidenceLower,
+            ci_upper: Numeric is_a ConfidenceUpper
+        ],
+
+        attributes: [
+            parameter: CodedValue is_a Parameter,
+            timepoint: Text is_a Visit,
+            population_flag: Flag is_a EfficacyFlag
+        ]
+    }
+}
+
+
+// =============================================================================
+// SLICE: ancova_input_slice (Template Level)
+// =============================================================================
+//
+// Defines the constrained view of the input cube for analysis.
+// At template level, attribute values are EMPTY (placeholders).
+//
+// Study instances will fix:
+//   parameter: "ADAS-Cog(11)"
+//   timepoint: "Week 24"
+//   population_flag: "Y"
+//   imputation_method: "LOCF"
+//
+
+slice ANCOVAInputSlice from ANCOVAInput {
+    // At template level, we don't fix specific values
+    // The slice declares WHICH attributes CAN be fixed
+
+    // Vary these dimensions (remain multi-valued for the analysis)
+    vary: [subject, treatment, site],
+
+    // Measures to include in the analysis
+    measures: [change_value, baseline_value]
+
+    // Template-level: no fix clause
+    // Study instance adds concrete values
+}
+
+
+// =============================================================================
+// MODEL: FitANCOVAModel
+// =============================================================================
+//
+// Statistical model that implements the ANCOVA analysis concept.
+//
+// Relationship from draw.io:
+// - Method "implements" -> Analysis (T_AC_ANCOVA)
+// - Method "input" -> Cube (ANCOVAInput via slice)
+// - Method "output" -> Cube (TreatmentResults, ComparisonResults)
+//
+// UNIVERSAL CONNECTOR IN ACTION:
+// The formula uses semantic names: change_value ~ baseline_value + site + treatment
+//
+// Resolution happens through the DataConcept hub:
+//
+//   Formula term        Cube element       DataConcept      ADaM variable
+//   ─────────────────────────────────────────────────────────────────────
+//   change_value    ->  is_a           ->  ChangeValue  <-  is_a  <- CHG
+//   baseline_value  ->  is_a           ->  BaselineValue <- is_a  <- BASE
+//   site            ->  is_a           ->  Site         <-  is_a  <- SITEID
+//   treatment       ->  is_a           ->  Treatment    <-  is_a  <- TRT01A
+//
+// Executed as ADaM: CHG ~ BASE + SITEID + TRT01A
+//
+
+model FitANCOVAModel {
+    input: ANCOVAInputSlice,
+
+    // Wilkinson formula notation using semantic names
+    // Resolution via DataConcept hub (see model-mappings.tsk for ADaM mappings)
+    formula: change_value ~ baseline_value + site + treatment,
+
+    // Model specification
+    family: Gaussian,
+    link: Identity,
+
+    // Comparison specification
+    comparison: LSMeans pairwise(treatment)
+}
+
+
+// =============================================================================
+// CONNECTOR RESOLUTION DIAGRAM
+// =============================================================================
+//
+//                     ┌─────────────────────┐
+//                     │    DataConcept      │
+//                     │    ChangeValue      │
+//                     │    (pure semantic)  │
+//                     └──────────▲──────────┘
+//                                │
+//            ┌───────────────────┼───────────────────┐
+//            │                   │                   │
+//       is_a │              is_a │              is_a │
+//            │                   │                   │
+//   ┌────────┴────────┐ ┌────────┴────────┐ ┌────────┴────────┐
+//   │ Cube Measure    │ │ ADaM Variable   │ │ USDM Element    │
+//   │ change_value    │ │ CHG             │ │ Observation.    │
+//   │ (this file)     │ │ (model-mappings)│ │ change          │
+//   └─────────────────┘ └─────────────────┘ └─────────────────┘
+//
+// Resolution for different target models:
+//
+//   ADaM context:  change_value -> ChangeValue <- CHG
+//   USDM context:  change_value -> ChangeValue <- Observation.change
+//   SDTM context:  change_value -> ChangeValue <- (derived, not stored)
+//
+// =============================================================================
+
+
+// =============================================================================
+// OUTPUT RELATIONSHIPS
+// =============================================================================
+//
+// The model produces two output cubes:
+//
+// 1. TreatmentResults: One row per treatment group
+//    - Contains: lsmean, lsmean_se, ci_lower, ci_upper
+//    - Dimensions: [treatment]
+//
+// 2. ComparisonResults: One row per treatment pair
+//    - Contains: lsmean_diff, p_value, ci_lower, ci_upper
+//    - Dimensions: [treatment, comparison_group]
+//
+// These map to the dual output pattern in analysis_concept_cube_ac_library.drawio
+//
+// =============================================================================

@@ -1,0 +1,395 @@
+// =============================================================================
+// Model Mappings: External Models -> DataConcepts
+// =============================================================================
+//
+// This file declares how external data model elements (ADaM, SDTM, USDM)
+// align with the semantic DataConcepts defined in concepts-data.tsk.
+//
+// RELATIONSHIP DIRECTION:
+// External model elements point TO DataConcepts via "is_a" relationships.
+// This means ADaM/SDTM/USDM variables declare their semantic meaning by
+// referencing the abstract DataConcept they implement/realize.
+//
+// Architecture:
+//
+//                          ┌─────────────────┐
+//                          │  DataConcept    │
+//                          │  (concepts-     │
+//                          │   data.tsk)     │
+//                          └────────▲────────┘
+//                                   │
+//              ┌────────────────────┼────────────────────┐
+//              │                    │                    │
+//         is_a │               is_a │               is_a │
+//              │                    │                    │
+//     ┌────────┴────────┐  ┌────────┴────────┐  ┌────────┴────────┐
+//     │ ADaM Variable   │  │ SDTM Variable   │  │ USDM Element    │
+//     │ (this file)     │  │ (this file)     │  │ (this file)     │
+//     └─────────────────┘  └─────────────────┘  └─────────────────┘
+//
+// Source: analysis_concept_cube.drawio (DataConcept <- ADaM Class Variable)
+// Pattern: Universal Connector Architecture (proposed principle A8)
+// =============================================================================
+
+
+// Import DataConcepts that we're mapping to
+import concepts-data
+
+
+// =============================================================================
+// ADaM CLASS VARIABLES -> DataConcepts
+// =============================================================================
+//
+// ADaM (Analysis Data Model) class variables declare their alignment
+// with semantic DataConcepts. These are "class-level" definitions that
+// apply across all ADaM datasets (ADSL, BDS, OCCDS, etc.).
+//
+
+// -----------------------------------------------------------------------------
+// Subject Identifiers
+// -----------------------------------------------------------------------------
+
+adam_class_variable USUBJID "Unique Subject Identifier" is_a Subject {
+    datatype: string,
+    class: Identifier,
+    description: "Unique identifier for each subject across all datasets"
+}
+
+
+// -----------------------------------------------------------------------------
+// Visit/Timepoint Variables
+// -----------------------------------------------------------------------------
+
+adam_class_variable AVISIT "Analysis Visit" is_a Visit {
+    datatype: string,
+    class: BDS,
+    description: "Analysis visit description"
+}
+
+adam_class_variable AVISITN "Analysis Visit (N)" is_a VisitNumeric {
+    datatype: numeric,
+    class: BDS,
+    description: "Analysis visit number for sorting"
+}
+
+
+// -----------------------------------------------------------------------------
+// Treatment Variables
+// -----------------------------------------------------------------------------
+
+adam_class_variable TRT01A "Actual Treatment for Period 01" is_a Treatment {
+    datatype: string,
+    class: ADSL,
+    description: "Actual treatment received in period 01"
+}
+
+adam_class_variable TRTP "Planned Treatment for Period" is_a Treatment {
+    datatype: string,
+    class: BDS,
+    description: "Planned treatment for the analysis period"
+}
+
+adam_class_variable TRT01P "Planned Treatment for Period 01" is_a Treatment {
+    datatype: string,
+    class: ADSL,
+    description: "Planned treatment for period 01"
+}
+
+
+// -----------------------------------------------------------------------------
+// Site Variables
+// -----------------------------------------------------------------------------
+
+adam_class_variable SITEID "Study Site Identifier" is_a Site {
+    datatype: string,
+    class: ADSL,
+    description: "Unique identifier for the study site"
+}
+
+
+// -----------------------------------------------------------------------------
+// Parameter Variables
+// -----------------------------------------------------------------------------
+
+adam_class_variable PARAMCD "Parameter Code" is_a Parameter {
+    datatype: string,
+    class: BDS,
+    description: "Short name for the analysis parameter"
+}
+
+adam_class_variable PARAM "Parameter" is_a ParameterDescription {
+    datatype: string,
+    class: BDS,
+    description: "Full description of the analysis parameter"
+}
+
+
+// -----------------------------------------------------------------------------
+// Analysis Value Variables
+// -----------------------------------------------------------------------------
+
+adam_class_variable AVAL "Analysis Value" is_a AnalysisValue {
+    datatype: numeric,
+    class: BDS,
+    description: "Primary analysis value"
+}
+
+adam_class_variable BASE "Baseline Value" is_a BaselineValue {
+    datatype: numeric,
+    class: BDS,
+    description: "Baseline value for change calculations",
+    derived: true
+}
+
+adam_class_variable CHG "Change from Baseline" is_a ChangeValue {
+    datatype: numeric,
+    class: BDS,
+    description: "Change from baseline (AVAL - BASE)",
+    derived: true
+}
+
+adam_class_variable PCHG "Percent Change from Baseline" is_a PercentChange {
+    datatype: numeric,
+    class: BDS,
+    description: "Percent change from baseline",
+    derived: true
+}
+
+
+// -----------------------------------------------------------------------------
+// Population Flag Variables
+// -----------------------------------------------------------------------------
+
+adam_class_variable ITTFL "Intent-to-Treat Population Flag" is_a ITTFlag {
+    datatype: string,
+    class: ADSL,
+    description: "Y/N flag for ITT population membership",
+    values: ["Y", "N"]
+}
+
+adam_class_variable EFFFL "Efficacy Population Flag" is_a EfficacyFlag {
+    datatype: string,
+    class: ADSL,
+    description: "Y/N flag for efficacy population membership",
+    values: ["Y", "N"]
+}
+
+
+// =============================================================================
+// SDTM VARIABLES -> DataConcepts
+// =============================================================================
+//
+// SDTM (Study Data Tabulation Model) variables declare their alignment
+// with semantic DataConcepts. Note that SDTM uses domain prefixes
+// (e.g., VS for Vital Signs, LB for Labs) represented as "--" below.
+//
+
+// -----------------------------------------------------------------------------
+// Subject Identifiers
+// -----------------------------------------------------------------------------
+
+sdtm_variable USUBJID "Unique Subject Identifier" is_a Subject {
+    datatype: string,
+    domain: DM,
+    description: "Unique identifier for each subject"
+}
+
+
+// -----------------------------------------------------------------------------
+// Visit/Timepoint Variables
+// -----------------------------------------------------------------------------
+
+sdtm_variable VISIT "Visit Name" is_a Visit {
+    datatype: string,
+    domain: "*",
+    description: "Protocol-defined visit name"
+}
+
+sdtm_variable VISITNUM "Visit Number" is_a VisitNumeric {
+    datatype: numeric,
+    domain: "*",
+    description: "Clinical encounter number for ordering"
+}
+
+
+// -----------------------------------------------------------------------------
+// Treatment Variables
+// -----------------------------------------------------------------------------
+
+sdtm_variable ARM "Description of Planned Arm" is_a Treatment {
+    datatype: string,
+    domain: DM,
+    description: "Name of the arm to which the subject was assigned"
+}
+
+sdtm_variable EXTRT "Name of Treatment" is_a Treatment {
+    datatype: string,
+    domain: EX,
+    description: "Name of the treatment administered"
+}
+
+
+// -----------------------------------------------------------------------------
+// Site Variables
+// -----------------------------------------------------------------------------
+
+sdtm_variable SITEID "Study Site Identifier" is_a Site {
+    datatype: string,
+    domain: DM,
+    description: "Unique identifier for the site"
+}
+
+
+// -----------------------------------------------------------------------------
+// Parameter/Test Variables (domain-prefixed)
+// -----------------------------------------------------------------------------
+
+sdtm_variable "--TESTCD" "Test Short Name" is_a Parameter {
+    datatype: string,
+    domain: Findings,
+    description: "Short name of the measurement, test, or examination",
+    note: "Replace -- with domain prefix (e.g., VSTESTCD, LBTESTCD)"
+}
+
+sdtm_variable "--TEST" "Test Name" is_a ParameterDescription {
+    datatype: string,
+    domain: Findings,
+    description: "Verbatim name of the test or examination",
+    note: "Replace -- with domain prefix (e.g., VSTEST, LBTEST)"
+}
+
+
+// -----------------------------------------------------------------------------
+// Result Variables (domain-prefixed)
+// -----------------------------------------------------------------------------
+
+sdtm_variable "--STRESN" "Numeric Result/Finding in Standard Units" is_a AnalysisValue {
+    datatype: numeric,
+    domain: Findings,
+    description: "Numeric result in standardized units",
+    note: "Replace -- with domain prefix (e.g., VSSTRESN, LBSTRESN)"
+}
+
+
+// =============================================================================
+// USDM ELEMENTS -> DataConcepts
+// =============================================================================
+//
+// USDM (Unified Study Definitions Model) elements declare their alignment
+// with semantic DataConcepts. These are high-level study design entities.
+//
+
+// -----------------------------------------------------------------------------
+// Subject Elements
+// -----------------------------------------------------------------------------
+
+usdm_element "StudySubject.identifier" is_a Subject {
+    description: "Unique identifier for a study participant in USDM"
+}
+
+
+// -----------------------------------------------------------------------------
+// Visit/Activity Elements
+// -----------------------------------------------------------------------------
+
+usdm_element "ScheduledActivityInstance" is_a Visit {
+    description: "A scheduled occurrence of a study activity"
+}
+
+usdm_element "ScheduledActivityInstance.timepoint" is_a VisitNumeric {
+    description: "Numeric timepoint of the scheduled activity"
+}
+
+
+// -----------------------------------------------------------------------------
+// Intervention Elements
+// -----------------------------------------------------------------------------
+
+usdm_element "StudyIntervention" is_a Treatment {
+    description: "An intervention administered in the study"
+}
+
+
+// -----------------------------------------------------------------------------
+// Site Elements
+// -----------------------------------------------------------------------------
+
+usdm_element "StudySite.identifier" is_a Site {
+    description: "Unique identifier for a study site"
+}
+
+
+// -----------------------------------------------------------------------------
+// Observation Elements
+// -----------------------------------------------------------------------------
+
+usdm_element "BiomedicalConcept" is_a Parameter {
+    description: "A biomedical concept being measured or assessed"
+}
+
+usdm_element "BiomedicalConcept.name" is_a ParameterDescription {
+    description: "Human-readable name of the biomedical concept"
+}
+
+usdm_element "Observation.value" is_a AnalysisValue {
+    description: "The observed or measured value"
+}
+
+usdm_element "Observation.baselineValue" is_a BaselineValue {
+    description: "The baseline reference value for an observation"
+}
+
+usdm_element "Observation.change" is_a ChangeValue {
+    description: "The change from baseline value"
+}
+
+usdm_element "Observation.percentChange" is_a PercentChange {
+    description: "The percent change from baseline"
+}
+
+
+// -----------------------------------------------------------------------------
+// Population Elements
+// -----------------------------------------------------------------------------
+
+usdm_element "AnalysisPopulation" is_a ITTFlag {
+    description: "Analysis population definition (ITT variant)",
+    population_type: "ITT"
+}
+
+usdm_element "AnalysisPopulation" is_a EfficacyFlag {
+    description: "Analysis population definition (Efficacy variant)",
+    population_type: "Efficacy"
+}
+
+
+// =============================================================================
+// ARS (Analysis Results Standard) ELEMENTS -> DataConcepts
+// =============================================================================
+//
+// ARS elements for statistical output concepts.
+//
+
+ars_element "AnalysisResult.estimate" is_a LeastSquaresMean {
+    description: "Point estimate from analysis (e.g., LS Mean)"
+}
+
+ars_element "AnalysisResult.standardError" is_a StandardError {
+    description: "Standard error of the estimate"
+}
+
+ars_element "AnalysisResult.confidenceInterval.lower" is_a ConfidenceLower {
+    description: "Lower bound of confidence interval"
+}
+
+ars_element "AnalysisResult.confidenceInterval.upper" is_a ConfidenceUpper {
+    description: "Upper bound of confidence interval"
+}
+
+ars_element "AnalysisResult.pValue" is_a PValue {
+    description: "P-value from statistical test"
+}
+
+ars_element "AnalysisResult.contrast" is_a TreatmentDifference {
+    description: "Treatment difference or contrast estimate"
+}

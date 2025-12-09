@@ -1,0 +1,248 @@
+// =============================================================================
+// Derivation Concept: Change from Baseline (Library Template)
+// =============================================================================
+//
+// Template ID: T_DC_018
+// Name: ChangeFromBaseline
+// Description: Absolute change in measurement from baseline value
+// Formula: Value - BaselineValue
+//
+// Source: analysis_concept_cube.drawio
+//
+// This is a LIBRARY-LEVEL template - attribute values are NOT bound.
+// Study-level instances would bind specific parameter, population, etc.
+//
+// Pattern: Template/Instance separation (principle D3: Progressive Refinement)
+// =============================================================================
+
+
+// =============================================================================
+// IMPORT DATA CONCEPTS
+// =============================================================================
+//
+// Import DataConcepts from concepts-data.tsk.
+// These are PURE semantic definitions - they contain no ADaM/SDTM/USDM mappings.
+// The mappings are declared separately in model-mappings.tsk where external
+// model elements point TO these concepts.
+
+import concepts-data.Subject
+import concepts-data.Visit
+import concepts-data.VisitNumeric
+import concepts-data.Parameter
+import concepts-data.ParameterDescription
+import concepts-data.AnalysisValue
+import concepts-data.BaselineValue
+import concepts-data.ChangeValue
+import concepts-data.ITTFlag
+
+
+// =============================================================================
+// INPUT CUBE: chg_input
+// =============================================================================
+//
+// Represents the source data structure for the derivation.
+//
+// UNIVERSAL CONNECTOR PATTERN:
+//
+// When defining a new AC or DC, the dimensions/measures/attributes are
+// "instances" of DataConcepts - they declare "is_a" relationships pointing
+// TO the abstract semantic concepts.
+//
+//     ┌─────────────────┐
+//     │  DataConcept    │  <- Pure semantic definition (concepts-data.tsk)
+//     │  (e.g. Subject) │
+//     └────────▲────────┘
+//              │ is_a
+//     ┌────────┴────────┐
+//     │   Dimension     │  <- Instance in this cube
+//     │   subject       │
+//     │   role: id      │
+//     └─────────────────┘
+//
+// The DataConcept is the hub. Both:
+//   - Cube elements (here) point to it via is_a
+//   - External model variables (model-mappings.tsk) point to it via is_a
+//
+// Resolution happens by following:
+//   Dimension -> is_a -> DataConcept <- is_a <- ADaM Variable
+//
+
+cube ChangeInput "Input dataset for Change from Baseline derivation" {
+    namespace: "http://cdisc.org/ac/template/T_DC_018#",
+
+    structure: {
+        // =====================================================================
+        // DIMENSIONS - Instances of DataConcepts
+        // =====================================================================
+        //
+        // Each dimension is an "instance" of a DataConcept for this derivation.
+        // The is_a relationship points TO the concept (not the other way around).
+        //
+        // To resolve to ADaM: follow is_a to DataConcept, then find the
+        // ADaM variable in model-mappings.tsk that also points to that concept.
+
+        dimensions: [
+            // Subject identifier - instance of Subject concept
+            // Resolution: subject -> Subject <- USUBJID (ADaM)
+            subject: Identifier is_a Subject,
+
+            // Visit (text) - instance of Visit concept
+            // Resolution: visit -> Visit <- AVISIT (ADaM)
+            visit: Text is_a Visit,
+
+            // Visit (numeric) - instance of VisitNumeric concept
+            // Resolution: visit_numeric -> VisitNumeric <- AVISITN (ADaM)
+            visit_numeric: Integer is_a VisitNumeric,
+
+            // Parameter code - instance of Parameter concept
+            // Resolution: parameter -> Parameter <- PARAMCD (ADaM)
+            parameter: CodedValue is_a Parameter
+        ],
+
+        // =====================================================================
+        // MEASURES - Instances of DataConcepts
+        // =====================================================================
+
+        measures: [
+            // Analysis value - instance of AnalysisValue concept
+            // Resolution: analysis_value -> AnalysisValue <- AVAL (ADaM)
+            analysis_value: Numeric is_a AnalysisValue,
+
+            // Baseline value - instance of BaselineValue concept
+            // Resolution: baseline_value -> BaselineValue <- BASE (ADaM)
+            baseline_value: Numeric is_a BaselineValue
+        ],
+
+        // =====================================================================
+        // ATTRIBUTES - Instances of DataConcepts
+        // =====================================================================
+
+        attributes: [
+            // Parameter description - instance of ParameterDescription concept
+            PARAM: Text is_a ParameterDescription,
+
+            // ITT population flag - instance of ITTFlag concept
+            ITTFL: Flag is_a ITTFlag
+        ]
+    }
+}
+
+
+// =============================================================================
+// OUTPUT CUBE: chg_output
+// =============================================================================
+//
+// Represents the result data structure after derivation.
+// Same dimensions as input, with additional derived measure.
+//
+
+cube ChangeOutput "Output dataset with derived Change from Baseline" {
+    namespace: "http://cdisc.org/ac/template/T_DC_018#",
+
+    structure: {
+        // Same dimension instances as input (carried through)
+        dimensions: [
+            subject: Identifier is_a Subject,
+            visit: Text is_a Visit,
+            visit_numeric: Integer is_a VisitNumeric,
+            parameter: CodedValue is_a Parameter
+        ],
+
+        // Measures include original plus derived
+        measures: [
+            // Original measures
+            analysis_value: Numeric is_a AnalysisValue,
+            baseline_value: Numeric is_a BaselineValue,
+
+            // DERIVED MEASURE - instance of ChangeValue concept
+            // Resolution: change_value -> ChangeValue <- CHG (ADaM)
+            change_value: Numeric is_a ChangeValue
+        ],
+
+        // Attributes carried through
+        attributes: [
+            PARAM: Text is_a ParameterDescription,
+            ITTFL: Flag is_a ITTFlag
+        ]
+    }
+}
+
+
+// =============================================================================
+// SLICE: chg_input_slice (Template Level)
+// =============================================================================
+//
+// Defines the constrained view of the input cube.
+// At template level, attribute values are EMPTY (placeholders).
+// Study-level instances would bind concrete values.
+//
+
+slice ChangeInputSlice from ChangeInput {
+    // At template level, we don't fix specific values
+    // This slice declares WHICH attributes CAN be fixed
+
+    // Vary these dimensions (remain multi-valued)
+    vary: [subject, visit, visit_numeric, parameter],
+
+    // Measures to include
+    measures: [analysis_value, baseline_value]
+
+    // Study instance would add:
+    // fix: {
+    //     PARAM: "Adas-Cog(11) Subscore",  // Concrete value
+    //     ITTFL: "Y"                        // ITT population
+    // }
+}
+
+
+// =============================================================================
+// DERIVATION: CalculateChangeFromBaseline
+// =============================================================================
+//
+// Method that implements the derivation concept.
+//
+// UNIVERSAL CONNECTOR IN ACTION:
+// The formula uses semantic names: change_value = analysis_value - baseline_value
+//
+// Resolution happens through the DataConcept hub:
+//
+//   Formula term        Cube element       DataConcept      ADaM variable
+//   ─────────────────────────────────────────────────────────────────────
+//   change_value    ->  is_a           ->  ChangeValue  <-  is_a  <- CHG
+//   analysis_value  ->  is_a           ->  AnalysisValue <- is_a  <- AVAL
+//   baseline_value  ->  is_a           ->  BaselineValue <- is_a  <- BASE
+//
+// Executed as ADaM: CHG = AVAL - BASE
+//
+
+derive CalculateChangeFromBaseline {
+    input: ChangeInput,
+    output: ChangeOutput,
+    derivations: [
+        // Semantic formula using DataConcept-linked names
+        change_value = analysis_value - baseline_value
+    ]
+}
+
+
+// =============================================================================
+// CONNECTOR RESOLUTION DIAGRAM
+// =============================================================================
+//
+//                     ┌─────────────────────┐
+//                     │    DataConcept      │
+//                     │    ChangeValue      │
+//                     │    (pure semantic)  │
+//                     └──────────▲──────────┘
+//                                │
+//            ┌───────────────────┼───────────────────┐
+//            │                   │                   │
+//       is_a │              is_a │              is_a │
+//            │                   │                   │
+//   ┌────────┴────────┐ ┌────────┴────────┐ ┌────────┴────────┐
+//   │ Cube Measure    │ │ ADaM Variable   │ │ USDM Element    │
+//   │ change_value    │ │ CHG             │ │ Observation.    │
+//   │ (this file)     │ │ (model-mappings)│ │ change          │
+//   └─────────────────┘ └─────────────────┘ └─────────────────┘
+//
+// =============================================================================

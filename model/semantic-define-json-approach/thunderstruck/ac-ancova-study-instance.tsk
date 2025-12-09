@@ -1,0 +1,338 @@
+// =============================================================================
+// Analysis Concept: ANCOVA (Study Instance)
+// =============================================================================
+//
+// Instance ID: S_AC_001
+// Name: ANCOVA Change from Baseline ADAS-Cog(11) Week 24
+// Description: ANCOVA analysis of change from baseline with baseline, site,
+//              and treatment as covariates
+// Instance Of: T_AC_ANCOVA (ac-ancova-template.tsk)
+//
+// Source: analysis_concept_cube_ac_study.drawio
+//
+// This is a STUDY-LEVEL instance - attribute values ARE bound to concrete values.
+// Demonstrates the Template -> Instance binding pattern.
+//
+// Pattern: Template/Instance separation (principle D3: Progressive Refinement)
+// =============================================================================
+
+
+// =============================================================================
+// IMPORT TEMPLATE AND DATA CONCEPTS
+// =============================================================================
+//
+// Import DataConcepts from concepts-data.tsk.
+// These are PURE semantic definitions - they contain no ADaM/SDTM/USDM mappings.
+// The mappings are declared separately in model-mappings.tsk where external
+// model elements point TO these concepts.
+
+import ac-ancova-template.ANCOVAInput
+import ac-ancova-template.TreatmentResults
+import ac-ancova-template.ComparisonResults
+
+import concepts-data.Subject
+import concepts-data.Treatment
+import concepts-data.Site
+import concepts-data.Parameter
+import concepts-data.Visit
+import concepts-data.ChangeValue
+import concepts-data.BaselineValue
+import concepts-data.EfficacyFlag
+import concepts-data.ImputationMethod
+
+
+// =============================================================================
+// STUDY-SPECIFIC INPUT CUBE: ADQSADAS_ANCOVA
+// =============================================================================
+//
+// Study-specific instantiation of the template input cube.
+// Bound to the ADQSADAS dataset for ADAS-Cog cognitive assessment analysis.
+//
+// KEY DIFFERENCE FROM TEMPLATE:
+// - Namespace is study-specific
+// - Label indicates the bound dataset
+// - Slice has FIX clause with concrete values
+//
+// UNIVERSAL CONNECTOR PATTERN:
+// Dimensions/measures are "instances" of DataConcepts via is_a.
+// Resolution: Dimension -> is_a -> DataConcept <- is_a <- ADaM Variable
+//
+
+cube ADQSADAS_ANCOVA "ADQSADAS filtered for ANCOVA analysis" {
+    namespace: "http://example.org/study/S_AC_001#",
+
+    // Inherits structure from ANCOVAInput template
+    structure: {
+        // =====================================================================
+        // DIMENSIONS - Instances of DataConcepts
+        // =====================================================================
+
+        dimensions: [
+            // Subject identifier - instance of Subject concept
+            // Resolution: subject -> Subject <- USUBJID (ADaM in model-mappings.tsk)
+            subject: Identifier is_a Subject,
+
+            // Treatment group (FACTOR) - instance of Treatment concept
+            // Resolution: treatment -> Treatment <- TRTP (ADaM)
+            treatment: CodedValue is_a Treatment,
+
+            // Clinical site - instance of Site concept
+            // Resolution: site -> Site <- SITEID (ADaM)
+            site: CodedValue is_a Site
+        ],
+
+        // =====================================================================
+        // MEASURES - Instances of DataConcepts
+        // =====================================================================
+
+        measures: [
+            // Change from baseline (DEPENDENT) - instance of ChangeValue concept
+            // Resolution: change_value -> ChangeValue <- CHG (ADaM)
+            change_value: Numeric is_a ChangeValue,
+
+            // Baseline value (COVARIATE) - instance of BaselineValue concept
+            // Resolution: baseline_value -> BaselineValue <- BASE (ADaM)
+            baseline_value: Numeric is_a BaselineValue
+        ],
+
+        // =====================================================================
+        // ATTRIBUTES - Will be FIXED by the study-specific slice
+        // =====================================================================
+
+        attributes: [
+            parameter: CodedValue is_a Parameter,
+            timepoint: Text is_a Visit,
+            population_flag: Flag is_a EfficacyFlag,
+            imputation_method: CodedValue is_a ImputationMethod
+        ]
+    }
+}
+
+
+// =============================================================================
+// STUDY-SPECIFIC SLICE: ANCOVASlice_ADAS_Week24
+// =============================================================================
+//
+// KEY DIFFERENCE FROM TEMPLATE:
+// Slice includes "fix" clause with CONCRETE study-specific values.
+//
+// These fixed values define the specific analysis context:
+// - parameter: "ADAS-Cog(11)" - The cognitive assessment parameter
+// - timepoint: "Week 24" - The primary analysis timepoint
+// - population_flag: "Y" - Efficacy population
+// - imputation_method: "LOCF" - Last Observation Carried Forward
+//
+// The draw.io diagram shows these values in BOLD to indicate binding.
+//
+
+slice ANCOVASlice_ADAS_Week24 from ADQSADAS_ANCOVA {
+    // ==========================================================================
+    // BOUND VALUES - Study-specific attribute constraints
+    // ==========================================================================
+    // These were EMPTY at template level, now BOUND to concrete values
+
+    fix: {
+        // Parameter: ADAS-Cog 11-item subscale
+        // Filters to PARAMCD = "ACTOT11" (via Parameter concept mapping)
+        parameter: "ADAS-Cog(11)",
+
+        // Timepoint: Week 24 primary analysis visit
+        // Filters to AVISIT = "Week 24" (via Visit concept mapping)
+        timepoint: "Week 24",
+
+        // Population: Efficacy population flag
+        // Filters to EFFFL = "Y" (via EfficacyFlag concept mapping)
+        population_flag: "Y",
+
+        // Imputation: LOCF method for missing data
+        imputation_method: "LOCF"
+    },
+
+    // Dimensions that vary (not fixed)
+    vary: [subject, treatment, site],
+
+    // Measures included in the analysis
+    measures: [change_value, baseline_value]
+}
+
+
+// =============================================================================
+// STUDY-SPECIFIC MODEL: FitANCOVAModel_ADAS
+// =============================================================================
+//
+// Study-level instantiation of the ANCOVA model.
+//
+// KEY DIFFERENCE FROM TEMPLATE:
+// The formula can use either:
+// 1. Semantic names (portable): change_value ~ baseline_value + site + treatment
+// 2. ADaM variable names (study-specific): CHG ~ BASE + SITEID + TRTP
+//
+// This example shows the ADaM-resolved form to demonstrate that the
+// Universal Connector has resolved semantic names to physical variables.
+//
+
+model FitANCOVAModel_ADAS {
+    input: ANCOVASlice_ADAS_Week24,
+
+    // Formula using ADaM variable names (resolved from concepts)
+    // This shows the "executed" form after connector resolution:
+    //   change_value   -> CHG  (via ChangeValue.adam_variable)
+    //   baseline_value -> BASE (via BaselineValue.adam_variable)
+    //   site           -> SITEID (via Site.adam_variable)
+    //   treatment      -> TRTP (via Treatment.adam_variable_planned)
+    formula: CHG ~ BASE + SITEID + TRTP,
+
+    family: Gaussian,
+    link: Identity,
+
+    comparison: LSMeans pairwise(TRTP)
+}
+
+
+// =============================================================================
+// STUDY-SPECIFIC OUTPUT CUBES
+// =============================================================================
+//
+// Output cubes inherit structure from template but are bound to study context.
+// The attribute values (parameter, timepoint, population) are propagated from
+// the input slice to provide full traceability.
+//
+
+cube TreatmentResults_ADAS_Week24 "LS Means by Treatment Group - ADAS-Cog Week 24" {
+    namespace: "http://example.org/study/S_AC_001#",
+
+    structure: {
+        dimensions: [
+            treatment: CodedValue is_a Treatment
+        ],
+
+        measures: [
+            lsmean: Numeric,
+            lsmean_se: Numeric,
+            ci_lower: Numeric,
+            ci_upper: Numeric
+        ],
+
+        // Bound context from input slice
+        attributes: [
+            parameter: CodedValue,      // = "ADAS-Cog(11)"
+            timepoint: Text,            // = "Week 24"
+            population_flag: Flag       // = "Y"
+        ]
+    }
+}
+
+
+cube ComparisonResults_ADAS_Week24 "Pairwise Comparisons - ADAS-Cog Week 24" {
+    namespace: "http://example.org/study/S_AC_001#",
+
+    structure: {
+        dimensions: [
+            treatment: CodedValue is_a Treatment,
+            comparison_group: CodedValue is_a Treatment
+        ],
+
+        measures: [
+            lsmean_diff: Numeric,
+            p_value: Numeric,
+            ci_lower: Numeric,
+            ci_upper: Numeric
+        ],
+
+        attributes: [
+            parameter: CodedValue,      // = "ADAS-Cog(11)"
+            timepoint: Text,            // = "Week 24"
+            population_flag: Flag       // = "Y"
+        ]
+    }
+}
+
+
+// =============================================================================
+// TEMPLATE VS. INSTANCE COMPARISON
+// =============================================================================
+//
+// This demonstrates the D3 Progressive Refinement pattern:
+//
+// TEMPLATE LEVEL (T_AC_ANCOVA):
+// ┌─────────────────────────────────────────────────────────────────────────┐
+// │ slice ANCOVAInputSlice from ANCOVAInput {                               │
+// │     vary: [subject, treatment, site],                                   │
+// │     measures: [change_value, baseline_value]                            │
+// │     // NO fix clause - attributes are EMPTY placeholders                │
+// │ }                                                                       │
+// │                                                                         │
+// │ model FitANCOVAModel {                                                  │
+// │     formula: change_value ~ baseline_value + site + treatment           │
+// │     // Semantic names - PORTABLE across studies                         │
+// │ }                                                                       │
+// └─────────────────────────────────────────────────────────────────────────┘
+//
+// INSTANCE LEVEL (S_AC_001):
+// ┌─────────────────────────────────────────────────────────────────────────┐
+// │ slice ANCOVASlice_ADAS_Week24 from ADQSADAS_ANCOVA {                    │
+// │     fix: {                                                              │
+// │         parameter: "ADAS-Cog(11)",      // BOUND                        │
+// │         timepoint: "Week 24",           // BOUND                        │
+// │         population_flag: "Y",           // BOUND                        │
+// │         imputation_method: "LOCF"       // BOUND                        │
+// │     },                                                                  │
+// │     vary: [subject, treatment, site],                                   │
+// │     measures: [change_value, baseline_value]                            │
+// │ }                                                                       │
+// │                                                                         │
+// │ model FitANCOVAModel_ADAS {                                             │
+// │     formula: CHG ~ BASE + SITEID + TRTP                                 │
+// │     // ADaM names - RESOLVED from concepts                              │
+// │ }                                                                       │
+// └─────────────────────────────────────────────────────────────────────────┘
+//
+// The same template can generate multiple study instances by varying:
+// - Parameter (different assessments)
+// - Timepoint (different visits)
+// - Population (ITT, PP, Safety)
+// - Imputation method (LOCF, MMRM, MI)
+//
+// =============================================================================
+
+
+// =============================================================================
+// UNIVERSAL CONNECTOR RESOLUTION TRACE
+// =============================================================================
+//
+// This shows the complete resolution path from semantic to physical via the
+// DataConcept hub pattern:
+//
+// 1. Template defines: change_value ~ baseline_value + site + treatment
+//
+// 2. Resolution via DataConcept hub (see model-mappings.tsk):
+//
+//    Formula term        Cube element       DataConcept      ADaM variable
+//    ─────────────────────────────────────────────────────────────────────
+//    change_value    ->  is_a           ->  ChangeValue  <-  is_a  <- CHG
+//    baseline_value  ->  is_a           ->  BaselineValue <- is_a  <- BASE
+//    site            ->  is_a           ->  Site         <-  is_a  <- SITEID
+//    treatment       ->  is_a           ->  Treatment    <-  is_a  <- TRTP
+//
+// 3. Study instance resolves to: CHG ~ BASE + SITEID + TRTP
+//
+// 4. Execution context:
+//    Dataset: ADQSADAS
+//    Filter: PARAMCD = "ACTOT11" AND AVISIT = "Week 24" AND EFFFL = "Y"
+//    Model: proc mixed; class TRTP SITEID; model CHG = BASE SITEID TRTP;
+//
+// =============================================================================
+
+
+// =============================================================================
+// SENTENCE REFERENCE
+// =============================================================================
+//
+// This analysis instance is described by a Sentence composed of Phrases.
+// The sentence provides a natural language description that links to the
+// structured analysis definition through the fix relationship.
+//
+// See sentences.tsk for the full Sentence/Phrase definitions.
+//
+
+described_by: ANCOVASentence_ADAS_Week24

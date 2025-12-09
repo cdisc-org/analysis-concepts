@@ -1,0 +1,180 @@
+// =============================================================================
+// Sentences and Phrases: Natural Language Description Composition
+// =============================================================================
+//
+// This file defines the Sentence/Phrase pattern for composing human-readable
+// analysis descriptions from structured, semantically-linked components.
+//
+// Pattern from: analysis_concept_cube_ac_study.drawio
+//
+// RELATIONSHIP TERMINOLOGY:
+// The draw.io diagrams use `is_a` and `fix` relationships. Alternative terms
+// that may better express the semantics:
+//
+//   is_a (Phrase -> DataConcept):
+//     - Better term: "typed_by"
+//     - Meaning: The DataConcept types/constrains the phrase's parameter value
+//     - The phrase parameter must be a valid instance of this concept
+//
+//   fix (Phrase -> Slice):
+//     - Better term: "binds_to" or "provides_value_for"
+//     - Meaning: The phrase value flows to the slice fix clause attribute
+//     - Enables traceability: natural language phrase -> data filter
+//
+// =============================================================================
+
+
+// =============================================================================
+// IMPORT DATA CONCEPTS AND ANALYSIS INSTANCE
+// =============================================================================
+
+import concepts-data.Parameter
+import concepts-data.Visit
+import concepts-data.EfficacyFlag
+import concepts-data.ImputationMethod
+
+import ac-ancova-study-instance.ANCOVASlice_ADAS_Week24
+import ac-ancova-study-instance.S_AC_001
+
+
+// =============================================================================
+// STATIC PHRASES (No parameters - reusable across studies)
+// =============================================================================
+//
+// Some phrases have fixed text with no variable parameter.
+// These don't need is_a or fix relationships.
+//
+
+phrase ResultPhrase "Analysis of the change from baseline" {
+    role: as_result,
+    text: "Analysis of the change from baseline"
+}
+
+phrase MethodPhrase_ANCOVA "ANCOVA Method Description" {
+    role: as_method,
+    text: "using ANCOVA model with the baseline score, site, and treatment included as independent variables"
+}
+
+phrase ComparisonPhrase "Pairwise Comparisons" {
+    role: as_comparison,
+    text: "Pairwise comparisons among the treatment groups will be performed"
+}
+
+phrase AlphaPhrase_005 "Significance Level 0.05" {
+    role: as_alpha,
+    text: "evaluated at a significance level of 0.05",
+    value: 0.05
+}
+
+
+// =============================================================================
+// PARAMETERIZED PHRASES (Study-specific values)
+// =============================================================================
+//
+// Phrases with variable parameters that users fill in at study time.
+//
+// Relationships:
+//   is_a DataConcept  - Types/constrains the parameter (semantically: "typed_by")
+//   fix Slice.attr    - Value flows to slice fix clause (semantically: "binds_to")
+//
+// Data flow:
+//   User provides value -> Phrase.value -> fix -> Slice.fix.attribute -> Cube filter
+//
+
+// Scope phrase - defines which parameter is being analyzed
+// is_a Parameter: phrase value must be a valid Parameter (typed_by Parameter)
+// fix slice.parameter: value flows to slice fix clause (binds_to slice.parameter)
+phrase ScopePhrase_ADAS "ADAS-Cog(11) Scope" is_a Parameter {
+    role: as_scope,
+    text: "in ADAS-Cog(11)",
+    value: "ADAS-Cog(11)",
+    fix: ANCOVASlice_ADAS_Week24.parameter
+}
+
+// Timepoint phrase - defines the analysis visit
+// is_a Visit: phrase value must be a valid Visit (typed_by Visit)
+// fix slice.timepoint: value flows to slice fix clause (binds_to slice.timepoint)
+phrase TimepointPhrase_Week24 "Week 24 Timepoint" is_a Visit {
+    role: as_timepoint,
+    text: "to Week 24",
+    value: "Week 24",
+    fix: ANCOVASlice_ADAS_Week24.timepoint
+}
+
+// Population phrase - defines the analysis population
+// is_a EfficacyFlag: phrase value must be a valid population flag (typed_by EfficacyFlag)
+// fix slice.population_flag: value flows to slice fix clause (binds_to slice.population_flag)
+phrase PopulationPhrase_Efficacy "Efficacy Population" is_a EfficacyFlag {
+    role: as_population,
+    text: "on the efficacy population",
+    value: "Y",
+    fix: ANCOVASlice_ADAS_Week24.population_flag
+}
+
+// Imputation phrase - defines missing data handling method
+// is_a ImputationMethod: phrase value must be valid imputation (typed_by ImputationMethod)
+// fix slice.imputation_method: value flows to slice fix clause (binds_to slice.imputation_method)
+phrase ImputationPhrase_LOCF "LOCF Imputation" is_a ImputationMethod {
+    role: as_imputation,
+    text: "with LOCF imputation for any missing values at Week 24",
+    value: "LOCF",
+    fix: ANCOVASlice_ADAS_Week24.imputation_method
+}
+
+
+// =============================================================================
+// SENTENCE DEFINITION
+// =============================================================================
+//
+// A Sentence is composed of multiple Phrases and describes an AnalysisInstance.
+// The full text can be generated by combining phrase texts in order.
+//
+
+sentence ANCOVASentence_ADAS_Week24 "ANCOVA Analysis Description" {
+    // Full composed text
+    text: "Analysis of the change from baseline in ADAS-Cog(11) to Week 24 using ANCOVA model with the baseline score, site, and treatment included as independent variables. The analysis will be performed on the efficacy population with LOCF imputation for any missing values at Week 24. Pairwise comparisons among the treatment groups will be performed, evaluated at a significance level of 0.05.",
+
+    // This sentence describes the study-level analysis instance
+    describes: S_AC_001,
+
+    // Composed from these phrases (order determines text assembly)
+    composed_of: [
+        ResultPhrase,
+        ScopePhrase_ADAS,
+        TimepointPhrase_Week24,
+        MethodPhrase_ANCOVA,
+        PopulationPhrase_Efficacy,
+        ImputationPhrase_LOCF,
+        ComparisonPhrase,
+        AlphaPhrase_005
+    ]
+}
+
+
+// =============================================================================
+// DATA FLOW DIAGRAM
+// =============================================================================
+//
+// User fills parameter --> Phrase.value --> fix --> Slice.fix.attribute
+//                                                          |
+//                                                          | constrains
+//                                                          v
+//                                                    Cube dimension/
+//                                                    attribute values
+//
+// Example flow for ScopePhrase_ADAS:
+//
+//   User types: "ADAS-Cog(11)"
+//        |
+//        v
+//   ScopePhrase_ADAS.value = "ADAS-Cog(11)"
+//        |
+//        | fix (binds_to)
+//        v
+//   ANCOVASlice_ADAS_Week24.fix.parameter = "ADAS-Cog(11)"
+//        |
+//        | constrains
+//        v
+//   ADQSADAS_ANCOVA cube filtered to PARAMCD = "ACTOT11"
+//
+// =============================================================================

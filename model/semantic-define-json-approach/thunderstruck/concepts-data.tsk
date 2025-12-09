@@ -1,0 +1,361 @@
+// =============================================================================
+// Data Concepts: Pure Semantic Definitions
+// =============================================================================
+//
+// This file defines DataConcepts as PURE semantic definitions - the central
+// abstraction layer in the Universal Connector Architecture.
+//
+// DataConcepts are the "hub" that everything else points TO:
+//   - Dimensions/Measures/Attributes in AC/DC cubes -> is_a -> DataConcept
+//   - ADaM Class Variables -> is_a -> DataConcept
+//   - SDTM Variables -> is_a -> DataConcept
+//   - USDM Elements -> is_a -> DataConcept
+//
+// DataConcepts themselves contain NO knowledge of ADaM, SDTM, or USDM.
+// The mappings are declared by the external model elements in model-mappings.tsk.
+//
+// Source: analysis_concept_cube.drawio, analysis_concept_cube_ac_library.drawio
+// Pattern: Universal Connector Architecture (proposed principle A8)
+// =============================================================================
+
+
+// =============================================================================
+// BASE CONCEPTS - Foundation hierarchy for inheritance
+// =============================================================================
+
+concept Person {
+    definition: "An individual entity"
+}
+
+concept MeasuredValue {
+    definition: "A value obtained through measurement or observation"
+}
+
+concept DerivedValue type_of MeasuredValue {
+    definition: "A value computed from other values"
+}
+
+concept TimePoint {
+    definition: "A point in time when an observation or assessment occurs"
+}
+
+concept Intervention {
+    definition: "A treatment or action applied in a study"
+}
+
+concept Location {
+    definition: "A physical or organizational location"
+}
+
+concept PopulationDefinition {
+    definition: "A defined subset of subjects for analysis"
+}
+
+concept DataHandlingMethod {
+    definition: "A technique for processing or managing data"
+}
+
+concept StatisticalParameter type_of MeasuredValue {
+    definition: "A numeric summary or estimate from statistical analysis"
+}
+
+
+// =============================================================================
+// STUDY DESIGN CONCEPTS - Core entities for clinical trials
+// =============================================================================
+
+/*
+ * Subject: Study participant identifier
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ADaM: USUBJID is_a Subject
+ *   - SDTM: USUBJID is_a Subject
+ *   - USDM: StudySubject.identifier is_a Subject
+ */
+concept Subject "Study Subject" type_of Person {
+    definition: "A participant enrolled in a clinical study",
+    category: StudyDesign
+}
+
+/*
+ * Visit: Study timepoint (text representation)
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ADaM: AVISIT is_a Visit
+ *   - SDTM: VISIT is_a Visit
+ *   - USDM: ScheduledActivityInstance is_a Visit
+ */
+concept Visit "Study Visit" type_of TimePoint {
+    definition: "A scheduled study assessment timepoint",
+    category: StudyDesign
+}
+
+/*
+ * VisitNumeric: Study timepoint (numeric representation)
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ADaM: AVISITN is_a VisitNumeric
+ *   - SDTM: VISITNUM is_a VisitNumeric
+ *   - USDM: ScheduledActivityInstance.timepoint is_a VisitNumeric
+ */
+concept VisitNumeric "Visit Number" type_of TimePoint {
+    definition: "Numeric representation of study visit for ordering and analysis",
+    category: StudyDesign
+}
+
+/*
+ * Treatment: Assigned intervention
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ADaM: TRT01A is_a Treatment, TRTP is_a Treatment
+ *   - SDTM: ARM is_a Treatment, EXTRT is_a Treatment
+ *   - USDM: StudyIntervention is_a Treatment
+ */
+concept Treatment "Treatment Assignment" type_of Intervention {
+    definition: "The intervention or therapy assigned to a study subject",
+    category: StudyDesign
+}
+
+/*
+ * Site: Clinical site identifier
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ADaM: SITEID is_a Site
+ *   - SDTM: SITEID is_a Site
+ *   - USDM: StudySite.identifier is_a Site
+ */
+concept Site "Clinical Site" type_of Location {
+    definition: "A clinical site where study activities are conducted",
+    category: StudyDesign
+}
+
+
+// =============================================================================
+// PARAMETER CONCEPTS - Test/assessment identifiers
+// =============================================================================
+
+/*
+ * Parameter: Analysis parameter code
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ADaM: PARAMCD is_a Parameter
+ *   - SDTM: --TESTCD is_a Parameter
+ *   - USDM: BiomedicalConcept is_a Parameter
+ */
+concept Parameter "Analysis Parameter" {
+    definition: "A coded identifier for an analysis parameter or test",
+    category: AnalysisParameter
+}
+
+/*
+ * ParameterDescription: Human-readable parameter name
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ADaM: PARAM is_a ParameterDescription
+ *   - SDTM: --TEST is_a ParameterDescription
+ *   - USDM: BiomedicalConcept.name is_a ParameterDescription
+ */
+concept ParameterDescription "Parameter Name" {
+    definition: "Human-readable description of the analysis parameter",
+    category: AnalysisParameter
+}
+
+
+// =============================================================================
+// MEASURE CONCEPTS - Quantitative values
+// =============================================================================
+
+/*
+ * AnalysisValue: Primary analysis value
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ADaM: AVAL is_a AnalysisValue
+ *   - SDTM: --STRESN is_a AnalysisValue
+ *   - USDM: Observation.value is_a AnalysisValue
+ */
+concept AnalysisValue "Analysis Value" type_of MeasuredValue {
+    definition: "The primary numeric value for an observation used in analysis",
+    category: AnalysisMeasure
+}
+
+/*
+ * BaselineValue: Baseline measurement
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ADaM: BASE is_a BaselineValue
+ *   - SDTM: (derived at baseline)
+ *   - USDM: Observation.baselineValue is_a BaselineValue
+ */
+concept BaselineValue "Baseline Value" type_of MeasuredValue {
+    definition: "The value of a measurement at baseline, used as reference for change calculations",
+    category: AnalysisMeasure
+}
+
+/*
+ * ChangeValue: Change from baseline
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ADaM: CHG is_a ChangeValue
+ *   - SDTM: (derived, not stored)
+ *   - USDM: Observation.change is_a ChangeValue
+ */
+concept ChangeValue "Change from Baseline" type_of DerivedValue {
+    definition: "The difference between a post-baseline value and the baseline value",
+    category: DerivedMeasure
+}
+
+/*
+ * PercentChange: Percent change from baseline
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ADaM: PCHG is_a PercentChange
+ *   - SDTM: (derived)
+ *   - USDM: Observation.percentChange is_a PercentChange
+ */
+concept PercentChange "Percent Change from Baseline" type_of DerivedValue {
+    definition: "The percent change from baseline: ((Post - Baseline) / Baseline) * 100",
+    category: DerivedMeasure
+}
+
+
+// =============================================================================
+// POPULATION FLAG CONCEPTS - Analysis population indicators
+// =============================================================================
+
+/*
+ * ITTFlag: Intent-to-Treat population flag
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ADaM: ITTFL is_a ITTFlag
+ *   - SDTM: (derived)
+ *   - USDM: AnalysisPopulation (ITT) is_a ITTFlag
+ */
+concept ITTFlag "Intent-to-Treat Population Flag" type_of PopulationDefinition {
+    definition: "Flag indicating subject belongs to Intent-to-Treat population",
+    category: PopulationFlag
+}
+
+/*
+ * EfficacyFlag: Efficacy population flag
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ADaM: EFFFL is_a EfficacyFlag
+ *   - SDTM: (derived)
+ *   - USDM: AnalysisPopulation (Efficacy) is_a EfficacyFlag
+ */
+concept EfficacyFlag "Efficacy Population Flag" type_of PopulationDefinition {
+    definition: "Flag indicating subject belongs to Efficacy population",
+    category: PopulationFlag
+}
+
+
+// =============================================================================
+// DATA HANDLING CONCEPTS - Imputation and missing data
+// =============================================================================
+
+/*
+ * ImputationMethod: Method for handling missing data
+ *
+ * Common methods: LOCF, BOCF, WOCF, MMRM, MI
+ */
+concept ImputationMethod "Imputation Method" type_of DataHandlingMethod {
+    definition: "Method used to handle missing data in the analysis",
+    category: DataHandling
+}
+
+
+// =============================================================================
+// STATISTICAL OUTPUT CONCEPTS - Model results
+// =============================================================================
+
+/*
+ * LeastSquaresMean: LS Mean from statistical model
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ARS: AnalysisResult.estimate is_a LeastSquaresMean
+ */
+concept LeastSquaresMean "Least Squares Mean" type_of StatisticalParameter {
+    definition: "Adjusted mean estimate from regression analysis (ANCOVA, MMRM)",
+    category: StatisticalEstimate
+}
+
+/*
+ * StandardError: Standard error of estimate
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ARS: AnalysisResult.standardError is_a StandardError
+ */
+concept StandardError "Standard Error" type_of StatisticalParameter {
+    definition: "Measure of the statistical accuracy of an estimate",
+    category: StatisticalEstimate
+}
+
+/*
+ * ConfidenceLower: Lower confidence interval bound
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ARS: AnalysisResult.confidenceInterval.lower is_a ConfidenceLower
+ */
+concept ConfidenceLower "Lower Confidence Limit" type_of StatisticalParameter {
+    definition: "Lower bound of the confidence interval",
+    category: StatisticalEstimate
+}
+
+/*
+ * ConfidenceUpper: Upper confidence interval bound
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ARS: AnalysisResult.confidenceInterval.upper is_a ConfidenceUpper
+ */
+concept ConfidenceUpper "Upper Confidence Limit" type_of StatisticalParameter {
+    definition: "Upper bound of the confidence interval",
+    category: StatisticalEstimate
+}
+
+/*
+ * PValue: Statistical significance
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ARS: AnalysisResult.pValue is_a PValue
+ */
+concept PValue "P-Value" type_of StatisticalParameter {
+    definition: "Probability of obtaining test results at least as extreme as observed",
+    category: StatisticalEstimate
+}
+
+/*
+ * TreatmentDifference: Difference between treatment groups
+ *
+ * External models that point to this concept (see model-mappings.tsk):
+ *   - ARS: AnalysisResult.contrast is_a TreatmentDifference
+ */
+concept TreatmentDifference "Treatment Difference" type_of StatisticalParameter {
+    definition: "Estimated difference between treatment group means",
+    category: StatisticalEstimate
+}
+
+
+// =============================================================================
+// DOMAIN-SPECIFIC CONCEPTS - ADAS-Cog example
+// =============================================================================
+
+/*
+ * ADASCog11: ADAS-Cog 11-item subscale
+ *
+ * This demonstrates how a specific biomedical concept inherits from
+ * the generic Parameter concept. The concept itself is pure semantic -
+ * external model mappings are in model-mappings.tsk.
+ *
+ * Controlled terminology references (codeLists) ARE appropriate here
+ * because LOINC codes are standardized semantic identifiers, not
+ * dataset variable names.
+ */
+concept ADASCog11 "ADAS-Cog 11-item Total Score" type_of Parameter {
+    definition: "Alzheimer's Disease Assessment Scale - Cognitive Subscale, 11-item version",
+    category: CognitiveAssessment,
+    // Controlled terminology - proper use of codeLists
+    // These are standardized codes from external terminologies
+    codeLists: [
+        LOINC: "72106-8"
+    ]
+}
