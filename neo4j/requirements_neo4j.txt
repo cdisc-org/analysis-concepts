@@ -8,3 +8,5 @@ neo4j>=5.14.0
 # Python-dotenv
 # For loading environment variables from .env file
 python-dotenv>=1.0.0
+
+owlready2>=0.45

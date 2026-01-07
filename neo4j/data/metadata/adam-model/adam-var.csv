@@ -1,0 +1,416 @@
+Dataset,Variable,Variable Label,Type,Length,Display Format,Controlled Terms
+ADAE,STUDYID,Study Identifier,Char,12,,
+ADAE,SITEID,Study Site Identifier,Char,3,,
+ADAE,USUBJID,Unique Subject Identifier,Char,11,,
+ADAE,TRTA,Actual Treatment,Char,20,,ARM
+ADAE,TRTAN,Actual Treatment (N),Num,8,,ARMN
+ADAE,AGE,Age,Num,8,,
+ADAE,AGEGR1,Pooled Age Group 1,Char,5,,AGEGR1
+ADAE,AGEGR1N,Pooled Age Group 1 (N),Num,8,,AGEGR1N
+ADAE,RACE,Race,Char,32,,RACE
+ADAE,RACEN,Race (N),Num,8,,RACEN
+ADAE,SEX,Sex,Char,1,,SEX
+ADAE,SAFFL,Safety Population Flag,Char,1,,YN
+ADAE,TRTSDT,Date of First Exposure to Treatment,Num,8,DATE9.,
+ADAE,TRTEDT,Date of Last Exposure to Treatment,Num,8,DATE9.,
+ADAE,ASTDT,Analysis Start Date,Num,8,DATE9.,
+ADAE,ASTDTF,Analysis Start Date Imputation Flag,Char,1,,DMY
+ADAE,ASTDY,Analysis Start Relative Day,Num,8,,
+ADAE,AENDT,Analysis End Date,Num,8,DATE9.,
+ADAE,AENDY,Analysis End Relative Day,Num,8,,
+ADAE,ADURN,AE Duration (N),Num,8,,
+ADAE,ADURU,AE Duration Units,Char,3,,
+ADAE,AETERM,Reported Term for the Adverse Event,Char,46,,
+ADAE,AELLT,Lowest Level Term,Char,46,,AEDICT
+ADAE,AELLTCD,Lowest Level Term Code,Num,8,,
+ADAE,AEDECOD,Dictionary-Derived Term,Char,46,,AEDICT
+ADAE,AEPTCD,Preferred Term Code,Num,8,,
+ADAE,AEHLT,High Level Term,Char,8,,AEDICT
+ADAE,AEHLTCD,High Level Term Code,Num,8,,
+ADAE,AEHLGT,High Level Group Term,Char,9,,AEDICT
+ADAE,AEHLGTCD,High Level Group Term Code,Num,8,,
+ADAE,AEBODSYS,Body System or Organ Class,Char,67,,AEDICT
+ADAE,AESOC,Primary System Organ Class,Char,67,,AEDICT
+ADAE,AESOCCD,Primary System Organ Class Code,Num,8,,
+ADAE,AESEV,Severity/Intensity,Char,8,,SEV
+ADAE,AESER,Serious Event,Char,1,,YN
+ADAE,AESCAN,Involves Cancer,Char,1,,YN
+ADAE,AESCONG,Congenital Anomaly or Birth Defect,Char,1,,YN
+ADAE,AESDISAB,Persist or Signif Disability/Incapacity,Char,1,,YN
+ADAE,AESDTH,Results in Death,Char,1,,YN
+ADAE,AESHOSP,Requires or Prolongs Hospitalization,Char,1,,YN
+ADAE,AESLIFE,Is Life Threatening,Char,1,,YN
+ADAE,AESOD,Occurred with Overdose,Char,1,,YN
+ADAE,AEREL,Causality,Char,8,,AECAUS
+ADAE,AEACN,Action Taken with Study Treatment,Char,1,,
+ADAE,AEOUT,Outcome of Adverse Event,Char,26,,OUT
+ADAE,AESEQ,Sequence Number,Num,8,,
+ADAE,TRTEMFL,Treatment Emergent Analysis Flag,Char,1,,YN
+ADAE,AOCCFL,1st Occurrence of Any AE Flag,Char,1,,Y_BLANK
+ADAE,AOCCSFL,1st Occurrence of SOC Flag,Char,1,,Y_BLANK
+ADAE,AOCCPFL,1st Occurrence of Preferred Term Flag,Char,1,,Y_BLANK
+ADAE,AOCC02FL,1st Occurrence 02 Flag for Serious,Char,1,,Y_BLANK
+ADAE,AOCC03FL,1st Occurrence 03 Flag for Serious SOC,Char,1,,Y_BLANK
+ADAE,AOCC04FL,1st Occurrence 04 Flag for Serious PT,Char,1,,Y_BLANK
+ADAE,CQ01NAM,Customized Query 01 Name,Char,19,,
+ADAE,AOCC01FL,1st Occurrence 01 Flag for CQ01,Char,1,,Y_BLANK
+ADLBC,STUDYID,Study Identifier,Char,12,,
+ADLBC,SUBJID,Subject Identifier for the Study,Char,4,,
+ADLBC,USUBJID,Unique Subject Identifier,Char,11,,
+ADLBC,TRTP,Planned Treatment,Char,20,,ARM
+ADLBC,TRTPN,Planned Treatment (N),Num,8,,ARMN
+ADLBC,TRTA,Actual Treatment,Char,20,,ARM
+ADLBC,TRTAN,Actual Treatment (N),Num,8,,ARMN
+ADLBC,TRTSDT,Date of First Exposure to Treatment,Num,8,DATE9.,
+ADLBC,TRTEDT,Date of Last Exposure to Treatment,Num,8,DATE9.,
+ADLBC,AGE,Age,Num,8,,
+ADLBC,AGEGR1,Pooled Age Group 1,Char,5,,AGEGR1
+ADLBC,AGEGR1N,Pooled Age Group 1 (N),Num,8,,AGEGR1N
+ADLBC,RACE,Race,Char,32,,RACE
+ADLBC,RACEN,Race (N),Num,8,,RACEN
+ADLBC,SEX,Sex,Char,1,,SEX
+ADLBC,COMP24FL,Completers of Week 24 Population Flag,Char,1,,YN
+ADLBC,DSRAEFL,Discontinued due to AE?,Char,1,,YN
+ADLBC,SAFFL,Safety Population Flag,Char,1,,YN
+ADLBC,AVISIT,Analysis Visit,Char,16,,AVISIT
+ADLBC,AVISITN,Analysis Visit (N),Num,8,,AVISITN
+ADLBC,ADY,Analysis Relative Day,Num,8,,
+ADLBC,ADT,Analysis Date,Num,8,DATE9.,
+ADLBC,VISIT,Visit Name,Char,19,,VISIT
+ADLBC,VISITNUM,Visit Number,Num,8,,VISITNUM
+ADLBC,PARAM,Parameter,Char,100,,PARAM_ADLBC
+ADLBC,PARAMCD,Parameter Code,Char,8,,PARAMCD_ADLBC
+ADLBC,PARAMN,Parameter (N),Num,8,,PARAMN_ADLBC
+ADLBC,PARCAT1,Parameter Category 1,Char,5,,ADLBCAT
+ADLBC,AVAL,Analysis Value,Num,8,,
+ADLBC,BASE,Baseline Value,Num,8,,
+ADLBC,CHG,Change from Baseline,Num,8,,
+ADLBC,A1LO,Analysis Range 1 Lower Limit,Num,8,,
+ADLBC,A1HI,Analysis Range 1 Upper Limit,Num,8,,
+ADLBC,R2A1LO,Ratio to Analysis Range 1 Lower Limit,Num,8,,
+ADLBC,R2A1HI,Ratio to Analysis Range 1 Upper Limit,Num,8,,
+ADLBC,BR2A1LO,Base Ratio to Analysis Range 1 Lower Lim,Num,8,,
+ADLBC,BR2A1HI,Base Ratio to Analysis Range 1 Upper Lim,Num,8,,
+ADLBC,ANL01FL,Analysis Record Flag 1,Char,1,,Y_BLANK
+ADLBC,ALBTRVAL,Amount Threshold Range,Num,8,,
+ADLBC,ANRIND,Analysis Reference Range Indicator,Char,1,,LNH
+ADLBC,BNRIND,Baseline Reference Range Indicator,Char,1,,LNH
+ADLBC,ABLFL,Baseline Record Flag,Char,1,,Y_BLANK
+ADLBC,AENTMTFL,Last value in treatment visit,Char,1,,Y_BLANK
+ADLBC,LBSEQ,Sequence Number,Num,8,,
+ADLBC,LBNRIND,Reference Range Indicator,Char,8,,LBNRIND
+ADLBC,LBSTRESN,Numeric Result/Finding in Standard Units,Num,8,,
+ADLBH,STUDYID,Study Identifier,Char,12,,
+ADLBH,SUBJID,Subject Identifier for the Study,Char,4,,
+ADLBH,USUBJID,Unique Subject Identifier,Char,11,,
+ADLBH,TRTP,Planned Treatment,Char,20,,ARM
+ADLBH,TRTPN,Planned Treatment (N),Num,8,,ARMN
+ADLBH,TRTA,Actual Treatment,Char,20,,ARM
+ADLBH,TRTAN,Actual Treatment (N),Num,8,,ARMN
+ADLBH,TRTSDT,Date of First Exposure to Treatment,Num,8,DATE9.,
+ADLBH,TRTEDT,Date of Last Exposure to Treatment,Num,8,DATE9.,
+ADLBH,AGE,Age,Num,8,,
+ADLBH,AGEGR1,Pooled Age Group 1,Char,5,,AGEGR1
+ADLBH,AGEGR1N,Pooled Age Group 1 (N),Num,8,,AGEGR1N
+ADLBH,RACE,Race,Char,32,,RACE
+ADLBH,RACEN,Race (N),Num,8,,RACEN
+ADLBH,SEX,Sex,Char,1,,SEX
+ADLBH,COMP24FL,Completers of Week 24 Population Flag,Char,1,,YN
+ADLBH,DSRAEFL,Discontinued due to AE?,Char,1,,YN
+ADLBH,SAFFL,Safety Population Flag,Char,1,,YN
+ADLBH,AVISIT,Analysis Visit,Char,16,,AVISIT
+ADLBH,AVISITN,Analysis Visit (N),Num,8,,AVISITN
+ADLBH,ADY,Analysis Relative Day,Num,8,,
+ADLBH,ADT,Analysis Date,Num,8,DATE9.,
+ADLBH,VISIT,Visit Name,Char,19,,VISIT
+ADLBH,VISITNUM,Visit Number,Num,8,,VISITNUM
+ADLBH,PARAM,Parameter,Char,100,,PARAM_ADLBH
+ADLBH,PARAMCD,Parameter Code,Char,8,,PARAMCD_ADLBH
+ADLBH,PARAMN,Parameter (N),Num,8,,PARAMN_ADLBH
+ADLBH,PARCAT1,Parameter Category 1,Char,5,,ADLBCAT
+ADLBH,AVAL,Analysis Value,Num,8,,
+ADLBH,BASE,Baseline Value,Num,8,,
+ADLBH,CHG,Change from Baseline,Num,8,,
+ADLBH,A1LO,Analysis Range 1 Lower Limit,Num,8,,
+ADLBH,A1HI,Analysis Range 1 Upper Limit,Num,8,,
+ADLBH,R2A1LO,Ratio to Analysis Range 1 Lower Limit,Num,8,,
+ADLBH,R2A1HI,Ratio to Analysis Range 1 Upper Limit,Num,8,,
+ADLBH,BR2A1LO,Base Ratio to Analysis Range 1 Lower Lim,Num,8,,
+ADLBH,BR2A1HI,Base Ratio to Analysis Range 1 Upper Lim,Num,8,,
+ADLBH,ANL01FL,Analysis Record Flag 1,Char,1,,Y_BLANK
+ADLBH,ALBTRVAL,Amount Threshold Range,Num,8,,
+ADLBH,ANRIND,Analysis Reference Range Indicator,Char,1,,LNH
+ADLBH,BNRIND,Baseline Reference Range Indicator,Char,1,,LNH
+ADLBH,ABLFL,Baseline Record Flag,Char,1,,Y_BLANK
+ADLBH,AENTMTFL,Last value in treatment visit,Char,1,,Y_BLANK
+ADLBH,LBSEQ,Sequence Number,Num,8,,
+ADLBH,LBNRIND,Reference Range Indicator,Char,8,,LBNRIND
+ADLBH,LBSTRESN,Numeric Result/Finding in Standard Units,Num,8,,
+ADLBHY,STUDYID,Study Identifier,Char,12,,
+ADLBHY,SUBJID,Subject Identifier for the Study,Char,4,,
+ADLBHY,USUBJID,Unique Subject Identifier,Char,11,,
+ADLBHY,TRTP,Planned Treatment,Char,20,,ARM
+ADLBHY,TRTPN,Planned Treatment (N),Num,8,,ARMN
+ADLBHY,TRTA,Actual Treatment,Char,20,,ARM
+ADLBHY,TRTAN,Actual Treatment (N),Num,8,,ARMN
+ADLBHY,TRTSDT,Date of First Exposure to Treatment,Num,8,DATE9.,
+ADLBHY,TRTEDT,Date of Last Exposure to Treatment,Num,8,DATE9.,
+ADLBHY,AGE,Age,Num,8,,
+ADLBHY,AGEGR1,Pooled Age Group 1,Char,5,,AGEGR1
+ADLBHY,AGEGR1N,Pooled Age Group 1 (N),Num,8,,AGEGR1N
+ADLBHY,RACE,Race,Char,32,,RACE
+ADLBHY,RACEN,Race (N),Num,8,,RACEN
+ADLBHY,SEX,Sex,Char,1,,SEX
+ADLBHY,COMP24FL,Completers of Week 24 Population Flag,Char,1,,YN
+ADLBHY,DSRAEFL,Discontinued due to AE?,Char,1,,YN
+ADLBHY,SAFFL,Safety Population Flag,Char,1,,YN
+ADLBHY,AVISIT,Analysis Visit,Char,16,,AVISIT
+ADLBHY,AVISITN,Analysis Visit (N),Num,8,,AVISITN
+ADLBHY,ADY,Analysis Relative Day,Num,8,,
+ADLBHY,ADT,Analysis Date,Num,8,DATE9.,
+ADLBHY,VISIT,Visit Name,Char,19,,VISIT
+ADLBHY,VISITNUM,Visit Number,Num,8,,VISITNUM
+ADLBHY,PARAMTYP,Parameter Type,Char,7,,PARAMTYP
+ADLBHY,PARAM,Parameter,Char,100,,PARAM_ADLBHY
+ADLBHY,PARAMCD,Parameter Code,Char,8,,PARAMCD_ADLBHY
+ADLBHY,PARAMN,Parameter (N),Num,8,,PARAMN_ADLBHY
+ADLBHY,PARCAT1,Parameter Category 1,Char,5,,ADLBCAT
+ADLBHY,AVAL,Analysis Value,Num,8,,
+ADLBHY,BASE,Baseline Value,Num,8,,
+ADLBHY,A1LO,Analysis Range 1 Lower Limit,Num,8,,
+ADLBHY,A1HI,Analysis Range 1 Upper Limit,Num,8,,
+ADLBHY,R2A1LO,Ratio to Analysis Range 1 Lower Limit,Num,8,,
+ADLBHY,R2A1HI,Ratio to Analysis Range 1 Upper Limit,Num,8,,
+ADLBHY,BR2A1LO,Base Ratio to Analysis Range 1 Lower Lim,Num,8,,
+ADLBHY,BR2A1HI,Base Ratio to Analysis Range 1 Upper Lim,Num,8,,
+ADLBHY,ABLFL,Baseline Record Flag,Char,1,,Y_BLANK
+ADLBHY,SHIFT1,Shift 1,Char,16,,SHIFT
+ADLBHY,SHIFT1N,Shift 1 (N),Num,8,,SHIFTN
+ADLBHY,CRIT1,Analysis Criterion 1,Char,12,,
+ADLBHY,CRIT1FL,Criterion 1 Evaluation Result Flag,Char,1,,YN
+ADLBHY,CRIT1FN,Criterion 1 Evaluation Result Flag (N),Num,8,,YNN
+ADQSADAS,STUDYID,Study Identifier,Char,12,,
+ADQSADAS,SITEID,Study Site Identifier,Char,3,,
+ADQSADAS,SITEGR1,Pooled Site Group 1,Char,3,,
+ADQSADAS,USUBJID,Unique Subject Identifier,Char,11,,
+ADQSADAS,TRTSDT,Date of First Exposure to Treatment,Num,8,DATE9.,
+ADQSADAS,TRTEDT,Date of Last Exposure to Treatment,Num,8,DATE9.,
+ADQSADAS,TRTP,Planned Treatment,Char,20,,ARM
+ADQSADAS,TRTPN,Planned Treatment (N),Num,8,,ARMN
+ADQSADAS,AGE,Age,Num,8,,
+ADQSADAS,AGEGR1,Pooled Age Group 1,Char,5,,AGEGR1
+ADQSADAS,AGEGR1N,Pooled Age Group 1 (N),Num,8,,AGEGR1N
+ADQSADAS,RACE,Race,Char,32,,RACE
+ADQSADAS,RACEN,Race (N),Num,8,,RACEN
+ADQSADAS,SEX,Sex,Char,1,,SEX
+ADQSADAS,ITTFL,Intent-to-Treat Population Flag,Char,1,,YN
+ADQSADAS,EFFFL,Efficacy Population Flag,Char,1,,YN
+ADQSADAS,COMP24FL,Completers of Week 24 Population Flag,Char,1,,YN
+ADQSADAS,AVISIT,Analysis Visit,Char,16,,AVISIT
+ADQSADAS,AVISITN,Analysis Visit (N),Num,8,,AVISITN
+ADQSADAS,VISIT,Visit Name,Char,19,,VISIT
+ADQSADAS,VISITNUM,Visit Number,Num,8,,VISITNUM
+ADQSADAS,ADY,Analysis Relative Day,Num,8,,
+ADQSADAS,ADT,Analysis Date,Num,8,DATE9.,
+ADQSADAS,PARAM,Parameter,Char,100,,PARAM_ADQSADAS
+ADQSADAS,PARAMCD,Parameter Code,Char,8,,PARAMCD_ADQSADAS
+ADQSADAS,PARAMN,Parameter (N),Num,8,,PARAMN_ADQSADAS
+ADQSADAS,AVAL,Analysis Value,Num,8,,
+ADQSADAS,BASE,Baseline Value,Num,8,,
+ADQSADAS,CHG,Baseline Value,Num,8,,
+ADQSADAS,PCHG,Percent Change from Baseline,Num,8,,
+ADQSADAS,ABLFL,ABLFL,Char,1,,Y_BLANK
+ADQSADAS,ANL01FL,Analysis Record Flag 01,Char,1,,Y_BLANK
+ADQSADAS,DTYPE,Derivation Type,Char,7,,DTYPE
+ADQSADAS,AWRANGE,Analysis Window Valid Relative Range,Char,9,,
+ADQSADAS,AWTARGET,Analysis Window Target,Num,8,,
+ADQSADAS,AWTDIFF,Analysis Window Diff from Target,Num,8,,
+ADQSADAS,AWLO,Analysis Window Beginning Timepoint,Num,8,,
+ADQSADAS,AWHI,Analysis Window Ending Timepoint,Num,8,,
+ADQSADAS,AWU,Analysis Window Unit,Char,4,,AWU
+ADQSADAS,QSSEQ,Sequence Number,Num,8,,
+ADQSCIBC,STUDYID,Study Identifier,Char,12,,
+ADQSCIBC,SITEID,Study Site Identifier,Char,3,,
+ADQSCIBC,SITEGR1,Pooled Site Group 1,Char,3,,
+ADQSCIBC,USUBJID,Unique Subject Identifier,Char,11,,
+ADQSCIBC,TRTSDT,Date of First Exposure to Treatment,Num,8,DATE9.,
+ADQSCIBC,TRTEDT,Date of Last Exposure to Treatment,Num,8,DATE9.,
+ADQSCIBC,TRTP,Planned Treatment,Char,20,,ARM
+ADQSCIBC,TRTPN,Planned Treatment (N),Num,8,,ARMN
+ADQSCIBC,AGE,Age,Num,8,,
+ADQSCIBC,AGEGR1,Pooled Age Group 1,Char,5,,AGEGR1
+ADQSCIBC,AGEGR1N,Pooled Age Group 1 (N),Num,8,,AGEGR1N
+ADQSCIBC,RACE,Race,Char,32,,RACE
+ADQSCIBC,RACEN,Race (N),Num,8,,RACEN
+ADQSCIBC,SEX,Sex,Char,1,,SEX
+ADQSCIBC,ITTFL,Intent-to-Treat Population Flag,Char,1,,YN
+ADQSCIBC,EFFFL,Efficacy Population Flag,Char,1,,YN
+ADQSCIBC,COMP24FL,Completers of Week 24 Population Flag,Char,1,,YN
+ADQSCIBC,AVISIT,Analysis Visit,Char,16,,AVISIT
+ADQSCIBC,AVISITN,Analysis Visit (N),Num,8,,AVISITN
+ADQSCIBC,VISIT,Visit Name,Char,19,,VISIT
+ADQSCIBC,VISITNUM,Visit Number,Num,8,,VISITNUM
+ADQSCIBC,ADY,Analysis Relative Day,Num,8,,
+ADQSCIBC,ADT,Analysis Date,Num,8,DATE9.,
+ADQSCIBC,PARAMCD,Parameter Code,Char,8,,PARAMCD_ADQSCIBC
+ADQSCIBC,PARAM,Parameter,Char,100,,PARAM_ADQSCIBC
+ADQSCIBC,PARAMN,Parameter (N),Num,8,,PARAMN_ADQSCIBC
+ADQSCIBC,AVAL,Analysis Value,Num,8,,
+ADQSCIBC,ANL01FL,Analysis Record Flag 01,Char,1,,Y_BLANK
+ADQSCIBC,DTYPE,Derivation Type,Char,7,,DTYPE
+ADQSCIBC,AWRANGE,Analysis Window Valid Relative Range,Char,9,,
+ADQSCIBC,AWTARGET,Analysis Window Target,Num,8,,
+ADQSCIBC,AWTDIFF,Analysis Window Diff from Target,Num,8,,
+ADQSCIBC,AWLO,Analysis Window Beginning Timepoint,Num,8,,
+ADQSCIBC,AWHI,Analysis Window Ending Timepoint,Num,8,,
+ADQSCIBC,AWU,Analysis Window Unit,Char,4,,AWU
+ADQSCIBC,QSSEQ,Sequence Number,Num,8,,
+ADQSNPIX,STUDYID,Study Identifier,Char,12,,
+ADQSNPIX,SITEID,Study Site Identifier,Char,3,,
+ADQSNPIX,SITEGR1,Pooled Site Group 1,Char,3,,
+ADQSNPIX,USUBJID,Unique Subject Identifier,Char,11,,
+ADQSNPIX,TRTSDT,Date of First Exposure to Treatment,Num,8,DATE9.,
+ADQSNPIX,TRTEDT,Date of Last Exposure to Treatment,Num,8,DATE9.,
+ADQSNPIX,TRTP,Planned Treatment,Char,20,,ARM
+ADQSNPIX,TRTPN,Planned Treatment (N),Num,8,,ARMN
+ADQSNPIX,AGE,Age,Num,8,,
+ADQSNPIX,AGEGR1,Pooled Age Group 1,Char,5,,AGEGR1
+ADQSNPIX,AGEGR1N,Pooled Age Group 1 (N),Num,8,,AGEGR1N
+ADQSNPIX,RACE,Race,Char,32,,RACE
+ADQSNPIX,RACEN,Race (N),Num,8,,RACEN
+ADQSNPIX,SEX,Sex,Char,1,,SEX
+ADQSNPIX,ITTFL,Intent-to-Treat Population Flag,Char,1,,YN
+ADQSNPIX,EFFFL,Efficacy Population Flag,Char,1,,YN
+ADQSNPIX,COMP24FL,Completers of Week 24 Population Flag,Char,1,,YN
+ADQSNPIX,AVISIT,Analysis Visit,Char,16,,AVISIT
+ADQSNPIX,AVISITN,Analysis Visit (N),Num,8,,AVISITN
+ADQSNPIX,ADY,Analysis Relative Day,Num,8,,
+ADQSNPIX,ADT,Analysis Date,Num,8,DATE9.,
+ADQSNPIX,VISITNUM,Visit Number,Num,8,,VISITNUM
+ADQSNPIX,VISIT,Visit Name,Char,19,,VISIT
+ADQSNPIX,PARAM,Parameter,Char,100,,PARAM_ADQSNPIX
+ADQSNPIX,PARAMCD,Parameter Code,Char,8,,PARAMCD_ADQSNPIX
+ADQSNPIX,PARAMN,Parameter (N),Num,8,,PARAMN_ADQSNPIX
+ADQSNPIX,PARAMTYP,Parameter Type,Char,7,,PARAMTYP
+ADQSNPIX,AVAL,Analysis Value,Num,8,,
+ADQSNPIX,BASE,Baseline Value,Num,8,,
+ADQSNPIX,CHG,Change from Baseline,Num,8,,
+ADQSNPIX,PCHG,Percent Change from Baseline,Num,8,,
+ADQSNPIX,ABLFL,Analysis Baseline Flag,Char,1,,Y_BLANK
+ADQSNPIX,ANL01FL,Analysis Record Flag 01,Char,1,,Y_BLANK
+ADQSNPIX,DTYPE,Derivation Type,Char,7,,DTYPE
+ADQSNPIX,AWRANGE,Analysis Window Valid Relative Range,Char,9,,
+ADQSNPIX,AWTARGET,Analysis Window Target,Num,8,,
+ADQSNPIX,AWTDIFF,Analysis Window Diff from Target,Num,8,,
+ADQSNPIX,AWLO,Analysis Window Beginning Timepoint,Num,8,,
+ADQSNPIX,AWHI,Analysis Window Ending Timepoint,Num,8,,
+ADQSNPIX,AWU,Analysis Window Unit,Char,4,,AWU
+ADQSNPIX,QSSEQ,Sequence Number,Num,8,,
+ADSL,STUDYID,Study Identifier,Char,12,,
+ADSL,USUBJID,Unique Subject Identifier,Char,11,,
+ADSL,SUBJID,Subject Identifier for the Study,Char,4,,
+ADSL,SITEID,Study Site Identifier,Char,3,,
+ADSL,SITEGR1,Pooled Site Group 1,Char,3,,
+ADSL,ARM,Description of Planned Arm,Char,20,,ARM
+ADSL,TRT01P,Planned Treatment for Period 01,Char,20,,ARM
+ADSL,TRT01PN,Planned Treatment for Period 01 (N),Num,8,,ARMN
+ADSL,TRT01A,Actual Treatment for Period 01,Char,20,,ARM
+ADSL,TRT01AN,Actual Treatment for Period 01 (N),Num,8,,ARMN
+ADSL,TRTSDT,Date of First Exposure to Treatment,Num,8,DATE9.,
+ADSL,TRTEDT,Date of Last Exposure to Treatment,Num,8,DATE9.,
+ADSL,TRTDUR,Duration of Treatment (days),Num,8,,
+ADSL,AVGDD,Avg Daily Dose (as planned),Num,8,,
+ADSL,CUMDOSE,Cumulative Dose (as planned),Num,8,,
+ADSL,AGE,Age,Num,8,,
+ADSL,AGEGR1,Pooled Age Group 1,Char,5,,AGEGR1
+ADSL,AGEGR1N,Pooled Age Group 1 (N),Num,8,,AGEGR1N
+ADSL,AGEU,Age Units,Char,5,,AGEU
+ADSL,RACE,Race,Char,32,,RACE
+ADSL,RACEN,Race (N),Num,8,,RACEN
+ADSL,SEX,Sex,Char,1,,SEX
+ADSL,ETHNIC,Ethnicity,Char,22,,ETHNIC
+ADSL,SAFFL,Safety Population Flag,Char,1,,YN
+ADSL,ITTFL,Intent-To-Treat Population Flag,Char,1,,YN
+ADSL,EFFFL,Efficacy Population Flag,Char,1,,YN
+ADSL,COMP8FL,Completers of Week 8 Population Flag,Char,1,,YN
+ADSL,COMP16FL,Completers of Week 16 Population Flag,Char,1,,YN
+ADSL,COMP24FL,Completers of Week 24 Population Flag,Char,1,,YN
+ADSL,DISCONFL,Did the Subject Discontinue the Study?,Char,1,,Y_BLANK
+ADSL,DSRAEFL,Discontinued due to AE?,Char,1,,Y_BLANK
+ADSL,DTHFL,Subject Died?,Char,1,,Y_BLANK
+ADSL,BMIBL,Baseline BMI (kg/m^2),Num,8,,
+ADSL,BMIBLGR1,Pooled Baseline BMI Group 1,Char,6,,BMICAT
+ADSL,HEIGHTBL,Baseline Height (cm),Num,8,,
+ADSL,WEIGHTBL,Baseline Weight (kg),Num,8,,
+ADSL,EDUCLVL,Years of Education,Num,8,,
+ADSL,DISONSDT,Date of Onset of Disease,Num,8,DATE9.,
+ADSL,DURDIS,Duration of Disease (Months),Num,8,,
+ADSL,DURDSGR1,Pooled Disease Duration Group 1,Char,4,,DURDISC
+ADSL,VISIT1DT,Date of Visit 1,Num,8,DATE9.,
+ADSL,RFSTDTC,Subject Reference Start Date/Time,datetime,20,,
+ADSL,RFENDTC,Subject Reference End Date/Time,datetime,20,,
+ADSL,VISNUMEN,End of Trt Visit (Vis 12 or Early Term.),Num,8,,
+ADSL,RFENDT,Date of Discontinuation/Completion,Num,8,DATE9.,
+ADSL,DCDECOD,Standardized Disposition Term,Char,27,,DISCCD
+ADSL,DCREASCD,Reason for Discontinuation,Char,18,,DISCREAS
+ADSL,MMSETOT,MMSE Total,Num,8,,
+ADTTE,STUDYID,Study Identifier,Char,12,,
+ADTTE,SITEID,Study Site Identifier,Char,3,,
+ADTTE,USUBJID,Unique Subject Identifier,Char,11,,
+ADTTE,AGE,Age,Num,8,,
+ADTTE,AGEGR1,Pooled Age Group 1,Char,5,,AGEGR1
+ADTTE,AGEGR1N,Pooled Age Group 1 (N),Num,8,,AGEGR1N
+ADTTE,RACE,Race,Char,32,,RACE
+ADTTE,RACEN,Race (N),Num,8,,RACEN
+ADTTE,SEX,Sex,Char,1,,SEX
+ADTTE,TRTSDT,Date of First Exposure to Treatment,Num,8,DATE9.,
+ADTTE,TRTEDT,Date of Last Exposure to Treatment,Num,8,DATE9.,
+ADTTE,TRTDUR,Duration of treatment (days),Num,8,,
+ADTTE,TRTP,Planned Treatment,Char,20,,ARM
+ADTTE,TRTA,Actual Treatment,Char,20,,ARM
+ADTTE,TRTAN,Actual Treatment (N),Num,8,,ARMN
+ADTTE,PARAM,Parameter Description,Char,100,,PARAM_ADTTE
+ADTTE,PARAMCD,Parameter Code,Char,8,,PARAMCD_ADTTE
+ADTTE,AVAL,Analysis Value,Num,8,,
+ADTTE,STARTDT,Time to Event Origin Date for Subject,Num,8,DATE9.,
+ADTTE,ADT,Analysis Date,Num,8,DATE9.,
+ADTTE,CNSR,Censor,Num,8,,CENSOR
+ADTTE,EVNTDESC,Event or Censoring Description,Char,25,,
+ADTTE,SRCDOM,Source Domain,Char,4,,
+ADTTE,SRCVAR,Source Variable,Char,6,,
+ADTTE,SRCSEQ,Source Sequence Number,Num,8,,
+ADTTE,SAFFL,Safety Population Flag,Char,1,,YN
+ADVS,STUDYID,Study Identifier,Char,12,,
+ADVS,SITEID,Study Site Identifier,Char,3,,
+ADVS,USUBJID,Unique Subject Identifier,Char,11,,
+ADVS,AGE,Age,Num,8,,
+ADVS,AGEGR1,Pooled Age Group 1,Char,5,,AGEGR1
+ADVS,AGEGR1N,Pooled Age Group 1 (N),Num,8,,AGEGR1N
+ADVS,RACE,Race,Char,32,,RACE
+ADVS,RACEN,Race (N),Num,8,,RACEN
+ADVS,SEX,Sex,Char,1,,SEX
+ADVS,SAFFL,Safety Population Flag,Char,1,,YN
+ADVS,TRTSDT,Date of First Exposure to Treatment,Num,8,DATE9.,
+ADVS,TRTEDT,Date of Last Exposure to Treatment,Num,8,DATE9.,
+ADVS,TRTP,Planned Treatment,Char,20,,ARM
+ADVS,TRTPN,Planned Treatment (N),Num,8,,ARMN
+ADVS,TRTA,Actual Treatment,Char,20,,ARM
+ADVS,TRTAN,Actual Treatment (N),Num,8,,ARMN
+ADVS,PARAMCD,Parameter Code,Char,8,,PARAMCD_ADVS
+ADVS,PARAM,Parameter,Char,100,,PARAM_ADVS
+ADVS,PARAMN,Parameter Number,Num,8,,PARAMN_ADVS
+ADVS,ADT,Analysis Date,Num,8,DATE9.,
+ADVS,ADY,Analysis Relative Day,Num,8,,
+ADVS,ATPTN,Analysis Timepoint (N),Num,8,,
+ADVS,ATPT,Analysis Timepoint,Char,30,,ATPT
+ADVS,AVISIT,Analysis Visit,Char,16,,AVISIT
+ADVS,AVISITN,Analysis Visit (N),Num,8,,AVISITN
+ADVS,AVAL,Analysis Value,Num,8,,
+ADVS,BASE,Baseline Value,Num,8,,
+ADVS,CHG,Change from Baseline,Num,8,,
+ADVS,PCHG,Percent Change from Baseline,Num,8,,
+ADVS,VISITNUM,Visit Number,Num,8,,VISITNUM
+ADVS,VISIT,Visit Name,Char,19,,VISIT
+ADVS,VSSEQ,Sequence Number,Num,8,,
+ADVS,ANL01FL,Analysis Record Flag 01,Char,1,,Y_BLANK
+ADVS,ABLFL,Baseline Record Flag,Char,1,,Y_BLANK

@@ -1,0 +1,10 @@
+data_concept,ADaM_standard_var
+subject,USUBJID
+visit,AVISIT
+visit_numeric,AVISITN
+parameter,PARAMCD
+parameter_description,PARAM
+analysis_value,AVAL
+baseline_value,BASE
+change_value,CHG
+record_population_flag,ITTFL

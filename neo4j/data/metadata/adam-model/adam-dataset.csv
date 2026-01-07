@@ -1,0 +1,11 @@
+Dataset,Dataset Description,Class,Structure,Keys
+ADSL,Subject-Level Analysis,ADSL,one record per subject,USUBJID
+ADAE,Adverse Events Analysis Dataset,ADAE,one record per subject per adverse event,"USUBJID, AETERM, ASTDT, AESEQ"
+ADLBC,Analysis Dataset Lab Blood Chemistry,BDS,one record per subject per parameter per analysis visit,"USUBJID, PARAMCD, AVISIT, LBSEQ"
+ADLBH,Analysis Dataset Lab Hematology,BDS,one record per subject per parameter per analysis visit,"USUBJID, PARAMCD, AVISIT, LBSEQ"
+ADLBHY,Analysis Dataset Lab Hy's Law,BDS,one record per subject per parameter per analysis visit,"USUBJID, PARAMCD, AVISIT, LBSEQ"
+ADQSADAS,ADAS-Cog Analysis,BDS,one record per subject per parameter per analysis visit per analysis date,"USUBJID, PARAMCD, AVISIT, ADT"
+ADQSCIBC,CIBIC+ Analysis,BDS,one record per subject per parameter per analysis visit per analysis date,"USUBJID, PARAMCD, AVISIT, ADT"
+ADQSNPIX,NPI-X Item Analysis Data,BDS,one record per subject per parameter per analysis visit per analysis date,"USUBJID, PARAMCD, AVISIT, ADT"
+ADTTE,AE Time To 1st Derm. Event Analysis,BDS,one record per subject per parameter,"USUBJID, PARAMCD"
+ADVS,Vital Signs Analysis Dataset,BDS,one record per subject per parameter per analysis visit per analysis timepoint,"USUBJID, PARAMCD, AVISIT, ATPT"

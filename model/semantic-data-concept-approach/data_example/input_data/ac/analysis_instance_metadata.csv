@@ -1,0 +1,15 @@
+entity_type,entity_id,name,label,role,datatype,value,parent_entity,relationship,data_concept,formula
+Analysis,S_AC_001,ANCOVA Change from Baseline ADAS-Cog(11) Week 24,ANCOVA analysis of change from baseline with baseline site and treatment as covariates,,,,,,,
+Method,,FitANCOVAModel,ANCOVA model fitting,,,,S_AC_001,implements,,change_value ~ baseline_value + site + treatment
+Cube,ancova_input,ancova_input,The input dataset for ANCOVA,,,,Method,input,,
+Cube,treatment_results,treatment_results,LS Means by Treatment Group,,,,Method,output,,
+Cube,comparison_results,comparison_results,Pairwise Treatment Comparisons,,,,Method,output,,
+Slice,,ancova_slice,,,,,ancova_input,constrains,,
+Dimension,,subject,,identifier,string,,ancova_input,contains,subject,
+Dimension,,treatment,,factor,string,,ancova_input,contains,treatment,
+Dimension,,site,,factor,string,,ancova_input,contains,site,
+Measure,,change_value,,dependent,numeric,,ancova_input,contains,change_value,
+Measure,,baseline_value,,covariate,numeric,,ancova_input,contains,baseline_value,
+Attribute,,PARAM,,qualifier,string,Adas-Cog(11) Subscore,ancova_slice,fix,parameter,
+Attribute,,AVISIT,,qualifier,string,Week 24,ancova_slice,fix,timepoint,
+Attribute,,EFFFL,,qualifier,string,Y,ancova_slice,fix,population_flag,

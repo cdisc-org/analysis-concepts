@@ -1,0 +1,4 @@
+"treatment","lsmean","lsmean_se","ci_lower","ci_upper","parameter","timepoint","population_flag"
+"Placebo",2.40035805339636,0.722654794371262,0.976037033323993,3.82467907346872,"Adas-Cog(11) Subscore","Week 24","Y"
+"Xanomeline High Dose",1.49278554676747,0.747926230504947,0.0186556304240499,2.9669154631109,"Adas-Cog(11) Subscore","Week 24","Y"
+"Xanomeline Low Dose",1.90030101742256,0.682685103443636,0.554758511514133,3.24584352333099,"Adas-Cog(11) Subscore","Week 24","Y"
