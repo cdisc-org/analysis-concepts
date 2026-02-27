@@ -1,0 +1,252 @@
+{
+  "version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "./statistics_vocabulary.json"
+  },
+  "description": "Reusable output class patterns referenced by methods",
+  "output_class_templates": {
+    "fit_statistics": {
+      "description": "Overall model goodness-of-fit measures",
+      "cardinality": "singleton",
+      "indexed_by": null,
+      "statistics": [
+        "AIC",
+        "BIC",
+        "minus2LogL"
+      ]
+    },
+    "type3_tests": {
+      "description": "Type III (or other SS type) omnibus tests, one per model term",
+      "cardinality": "per_term",
+      "indexed_by": [
+        "term"
+      ],
+      "statistics": [
+        "F_statistic",
+        "p_value",
+        "df_num",
+        "df_den",
+        "SS",
+        "MS"
+      ]
+    },
+    "parameter_estimates": {
+      "description": "Solution for fixed effects, one row per model coefficient",
+      "cardinality": "per_coefficient",
+      "indexed_by": [
+        "term",
+        "level"
+      ],
+      "statistics": [
+        "coefficient",
+        "SE",
+        "t_statistic",
+        "p_value",
+        "CI_lower",
+        "CI_upper",
+        "df"
+      ]
+    },
+    "ls_means": {
+      "description": "Least-squares means (adjusted marginal means) per factor level or level combination",
+      "cardinality": "per_level",
+      "indexed_by": [
+        "factor",
+        "level"
+      ],
+      "statistics": [
+        "estimate",
+        "SE",
+        "CI_lower",
+        "CI_upper",
+        "df"
+      ]
+    },
+    "contrasts": {
+      "description": "Pairwise or custom contrasts between LS means",
+      "cardinality": "per_contrast",
+      "indexed_by": [
+        "contrast",
+        "at_level"
+      ],
+      "statistics": [
+        "estimate",
+        "SE",
+        "CI_lower",
+        "CI_upper",
+        "t_statistic",
+        "p_value",
+        "df"
+      ]
+    },
+    "covariance_parameters": {
+      "description": "Estimated covariance/variance components",
+      "cardinality": "per_parameter",
+      "indexed_by": [
+        "cov_param"
+      ],
+      "statistics": [
+        "estimate",
+        "SE"
+      ]
+    },
+    "test_result": {
+      "description": "Single overall test result (for non-regression methods)",
+      "cardinality": "singleton",
+      "indexed_by": null,
+      "statistics": [
+        "chi_squared",
+        "p_value",
+        "df"
+      ]
+    },
+    "association_measures": {
+      "description": "Effect size / association measures with inference",
+      "cardinality": "singleton_or_per_stratum",
+      "indexed_by": [
+        "stratum"
+      ],
+      "statistics": [
+        "estimate",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "survival_table": {
+      "description": "Life table with survival estimates at each event time",
+      "cardinality": "per_event_time",
+      "indexed_by": [
+        "group",
+        "time"
+      ],
+      "statistics": [
+        "n_risk",
+        "n_event",
+        "n_censored",
+        "survival_prob",
+        "SE",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "median_survival": {
+      "description": "Median survival time per group",
+      "cardinality": "per_group",
+      "indexed_by": [
+        "group"
+      ],
+      "statistics": [
+        "median",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "event_summary": {
+      "description": "Summary counts of events and censoring per group",
+      "cardinality": "per_group",
+      "indexed_by": [
+        "group"
+      ],
+      "statistics": [
+        "n_risk",
+        "n_event",
+        "n_censored"
+      ]
+    },
+    "computed_value": {
+      "description": "Single derived/computed output value (for derivation methods)",
+      "cardinality": "per_row",
+      "indexed_by": null,
+      "statistics": [
+        "value"
+      ]
+    },
+    "multivariate_tests": {
+      "description": "Multivariate test statistics for overall hypothesis",
+      "cardinality": "per_test_type",
+      "indexed_by": [
+        "test_type"
+      ],
+      "statistics": [
+        "estimate",
+        "F_statistic",
+        "p_value",
+        "df_num",
+        "df_den"
+      ]
+    },
+    "point_estimate": {
+      "description": "Estimated mean with inference",
+      "cardinality": "singleton",
+      "indexed_by": null,
+      "statistics": [
+        "mean",
+        "SE",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "homogeneity_test": {
+      "description": "Breslow-Day test for homogeneity of odds ratios across strata",
+      "cardinality": "singleton",
+      "indexed_by": null,
+      "statistics": [
+        "chi_squared",
+        "p_value",
+        "df"
+      ]
+    },
+    "odds_ratio_estimates": {
+      "description": "Odds ratios with confidence intervals (exponentiated coefficients)",
+      "cardinality": "per_coefficient",
+      "indexed_by": [
+        "term",
+        "level"
+      ],
+      "statistics": [
+        "odds_ratio",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "landmark_estimates": {
+      "description": "Survival probability at specific landmark times",
+      "cardinality": "per_group_per_landmark",
+      "indexed_by": [
+        "group",
+        "time"
+      ],
+      "statistics": [
+        "survival_prob",
+        "SE",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "global_tests": {
+      "description": "Overall model significance tests (likelihood ratio, Wald, score)",
+      "cardinality": "per_test_type",
+      "indexed_by": [
+        "test_type"
+      ],
+      "statistics": [
+        "chi_squared",
+        "p_value",
+        "df"
+      ]
+    },
+    "hazard_ratio_estimates": {
+      "description": "Hazard ratios with confidence intervals (exponentiated coefficients)",
+      "cardinality": "per_coefficient",
+      "indexed_by": [
+        "term",
+        "level"
+      ],
+      "statistics": [
+        "hazard_ratio",
+        "CI_lower",
+        "CI_upper"
+      ]
+    }
+  }
+}

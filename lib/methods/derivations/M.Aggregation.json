@@ -1,0 +1,73 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.Aggregation",
+  "name": "Aggregation",
+  "type": "derivation",
+  "class": "Summary",
+  "intent": [
+    "DataAggregation"
+  ],
+  "description": "Aggregates values within a partition using specified function",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := AGG(value) OVER (partition)",
+    "generic_expression": "result := <agg_func>(<value>) OVER (<partition>+)"
+  },
+  "configurations": [
+    {
+      "name": "agg_func",
+      "dataType": "enum",
+      "defaultValue": "mean",
+      "enumValues": [
+        "sum",
+        "mean",
+        "median",
+        "min",
+        "max",
+        "count",
+        "first",
+        "last"
+      ],
+      "description": "Aggregation function to apply"
+    }
+  ],
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "value",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "Values to aggregate"
+    },
+    {
+      "name": "partition",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "multiple",
+      "description": "Grouping variables defining the partition"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "result",
+        "dataType": "numeric",
+        "description": "The aggregated value per partition group",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": [
+          "partition"
+        ]
+      }
+    ]
+  }
+}

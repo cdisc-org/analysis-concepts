@@ -1,0 +1,129 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.LogisticRegression",
+  "name": "Logistic Regression",
+  "type": "analysis",
+  "class": "Generalized Linear Models",
+  "intent": [
+    "OutcomeModeling"
+  ],
+  "description": "Models binary outcome as function of predictors via a link function (logit by default)",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ covariate + group",
+    "generic_expression": "<response> ~ <covariate>* + <fixed_effect>+ + (<covariate>:<fixed_effect>)* + (<fixed_effect>:<fixed_effect>)*",
+    "notes": "Generalized linear model with binomial family. Multiple covariates and factors supported. For stratified analyses, can include strata as a fixed effect."
+  },
+  "configurations": [
+    {
+      "name": "link",
+      "dataType": "enum",
+      "defaultValue": "logit",
+      "enumValues": [
+        "logit",
+        "probit",
+        "cloglog"
+      ],
+      "description": "Link function"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "fit_statistics",
+        "description": "Model fit measures",
+        "cardinality": "singleton",
+        "indexed_by": null,
+        "statistics": [
+          "AIC",
+          "BIC",
+          "minus2LogL",
+          "concordance"
+        ]
+      },
+      {
+        "class": "type3_tests",
+        "description": "Type III likelihood ratio or Wald tests per term",
+        "cardinality": "per_term",
+        "indexed_by": [
+          "term"
+        ],
+        "statistics": [
+          "chi_squared",
+          "p_value",
+          "df"
+        ]
+      },
+      {
+        "class": "parameter_estimates",
+        "description": "Maximum likelihood estimates on log-odds scale",
+        "cardinality": "per_coefficient",
+        "indexed_by": [
+          "term",
+          "level"
+        ],
+        "statistics": [
+          "coefficient",
+          "SE",
+          "z_statistic",
+          "p_value",
+          "CI_lower",
+          "CI_upper",
+          "odds_ratio"
+        ]
+      },
+      {
+        "class": "odds_ratio_estimates",
+        "description": "Odds ratios with confidence intervals (exponentiated coefficients)",
+        "cardinality": "per_coefficient",
+        "indexed_by": [
+          "term",
+          "level"
+        ],
+        "statistics": [
+          "odds_ratio",
+          "CI_lower",
+          "CI_upper"
+        ]
+      }
+    ]
+  },
+  "assumptions": [
+    "Independence of observations",
+    "Linear relationship between log-odds and predictors",
+    "No multicollinearity"
+  ],
+  "stato_mapping": "STATO:0000149",
+  "input_roles": [
+    {
+      "name": "response",
+      "statisticalRole": "response",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single",
+      "description": "Binary response variable (0/1 or event/no-event)"
+    },
+    {
+      "name": "covariate",
+      "statisticalRole": "covariate",
+      "dataType": "numeric",
+      "required": false,
+      "cardinality": "multiple",
+      "description": "Continuous covariate(s)"
+    },
+    {
+      "name": "group",
+      "statisticalRole": "fixed_effect",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single_or_multiple",
+      "description": "Treatment group and/or other categorical factors"
+    }
+  ]
+}

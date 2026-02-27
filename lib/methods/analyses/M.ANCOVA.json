@@ -1,0 +1,172 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.ANCOVA",
+  "name": "ANCOVA",
+  "type": "analysis",
+  "class": "General Linear Models",
+  "intent": [
+    "GroupComparison"
+  ],
+  "stato_mapping": "STATO:0000179",
+  "stato_class": {
+    "id": "STATO:0000279",
+    "name": "between group comparison statistical test"
+  },
+  "description": "Analysis of Covariance - ANOVA with continuous covariate adjustment",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ covariate + group",
+    "generic_expression": "<response> ~ <covariate>* + <fixed_effect>+ + (<covariate>:<fixed_effect>)*",
+    "notes": "Covariates adjust the group comparison. Adding covariate:group interaction tests homogeneity of regression slopes. Multiple covariates and factors are supported."
+  },
+  "configurations": [
+    {
+      "name": "ss_type",
+      "dataType": "enum",
+      "defaultValue": "III",
+      "enumValues": [
+        "I",
+        "II",
+        "III",
+        "IV"
+      ],
+      "description": "Sum of squares type"
+    },
+    {
+      "name": "alpha",
+      "dataType": "numeric",
+      "defaultValue": 0.05,
+      "description": "Significance level"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "fit_statistics",
+        "description": "Model fit measures",
+        "cardinality": "singleton",
+        "indexed_by": null,
+        "statistics": [
+          "AIC",
+          "BIC",
+          "minus2LogL",
+          "R_squared"
+        ]
+      },
+      {
+        "class": "type3_tests",
+        "description": "Type III tests for each model term (covariate, group, interactions)",
+        "cardinality": "per_term",
+        "indexed_by": [
+          "term"
+        ],
+        "statistics": [
+          "SS",
+          "df_num",
+          "df_den",
+          "MS",
+          "F_statistic",
+          "p_value"
+        ]
+      },
+      {
+        "class": "parameter_estimates",
+        "description": "Solution for fixed effects (intercept, covariate slopes, group effects)",
+        "cardinality": "per_coefficient",
+        "indexed_by": [
+          "term",
+          "level"
+        ],
+        "statistics": [
+          "coefficient",
+          "SE",
+          "t_statistic",
+          "p_value",
+          "CI_lower",
+          "CI_upper",
+          "df"
+        ]
+      },
+      {
+        "class": "ls_means",
+        "description": "Least-squares means per group level, adjusted for covariates",
+        "cardinality": "per_level",
+        "indexed_by": [
+          "factor",
+          "level"
+        ],
+        "statistics": [
+          "estimate",
+          "SE",
+          "CI_lower",
+          "CI_upper",
+          "df"
+        ]
+      },
+      {
+        "class": "contrasts",
+        "description": "Pairwise LS mean differences between group levels",
+        "cardinality": "per_contrast",
+        "indexed_by": [
+          "contrast"
+        ],
+        "statistics": [
+          "estimate",
+          "SE",
+          "CI_lower",
+          "CI_upper",
+          "t_statistic",
+          "p_value",
+          "df"
+        ]
+      },
+      {
+        "class": "covariance_parameters",
+        "description": "Residual variance estimate",
+        "cardinality": "singleton",
+        "indexed_by": null,
+        "statistics": [
+          "estimate"
+        ]
+      }
+    ]
+  },
+  "assumptions": [
+    "Independence of observations",
+    "Normality of residuals",
+    "Homogeneity of regression slopes (if no covariate:group interaction)",
+    "Linear relationship between covariate and response"
+  ],
+  "input_roles": [
+    {
+      "name": "response",
+      "statisticalRole": "response",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "The response/dependent variable"
+    },
+    {
+      "name": "covariate",
+      "statisticalRole": "covariate",
+      "dataType": "numeric",
+      "required": false,
+      "cardinality": "multiple",
+      "description": "Continuous covariate(s) for adjustment (e.g., baseline value, age)"
+    },
+    {
+      "name": "group",
+      "statisticalRole": "fixed_effect",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single_or_multiple",
+      "description": "Grouping/factor variable(s) (e.g., treatment arm, region)"
+    }
+  ]
+}

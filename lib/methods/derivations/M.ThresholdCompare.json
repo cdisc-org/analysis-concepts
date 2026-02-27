@@ -1,0 +1,81 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.ThresholdCompare",
+  "name": "Threshold Comparison",
+  "type": "derivation",
+  "class": "Classification",
+  "intent": [
+    "ValueClassification"
+  ],
+  "description": "Compares value against threshold and returns result",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := IF(value >= threshold, true_value, false_value)",
+    "generic_expression": "result := IF(<value> <operator> <threshold>, <true_value>, <false_value>)"
+  },
+  "configurations": [
+    {
+      "name": "operator",
+      "dataType": "enum",
+      "defaultValue": ">=",
+      "enumValues": [
+        ">=",
+        ">",
+        "<=",
+        "<",
+        "==",
+        "!="
+      ],
+      "description": "Comparison operator"
+    },
+    {
+      "name": "true_value",
+      "dataType": "string",
+      "defaultValue": "Y",
+      "description": "Value when condition is true"
+    },
+    {
+      "name": "false_value",
+      "dataType": "string",
+      "defaultValue": "N",
+      "description": "Value when condition is false"
+    }
+  ],
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "value",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "Value to compare"
+    },
+    {
+      "name": "threshold",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "Threshold value"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "result",
+        "dataType": "string",
+        "description": "Comparison result flag",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": null
+      }
+    ]
+  }
+}

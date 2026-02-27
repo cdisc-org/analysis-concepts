@@ -1,0 +1,88 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.FisherExactTest",
+  "name": "Fisher's Exact Test",
+  "type": "analysis",
+  "class": "Categorical Data Analysis",
+  "intent": [
+    "CategoricalAssociation"
+  ],
+  "stato_mapping": "STATO:0000073",
+  "stato_class": {
+    "id": "STATO:0000027",
+    "name": "test of association between categorical variables"
+  },
+  "stato_r_implementation": "fisher.test(x) function, where x is a matrix",
+  "description": "Exact test of independence for 2x2 contingency tables. Preferred over chi-squared when expected cell counts are small.",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ group",
+    "generic_expression": "<response> ~ <fixed_effect>",
+    "notes": "Both variables must be binary for the standard 2x2 Fisher test."
+  },
+  "configurations": [
+    {
+      "name": "alternative",
+      "dataType": "enum",
+      "defaultValue": "two_sided",
+      "enumValues": [
+        "two_sided",
+        "less",
+        "greater"
+      ],
+      "description": "Direction of alternative hypothesis"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "test_result",
+        "description": "Fisher's exact test result",
+        "cardinality": "singleton",
+        "indexed_by": null,
+        "statistics": [
+          "p_value"
+        ]
+      },
+      {
+        "class": "association_measures",
+        "description": "Conditional maximum likelihood odds ratio",
+        "cardinality": "singleton",
+        "indexed_by": null,
+        "statistics": [
+          "odds_ratio",
+          "CI_lower",
+          "CI_upper"
+        ]
+      }
+    ]
+  },
+  "assumptions": [
+    "Independence of observations",
+    "Fixed marginal totals"
+  ],
+  "input_roles": [
+    {
+      "name": "response",
+      "statisticalRole": "response",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single",
+      "description": "Binary response variable (e.g., responder flag)"
+    },
+    {
+      "name": "group",
+      "statisticalRole": "fixed_effect",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single",
+      "description": "Treatment grouping variable"
+    }
+  ]
+}

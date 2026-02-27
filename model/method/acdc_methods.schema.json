@@ -1,0 +1,709 @@
+{
+    "$defs": {
+        "Cardinality": {
+            "description": "How many variables can fill an input role",
+            "enum": [
+                "single",
+                "multiple",
+                "single_or_multiple"
+            ],
+            "title": "Cardinality",
+            "type": "string"
+        },
+        "Configuration": {
+            "additionalProperties": false,
+            "description": "A configurable parameter for a method",
+            "properties": {
+                "dataType": {
+                    "$ref": "#/$defs/DataType",
+                    "description": "Data type of the configuration value"
+                },
+                "defaultValue": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Default value if not specified (can be string, number, or boolean)"
+                },
+                "description": {
+                    "description": "Explanation of this configuration parameter",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "enumValues": {
+                    "description": "Allowed values when dataType is enum",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Configuration parameter name",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "dataType"
+            ],
+            "title": "Configuration",
+            "type": "object"
+        },
+        "DataType": {
+            "description": "Data types for inputs, outputs, and configurations",
+            "enum": [
+                "numeric",
+                "string",
+                "boolean",
+                "date",
+                "datetime",
+                "enum"
+            ],
+            "title": "DataType",
+            "type": "string"
+        },
+        "FormulaNotation": {
+            "description": "The notation system used for formulas",
+            "enum": [
+                "assignment",
+                "wilkinson_rogers",
+                "survival"
+            ],
+            "title": "FormulaNotation",
+            "type": "string"
+        },
+        "FormulaSpec": {
+            "additionalProperties": false,
+            "description": "Specifies the formula notation and expressions for a method",
+            "properties": {
+                "default_expression": {
+                    "description": "Concrete example expression with default variable names",
+                    "type": "string"
+                },
+                "generic_expression": {
+                    "description": "Template expression with role-tagged placeholders, e.g., <response> ~ <covariate>",
+                    "type": "string"
+                },
+                "notation": {
+                    "$ref": "#/$defs/FormulaNotation",
+                    "description": "The formula notation system used"
+                },
+                "notes": {
+                    "description": "Additional notes on formula interpretation",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "notation",
+                "default_expression",
+                "generic_expression"
+            ],
+            "title": "FormulaSpec",
+            "type": "object"
+        },
+        "InputRole": {
+            "additionalProperties": false,
+            "description": "Specification of one input to a method",
+            "properties": {
+                "cardinality": {
+                    "$ref": "#/$defs/Cardinality",
+                    "description": "How many variables can fill this role"
+                },
+                "dataType": {
+                    "$ref": "#/$defs/DataType",
+                    "description": "Expected data type"
+                },
+                "description": {
+                    "description": "Explanation of this input role",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Role name used in the formula, e.g., response, covariate, partition",
+                    "type": "string"
+                },
+                "required": {
+                    "description": "Whether this input is mandatory",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "statisticalRole": {
+                    "$ref": "#/$defs/StatisticalRole",
+                    "description": "The statistical role of this input in the model"
+                }
+            },
+            "required": [
+                "name",
+                "dataType"
+            ],
+            "title": "InputRole",
+            "type": "object"
+        },
+        "Intent": {
+            "description": "Semantic purpose tags for methods",
+            "enum": [
+                "ChangeComputation",
+                "RatioComputation",
+                "DataAggregation",
+                "ValueClassification",
+                "MissingDataHandling",
+                "ValueRetrieval",
+                "PrecisionAdjustment",
+                "GroupComparison",
+                "LongitudinalEstimate",
+                "CategoricalAssociation",
+                "OutcomeModeling",
+                "TimeToEventEstimate"
+            ],
+            "title": "Intent",
+            "type": "string"
+        },
+        "Method": {
+            "additionalProperties": false,
+            "description": "A reusable statistical or derivation method definition. Distinguished by type (analysis vs derivation) and formula notation.",
+            "properties": {
+                "assumptions": {
+                    "description": "Key assumptions required for the method to be valid",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "class": {
+                    "description": "Method category, e.g., General Linear Models, Arithmetic, Data Handling",
+                    "type": "string"
+                },
+                "configurations": {
+                    "description": "Configurable parameters for the method",
+                    "items": {
+                        "$ref": "#/$defs/Configuration"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text explanation of what the method does",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "formula": {
+                    "$ref": "#/$defs/FormulaSpec",
+                    "description": "Formula specification including notation and expressions"
+                },
+                "input_roles": {
+                    "description": "Input data specifications with statistical roles",
+                    "items": {
+                        "$ref": "#/$defs/InputRole"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "intent": {
+                    "description": "Semantic purpose tags for the method",
+                    "items": {
+                        "$ref": "#/$defs/Intent"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Human-readable method name",
+                    "type": "string"
+                },
+                "oid": {
+                    "description": "Unique method identifier, e.g., M.ANCOVA, M.Subtraction",
+                    "pattern": "^M\\..+$",
+                    "type": "string"
+                },
+                "output_specification": {
+                    "$ref": "#/$defs/OutputSpecification",
+                    "description": "What outputs the method produces"
+                },
+                "schema_version": {
+                    "description": "Version of the ACDC method schema this definition conforms to",
+                    "type": "string"
+                },
+                "stato_class": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/StatoClass"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Immediate STATO parent class (first STATO ancestor, skipping OBI/BFO)"
+                },
+                "stato_mapping": {
+                    "description": "Mapping to STATO ontology term, e.g., STATO:0000179",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "stato_r_implementation": {
+                    "description": "R command or function reference from STATO ontology",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "type": {
+                    "$ref": "#/$defs/MethodType",
+                    "description": "Whether this is an analysis or derivation method"
+                }
+            },
+            "required": [
+                "oid",
+                "schema_version",
+                "name",
+                "type",
+                "class",
+                "formula",
+                "output_specification"
+            ],
+            "title": "Method",
+            "type": "object"
+        },
+        "MethodType": {
+            "description": "Whether a method is an analysis or derivation",
+            "enum": [
+                "derivation",
+                "analysis"
+            ],
+            "title": "MethodType",
+            "type": "string"
+        },
+        "OutputClass": {
+            "additionalProperties": false,
+            "description": "One class of output from a method. References output_class_templates by the class field and statistics_vocabulary by the statistics field.",
+            "properties": {
+                "cardinality": {
+                    "description": "How many rows this output class produces",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "class": {
+                    "description": "Name of the output class template, e.g., fit_statistics, computed_value",
+                    "type": "string"
+                },
+                "dataType": {
+                    "description": "Data type of the output",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "What this output class represents",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "examples": {
+                    "description": "Example values for the indexed_by dimensions",
+                    "items": {},
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "indexed_by": {
+                    "description": "Dimensions that index the output rows",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "role_name": {
+                    "description": "Output variable name (for derivation methods)",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "statistics": {
+                    "description": "Statistic names from statistics_vocabulary",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "sub_types": {
+                    "description": "Optional sub-type variants of this output class",
+                    "items": {
+                        "$ref": "#/$defs/OutputClassSubType"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "template_ref": {
+                    "description": "Explicit reference to output class template (alternative to class)",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "test_types": {
+                    "description": "Specific test types available (for multivariate_tests)",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "class"
+            ],
+            "title": "OutputClass",
+            "type": "object"
+        },
+        "OutputClassSubType": {
+            "additionalProperties": false,
+            "description": "A sub-type variant of an output class (e.g., contrasts at different levels)",
+            "properties": {
+                "description": {
+                    "description": "What this sub-type represents",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "indexed_by": {
+                    "description": "Dimensions for this sub-type",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Sub-type identifier",
+                    "type": "string"
+                },
+                "statistics": {
+                    "description": "Statistics available for this sub-type",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "title": "OutputClassSubType",
+            "type": "object"
+        },
+        "OutputClassTemplate": {
+            "additionalProperties": false,
+            "description": "A reusable output structure pattern",
+            "properties": {
+                "cardinality": {
+                    "description": "How many output rows this class produces",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Purpose of this output class",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "indexed_by": {
+                    "description": "Dimensions that index the output rows",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Template identifier, e.g., fit_statistics, contrasts",
+                    "type": "string"
+                },
+                "statistics": {
+                    "description": "Statistic names from the vocabulary that this template includes",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "title": "OutputClassTemplate",
+            "type": "object"
+        },
+        "OutputSpecification": {
+            "additionalProperties": false,
+            "description": "Container for the output classes a method produces",
+            "properties": {
+                "output_classes": {
+                    "description": "The output class definitions",
+                    "items": {
+                        "$ref": "#/$defs/OutputClass"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "title": "OutputSpecification",
+            "type": "object"
+        },
+        "Statistic": {
+            "additionalProperties": false,
+            "description": "A reusable statistic/measure definition in the vocabulary",
+            "properties": {
+                "dataType": {
+                    "$ref": "#/$defs/DataType",
+                    "description": "Data type of the statistic value"
+                },
+                "description": {
+                    "description": "What this statistic measures",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Statistic identifier, e.g., estimate, p_value, F_statistic",
+                    "type": "string"
+                },
+                "stato_id": {
+                    "description": "STATO ontology identifier, e.g., STATO:0000193 (p-value)",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "name",
+                "dataType"
+            ],
+            "title": "Statistic",
+            "type": "object"
+        },
+        "StatisticalRole": {
+            "description": "The statistical role of an input variable",
+            "enum": [
+                "response",
+                "covariate",
+                "fixed_effect",
+                "repeated_factor",
+                "repeated_subject",
+                "strata",
+                "offset"
+            ],
+            "title": "StatisticalRole",
+            "type": "string"
+        },
+        "StatoClass": {
+            "additionalProperties": false,
+            "description": "A STATO ontology class reference",
+            "properties": {
+                "id": {
+                    "description": "STATO identifier, e.g., STATO:0000279",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Human-readable label from STATO",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "name"
+            ],
+            "title": "StatoClass",
+            "type": "object"
+        }
+    },
+    "$id": "https://cdisc.org/acdc/method",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "additionalProperties": true,
+    "description": "A reusable statistical or derivation method definition. Distinguished by type (analysis vs derivation) and formula notation.",
+    "metamodel_version": "1.7.0",
+    "properties": {
+        "assumptions": {
+            "description": "Key assumptions required for the method to be valid",
+            "items": {
+                "type": "string"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "class": {
+            "description": "Method category, e.g., General Linear Models, Arithmetic, Data Handling",
+            "type": "string"
+        },
+        "configurations": {
+            "description": "Configurable parameters for the method",
+            "items": {
+                "$ref": "#/$defs/Configuration"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "description": {
+            "description": "Free-text explanation of what the method does",
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "formula": {
+            "$ref": "#/$defs/FormulaSpec",
+            "description": "Formula specification including notation and expressions"
+        },
+        "input_roles": {
+            "description": "Input data specifications with statistical roles",
+            "items": {
+                "$ref": "#/$defs/InputRole"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "intent": {
+            "description": "Semantic purpose tags for the method",
+            "items": {
+                "$ref": "#/$defs/Intent"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "name": {
+            "description": "Human-readable method name",
+            "type": "string"
+        },
+        "oid": {
+            "description": "Unique method identifier, e.g., M.ANCOVA, M.Subtraction",
+            "pattern": "^M\\..+$",
+            "type": "string"
+        },
+        "output_specification": {
+            "$ref": "#/$defs/OutputSpecification",
+            "description": "What outputs the method produces"
+        },
+        "schema_version": {
+            "description": "Version of the ACDC method schema this definition conforms to",
+            "type": "string"
+        },
+        "stato_class": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/StatoClass"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "description": "Immediate STATO parent class (first STATO ancestor, skipping OBI/BFO)"
+        },
+        "stato_mapping": {
+            "description": "Mapping to STATO ontology term, e.g., STATO:0000179",
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "stato_r_implementation": {
+            "description": "R command or function reference from STATO ontology",
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "type": {
+            "$ref": "#/$defs/MethodType",
+            "description": "Whether this is an analysis or derivation method"
+        }
+    },
+    "required": [
+        "oid",
+        "schema_version",
+        "name",
+        "type",
+        "class",
+        "formula",
+        "output_specification"
+    ],
+    "title": "acdc_methods",
+    "type": "object",
+    "version": "0.4.0"
+}

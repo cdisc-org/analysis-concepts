@@ -1,0 +1,231 @@
+{
+  "schema_version": "0.4.0",
+  "description": "Registry of all ACDC method definitions",
+  "methods": [
+    {
+      "oid": "M.Subtraction",
+      "name": "Subtraction",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M.Subtraction.json"
+    },
+    {
+      "oid": "M.Division",
+      "name": "Division",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M.Division.json"
+    },
+    {
+      "oid": "M.PercentChange",
+      "name": "Percent Change",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M.PercentChange.json"
+    },
+    {
+      "oid": "M.DateDifference",
+      "name": "Date Difference",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M.DateDifference.json"
+    },
+    {
+      "oid": "M.Aggregation",
+      "name": "Aggregation",
+      "type": "derivation",
+      "class": "Summary",
+      "path": "derivations/M.Aggregation.json"
+    },
+    {
+      "oid": "M.Categorization",
+      "name": "Categorization",
+      "type": "derivation",
+      "class": "Classification",
+      "path": "derivations/M.Categorization.json"
+    },
+    {
+      "oid": "M.ThresholdCompare",
+      "name": "Threshold Comparison",
+      "type": "derivation",
+      "class": "Classification",
+      "path": "derivations/M.ThresholdCompare.json"
+    },
+    {
+      "oid": "M.Imputation",
+      "name": "Apply Imputation",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.Imputation.json"
+    },
+    {
+      "oid": "M.ImputedValue_LOCF",
+      "name": "Last Observation Carried Forward",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.ImputedValue_LOCF.json"
+    },
+    {
+      "oid": "M.ImputedValue_BOCF",
+      "name": "Baseline Observation Carried Forward",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.ImputedValue_BOCF.json"
+    },
+    {
+      "oid": "M.ImputedValue_WOCF",
+      "name": "Worst Observation Carried Forward",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.ImputedValue_WOCF.json"
+    },
+    {
+      "oid": "M.ImputedValue_Mean",
+      "name": "Mean Imputation",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.ImputedValue_Mean.json"
+    },
+    {
+      "oid": "M.ImputedValue_Median",
+      "name": "Median Imputation",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.ImputedValue_Median.json"
+    },
+    {
+      "oid": "M.ImputedValue_Zero",
+      "name": "Zero Imputation",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.ImputedValue_Zero.json"
+    },
+    {
+      "oid": "M.WindowLookup",
+      "name": "Window Lookup",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.WindowLookup.json"
+    },
+    {
+      "oid": "M.Rounding",
+      "name": "Rounding",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M.Rounding.json",
+      "stato_mapping": "UNMAPPED"
+    },
+    {
+      "oid": "M.OneSampleTTest",
+      "name": "One-sample t-test",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M.OneSampleTTest.json",
+      "stato_mapping": "STATO:0000302"
+    },
+    {
+      "oid": "M.PairedTTest",
+      "name": "Paired t-test",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M.PairedTTest.json",
+      "stato_mapping": "STATO:0000095"
+    },
+    {
+      "oid": "M.TwoSampleTTest",
+      "name": "Two-sample t-test",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M.TwoSampleTTest.json",
+      "stato_mapping": "STATO:0000304"
+    },
+    {
+      "oid": "M.ANOVA",
+      "name": "ANOVA",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M.ANOVA.json",
+      "stato_mapping": "STATO:0000048"
+    },
+    {
+      "oid": "M.ANCOVA",
+      "name": "ANCOVA",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M.ANCOVA.json",
+      "stato_mapping": "STATO:0000179"
+    },
+    {
+      "oid": "M.MMRM",
+      "name": "Mixed Model for Repeated Measures",
+      "type": "analysis",
+      "class": "Repeated Measures",
+      "path": "analyses/M.MMRM.json",
+      "stato_mapping": "STATO:0000189"
+    },
+    {
+      "oid": "M.ChiSquaredTest",
+      "name": "Chi-squared Test",
+      "type": "analysis",
+      "class": "Categorical Data Analysis",
+      "path": "analyses/M.ChiSquaredTest.json",
+      "stato_mapping": "STATO:0000187"
+    },
+    {
+      "oid": "M.CMH",
+      "name": "Cochran-Mantel-Haenszel Test",
+      "type": "analysis",
+      "class": "Categorical Data Analysis",
+      "path": "analyses/M.CMH.json",
+      "stato_mapping": "STATO:0000185"
+    },
+    {
+      "oid": "M.FisherExactTest",
+      "name": "Fisher's Exact Test",
+      "type": "analysis",
+      "class": "Categorical Data Analysis",
+      "path": "analyses/M.FisherExactTest.json",
+      "stato_mapping": "STATO:0000073"
+    },
+    {
+      "oid": "M.LogisticRegression",
+      "name": "Logistic Regression",
+      "type": "analysis",
+      "class": "Generalized Linear Models",
+      "path": "analyses/M.LogisticRegression.json",
+      "stato_mapping": "STATO:0000149"
+    },
+    {
+      "oid": "M.KaplanMeier",
+      "name": "Kaplan-Meier Estimator",
+      "type": "analysis",
+      "class": "Survival Models",
+      "path": "analyses/M.KaplanMeier.json",
+      "stato_mapping": "STATO:0000213"
+    },
+    {
+      "oid": "M.LogRankTest",
+      "name": "Log-rank Test",
+      "type": "analysis",
+      "class": "Survival Models",
+      "path": "analyses/M.LogRankTest.json",
+      "stato_mapping": "STATO:0000217"
+    },
+    {
+      "oid": "M.CoxPH",
+      "name": "Cox Proportional Hazards",
+      "type": "analysis",
+      "class": "Survival Models",
+      "path": "analyses/M.CoxPH.json",
+      "stato_mapping": "STATO:0000223"
+    },
+    {
+      "oid": "M.MANOVA",
+      "name": "Multivariate Analysis of Variance",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M.MANOVA.json",
+      "stato_mapping": "UNMAPPED"
+    }
+  ]
+}

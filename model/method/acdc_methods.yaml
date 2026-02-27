@@ -1,0 +1,354 @@
+id: https://cdisc.org/acdc/method
+name: acdc_methods
+version: "0.4.0"
+title: ACDC Method Model
+description: >-
+  Schema for ACDC (Analysis Concepts / Derivation Concepts) method definitions.
+  Covers statistical analysis methods (e.g., ANCOVA, Cox PH) and derivation
+  methods (e.g., Subtraction, LOCF imputation). Methods are the reusable
+  building blocks that AC and DC definitions reference.
+
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  acdc: https://cdisc.org/acdc/
+  linkml: https://w3id.org/linkml/
+  STATO: http://purl.obolibrary.org/obo/STATO_
+
+default_prefix: acdc
+default_range: string
+
+imports:
+  - linkml:types
+
+# ──────────────────────────────────────────────
+# Classes
+# ──────────────────────────────────────────────
+
+classes:
+
+  Method:
+    description: >-
+      A reusable statistical or derivation method definition.
+      Distinguished by type (analysis vs derivation) and formula notation.
+    tree_root: true
+    attributes:
+      oid:
+        description: Unique method identifier, e.g., M.ANCOVA, M.Subtraction
+        identifier: true
+        required: true
+        pattern: "^M\\..+$"
+      schema_version:
+        description: Version of the ACDC method schema this definition conforms to
+        required: true
+      name:
+        description: Human-readable method name
+        required: true
+      type:
+        description: Whether this is an analysis or derivation method
+        range: MethodType
+        required: true
+      class:
+        description: Method category, e.g., General Linear Models, Arithmetic, Data Handling
+        required: true
+      intent:
+        description: Semantic purpose tags for the method
+        multivalued: true
+        range: Intent
+      description:
+        description: Free-text explanation of what the method does
+      formula:
+        description: Formula specification including notation and expressions
+        range: FormulaSpec
+        required: true
+      configurations:
+        description: Configurable parameters for the method
+        multivalued: true
+        range: Configuration
+        inlined_as_list: true
+      assumptions:
+        description: Key assumptions required for the method to be valid
+        multivalued: true
+      input_roles:
+        description: Input data specifications with statistical roles
+        multivalued: true
+        range: InputRole
+        inlined_as_list: true
+      output_specification:
+        description: What outputs the method produces
+        range: OutputSpecification
+        required: true
+        inlined: true
+      stato_mapping:
+        description: Mapping to STATO ontology term, e.g., STATO:0000179
+      stato_class:
+        description: Immediate STATO parent class (first STATO ancestor, skipping OBI/BFO)
+        range: StatoClass
+        inlined: true
+      stato_r_implementation:
+        description: R command or function reference from STATO ontology
+
+  StatoClass:
+    description: A STATO ontology class reference
+    attributes:
+      id:
+        description: STATO identifier, e.g., STATO:0000279
+        required: true
+      name:
+        description: Human-readable label from STATO
+        required: true
+
+  FormulaSpec:
+    description: Specifies the formula notation and expressions for a method
+    attributes:
+      notation:
+        description: The formula notation system used
+        range: FormulaNotation
+        required: true
+      default_expression:
+        description: Concrete example expression with default variable names
+        required: true
+      generic_expression:
+        description: Template expression with role-tagged placeholders, e.g., <response> ~ <covariate>
+        required: true
+      notes:
+        description: Additional notes on formula interpretation
+
+  InputRole:
+    description: Specification of one input to a method
+    attributes:
+      name:
+        description: Role name used in the formula, e.g., response, covariate, partition
+        identifier: true
+        required: true
+      statisticalRole:
+        description: The statistical role of this input in the model
+        range: StatisticalRole
+      dataType:
+        description: Expected data type
+        range: DataType
+        required: true
+      required:
+        description: Whether this input is mandatory
+        range: boolean
+      cardinality:
+        description: How many variables can fill this role
+        range: Cardinality
+      description:
+        description: Explanation of this input role
+
+  Configuration:
+    description: A configurable parameter for a method
+    attributes:
+      name:
+        description: Configuration parameter name
+        identifier: true
+        required: true
+      dataType:
+        description: Data type of the configuration value
+        range: DataType
+        required: true
+      defaultValue:
+        description: Default value if not specified (can be string, number, or boolean)
+        any_of:
+          - range: string
+          - range: integer
+          - range: float
+          - range: boolean
+      enumValues:
+        description: Allowed values when dataType is enum
+        multivalued: true
+      description:
+        description: Explanation of this configuration parameter
+
+  OutputSpecification:
+    description: Container for the output classes a method produces
+    attributes:
+      output_classes:
+        description: The output class definitions
+        multivalued: true
+        range: OutputClass
+        inlined_as_list: true
+
+  OutputClass:
+    description: >-
+      One class of output from a method. References output_class_templates
+      by the class field and statistics_vocabulary by the statistics field.
+    attributes:
+      class:
+        description: Name of the output class template, e.g., fit_statistics, computed_value
+        required: true
+      role_name:
+        description: Output variable name (for derivation methods)
+      dataType:
+        description: Data type of the output
+      description:
+        description: What this output class represents
+      cardinality:
+        description: How many rows this output class produces
+      indexed_by:
+        description: Dimensions that index the output rows
+        multivalued: true
+      statistics:
+        description: Statistic names from statistics_vocabulary
+        multivalued: true
+      sub_types:
+        description: Optional sub-type variants of this output class
+        multivalued: true
+        range: OutputClassSubType
+        inlined_as_list: true
+      template_ref:
+        description: Explicit reference to output class template (alternative to class)
+      examples:
+        description: Example values for the indexed_by dimensions
+        multivalued: true
+        range: string
+      test_types:
+        description: Specific test types available (for multivariate_tests)
+        multivalued: true
+
+  OutputClassSubType:
+    description: A sub-type variant of an output class (e.g., contrasts at different levels)
+    attributes:
+      name:
+        description: Sub-type identifier
+        identifier: true
+        required: true
+      indexed_by:
+        description: Dimensions for this sub-type
+        multivalued: true
+      description:
+        description: What this sub-type represents
+      statistics:
+        description: Statistics available for this sub-type
+        multivalued: true
+
+  Statistic:
+    description: A reusable statistic/measure definition in the vocabulary
+    attributes:
+      name:
+        description: Statistic identifier, e.g., estimate, p_value, F_statistic
+        identifier: true
+        required: true
+      dataType:
+        description: Data type of the statistic value
+        range: DataType
+        required: true
+      description:
+        description: What this statistic measures
+      stato_id:
+        description: STATO ontology identifier, e.g., STATO:0000193 (p-value)
+
+  OutputClassTemplate:
+    description: A reusable output structure pattern
+    attributes:
+      name:
+        description: Template identifier, e.g., fit_statistics, contrasts
+        identifier: true
+        required: true
+      description:
+        description: Purpose of this output class
+      cardinality:
+        description: How many output rows this class produces
+      indexed_by:
+        description: Dimensions that index the output rows
+        multivalued: true
+      statistics:
+        description: Statistic names from the vocabulary that this template includes
+        multivalued: true
+
+# ──────────────────────────────────────────────
+# Enums
+# ──────────────────────────────────────────────
+
+enums:
+
+  MethodType:
+    description: Whether a method is an analysis or derivation
+    permissible_values:
+      derivation:
+        description: Creates new subject-level data from existing data
+      analysis:
+        description: Performs statistical analysis producing aggregated results
+
+  FormulaNotation:
+    description: The notation system used for formulas
+    permissible_values:
+      assignment:
+        description: "Derivation notation: output_var := expression"
+      wilkinson_rogers:
+        description: "Analysis notation: response ~ predictor1 + predictor2"
+      survival:
+        description: "Survival analysis notation: Surv(time, event) ~ predictors"
+
+  StatisticalRole:
+    description: The statistical role of an input variable
+    permissible_values:
+      response:
+        description: Dependent/outcome variable
+      covariate:
+        description: Continuous adjustment variable
+      fixed_effect:
+        description: Categorical factor variable
+      repeated_factor:
+        description: Within-subject repeated dimension (e.g., visit)
+      repeated_subject:
+        description: Subject identifier for repeated measures
+      strata:
+        description: Stratification variable
+      offset:
+        description: Offset term in the model
+
+  DataType:
+    description: Data types for inputs, outputs, and configurations
+    permissible_values:
+      numeric:
+        description: Numeric (integer or float)
+      string:
+        description: Character/text
+      boolean:
+        description: True/false
+      date:
+        description: Date value
+      datetime:
+        description: Date-time value
+      enum:
+        description: Enumerated set of allowed values
+
+  Cardinality:
+    description: How many variables can fill an input role
+    permissible_values:
+      single:
+        description: Exactly one variable
+      multiple:
+        description: One or more variables
+      single_or_multiple:
+        description: One or more variables (flexible)
+
+  Intent:
+    description: Semantic purpose tags for methods
+    permissible_values:
+      ChangeComputation:
+        description: Computing differences or changes
+      RatioComputation:
+        description: Computing ratios or proportions
+      DataAggregation:
+        description: Aggregating data within groups
+      ValueClassification:
+        description: Classifying values into categories
+      MissingDataHandling:
+        description: Imputation or handling of missing data
+      ValueRetrieval:
+        description: Looking up values from other rows
+      PrecisionAdjustment:
+        description: Adjusting numeric precision
+      GroupComparison:
+        description: Comparing outcomes across groups
+      LongitudinalEstimate:
+        description: Modeling longitudinal/repeated measures data
+      CategoricalAssociation:
+        description: Testing association between categorical variables
+      OutcomeModeling:
+        description: Modeling binary or other outcomes
+      TimeToEventEstimate:
+        description: Estimating survival/time-to-event outcomes

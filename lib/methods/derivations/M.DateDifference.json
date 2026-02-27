@@ -1,0 +1,67 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.DateDifference",
+  "name": "Date Difference",
+  "type": "derivation",
+  "class": "Arithmetic",
+  "intent": [
+    "ChangeComputation"
+  ],
+  "description": "Computes the difference between two dates in specified units",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := date_diff(end_date, start_date, unit)",
+    "generic_expression": "result := date_diff(<end_date>, <start_date>, <unit>)"
+  },
+  "configurations": [
+    {
+      "name": "unit",
+      "dataType": "enum",
+      "defaultValue": "days",
+      "enumValues": [
+        "days",
+        "weeks",
+        "months",
+        "years"
+      ],
+      "description": "Unit for the result"
+    }
+  ],
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "start_date",
+      "dataType": "date",
+      "required": true,
+      "cardinality": "single",
+      "description": "The starting date"
+    },
+    {
+      "name": "end_date",
+      "dataType": "date",
+      "required": true,
+      "cardinality": "single",
+      "description": "The ending date"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "result",
+        "dataType": "numeric",
+        "description": "The difference in the specified unit",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": null
+      }
+    ]
+  }
+}

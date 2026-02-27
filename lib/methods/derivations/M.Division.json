@@ -1,0 +1,56 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.Division",
+  "name": "Division",
+  "type": "derivation",
+  "class": "Arithmetic",
+  "intent": [
+    "RatioComputation"
+  ],
+  "description": "Computes the quotient of two numeric values",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := numerator / denominator",
+    "generic_expression": "result := <numerator> / <denominator>"
+  },
+  "configurations": [],
+  "assumptions": [
+    "Denominator is non-zero"
+  ],
+  "input_roles": [
+    {
+      "name": "numerator",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "The value to divide"
+    },
+    {
+      "name": "denominator",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "The value to divide by"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "quotient",
+        "dataType": "numeric",
+        "description": "Result: numerator / denominator",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": null
+      }
+    ]
+  }
+}

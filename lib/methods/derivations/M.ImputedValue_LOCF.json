@@ -1,0 +1,69 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.ImputedValue_LOCF",
+  "name": "Last Observation Carried Forward",
+  "type": "derivation",
+  "class": "Data Handling",
+  "intent": [
+    "MissingDataHandling"
+  ],
+  "description": "Computes the last non-missing observed value within a partition, ordered by a time variable. The result carries forward the most recent non-missing value and is intended as input to M.Imputation.",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "imputed_value := LOCF(value) OVER (partition ORDER BY time_order)",
+    "generic_expression": "imputed_value := LOCF(<value>) OVER (<partition>+ ORDER BY <time_order>)",
+    "notes": "LOCF scans backwards in time_order within each partition and returns the most recent non-missing value. If no prior non-missing value exists, the result is missing."
+  },
+  "configurations": [],
+  "assumptions": [
+    "Time ordering within partition is unambiguous",
+    "At least one prior non-missing value exists for carry-forward to produce a result",
+    "Missing data pattern may be monotone or intermittent"
+  ],
+  "input_roles": [
+    {
+      "name": "value",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "Source value to carry forward (may contain missing values)"
+    },
+    {
+      "name": "partition",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "multiple",
+      "description": "Grouping variables defining the carry-forward scope (typically subject, parameter)"
+    },
+    {
+      "name": "time_order",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "Variable defining the temporal ordering within partition (e.g., AVISITN, ADY)"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "imputed_value",
+        "dataType": "numeric",
+        "description": "The last non-missing value carried forward",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": [
+          "partition",
+          "time_order"
+        ]
+      }
+    ]
+  }
+}

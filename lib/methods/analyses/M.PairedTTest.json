@@ -1,0 +1,92 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.PairedTTest",
+  "name": "Paired t-test",
+  "type": "analysis",
+  "class": "General Linear Models",
+  "intent": [
+    "GroupComparison"
+  ],
+  "stato_mapping": "STATO:0000095",
+  "stato_class": {
+    "id": "STATO:0000202",
+    "name": "within subject comparison statistical test"
+  },
+  "stato_r_implementation": "http://stat.ethz.ch/R-manual/R-patched/library/stats/html/t.test.html\n\nt.test(dependent variable ~ independant variable, data = dataset, var.equal = FALSE, paired= TRUE)",
+  "description": "Tests whether the mean difference between paired observations differs from zero",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ 1 | subject",
+    "generic_expression": "<response> ~ 1 | <subject>",
+    "notes": "Intercept-only model on the within-subject differences"
+  },
+  "configurations": [
+    {
+      "name": "mu",
+      "dataType": "numeric",
+      "defaultValue": 0,
+      "description": "Hypothesized difference"
+    },
+    {
+      "name": "conf_level",
+      "dataType": "numeric",
+      "defaultValue": 0.95,
+      "description": "Confidence level"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "test_result",
+        "description": "Paired t-test result",
+        "cardinality": "singleton",
+        "indexed_by": null,
+        "statistics": [
+          "t_statistic",
+          "p_value",
+          "df"
+        ]
+      },
+      {
+        "class": "point_estimate",
+        "description": "Mean of paired differences with inference",
+        "cardinality": "singleton",
+        "indexed_by": null,
+        "statistics": [
+          "estimate",
+          "SE",
+          "CI_lower",
+          "CI_upper"
+        ]
+      }
+    ]
+  },
+  "assumptions": [
+    "Differences are normally distributed",
+    "Pairs are independent"
+  ],
+  "input_roles": [
+    {
+      "name": "response",
+      "statisticalRole": "response",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "The paired difference values (or the raw values at two timepoints)"
+    },
+    {
+      "name": "subject",
+      "statisticalRole": "repeated_subject",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single",
+      "description": "Subject identifier for pairing"
+    }
+  ]
+}

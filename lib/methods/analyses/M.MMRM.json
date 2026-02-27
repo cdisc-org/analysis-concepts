@@ -1,0 +1,296 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.MMRM",
+  "name": "Mixed Model for Repeated Measures",
+  "type": "analysis",
+  "class": "Repeated Measures",
+  "intent": [
+    "LongitudinalEstimate"
+  ],
+  "stato_mapping": "STATO:0000189",
+  "stato_class": {
+    "id": "STATO:0000107",
+    "name": "statistical model"
+  },
+  "description": "Linear mixed model for longitudinal data with structured R-side covariance. No random effects (G-side); within-subject correlation modeled through the residual covariance structure.",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ covariate + time + group + time:group | subject / time",
+    "generic_expression": "<response> ~ <covariate>* + <repeated_factor> + <fixed_effect>+ + (<fixed_effect>:<repeated_factor>)* + (<covariate>:<fixed_effect>)* | <repeated_subject> / <repeated_factor>",
+    "notes": "The part after '|' specifies the repeated measures structure: subject is the clustering unit, time is the repeated factor within subject. Multiple covariates and fixed effects are supported. The time:group interaction is typically the term of primary interest for treatment comparison at each visit."
+  },
+  "configurations": [
+    {
+      "name": "covariance_structure",
+      "dataType": "enum",
+      "defaultValue": "UN",
+      "enumValues": [
+        "UN",
+        "CS",
+        "AR1",
+        "TOEP",
+        "CSH",
+        "ARH1"
+      ],
+      "description": "Within-subject (R-side) covariance structure"
+    },
+    {
+      "name": "estimation_method",
+      "dataType": "enum",
+      "defaultValue": "REML",
+      "enumValues": [
+        "REML",
+        "ML"
+      ],
+      "description": "Estimation method"
+    },
+    {
+      "name": "df_method",
+      "dataType": "enum",
+      "defaultValue": "KR",
+      "enumValues": [
+        "KR",
+        "Satterthwaite",
+        "Containment"
+      ],
+      "description": "Degrees of freedom method"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "fit_statistics",
+        "description": "Model fit measures for covariance structure selection",
+        "cardinality": "singleton",
+        "indexed_by": null,
+        "statistics": [
+          "AIC",
+          "BIC",
+          "minus2LogL"
+        ]
+      },
+      {
+        "class": "type3_tests",
+        "description": "Type III F-tests for each fixed effect term",
+        "cardinality": "per_term",
+        "indexed_by": [
+          "term"
+        ],
+        "statistics": [
+          "F_statistic",
+          "p_value",
+          "df_num",
+          "df_den"
+        ],
+        "examples": [
+          {
+            "term": "covariate"
+          },
+          {
+            "term": "time"
+          },
+          {
+            "term": "group"
+          },
+          {
+            "term": "time:group"
+          }
+        ]
+      },
+      {
+        "class": "parameter_estimates",
+        "description": "Solution for all fixed effect coefficients",
+        "cardinality": "per_coefficient",
+        "indexed_by": [
+          "term",
+          "level"
+        ],
+        "statistics": [
+          "coefficient",
+          "SE",
+          "t_statistic",
+          "p_value",
+          "CI_lower",
+          "CI_upper",
+          "df"
+        ]
+      },
+      {
+        "class": "ls_means",
+        "description": "LS means by group, by time, or by group×time. The indexing depends on which LSMEANS statement is requested.",
+        "cardinality": "per_level_combination",
+        "indexed_by": [
+          "factor",
+          "level"
+        ],
+        "sub_types": [
+          {
+            "name": "ls_means_by_group_time",
+            "indexed_by": [
+              "group",
+              "time"
+            ],
+            "description": "LS means for each group at each timepoint",
+            "statistics": [
+              "estimate",
+              "SE",
+              "CI_lower",
+              "CI_upper",
+              "df"
+            ]
+          },
+          {
+            "name": "ls_means_by_group",
+            "indexed_by": [
+              "group"
+            ],
+            "description": "Marginal LS means averaged over time",
+            "statistics": [
+              "estimate",
+              "SE",
+              "CI_lower",
+              "CI_upper",
+              "df"
+            ]
+          },
+          {
+            "name": "ls_means_by_time",
+            "indexed_by": [
+              "time"
+            ],
+            "description": "Marginal LS means averaged over group",
+            "statistics": [
+              "estimate",
+              "SE",
+              "CI_lower",
+              "CI_upper",
+              "df"
+            ]
+          }
+        ]
+      },
+      {
+        "class": "contrasts",
+        "description": "Treatment comparisons. Typically the primary analysis: group difference at each timepoint (from time:group interaction).",
+        "cardinality": "per_contrast",
+        "sub_types": [
+          {
+            "name": "group_contrast_at_time",
+            "indexed_by": [
+              "contrast",
+              "time"
+            ],
+            "description": "Group difference at a specific timepoint (e.g., Treatment vs Placebo at Week 24)",
+            "statistics": [
+              "estimate",
+              "SE",
+              "CI_lower",
+              "CI_upper",
+              "t_statistic",
+              "p_value",
+              "df"
+            ]
+          },
+          {
+            "name": "time_contrast_within_group",
+            "indexed_by": [
+              "time_contrast",
+              "group"
+            ],
+            "description": "Change over time within a group (e.g., Week 24 vs Week 4 within Treatment)",
+            "statistics": [
+              "estimate",
+              "SE",
+              "CI_lower",
+              "CI_upper",
+              "t_statistic",
+              "p_value",
+              "df"
+            ]
+          },
+          {
+            "name": "overall_group_contrast",
+            "indexed_by": [
+              "contrast"
+            ],
+            "description": "Overall group difference marginalized over time",
+            "statistics": [
+              "estimate",
+              "SE",
+              "CI_lower",
+              "CI_upper",
+              "t_statistic",
+              "p_value",
+              "df"
+            ]
+          }
+        ]
+      },
+      {
+        "class": "covariance_parameters",
+        "description": "Estimated R-side covariance matrix parameters",
+        "cardinality": "per_parameter",
+        "indexed_by": [
+          "cov_param"
+        ],
+        "statistics": [
+          "estimate",
+          "SE"
+        ]
+      }
+    ]
+  },
+  "assumptions": [
+    "Missing at Random (MAR)",
+    "Multivariate normality of residuals",
+    "Correct specification of covariance structure"
+  ],
+  "input_roles": [
+    {
+      "name": "response",
+      "statisticalRole": "response",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "The response variable at each timepoint (e.g., change from baseline)"
+    },
+    {
+      "name": "covariate",
+      "statisticalRole": "covariate",
+      "dataType": "numeric",
+      "required": false,
+      "cardinality": "multiple",
+      "description": "Continuous covariate(s) (e.g., baseline value, age, weight)"
+    },
+    {
+      "name": "time",
+      "statisticalRole": "repeated_factor",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single",
+      "description": "Timepoint/visit variable defining the repeated dimension"
+    },
+    {
+      "name": "group",
+      "statisticalRole": "fixed_effect",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single_or_multiple",
+      "description": "Treatment group (and optionally additional factors like region, sex)"
+    },
+    {
+      "name": "subject",
+      "statisticalRole": "repeated_subject",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single",
+      "description": "Subject identifier for the repeated measures clustering"
+    }
+  ]
+}

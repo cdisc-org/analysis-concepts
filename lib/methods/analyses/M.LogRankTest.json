@@ -1,0 +1,89 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.LogRankTest",
+  "name": "Log-rank Test",
+  "type": "analysis",
+  "class": "Survival Models",
+  "intent": [
+    "TimeToEventEstimate"
+  ],
+  "stato_mapping": "STATO:0000217",
+  "stato_class": {
+    "id": "STATO:0000065",
+    "name": "hypothesis"
+  },
+  "description": "Compares survival distributions between groups using a rank-based test",
+  "formula": {
+    "notation": "survival",
+    "default_expression": "Surv(time, event) ~ group",
+    "generic_expression": "Surv(<time>, <event>) ~ <fixed_effect>+ + <strata>*",
+    "notes": "Multiple group factors can be included. Strata variables (after adjusting) produce stratified log-rank tests."
+  },
+  "configurations": [
+    {
+      "name": "rho",
+      "dataType": "numeric",
+      "defaultValue": 0,
+      "description": "Weight parameter: 0 = log-rank (default), 1 = Wilcoxon/Peto"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "test_result",
+        "description": "Log-rank (or weighted) test result",
+        "cardinality": "singleton",
+        "indexed_by": null,
+        "statistics": [
+          "chi_squared",
+          "p_value",
+          "df"
+        ]
+      }
+    ]
+  },
+  "assumptions": [
+    "Non-informative censoring",
+    "Proportional hazards (for optimal power)"
+  ],
+  "input_roles": [
+    {
+      "name": "time",
+      "statisticalRole": "response",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "Time to event or censoring"
+    },
+    {
+      "name": "event",
+      "statisticalRole": "response",
+      "dataType": "boolean",
+      "required": true,
+      "cardinality": "single",
+      "description": "Event indicator"
+    },
+    {
+      "name": "group",
+      "statisticalRole": "fixed_effect",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single",
+      "description": "Grouping variable"
+    },
+    {
+      "name": "strata",
+      "statisticalRole": "strata",
+      "dataType": "string",
+      "required": false,
+      "cardinality": "multiple",
+      "description": "Optional stratification variables"
+    }
+  ]
+}

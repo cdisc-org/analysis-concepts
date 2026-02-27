@@ -1,0 +1,63 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.Categorization",
+  "name": "Categorization",
+  "type": "derivation",
+  "class": "Classification",
+  "intent": [
+    "ValueClassification"
+  ],
+  "description": "Maps continuous or discrete values to categories",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := CASE WHEN conditions THEN categories END",
+    "generic_expression": "result := CASE WHEN <conditions> THEN <categories> ELSE <default_category> END"
+  },
+  "configurations": [
+    {
+      "name": "conditions",
+      "dataType": "string",
+      "description": "Condition expressions (e.g., 'value < 30, value < 70, value >= 70')"
+    },
+    {
+      "name": "categories",
+      "dataType": "string",
+      "description": "Category labels (e.g., 'Low, Medium, High')"
+    },
+    {
+      "name": "default_category",
+      "dataType": "string",
+      "description": "Category when no condition matches"
+    }
+  ],
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "value",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "Value to categorize"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "result",
+        "dataType": "string",
+        "description": "The category label",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": null
+      }
+    ]
+  }
+}

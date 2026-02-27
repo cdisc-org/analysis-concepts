@@ -1,0 +1,147 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.MANOVA",
+  "name": "Multivariate Analysis of Variance",
+  "type": "analysis",
+  "class": "General Linear Models",
+  "intent": [
+    "GroupComparison"
+  ],
+  "description": "Tests the hypothesis of no overall treatment effect across multiple correlated response variables simultaneously",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "cbind(response1, response2, ...) ~ group",
+    "generic_expression": "cbind(<response>+) ~ <covariate>* + <fixed_effect>+",
+    "notes": "Left-hand side uses cbind() to specify the multivariate response. In long format with a parameter identifier, the model is fit as response ~ group with subject and parameter defining the multivariate structure."
+  },
+  "configurations": [
+    {
+      "name": "test_statistic",
+      "dataType": "enum",
+      "defaultValue": "wilks",
+      "enumValues": [
+        "wilks",
+        "pillai",
+        "hotelling_lawley",
+        "roy"
+      ],
+      "description": "Multivariate test statistic"
+    },
+    {
+      "name": "covariance_structure",
+      "dataType": "enum",
+      "defaultValue": "UN",
+      "enumValues": [
+        "UN",
+        "CS",
+        "AR1"
+      ],
+      "description": "Covariance structure among responses"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "multivariate_tests",
+        "description": "Multivariate omnibus test statistics",
+        "cardinality": "per_test_type",
+        "indexed_by": [
+          "test_type"
+        ],
+        "statistics": [
+          "estimate",
+          "F_statistic",
+          "p_value",
+          "df_num",
+          "df_den"
+        ],
+        "test_types": [
+          "wilks_lambda",
+          "pillai_trace",
+          "hotelling_lawley_trace",
+          "roy_greatest_root"
+        ]
+      },
+      {
+        "class": "type3_tests",
+        "description": "Univariate Type III tests per response variable (follow-up to multivariate test)",
+        "cardinality": "per_response_per_term",
+        "indexed_by": [
+          "response",
+          "term"
+        ],
+        "statistics": [
+          "F_statistic",
+          "p_value",
+          "df_num",
+          "df_den"
+        ]
+      },
+      {
+        "class": "parameter_estimates",
+        "description": "Regression coefficients per response variable",
+        "cardinality": "per_response_per_coefficient",
+        "indexed_by": [
+          "response",
+          "term",
+          "level"
+        ],
+        "statistics": [
+          "coefficient",
+          "SE",
+          "t_statistic",
+          "p_value",
+          "CI_lower",
+          "CI_upper",
+          "df"
+        ]
+      }
+    ]
+  },
+  "assumptions": [
+    "Multivariate normality of residuals",
+    "Homogeneity of covariance matrices",
+    "Independence of observations"
+  ],
+  "stato_mapping": "UNMAPPED",
+  "input_roles": [
+    {
+      "name": "response",
+      "statisticalRole": "response",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "multiple",
+      "description": "Multiple correlated response variables"
+    },
+    {
+      "name": "group",
+      "statisticalRole": "fixed_effect",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single_or_multiple",
+      "description": "Treatment/factor variable(s)"
+    },
+    {
+      "name": "subject",
+      "statisticalRole": "repeated_subject",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single",
+      "description": "Subject identifier"
+    },
+    {
+      "name": "parameter",
+      "statisticalRole": "repeated_factor",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single",
+      "description": "Parameter/subscale identifier (defines which response variable)"
+    }
+  ]
+}

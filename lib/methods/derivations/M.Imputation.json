@@ -1,0 +1,55 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.Imputation",
+  "name": "Apply Imputation",
+  "type": "derivation",
+  "class": "Data Handling",
+  "intent": [
+    "MissingDataHandling"
+  ],
+  "description": "Replaces missing values with a pre-computed imputed value. This is the application step only — the imputed_value must be computed upstream by one of the M.ImputedValue_* methods. Designed for use in transformation pipelines.",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := COALESCE(value, imputed_value)",
+    "generic_expression": "result := COALESCE(<value>, <imputed_value>)"
+  },
+  "configurations": [],
+  "assumptions": [],
+  "_design_note": "This method has no imputation_method configuration. The strategy is determined by which M.ImputedValue_* method is upstream in the transformation pipeline. This makes each step independently testable and auditable.",
+  "input_roles": [
+    {
+      "name": "value",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "Original value (may be missing)"
+    },
+    {
+      "name": "imputed_value",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "Pre-computed replacement value (from an M.ImputedValue_* method)"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "result",
+        "dataType": "numeric",
+        "description": "The resulting value (original if non-missing, otherwise imputed)",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": null
+      }
+    ]
+  }
+}

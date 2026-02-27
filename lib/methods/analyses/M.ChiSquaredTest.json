@@ -1,0 +1,78 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.ChiSquaredTest",
+  "name": "Chi-squared Test",
+  "type": "analysis",
+  "class": "Categorical Data Analysis",
+  "intent": [
+    "CategoricalAssociation"
+  ],
+  "stato_mapping": "STATO:0000187",
+  "stato_class": {
+    "id": "STATO:0000133",
+    "name": "post-hoc analysis"
+  },
+  "stato_r_implementation": "http://stat.ethz.ch/R-manual/R-patched/library/stats/html/TukeyHSD.html",
+  "description": "Tests association between two categorical variables using Pearson's chi-squared statistic",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ group",
+    "generic_expression": "<response> ~ <fixed_effect>",
+    "notes": "Both response and group are categorical. For RxC tables (more than 2x2)."
+  },
+  "configurations": [
+    {
+      "name": "correction",
+      "dataType": "enum",
+      "defaultValue": "none",
+      "enumValues": [
+        "none",
+        "yates"
+      ],
+      "description": "Continuity correction (applicable for 2x2 tables)"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "test_result",
+        "description": "Chi-squared test of independence",
+        "cardinality": "singleton",
+        "indexed_by": null,
+        "statistics": [
+          "chi_squared",
+          "p_value",
+          "df"
+        ]
+      }
+    ]
+  },
+  "assumptions": [
+    "Independence of observations",
+    "Expected cell counts >= 5"
+  ],
+  "input_roles": [
+    {
+      "name": "response",
+      "statisticalRole": "response",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single",
+      "description": "Response category variable"
+    },
+    {
+      "name": "group",
+      "statisticalRole": "fixed_effect",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single",
+      "description": "Grouping variable"
+    }
+  ]
+}

@@ -4,9 +4,9 @@
   "description": "Primary analysis of ADAS-Cog (11) at Week 24 using ANCOVA with dose response testing",
   "analysisDefinition": {
     "statisticalMethod": {
-      "statoId": "STATO_0000219",
-      "label": "analysis of covariance",
-      "acronym": "ANCOVA"
+      "methodRef": "M.ANCOVA",
+      "statoMapping": "STATO:0000179",
+      "label": "Analysis of Covariance"
     },
     "dependentVariable": {
       "id": "ADAS_COG_11_WEEK24",
@@ -77,10 +77,10 @@
       ]
     },
     "missingDataHandling": {
-      "method": "LOCF",
+      "methodRef": "M.ImputedValue_LOCF",
+      "label": "Last Observation Carried Forward",
       "description": "Last observation carried forward imputation for any missing values at Week 24",
-      "statoId": "STATO_0000171",
-      "statoLabel": "last observation carried forward"
+      "statoMapping": "STATO:0000171"
     }
   },
   "analysisContext": {
