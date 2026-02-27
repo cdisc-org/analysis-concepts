@@ -10,3 +10,5 @@ neo4j>=5.14.0
 python-dotenv>=1.0.0
 
 owlready2>=0.45
+
+plotly>=5.15.0

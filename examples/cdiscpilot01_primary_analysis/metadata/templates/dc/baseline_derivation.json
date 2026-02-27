@@ -1,0 +1,54 @@
+{
+  "$schema": "https://cdisc.org/ac-dc/v1/template-schema.json",
+  "template": {
+    "id": "T_DC_Baseline",
+    "name": "BaselineDerivation",
+    "type": "derivation",
+    "version": "1.0.0",
+    "clinical_intent": "Derive baseline value from the baseline visit observation",
+    "uses_method": "Aggregation",
+    "parameters": {
+      "agg_func": "FIRST",
+      "order_by": "visit_numeric"
+    },
+    "role_bindings": [
+      {
+        "semantic_transformation_concept": "observation_value",
+        "method_role": "value",
+        "direction": "input",
+        "cube_role": "measure",
+        "data_type": "numeric"
+      },
+      {
+        "semantic_transformation_concept": "subject",
+        "method_role": "partition",
+        "direction": "input",
+        "cube_role": "dimension",
+        "data_type": "string"
+      },
+      {
+        "semantic_transformation_concept": "parameter",
+        "method_role": "partition",
+        "direction": "input",
+        "cube_role": "dimension",
+        "data_type": "string"
+      },
+      {
+        "semantic_transformation_concept": "baseline_flag",
+        "method_role": "filter",
+        "direction": "input",
+        "cube_role": "filter",
+        "data_type": "boolean",
+        "description": "Filter to baseline records only"
+      },
+      {
+        "semantic_transformation_concept": "baseline_value",
+        "method_role": "result",
+        "direction": "output",
+        "cube_role": "measure",
+        "data_type": "numeric"
+      }
+    ],
+    "del_expression": "baseline_value := FIRST(observation_value) OVER (subject, parameter) WHERE baseline_flag = TRUE ORDER BY visit_numeric"
+  }
+}

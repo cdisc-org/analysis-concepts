@@ -1,0 +1,162 @@
+# =============================================================================
+# ADaM Class Variables -> DataConcepts Mappings
+# =============================================================================
+#
+# ADaM (Analysis Data Model) class variables declare their alignment with
+# semantic DataConcepts. These are "class-level" definitions that apply
+# across all ADaM datasets (ADSL, BDS, OCCDS, etc.).
+#
+# Relationship direction: ADaM variables point TO DataConcepts via "is_a"
+#
+# Source: model-mappings.tsk
+# =============================================================================
+
+adam_class_variables:
+
+  # ---------------------------------------------------------------------------
+  # Subject Identifiers
+  # ---------------------------------------------------------------------------
+
+  - name: USUBJID
+    label: "Unique Subject Identifier"
+    is_a: Subject
+    datatype: string
+    class: Identifier
+    description: "Unique identifier for each subject across all datasets"
+
+
+  # ---------------------------------------------------------------------------
+  # Visit/Timepoint Variables
+  # ---------------------------------------------------------------------------
+
+  - name: AVISIT
+    label: "Analysis Visit"
+    is_a: Visit
+    datatype: string
+    class: BDS
+    description: "Analysis visit description"
+
+  - name: AVISITN
+    label: "Analysis Visit (N)"
+    is_a: VisitNumeric
+    datatype: numeric
+    class: BDS
+    description: "Analysis visit number for sorting"
+
+
+  # ---------------------------------------------------------------------------
+  # Treatment Variables
+  # ---------------------------------------------------------------------------
+
+  - name: TRT01A
+    label: "Actual Treatment for Period 01"
+    is_a: Treatment
+    datatype: string
+    class: ADSL
+    description: "Actual treatment received in period 01"
+
+  - name: TRTP
+    label: "Planned Treatment for Period"
+    is_a: Treatment
+    datatype: string
+    class: BDS
+    description: "Planned treatment for the analysis period"
+
+  - name: TRT01P
+    label: "Planned Treatment for Period 01"
+    is_a: Treatment
+    datatype: string
+    class: ADSL
+    description: "Planned treatment for period 01"
+
+
+  # ---------------------------------------------------------------------------
+  # Site Variables
+  # ---------------------------------------------------------------------------
+
+  - name: SITEID
+    label: "Study Site Identifier"
+    is_a: Site
+    datatype: string
+    class: ADSL
+    description: "Unique identifier for the study site"
+
+
+  # ---------------------------------------------------------------------------
+  # Parameter Variables
+  # ---------------------------------------------------------------------------
+
+  - name: PARAMCD
+    label: "Parameter Code"
+    is_a: Parameter
+    datatype: string
+    class: BDS
+    description: "Short name for the analysis parameter"
+
+  - name: PARAM
+    label: "Parameter"
+    is_a: ParameterDescription
+    datatype: string
+    class: BDS
+    description: "Full description of the analysis parameter"
+
+
+  # ---------------------------------------------------------------------------
+  # Analysis Value Variables
+  # ---------------------------------------------------------------------------
+
+  - name: AVAL
+    label: "Analysis Value"
+    is_a: AnalysisValue
+    datatype: numeric
+    class: BDS
+    description: "Primary analysis value"
+
+  - name: BASE
+    label: "Baseline Value"
+    is_a: BaselineValue
+    datatype: numeric
+    class: BDS
+    description: "Baseline value for change calculations"
+    derived: true
+
+  - name: CHG
+    label: "Change from Baseline"
+    is_a: ChangeValue
+    datatype: numeric
+    class: BDS
+    description: "Change from baseline (AVAL - BASE)"
+    derived: true
+
+  - name: PCHG
+    label: "Percent Change from Baseline"
+    is_a: PercentChange
+    datatype: numeric
+    class: BDS
+    description: "Percent change from baseline"
+    derived: true
+
+
+  # ---------------------------------------------------------------------------
+  # Population Flag Variables
+  # ---------------------------------------------------------------------------
+
+  - name: ITTFL
+    label: "Intent-to-Treat Population Flag"
+    is_a: ITTFlag
+    datatype: string
+    class: ADSL
+    description: "Y/N flag for ITT population membership"
+    values:
+      - "Y"
+      - "N"
+
+  - name: EFFFL
+    label: "Efficacy Population Flag"
+    is_a: EfficacyFlag
+    datatype: string
+    class: ADSL
+    description: "Y/N flag for efficacy population membership"
+    values:
+      - "Y"
+      - "N"

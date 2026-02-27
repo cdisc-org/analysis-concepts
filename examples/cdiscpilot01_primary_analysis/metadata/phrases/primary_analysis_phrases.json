@@ -1,0 +1,154 @@
+{
+  "$schema": "https://cdisc.org/ac-dc/v1/phrases-schema.json",
+  "version": "1.0.0",
+  "description": "Smart Phrases for CDISCPILOT01 Primary Analysis",
+  "static_phrases": [
+    {
+      "id": "SP_CFB_ENDPOINT",
+      "role": "endpoint",
+      "phrase_template": "change from baseline",
+      "references": ["change_value"],
+      "description": "Endpoint is the change from baseline value"
+    },
+    {
+      "id": "SP_ANCOVA_METHOD",
+      "role": "method",
+      "phrase_template": "An ANCOVA model will be used",
+      "references": ["ancova_dose_response"],
+      "description": "Analysis method is ANCOVA"
+    },
+    {
+      "id": "SP_BASELINE_COV",
+      "role": "covariate",
+      "phrase_template": "with the baseline score included as a covariate",
+      "references": ["baseline_value"],
+      "description": "Baseline value is a covariate in the model"
+    },
+    {
+      "id": "SP_SITE_FACTOR",
+      "role": "grouping",
+      "phrase_template": "site included as a fixed effect",
+      "references": ["site"],
+      "description": "Site is a fixed effect in the model"
+    },
+    {
+      "id": "SP_TRT_CONTINUOUS",
+      "role": "grouping",
+      "phrase_template": "treatment included as a continuous variable",
+      "references": ["treatment_dose"],
+      "description": "Treatment dose is modeled as continuous for dose-response"
+    },
+    {
+      "id": "SP_DOSE_RESPONSE",
+      "role": "method_qualifier",
+      "phrase_template": "results for a test of dose response will be produced",
+      "references": ["slope", "p_value"],
+      "description": "The analysis will test for dose-response relationship"
+    }
+  ],
+  "parameterized_phrases": [
+    {
+      "id": "SP_PARAMETER",
+      "role": "parameter",
+      "phrase_template": "in {parameter}",
+      "parameters": ["parameter"],
+      "references": ["parameter"],
+      "description": "Specifies the analysis parameter"
+    },
+    {
+      "id": "SP_TIMEPOINT",
+      "role": "timepoint",
+      "phrase_template": "at {visit}",
+      "parameters": ["visit"],
+      "references": ["visit"],
+      "description": "Specifies the analysis timepoint"
+    },
+    {
+      "id": "SP_POPULATION",
+      "role": "population",
+      "phrase_template": "will use the {population} population",
+      "parameters": ["population"],
+      "references": ["population_flag"],
+      "description": "Specifies the analysis population"
+    },
+    {
+      "id": "SP_IMPUTATION",
+      "role": "method_qualifier",
+      "phrase_template": "with {imputation} imputation for any missing values at {visit}",
+      "parameters": ["imputation", "visit"],
+      "references": ["derivation_type"],
+      "description": "Specifies the imputation method for missing data"
+    }
+  ],
+  "sentences": [
+    {
+      "id": "S_SENTENCE_PRIMARY_ANALYSIS",
+      "name": "Primary Analysis Description",
+      "describes": "S_AC_CDISCPILOT01_ADAS_WK24",
+      "text": "The primary analysis of the change from baseline in ADAS-Cog(11) at Week 24 will use the efficacy population with LOCF imputation for any missing values at Week 24. An ANCOVA model will be used with the baseline score, site, and treatment included as independent variables. Treatment will be included as a continuous variable, and results for a test of dose response will be produced.",
+      "composed_of": [
+        {
+          "phrase_id": "SP_CFB_ENDPOINT",
+          "order": 1
+        },
+        {
+          "phrase_id": "SP_PARAMETER",
+          "order": 2,
+          "bound_value": "ADAS-Cog(11)"
+        },
+        {
+          "phrase_id": "SP_TIMEPOINT",
+          "order": 3,
+          "bound_value": "Week 24"
+        },
+        {
+          "phrase_id": "SP_POPULATION",
+          "order": 4,
+          "bound_value": "efficacy"
+        },
+        {
+          "phrase_id": "SP_IMPUTATION",
+          "order": 5,
+          "bound_values": {
+            "imputation": "LOCF",
+            "visit": "Week 24"
+          }
+        },
+        {
+          "phrase_id": "SP_ANCOVA_METHOD",
+          "order": 6
+        },
+        {
+          "phrase_id": "SP_BASELINE_COV",
+          "order": 7
+        },
+        {
+          "phrase_id": "SP_SITE_FACTOR",
+          "order": 8
+        },
+        {
+          "phrase_id": "SP_TRT_CONTINUOUS",
+          "order": 9
+        },
+        {
+          "phrase_id": "SP_DOSE_RESPONSE",
+          "order": 10
+        }
+      ],
+      "traceability": {
+        "parameter_phrase_to_slice": {
+          "SP_PARAMETER.bound_value": "slice_bindings.parameter.label"
+        },
+        "timepoint_phrase_to_slice": {
+          "SP_TIMEPOINT.bound_value": "slice_bindings.visit.value"
+        },
+        "population_phrase_to_slice": {
+          "SP_POPULATION.bound_value": "slice_bindings.population_flag.population_name"
+        },
+        "imputation_phrase_to_slice": {
+          "SP_IMPUTATION.bound_values.imputation": "slice_bindings.derivation_type.values"
+        }
+      }
+    }
+  ]
+}

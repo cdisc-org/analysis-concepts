@@ -1,0 +1,183 @@
+{
+  "$schema": "https://cdisc.org/ac-dc/v1/method-schema.json",
+  "version": "1.0.0",
+  "description": "Analysis Methods for CDISCPILOT01 Primary Analysis",
+  "methods": [
+    {
+      "name": "ancova",
+      "type": "analysis",
+      "description": "Analysis of covariance - compares group means controlling for continuous covariates",
+      "del_expression": "response ~ covariate + group",
+      "mathematical_notation": "Y_ij = mu + tau_i + beta*X_ij + epsilon_ij",
+      "roles": [
+        {
+          "name": "response",
+          "direction": "input",
+          "data_type": "numeric",
+          "description": "Dependent variable (outcome)"
+        },
+        {
+          "name": "covariate",
+          "direction": "input",
+          "data_type": "numeric",
+          "description": "Continuous covariate for adjustment"
+        },
+        {
+          "name": "group",
+          "direction": "input",
+          "data_type": "string",
+          "description": "Categorical grouping factor"
+        },
+        {
+          "name": "ls_means",
+          "direction": "output",
+          "data_type": "numeric",
+          "description": "Least-squares means per group"
+        },
+        {
+          "name": "ls_mean_difference",
+          "direction": "output",
+          "data_type": "numeric",
+          "description": "Difference in LS means"
+        },
+        {
+          "name": "confidence_interval",
+          "direction": "output",
+          "data_type": "numeric",
+          "description": "CI for LS mean difference"
+        },
+        {
+          "name": "p_value",
+          "direction": "output",
+          "data_type": "numeric",
+          "description": "P-value for treatment effect"
+        },
+        {
+          "name": "f_statistic",
+          "direction": "output",
+          "data_type": "numeric",
+          "description": "F-statistic for each effect"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "ss_type",
+          "type": "enum",
+          "values": ["I", "II", "III"],
+          "default": "III",
+          "description": "Type of sum of squares"
+        },
+        {
+          "name": "alpha",
+          "type": "numeric",
+          "default": 0.05,
+          "description": "Significance level"
+        },
+        {
+          "name": "interaction",
+          "type": "boolean",
+          "default": false,
+          "description": "Include covariate x group interaction"
+        }
+      ],
+      "assumptions": [
+        "Linearity between covariate and response",
+        "Homogeneity of regression slopes",
+        "Normality of residuals",
+        "Homoscedasticity",
+        "Independence of observations"
+      ]
+    },
+    {
+      "name": "ancova_dose_response",
+      "type": "analysis",
+      "description": "ANCOVA with treatment as continuous variable for dose-response trend testing",
+      "del_expression": "response ~ covariate + factor + continuous_predictor",
+      "mathematical_notation": "Y_ij = mu + beta_1*X_ij + tau_i + beta_2*Dose_j + epsilon_ij",
+      "roles": [
+        {
+          "name": "response",
+          "direction": "input",
+          "data_type": "numeric",
+          "description": "Dependent variable (change from baseline)"
+        },
+        {
+          "name": "covariate",
+          "direction": "input",
+          "data_type": "numeric",
+          "description": "Baseline value as covariate"
+        },
+        {
+          "name": "factor",
+          "direction": "input",
+          "data_type": "string",
+          "description": "Categorical factor (e.g., site)"
+        },
+        {
+          "name": "continuous_predictor",
+          "direction": "input",
+          "data_type": "numeric",
+          "description": "Treatment dose as continuous predictor"
+        },
+        {
+          "name": "slope",
+          "direction": "output",
+          "data_type": "numeric",
+          "description": "Slope estimate for dose-response"
+        },
+        {
+          "name": "slope_se",
+          "direction": "output",
+          "data_type": "numeric",
+          "description": "Standard error of slope"
+        },
+        {
+          "name": "p_value",
+          "direction": "output",
+          "data_type": "numeric",
+          "description": "P-value for dose-response trend"
+        },
+        {
+          "name": "confidence_interval",
+          "direction": "output",
+          "data_type": "numeric",
+          "description": "CI for slope estimate"
+        },
+        {
+          "name": "f_statistic",
+          "direction": "output",
+          "data_type": "numeric",
+          "description": "F-statistic for dose-response effect"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "ss_type",
+          "type": "enum",
+          "values": ["I", "II", "III"],
+          "default": "III",
+          "description": "Type of sum of squares"
+        },
+        {
+          "name": "alpha",
+          "type": "numeric",
+          "default": 0.05,
+          "description": "Significance level"
+        }
+      ],
+      "outputs": [
+        "slope",
+        "slope_se",
+        "p_value",
+        "confidence_interval",
+        "f_statistic"
+      ],
+      "assumptions": [
+        "Linearity of dose-response relationship",
+        "Normality of residuals",
+        "Homoscedasticity",
+        "Independence of observations"
+      ]
+    }
+  ]
+}

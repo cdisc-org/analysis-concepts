@@ -1,0 +1,54 @@
+{
+  "$schema": "https://cdisc.org/ac-dc/v1/instance-schema.json",
+  "instance": {
+    "id": "S_DC_ADAS_Change",
+    "name": "ADAS-Cog(11) Change from Baseline",
+    "type": "derivation_instance",
+    "version": "1.0.0",
+    "instance_of": "T_DC_ChangeFromBaseline",
+    "study": "CDISCPILOT01",
+    "description": "Calculate change from baseline for ADAS-Cog(11) scores",
+    "depends_on": ["S_DC_ADAS_Baseline"],
+
+    "method": {
+      "name": "Subtraction",
+      "formula": "change_value = analysis_value - baseline_value"
+    },
+
+    "input_cube": {
+      "name": "chg_input",
+      "dimensions": [
+        {"data_concept": "subject", "role": "identifier"},
+        {"data_concept": "visit", "role": "identifier"},
+        {"data_concept": "visit_numeric", "role": "identifier"},
+        {"data_concept": "parameter", "role": "identifier"}
+      ],
+      "measures": [
+        {"data_concept": "analysis_value", "role": "value"},
+        {"data_concept": "baseline_value", "role": "value"}
+      ]
+    },
+
+    "output_cube": {
+      "name": "chg_output",
+      "dimensions": [
+        {"data_concept": "subject", "role": "identifier"},
+        {"data_concept": "visit", "role": "identifier"},
+        {"data_concept": "visit_numeric", "role": "identifier"},
+        {"data_concept": "parameter", "role": "identifier"}
+      ],
+      "measures": [
+        {"data_concept": "analysis_value", "role": "value"},
+        {"data_concept": "baseline_value", "role": "value"},
+        {"data_concept": "change_value", "role": "value"}
+      ]
+    },
+
+    "slice": {
+      "name": "chg_slice",
+      "constraints": [
+        {"data_concept": "parameter", "value": "ACTOT11", "label": "ADAS-Cog(11) Total Score"}
+      ]
+    }
+  }
+}

@@ -1,0 +1,230 @@
+{
+  "$schema": "https://cdisc.org/ac-dc/v1/method-schema.json",
+  "version": "1.0.0",
+  "description": "Derivation Methods for CDISCPILOT01 Primary Analysis",
+  "methods": [
+    {
+      "name": "Subtraction",
+      "type": "derivation",
+      "description": "Difference between two values",
+      "del_expression": "difference := minuend - subtrahend",
+      "roles": [
+        {
+          "name": "minuend",
+          "direction": "input",
+          "data_type": "numeric",
+          "description": "Value to subtract from"
+        },
+        {
+          "name": "subtrahend",
+          "direction": "input",
+          "data_type": "numeric",
+          "description": "Value to subtract"
+        },
+        {
+          "name": "difference",
+          "direction": "output",
+          "data_type": "numeric",
+          "description": "Result of subtraction"
+        }
+      ],
+      "parameters": []
+    },
+    {
+      "name": "Aggregation",
+      "type": "derivation",
+      "description": "Aggregate over partition to derive a single value",
+      "del_expression": "result := AGG(value) OVER partition WHERE condition",
+      "roles": [
+        {
+          "name": "value",
+          "direction": "input",
+          "data_type": "any",
+          "description": "Value to aggregate"
+        },
+        {
+          "name": "partition",
+          "direction": "input",
+          "data_type": "any",
+          "description": "Grouping variables for aggregation"
+        },
+        {
+          "name": "result",
+          "direction": "output",
+          "data_type": "any",
+          "description": "Aggregated result"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "agg_func",
+          "type": "enum",
+          "values": ["FIRST", "LAST", "MIN", "MAX", "SUM", "AVG", "COUNT"],
+          "default": "FIRST",
+          "description": "Aggregation function to apply"
+        },
+        {
+          "name": "order_by",
+          "type": "string",
+          "description": "Variable(s) to order by before aggregation"
+        }
+      ]
+    },
+    {
+      "name": "WindowLookup",
+      "type": "derivation",
+      "description": "Value from another row within window (for LOCF, BOCF)",
+      "del_expression": "result := WINDOW(value, offset) OVER partition ORDER BY order_var",
+      "roles": [
+        {
+          "name": "value",
+          "direction": "input",
+          "data_type": "any",
+          "description": "Value to look up"
+        },
+        {
+          "name": "partition",
+          "direction": "input",
+          "data_type": "any",
+          "description": "Grouping variables for window"
+        },
+        {
+          "name": "order_var",
+          "direction": "input",
+          "data_type": "any",
+          "description": "Variable(s) defining row order"
+        },
+        {
+          "name": "result",
+          "direction": "output",
+          "data_type": "any",
+          "description": "Looked-up value"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "window_func",
+          "type": "enum",
+          "values": ["LAG", "LEAD", "FIRST_VALUE", "LAST_VALUE"],
+          "default": "LAG",
+          "description": "Window function to apply"
+        },
+        {
+          "name": "offset",
+          "type": "numeric",
+          "default": 1,
+          "description": "Number of rows to look back/forward"
+        },
+        {
+          "name": "ignore_nulls",
+          "type": "boolean",
+          "default": true,
+          "description": "Skip null values when looking up"
+        }
+      ]
+    },
+    {
+      "name": "Imputation",
+      "type": "derivation",
+      "description": "Replace missing values with imputed values",
+      "del_expression": "result := COALESCE(value, imputed_value)",
+      "roles": [
+        {
+          "name": "value",
+          "direction": "input",
+          "data_type": "any",
+          "description": "Original value (may be missing)"
+        },
+        {
+          "name": "imputed_value",
+          "direction": "input",
+          "data_type": "any",
+          "description": "Value to use if original is missing"
+        },
+        {
+          "name": "result",
+          "direction": "output",
+          "data_type": "any",
+          "description": "Coalesced result"
+        }
+      ],
+      "parameters": []
+    },
+    {
+      "name": "ThresholdCompare",
+      "type": "derivation",
+      "description": "Compare value to threshold and return flag",
+      "del_expression": "result := IF(value >= threshold, true_val, false_val)",
+      "roles": [
+        {
+          "name": "value",
+          "direction": "input",
+          "data_type": "any",
+          "description": "Value to compare"
+        },
+        {
+          "name": "threshold",
+          "direction": "input",
+          "data_type": "any",
+          "description": "Threshold for comparison"
+        },
+        {
+          "name": "result",
+          "direction": "output",
+          "data_type": "any",
+          "description": "Result of comparison"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "operator",
+          "type": "enum",
+          "values": ["=", "!=", "<", "<=", ">", ">="],
+          "default": ">=",
+          "description": "Comparison operator"
+        },
+        {
+          "name": "true_val",
+          "type": "any",
+          "default": "Y",
+          "description": "Value when condition is true"
+        },
+        {
+          "name": "false_val",
+          "type": "any",
+          "default": "N",
+          "description": "Value when condition is false"
+        }
+      ]
+    },
+    {
+      "name": "LogicalCombination",
+      "type": "derivation",
+      "description": "Combine multiple boolean conditions",
+      "del_expression": "result := condition1 AND condition2 AND ... conditionN",
+      "roles": [
+        {
+          "name": "conditions",
+          "direction": "input",
+          "data_type": "boolean",
+          "description": "Boolean conditions to combine (multiple inputs)"
+        },
+        {
+          "name": "result",
+          "direction": "output",
+          "data_type": "boolean",
+          "description": "Combined result"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "logic_op",
+          "type": "enum",
+          "values": ["AND", "OR"],
+          "default": "AND",
+          "description": "Logical operator to combine conditions"
+        }
+      ]
+    }
+  ]
+}

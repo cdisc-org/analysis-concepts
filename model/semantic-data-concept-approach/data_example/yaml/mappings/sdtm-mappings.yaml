@@ -1,0 +1,109 @@
+# =============================================================================
+# SDTM Variables -> DataConcepts Mappings
+# =============================================================================
+#
+# SDTM (Study Data Tabulation Model) variables declare their alignment with
+# semantic DataConcepts. SDTM uses domain prefixes (e.g., VS for Vital Signs,
+# LB for Labs) represented as "--" for generic domain-prefixed variables.
+#
+# Relationship direction: SDTM variables point TO DataConcepts via "is_a"
+#
+# Source: model-mappings.tsk
+# =============================================================================
+
+sdtm_variables:
+
+  # ---------------------------------------------------------------------------
+  # Subject Identifiers
+  # ---------------------------------------------------------------------------
+
+  - name: USUBJID
+    label: "Unique Subject Identifier"
+    is_a: Subject
+    datatype: string
+    domain: DM
+    description: "Unique identifier for each subject"
+
+
+  # ---------------------------------------------------------------------------
+  # Visit/Timepoint Variables
+  # ---------------------------------------------------------------------------
+
+  - name: VISIT
+    label: "Visit Name"
+    is_a: Visit
+    datatype: string
+    domain: "*"  # All domains
+    description: "Protocol-defined visit name"
+
+  - name: VISITNUM
+    label: "Visit Number"
+    is_a: VisitNumeric
+    datatype: numeric
+    domain: "*"  # All domains
+    description: "Clinical encounter number for ordering"
+
+
+  # ---------------------------------------------------------------------------
+  # Treatment Variables
+  # ---------------------------------------------------------------------------
+
+  - name: ARM
+    label: "Description of Planned Arm"
+    is_a: Treatment
+    datatype: string
+    domain: DM
+    description: "Name of the arm to which the subject was assigned"
+
+  - name: EXTRT
+    label: "Name of Treatment"
+    is_a: Treatment
+    datatype: string
+    domain: EX
+    description: "Name of the treatment administered"
+
+
+  # ---------------------------------------------------------------------------
+  # Site Variables
+  # ---------------------------------------------------------------------------
+
+  - name: SITEID
+    label: "Study Site Identifier"
+    is_a: Site
+    datatype: string
+    domain: DM
+    description: "Unique identifier for the site"
+
+
+  # ---------------------------------------------------------------------------
+  # Parameter/Test Variables (domain-prefixed)
+  # ---------------------------------------------------------------------------
+
+  - name: "--TESTCD"
+    label: "Test Short Name"
+    is_a: Parameter
+    datatype: string
+    domain: Findings
+    description: "Short name of the measurement, test, or examination"
+    note: "Replace -- with domain prefix (e.g., VSTESTCD, LBTESTCD)"
+
+  - name: "--TEST"
+    label: "Test Name"
+    is_a: ParameterDescription
+    datatype: string
+    domain: Findings
+    description: "Verbatim name of the test or examination"
+    note: "Replace -- with domain prefix (e.g., VSTEST, LBTEST)"
+
+
+  # ---------------------------------------------------------------------------
+  # Result Variables (domain-prefixed)
+  # ---------------------------------------------------------------------------
+
+  - name: "--STRESN"
+    label: "Numeric Result/Finding in Standard Units"
+    is_a: AnalysisValue
+    datatype: numeric
+    domain: Findings
+    description: "Numeric result in standardized units"
+    note: "Replace -- with domain prefix (e.g., VSSTRESN, LBSTRESN)"

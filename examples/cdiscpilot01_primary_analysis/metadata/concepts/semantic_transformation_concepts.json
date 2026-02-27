@@ -1,0 +1,190 @@
+{
+  "$schema": "https://cdisc.org/ac-dc/v1/stc-schema.json",
+  "version": "1.0.0",
+  "description": "Semantic Transformation Concepts for CDISCPILOT01 Primary Analysis",
+  "concepts": {
+    "observation_level": [
+      {
+        "name": "study",
+        "description": "Clinical study identifier",
+        "level": "observation",
+        "category": "Identity",
+        "data_type": "string"
+      },
+      {
+        "name": "site",
+        "description": "Site identifier and site groupings",
+        "level": "observation",
+        "category": "Identity",
+        "data_type": "string"
+      },
+      {
+        "name": "subject",
+        "description": "Unique subject identifier",
+        "level": "observation",
+        "category": "Identity",
+        "data_type": "string"
+      },
+      {
+        "name": "parameter",
+        "description": "Analysis parameter identifier",
+        "level": "observation",
+        "category": "Identity",
+        "data_type": "string"
+      },
+      {
+        "name": "visit",
+        "description": "Analysis visit and timepoint",
+        "level": "observation",
+        "category": "Identity",
+        "data_type": "string"
+      },
+      {
+        "name": "observation_value",
+        "description": "Raw/collected value from source domain",
+        "level": "observation",
+        "category": "Value",
+        "data_type": "any"
+      },
+      {
+        "name": "analysis_value",
+        "description": "Primary value for analysis",
+        "level": "observation",
+        "category": "Value",
+        "data_type": "numeric"
+      },
+      {
+        "name": "baseline_value",
+        "description": "Reference value for computing change (used as measure in methods)",
+        "level": "observation",
+        "category": "Value",
+        "data_type": "numeric"
+      },
+      {
+        "name": "change_value",
+        "description": "Computed change from baseline",
+        "level": "observation",
+        "category": "Value",
+        "data_type": "numeric"
+      },
+      {
+        "name": "treatment_planned",
+        "description": "Planned treatment group assignment (categorical)",
+        "level": "observation",
+        "category": "Identity",
+        "data_type": "string"
+      },
+      {
+        "name": "treatment_dose",
+        "description": "Numeric dose value for dose-response analysis",
+        "level": "observation",
+        "category": "Value",
+        "data_type": "numeric"
+      },
+      {
+        "name": "population_flag",
+        "description": "Subject belongs to analysis population",
+        "level": "observation",
+        "category": "Flag",
+        "data_type": "boolean"
+      },
+      {
+        "name": "efficacy_flag",
+        "description": "Subject belongs to efficacy population",
+        "level": "observation",
+        "category": "Flag",
+        "data_type": "boolean"
+      },
+      {
+        "name": "baseline_flag",
+        "description": "Record is the baseline record",
+        "level": "observation",
+        "category": "Flag",
+        "data_type": "boolean"
+      },
+      {
+        "name": "derivation_type",
+        "description": "Method of value derivation (e.g., LOCF, WOCF, observed)",
+        "level": "observation",
+        "category": "Qualifier",
+        "data_type": "string"
+      },
+      {
+        "name": "unit",
+        "description": "Unit of measurement for the value",
+        "level": "observation",
+        "category": "Qualifier",
+        "data_type": "string"
+      },
+      {
+        "name": "parameter_label",
+        "description": "Human-readable parameter name for display",
+        "level": "observation",
+        "category": "Qualifier",
+        "data_type": "string"
+      }
+    ],
+    "inference_level": [
+      {
+        "name": "ls_mean",
+        "description": "Least-squares mean estimate from ANCOVA model",
+        "level": "inference",
+        "category": "Estimate",
+        "data_type": "numeric",
+        "stato_uri": "http://purl.obolibrary.org/obo/STATO_0000255"
+      },
+      {
+        "name": "slope",
+        "description": "Slope estimate for continuous predictor (dose-response)",
+        "level": "inference",
+        "category": "Estimate",
+        "data_type": "numeric",
+        "stato_uri": "http://purl.obolibrary.org/obo/STATO_0000182"
+      },
+      {
+        "name": "slope_se",
+        "description": "Standard error of slope estimate",
+        "level": "inference",
+        "category": "Estimate",
+        "data_type": "numeric"
+      },
+      {
+        "name": "p_value",
+        "description": "P-value for statistical test",
+        "level": "inference",
+        "category": "Test",
+        "data_type": "numeric",
+        "stato_uri": "http://purl.obolibrary.org/obo/STATO_0000087"
+      },
+      {
+        "name": "confidence_interval_lower",
+        "description": "Lower bound of confidence interval",
+        "level": "inference",
+        "category": "Estimate",
+        "data_type": "numeric"
+      },
+      {
+        "name": "confidence_interval_upper",
+        "description": "Upper bound of confidence interval",
+        "level": "inference",
+        "category": "Estimate",
+        "data_type": "numeric"
+      },
+      {
+        "name": "f_statistic",
+        "description": "F-statistic from ANOVA/ANCOVA model",
+        "level": "inference",
+        "category": "Test",
+        "data_type": "numeric",
+        "stato_uri": "http://purl.obolibrary.org/obo/STATO_0000176"
+      },
+      {
+        "name": "degrees_of_freedom",
+        "description": "Degrees of freedom for statistical test",
+        "level": "inference",
+        "category": "Test",
+        "data_type": "numeric"
+      }
+    ]
+  }
+}

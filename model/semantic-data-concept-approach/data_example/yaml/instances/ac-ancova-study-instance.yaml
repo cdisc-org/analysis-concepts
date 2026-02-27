@@ -1,0 +1,347 @@
+# =============================================================================
+# Analysis Concept: ANCOVA (Study Instance)
+# =============================================================================
+#
+# Instance ID: S_AC_001
+# Name: ANCOVA Change from Baseline ADAS-Cog(11) Week 24
+# Description: ANCOVA analysis of change from baseline with baseline, site,
+#              and treatment as covariates
+# Instance Of: T_AC_ANCOVA (ac-ancova-template.yaml)
+#
+# This is a STUDY-LEVEL instance - attribute values ARE bound to concrete values.
+# Demonstrates the Template -> Instance binding pattern.
+#
+# Pattern: Template/Instance separation (D3: Progressive Refinement)
+# Source: ac-ancova-study-instance.tsk
+# =============================================================================
+
+instance:
+  id: S_AC_001
+  name: "ANCOVA Change from Baseline ADAS-Cog(11) Week 24"
+  type: AnalysisConceptInstance
+  instance_of: T_AC_ANCOVA
+  description: "ANCOVA analysis of change from baseline with baseline, site, and treatment as covariates"
+  described_by: ANCOVASentence_ADAS_Week24
+
+
+# =============================================================================
+# IMPORTED TEMPLATES AND CONCEPTS
+# =============================================================================
+
+imports:
+  # Template cubes
+  - ac-ancova-template.ANCOVAInput
+  - ac-ancova-template.TreatmentResults
+  - ac-ancova-template.ComparisonResults
+
+  # Data concepts
+  - concepts-data.Subject
+  - concepts-data.Treatment
+  - concepts-data.Site
+  - concepts-data.Parameter
+  - concepts-data.Visit
+  - concepts-data.ChangeValue
+  - concepts-data.BaselineValue
+  - concepts-data.EfficacyFlag
+  - concepts-data.ImputationMethod
+
+
+# =============================================================================
+# STUDY-SPECIFIC CUBES
+# =============================================================================
+
+cubes:
+
+  # ---------------------------------------------------------------------------
+  # INPUT CUBE: ADQSADAS_ANCOVA (Study-specific)
+  # ---------------------------------------------------------------------------
+  - name: ADQSADAS_ANCOVA
+    label: "ADQSADAS filtered for ANCOVA analysis"
+    namespace: "http://example.org/study/S_AC_001#"
+    role: input
+    inherits_from: ANCOVAInput
+
+    structure:
+      dimensions:
+        - name: subject
+          datatype: Identifier
+          is_a: Subject
+          # Resolved: USUBJID
+
+        - name: treatment
+          datatype: CodedValue
+          is_a: Treatment
+          role: factor
+          # Resolved: TRTP
+
+        - name: site
+          datatype: CodedValue
+          is_a: Site
+          # Resolved: SITEID
+
+      measures:
+        - name: change_value
+          datatype: Numeric
+          is_a: ChangeValue
+          role: dependent
+          # Resolved: CHG
+
+        - name: baseline_value
+          datatype: Numeric
+          is_a: BaselineValue
+          role: covariate
+          # Resolved: BASE
+
+      attributes:
+        - name: parameter
+          datatype: CodedValue
+          is_a: Parameter
+
+        - name: timepoint
+          datatype: Text
+          is_a: Visit
+
+        - name: population_flag
+          datatype: Flag
+          is_a: EfficacyFlag
+
+        - name: imputation_method
+          datatype: CodedValue
+          is_a: ImputationMethod
+
+
+  # ---------------------------------------------------------------------------
+  # OUTPUT CUBE 1: TreatmentResults_ADAS_Week24 (Study-specific)
+  # ---------------------------------------------------------------------------
+  - name: TreatmentResults_ADAS_Week24
+    label: "LS Means by Treatment Group - ADAS-Cog Week 24"
+    namespace: "http://example.org/study/S_AC_001#"
+    role: output
+    inherits_from: TreatmentResults
+
+    structure:
+      dimensions:
+        - name: treatment
+          datatype: CodedValue
+          is_a: Treatment
+
+      measures:
+        - name: lsmean
+          datatype: Numeric
+
+        - name: lsmean_se
+          datatype: Numeric
+
+        - name: ci_lower
+          datatype: Numeric
+
+        - name: ci_upper
+          datatype: Numeric
+
+      # Bound context from input slice
+      attributes:
+        - name: parameter
+          datatype: CodedValue
+          value: "ADAS-Cog(11)"
+
+        - name: timepoint
+          datatype: Text
+          value: "Week 24"
+
+        - name: population_flag
+          datatype: Flag
+          value: "Y"
+
+
+  # ---------------------------------------------------------------------------
+  # OUTPUT CUBE 2: ComparisonResults_ADAS_Week24 (Study-specific)
+  # ---------------------------------------------------------------------------
+  - name: ComparisonResults_ADAS_Week24
+    label: "Pairwise Comparisons - ADAS-Cog Week 24"
+    namespace: "http://example.org/study/S_AC_001#"
+    role: output
+    inherits_from: ComparisonResults
+
+    structure:
+      dimensions:
+        - name: treatment
+          datatype: CodedValue
+          is_a: Treatment
+
+        - name: comparison_group
+          datatype: CodedValue
+          is_a: Treatment
+
+      measures:
+        - name: lsmean_diff
+          datatype: Numeric
+
+        - name: p_value
+          datatype: Numeric
+
+        - name: ci_lower
+          datatype: Numeric
+
+        - name: ci_upper
+          datatype: Numeric
+
+      # Bound context from input slice
+      attributes:
+        - name: parameter
+          datatype: CodedValue
+          value: "ADAS-Cog(11)"
+
+        - name: timepoint
+          datatype: Text
+          value: "Week 24"
+
+        - name: population_flag
+          datatype: Flag
+          value: "Y"
+
+
+# =============================================================================
+# STUDY-SPECIFIC SLICE
+# =============================================================================
+
+slices:
+  - name: ANCOVASlice_ADAS_Week24
+    cube: ADQSADAS_ANCOVA
+    description: "Study-specific slice with bound attribute values"
+
+    # BOUND VALUES - Study-specific attribute constraints
+    # These were EMPTY at template level, now BOUND to concrete values
+    fix:
+      # Parameter: ADAS-Cog 11-item subscale
+      # Filters to PARAMCD = "ACTOT11" (via Parameter concept mapping)
+      parameter: "ADAS-Cog(11)"
+
+      # Timepoint: Week 24 primary analysis visit
+      # Filters to AVISIT = "Week 24" (via Visit concept mapping)
+      timepoint: "Week 24"
+
+      # Population: Efficacy population flag
+      # Filters to EFFFL = "Y" (via EfficacyFlag concept mapping)
+      population_flag: "Y"
+
+      # Imputation: LOCF method for missing data
+      imputation_method: "LOCF"
+
+    # Dimensions that vary (not fixed)
+    vary:
+      - subject
+      - treatment
+      - site
+
+    # Measures included in the analysis
+    measures:
+      - change_value
+      - baseline_value
+
+
+# =============================================================================
+# STUDY-SPECIFIC MODEL
+# =============================================================================
+
+models:
+  - name: FitANCOVAModel_ADAS
+    input: ANCOVASlice_ADAS_Week24
+    outputs:
+      - TreatmentResults_ADAS_Week24
+      - ComparisonResults_ADAS_Week24
+
+    # Formula using ADaM variable names (resolved from concepts)
+    # This shows the "executed" form after connector resolution:
+    #   change_value   -> CHG  (via ChangeValue.adam_variable)
+    #   baseline_value -> BASE (via BaselineValue.adam_variable)
+    #   site           -> SITEID (via Site.adam_variable)
+    #   treatment      -> TRTP (via Treatment.adam_variable_planned)
+    formula: "CHG ~ BASE + SITEID + TRTP"
+    formula_notation: R
+    formula_type: resolved  # Indicates ADaM-resolved form
+
+    specification:
+      family: Gaussian
+      link: Identity
+
+    comparison:
+      method: LSMeans
+      type: pairwise
+      factor: TRTP
+
+    # Execution context
+    execution:
+      dataset: ADQSADAS
+      filter: "PARAMCD = 'ACTOT11' AND AVISIT = 'Week 24' AND EFFFL = 'Y'"
+      # SAS equivalent: proc mixed; class TRTP SITEID; model CHG = BASE SITEID TRTP;
+
+
+# =============================================================================
+# TEMPLATE VS. INSTANCE COMPARISON
+# =============================================================================
+#
+# TEMPLATE LEVEL (T_AC_ANCOVA):
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │ slice ANCOVAInputSlice from ANCOVAInput {                               │
+# │     vary: [subject, treatment, site],                                   │
+# │     measures: [change_value, baseline_value]                            │
+# │     // NO fix clause - attributes are EMPTY placeholders                │
+# │ }                                                                       │
+# │                                                                         │
+# │ model FitANCOVAModel {                                                  │
+# │     formula: change_value ~ baseline_value + site + treatment           │
+# │     // Semantic names - PORTABLE across studies                         │
+# │ }                                                                       │
+# └─────────────────────────────────────────────────────────────────────────┘
+#
+# INSTANCE LEVEL (S_AC_001):
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │ slice ANCOVASlice_ADAS_Week24 from ADQSADAS_ANCOVA {                    │
+# │     fix: {                                                              │
+# │         parameter: "ADAS-Cog(11)",      // BOUND                        │
+# │         timepoint: "Week 24",           // BOUND                        │
+# │         population_flag: "Y",           // BOUND                        │
+# │         imputation_method: "LOCF"       // BOUND                        │
+# │     },                                                                  │
+# │     vary: [subject, treatment, site],                                   │
+# │     measures: [change_value, baseline_value]                            │
+# │ }                                                                       │
+# │                                                                         │
+# │ model FitANCOVAModel_ADAS {                                             │
+# │     formula: CHG ~ BASE + SITEID + TRTP                                 │
+# │     // ADaM names - RESOLVED from concepts                              │
+# │ }                                                                       │
+# └─────────────────────────────────────────────────────────────────────────┘
+#
+# The same template can generate multiple study instances by varying:
+# - Parameter (different assessments)
+# - Timepoint (different visits)
+# - Population (ITT, PP, Safety)
+# - Imputation method (LOCF, MMRM, MI)
+#
+# =============================================================================
+
+
+# =============================================================================
+# UNIVERSAL CONNECTOR RESOLUTION TRACE
+# =============================================================================
+#
+# 1. Template defines: change_value ~ baseline_value + site + treatment
+#
+# 2. Resolution via DataConcept hub (see mappings/):
+#
+#    Formula term        Cube element       DataConcept      ADaM variable
+#    ─────────────────────────────────────────────────────────────────────
+#    change_value    ->  is_a           ->  ChangeValue  <-  is_a  <- CHG
+#    baseline_value  ->  is_a           ->  BaselineValue <- is_a  <- BASE
+#    site            ->  is_a           ->  Site         <-  is_a  <- SITEID
+#    treatment       ->  is_a           ->  Treatment    <-  is_a  <- TRTP
+#
+# 3. Study instance resolves to: CHG ~ BASE + SITEID + TRTP
+#
+# 4. Execution context:
+#    Dataset: ADQSADAS
+#    Filter: PARAMCD = "ACTOT11" AND AVISIT = "Week 24" AND EFFFL = "Y"
+#    Model: proc mixed; class TRTP SITEID; model CHG = BASE SITEID TRTP;
+#
+# =============================================================================

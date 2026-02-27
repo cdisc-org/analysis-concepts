@@ -1,0 +1,1086 @@
+{
+  "version": "1.0.0",
+  "description": "AC/DC Standards Library",
+  "methods": {
+    "derivation": [
+      {
+        "name": "Subtraction",
+        "type": "derivation",
+        "description": "Difference between two values",
+        "del_expression": "difference := minuend - subtrahend",
+        "roles": [
+          {
+            "name": "minuend",
+            "direction": "input",
+            "data_type": "numeric",
+            "description": "Value to subtract from"
+          },
+          {
+            "name": "subtrahend",
+            "direction": "input",
+            "data_type": "numeric",
+            "description": "Value to subtract"
+          },
+          {
+            "name": "difference",
+            "direction": "output",
+            "data_type": "numeric",
+            "description": "Result of subtraction"
+          }
+        ],
+        "parameters": []
+      },
+      {
+        "name": "Aggregation",
+        "type": "derivation",
+        "description": "Aggregate over partition to derive a single value",
+        "del_expression": "result := AGG(value) OVER partition WHERE condition",
+        "roles": [
+          {
+            "name": "value",
+            "direction": "input",
+            "data_type": "any",
+            "description": "Value to aggregate"
+          },
+          {
+            "name": "partition",
+            "direction": "input",
+            "data_type": "any",
+            "description": "Grouping variables for aggregation"
+          },
+          {
+            "name": "result",
+            "direction": "output",
+            "data_type": "any",
+            "description": "Aggregated result"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agg_func",
+            "type": "enum",
+            "default": "FIRST",
+            "values": [
+              "FIRST",
+              "LAST",
+              "MIN",
+              "MAX",
+              "SUM",
+              "AVG",
+              "COUNT"
+            ],
+            "description": "Aggregation function to apply"
+          },
+          {
+            "name": "order_by",
+            "type": "string",
+            "description": "Variable(s) to order by before aggregation"
+          }
+        ]
+      },
+      {
+        "name": "WindowLookup",
+        "type": "derivation",
+        "description": "Value from another row within window (for LOCF, BOCF)",
+        "del_expression": "result := WINDOW(value, offset) OVER partition ORDER BY order_var",
+        "roles": [
+          {
+            "name": "value",
+            "direction": "input",
+            "data_type": "any",
+            "description": "Value to look up"
+          },
+          {
+            "name": "partition",
+            "direction": "input",
+            "data_type": "any",
+            "description": "Grouping variables for window"
+          },
+          {
+            "name": "order_var",
+            "direction": "input",
+            "data_type": "any",
+            "description": "Variable(s) defining row order"
+          },
+          {
+            "name": "result",
+            "direction": "output",
+            "data_type": "any",
+            "description": "Looked-up value"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "window_func",
+            "type": "enum",
+            "default": "LAG",
+            "values": [
+              "LAG",
+              "LEAD",
+              "FIRST_VALUE",
+              "LAST_VALUE"
+            ],
+            "description": "Window function to apply"
+          },
+          {
+            "name": "offset",
+            "type": "numeric",
+            "default": 1,
+            "description": "Number of rows to look back/forward"
+          },
+          {
+            "name": "ignore_nulls",
+            "type": "boolean",
+            "default": true,
+            "description": "Skip null values when looking up"
+          }
+        ]
+      },
+      {
+        "name": "Imputation",
+        "type": "derivation",
+        "description": "Replace missing values with imputed values",
+        "del_expression": "result := COALESCE(value, imputed_value)",
+        "roles": [
+          {
+            "name": "value",
+            "direction": "input",
+            "data_type": "any",
+            "description": "Original value (may be missing)"
+          },
+          {
+            "name": "imputed_value",
+            "direction": "input",
+            "data_type": "any",
+            "description": "Value to use if original is missing"
+          },
+          {
+            "name": "result",
+            "direction": "output",
+            "data_type": "any",
+            "description": "Coalesced result"
+          }
+        ],
+        "parameters": []
+      },
+      {
+        "name": "ThresholdCompare",
+        "type": "derivation",
+        "description": "Compare value to threshold and return flag",
+        "del_expression": "result := IF(value >= threshold, true_val, false_val)",
+        "roles": [
+          {
+            "name": "value",
+            "direction": "input",
+            "data_type": "any",
+            "description": "Value to compare"
+          },
+          {
+            "name": "threshold",
+            "direction": "input",
+            "data_type": "any",
+            "description": "Threshold for comparison"
+          },
+          {
+            "name": "result",
+            "direction": "output",
+            "data_type": "any",
+            "description": "Result of comparison"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operator",
+            "type": "enum",
+            "default": ">=",
+            "values": [
+              "=",
+              "!=",
+              "<",
+              "<=",
+              ">",
+              ">="
+            ],
+            "description": "Comparison operator"
+          },
+          {
+            "name": "true_val",
+            "type": "any",
+            "default": "Y",
+            "description": "Value when condition is true"
+          },
+          {
+            "name": "false_val",
+            "type": "any",
+            "default": "N",
+            "description": "Value when condition is false"
+          }
+        ]
+      },
+      {
+        "name": "LogicalCombination",
+        "type": "derivation",
+        "description": "Combine multiple boolean conditions",
+        "del_expression": "result := condition1 AND condition2 AND ... conditionN",
+        "roles": [
+          {
+            "name": "conditions",
+            "direction": "input",
+            "data_type": "boolean",
+            "description": "Boolean conditions to combine (multiple inputs)"
+          },
+          {
+            "name": "result",
+            "direction": "output",
+            "data_type": "boolean",
+            "description": "Combined result"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "logic_op",
+            "type": "enum",
+            "default": "AND",
+            "values": [
+              "AND",
+              "OR"
+            ],
+            "description": "Logical operator to combine conditions"
+          }
+        ]
+      }
+    ],
+    "analysis": [
+      {
+        "name": "ancova",
+        "type": "analysis",
+        "description": "Analysis of covariance - compares group means controlling for continuous covariates",
+        "del_expression": "response ~ covariate + group",
+        "roles": [
+          {
+            "name": "response",
+            "direction": "input",
+            "data_type": "numeric",
+            "description": "Dependent variable (outcome)"
+          },
+          {
+            "name": "covariate",
+            "direction": "input",
+            "data_type": "numeric",
+            "description": "Continuous covariate for adjustment"
+          },
+          {
+            "name": "group",
+            "direction": "input",
+            "data_type": "string",
+            "description": "Categorical grouping factor"
+          },
+          {
+            "name": "ls_means",
+            "direction": "output",
+            "data_type": "numeric",
+            "description": "Least-squares means per group"
+          },
+          {
+            "name": "ls_mean_difference",
+            "direction": "output",
+            "data_type": "numeric",
+            "description": "Difference in LS means"
+          },
+          {
+            "name": "confidence_interval_upper",
+            "direction": "output",
+            "data_type": "numeric",
+            "description": "Upper CI for LS mean difference"
+          },
+          {
+            "name": "p_value",
+            "direction": "output",
+            "data_type": "numeric",
+            "description": "P-value for treatment effect"
+          },
+          {
+            "name": "f_statistic",
+            "direction": "output",
+            "data_type": "numeric",
+            "description": "F-statistic for each effect"
+          },
+          {
+            "name": "confidence_interval_lower",
+            "direction": "output",
+            "data_type": "numeric",
+            "description": "Lower CI for LS mean difference"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ss_type",
+            "type": "enum",
+            "default": "III",
+            "description": "Type of sum of squares"
+          },
+          {
+            "name": "alpha",
+            "type": "numeric",
+            "default": "0.05",
+            "description": "Significance level"
+          },
+          {
+            "name": "interaction",
+            "type": "boolean",
+            "description": "Include covariate x group interaction"
+          }
+        ]
+      },
+      {
+        "name": "ancova_dose_response",
+        "type": "analysis",
+        "description": "ANCOVA with treatment as continuous variable for dose-response trend testing",
+        "del_expression": "response ~ covariate + factor + continuous_predictor",
+        "roles": [
+          {
+            "name": "response",
+            "direction": "input",
+            "data_type": "numeric",
+            "description": "Dependent variable (change from baseline)"
+          },
+          {
+            "name": "covariate",
+            "direction": "input",
+            "data_type": "numeric",
+            "description": "Baseline value as covariate"
+          },
+          {
+            "name": "factor",
+            "direction": "input",
+            "data_type": "string",
+            "description": "Categorical factor (e.g., site)"
+          },
+          {
+            "name": "continuous_predictor",
+            "direction": "input",
+            "data_type": "numeric",
+            "description": "Treatment dose as continuous predictor"
+          },
+          {
+            "name": "slope",
+            "direction": "output",
+            "data_type": "numeric",
+            "description": "Slope estimate for dose-response"
+          },
+          {
+            "name": "slope_se",
+            "direction": "output",
+            "data_type": "numeric",
+            "description": "Standard error of slope"
+          },
+          {
+            "name": "p_value",
+            "direction": "output",
+            "data_type": "numeric",
+            "description": "P-value for dose-response trend"
+          },
+          {
+            "name": "confidence_interval_upper",
+            "direction": "output",
+            "data_type": "numeric",
+            "description": "Upper CI for slope estimate"
+          },
+          {
+            "name": "f_statistic",
+            "direction": "output",
+            "data_type": "numeric",
+            "description": "F-statistic for dose-response effect"
+          },
+          {
+            "name": "confidence_interval_lower",
+            "direction": "output",
+            "data_type": "numeric",
+            "description": "Lower CI for slope estimate"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ss_type",
+            "type": "enum",
+            "default": "III",
+            "description": "Type of sum of squares"
+          },
+          {
+            "name": "alpha",
+            "type": "numeric",
+            "default": "0.05",
+            "description": "Significance level"
+          }
+        ]
+      }
+    ]
+  },
+  "concepts": {
+    "observation": [
+      {
+        "name": "study",
+        "description": "Clinical study identifier",
+        "level": "observation",
+        "category": "Identity",
+        "data_type": "string"
+      },
+      {
+        "name": "site",
+        "description": "Site identifier and site groupings",
+        "level": "observation",
+        "category": "Identity",
+        "data_type": "string"
+      },
+      {
+        "name": "subject",
+        "description": "Unique subject identifier",
+        "level": "observation",
+        "category": "Identity",
+        "data_type": "string"
+      },
+      {
+        "name": "parameter",
+        "description": "Analysis parameter identifier",
+        "level": "observation",
+        "category": "Identity",
+        "data_type": "string"
+      },
+      {
+        "name": "visit",
+        "description": "Analysis visit and timepoint",
+        "level": "observation",
+        "category": "Identity",
+        "data_type": "string"
+      },
+      {
+        "name": "observation_value",
+        "description": "Raw/collected value from source domain",
+        "level": "observation",
+        "category": "Value",
+        "data_type": "any"
+      },
+      {
+        "name": "analysis_value",
+        "description": "Primary value for analysis",
+        "level": "observation",
+        "category": "Value",
+        "data_type": "numeric"
+      },
+      {
+        "name": "baseline_value",
+        "description": "Reference value for computing change (used as measure in methods)",
+        "level": "observation",
+        "category": "Value",
+        "data_type": "numeric"
+      },
+      {
+        "name": "change_value",
+        "description": "Computed change from baseline",
+        "level": "observation",
+        "category": "Value",
+        "data_type": "numeric"
+      },
+      {
+        "name": "treatment_planned",
+        "description": "Planned treatment group assignment (categorical)",
+        "level": "observation",
+        "category": "Identity",
+        "data_type": "string"
+      },
+      {
+        "name": "treatment_dose",
+        "description": "Numeric dose value for dose-response analysis",
+        "level": "observation",
+        "category": "Value",
+        "data_type": "numeric"
+      },
+      {
+        "name": "population_flag",
+        "description": "Subject belongs to analysis population",
+        "level": "observation",
+        "category": "Flag",
+        "data_type": "boolean"
+      },
+      {
+        "name": "efficacy_flag",
+        "description": "Subject belongs to efficacy population",
+        "level": "observation",
+        "category": "Flag",
+        "data_type": "boolean"
+      },
+      {
+        "name": "baseline_flag",
+        "description": "Record is the baseline record",
+        "level": "observation",
+        "category": "Flag",
+        "data_type": "boolean"
+      },
+      {
+        "name": "derivation_type",
+        "description": "Method of value derivation (e.g., LOCF, WOCF, observed)",
+        "level": "observation",
+        "category": "Qualifier",
+        "data_type": "string"
+      },
+      {
+        "name": "unit",
+        "description": "Unit of measurement for the value",
+        "level": "observation",
+        "category": "Qualifier",
+        "data_type": "string"
+      },
+      {
+        "name": "parameter_label",
+        "description": "Human-readable parameter name for display",
+        "level": "observation",
+        "category": "Qualifier",
+        "data_type": "string"
+      }
+    ],
+    "inference": [
+      {
+        "name": "ls_mean",
+        "description": "Least-squares mean estimate from ANCOVA model",
+        "level": "inference",
+        "category": "Estimate",
+        "data_type": "numeric",
+        "stato_uri": "http://purl.obolibrary.org/obo/STATO_0000255"
+      },
+      {
+        "name": "slope",
+        "description": "Slope estimate for continuous predictor (dose-response)",
+        "level": "inference",
+        "category": "Estimate",
+        "data_type": "numeric",
+        "stato_uri": "http://purl.obolibrary.org/obo/STATO_0000182"
+      },
+      {
+        "name": "slope_se",
+        "description": "Standard error of slope estimate",
+        "level": "inference",
+        "category": "Estimate",
+        "data_type": "numeric"
+      },
+      {
+        "name": "p_value",
+        "description": "P-value for statistical test",
+        "level": "inference",
+        "category": "Test",
+        "data_type": "numeric",
+        "stato_uri": "http://purl.obolibrary.org/obo/STATO_0000087"
+      },
+      {
+        "name": "confidence_interval_lower",
+        "description": "Lower bound of confidence interval",
+        "level": "inference",
+        "category": "Estimate",
+        "data_type": "numeric"
+      },
+      {
+        "name": "confidence_interval_upper",
+        "description": "Upper bound of confidence interval",
+        "level": "inference",
+        "category": "Estimate",
+        "data_type": "numeric"
+      },
+      {
+        "name": "f_statistic",
+        "description": "F-statistic from ANOVA/ANCOVA model",
+        "level": "inference",
+        "category": "Test",
+        "data_type": "numeric",
+        "stato_uri": "http://purl.obolibrary.org/obo/STATO_0000176"
+      },
+      {
+        "name": "degrees_of_freedom",
+        "description": "Degrees of freedom for statistical test",
+        "level": "inference",
+        "category": "Test",
+        "data_type": "numeric"
+      }
+    ]
+  },
+  "templates": {
+    "dc": [
+      {
+        "id": "T_DC_Baseline",
+        "name": "BaselineDerivation",
+        "type": "derivation",
+        "version": "1.0.0",
+        "clinical_intent": "Derive baseline value from the baseline visit observation",
+        "uses_method": "Aggregation",
+        "methods": [],
+        "role_bindings": [
+          {
+            "semantic_transformation_concept": "observation_value",
+            "method_role": "value",
+            "direction": "input",
+            "cube_role": "measure",
+            "data_type": "numeric"
+          },
+          {
+            "semantic_transformation_concept": "subject",
+            "method_role": "partition",
+            "direction": "input",
+            "cube_role": "dimension",
+            "data_type": "string"
+          },
+          {
+            "semantic_transformation_concept": "parameter",
+            "method_role": "partition",
+            "direction": "input",
+            "cube_role": "dimension",
+            "data_type": "string"
+          },
+          {
+            "semantic_transformation_concept": "baseline_flag",
+            "method_role": "filter",
+            "direction": "input",
+            "cube_role": "filter",
+            "data_type": "boolean",
+            "description": "Filter to baseline records only"
+          },
+          {
+            "semantic_transformation_concept": "baseline_value",
+            "method_role": "result",
+            "direction": "output",
+            "cube_role": "measure",
+            "data_type": "numeric"
+          }
+        ],
+        "parameters": {
+          "agg_func": "FIRST",
+          "order_by": "visit_numeric"
+        },
+        "del_expression": "baseline_value := FIRST(observation_value) OVER (subject, parameter) WHERE baseline_flag = TRUE ORDER BY visit_numeric"
+      },
+      {
+        "id": "T_DC_EfficacyFlag",
+        "name": "EfficacyPopulationFlag",
+        "type": "derivation",
+        "version": "1.0.0",
+        "clinical_intent": "Derive efficacy population membership flag based on study criteria",
+        "uses_method": "LogicalCombination",
+        "methods": [],
+        "role_bindings": [
+          {
+            "semantic_transformation_concept": "population_flag",
+            "method_role": "conditions",
+            "direction": "input",
+            "cube_role": "filter",
+            "data_type": "boolean",
+            "description": "Safety population flag (SAFFL='Y')"
+          },
+          {
+            "semantic_transformation_concept": "baseline_value",
+            "method_role": "conditions",
+            "direction": "input",
+            "cube_role": "measure",
+            "data_type": "numeric",
+            "description": "Has baseline ADAS-Cog assessment (not missing)"
+          },
+          {
+            "semantic_transformation_concept": "analysis_value",
+            "method_role": "conditions",
+            "direction": "input",
+            "cube_role": "measure",
+            "data_type": "numeric",
+            "description": "Has at least one post-baseline ADAS-Cog assessment (not missing)"
+          },
+          {
+            "semantic_transformation_concept": "efficacy_flag",
+            "method_role": "result",
+            "direction": "output",
+            "cube_role": "filter",
+            "data_type": "boolean"
+          }
+        ],
+        "parameters": {
+          "logic_op": "AND"
+        },
+        "del_expression": "efficacy_flag := safety_flag AND NOT MISSING(baseline_value) AND EXISTS(post_baseline_assessment)"
+      },
+      {
+        "id": "T_DC_LOCF",
+        "name": "LOCFImputation",
+        "type": "derivation",
+        "version": "1.0.0",
+        "clinical_intent": "Last Observation Carried Forward imputation for missing values",
+        "uses_method": "WindowLookup",
+        "methods": [],
+        "role_bindings": [
+          {
+            "semantic_transformation_concept": "analysis_value",
+            "method_role": "value",
+            "direction": "input",
+            "cube_role": "measure",
+            "data_type": "numeric"
+          },
+          {
+            "semantic_transformation_concept": "subject",
+            "method_role": "partition",
+            "direction": "input",
+            "cube_role": "dimension",
+            "data_type": "string"
+          },
+          {
+            "semantic_transformation_concept": "parameter",
+            "method_role": "partition",
+            "direction": "input",
+            "cube_role": "dimension",
+            "data_type": "string"
+          },
+          {
+            "semantic_transformation_concept": "visit",
+            "method_role": "order_var",
+            "direction": "input",
+            "cube_role": "dimension",
+            "data_type": "string"
+          },
+          {
+            "semantic_transformation_concept": "analysis_value",
+            "method_role": "result",
+            "direction": "output",
+            "cube_role": "measure",
+            "data_type": "numeric",
+            "description": "Imputed analysis value (LOCF applied)"
+          }
+        ],
+        "parameters": {
+          "window_func": "LAST_VALUE",
+          "ignore_nulls": true
+        },
+        "del_expression": "imputed_value := LAST_VALUE(analysis_value IGNORE NULLS) OVER (subject, parameter) ORDER BY visit_numeric ROWS UNBOUNDED PRECEDING"
+      },
+      {
+        "id": "T_DC_ChangeFromBaseline",
+        "name": "ChangeFromBaseline",
+        "type": "derivation",
+        "version": "1.0.0",
+        "clinical_intent": "Calculate the absolute change from baseline value",
+        "uses_method": "Subtraction",
+        "methods": [],
+        "role_bindings": [
+          {
+            "semantic_transformation_concept": "analysis_value",
+            "method_role": "minuend",
+            "direction": "input",
+            "cube_role": "measure"
+          },
+          {
+            "semantic_transformation_concept": "baseline_value",
+            "method_role": "subtrahend",
+            "direction": "input",
+            "cube_role": "measure"
+          },
+          {
+            "semantic_transformation_concept": "change_value",
+            "method_role": "difference",
+            "direction": "output",
+            "cube_role": "measure"
+          }
+        ],
+        "parameters": {},
+        "del_expression": "change_value := analysis_value - baseline_value",
+        "input_cube": {
+          "name": "input_cube",
+          "dimensions": [
+            {
+              "data_concept": "subject",
+              "role": "dimension"
+            },
+            {
+              "data_concept": "parameter",
+              "role": "dimension"
+            },
+            {
+              "data_concept": "visit",
+              "role": "dimension"
+            }
+          ],
+          "measures": [
+            {
+              "data_concept": "analysis_value",
+              "role": "value"
+            },
+            {
+              "data_concept": "baseline_value",
+              "role": "value"
+            }
+          ]
+        },
+        "output_cube": {
+          "name": "output_cube",
+          "dimensions": [
+            {
+              "data_concept": "subject",
+              "role": "dimension"
+            },
+            {
+              "data_concept": "parameter",
+              "role": "dimension"
+            },
+            {
+              "data_concept": "visit",
+              "role": "dimension"
+            }
+          ],
+          "measures": [
+            {
+              "data_concept": "change_value",
+              "role": "result"
+            }
+          ]
+        },
+        "slice": {
+          "name": "parameter_filter",
+          "constraints": [
+            {
+              "data_concept": "parameter"
+            }
+          ]
+        }
+      }
+    ],
+    "ac": [
+      {
+        "id": "T_AC_ANCOVA_DoseResponse",
+        "name": "CFB_ANCOVA_DoseResponse",
+        "type": "analysis",
+        "version": "1.0.0",
+        "clinical_intent": "Test dose-response relationship for change from baseline using treatment dose as continuous predictor, adjusting for baseline value and site",
+        "uses_method": "ancova_dose_response",
+        "methods": [],
+        "role_bindings": [
+          {
+            "semantic_transformation_concept": "change_value",
+            "method_role": "response",
+            "direction": "input",
+            "cube_role": "measure",
+            "phrase_ref": "SP_CFB_ENDPOINT"
+          },
+          {
+            "semantic_transformation_concept": "baseline_value",
+            "method_role": "covariate",
+            "direction": "input",
+            "cube_role": "measure"
+          },
+          {
+            "semantic_transformation_concept": "site",
+            "method_role": "factor",
+            "direction": "input",
+            "cube_role": "dimension"
+          },
+          {
+            "semantic_transformation_concept": "treatment_dose",
+            "method_role": "continuous_predictor",
+            "direction": "input",
+            "cube_role": "measure"
+          },
+          {
+            "semantic_transformation_concept": "slope",
+            "method_role": "slope",
+            "direction": "output",
+            "cube_role": "measure"
+          },
+          {
+            "semantic_transformation_concept": "slope_se",
+            "method_role": "slope_se",
+            "direction": "output",
+            "cube_role": "measure"
+          },
+          {
+            "semantic_transformation_concept": "p_value",
+            "method_role": "p_value",
+            "direction": "output",
+            "cube_role": "measure"
+          },
+          {
+            "semantic_transformation_concept": "confidence_interval_upper",
+            "method_role": "confidence_interval_upper",
+            "direction": "output",
+            "cube_role": "measure"
+          },
+          {
+            "semantic_transformation_concept": "f_statistic",
+            "method_role": "f_statistic",
+            "direction": "output",
+            "cube_role": "measure"
+          },
+          {
+            "semantic_transformation_concept": "confidence_interval_lower",
+            "method_role": "confidence_interval_lower",
+            "direction": "output",
+            "cube_role": "measure"
+          }
+        ],
+        "parameters": {},
+        "del_expression": "change_value ~ baseline_value + site + treatment_dose",
+        "input_cube": {
+          "name": "input_cube",
+          "dimensions": [
+            {
+              "data_concept": "site",
+              "role": "dimension"
+            }
+          ],
+          "measures": [
+            {
+              "data_concept": "change_value",
+              "role": "value"
+            },
+            {
+              "data_concept": "baseline_value",
+              "role": "value"
+            },
+            {
+              "data_concept": "treatment_dose",
+              "role": "value"
+            }
+          ]
+        },
+        "output_cube": {
+          "name": "output_cube",
+          "measures": [
+            {
+              "data_concept": "slope",
+              "role": "result"
+            },
+            {
+              "data_concept": "slope_se",
+              "role": "result"
+            },
+            {
+              "data_concept": "p_value",
+              "role": "result"
+            },
+            {
+              "data_concept": "confidence_interval_upper",
+              "role": "result"
+            },
+            {
+              "data_concept": "f_statistic",
+              "role": "result"
+            },
+            {
+              "data_concept": "confidence_interval_lower",
+              "role": "result"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "phrases": {
+    "static_phrases": [
+      {
+        "id": "SP_CFB_ENDPOINT",
+        "role": "endpoint",
+        "phrase_template": "change from baseline",
+        "references": [
+          "change_value"
+        ],
+        "description": "Endpoint is the change from baseline value"
+      },
+      {
+        "id": "SP_ANCOVA_METHOD",
+        "role": "method",
+        "phrase_template": "An ANCOVA model will be used",
+        "references": [
+          "ancova_dose_response"
+        ],
+        "description": "Analysis method is ANCOVA"
+      },
+      {
+        "id": "SP_BASELINE_COV",
+        "role": "covariate",
+        "phrase_template": "with the baseline score included as a covariate",
+        "references": [
+          "baseline_value"
+        ],
+        "description": "Baseline value is a covariate in the model"
+      },
+      {
+        "id": "SP_SITE_FACTOR",
+        "role": "grouping",
+        "phrase_template": "site included as a fixed effect",
+        "references": [
+          "site"
+        ],
+        "description": "Site is a fixed effect in the model"
+      },
+      {
+        "id": "SP_TRT_CONTINUOUS",
+        "role": "grouping",
+        "phrase_template": "treatment included as a continuous variable",
+        "references": [
+          "treatment_dose"
+        ],
+        "description": "Treatment dose is modeled as continuous for dose-response"
+      },
+      {
+        "id": "SP_DOSE_RESPONSE",
+        "role": "method_qualifier",
+        "phrase_template": "results for a test of dose response will be produced",
+        "references": [
+          "slope",
+          "p_value"
+        ],
+        "description": "The analysis will test for dose-response relationship"
+      }
+    ],
+    "parameterized_phrases": [
+      {
+        "id": "SP_PARAMETER",
+        "role": "parameter",
+        "phrase_template": "in {parameter}",
+        "parameters": [
+          "parameter"
+        ],
+        "references": [
+          "parameter"
+        ],
+        "description": "Specifies the analysis parameter"
+      },
+      {
+        "id": "SP_TIMEPOINT",
+        "role": "timepoint",
+        "phrase_template": "at {visit}",
+        "parameters": [
+          "visit"
+        ],
+        "references": [
+          "visit"
+        ],
+        "description": "Specifies the analysis timepoint"
+      },
+      {
+        "id": "SP_POPULATION",
+        "role": "population",
+        "phrase_template": "will use the {population} population",
+        "parameters": [
+          "population"
+        ],
+        "references": [
+          "population_flag"
+        ],
+        "description": "Specifies the analysis population"
+      },
+      {
+        "id": "SP_IMPUTATION",
+        "role": "method_qualifier",
+        "phrase_template": "with {imputation} imputation for any missing values at {visit}",
+        "parameters": [
+          "imputation",
+          "visit"
+        ],
+        "references": [
+          "derivation_type"
+        ],
+        "description": "Specifies the imputation method for missing data"
+      }
+    ]
+  },
+  "default_analysis_method": "ancova_dose_response"
+}

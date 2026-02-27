@@ -1,0 +1,49 @@
+{
+  "$schema": "https://cdisc.org/ac-dc/v1/template-schema.json",
+  "template": {
+    "id": "T_DC_EfficacyFlag",
+    "name": "EfficacyPopulationFlag",
+    "type": "derivation",
+    "version": "1.0.0",
+    "clinical_intent": "Derive efficacy population membership flag based on study criteria",
+    "uses_method": "LogicalCombination",
+    "parameters": {
+      "logic_op": "AND"
+    },
+    "role_bindings": [
+      {
+        "semantic_transformation_concept": "population_flag",
+        "method_role": "conditions",
+        "direction": "input",
+        "cube_role": "filter",
+        "data_type": "boolean",
+        "description": "Safety population flag (SAFFL='Y')"
+      },
+      {
+        "semantic_transformation_concept": "baseline_value",
+        "method_role": "conditions",
+        "direction": "input",
+        "cube_role": "measure",
+        "data_type": "numeric",
+        "description": "Has baseline ADAS-Cog assessment (not missing)"
+      },
+      {
+        "semantic_transformation_concept": "analysis_value",
+        "method_role": "conditions",
+        "direction": "input",
+        "cube_role": "measure",
+        "data_type": "numeric",
+        "description": "Has at least one post-baseline ADAS-Cog assessment (not missing)"
+      },
+      {
+        "semantic_transformation_concept": "efficacy_flag",
+        "method_role": "result",
+        "direction": "output",
+        "cube_role": "filter",
+        "data_type": "boolean"
+      }
+    ],
+    "del_expression": "efficacy_flag := safety_flag AND NOT MISSING(baseline_value) AND EXISTS(post_baseline_assessment)",
+    "description": "Subject is in efficacy population if: (1) in safety population, (2) has baseline ADAS-Cog score, (3) has at least one post-baseline ADAS-Cog assessment"
+  }
+}

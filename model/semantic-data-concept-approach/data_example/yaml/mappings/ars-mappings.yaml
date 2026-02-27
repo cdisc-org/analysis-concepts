@@ -1,0 +1,42 @@
+# =============================================================================
+# ARS Elements -> DataConcepts Mappings
+# =============================================================================
+#
+# ARS (Analysis Results Standard) elements declare their alignment with
+# semantic DataConcepts. These map statistical output concepts to the
+# semantic layer for traceability.
+#
+# Relationship direction: ARS elements point TO DataConcepts via "is_a"
+#
+# Source: model-mappings.tsk
+# =============================================================================
+
+ars_elements:
+
+  # ---------------------------------------------------------------------------
+  # Statistical Estimate Elements
+  # ---------------------------------------------------------------------------
+
+  - name: AnalysisResult.estimate
+    is_a: LeastSquaresMean
+    description: "Point estimate from analysis (e.g., LS Mean)"
+
+  - name: AnalysisResult.standardError
+    is_a: StandardError
+    description: "Standard error of the estimate"
+
+  - name: AnalysisResult.confidenceInterval.lower
+    is_a: ConfidenceLower
+    description: "Lower bound of confidence interval"
+
+  - name: AnalysisResult.confidenceInterval.upper
+    is_a: ConfidenceUpper
+    description: "Upper bound of confidence interval"
+
+  - name: AnalysisResult.pValue
+    is_a: PValue
+    description: "P-value from statistical test"
+
+  - name: AnalysisResult.contrast
+    is_a: TreatmentDifference
+    description: "Treatment difference or contrast estimate"

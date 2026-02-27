@@ -1,0 +1,97 @@
+# =============================================================================
+# USDM Elements -> DataConcepts Mappings
+# =============================================================================
+#
+# USDM (Unified Study Definitions Model) elements declare their alignment with
+# semantic DataConcepts. These are high-level study design entities that map
+# to the semantic layer.
+#
+# Relationship direction: USDM elements point TO DataConcepts via "is_a"
+#
+# Source: model-mappings.tsk
+# =============================================================================
+
+usdm_elements:
+
+  # ---------------------------------------------------------------------------
+  # Subject Elements
+  # ---------------------------------------------------------------------------
+
+  - name: StudySubject.identifier
+    is_a: Subject
+    description: "Unique identifier for a study participant in USDM"
+
+
+  # ---------------------------------------------------------------------------
+  # Visit/Activity Elements
+  # ---------------------------------------------------------------------------
+
+  - name: ScheduledActivityInstance
+    is_a: Visit
+    description: "A scheduled occurrence of a study activity"
+
+  - name: ScheduledActivityInstance.timepoint
+    is_a: VisitNumeric
+    description: "Numeric timepoint of the scheduled activity"
+
+
+  # ---------------------------------------------------------------------------
+  # Intervention Elements
+  # ---------------------------------------------------------------------------
+
+  - name: StudyIntervention
+    is_a: Treatment
+    description: "An intervention administered in the study"
+
+
+  # ---------------------------------------------------------------------------
+  # Site Elements
+  # ---------------------------------------------------------------------------
+
+  - name: StudySite.identifier
+    is_a: Site
+    description: "Unique identifier for a study site"
+
+
+  # ---------------------------------------------------------------------------
+  # Observation Elements
+  # ---------------------------------------------------------------------------
+
+  - name: BiomedicalConcept
+    is_a: Parameter
+    description: "A biomedical concept being measured or assessed"
+
+  - name: BiomedicalConcept.name
+    is_a: ParameterDescription
+    description: "Human-readable name of the biomedical concept"
+
+  - name: Observation.value
+    is_a: AnalysisValue
+    description: "The observed or measured value"
+
+  - name: Observation.baselineValue
+    is_a: BaselineValue
+    description: "The baseline reference value for an observation"
+
+  - name: Observation.change
+    is_a: ChangeValue
+    description: "The change from baseline value"
+
+  - name: Observation.percentChange
+    is_a: PercentChange
+    description: "The percent change from baseline"
+
+
+  # ---------------------------------------------------------------------------
+  # Population Elements
+  # ---------------------------------------------------------------------------
+
+  - name: AnalysisPopulation
+    is_a: ITTFlag
+    description: "Analysis population definition (ITT variant)"
+    population_type: ITT
+
+  - name: AnalysisPopulation
+    is_a: EfficacyFlag
+    description: "Analysis population definition (Efficacy variant)"
+    population_type: Efficacy

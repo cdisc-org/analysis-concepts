@@ -1,0 +1,49 @@
+{
+  "$schema": "https://cdisc.org/ac-dc/v1/instance-schema.json",
+  "instance": {
+    "id": "S_DC_ADAS_Baseline",
+    "name": "ADAS-Cog(11) Baseline Derivation",
+    "type": "derivation_instance",
+    "version": "1.0.0",
+    "instance_of": "T_DC_Baseline",
+    "study": "CDISCPILOT01",
+    "description": "Derive baseline ADAS-Cog(11) score from baseline visit",
+
+    "method": {
+      "name": "Aggregation",
+      "formula": "baseline_value = analysis_value WHERE baseline_flag = 'Y'"
+    },
+
+    "input_cube": {
+      "name": "baseline_input",
+      "dimensions": [
+        {"data_concept": "subject", "role": "identifier"},
+        {"data_concept": "visit", "role": "identifier"},
+        {"data_concept": "visit_numeric", "role": "identifier"},
+        {"data_concept": "parameter", "role": "identifier"}
+      ],
+      "measures": [
+        {"data_concept": "analysis_value", "role": "value"}
+      ]
+    },
+
+    "output_cube": {
+      "name": "baseline_output",
+      "dimensions": [
+        {"data_concept": "subject", "role": "identifier"},
+        {"data_concept": "parameter", "role": "identifier"}
+      ],
+      "measures": [
+        {"data_concept": "baseline_value", "role": "value"}
+      ]
+    },
+
+    "slice": {
+      "name": "baseline_slice",
+      "constraints": [
+        {"data_concept": "parameter", "value": "ACTOT11", "label": "ADAS-Cog(11) Total Score"},
+        {"data_concept": "baseline_flag", "value": "Y", "description": "Baseline visit (VISITNUM=3)"}
+      ]
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://cdisc.org/ac-dc/v1/mapping-schema.json",
+  "version": "1.0.0",
+  "description": "Data concept to implementation standard variable mappings",
+
+  "data_concept_to_adam": {
+    "subject": "USUBJID",
+    "visit": "AVISIT",
+    "visit_numeric": "AVISITN",
+    "parameter": "PARAMCD",
+    "parameter_label": "PARAM",
+    "analysis_value": "AVAL",
+    "baseline_value": "BASE",
+    "change_value": "CHG",
+    "baseline_flag": "ABLFL",
+    "derivation_type": "DTYPE",
+    "treatment": "TRTP",
+    "treatment_dose": "TRT01PN",
+    "site": "SITEID",
+    "efficacy_flag": "EFFFL",
+    "safety_flag": "SAFFL",
+    "population_flag": "ITTFL"
+  },
+
+  "data_concept_to_sdtm": {
+    "subject": "USUBJID",
+    "visit": "VISIT",
+    "visit_numeric": "VISITNUM",
+    "parameter": "QSTESTCD",
+    "parameter_label": "QSTEST",
+    "observation_value": "QSSTRESN",
+    "treatment": "EXTRT",
+    "treatment_dose": "EXDOSE",
+    "site": "SITEID",
+    "study": "STUDYID"
+  },
+
+  "adam_variable_to_dataset": {
+    "USUBJID": ["ADSL", "ADQSADAS"],
+    "PARAM": ["ADQSADAS"],
+    "PARAMCD": ["ADQSADAS"],
+    "AVISIT": ["ADQSADAS"],
+    "AVISITN": ["ADQSADAS"],
+    "AVAL": ["ADQSADAS"],
+    "CHG": ["ADQSADAS"],
+    "BASE": ["ADQSADAS"],
+    "ABLFL": ["ADQSADAS"],
+    "DTYPE": ["ADQSADAS"],
+    "TRTP": ["ADSL", "ADQSADAS"],
+    "TRT01PN": ["ADSL"],
+    "SITEID": ["ADSL"],
+    "EFFFL": ["ADSL"],
+    "SAFFL": ["ADSL"],
+    "ITTFL": ["ADSL"]
+  }
+}

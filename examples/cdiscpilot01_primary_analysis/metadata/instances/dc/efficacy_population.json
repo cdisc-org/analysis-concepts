@@ -1,0 +1,63 @@
+{
+  "$schema": "https://cdisc.org/ac-dc/v1/instance-schema.json",
+  "instance": {
+    "id": "S_DC_Efficacy",
+    "name": "Efficacy Population Flag Derivation",
+    "type": "derivation_instance",
+    "version": "1.0.0",
+    "instance_of": "T_DC_EfficacyFlag",
+    "study": "CDISCPILOT01",
+    "description": "Derive efficacy population membership for CDISCPILOT01: Safety population AND has baseline AND post-baseline ADAS-Cog assessment",
+
+    "method": {
+      "name": "LogicalAnd",
+      "formula": "efficacy_flag = safety_flag AND has_baseline AND has_post_baseline"
+    },
+
+    "input_cube": {
+      "name": "efficacy_input",
+      "dimensions": [
+        {"data_concept": "subject", "role": "identifier"}
+      ],
+      "measures": [
+        {"data_concept": "safety_flag", "role": "qualifier"},
+        {"data_concept": "analysis_value", "role": "value", "note": "From BDS for baseline/post-baseline checks"}
+      ]
+    },
+
+    "output_cube": {
+      "name": "efficacy_output",
+      "dimensions": [
+        {"data_concept": "subject", "role": "identifier"}
+      ],
+      "measures": [
+        {"data_concept": "efficacy_flag", "role": "qualifier"}
+      ]
+    },
+
+    "slice": {
+      "name": "efficacy_slice",
+      "constraints": [
+        {"data_concept": "parameter", "value": "ACTOT11", "label": "ADAS-Cog(11) Total Score", "description": "Efficacy based on ADAS-Cog(11) assessments"}
+      ]
+    },
+
+    "criteria": [
+      {
+        "name": "safety_population",
+        "description": "Subject is in safety population",
+        "data_concept_condition": "safety_flag = 'Y'"
+      },
+      {
+        "name": "has_baseline",
+        "description": "Subject has baseline ADAS-Cog(11) assessment",
+        "data_concept_condition": "EXISTS(analysis_value WHERE baseline_flag = 'Y' AND parameter = 'ACTOT11')"
+      },
+      {
+        "name": "has_post_baseline",
+        "description": "Subject has at least one post-baseline ADAS-Cog(11) assessment",
+        "data_concept_condition": "EXISTS(analysis_value WHERE visit_numeric > 3 AND parameter = 'ACTOT11')"
+      }
+    ]
+  }
+}
