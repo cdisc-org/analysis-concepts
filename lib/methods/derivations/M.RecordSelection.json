@@ -1,0 +1,117 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.4.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.RecordSelection",
+  "name": "Record Selection",
+  "type": "derivation",
+  "class": "Data Handling",
+  "intent": [
+    "ValueRetrieval"
+  ],
+  "description": "Identifies one or more records within a partition that satisfy a selection rule and flags them. In a graph context, downstream transformations resolve values by traversing to the flagged record(s) — no value copying is required. Covers baseline selection (ABLFL), analysis record flags (ANL01FL), worst/best post-baseline selection, and any other record-level flagging pattern.",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "flag := IF(selection_rule(value, time_order) OVER (partition), 'Y', '')",
+    "generic_expression": "<flag> := IF(<selection_rule>(<value>, <time_order>) OVER (<partition>+), 'Y', '')",
+    "notes": "The selection rule is applied within each partition. Cardinality configuration controls whether one or multiple records can be flagged per partition. Scope configuration controls which records are eligible for selection."
+  },
+  "configurations": [
+    {
+      "name": "selection_rule",
+      "dataType": "enum",
+      "defaultValue": "last_non_missing",
+      "enumValues": [
+        "last_non_missing",
+        "first_non_missing",
+        "worst",
+        "best",
+        "closest_to_target",
+        "all_matching"
+      ],
+      "description": "Rule for selecting record(s) within the partition"
+    },
+    {
+      "name": "scope",
+      "dataType": "enum",
+      "defaultValue": "pre_treatment",
+      "enumValues": [
+        "pre_treatment",
+        "post_baseline",
+        "on_treatment",
+        "all",
+        "custom"
+      ],
+      "description": "Which records are eligible for selection"
+    },
+    {
+      "name": "cardinality",
+      "dataType": "enum",
+      "defaultValue": "single",
+      "enumValues": [
+        "single",
+        "multiple"
+      ],
+      "description": "Whether the rule selects one record or multiple records per partition"
+    },
+    {
+      "name": "reference_event",
+      "dataType": "string",
+      "defaultValue": "first_dose",
+      "description": "The event that defines scope boundaries (e.g. first dose date, randomisation date)"
+    },
+    {
+      "name": "target_value",
+      "dataType": "numeric",
+      "defaultValue": null,
+      "description": "Target value for closest_to_target rule"
+    }
+  ],
+  "assumptions": [
+    "At least one eligible record exists within the partition for the given scope",
+    "Time ordering of records within partition is unambiguous"
+  ],
+  "input_roles": [
+    {
+      "name": "value",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "The observed values to evaluate for selection"
+    },
+    {
+      "name": "partition",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "multiple",
+      "description": "Variables defining the selection scope (e.g. subject, parameter)"
+    },
+    {
+      "name": "time_order",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "Variable defining temporal ordering within partition (e.g. visit number, analysis date)"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "flag",
+        "dataType": "string",
+        "description": "Indicator marking selected record(s) ('Y' on selected, blank otherwise). In ADaM context: ABLFL for baseline, ANL01FL for analysis records, etc.",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": [
+          "partition"
+        ]
+      }
+    ]
+  }
+}
