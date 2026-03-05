@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -42,6 +42,22 @@
       "description": "Whether to consider only values observed up to the current time point (cumulative) or all observed values in the partition (all_observed)"
     }
   ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "imputed_value",
+        "dataType": "numeric",
+        "description": "The worst observed value within the partition",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": [
+          "partition"
+        ]
+      }
+    ]
+  },
   "assumptions": [
     "At least one non-missing observed value exists in the partition",
     "The direction of 'worst' is clinically defined for the endpoint"
@@ -61,21 +77,5 @@
       "cardinality": "multiple",
       "description": "Grouping variables (typically subject, parameter)"
     }
-  ],
-  "output_specification": {
-    "output_classes": [
-      {
-        "class": "computed_value",
-        "role_name": "imputed_value",
-        "dataType": "numeric",
-        "description": "The worst observed value within the partition",
-        "statistics": [
-          "value"
-        ],
-        "indexed_by": [
-          "partition"
-        ]
-      }
-    ]
-  }
+  ]
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -21,6 +21,22 @@
     "notes": "Same partitioning logic as mean imputation. Preferred when the distribution is skewed or when outliers may distort the mean."
   },
   "configurations": [],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "imputed_value",
+        "dataType": "numeric",
+        "description": "The group median of non-missing observed values",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": [
+          "group_partition"
+        ]
+      }
+    ]
+  },
   "assumptions": [
     "At least one non-missing value exists in the group",
     "Missing data are MCAR or MAR",
@@ -41,21 +57,5 @@
       "cardinality": "multiple",
       "description": "Grouping variables defining the median computation scope"
     }
-  ],
-  "output_specification": {
-    "output_classes": [
-      {
-        "class": "computed_value",
-        "role_name": "imputed_value",
-        "dataType": "numeric",
-        "description": "The group median of non-missing observed values",
-        "statistics": [
-          "value"
-        ],
-        "indexed_by": [
-          "group_partition"
-        ]
-      }
-    ]
-  }
+  ]
 }

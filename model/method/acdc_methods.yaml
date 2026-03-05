@@ -1,6 +1,6 @@
 id: https://cdisc.org/acdc/method
 name: acdc_methods
-version: "0.4.0"
+version: "0.5.0"
 title: ACDC Method Model
 description: >-
   Schema for ACDC (Analysis Concepts / Derivation Concepts) method definitions.
@@ -79,24 +79,28 @@ classes:
         range: OutputSpecification
         required: true
         inlined: true
-      stato_mapping:
-        description: Mapping to STATO ontology term, e.g., STATO:0000179
-      stato_class:
-        description: Immediate STATO parent class (first STATO ancestor, skipping OBI/BFO)
-        range: StatoClass
-        inlined: true
+      codings:
+        description: Mappings to external terminology or ontology codes
+        multivalued: true
+        range: Coding
+        inlined_as_list: true
       stato_r_implementation:
         description: R command or function reference from STATO ontology
 
-  StatoClass:
-    description: A STATO ontology class reference
+  Coding:
+    description: A reference to a code in a terminology or ontology
     attributes:
-      id:
-        description: STATO identifier, e.g., STATO:0000279
+      system:
+        description: URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/stato)
         required: true
-      name:
-        description: Human-readable label from STATO
+      code:
+        description: The code value within the system (e.g., STATO:0000179)
         required: true
+      display:
+        description: Human-readable label for the code
+      relationship:
+        description: Relationship of this coding to the entity (e.g., equivalent, parent)
+        range: CodingRelationship
 
   FormulaSpec:
     description: Specifies the formula notation and expressions for a method
@@ -236,8 +240,11 @@ classes:
         required: true
       description:
         description: What this statistic measures
-      stato_id:
-        description: STATO ontology identifier, e.g., STATO:0000193 (p-value)
+      codings:
+        description: Mappings to external terminology or ontology codes
+        multivalued: true
+        range: Coding
+        inlined_as_list: true
 
   OutputClassTemplate:
     description: A reusable output structure pattern
@@ -324,6 +331,18 @@ enums:
         description: One or more variables
       single_or_multiple:
         description: One or more variables (flexible)
+
+  CodingRelationship:
+    description: Relationship of a coding to the entity it annotates
+    permissible_values:
+      equivalent:
+        description: The code is an exact match for the entity
+      parent:
+        description: The code is a broader/parent concept
+      narrower:
+        description: The code is a more specific/narrower concept
+      broader:
+        description: The code is a broader concept (synonym for parent)
 
   Intent:
     description: Semantic purpose tags for methods

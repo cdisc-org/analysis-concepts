@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -12,6 +12,13 @@
   "class": "Generalized Linear Models",
   "intent": [
     "OutcomeModeling"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000149",
+      "relationship": "equivalent"
+    }
   ],
   "description": "Models binary outcome as function of predictors via a link function (logit by default)",
   "formula": {
@@ -99,7 +106,6 @@
     "Linear relationship between log-odds and predictors",
     "No multicollinearity"
   ],
-  "stato_mapping": "STATO:0000149",
   "input_roles": [
     {
       "name": "response",

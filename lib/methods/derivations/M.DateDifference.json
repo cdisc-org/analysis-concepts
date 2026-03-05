@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -33,6 +33,20 @@
       "description": "Unit for the result"
     }
   ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "result",
+        "dataType": "numeric",
+        "description": "The difference in the specified unit",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": null
+      }
+    ]
+  },
   "assumptions": [],
   "input_roles": [
     {
@@ -49,19 +63,5 @@
       "cardinality": "single",
       "description": "The ending date"
     }
-  ],
-  "output_specification": {
-    "output_classes": [
-      {
-        "class": "computed_value",
-        "role_name": "result",
-        "dataType": "numeric",
-        "description": "The difference in the specified unit",
-        "statistics": [
-          "value"
-        ],
-        "indexed_by": null
-      }
-    ]
-  }
+  ]
 }

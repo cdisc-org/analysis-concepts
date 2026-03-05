@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -12,6 +12,13 @@
   "class": "General Linear Models",
   "intent": [
     "GroupComparison"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000048",
+      "relationship": "equivalent"
+    }
   ],
   "description": "Analysis of Variance - compares means across multiple groups",
   "formula": {
@@ -99,7 +106,6 @@
     "Normality within groups",
     "Homogeneity of variance"
   ],
-  "stato_mapping": "STATO:0000048",
   "input_roles": [
     {
       "name": "response",

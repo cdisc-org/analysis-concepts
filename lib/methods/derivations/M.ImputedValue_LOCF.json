@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -21,6 +21,23 @@
     "notes": "LOCF scans backwards in time_order within each partition and returns the most recent non-missing value. If no prior non-missing value exists, the result is missing."
   },
   "configurations": [],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "imputed_value",
+        "dataType": "numeric",
+        "description": "The last non-missing value carried forward",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": [
+          "partition",
+          "time_order"
+        ]
+      }
+    ]
+  },
   "assumptions": [
     "Time ordering within partition is unambiguous",
     "At least one prior non-missing value exists for carry-forward to produce a result",
@@ -48,22 +65,5 @@
       "cardinality": "single",
       "description": "Variable defining the temporal ordering within partition (e.g., AVISITN, ADY)"
     }
-  ],
-  "output_specification": {
-    "output_classes": [
-      {
-        "class": "computed_value",
-        "role_name": "imputed_value",
-        "dataType": "numeric",
-        "description": "The last non-missing value carried forward",
-        "statistics": [
-          "value"
-        ],
-        "indexed_by": [
-          "partition",
-          "time_order"
-        ]
-      }
-    ]
-  }
+  ]
 }

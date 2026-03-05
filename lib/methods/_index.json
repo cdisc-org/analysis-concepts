@@ -112,8 +112,7 @@
       "name": "Rounding",
       "type": "derivation",
       "class": "Arithmetic",
-      "path": "derivations/M.Rounding.json",
-      "stato_mapping": "UNMAPPED"
+      "path": "derivations/M.Rounding.json"
     },
     {
       "oid": "M.OneSampleTTest",
@@ -121,7 +120,12 @@
       "type": "analysis",
       "class": "General Linear Models",
       "path": "analyses/M.OneSampleTTest.json",
-      "stato_mapping": "STATO:0000302"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000302"
+        }
+      ]
     },
     {
       "oid": "M.PairedTTest",
@@ -129,7 +133,12 @@
       "type": "analysis",
       "class": "General Linear Models",
       "path": "analyses/M.PairedTTest.json",
-      "stato_mapping": "STATO:0000095"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000095"
+        }
+      ]
     },
     {
       "oid": "M.TwoSampleTTest",
@@ -137,7 +146,12 @@
       "type": "analysis",
       "class": "General Linear Models",
       "path": "analyses/M.TwoSampleTTest.json",
-      "stato_mapping": "STATO:0000304"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000304"
+        }
+      ]
     },
     {
       "oid": "M.ANOVA",
@@ -145,7 +159,12 @@
       "type": "analysis",
       "class": "General Linear Models",
       "path": "analyses/M.ANOVA.json",
-      "stato_mapping": "STATO:0000048"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000048"
+        }
+      ]
     },
     {
       "oid": "M.ANCOVA",
@@ -153,7 +172,12 @@
       "type": "analysis",
       "class": "General Linear Models",
       "path": "analyses/M.ANCOVA.json",
-      "stato_mapping": "STATO:0000179"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000179"
+        }
+      ]
     },
     {
       "oid": "M.MMRM",
@@ -161,7 +185,12 @@
       "type": "analysis",
       "class": "Repeated Measures",
       "path": "analyses/M.MMRM.json",
-      "stato_mapping": "STATO:0000189"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000189"
+        }
+      ]
     },
     {
       "oid": "M.ChiSquaredTest",
@@ -169,7 +198,12 @@
       "type": "analysis",
       "class": "Categorical Data Analysis",
       "path": "analyses/M.ChiSquaredTest.json",
-      "stato_mapping": "STATO:0000187"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000187"
+        }
+      ]
     },
     {
       "oid": "M.CMH",
@@ -177,7 +211,12 @@
       "type": "analysis",
       "class": "Categorical Data Analysis",
       "path": "analyses/M.CMH.json",
-      "stato_mapping": "STATO:0000185"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000185"
+        }
+      ]
     },
     {
       "oid": "M.FisherExactTest",
@@ -185,7 +224,12 @@
       "type": "analysis",
       "class": "Categorical Data Analysis",
       "path": "analyses/M.FisherExactTest.json",
-      "stato_mapping": "STATO:0000073"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000073"
+        }
+      ]
     },
     {
       "oid": "M.LogisticRegression",
@@ -193,7 +237,12 @@
       "type": "analysis",
       "class": "Generalized Linear Models",
       "path": "analyses/M.LogisticRegression.json",
-      "stato_mapping": "STATO:0000149"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000149"
+        }
+      ]
     },
     {
       "oid": "M.KaplanMeier",
@@ -201,7 +250,12 @@
       "type": "analysis",
       "class": "Survival Models",
       "path": "analyses/M.KaplanMeier.json",
-      "stato_mapping": "STATO:0000213"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000213"
+        }
+      ]
     },
     {
       "oid": "M.LogRankTest",
@@ -209,7 +263,12 @@
       "type": "analysis",
       "class": "Survival Models",
       "path": "analyses/M.LogRankTest.json",
-      "stato_mapping": "STATO:0000217"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000217"
+        }
+      ]
     },
     {
       "oid": "M.CoxPH",
@@ -217,15 +276,19 @@
       "type": "analysis",
       "class": "Survival Models",
       "path": "analyses/M.CoxPH.json",
-      "stato_mapping": "STATO:0000223"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000223"
+        }
+      ]
     },
     {
       "oid": "M.MANOVA",
       "name": "Multivariate Analysis of Variance",
       "type": "analysis",
       "class": "General Linear Models",
-      "path": "analyses/M.MANOVA.json",
-      "stato_mapping": "UNMAPPED"
+      "path": "analyses/M.MANOVA.json"
     }
   ]
 }

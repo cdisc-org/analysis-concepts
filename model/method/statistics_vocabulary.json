@@ -1,86 +1,166 @@
 {
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Reusable statistic definitions referenced by output classes across ACDC methods",
   "statistics": {
     "estimate": {
       "dataType": "numeric",
       "description": "Point estimate of the quantity",
-      "stato_id": "STATO:0000599"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000599"
+        }
+      ]
     },
     "SE": {
       "dataType": "numeric",
       "description": "Standard error of the estimate",
-      "stato_id": "STATO:0000562"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000562"
+        }
+      ]
     },
     "CI_lower": {
       "dataType": "numeric",
       "description": "Lower bound of confidence interval",
-      "stato_id": "STATO:0000315"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000315"
+        }
+      ]
     },
     "CI_upper": {
       "dataType": "numeric",
       "description": "Upper bound of confidence interval",
-      "stato_id": "STATO:0000314"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000314"
+        }
+      ]
     },
     "df": {
       "dataType": "numeric",
       "description": "Degrees of freedom",
-      "stato_id": "STATO:0000069"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000069"
+        }
+      ]
     },
     "df_num": {
       "dataType": "numeric",
       "description": "Numerator degrees of freedom",
-      "stato_id": "STATO:0000498"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000498"
+        }
+      ]
     },
     "df_den": {
       "dataType": "numeric",
       "description": "Denominator degrees of freedom",
-      "stato_id": "STATO:0000527"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000527"
+        }
+      ]
     },
     "t_statistic": {
       "dataType": "numeric",
       "description": "t test statistic",
-      "stato_id": "STATO:0000176"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000176"
+        }
+      ]
     },
     "F_statistic": {
       "dataType": "numeric",
       "description": "F test statistic",
-      "stato_id": "STATO:0000282"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000282"
+        }
+      ]
     },
     "z_statistic": {
       "dataType": "numeric",
       "description": "z test statistic",
-      "stato_id": "STATO:0000376"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000376"
+        }
+      ]
     },
     "chi_squared": {
       "dataType": "numeric",
       "description": "Chi-squared test statistic",
-      "stato_id": "STATO:0000030"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000030"
+        }
+      ]
     },
     "p_value": {
       "dataType": "numeric",
       "description": "P-value for the test",
-      "stato_id": "STATO:0000193"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000193"
+        }
+      ]
     },
     "SS": {
       "dataType": "numeric",
       "description": "Sum of squares",
-      "stato_id": "STATO:0000458"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000458"
+        }
+      ]
     },
     "MS": {
       "dataType": "numeric",
       "description": "Mean square",
-      "stato_id": "STATO:0000375"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000375"
+        }
+      ]
     },
     "odds_ratio": {
       "dataType": "numeric",
       "description": "Odds ratio (exp of log-odds coefficient)",
-      "stato_id": "STATO:0000182"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000182"
+        }
+      ]
     },
     "hazard_ratio": {
       "dataType": "numeric",
       "description": "Hazard ratio (exp of Cox coefficient)",
-      "stato_id": "STATO:0000224"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000224"
+        }
+      ]
     },
     "coefficient": {
       "dataType": "numeric",
@@ -105,22 +185,42 @@
     "median": {
       "dataType": "numeric",
       "description": "Median estimate",
-      "stato_id": "STATO:0000574"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000574"
+        }
+      ]
     },
     "mean": {
       "dataType": "numeric",
       "description": "Mean estimate",
-      "stato_id": "STATO:0000573"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000573"
+        }
+      ]
     },
     "AIC": {
       "dataType": "numeric",
       "description": "Akaike Information Criterion",
-      "stato_id": "STATO:0000328"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000328"
+        }
+      ]
     },
     "BIC": {
       "dataType": "numeric",
       "description": "Bayesian Information Criterion",
-      "stato_id": "STATO:0000327"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000327"
+        }
+      ]
     },
     "minus2LogL": {
       "dataType": "numeric",
@@ -129,7 +229,12 @@
     "R_squared": {
       "dataType": "numeric",
       "description": "Coefficient of determination",
-      "stato_id": "STATO:0000589"
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO:0000589"
+        }
+      ]
     },
     "concordance": {
       "dataType": "numeric",

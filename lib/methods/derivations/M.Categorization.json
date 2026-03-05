@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -36,16 +36,6 @@
       "description": "Category when no condition matches"
     }
   ],
-  "assumptions": [],
-  "input_roles": [
-    {
-      "name": "value",
-      "dataType": "numeric",
-      "required": true,
-      "cardinality": "single",
-      "description": "Value to categorize"
-    }
-  ],
   "output_specification": {
     "output_classes": [
       {
@@ -59,5 +49,15 @@
         "indexed_by": null
       }
     ]
-  }
+  },
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "value",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "Value to categorize"
+    }
+  ]
 }

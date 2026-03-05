@@ -5,9 +5,9 @@ Enrich ACDC method library and statistics vocabulary with STATO ontology data fr
 Requires: Neo4j running locally with STATO loaded (via load_stato_owl.py).
 
 Operations:
-  1. Add stato_id to statistics in statistics_vocabulary.json
-  2. Validate existing + fill missing stato_mapping on methods
-  3. Add stato_hierarchy (IS_A ancestry) to each mapped method
+  1. Add STATO codings to statistics in statistics_vocabulary.json
+  2. Validate existing + fill missing STATO codings on methods
+  3. Add parent class coding to each mapped method
   4. Add stato_r_implementation (R command) to each mapped method
 
 Usage:
@@ -56,10 +56,12 @@ def write_json(path, data):
 
 # Preferred key order for method JSON files.
 # Keys not listed here appear in their original order at the end.
+STATO_SYSTEM = "http://purl.obolibrary.org/obo/stato"
+
 METHOD_KEY_ORDER = [
     "$schema", "schema_version", "$vocabulary",
     "oid", "name", "type", "class", "intent",
-    "stato_mapping", "stato_class", "stato_r_implementation",
+    "codings", "stato_r_implementation",
     "description", "formula", "configurations",
     "output_specification", "assumptions", "input_roles",
 ]
@@ -214,8 +216,16 @@ def find_stato_for_statistic(session, stat_name, stat_description, node_label):
     return list(all_candidates.values()), "ambiguous" if all_candidates else "no_match"
 
 
+def get_stato_coding(codings):
+    """Extract the STATO equivalent coding from a codings array, if present."""
+    for c in (codings or []):
+        if c.get("system") == STATO_SYSTEM and c.get("relationship", "equivalent") == "equivalent":
+            return c.get("code")
+    return None
+
+
 def enrich_statistics(session, node_label, write_mode):
-    """Add stato_id to statistics_vocabulary.json by querying Neo4j."""
+    """Add STATO codings to statistics_vocabulary.json by querying Neo4j."""
     print("\n=== Enriching Statistics Vocabulary ===\n")
 
     vocab_path = MODEL_DIR / "statistics_vocabulary.json"
@@ -226,19 +236,20 @@ def enrich_statistics(session, node_label, write_mode):
 
     for stat_name, stat_data in stats.items():
         description = stat_data.get("description", "")
-        existing_id = stat_data.get("stato_id")
+        existing_code = get_stato_coding(stat_data.get("codings"))
 
-        # If already has a stato_id, validate it
-        if existing_id:
-            info = validate_stato_id(session, existing_id, node_label)
+        # If already has a STATO coding, validate it
+        if existing_code:
+            info = validate_stato_id(session, existing_code, node_label)
             if info:
-                print(f"  {stat_name}: {existing_id} -> \"{info['label']}\" [existing, OK]")
+                print(f"  {stat_name}: {existing_code} -> \"{info['label']}\" [existing, OK]")
             else:
-                print(f"  {stat_name}: {existing_id} NOT FOUND — will re-search")
-                del stat_data["stato_id"]
-                existing_id = None
+                print(f"  {stat_name}: {existing_code} NOT FOUND — will re-search")
+                stat_data["codings"] = [c for c in stat_data["codings"]
+                                        if c.get("system") != STATO_SYSTEM]
+                existing_code = None
 
-        if existing_id:
+        if existing_code:
             continue
 
         # Search Neo4j for a match
@@ -247,7 +258,13 @@ def enrich_statistics(session, node_label, write_mode):
         if match_type in ("exact_label", "label_contains_desc", "label_or_alt_term", "definition_match"):
             # Unambiguous match
             print(f"  {stat_name}: {result['id']} -> \"{result['label']}\" [{match_type}]")
-            stat_data["stato_id"] = result["id"]
+            codings = stat_data.get("codings", []) or []
+            codings.append({
+                "system": STATO_SYSTEM,
+                "code": result["id"],
+                "display": result["label"],
+            })
+            stat_data["codings"] = codings
             changes += 1
         elif match_type == "ambiguous":
             print(f"  {stat_name}: AMBIGUOUS — {len(result)} candidates (skipping):")
@@ -257,7 +274,7 @@ def enrich_statistics(session, node_label, write_mode):
         else:
             print(f"  {stat_name}: no STATO match found")
 
-    print(f"\n  {changes} statistics enriched with STATO IDs")
+    print(f"\n  {changes} statistics enriched with STATO codings")
     if skipped:
         print(f"  {skipped} skipped (ambiguous — review manually)")
 
@@ -267,7 +284,7 @@ def enrich_statistics(session, node_label, write_mode):
 
 
 def enrich_methods(session, node_label, rel_type, write_mode):
-    """Validate/add stato_mapping, add stato_class and stato_r_implementation."""
+    """Validate/add STATO codings and stato_r_implementation on methods."""
     print("\n=== Enriching Methods ===\n")
 
     index = load_json(LIB_DIR / "_index.json")
@@ -277,59 +294,61 @@ def enrich_methods(session, node_label, rel_type, write_mode):
         oid = entry["oid"]
         filepath = LIB_DIR / entry["path"]
         method = load_json(filepath)
-        stato_mapping = method.get("stato_mapping")
+        codings = method.get("codings", []) or []
+        stato_code = get_stato_coding(codings)
         method_changed = False
 
         print(f"\n  {oid} ({entry['name']}):")
 
         # --- Validate or search for STATO mapping ---
-        if stato_mapping and stato_mapping != "UNMAPPED":
-            info = validate_stato_id(session, stato_mapping, node_label)
+        if stato_code:
+            info = validate_stato_id(session, stato_code, node_label)
             if info:
-                print(f"    stato_mapping: {stato_mapping} -> \"{info['label']}\" [OK]")
+                print(f"    coding: {stato_code} -> \"{info['label']}\" [OK]")
             else:
-                print(f"    stato_mapping: {stato_mapping} NOT FOUND in Neo4j!")
+                print(f"    coding: {stato_code} NOT FOUND in Neo4j!")
                 continue
-        elif stato_mapping == "UNMAPPED":
-            # Try to find a match
-            search_terms = [entry["name"], method.get("description", "")]
-            candidates = search_stato_term(session, search_terms, node_label)
-            if candidates:
-                print(f"    UNMAPPED — candidates found:")
-                for c in candidates[:3]:
-                    print(f"      {c['id']}: {c['label']}")
-            else:
-                print(f"    UNMAPPED — no STATO candidates found")
-            continue
         else:
-            # No stato_mapping at all (derivation methods)
+            # No STATO coding — try to find a match
             search_terms = [entry["name"]]
             if method.get("description"):
                 search_terms.append(method["description"])
             candidates = search_stato_term(session, search_terms, node_label)
             if candidates:
-                print(f"    No mapping — candidates found:")
+                print(f"    No coding — candidates found:")
                 for c in candidates[:3]:
                     print(f"      {c['id']}: {c['label']}")
             else:
-                print(f"    No mapping — no STATO candidates")
+                print(f"    No coding — no STATO candidates")
             continue
 
-        # --- At this point we have a valid stato_mapping. Enrich. ---
+        # --- At this point we have a valid STATO coding. Enrich. ---
 
-        # Remove old stato_hierarchy if present (replaced by stato_class)
-        if "stato_hierarchy" in method:
-            del method["stato_hierarchy"]
-            method_changed = True
+        # Remove old fields if present (migration cleanup)
+        for old_field in ("stato_hierarchy", "stato_mapping", "stato_class"):
+            if old_field in method:
+                del method[old_field]
+                method_changed = True
 
-        # Add stato_class (immediate STATO parent, skipping OBI/BFO)
-        parent = get_stato_parent(session, stato_mapping, node_label, rel_type)
-        if parent:
-            method["stato_class"] = parent
-            method_changed = True
-            print(f"    stato_class: {parent['id']} -> \"{parent['name']}\"")
-        else:
-            print(f"    stato_class: no STATO parent found")
+        # Add parent class coding if not already present
+        has_parent = any(
+            c.get("system") == STATO_SYSTEM and c.get("relationship") == "parent"
+            for c in codings
+        )
+        if not has_parent:
+            parent = get_stato_parent(session, stato_code, node_label, rel_type)
+            if parent:
+                codings.append({
+                    "system": STATO_SYSTEM,
+                    "code": parent["id"],
+                    "display": parent["name"],
+                    "relationship": "parent",
+                })
+                method["codings"] = codings
+                method_changed = True
+                print(f"    parent: {parent['id']} -> \"{parent['name']}\"")
+            else:
+                print(f"    parent: no STATO parent found")
 
         # Add stato_r_implementation
         if info and info.get("r_command"):
@@ -344,14 +363,15 @@ def enrich_methods(session, node_label, rel_type, write_mode):
             write_json(filepath, ordered_method(method))
             print(f"    Wrote {filepath.relative_to(ROOT)}")
 
-        # Update index stato_mapping if needed
-        if stato_mapping and stato_mapping != entry.get("stato_mapping"):
-            entry["stato_mapping"] = stato_mapping
+        # Update index codings if needed
+        entry_code = get_stato_coding(entry.get("codings"))
+        if stato_code and stato_code != entry_code:
+            entry["codings"] = [{"system": STATO_SYSTEM, "code": stato_code}]
             index_changes += 1
 
     if write_mode and index_changes > 0:
         write_json(LIB_DIR / "_index.json", index)
-        print(f"\n  Updated _index.json with {index_changes} stato_mapping entries")
+        print(f"\n  Updated _index.json with {index_changes} coding entries")
 
 
 # ──────────────────────────────────────────────

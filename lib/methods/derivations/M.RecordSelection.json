@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -71,6 +71,22 @@
       "description": "Target value for closest_to_target rule"
     }
   ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "flag",
+        "dataType": "string",
+        "description": "Indicator marking selected record(s) ('Y' on selected, blank otherwise). In ADaM context: ABLFL for baseline, ANL01FL for analysis records, etc.",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": [
+          "partition"
+        ]
+      }
+    ]
+  },
   "assumptions": [
     "At least one eligible record exists within the partition for the given scope",
     "Time ordering of records within partition is unambiguous"
@@ -97,21 +113,5 @@
       "cardinality": "single",
       "description": "Variable defining temporal ordering within partition (e.g. visit number, analysis date)"
     }
-  ],
-  "output_specification": {
-    "output_classes": [
-      {
-        "class": "computed_value",
-        "role_name": "flag",
-        "dataType": "string",
-        "description": "Indicator marking selected record(s) ('Y' on selected, blank otherwise). In ADaM context: ABLFL for baseline, ANL01FL for analysis records, etc.",
-        "statistics": [
-          "value"
-        ],
-        "indexed_by": [
-          "partition"
-        ]
-      }
-    ]
-  }
+  ]
 }

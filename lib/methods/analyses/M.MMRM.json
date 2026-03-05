@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -13,11 +13,19 @@
   "intent": [
     "LongitudinalEstimate"
   ],
-  "stato_mapping": "STATO:0000189",
-  "stato_class": {
-    "id": "STATO:0000107",
-    "name": "statistical model"
-  },
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000189",
+      "relationship": "equivalent"
+    },
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000107",
+      "display": "statistical model",
+      "relationship": "parent"
+    }
+  ],
   "description": "Linear mixed model for longitudinal data with structured R-side covariance. No random effects (G-side); within-subject correlation modeled through the residual covariance structure.",
   "formula": {
     "notation": "wilkinson_rogers",

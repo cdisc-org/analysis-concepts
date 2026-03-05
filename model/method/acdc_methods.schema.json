@@ -1,5 +1,47 @@
 {
     "$defs": {
+        "Coding": {
+            "additionalProperties": false,
+            "description": "A reference to a code in a terminology or ontology",
+            "properties": {
+                "system": {
+                    "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/stato)",
+                    "type": "string",
+                    "format": "uri"
+                },
+                "code": {
+                    "description": "The code value within the system (e.g., STATO:0000179)",
+                    "type": "string"
+                },
+                "display": {
+                    "description": "Human-readable label for the code",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "relationship": {
+                    "description": "Relationship of this coding to the entity (e.g., equivalent, parent)",
+                    "enum": [
+                        "equivalent",
+                        "parent",
+                        "narrower",
+                        "broader",
+                        null
+                    ],
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "system",
+                "code"
+            ],
+            "title": "Coding",
+            "type": "object"
+        },
         "Cardinality": {
             "description": "How many variables can fill an input role",
             "enum": [
@@ -259,21 +301,13 @@
                     "description": "Version of the ACDC method schema this definition conforms to",
                     "type": "string"
                 },
-                "stato_class": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/StatoClass"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "Immediate STATO parent class (first STATO ancestor, skipping OBI/BFO)"
-                },
-                "stato_mapping": {
-                    "description": "Mapping to STATO ontology term, e.g., STATO:0000179",
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
                     "type": [
-                        "string",
+                        "array",
                         "null"
                     ]
                 },
@@ -536,10 +570,13 @@
                     "description": "Statistic identifier, e.g., estimate, p_value, F_statistic",
                     "type": "string"
                 },
-                "stato_id": {
-                    "description": "STATO ontology identifier, e.g., STATO:0000193 (p-value)",
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
                     "type": [
-                        "string",
+                        "array",
                         "null"
                     ]
                 }
@@ -565,26 +602,6 @@
             "title": "StatisticalRole",
             "type": "string"
         },
-        "StatoClass": {
-            "additionalProperties": false,
-            "description": "A STATO ontology class reference",
-            "properties": {
-                "id": {
-                    "description": "STATO identifier, e.g., STATO:0000279",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "Human-readable label from STATO",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "id",
-                "name"
-            ],
-            "title": "StatoClass",
-            "type": "object"
-        }
     },
     "$id": "https://cdisc.org/acdc/method",
     "$schema": "https://json-schema.org/draft/2019-09/schema",
@@ -664,21 +681,13 @@
             "description": "Version of the ACDC method schema this definition conforms to",
             "type": "string"
         },
-        "stato_class": {
-            "anyOf": [
-                {
-                    "$ref": "#/$defs/StatoClass"
-                },
-                {
-                    "type": "null"
-                }
-            ],
-            "description": "Immediate STATO parent class (first STATO ancestor, skipping OBI/BFO)"
-        },
-        "stato_mapping": {
-            "description": "Mapping to STATO ontology term, e.g., STATO:0000179",
+        "codings": {
+            "description": "Mappings to external terminology or ontology codes",
+            "items": {
+                "$ref": "#/$defs/Coding"
+            },
             "type": [
-                "string",
+                "array",
                 "null"
             ]
         },
@@ -705,5 +714,5 @@
     ],
     "title": "acdc_methods",
     "type": "object",
-    "version": "0.4.0"
+    "version": "0.5.0"
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -44,6 +44,22 @@
       "description": "Variable defining row order within partition"
     }
   ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "result",
+        "dataType": "numeric",
+        "description": "The looked-up value",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": [
+          "partition"
+        ]
+      }
+    ]
+  },
   "assumptions": [],
   "input_roles": [
     {
@@ -60,21 +76,5 @@
       "cardinality": "multiple",
       "description": "Partitioning variables"
     }
-  ],
-  "output_specification": {
-    "output_classes": [
-      {
-        "class": "computed_value",
-        "role_name": "result",
-        "dataType": "numeric",
-        "description": "The looked-up value",
-        "statistics": [
-          "value"
-        ],
-        "indexed_by": [
-          "partition"
-        ]
-      }
-    ]
-  }
+  ]
 }

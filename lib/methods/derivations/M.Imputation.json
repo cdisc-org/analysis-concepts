@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -20,8 +20,21 @@
     "generic_expression": "result := COALESCE(<value>, <imputed_value>)"
   },
   "configurations": [],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "result",
+        "dataType": "numeric",
+        "description": "The resulting value (original if non-missing, otherwise imputed)",
+        "statistics": [
+          "value"
+        ],
+        "indexed_by": null
+      }
+    ]
+  },
   "assumptions": [],
-  "_design_note": "This method has no imputation_method configuration. The strategy is determined by which M.ImputedValue_* method is upstream in the transformation pipeline. This makes each step independently testable and auditable.",
   "input_roles": [
     {
       "name": "value",
@@ -38,18 +51,5 @@
       "description": "Pre-computed replacement value (from an M.ImputedValue_* method)"
     }
   ],
-  "output_specification": {
-    "output_classes": [
-      {
-        "class": "computed_value",
-        "role_name": "result",
-        "dataType": "numeric",
-        "description": "The resulting value (original if non-missing, otherwise imputed)",
-        "statistics": [
-          "value"
-        ],
-        "indexed_by": null
-      }
-    ]
-  }
+  "_design_note": "This method has no imputation_method configuration. The strategy is determined by which M.ImputedValue_* method is upstream in the transformation pipeline. This makes each step independently testable and auditable."
 }

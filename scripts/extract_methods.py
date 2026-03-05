@@ -129,8 +129,8 @@ def extract_methods(monolith):
             "class": method["class"],
             "path": rel_path
         }
-        if "stato_mapping" in method:
-            index_entry["stato_mapping"] = method["stato_mapping"]
+        if "codings" in method:
+            index_entry["codings"] = method["codings"]
         index_entries.append(index_entry)
 
     # Write index

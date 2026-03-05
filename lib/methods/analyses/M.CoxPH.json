@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -12,6 +12,13 @@
   "class": "Survival Models",
   "intent": [
     "TimeToEventEstimate"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000223",
+      "relationship": "equivalent"
+    }
   ],
   "description": "Semi-parametric regression for survival data modeling the hazard function",
   "formula": {
@@ -112,7 +119,6 @@
     "Non-informative censoring",
     "Independence of survival times"
   ],
-  "stato_mapping": "STATO:0000223",
   "input_roles": [
     {
       "name": "time",

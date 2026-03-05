@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -13,11 +13,19 @@
   "intent": [
     "GroupComparison"
   ],
-  "stato_mapping": "STATO:0000304",
-  "stato_class": {
-    "id": "STATO:0000279",
-    "name": "between group comparison statistical test"
-  },
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000304",
+      "relationship": "equivalent"
+    },
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000279",
+      "display": "between group comparison statistical test",
+      "relationship": "parent"
+    }
+  ],
   "stato_r_implementation": "t.test(x, y = NULL,\n       alternative = c(\"two.sided\", \"less\", \"greater\"),\n       mu = 0, paired = FALSE, var.equal = FALSE,\n       conf.level = 0.95, ...)\n\nhttp://stat.ethz.ch/R-manual/R-patched/library/stats/html/t.test.html",
   "description": "Tests whether means of two independent samples differ significantly",
   "formula": {

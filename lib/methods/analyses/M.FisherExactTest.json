@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -13,11 +13,19 @@
   "intent": [
     "CategoricalAssociation"
   ],
-  "stato_mapping": "STATO:0000073",
-  "stato_class": {
-    "id": "STATO:0000027",
-    "name": "test of association between categorical variables"
-  },
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000073",
+      "relationship": "equivalent"
+    },
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000027",
+      "display": "test of association between categorical variables",
+      "relationship": "parent"
+    }
+  ],
   "stato_r_implementation": "fisher.test(x) function, where x is a matrix",
   "description": "Exact test of independence for 2x2 contingency tables. Preferred over chi-squared when expected cell counts are small.",
   "formula": {

@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -13,11 +13,19 @@
   "intent": [
     "TimeToEventEstimate"
   ],
-  "stato_mapping": "STATO:0000217",
-  "stato_class": {
-    "id": "STATO:0000065",
-    "name": "hypothesis"
-  },
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000217",
+      "relationship": "equivalent"
+    },
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000065",
+      "display": "hypothesis",
+      "relationship": "parent"
+    }
+  ],
   "description": "Compares survival distributions between groups using a rank-based test",
   "formula": {
     "notation": "survival",

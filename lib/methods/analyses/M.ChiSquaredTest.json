@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -13,11 +13,19 @@
   "intent": [
     "CategoricalAssociation"
   ],
-  "stato_mapping": "STATO:0000187",
-  "stato_class": {
-    "id": "STATO:0000133",
-    "name": "post-hoc analysis"
-  },
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000187",
+      "relationship": "equivalent"
+    },
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000133",
+      "display": "post-hoc analysis",
+      "relationship": "parent"
+    }
+  ],
   "stato_r_implementation": "http://stat.ethz.ch/R-manual/R-patched/library/stats/html/TukeyHSD.html",
   "description": "Tests association between two categorical variables using Pearson's chi-squared statistic",
   "formula": {

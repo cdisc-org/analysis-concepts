@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -13,11 +13,19 @@
   "intent": [
     "GroupComparison"
   ],
-  "stato_mapping": "STATO:0000179",
-  "stato_class": {
-    "id": "STATO:0000279",
-    "name": "between group comparison statistical test"
-  },
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000179",
+      "relationship": "equivalent"
+    },
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO:0000279",
+      "display": "between group comparison statistical test",
+      "relationship": "parent"
+    }
+  ],
   "description": "Analysis of Covariance - ANOVA with continuous covariate adjustment",
   "formula": {
     "notation": "wilkinson_rogers",
