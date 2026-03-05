@@ -16,14 +16,8 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000189",
-      "relationship": "equivalent"
-    },
-    {
-      "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000107",
-      "display": "statistical model",
-      "relationship": "parent"
+      "code": "STATO_0000189",
+      "display": "MMRM"
     }
   ],
   "description": "Linear mixed model for longitudinal data with structured R-side covariance. No random effects (G-side); within-subject correlation modeled through the residual covariance structure.",

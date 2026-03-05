@@ -16,14 +16,8 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000302",
-      "relationship": "equivalent"
-    },
-    {
-      "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000279",
-      "display": "between group comparison statistical test",
-      "relationship": "parent"
+      "code": "STATO_0000302",
+      "display": "one sample t-test"
     }
   ],
   "stato_r_implementation": "t.test(x = NULL,\n       alternative = c(\"two.sided\", \"less\", \"greater\"),\n       mu = 0, paired = FALSE, var.equal = FALSE,\n       conf.level = 0.95, ...)\n\n\nhttp://stat.ethz.ch/R-manual/R-patched/library/stats/html/t.test.html",

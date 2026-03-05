@@ -16,14 +16,8 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000073",
-      "relationship": "equivalent"
-    },
-    {
-      "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000027",
-      "display": "test of association between categorical variables",
-      "relationship": "parent"
+      "code": "STATO_0000213",
+      "display": "Fisher exact test"
     }
   ],
   "stato_r_implementation": "fisher.test(x) function, where x is a matrix",

@@ -94,13 +94,10 @@ classes:
         description: URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/stato)
         required: true
       code:
-        description: The code value within the system (e.g., STATO:0000179)
+        description: The code value within the system (e.g., STATO_0000179)
         required: true
       display:
         description: Human-readable label for the code
-      relationship:
-        description: Relationship of this coding to the entity (e.g., equivalent, parent)
-        range: CodingRelationship
 
   FormulaSpec:
     description: Specifies the formula notation and expressions for a method
@@ -331,18 +328,6 @@ enums:
         description: One or more variables
       single_or_multiple:
         description: One or more variables (flexible)
-
-  CodingRelationship:
-    description: Relationship of a coding to the entity it annotates
-    permissible_values:
-      equivalent:
-        description: The code is an exact match for the entity
-      parent:
-        description: The code is a broader/parent concept
-      narrower:
-        description: The code is a more specific/narrower concept
-      broader:
-        description: The code is a broader concept (synonym for parent)
 
   Intent:
     description: Semantic purpose tags for methods

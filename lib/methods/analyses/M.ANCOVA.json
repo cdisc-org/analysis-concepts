@@ -16,14 +16,8 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000179",
-      "relationship": "equivalent"
-    },
-    {
-      "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000279",
-      "display": "between group comparison statistical test",
-      "relationship": "parent"
+      "code": "STATO_0000179",
+      "display": "ANCOVA"
     }
   ],
   "description": "Analysis of Covariance - ANOVA with continuous covariate adjustment",

@@ -123,7 +123,8 @@
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
-          "code": "STATO:0000302"
+          "code": "STATO_0000302",
+          "display": "one sample t-test"
         }
       ]
     },
@@ -136,7 +137,8 @@
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
-          "code": "STATO:0000095"
+          "code": "STATO_0000095",
+          "display": "paired t-test"
         }
       ]
     },
@@ -149,7 +151,8 @@
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
-          "code": "STATO:0000304"
+          "code": "STATO_0000304",
+          "display": "two sample t-test"
         }
       ]
     },
@@ -162,7 +165,8 @@
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
-          "code": "STATO:0000048"
+          "code": "STATO_0000048",
+          "display": "ANOVA"
         }
       ]
     },
@@ -175,7 +179,8 @@
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
-          "code": "STATO:0000179"
+          "code": "STATO_0000179",
+          "display": "ANCOVA"
         }
       ]
     },
@@ -188,7 +193,8 @@
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
-          "code": "STATO:0000189"
+          "code": "STATO_0000189",
+          "display": "MMRM"
         }
       ]
     },
@@ -201,7 +207,8 @@
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
-          "code": "STATO:0000187"
+          "code": "STATO_0000073",
+          "display": "chi-squared test"
         }
       ]
     },
@@ -214,7 +221,8 @@
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
-          "code": "STATO:0000185"
+          "code": "STATO_0000149",
+          "display": "Cochran-Mantel-Haenszel test"
         }
       ]
     },
@@ -227,7 +235,8 @@
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
-          "code": "STATO:0000073"
+          "code": "STATO_0000213",
+          "display": "Fisher exact test"
         }
       ]
     },
@@ -240,7 +249,8 @@
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
-          "code": "STATO:0000149"
+          "code": "STATO_0000187",
+          "display": "logistic regression"
         }
       ]
     },
@@ -253,7 +263,8 @@
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
-          "code": "STATO:0000213"
+          "code": "STATO_0000223",
+          "display": "Kaplan-Meier method"
         }
       ]
     },
@@ -266,7 +277,8 @@
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
-          "code": "STATO:0000217"
+          "code": "STATO_0000217",
+          "display": "log-rank test"
         }
       ]
     },
@@ -279,7 +291,8 @@
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
-          "code": "STATO:0000223"
+          "code": "STATO_0000185",
+          "display": "Cox proportional hazards regression"
         }
       ]
     },
@@ -288,7 +301,14 @@
       "name": "Multivariate Analysis of Variance",
       "type": "analysis",
       "class": "General Linear Models",
-      "path": "analyses/M.MANOVA.json"
+      "path": "analyses/M.MANOVA.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000454",
+          "display": "multivariate analysis of variance"
+        }
+      ]
     }
   ]
 }

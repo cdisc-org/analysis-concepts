@@ -16,8 +16,8 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000149",
-      "relationship": "equivalent"
+      "code": "STATO_0000187",
+      "display": "logistic regression"
     }
   ],
   "description": "Models binary outcome as function of predictors via a link function (logit by default)",

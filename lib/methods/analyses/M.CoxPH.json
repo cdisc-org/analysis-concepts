@@ -16,8 +16,8 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000223",
-      "relationship": "equivalent"
+      "code": "STATO_0000185",
+      "display": "Cox proportional hazards regression"
     }
   ],
   "description": "Semi-parametric regression for survival data modeling the hazard function",

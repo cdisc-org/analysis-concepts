@@ -216,10 +216,20 @@ def find_stato_for_statistic(session, stat_name, stat_description, node_label):
     return list(all_candidates.values()), "ambiguous" if all_candidates else "no_match"
 
 
+def to_neo4j_id(code):
+    """Convert file code (STATO_0000179) to Neo4j stato_id (STATO:0000179)."""
+    return code.replace("STATO_", "STATO:") if code else code
+
+
+def to_file_code(neo4j_id):
+    """Convert Neo4j stato_id (STATO:0000179) to file code (STATO_0000179)."""
+    return neo4j_id.replace("STATO:", "STATO_") if neo4j_id else neo4j_id
+
+
 def get_stato_coding(codings):
-    """Extract the STATO equivalent coding from a codings array, if present."""
+    """Extract the STATO coding from a codings array, if present."""
     for c in (codings or []):
-        if c.get("system") == STATO_SYSTEM and c.get("relationship", "equivalent") == "equivalent":
+        if c.get("system") == STATO_SYSTEM:
             return c.get("code")
     return None
 
@@ -240,7 +250,7 @@ def enrich_statistics(session, node_label, write_mode):
 
         # If already has a STATO coding, validate it
         if existing_code:
-            info = validate_stato_id(session, existing_code, node_label)
+            info = validate_stato_id(session, to_neo4j_id(existing_code), node_label)
             if info:
                 print(f"  {stat_name}: {existing_code} -> \"{info['label']}\" [existing, OK]")
             else:
@@ -261,7 +271,7 @@ def enrich_statistics(session, node_label, write_mode):
             codings = stat_data.get("codings", []) or []
             codings.append({
                 "system": STATO_SYSTEM,
-                "code": result["id"],
+                "code": to_file_code(result["id"]),
                 "display": result["label"],
             })
             stat_data["codings"] = codings
@@ -302,7 +312,7 @@ def enrich_methods(session, node_label, rel_type, write_mode):
 
         # --- Validate or search for STATO mapping ---
         if stato_code:
-            info = validate_stato_id(session, stato_code, node_label)
+            info = validate_stato_id(session, to_neo4j_id(stato_code), node_label)
             if info:
                 print(f"    coding: {stato_code} -> \"{info['label']}\" [OK]")
             else:
@@ -330,26 +340,6 @@ def enrich_methods(session, node_label, rel_type, write_mode):
                 del method[old_field]
                 method_changed = True
 
-        # Add parent class coding if not already present
-        has_parent = any(
-            c.get("system") == STATO_SYSTEM and c.get("relationship") == "parent"
-            for c in codings
-        )
-        if not has_parent:
-            parent = get_stato_parent(session, stato_code, node_label, rel_type)
-            if parent:
-                codings.append({
-                    "system": STATO_SYSTEM,
-                    "code": parent["id"],
-                    "display": parent["name"],
-                    "relationship": "parent",
-                })
-                method["codings"] = codings
-                method_changed = True
-                print(f"    parent: {parent['id']} -> \"{parent['name']}\"")
-            else:
-                print(f"    parent: no STATO parent found")
-
         # Add stato_r_implementation
         if info and info.get("r_command"):
             method["stato_r_implementation"] = info["r_command"]
@@ -366,7 +356,7 @@ def enrich_methods(session, node_label, rel_type, write_mode):
         # Update index codings if needed
         entry_code = get_stato_coding(entry.get("codings"))
         if stato_code and stato_code != entry_code:
-            entry["codings"] = [{"system": STATO_SYSTEM, "code": stato_code}]
+            entry["codings"] = [{"system": STATO_SYSTEM, "code": to_file_code(stato_code)}]
             index_changes += 1
 
     if write_mode and index_changes > 0:

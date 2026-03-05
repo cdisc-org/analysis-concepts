@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""One-time migration: convert stato_id/stato_mapping/stato_class to codings arrays."""
+"""One-time migration: convert stato_id/stato_mapping/stato_class to codings arrays.
+
+Codes use underscore form (STATO_0000179) to align with OBO IRI convention.
+"""
 
 import json
 from pathlib import Path
@@ -64,29 +67,31 @@ def migrate_method_file(filepath):
     method = load_json(filepath)
     method["schema_version"] = "0.5.0"
 
-    codings = []
+    codings = method.get("codings", []) or []
 
-    # Convert stato_mapping
+    # Convert old stato_mapping if still present
     stato_mapping = method.pop("stato_mapping", None)
     if stato_mapping and stato_mapping != "UNMAPPED":
         codings.append({
             "system": STATO_SYSTEM,
             "code": stato_mapping,
-            "relationship": "equivalent",
         })
 
-    # Convert stato_class
-    stato_class = method.pop("stato_class", None)
-    if stato_class:
-        codings.append({
-            "system": STATO_SYSTEM,
-            "code": stato_class["id"],
-            "display": stato_class["name"],
-            "relationship": "parent",
-        })
+    # Drop old stato_class
+    method.pop("stato_class", None)
 
-    if codings:
-        method["codings"] = codings
+    # Clean up codings: remove parent entries, strip relationship key
+    cleaned = []
+    for c in codings:
+        if c.get("relationship") == "parent":
+            continue
+        c.pop("relationship", None)
+        cleaned.append(c)
+
+    if cleaned:
+        method["codings"] = cleaned
+    else:
+        method.pop("codings", None)
 
     write_json(filepath, ordered_method(method))
     print(f"  Migrated {filepath.relative_to(ROOT)}")

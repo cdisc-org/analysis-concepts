@@ -16,8 +16,8 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000048",
-      "relationship": "equivalent"
+      "code": "STATO_0000048",
+      "display": "ANOVA"
     }
   ],
   "description": "Analysis of Variance - compares means across multiple groups",

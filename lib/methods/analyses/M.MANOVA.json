@@ -13,6 +13,13 @@
   "intent": [
     "GroupComparison"
   ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000454",
+      "display": "multivariate analysis of variance"
+    }
+  ],
   "description": "Tests the hypothesis of no overall treatment effect across multiple correlated response variables simultaneously",
   "formula": {
     "notation": "wilkinson_rogers",

@@ -16,14 +16,8 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000217",
-      "relationship": "equivalent"
-    },
-    {
-      "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000065",
-      "display": "hypothesis",
-      "relationship": "parent"
+      "code": "STATO_0000217",
+      "display": "log-rank test"
     }
   ],
   "description": "Compares survival distributions between groups using a rank-based test",

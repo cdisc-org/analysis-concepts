@@ -16,14 +16,8 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000187",
-      "relationship": "equivalent"
-    },
-    {
-      "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000133",
-      "display": "post-hoc analysis",
-      "relationship": "parent"
+      "code": "STATO_0000073",
+      "display": "chi-squared test"
     }
   ],
   "stato_r_implementation": "http://stat.ethz.ch/R-manual/R-patched/library/stats/html/TukeyHSD.html",

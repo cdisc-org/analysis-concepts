@@ -16,14 +16,8 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000095",
-      "relationship": "equivalent"
-    },
-    {
-      "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000202",
-      "display": "within subject comparison statistical test",
-      "relationship": "parent"
+      "code": "STATO_0000095",
+      "display": "paired t-test"
     }
   ],
   "stato_r_implementation": "http://stat.ethz.ch/R-manual/R-patched/library/stats/html/t.test.html\n\nt.test(dependent variable ~ independant variable, data = dataset, var.equal = FALSE, paired= TRUE)",

@@ -16,8 +16,8 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000213",
-      "relationship": "equivalent"
+      "code": "STATO_0000223",
+      "display": "Kaplan-Meier method"
     }
   ],
   "stato_r_implementation": "http://cran.r-project.org/web/packages/discretization/index.html",

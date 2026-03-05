@@ -16,14 +16,8 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000185",
-      "relationship": "equivalent"
-    },
-    {
-      "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO:0000140",
-      "display": "contingency table",
-      "relationship": "parent"
+      "code": "STATO_0000149",
+      "display": "Cochran-Mantel-Haenszel test"
     }
   ],
   "stato_r_implementation": "xtabs(formula = ~., data = parent.frame(), subset, sparse = FALSE,\n      na.action, exclude = c(NA, NaN), drop.unused.levels = FALSE)\n\nhttp://stat.ethz.ch/R-manual/R-patched/library/stats/html/xtabs.html\n\nflat contingency tables:\n\nftable(x, ...)\n\nhttp://stat.ethz.ch/R-manual/R-patched/library/stats/html/ftable.html",

@@ -10,25 +10,11 @@
                     "format": "uri"
                 },
                 "code": {
-                    "description": "The code value within the system (e.g., STATO:0000179)",
+                    "description": "The code value within the system (e.g., STATO_0000179)",
                     "type": "string"
                 },
                 "display": {
                     "description": "Human-readable label for the code",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "relationship": {
-                    "description": "Relationship of this coding to the entity (e.g., equivalent, parent)",
-                    "enum": [
-                        "equivalent",
-                        "parent",
-                        "narrower",
-                        "broader",
-                        null
-                    ],
                     "type": [
                         "string",
                         "null"
