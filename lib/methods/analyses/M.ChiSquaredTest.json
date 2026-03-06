@@ -16,11 +16,10 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO_0000073",
-      "display": "chi-squared test"
+      "code": "STATO_0000081",
+      "display": "Pearson's Chi square test of independence between categorical variables"
     }
   ],
-  "stato_r_implementation": "http://stat.ethz.ch/R-manual/R-patched/library/stats/html/TukeyHSD.html",
   "description": "Tests association between two categorical variables using Pearson's chi-squared statistic",
   "formula": {
     "notation": "wilkinson_rogers",

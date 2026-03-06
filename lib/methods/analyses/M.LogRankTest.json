@@ -16,7 +16,7 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO_0000217",
+      "code": "STATO_0000640",
       "display": "log-rank test"
     }
   ],

@@ -16,11 +16,10 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO_0000149",
-      "display": "Cochran-Mantel-Haenszel test"
+      "code": "STATO_0000074",
+      "display": "Cochran-Mantel-Haenzel test for repeated tests of independence"
     }
   ],
-  "stato_r_implementation": "xtabs(formula = ~., data = parent.frame(), subset, sparse = FALSE,\n      na.action, exclude = c(NA, NaN), drop.unused.levels = FALSE)\n\nhttp://stat.ethz.ch/R-manual/R-patched/library/stats/html/xtabs.html\n\nflat contingency tables:\n\nftable(x, ...)\n\nhttp://stat.ethz.ch/R-manual/R-patched/library/stats/html/ftable.html",
   "description": "Stratified analysis for 2x2xK tables controlling for strata. Tests the null hypothesis of no association between response and group after adjusting for strata.",
   "formula": {
     "notation": "wilkinson_rogers",

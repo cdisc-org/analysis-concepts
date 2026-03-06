@@ -13,14 +13,6 @@
   "intent": [
     "TimeToEventEstimate"
   ],
-  "codings": [
-    {
-      "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO_0000223",
-      "display": "Kaplan-Meier method"
-    }
-  ],
-  "stato_r_implementation": "http://cran.r-project.org/web/packages/discretization/index.html",
   "description": "Non-parametric survival function estimation with optional grouping",
   "formula": {
     "notation": "survival",

@@ -1,0 +1,59 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.5.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.TrimmedMean",
+  "name": "Trimmed Mean",
+  "type": "analysis",
+  "class": "Central Tendency",
+  "intent": ["DescriptiveSummary"],
+  "codings": [],
+  "description": "Computes the trimmed mean after removing a fraction of extreme values from each tail",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := TRIMMEAN(variable, trim_fraction) OVER (group)",
+    "generic_expression": "result := TRIMMEAN(<variable>, <trim_fraction>) OVER (<group>*)"
+  },
+  "configurations": [
+    {
+      "name": "trim_fraction",
+      "dataType": "numeric",
+      "defaultValue": 0.05,
+      "description": "Fraction to trim from each tail (0 to 0.5)"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "description": "Trimmed mean of the variable",
+        "cardinality": "per_group",
+        "indexed_by": ["group"],
+        "statistics": ["trimmed_mean"]
+      }
+    ]
+  },
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "variable",
+      "statisticalRole": "response",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "The variable to summarize"
+    },
+    {
+      "name": "group",
+      "statisticalRole": "fixed_effect",
+      "dataType": "string",
+      "required": false,
+      "cardinality": "single_or_multiple",
+      "description": "Optional grouping variable(s)"
+    }
+  ]
+}

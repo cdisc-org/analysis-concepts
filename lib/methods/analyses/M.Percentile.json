@@ -1,0 +1,72 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.5.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.Percentile",
+  "name": "Percentile",
+  "type": "analysis",
+  "class": "Quantile",
+  "intent": ["DescriptiveSummary"],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000293",
+      "display": "percentile"
+    }
+  ],
+  "description": "Computes the value at a specified percentile rank",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := PERCENTILE(variable, percentile_value) OVER (group)",
+    "generic_expression": "result := PERCENTILE(<variable>, <percentile_value>) OVER (<group>*)"
+  },
+  "configurations": [
+    {
+      "name": "percentile_value",
+      "dataType": "numeric",
+      "defaultValue": 50,
+      "description": "Percentile rank (0 to 100)"
+    },
+    {
+      "name": "percentile_method",
+      "dataType": "enum",
+      "defaultValue": "type_2",
+      "enumValues": ["type_2", "type_6", "type_7"],
+      "description": "Interpolation method (type_2 = SAS default, type_7 = R default)"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "description": "The computed percentile value per group",
+        "cardinality": "per_group",
+        "indexed_by": ["group"],
+        "statistics": ["percentile"]
+      }
+    ]
+  },
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "variable",
+      "statisticalRole": "response",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "The variable to summarize"
+    },
+    {
+      "name": "group",
+      "statisticalRole": "fixed_effect",
+      "dataType": "string",
+      "required": false,
+      "cardinality": "single_or_multiple",
+      "description": "Optional grouping variable(s)"
+    }
+  ]
+}

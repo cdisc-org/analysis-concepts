@@ -13,13 +13,6 @@
   "intent": [
     "TimeToEventEstimate"
   ],
-  "codings": [
-    {
-      "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO_0000185",
-      "display": "Cox proportional hazards regression"
-    }
-  ],
   "description": "Semi-parametric regression for survival data modeling the hazard function",
   "formula": {
     "notation": "survival",

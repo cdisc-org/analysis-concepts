@@ -1,0 +1,52 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.5.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.GeometricCV",
+  "name": "Geometric Coefficient of Variation",
+  "type": "analysis",
+  "class": "Dispersion",
+  "intent": ["DescriptiveSummary"],
+  "codings": [],
+  "description": "Computes the geometric coefficient of variation",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := GEOMCV(variable) OVER (group)",
+    "generic_expression": "result := GEOMCV(<variable>) OVER (<group>*)"
+  },
+  "configurations": [],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "description": "The computed statistic per group",
+        "cardinality": "per_group",
+        "indexed_by": ["group"],
+        "statistics": ["geometric_cv"]
+      }
+    ]
+  },
+  "assumptions": ["All values must be positive"],
+  "input_roles": [
+    {
+      "name": "variable",
+      "statisticalRole": "response",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "The variable to summarize"
+    },
+    {
+      "name": "group",
+      "statisticalRole": "fixed_effect",
+      "dataType": "string",
+      "required": false,
+      "cardinality": "single_or_multiple",
+      "description": "Optional grouping variable(s)"
+    }
+  ]
+}

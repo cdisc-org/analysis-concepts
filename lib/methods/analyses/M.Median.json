@@ -1,0 +1,58 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.5.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.Median",
+  "name": "Median",
+  "type": "analysis",
+  "class": "Central Tendency",
+  "intent": ["DescriptiveSummary"],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000574",
+      "display": "center value"
+    }
+  ],
+  "description": "Computes the median (50th percentile) of a numeric variable",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := MEDIAN(variable) OVER (group)",
+    "generic_expression": "result := MEDIAN(<variable>) OVER (<group>*)"
+  },
+  "configurations": [],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "description": "Median of the variable",
+        "cardinality": "per_group",
+        "indexed_by": ["group"],
+        "statistics": ["median"]
+      }
+    ]
+  },
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "variable",
+      "statisticalRole": "response",
+      "dataType": "numeric",
+      "required": true,
+      "cardinality": "single",
+      "description": "The variable to summarize"
+    },
+    {
+      "name": "group",
+      "statisticalRole": "fixed_effect",
+      "dataType": "string",
+      "required": false,
+      "cardinality": "single_or_multiple",
+      "description": "Optional grouping variable(s)"
+    }
+  ]
+}

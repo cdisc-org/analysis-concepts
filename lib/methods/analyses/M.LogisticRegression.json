@@ -16,8 +16,8 @@
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
-      "code": "STATO_0000187",
-      "display": "logistic regression"
+      "code": "STATO_0000149",
+      "display": "binomial logistic regression for analysis of dichotomous dependent variable"
     }
   ],
   "description": "Models binary outcome as function of predictors via a link function (logit by default)",

@@ -1,0 +1,58 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.5.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.Frequency",
+  "name": "Frequency",
+  "type": "analysis",
+  "class": "Counting",
+  "intent": ["DescriptiveSummary"],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000674",
+      "display": "frequency"
+    }
+  ],
+  "description": "Computes frequency counts per category of a categorical variable",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := FREQ(category) OVER (group)",
+    "generic_expression": "result := FREQ(<category>) OVER (<group>*)"
+  },
+  "configurations": [],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "description": "The frequency count per category per group",
+        "cardinality": "per_group",
+        "indexed_by": ["group"],
+        "statistics": ["frequency", "n"]
+      }
+    ]
+  },
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "category",
+      "statisticalRole": "response",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single",
+      "description": "The categorical variable to summarize"
+    },
+    {
+      "name": "group",
+      "statisticalRole": "fixed_effect",
+      "dataType": "string",
+      "required": false,
+      "cardinality": "single_or_multiple",
+      "description": "Optional grouping variable(s)"
+    }
+  ]
+}

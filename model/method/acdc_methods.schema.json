@@ -206,7 +206,8 @@
                 "LongitudinalEstimate",
                 "CategoricalAssociation",
                 "OutcomeModeling",
-                "TimeToEventEstimate"
+                "TimeToEventEstimate",
+                "DescriptiveSummary"
             ],
             "title": "Intent",
             "type": "string"
