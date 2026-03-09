@@ -1,0 +1,239 @@
+{
+  "model": "AC",
+  "version": "0.16",
+  "description": "Analysis Concept model with three levels: Statistical Concepts (atoms), Result Patterns (molecules), and Categories (groupings). The shared statistics vocabulary is referenced by both methods and result patterns but owned by neither.",
+
+  "designPrinciples": [
+    "Statistical concepts are individual data points — each has its own identity in the graph",
+    "Result patterns group statistical concepts that belong together and should be interpreted together",
+    "Categories group result patterns that typically appear together in the same kind of analysis",
+    "The shared statistics vocabulary is independent — methods reference it for output slots, result patterns reference it for grouping",
+    "Methods do not reference AC concepts — the Transformation maps method output slots to result patterns",
+    "The model is representation-neutral — it works in tabular, graph, or any other physical format"
+  ],
+
+  "sharedStatisticsVocabulary": {
+    "note": "These are Level 1 Statistical Concepts. Both methods and result patterns reference them. Neither owns them.",
+    "concepts": {
+      "Estimate": {
+        "definition": "Point estimate of a quantity",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000599"
+      },
+      "SE": {
+        "definition": "Standard error of an estimate",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000562"
+      },
+      "CI_Lower": {
+        "definition": "Lower bound of a confidence interval",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000315"
+      },
+      "CI_Upper": {
+        "definition": "Upper bound of a confidence interval",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000314"
+      },
+      "DF": {
+        "definition": "Degrees of freedom",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000069"
+      },
+      "PValue": {
+        "definition": "P-value for a statistical test",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000193"
+      },
+      "TStatistic": {
+        "definition": "t test statistic",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000176"
+      },
+      "FStatistic": {
+        "definition": "F test statistic",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000282"
+      },
+      "ChiSquared": {
+        "definition": "Chi-squared test statistic",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000030"
+      },
+      "Coefficient": {
+        "definition": "Model coefficient (log scale for GLMs)",
+        "dataType": "numeric"
+      },
+      "HazardRatio": {
+        "definition": "Hazard ratio (exponentiated Cox coefficient)",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000224"
+      },
+      "OddsRatio": {
+        "definition": "Odds ratio (exponentiated log-odds coefficient)",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000182"
+      },
+      "SurvivalProb": {
+        "definition": "Estimated survival probability",
+        "dataType": "numeric"
+      },
+      "Median": {
+        "definition": "Median estimate",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000574"
+      },
+      "Mean": {
+        "definition": "Mean estimate",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000573"
+      },
+      "NRisk": {
+        "definition": "Number at risk",
+        "dataType": "numeric"
+      },
+      "NEvent": {
+        "definition": "Number of events",
+        "dataType": "numeric"
+      },
+      "NCensored": {
+        "definition": "Number censored",
+        "dataType": "numeric"
+      },
+      "AIC": {
+        "definition": "Akaike Information Criterion",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000328"
+      },
+      "BIC": {
+        "definition": "Bayesian Information Criterion",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000327"
+      },
+      "Minus2LogL": {
+        "definition": "-2 Log Likelihood",
+        "dataType": "numeric"
+      },
+      "DF_Num": {
+        "definition": "Numerator degrees of freedom",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000498"
+      },
+      "DF_Den": {
+        "definition": "Denominator degrees of freedom",
+        "dataType": "numeric",
+        "statoMapping": "STATO:0000527"
+      },
+      "Value": {
+        "definition": "A computed/derived value (generic)",
+        "dataType": "numeric"
+      }
+    }
+  },
+
+  "resultPatterns": {
+    "note": "Level 2 Result Patterns. Each groups a set of statistical concepts and defines the identifying relationships for each instance.",
+    "LSMeans": {
+      "definition": "Least-squares means (adjusted marginal means) per factor level or level combination",
+      "constituents": ["Estimate", "SE", "CI_Lower", "CI_Upper", "DF"],
+      "identifiedBy": ["group", "visit"]
+    },
+    "Contrasts": {
+      "definition": "Pairwise or custom contrasts between LS means",
+      "constituents": ["Estimate", "SE", "CI_Lower", "CI_Upper", "TStatistic", "PValue", "DF"],
+      "identifiedBy": ["contrast", "visit"]
+    },
+    "Type3Tests": {
+      "definition": "Type III omnibus tests, one per model term",
+      "constituents": ["FStatistic", "PValue", "DF_Num", "DF_Den"],
+      "identifiedBy": ["term"]
+    },
+    "ParameterEstimates": {
+      "definition": "Solution for fixed effects, one row per model coefficient",
+      "constituents": ["Coefficient", "SE", "TStatistic", "PValue", "CI_Lower", "CI_Upper", "DF"],
+      "identifiedBy": ["term", "level"]
+    },
+    "FitStatistics": {
+      "definition": "Overall model goodness-of-fit measures",
+      "constituents": ["AIC", "BIC", "Minus2LogL"],
+      "identifiedBy": []
+    },
+    "CovarianceParameters": {
+      "definition": "Estimated covariance/variance components",
+      "constituents": ["Estimate", "SE"],
+      "identifiedBy": ["cov_param"]
+    },
+    "TestResult": {
+      "definition": "Single overall test result",
+      "constituents": ["ChiSquared", "PValue", "DF"],
+      "identifiedBy": []
+    },
+    "SurvivalTable": {
+      "definition": "Life table with survival estimates at each event time",
+      "constituents": ["NRisk", "NEvent", "NCensored", "SurvivalProb", "SE", "CI_Lower", "CI_Upper"],
+      "identifiedBy": ["group", "time"]
+    },
+    "MedianSurvival": {
+      "definition": "Median survival time per group",
+      "constituents": ["Median", "CI_Lower", "CI_Upper"],
+      "identifiedBy": ["group"]
+    },
+    "EventSummary": {
+      "definition": "Summary counts of events and censoring per group",
+      "constituents": ["NRisk", "NEvent", "NCensored"],
+      "identifiedBy": ["group"]
+    },
+    "ComputedValue": {
+      "definition": "Single derived/computed output value",
+      "constituents": ["Value"],
+      "identifiedBy": ["group"]
+    },
+    "HazardRatioEstimates": {
+      "definition": "Hazard ratios with confidence intervals",
+      "constituents": ["HazardRatio", "CI_Lower", "CI_Upper"],
+      "identifiedBy": ["term", "level"]
+    },
+    "OddsRatioEstimates": {
+      "definition": "Odds ratios with confidence intervals",
+      "constituents": ["OddsRatio", "CI_Lower", "CI_Upper"],
+      "identifiedBy": ["term", "level"]
+    }
+  },
+
+  "categories": {
+    "note": "Level 3 AC Categories. Group result patterns that typically appear together.",
+    "TreatmentComparison": {
+      "definition": "A comparison of an outcome between treatment groups, producing estimated treatment effects with inference.",
+      "typicallyInvolves": ["Contrasts", "LSMeans", "Type3Tests", "ParameterEstimates", "FitStatistics"],
+      "typicalMethods": ["M.MMRM", "M.ANCOVA", "M.TTest", "M.WilcoxonRankSum"]
+    },
+    "SurvivalAnalysis": {
+      "definition": "An analysis of time-to-event outcomes, estimating survival patterns and comparing them between groups.",
+      "typicallyInvolves": ["TestResult", "SurvivalTable", "MedianSurvival", "EventSummary", "HazardRatioEstimates"],
+      "typicalMethods": ["M.LogRankTest", "M.KaplanMeier", "M.CoxPH"]
+    },
+    "DescriptiveSummary": {
+      "definition": "A statistical summary of a distribution within a group. No comparison between groups required.",
+      "typicallyInvolves": ["ComputedValue"],
+      "typicalMethods": ["M.Mean", "M.Quartile", "M.Skewness", "M.Sum", "M.WinsorizedMean"]
+    }
+  },
+
+  "methodOutputSlotMapping": {
+    "note": "This shows how method output slots map to result patterns. The method defines slots using the shared vocabulary. The Transformation maps slots to result patterns. Neither the method nor the result pattern references the other directly.",
+    "M.MMRM": {
+      "adjusted_means": "LSMeans",
+      "pairwise_diffs": "Contrasts",
+      "omnibus_tests": "Type3Tests",
+      "fixed_effects": "ParameterEstimates",
+      "model_fit": "FitStatistics",
+      "covariance": "CovarianceParameters"
+    },
+    "M.LogRankTest": {
+      "test": "TestResult"
+    },
+    "M.Quartile": {
+      "summary": "ComputedValue"
+    }
+  }
+}

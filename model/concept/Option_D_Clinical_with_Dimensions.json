@@ -1,0 +1,647 @@
+{
+  "model": "DC",
+  "version": "0.20c",
+  "variant": "clinical-with-dimensional-relationships",
+  "description": "Derivation Concepts with clinical naming AND explicit relationships to dimensional concepts. In this variant, each category and concept declares its structural relationship to the dimensional concepts — which dimensions are required, which are optional, and what role each plays (partition, constraint, order). The Transformation inherits these relationships and only adds what is specific to the clinical context.",
+  "designRationale": "In v0.20a and v0.20b, dimensional concepts are listed as available but the relationship between a derivation concept and its dimensions is left to the Transformation. This means every Transformation repeats the same dimensional bindings (Subject, Parameter, Visit) even when they are structurally determined by the concept. In v0.20c, the concept carries these relationships, so the Transformation only declares what the concept does not already know.",
+  "namingPrinciples": [
+    "Would a clinical programmer call this data by this name without further context?",
+    "Does the name describe what the data IS, not how or why it was produced?",
+    "Can you say the name without referencing a parameter, visit, or standard?",
+    "Would you handle this data differently than any other concept?",
+    "Could you define it in one sentence without referencing another concept?",
+    "Is it a different ingredient type, not a different brand of the same ingredient?"
+  ],
+  "dimensionalConcepts": {
+    "note": "These are concepts in the model, but they are not derivation concepts. They define the context in which a derivation is performed. The Implementation maps them to physical columns (e.g. USUBJID → Subject, PARAMCD → Parameter, AVISIT → Visit).",
+    "Subject": {
+      "definition": "The individual for whom the derivation is computed."
+    },
+    "Parameter": {
+      "definition": "The measure or endpoint being derived."
+    },
+    "Timing": {
+      "definition": "The temporal position (absolute or relative)."
+    },
+    "AnalysisVisit": {
+      "definition": "The protocol-defined visit window."
+    },
+    "Treatment": {
+      "definition": "The treatment group or arm."
+    },
+    "Population": {
+      "definition": "The analysis population (ITT, safety, PK)."
+    },
+    "Period": {
+      "definition": "The study period or epoch."
+    }
+  },
+  "dimensionalRoles": {
+    "note": "When a concept declares a relationship to a dimensional concept, it specifies the role that dimension plays in the derivation.",
+    "partition": "The dimension defines a group. The derivation is computed independently within each partition. The dimension is preserved in the output.",
+    "constraint": "The dimension imposes a structural rule. For example, Comparison requires that both inputs share the same Parameter.",
+    "order": "The dimension provides the ordering axis. The derivation summarises across this axis — it collapses in the output.",
+    "scope": "The dimension defines the boundary within which the derivation operates, without partitioning or ordering."
+  },
+  "categories": {
+    "PointComputation": {
+      "definition": "A value computed at a specific point, without reference comparison, temporal aggregation, event aggregation, or classification.",
+      "inputPattern": "Method-driven. The concept defines output shape only; the method determines what inputs are needed.",
+      "dimensionalRelationships": {
+        "Subject": {
+          "role": "partition",
+          "cardinality": "1",
+          "note": "Always per subject."
+        },
+        "Parameter": {
+          "role": "partition",
+          "cardinality": "1",
+          "note": "Each input and output Measure has a Parameter. Inputs may have different parameters (e.g. WEIGHT, HEIGHT for BMI), and the output may create a new one (BMI)."
+        },
+        "Timing": {
+          "role": "partition",
+          "cardinality": "0..1",
+          "note": "Preserved in output when present."
+        },
+        "AnalysisVisit": {
+          "role": "partition",
+          "cardinality": "0..1"
+        },
+        "Treatment": {
+          "role": "partition",
+          "cardinality": "0..1"
+        },
+        "Population": {
+          "role": "scope",
+          "cardinality": "0..1"
+        },
+        "Period": {
+          "role": "partition",
+          "cardinality": "0..1"
+        }
+      },
+      "concepts": {
+        "Measure": {
+          "mathematicalEquivalent": "DirectValue",
+          "definition": "A value produced by applying a computation to one or more source values.",
+          "math": "f(x₁, …, xₙ)",
+          "examples": [
+            "BMI",
+            "eGFR",
+            "QTcF",
+            "unit-converted lab",
+            "LOCF imputed value",
+            "questionnaire total score"
+          ],
+          "result": {
+            "valueType": [
+              "NumericValue",
+              "CharacterValue",
+              "CodedResponse"
+            ],
+            "unit": "inherited or specified"
+          }
+        }
+      }
+    },
+    "Comparison": {
+      "definition": "Data expressing the relationship between two values of the same parameter.",
+      "inputPattern": "Concept-driven. Requires 2× Measure inputs, intrinsic to the category.",
+      "dimensionalRelationships": {
+        "Subject": {
+          "role": "partition",
+          "cardinality": "1",
+          "note": "Always per subject."
+        },
+        "Parameter": {
+          "role": "constraint",
+          "cardinality": "1",
+          "note": "Both inputs must share the same parameter. The output inherits it."
+        },
+        "Timing": {
+          "role": "partition",
+          "cardinality": "0..1",
+          "note": "The two inputs exist at different time points; the output sits at the source timepoint."
+        },
+        "AnalysisVisit": {
+          "role": "partition",
+          "cardinality": "0..1"
+        },
+        "Treatment": {
+          "role": "partition",
+          "cardinality": "0..1"
+        },
+        "Population": {
+          "role": "scope",
+          "cardinality": "0..1"
+        },
+        "Period": {
+          "role": "partition",
+          "cardinality": "0..1"
+        }
+      },
+      "concepts": {
+        "Change": {
+          "mathematicalEquivalent": "AbsoluteDifference",
+          "definition": "The arithmetic difference between two values of the same parameter.",
+          "math": "x − x_ref",
+          "examples": [
+            "change from baseline in SBP",
+            "inter-visit difference in weight",
+            "difference between duplicate measurements"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          }
+        },
+        "PercentChange": {
+          "mathematicalEquivalent": "RelativeDifference",
+          "definition": "The proportional difference between two values of the same parameter, expressed as a percentage.",
+          "math": "(x − x_ref) / x_ref",
+          "examples": [
+            "percent change from baseline in tumor size",
+            "relative change in eGFR"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "fixed: %"
+          }
+        },
+        "Ratio": {
+          "mathematicalEquivalent": "Ratio",
+          "definition": "The quotient of two values of the same parameter.",
+          "math": "x / x_ref",
+          "examples": [
+            "fold change in biomarker",
+            "post/pre treatment ratio"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "dimensionless"
+          }
+        },
+        "LogRatio": {
+          "mathematicalEquivalent": "LogRatio",
+          "definition": "The logarithm of the quotient of two values. Symmetric, additive scale.",
+          "math": "ln(x / x_ref)",
+          "examples": [
+            "log-fold change in gene expression",
+            "log-ratio of drug concentrations"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "dimensionless"
+          }
+        },
+        "Shift": {
+          "mathematicalEquivalent": "CategoricalTransition",
+          "definition": "The categorical movement between two values of the same parameter.",
+          "math": "class(x) vs class(x_ref)",
+          "examples": [
+            "normal-to-abnormal shift in lab",
+            "severity worsening from baseline"
+          ],
+          "result": {
+            "valueType": "CodedResponse",
+            "unit": "none"
+          }
+        }
+      }
+    },
+    "SequenceAggregate": {
+      "definition": "A summary of an ordered series of the same parameter over time.",
+      "inputPattern": "Concept-driven. Requires 1× Measure input; the ordered series emerges from dimensional scoping.",
+      "dimensionalRelationships": {
+        "Subject": {
+          "role": "partition",
+          "cardinality": "1",
+          "note": "Always per subject."
+        },
+        "Parameter": {
+          "role": "partition",
+          "cardinality": "1",
+          "note": "The series is of a single parameter. Inherited by the output."
+        },
+        "Timing": {
+          "role": "order",
+          "cardinality": "1",
+          "note": "Provides the ordering axis. COLLAPSES in output — the summary is across all timepoints."
+        },
+        "AnalysisVisit": {
+          "role": "order",
+          "cardinality": "0..1",
+          "note": "Alternative ordering axis to Timing."
+        },
+        "Treatment": {
+          "role": "partition",
+          "cardinality": "0..1"
+        },
+        "Population": {
+          "role": "scope",
+          "cardinality": "0..1"
+        },
+        "Period": {
+          "role": "scope",
+          "cardinality": "0..1",
+          "note": "May define the window over which the series is summarised."
+        }
+      },
+      "concepts": {
+        "PeakValue": {
+          "mathematicalEquivalent": "SequenceMaximum",
+          "definition": "The highest value in an ordered series.",
+          "math": "sup{yᵢ}",
+          "examples": [
+            "Cmax",
+            "maximum heart rate during exercise",
+            "highest recorded SBP"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          }
+        },
+        "TroughValue": {
+          "mathematicalEquivalent": "SequenceMinimum",
+          "definition": "The lowest value in an ordered series.",
+          "math": "inf{yᵢ}",
+          "examples": [
+            "Ctrough",
+            "nadir neutrophil count",
+            "minimum platelet count"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          }
+        },
+        "TimeToPeak": {
+          "mathematicalEquivalent": "SequenceArgMaximum",
+          "definition": "The time at which the highest value occurs.",
+          "math": "argmax_t{yᵢ}",
+          "examples": [
+            "Tmax"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          }
+        },
+        "TimeToTrough": {
+          "mathematicalEquivalent": "SequenceArgMinimum",
+          "definition": "The time at which the lowest value occurs.",
+          "math": "argmin_t{yᵢ}",
+          "examples": [
+            "time to nadir"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          }
+        },
+        "AreaUnderCurve": {
+          "mathematicalEquivalent": "SequenceIntegral",
+          "definition": "The integrated value over time.",
+          "math": "∫y dt",
+          "examples": [
+            "AUC₀₋₂₄",
+            "AUC₀₋∞",
+            "glucose AUC during OGTT"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "source_unit × time_unit"
+          }
+        },
+        "CumulativeTotal": {
+          "mathematicalEquivalent": "SequenceCumulativeSum",
+          "definition": "The running total accumulated over time.",
+          "math": "Σyᵢ for i ≤ k",
+          "examples": [
+            "cumulative dose",
+            "cumulative exposure"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          }
+        },
+        "RateOfChange": {
+          "mathematicalEquivalent": "SequenceRateOfChange",
+          "definition": "The rate at which a value changes over a time segment.",
+          "math": "Δy/Δt",
+          "examples": [
+            "eGFR slope",
+            "tumor growth rate",
+            "rate of decline in FEV1"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "source_unit / time_unit"
+          }
+        },
+        "HalfLife": {
+          "mathematicalEquivalent": "ExponentialDecayConstant",
+          "definition": "The time for a value to decline by half.",
+          "math": "ln(2) / λ",
+          "examples": [
+            "drug half-life",
+            "antibody half-life"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          }
+        },
+        "LastValue": {
+          "mathematicalEquivalent": "SequenceTerminalValue",
+          "definition": "The last observed value in an ordered series.",
+          "math": "yₙ",
+          "examples": [
+            "last observed concentration",
+            "end-of-study value"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          }
+        },
+        "FirstValue": {
+          "mathematicalEquivalent": "SequenceInitialValue",
+          "definition": "The first value in an ordered series.",
+          "math": "y₁",
+          "examples": [
+            "first post-dose concentration",
+            "initial measurement"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          }
+        },
+        "TimeInState": {
+          "mathematicalEquivalent": "SequenceThresholdDuration",
+          "definition": "The total time spent above or below a threshold.",
+          "math": "measure({t : y(t) > θ})",
+          "examples": [
+            "time in therapeutic range",
+            "time above MIC",
+            "time in hypoglycemia"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          }
+        },
+        "TimeToThreshold": {
+          "mathematicalEquivalent": "SequenceThresholdCrossing",
+          "definition": "The time at which a series first crosses a defined threshold.",
+          "math": "inf{t : y(t) = θ}",
+          "examples": [
+            "time to target concentration",
+            "time to normalization"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          }
+        },
+        "Range": {
+          "mathematicalEquivalent": "SequenceRange",
+          "definition": "The difference between the highest and lowest values in a series.",
+          "math": "sup{yᵢ} − inf{yᵢ}",
+          "examples": [
+            "blood pressure variability",
+            "PK concentration range"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          }
+        }
+      }
+    },
+    "EventAggregate": {
+      "definition": "A summary of discrete event occurrences on a timeline.",
+      "inputPattern": "Concept-driven. Requires 1× Observation (OC layer); the event set emerges from dimensional scoping.",
+      "dimensionalRelationships": {
+        "Subject": {
+          "role": "partition",
+          "cardinality": "1",
+          "note": "Always per subject."
+        },
+        "Parameter": {
+          "role": "partition",
+          "cardinality": "0..1",
+          "note": "The event type (e.g. specific AE term). Output typically gets a new parameter."
+        },
+        "Timing": {
+          "role": "scope",
+          "cardinality": "1",
+          "note": "Provides the timeline over which events are counted. Not an ordering axis — events are discrete occurrences."
+        },
+        "Treatment": {
+          "role": "partition",
+          "cardinality": "0..1"
+        },
+        "Population": {
+          "role": "scope",
+          "cardinality": "0..1"
+        },
+        "Period": {
+          "role": "scope",
+          "cardinality": "0..1",
+          "note": "May define the window in which events are counted."
+        }
+      },
+      "concepts": {
+        "EventCount": {
+          "mathematicalEquivalent": "Count",
+          "definition": "The number of times an event or condition occurs.",
+          "math": "|{events}|",
+          "examples": [
+            "number of AEs",
+            "seizure count",
+            "number of exacerbations"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "none"
+          }
+        },
+        "EventRate": {
+          "mathematicalEquivalent": "Rate",
+          "definition": "The number of occurrences per unit of time or exposure.",
+          "math": "|{events}| / T",
+          "examples": [
+            "annualized relapse rate",
+            "AE rate per patient-year"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "events / time_unit"
+          }
+        },
+        "TimeToEvent": {
+          "mathematicalEquivalent": "TimeToEvent",
+          "definition": "The duration from a defined start to event occurrence or censoring.",
+          "math": "inf{tᵢ}",
+          "examples": [
+            "time to first AE",
+            "overall survival",
+            "progression-free survival"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          }
+        },
+        "TimeBetweenEvents": {
+          "mathematicalEquivalent": "InterEventInterval",
+          "definition": "The duration between consecutive recurrent events.",
+          "math": "t_{i+1} − tᵢ",
+          "examples": [
+            "time between seizures",
+            "inter-exacerbation interval"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          }
+        }
+      }
+    },
+    "Classification": {
+      "definition": "A derivation mapping value(s) to a categorical assignment.",
+      "inputPattern": "Concept-driven. Requires 1× any concept as input (the value being classified).",
+      "dimensionalRelationships": {
+        "Subject": {
+          "role": "partition",
+          "cardinality": "1",
+          "note": "Always per subject."
+        },
+        "Parameter": {
+          "role": "partition",
+          "cardinality": "0..1",
+          "note": "The classification may be parameter-specific (e.g. responder flag per parameter) or create a new parameter (e.g. population flag)."
+        },
+        "Timing": {
+          "role": "partition",
+          "cardinality": "0..1",
+          "note": "Preserved when classifying at each timepoint."
+        },
+        "AnalysisVisit": {
+          "role": "partition",
+          "cardinality": "0..1"
+        },
+        "Treatment": {
+          "role": "partition",
+          "cardinality": "0..1"
+        },
+        "Population": {
+          "role": "scope",
+          "cardinality": "0..1"
+        },
+        "Period": {
+          "role": "partition",
+          "cardinality": "0..1"
+        }
+      },
+      "concepts": {
+        "Flag": {
+          "mathematicalEquivalent": "Indicator",
+          "definition": "A binary indicator evaluating a criterion (Y/N).",
+          "math": "I(criterion)",
+          "examples": [
+            "baseline flag (ABLFL)",
+            "population flag (SAFFL)",
+            "responder flag"
+          ],
+          "result": {
+            "valueType": "CodedResponse",
+            "unit": "none"
+          }
+        },
+        "Category": {
+          "mathematicalEquivalent": "Classification",
+          "definition": "A categorical grouping derived from rules.",
+          "math": "f(x) → {c₁, c₂, …}",
+          "examples": [
+            "severity grade",
+            "BMI category",
+            "renal impairment stage"
+          ],
+          "result": {
+            "valueType": "CodedResponse",
+            "unit": "none"
+          }
+        },
+        "Rank": {
+          "mathematicalEquivalent": "Rank",
+          "definition": "The ordinal position of a value within a defined scope.",
+          "math": "rank(x) within group",
+          "examples": [
+            "worst post-baseline rank",
+            "severity ranking"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "none"
+          }
+        },
+        "QuantileGroup": {
+          "mathematicalEquivalent": "Quantile",
+          "definition": "A distributional bin assignment (tertiles, quartiles, quintiles).",
+          "math": "Qₖ where F(x) in bin k",
+          "examples": [
+            "exposure quartile",
+            "baseline severity tertile"
+          ],
+          "result": {
+            "valueType": "CodedResponse",
+            "unit": "none"
+          }
+        }
+      }
+    }
+  },
+  "transformationExample_v020c": {
+    "note": "This shows how a Transformation simplifies when the concept carries dimensional relationships. Compare with v0.20a/b where the Transformation must declare all dimensional bindings.",
+    "T.ChangeFromBaseline": {
+      "instanceOf": "Change",
+      "usesMethod": "M.Subtraction",
+      "inheritedFromConcept": {
+        "Subject": "partition (cardinality 1)",
+        "Parameter": "constraint — same across both inputs (cardinality 1)"
+      },
+      "addedByTransformation": {
+        "AnalysisVisit": "partition — one result per visit"
+      },
+      "note": "The Transformation only adds AnalysisVisit. Subject and Parameter (with the same-parameter constraint) are inherited from the Comparison category."
+    },
+    "T.PeakConcentration": {
+      "instanceOf": "PeakValue",
+      "usesMethod": "M.Maximum",
+      "inheritedFromConcept": {
+        "Subject": "partition (cardinality 1)",
+        "Parameter": "partition (cardinality 1)",
+        "Timing": "order — collapses in output"
+      },
+      "addedByTransformation": {},
+      "note": "The Transformation adds nothing. All dimensional relationships are inherited from the SequenceAggregate category. The concept already knows it partitions by Subject and Parameter and collapses the Timing axis."
+    },
+    "T.BMICalculation": {
+      "instanceOf": "Measure",
+      "usesMethod": "M.Formula",
+      "inheritedFromConcept": {
+        "Subject": "partition (cardinality 1)",
+        "Parameter": "partition — each input Measure carries its own Parameter (WEIGHT, HEIGHT)"
+      },
+      "addedByTransformation": {
+        "AnalysisVisit": "partition — one BMI per visit"
+      },
+      "note": "Parameter is inherited and present on both inputs, but each input has a different parameter value (WEIGHT, HEIGHT). The output creates a new parameter (BMI). Compare with Comparison, where Parameter is a constraint (both inputs must share the same parameter). In PointComputation, inputs can have different parameters — the method determines how they combine."
+    }
+  }
+}
