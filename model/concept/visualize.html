@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concept Model Visualizer</title>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --card-bg: #ffffff;
+    --border: #dee2e6;
+    --text: #212529;
+    --text-muted: #6c757d;
+    --accent: #4361ee;
+    --cat-point: #4361ee;
+    --cat-comparison: #7209b7;
+    --cat-sequence: #f72585;
+    --cat-event: #ff6d00;
+    --cat-class: #2ec4b6;
+    --dim-color: #495057;
+    --role-partition: #4361ee;
+    --role-constraint: #e63946;
+    --role-order: #ff6d00;
+    --role-scope: #2ec4b6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  header h1 {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  header .meta {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .file-picker {
+    margin-left: auto;
+  }
+
+  .file-picker label {
+    display: inline-block;
+    padding: 8px 16px;
+    background: var(--accent);
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .file-picker input { display: none; }
+
+  #landing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 70vh;
+    color: var(--text-muted);
+    font-size: 15px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  #landing .arrow { font-size: 32px; }
+
+  #diagram {
+    display: none;
+    padding: 24px;
+  }
+
+  .description-bar {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+
+  .description-bar strong {
+    color: var(--text);
+  }
+
+  .layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .dimensions-panel {
+    flex: 0 0 200px;
+    position: sticky;
+    top: 24px;
+  }
+
+  .dimensions-panel h2 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .dim-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--dim-color);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .dim-card .dim-name {
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .dim-card .dim-def {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .dim-card .dim-cardinality {
+    font-size: 11px;
+    color: var(--accent);
+    font-family: monospace;
+    margin-top: 2px;
+  }
+
+  .categories-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .category-group {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .category-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .category-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .category-header .cat-def {
+    font-size: 12px;
+    color: var(--text-muted);
+    flex: 1;
+  }
+
+  .category-header .input-pattern {
+    font-size: 11px;
+    background: #f1f3f5;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .dim-rel-bar {
+    padding: 8px 18px;
+    background: #f8f9fa;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .dim-rel-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+    border: 1px solid;
+  }
+
+  .dim-rel-tag[data-role="partition"] {
+    color: var(--role-partition);
+    border-color: var(--role-partition);
+    background: rgba(67, 97, 238, 0.08);
+  }
+  .dim-rel-tag[data-role="constraint"] {
+    color: var(--role-constraint);
+    border-color: var(--role-constraint);
+    background: rgba(230, 57, 70, 0.08);
+  }
+  .dim-rel-tag[data-role="order"] {
+    color: var(--role-order);
+    border-color: var(--role-order);
+    background: rgba(255, 109, 0, 0.08);
+  }
+  .dim-rel-tag[data-role="scope"] {
+    color: var(--role-scope);
+    border-color: var(--role-scope);
+    background: rgba(46, 196, 182, 0.08);
+  }
+
+  .concepts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .concept-card {
+    background: var(--card-bg);
+    padding: 14px 16px;
+  }
+
+  .concept-card .concept-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .concept-card .concept-name .math-equiv {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .concept-card .concept-def {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .concept-card .concept-math {
+    font-family: 'Times New Roman', serif;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 6px;
+    font-style: italic;
+  }
+
+  .concept-card .concept-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .concept-card .example-tag {
+    font-size: 10px;
+    background: #f1f3f5;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--text-muted);
+  }
+
+  .concept-card .result-info {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 12px;
+  }
+
+  .result-info span {
+    font-family: monospace;
+  }
+
+  .cat-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  /* SVG relationship overlay */
+  #rel-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .legend {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .legend h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  /* Comparison table */
+  #compare-view {
+    display: none;
+    padding: 24px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-left: 16px;
+  }
+
+  .tab-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .tab-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  /* Role legend */
+  .role-legend {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+
+  .role-legend h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .role-legend-items {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .role-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  .role-legend-item .role-swatch {
+    width: 24px;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  .role-legend-item .role-label {
+    font-weight: 500;
+  }
+
+  .role-legend-item .role-desc {
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Concept Model Visualizer</h1>
+  <span class="meta" id="model-meta"></span>
+  <div class="file-picker">
+    <label>Load JSON <input type="file" id="file-input" accept=".json"></label>
+  </div>
+</header>
+
+<div id="landing">
+  <div class="arrow">&uarr;</div>
+  <div>Load a concept model JSON file to visualize it</div>
+  <div style="font-size:12px">(Option_A, Option_B, Option_C, or Option_D)</div>
+</div>
+
+<div id="diagram"></div>
+
+<script>
+const CAT_COLORS = {
+  PointComputation: '#4361ee',
+  Comparison: '#7209b7',
+  SequenceAggregate: '#f72585',
+  EventAggregate: '#ff6d00',
+  Classification: '#2ec4b6'
+};
+
+const ROLE_COLORS = {
+  partition: '#4361ee',
+  constraint: '#e63946',
+  order: '#ff6d00',
+  scope: '#2ec4b6'
+};
+
+const ROLE_DESCRIPTIONS = {
+  partition: 'Defines a group; derivation computed independently per partition',
+  constraint: 'Imposes a structural rule (e.g. same Parameter)',
+  order: 'Provides ordering axis; collapses in output',
+  scope: 'Defines boundary without partitioning or ordering'
+};
+
+document.getElementById('file-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      render(data, file.name);
+    } catch (err) {
+      alert('Invalid JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+});
+
+function render(data, filename) {
+  document.getElementById('landing').style.display = 'none';
+  const diagram = document.getElementById('diagram');
+  diagram.style.display = 'block';
+  diagram.innerHTML = '';
+
+  // Meta
+  const meta = document.getElementById('model-meta');
+  meta.textContent = `${data.variant || ''} — v${data.version || '?'} — ${filename}`;
+
+  // Description
+  if (data.description) {
+    const descBar = el('div', 'description-bar');
+    descBar.innerHTML = data.description;
+    diagram.appendChild(descBar);
+  }
+
+  // Detect if this model has dimensional relationships (Options C/D)
+  const hasDimRels = !!(data.categories &&
+    Object.values(data.categories).some(c => c.dimensionalRelationships));
+
+  // Detect dimensions source
+  const dims = data.dimensionalConcepts || data.sharedDimensions || {};
+
+  // Category color legend
+  const legend = el('div', 'legend');
+  const legendTitle = el('h4');
+  legendTitle.textContent = 'Categories';
+  legend.appendChild(legendTitle);
+  for (const [catKey, color] of Object.entries(CAT_COLORS)) {
+    if (data.categories && data.categories[catKey]) {
+      const item = el('div', 'legend-item');
+      const dot = el('div', 'legend-dot');
+      dot.style.background = color;
+      item.appendChild(dot);
+      const label = document.createTextNode(catKey);
+      item.appendChild(label);
+      legend.appendChild(item);
+    }
+  }
+  diagram.appendChild(legend);
+
+  // Dimensional roles legend (for C/D)
+  if (hasDimRels) {
+    const roleLegend = el('div', 'role-legend');
+    const rlTitle = el('h4');
+    rlTitle.textContent = 'Dimensional Roles';
+    roleLegend.appendChild(rlTitle);
+    const rlItems = el('div', 'role-legend-items');
+    for (const [role, desc] of Object.entries(ROLE_DESCRIPTIONS)) {
+      const item = el('div', 'role-legend-item');
+      const swatch = el('div', 'role-swatch');
+      swatch.style.background = ROLE_COLORS[role];
+      item.appendChild(swatch);
+      const label = el('span', 'role-label');
+      label.textContent = role;
+      item.appendChild(label);
+      const descEl = el('span', 'role-desc');
+      descEl.textContent = '— ' + desc;
+      item.appendChild(descEl);
+      rlItems.appendChild(item);
+    }
+    roleLegend.appendChild(rlItems);
+    diagram.appendChild(roleLegend);
+  }
+
+  // Main layout
+  const layout = el('div', 'layout');
+
+  // Dimensions panel
+  const dimPanel = el('div', 'dimensions-panel');
+  const dimTitle = el('h2');
+  dimTitle.textContent = hasDimRels ? 'Dimensional Concepts' : 'Shared Dimensions';
+  dimPanel.appendChild(dimTitle);
+
+  for (const [dimName, dimInfo] of Object.entries(dims)) {
+    if (dimName === 'note') continue;
+    const card = el('div', 'dim-card');
+    card.id = 'dim-' + dimName;
+    const name = el('div', 'dim-name');
+    name.textContent = dimName;
+    card.appendChild(name);
+    if (dimInfo.definition) {
+      const def = el('div', 'dim-def');
+      def.textContent = dimInfo.definition;
+      card.appendChild(def);
+    }
+    if (dimInfo.cardinality) {
+      const card2 = el('div', 'dim-cardinality');
+      card2.textContent = 'cardinality: ' + dimInfo.cardinality;
+      card.appendChild(card2);
+    }
+    dimPanel.appendChild(card);
+  }
+  layout.appendChild(dimPanel);
+
+  // Categories panel
+  const catPanel = el('div', 'categories-panel');
+
+  for (const [catKey, catData] of Object.entries(data.categories || {})) {
+    const color = CAT_COLORS[catKey] || '#6c757d';
+    const group = el('div', 'category-group');
+
+    // Header
+    const header = el('div', 'category-header');
+    const dot = el('div', 'cat-dot');
+    dot.style.background = color;
+    header.appendChild(dot);
+    const title = el('h3');
+    title.textContent = catKey;
+    title.style.color = color;
+    header.appendChild(title);
+    const defText = el('span', 'cat-def');
+    defText.textContent = catData.definition || '';
+    header.appendChild(defText);
+    if (catData.inputPattern) {
+      const ip = el('span', 'input-pattern');
+      ip.textContent = catData.inputPattern.split('.')[0];
+      header.appendChild(ip);
+    }
+    group.appendChild(header);
+
+    // Dimensional relationships bar (Options C/D)
+    if (catData.dimensionalRelationships) {
+      const dimBar = el('div', 'dim-rel-bar');
+      for (const [dName, dInfo] of Object.entries(catData.dimensionalRelationships)) {
+        const tag = el('span', 'dim-rel-tag');
+        tag.setAttribute('data-role', dInfo.role || 'scope');
+        const cardinality = dInfo.cardinality ? ` [${dInfo.cardinality}]` : '';
+        tag.textContent = `${dName}: ${dInfo.role}${cardinality}`;
+        if (dInfo.note) tag.title = dInfo.note;
+        dimBar.appendChild(tag);
+      }
+      group.appendChild(dimBar);
+    }
+
+    // Concepts grid
+    const grid = el('div', 'concepts-grid');
+    for (const [cName, cData] of Object.entries(catData.concepts || {})) {
+      const card = el('div', 'concept-card');
+      card.style.borderTop = `3px solid ${color}`;
+
+      // Name + math equivalent
+      const nameRow = el('div', 'concept-name');
+      nameRow.textContent = cName;
+      if (cData.mathematicalEquivalent) {
+        const equiv = el('span', 'math-equiv');
+        equiv.textContent = '(' + cData.mathematicalEquivalent + ')';
+        nameRow.appendChild(equiv);
+      }
+      card.appendChild(nameRow);
+
+      // Definition
+      if (cData.definition) {
+        const def = el('div', 'concept-def');
+        def.textContent = cData.definition;
+        card.appendChild(def);
+      }
+
+      // Math
+      if (cData.math) {
+        const math = el('div', 'concept-math');
+        math.textContent = cData.math;
+        card.appendChild(math);
+      }
+
+      // Concept-level dimensional overrides (Options C/D)
+      if (cData.dimensionalRelationships) {
+        const dimBar = el('div', 'dim-rel-bar');
+        dimBar.style.margin = '6px -16px';
+        dimBar.style.padding = '6px 16px';
+        for (const [dName, dInfo] of Object.entries(cData.dimensionalRelationships)) {
+          const tag = el('span', 'dim-rel-tag');
+          tag.setAttribute('data-role', dInfo.role || 'scope');
+          const cardinality = dInfo.cardinality ? ` [${dInfo.cardinality}]` : '';
+          tag.textContent = `${dName}: ${dInfo.role}${cardinality}`;
+          if (dInfo.note) tag.title = dInfo.note;
+          dimBar.appendChild(tag);
+        }
+        card.appendChild(dimBar);
+      }
+
+      // Examples
+      if (cData.examples && cData.examples.length) {
+        const exDiv = el('div', 'concept-examples');
+        for (const ex of cData.examples) {
+          const tag = el('span', 'example-tag');
+          tag.textContent = ex;
+          exDiv.appendChild(tag);
+        }
+        card.appendChild(exDiv);
+      }
+
+      // Result info
+      if (cData.result) {
+        const res = el('div', 'result-info');
+        const vt = Array.isArray(cData.result.valueType)
+          ? cData.result.valueType.join(' | ')
+          : cData.result.valueType;
+        res.innerHTML = `<span>${vt}</span> <span>${cData.result.unit || ''}</span>`;
+        card.appendChild(res);
+      }
+
+      grid.appendChild(card);
+    }
+    group.appendChild(grid);
+    catPanel.appendChild(group);
+  }
+
+  layout.appendChild(catPanel);
+  diagram.appendChild(layout);
+}
+
+function el(tag, className) {
+  const e = document.createElement(tag);
+  if (className) e.className = className;
+  return e;
+}
+</script>
+</body>
+</html>
