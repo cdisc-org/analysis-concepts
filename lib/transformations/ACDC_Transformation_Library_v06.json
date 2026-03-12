@@ -1,0 +1,560 @@
+{
+  "version": "0.6",
+  "description": "Transformation library using Option D (clinical naming with dimensional relationships) for DC concepts and AC Concept Model v0.16 for analysis concepts. SmartPhrases compose into human-readable analysis descriptions.",
+
+  "$references": {
+    "dcConcepts": "Option_D_Clinical_with_Dimensions.json",
+    "acConcepts": "AC_Concept_Model_v016.json",
+    "methods": "Method definitions (M.MMRM, M.LogRankTest, M.Subtraction, etc.)"
+  },
+
+  "smartPhrases": [
+    {
+      "oid": "SP_CFB_ENDPOINT",
+      "name": "Change from baseline endpoint",
+      "role": "endpoint",
+      "phrase_template": "change from baseline in {parameter}",
+      "configurations": ["parameter"],
+      "references": ["C.Change", "Parameter"]
+    },
+    {
+      "oid": "SP_PCTCFB_ENDPOINT",
+      "name": "Percent change from baseline endpoint",
+      "role": "endpoint",
+      "phrase_template": "percent change from baseline in {parameter}",
+      "configurations": ["parameter"],
+      "references": ["C.PercentChange", "Parameter"]
+    },
+    {
+      "oid": "SP_TTE_ENDPOINT",
+      "name": "Time-to-event endpoint",
+      "role": "endpoint",
+      "phrase_template": "time to {event}",
+      "configurations": ["event"],
+      "references": ["C.TimeToEvent"]
+    },
+    {
+      "oid": "SP_RESPONDER_ENDPOINT",
+      "name": "Responder endpoint",
+      "role": "endpoint",
+      "phrase_template": "proportion of responders in {parameter}",
+      "configurations": ["parameter"],
+      "references": ["C.Flag", "Parameter"]
+    },
+    {
+      "oid": "SP_VALUE_ENDPOINT",
+      "name": "Analysis value endpoint",
+      "role": "endpoint",
+      "phrase_template": "{parameter} value",
+      "configurations": ["parameter"],
+      "references": ["C.Measure", "Parameter"]
+    },
+    {
+      "oid": "SP_SHIFT_ENDPOINT",
+      "name": "Shift endpoint",
+      "role": "endpoint",
+      "phrase_template": "shift from baseline in {parameter}",
+      "configurations": ["parameter"],
+      "references": ["C.Shift", "Parameter"]
+    },
+    {
+      "oid": "SP_PEAK_ENDPOINT",
+      "name": "Peak value endpoint",
+      "role": "endpoint",
+      "phrase_template": "peak {parameter}",
+      "configurations": ["parameter"],
+      "references": ["C.PeakValue", "Parameter"]
+    },
+    {
+      "oid": "SP_AUC_ENDPOINT",
+      "name": "Area under curve endpoint",
+      "role": "endpoint",
+      "phrase_template": "{parameter} AUC",
+      "configurations": ["parameter"],
+      "references": ["C.AreaUnderCurve", "Parameter"]
+    },
+    {
+      "oid": "SP_PARAMETER",
+      "name": "Parameter",
+      "role": "parameter",
+      "phrase_template": "for {parameter}",
+      "configurations": ["parameter"],
+      "references": ["Parameter"]
+    },
+    {
+      "oid": "SP_TIMEPOINT",
+      "name": "Timepoint",
+      "role": "timepoint",
+      "phrase_template": "at {visit}",
+      "configurations": ["visit"],
+      "references": ["AnalysisVisit"]
+    },
+    {
+      "oid": "SP_POPULATION",
+      "name": "Population",
+      "role": "population",
+      "phrase_template": "in the {population} population",
+      "configurations": ["population"],
+      "references": ["Population"]
+    },
+    {
+      "oid": "SP_GROUPING",
+      "name": "Treatment grouping",
+      "role": "grouping",
+      "phrase_template": "comparing {treatment} groups",
+      "configurations": ["treatment"],
+      "references": ["Treatment"]
+    },
+    {
+      "oid": "SP_STRATIFICATION",
+      "name": "Stratification",
+      "role": "grouping",
+      "phrase_template": "stratified by {strata}",
+      "configurations": ["strata"],
+      "references": []
+    },
+    {
+      "oid": "SP_METHOD_MMRM",
+      "name": "MMRM method",
+      "role": "method",
+      "phrase_template": "using mixed model repeated measures",
+      "configurations": [],
+      "references": ["M.MMRM"]
+    },
+    {
+      "oid": "SP_METHOD_ANCOVA",
+      "name": "ANCOVA method",
+      "role": "method",
+      "phrase_template": "using analysis of covariance",
+      "configurations": [],
+      "references": ["M.ANCOVA"]
+    },
+    {
+      "oid": "SP_METHOD_LOGRANK",
+      "name": "Log-rank method",
+      "role": "method",
+      "phrase_template": "using the log-rank test",
+      "configurations": [],
+      "references": ["M.LogRankTest"]
+    },
+    {
+      "oid": "SP_METHOD_KM",
+      "name": "Kaplan-Meier method",
+      "role": "method",
+      "phrase_template": "using Kaplan-Meier estimation",
+      "configurations": [],
+      "references": ["M.KaplanMeier"]
+    },
+    {
+      "oid": "SP_METHOD_DESCSTATS",
+      "name": "Descriptive statistics method",
+      "role": "method",
+      "phrase_template": "summarised by descriptive statistics",
+      "configurations": [],
+      "references": []
+    },
+    {
+      "oid": "SP_IMPUTATION",
+      "name": "Imputation qualifier",
+      "role": "method_qualifier",
+      "phrase_template": "with {imputation} imputation for missing data",
+      "configurations": ["imputation"],
+      "references": []
+    },
+    {
+      "oid": "SP_CONFIDENCE_LEVEL",
+      "name": "Confidence level qualifier",
+      "role": "method_qualifier",
+      "phrase_template": "with {conf_level}% confidence intervals",
+      "configurations": ["conf_level"],
+      "references": []
+    },
+    {
+      "oid": "SP_COVARIATE_BASELINE",
+      "name": "Baseline covariate",
+      "role": "covariate",
+      "phrase_template": "adjusting for baseline {parameter}",
+      "configurations": ["parameter"],
+      "references": ["C.Measure"]
+    },
+    {
+      "oid": "SP_COVARIATE_SITE",
+      "name": "Site covariate",
+      "role": "covariate",
+      "phrase_template": "adjusting for site",
+      "configurations": [],
+      "references": []
+    }
+  ],
+
+  "derivationTransformations": [
+    {
+      "oid": "T.BaselineSelection",
+      "name": "Baseline Selection",
+      "transformationType": "derivation",
+      "description": "Identify the baseline record per subject per parameter using M.RecordSelection configured for baseline.",
+      "instanceOf": "C.Flag",
+      "usesMethod": "M.RecordSelection",
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "partition"
+      },
+      "addedDimensions": {
+        "AnalysisVisit": "partition"
+      },
+      "inputConcepts": ["C.Measure"],
+      "outputConcept": "C.Flag",
+      "methodConfigurations": {
+        "selection_rule": "last_non_missing",
+        "scope": "pre_treatment",
+        "cardinality": "single",
+        "reference_event": "first_dose"
+      },
+      "validSmartPhrases": []
+    },
+    {
+      "oid": "T.ChangeFromBaseline",
+      "name": "Change From Baseline",
+      "transformationType": "derivation",
+      "description": "Calculate the arithmetic change from baseline value.",
+      "instanceOf": "C.Change",
+      "usesMethod": "M.Subtraction",
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint"
+      },
+      "addedDimensions": {
+        "AnalysisVisit": "partition"
+      },
+      "inputConcepts": ["C.Measure", "C.Measure"],
+      "outputConcept": "C.Change",
+      "methodRoleMapping": {
+        "minuend": "C.Measure (current record)",
+        "subtrahend": "C.Measure (baseline-flagged record)"
+      },
+      "validSmartPhrases": ["SP_CFB_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT", "SP_IMPUTATION"],
+      "composedPhrase": "change from baseline in {parameter} at {visit} with {imputation} imputation for missing data"
+    },
+    {
+      "oid": "T.PercentChangeFromBaseline",
+      "name": "Percent Change From Baseline",
+      "transformationType": "derivation",
+      "description": "Calculate the percent change from baseline value.",
+      "instanceOf": "C.PercentChange",
+      "usesMethod": "M.RelativeDifference",
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint"
+      },
+      "addedDimensions": {
+        "AnalysisVisit": "partition"
+      },
+      "inputConcepts": ["C.Measure", "C.Measure"],
+      "outputConcept": "C.PercentChange",
+      "validSmartPhrases": ["SP_PCTCFB_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT", "SP_IMPUTATION"]
+    },
+    {
+      "oid": "T.ShiftFromBaseline",
+      "name": "Shift From Baseline",
+      "transformationType": "derivation",
+      "description": "Determine categorical shift between baseline and post-baseline values.",
+      "instanceOf": "C.Shift",
+      "usesMethod": "M.CategoricalTransition",
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint"
+      },
+      "addedDimensions": {
+        "AnalysisVisit": "partition"
+      },
+      "inputConcepts": ["C.Measure", "C.Measure"],
+      "outputConcept": "C.Shift",
+      "validSmartPhrases": ["SP_SHIFT_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT"]
+    },
+    {
+      "oid": "T.ResponderClassification",
+      "name": "Responder Classification",
+      "transformationType": "derivation",
+      "description": "Classify subjects as responders based on threshold criterion applied to a derived value.",
+      "instanceOf": "C.Flag",
+      "usesMethod": "M.ThresholdEvaluation",
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "partition"
+      },
+      "addedDimensions": {
+        "AnalysisVisit": "partition"
+      },
+      "inputConcepts": ["C.Change"],
+      "outputConcept": "C.Flag",
+      "validSmartPhrases": ["SP_RESPONDER_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT"]
+    },
+    {
+      "oid": "T.LOCF_Imputation",
+      "name": "LOCF Imputation",
+      "transformationType": "derivation",
+      "description": "Impute missing values by carrying forward the last non-missing observation within each subject-parameter partition, ordered by analysis visit.",
+      "instanceOf": "C.Measure",
+      "usesMethod": "M.ImputedValue_LOCF",
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "partition"
+      },
+      "addedDimensions": {
+        "AnalysisVisit": "order"
+      },
+      "inputConcepts": ["C.Measure"],
+      "outputConcept": "C.Measure",
+      "methodRoleMapping": {
+        "value": "C.Measure (observed values, may contain missing)",
+        "partition": "Subject, Parameter (inherited dimensions)",
+        "time_order": "AnalysisVisit (ordering dimension)"
+      },
+      "validSmartPhrases": ["SP_IMPUTATION"]
+    },
+    {
+      "oid": "T.VisitWindowing",
+      "name": "Analysis Visit Assignment",
+      "transformationType": "derivation",
+      "description": "Assign records to analysis visit windows based on timing relative to protocol-defined encounters.",
+      "instanceOf": "C.Category",
+      "usesMethod": "M.WindowAssignment",
+      "inheritedDimensions": {
+        "Subject": "partition"
+      },
+      "addedDimensions": {},
+      "inputConcepts": ["Timing"],
+      "outputConcept": "C.Category",
+      "methodConfigurations": {
+        "window_definitions": "(provided at study instantiation)"
+      },
+      "validSmartPhrases": []
+    },
+    {
+      "oid": "T.PopulationFlag",
+      "name": "Population Flag Assignment",
+      "transformationType": "derivation",
+      "description": "Assign subjects to analysis populations based on eligibility criteria.",
+      "instanceOf": "C.Flag",
+      "usesMethod": "M.CriterionEvaluation",
+      "inheritedDimensions": {
+        "Subject": "partition"
+      },
+      "addedDimensions": {},
+      "inputConcepts": ["C.Measure"],
+      "outputConcept": "C.Flag",
+      "validSmartPhrases": ["SP_POPULATION"]
+    },
+    {
+      "oid": "T.PeakConcentration",
+      "name": "Peak Concentration",
+      "transformationType": "derivation",
+      "description": "Find the maximum concentration in an ordered PK profile.",
+      "instanceOf": "C.PeakValue",
+      "usesMethod": "M.Maximum",
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "partition",
+        "Timing": "order"
+      },
+      "addedDimensions": {},
+      "inputConcepts": ["C.Measure"],
+      "outputConcept": "C.PeakValue",
+      "validSmartPhrases": ["SP_PEAK_ENDPOINT", "SP_PARAMETER"]
+    },
+    {
+      "oid": "T.AUCCalculation",
+      "name": "Area Under Curve",
+      "transformationType": "derivation",
+      "description": "Calculate the area under the concentration-time curve.",
+      "instanceOf": "C.AreaUnderCurve",
+      "usesMethod": "M.TrapezoidalIntegration",
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "partition",
+        "Timing": "order"
+      },
+      "addedDimensions": {},
+      "inputConcepts": ["C.Measure"],
+      "outputConcept": "C.AreaUnderCurve",
+      "validSmartPhrases": ["SP_AUC_ENDPOINT", "SP_PARAMETER"]
+    },
+    {
+      "oid": "T.OverallSurvivalTime",
+      "name": "Overall Survival Time",
+      "transformationType": "derivation",
+      "description": "Calculate time from randomisation to death or censoring.",
+      "instanceOf": "C.TimeToEvent",
+      "usesMethod": "M.DurationCalculation",
+      "inheritedDimensions": {
+        "Subject": "partition"
+      },
+      "addedDimensions": {},
+      "inputConcepts": ["Timing"],
+      "outputConcept": "C.TimeToEvent",
+      "validSmartPhrases": ["SP_TTE_ENDPOINT"]
+    },
+    {
+      "oid": "T.DeathEventFlag",
+      "name": "Death Event Flag",
+      "transformationType": "derivation",
+      "description": "Create censoring indicator for survival analysis (death = event, alive = censored).",
+      "instanceOf": "C.Flag",
+      "usesMethod": "M.CriterionEvaluation",
+      "inheritedDimensions": {
+        "Subject": "partition"
+      },
+      "addedDimensions": {},
+      "inputConcepts": [],
+      "outputConcept": "C.Flag",
+      "validSmartPhrases": []
+    }
+  ],
+
+  "analysisTransformations": [
+    {
+      "oid": "T.CFB_MMRM_Primary",
+      "name": "Change From Baseline MMRM Primary Analysis",
+      "transformationType": "analysis",
+      "description": "Primary efficacy analysis: MMRM on change from baseline, comparing treatment groups at each visit with baseline as covariate.",
+      "acCategory": "TreatmentComparison",
+      "usesMethod": "M.MMRM",
+      "methodOutputSlotMapping": {
+        "adjusted_means": "LSMeans",
+        "pairwise_diffs": "Contrasts",
+        "omnibus_tests": "Type3Tests",
+        "fixed_effects": "ParameterEstimates",
+        "model_fit": "FitStatistics",
+        "covariance": "CovarianceParameters"
+      },
+      "inputBindings": [
+        { "methodRole": "response",  "concept": "C.Change" },
+        { "methodRole": "covariate", "concept": "C.Measure",     "description": "Baseline value" },
+        { "methodRole": "time",      "concept": "AnalysisVisit", "type": "dimensional" },
+        { "methodRole": "group",     "concept": "Treatment",     "type": "dimensional" },
+        { "methodRole": "subject",   "concept": "Subject",       "type": "dimensional" }
+      ],
+      "methodConfigurations": {
+        "covariance_structure": "UN",
+        "estimation_method": "REML",
+        "df_method": "KR"
+      },
+      "validSmartPhrases": [
+        "SP_CFB_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT",
+        "SP_POPULATION", "SP_GROUPING",
+        "SP_METHOD_MMRM", "SP_IMPUTATION", "SP_CONFIDENCE_LEVEL",
+        "SP_COVARIATE_BASELINE"
+      ],
+      "composedPhrase": "change from baseline in {parameter} at {visit} in the {population} population comparing {treatment} groups using mixed model repeated measures adjusting for baseline {parameter} with {conf_level}% confidence intervals",
+      "exampleInstance": {
+        "parameter": "SBP (mmHg)",
+        "visit": "Week 24",
+        "population": "ITT",
+        "treatment": "Drug A vs Placebo",
+        "conf_level": 95,
+        "resolvedPhrase": "change from baseline in SBP (mmHg) at Week 24 in the ITT population comparing Drug A vs Placebo groups using mixed model repeated measures adjusting for baseline SBP (mmHg) with 95% confidence intervals"
+      }
+    },
+    {
+      "oid": "T.CFB_ANCOVA_Primary",
+      "name": "Change From Baseline ANCOVA Primary Analysis",
+      "transformationType": "analysis",
+      "description": "Primary efficacy analysis: ANCOVA on change from baseline at a specific visit, comparing treatment groups with baseline as covariate.",
+      "acCategory": "TreatmentComparison",
+      "usesMethod": "M.ANCOVA",
+      "methodOutputSlotMapping": {
+        "adjusted_means": "LSMeans",
+        "pairwise_diffs": "Contrasts",
+        "omnibus_tests": "Type3Tests",
+        "fixed_effects": "ParameterEstimates",
+        "model_fit": "FitStatistics"
+      },
+      "inputBindings": [
+        { "methodRole": "response",  "concept": "C.Change" },
+        { "methodRole": "covariate", "concept": "C.Measure",     "description": "Baseline value" },
+        { "methodRole": "group",     "concept": "Treatment",     "type": "dimensional" }
+      ],
+      "methodConfigurations": {
+        "ss_type": "III"
+      },
+      "validSmartPhrases": [
+        "SP_CFB_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT",
+        "SP_POPULATION", "SP_GROUPING",
+        "SP_METHOD_ANCOVA", "SP_CONFIDENCE_LEVEL",
+        "SP_COVARIATE_BASELINE", "SP_COVARIATE_SITE"
+      ],
+      "composedPhrase": "change from baseline in {parameter} at {visit} in the {population} population comparing {treatment} groups using analysis of covariance adjusting for baseline {parameter} and site with {conf_level}% confidence intervals"
+    },
+    {
+      "oid": "T.OS_LogRank",
+      "name": "Overall Survival Log-Rank Test",
+      "transformationType": "analysis",
+      "description": "Compare overall survival between treatment groups using the log-rank test.",
+      "acCategory": "SurvivalAnalysis",
+      "usesMethod": "M.LogRankTest",
+      "methodOutputSlotMapping": {
+        "test": "TestResult"
+      },
+      "inputBindings": [
+        { "methodRole": "time",   "concept": "C.TimeToEvent" },
+        { "methodRole": "event",  "concept": "C.Flag" },
+        { "methodRole": "group",  "concept": "Treatment",     "type": "dimensional" }
+      ],
+      "methodConfigurations": {
+        "rho": 0
+      },
+      "validSmartPhrases": [
+        "SP_TTE_ENDPOINT", "SP_POPULATION", "SP_GROUPING",
+        "SP_METHOD_LOGRANK", "SP_STRATIFICATION"
+      ],
+      "composedPhrase": "time to death in the {population} population comparing {treatment} groups using the log-rank test",
+      "exampleInstance": {
+        "population": "ITT",
+        "treatment": "Drug A vs Placebo",
+        "resolvedPhrase": "time to death in the ITT population comparing Drug A vs Placebo groups using the log-rank test"
+      }
+    },
+    {
+      "oid": "T.DescStats_CFB",
+      "name": "Descriptive Statistics of Change From Baseline",
+      "transformationType": "analysis",
+      "description": "Summary statistics (N, mean, SD, median, Q1, Q3, min, max) for change from baseline by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.DescriptiveStatistics",
+      "methodOutputSlotMapping": {
+        "summary": "ComputedValue"
+      },
+      "inputBindings": [
+        { "methodRole": "variable", "concept": "C.Change" },
+        { "methodRole": "group",    "concept": "Treatment",     "type": "dimensional" }
+      ],
+      "validSmartPhrases": [
+        "SP_CFB_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT",
+        "SP_POPULATION", "SP_GROUPING",
+        "SP_METHOD_DESCSTATS"
+      ],
+      "composedPhrase": "change from baseline in {parameter} at {visit} in the {population} population comparing {treatment} groups summarised by descriptive statistics"
+    },
+    {
+      "oid": "T.Responder_ChiSq",
+      "name": "Responder Analysis Chi-Square",
+      "transformationType": "analysis",
+      "description": "Compare responder proportions between treatment groups using chi-square test.",
+      "acCategory": "TreatmentComparison",
+      "usesMethod": "M.ChiSquareTest",
+      "methodOutputSlotMapping": {
+        "test": "TestResult"
+      },
+      "inputBindings": [
+        { "methodRole": "variable", "concept": "C.Flag" },
+        { "methodRole": "group",    "concept": "Treatment",  "type": "dimensional" }
+      ],
+      "validSmartPhrases": [
+        "SP_RESPONDER_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT",
+        "SP_POPULATION", "SP_GROUPING",
+        "SP_METHOD_CHISQ"
+      ],
+      "composedPhrase": "proportion of responders in {parameter} at {visit} in the {population} population comparing {treatment} groups using the chi-square test"
+    }
+  ]
+}
