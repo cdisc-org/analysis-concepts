@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -16,7 +16,7 @@
   "description": "Non-parametric survival function estimation with optional grouping",
   "formula": {
     "notation": "survival",
-    "default_expression": "Surv(time, event) ~ group",
+    "default_expression": "Surv(time, event) ~ fixed_effect",
     "generic_expression": "Surv(<time>, <event>) ~ <fixed_effect>?",
     "notes": "If no group is specified, estimates a single survival curve. With a group variable, produces stratified curves."
   },
@@ -41,7 +41,7 @@
         "description": "Summary of events and censoring per group",
         "cardinality": "per_group",
         "indexed_by": [
-          "group"
+          "fixed_effect"
         ],
         "statistics": [
           "n_risk",
@@ -54,7 +54,7 @@
         "description": "Life table with survival estimates at each event time",
         "cardinality": "per_event_time",
         "indexed_by": [
-          "group",
+          "fixed_effect",
           "time"
         ],
         "statistics": [
@@ -72,7 +72,7 @@
         "description": "Median survival time per group with confidence interval",
         "cardinality": "per_group",
         "indexed_by": [
-          "group"
+          "fixed_effect"
         ],
         "statistics": [
           "median",
@@ -85,7 +85,7 @@
         "description": "Survival probability at specific landmark times",
         "cardinality": "per_group_per_landmark",
         "indexed_by": [
-          "group",
+          "fixed_effect",
           "time"
         ],
         "statistics": [
@@ -105,7 +105,7 @@
     {
       "name": "time",
       "statisticalRole": "response",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "Time to event or censoring"
@@ -119,9 +119,9 @@
       "description": "Event indicator (1=event, 0=censored)"
     },
     {
-      "name": "group",
+      "name": "fixed_effect",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": false,
       "cardinality": "single",
       "description": "Optional grouping variable for stratified curves"

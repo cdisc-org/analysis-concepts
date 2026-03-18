@@ -1,0 +1,256 @@
+{
+  "adam": {
+    "concepts": {
+      "C.Measure": {
+        "variable": "AVAL/AVALC",
+        "byDataType": { "decimal": "AVAL", "code": "AVALC", "string": "AVALC" },
+        "notes": "Analysis value (numeric or character)"
+      },
+      "C.Change": {
+        "variable": "CHG",
+        "byDataType": { "decimal": "CHG" },
+        "notes": "Change from baseline"
+      },
+      "C.PercentChange": {
+        "variable": "PCHG",
+        "byDataType": { "decimal": "PCHG" },
+        "notes": "Percent change from baseline"
+      },
+      "C.Shift": {
+        "variable": "AVALC",
+        "byDataType": { "code": "AVALC", "string": "AVALC" },
+        "notes": "Shift category (character)"
+      },
+      "C.PeakValue": {
+        "variable": "AVAL",
+        "byDataType": { "decimal": "AVAL" },
+        "notes": "Peak/extreme analysis value"
+      },
+      "C.AreaUnderCurve": {
+        "variable": "AVAL",
+        "byDataType": { "decimal": "AVAL" },
+        "notes": "AUC-derived analysis value"
+      },
+      "C.EventCount": {
+        "variable": "AVAL",
+        "byDataType": { "decimal": "AVAL", "integer": "AVAL" },
+        "notes": "Count of events"
+      },
+      "C.TimeToEvent": {
+        "variable": "AVAL",
+        "byDataType": { "decimal": "AVAL" },
+        "notes": "Time-to-event duration"
+      },
+      "C.Flag": {
+        "variable": "AVALC/xxxFL",
+        "byDataType": { "code": "AVALC", "boolean": "xxxFL", "string": "AVALC" },
+        "notes": "Flag indicator variable"
+      },
+      "C.Category": {
+        "variable": "AVALC",
+        "byDataType": { "code": "AVALC", "string": "AVALC" },
+        "notes": "Categorized analysis value"
+      }
+    },
+    "dimensions": {
+      "Subject": {
+        "variable": "USUBJID",
+        "byDataType": { "id": "USUBJID", "string": "USUBJID" },
+        "notes": "Unique subject identifier"
+      },
+      "Parameter": {
+        "variable": "PARAMCD/PARAM",
+        "byDataType": { "code": "PARAMCD", "string": "PARAM" },
+        "notes": "Parameter code and label"
+      },
+      "Timing": {
+        "variable": "ADT/ADY/ATPT",
+        "byDataType": { "date": "ADT", "integer": "ADY", "decimal": "ADY", "string": "ATPT", "code": "ATPT" },
+        "notes": "Analysis date, day, or timepoint"
+      },
+      "AnalysisVisit": {
+        "variable": "AVISIT/AVISITN",
+        "byDataType": { "code": "AVISIT", "string": "AVISIT", "decimal": "AVISITN", "integer": "AVISITN" },
+        "notes": "Analysis visit (character/numeric)"
+      },
+      "Treatment": {
+        "variable": "TRTA/TRTP",
+        "byDataType": { "code": "TRTP", "string": "TRTP" },
+        "notes": "Actual/planned treatment"
+      },
+      "Population": {
+        "variable": "SAFFL/ITTFL",
+        "byDataType": { "code": "SAFFL", "boolean": "SAFFL", "string": "SAFFL" },
+        "notes": "Population flag variables"
+      },
+      "Period": {
+        "variable": "APERIOD/APERIODC",
+        "byDataType": { "integer": "APERIOD", "decimal": "APERIOD", "code": "APERIODC", "string": "APERIODC" },
+        "notes": "Analysis period (numeric/character)"
+      },
+      "Site": {
+        "variable": "SITEID",
+        "byDataType": { "id": "SITEID", "string": "SITEID", "code": "SITEID" },
+        "notes": "Study site identifier"
+      },
+      "Visit": {
+        "variable": "VISIT/VISITNUM",
+        "byDataType": { "code": "VISIT", "string": "VISIT", "integer": "VISITNUM", "decimal": "VISITNUM" },
+        "notes": "Protocol-defined visit (character/numeric)"
+      },
+      "Study": {
+        "variable": "STUDYID",
+        "byDataType": { "id": "STUDYID", "string": "STUDYID" },
+        "notes": "Study identifier"
+      },
+      "Timepoint": {
+        "variable": "ATPT/ATPTN",
+        "byDataType": { "code": "ATPT", "string": "ATPT", "integer": "ATPTN", "decimal": "ATPTN" },
+        "notes": "Analysis timepoint (character/numeric)"
+      }
+    }
+  },
+  "omop": {
+    "concepts": {
+      "C.Measure": {
+        "variable": "measurement.value_as_number",
+        "byDataType": { "decimal": "measurement.value_as_number", "code": "measurement.value_as_concept_id", "string": "measurement.value_as_string" },
+        "notes": "Measurement value"
+      },
+      "C.Change": { "variable": "measurement.value_as_number", "notes": "Derived change value" },
+      "C.PeakValue": { "variable": "measurement.value_as_number", "notes": "Peak measurement value" },
+      "C.EventCount": { "variable": "observation.value_as_number", "notes": "Event count observation" },
+      "C.TimeToEvent": { "variable": "observation.value_as_number", "notes": "Time-to-event observation" },
+      "C.Flag": {
+        "variable": "observation.value_as_concept_id",
+        "byDataType": { "boolean": "observation.value_as_concept_id", "code": "observation.value_as_concept_id" },
+        "notes": "Flag as concept reference"
+      },
+      "C.Shift": { "variable": "observation.value_as_string", "notes": "Shift as string observation" }
+    },
+    "dimensions": {
+      "Subject": { "variable": "person_id", "notes": "Person identifier" },
+      "Parameter": { "variable": "measurement_concept_id", "notes": "Measurement concept reference" },
+      "Timing": { "variable": "measurement_date", "notes": "Measurement date" },
+      "AnalysisVisit": { "variable": "visit_occurrence_id", "notes": "Visit occurrence reference" },
+      "Treatment": { "variable": "drug_exposure table", "notes": "Drug exposure records" },
+      "Population": { "variable": "cohort table", "notes": "Cohort membership" },
+      "Period": { "variable": "observation_period", "notes": "Observation period record" },
+      "Site": { "variable": "care_site_id", "notes": "Care site reference" },
+      "Visit": { "variable": "visit_occurrence.visit_concept_id", "notes": "Visit occurrence concept" },
+      "Study": { "variable": "metadata.study_id", "notes": "Study metadata identifier" },
+      "Timepoint": { "variable": "visit_detail.visit_detail_concept_id", "notes": "Visit detail concept" }
+    }
+  },
+  "fhir": {
+    "concepts": {
+      "C.Measure": {
+        "variable": "Observation.valueQuantity.value",
+        "byDataType": { "decimal": "Observation.valueQuantity.value", "code": "Observation.valueCodeableConcept", "string": "Observation.valueString" },
+        "notes": "Observation value (R5 value[x])"
+      },
+      "C.Change": {
+        "variable": "Observation.valueQuantity.value",
+        "byDataType": { "decimal": "Observation.valueQuantity.value" },
+        "notes": "Change from baseline observation"
+      },
+      "C.PercentChange": {
+        "variable": "Observation.valueQuantity.value",
+        "byDataType": { "decimal": "Observation.valueQuantity.value" },
+        "notes": "Percent change observation"
+      },
+      "C.Shift": {
+        "variable": "Observation.valueCodeableConcept",
+        "byDataType": { "code": "Observation.valueCodeableConcept", "string": "Observation.valueString" },
+        "notes": "Shift category observation"
+      },
+      "C.PeakValue": {
+        "variable": "Observation.valueQuantity.value",
+        "byDataType": { "decimal": "Observation.valueQuantity.value" },
+        "notes": "Peak value observation"
+      },
+      "C.AreaUnderCurve": {
+        "variable": "Observation.valueQuantity.value",
+        "byDataType": { "decimal": "Observation.valueQuantity.value" },
+        "notes": "AUC-derived observation"
+      },
+      "C.EventCount": {
+        "variable": "Observation.valueInteger",
+        "byDataType": { "decimal": "Observation.valueQuantity.value", "integer": "Observation.valueInteger" },
+        "notes": "Event count observation"
+      },
+      "C.TimeToEvent": {
+        "variable": "Observation.valueQuantity.value",
+        "byDataType": { "decimal": "Observation.valueQuantity.value" },
+        "notes": "Time-to-event duration"
+      },
+      "C.Flag": {
+        "variable": "Observation.valueBoolean",
+        "byDataType": { "boolean": "Observation.valueBoolean", "code": "Observation.valueCodeableConcept", "string": "Observation.valueString" },
+        "notes": "Flag indicator observation"
+      },
+      "C.Category": {
+        "variable": "Observation.valueCodeableConcept",
+        "byDataType": { "code": "Observation.valueCodeableConcept", "string": "Observation.valueString" },
+        "notes": "Categorized observation value"
+      }
+    },
+    "dimensions": {
+      "Subject": {
+        "variable": "Patient.identifier",
+        "byDataType": { "id": "Patient.identifier", "string": "Patient.identifier" },
+        "notes": "Patient resource identifier"
+      },
+      "Parameter": {
+        "variable": "Observation.code",
+        "byDataType": { "code": "Observation.code", "string": "Observation.code.text" },
+        "notes": "Observation code (LOINC/SNOMED)"
+      },
+      "Timing": {
+        "variable": "Observation.effectiveDateTime",
+        "byDataType": { "date": "Observation.effectiveDateTime", "dateTime": "Observation.effectiveDateTime", "string": "Observation.effectiveDateTime" },
+        "notes": "Observation effective date/time"
+      },
+      "AnalysisVisit": {
+        "variable": "Encounter.identifier",
+        "byDataType": { "code": "Encounter.identifier", "string": "Encounter.identifier", "integer": "Encounter.identifier" },
+        "notes": "Encounter identifier for visit"
+      },
+      "Treatment": {
+        "variable": "MedicationAdministration.medicationCodeableConcept",
+        "byDataType": { "code": "MedicationAdministration.medicationCodeableConcept", "string": "MedicationAdministration.medicationCodeableConcept.text" },
+        "notes": "Medication administration reference"
+      },
+      "Population": {
+        "variable": "Group.member",
+        "byDataType": { "code": "Group.member", "boolean": "Group.member" },
+        "notes": "Group membership (cohort)"
+      },
+      "Period": {
+        "variable": "EpisodeOfCare.period",
+        "byDataType": { "date": "EpisodeOfCare.period.start", "dateTime": "EpisodeOfCare.period", "string": "EpisodeOfCare.period" },
+        "notes": "Episode of care period"
+      },
+      "Site": {
+        "variable": "Location.identifier",
+        "byDataType": { "id": "Location.identifier", "string": "Location.identifier" },
+        "notes": "Location resource identifier (study site)"
+      },
+      "Visit": {
+        "variable": "Encounter.type",
+        "byDataType": { "code": "Encounter.type", "string": "Encounter.type.text" },
+        "notes": "Encounter type (protocol visit)"
+      },
+      "Study": {
+        "variable": "ResearchStudy.identifier",
+        "byDataType": { "id": "ResearchStudy.identifier", "string": "ResearchStudy.identifier" },
+        "notes": "ResearchStudy resource identifier"
+      },
+      "Timepoint": {
+        "variable": "Encounter.serviceType",
+        "byDataType": { "code": "Encounter.serviceType", "string": "Encounter.serviceType.text" },
+        "notes": "Encounter service type (timepoint)"
+      }
+    }
+  }
+}

@@ -15,7 +15,7 @@ export function renderStudyOverview(container) {
         <p style="color:var(--cdisc-gray); font-size:13px; margin-top:4px;">${study.identifiers.map(i => i.text).join(' | ')}</p>
       </div>
       <button class="btn btn-primary" id="btn-proceed-esap">
-        Proceed to eSAP &rarr;
+        Specify Endpoints &rarr;
       </button>
     </div>
 
@@ -24,12 +24,14 @@ export function renderStudyOverview(container) {
       <button class="tab-btn" data-tab="arms">Arms</button>
       <button class="tab-btn" data-tab="objectives">Objectives & Endpoints</button>
       <button class="tab-btn" data-tab="narrative">Narrative</button>
+      <button class="tab-btn" data-tab="configuration">Configuration</button>
     </div>
 
     <div class="tab-panel active" id="tab-summary">${renderSummary(study)}</div>
     <div class="tab-panel" id="tab-arms">${renderArms(study)}</div>
     <div class="tab-panel" id="tab-objectives">${renderObjectives(study)}</div>
     <div class="tab-panel" id="tab-narrative">${renderNarrative(study)}</div>
+    <div class="tab-panel" id="tab-configuration">${renderConfiguration()}</div>
   `;
 
   // Tab switching
@@ -83,6 +85,7 @@ export function renderStudyOverview(container) {
   });
 
   updateSelectionCount(container);
+  wireConfigurationTab(container);
 }
 
 function updateSelectionCount(container) {
@@ -180,6 +183,130 @@ function renderObjectives(study) {
       </div>
     `).join('')}
   `;
+}
+
+function renderConfiguration() {
+  const mappings = appState.conceptMappings;
+  if (!mappings) {
+    return '<div class="card"><p style="color:var(--cdisc-gray);">Mappings not loaded yet.</p></div>';
+  }
+
+  function renderMappingTable(modelKey, typeKey, typeLabel) {
+    const entries = mappings[modelKey]?.[typeKey] || {};
+    const rows = Object.entries(entries).map(([name, entry]) => `
+      <tr>
+        <td style="font-weight:600; white-space:nowrap;"><code>${name}</code></td>
+        <td><input class="mapping-variable-input" data-model="${modelKey}" data-type="${typeKey}" data-concept="${name}" value="${entry.variable || ''}"></td>
+        <td><input class="mapping-notes-input" data-model="${modelKey}" data-type="${typeKey}" data-concept="${name}" value="${entry.notes || ''}"></td>
+      </tr>
+    `).join('');
+
+    return `
+      <div style="margin-bottom:20px;">
+        <div style="font-weight:600; font-size:12px; margin-bottom:8px; color:var(--cdisc-text);">${typeLabel}</div>
+        <table class="data-table mapping-table">
+          <thead>
+            <tr>
+              <th style="width:180px;">Concept</th>
+              <th style="width:220px;">Variable</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <div class="card-title">Concept-to-Variable Mappings</div>
+        <button class="btn btn-sm btn-secondary" id="reset-mappings-btn">Reset to Defaults</button>
+      </div>
+      <p style="font-size:12px; color:var(--cdisc-gray); margin-bottom:16px; line-height:1.5;">
+        Edit variable names to customize how concepts are displayed when using the model view toggle in the header.
+        Changes take effect immediately when viewing other steps.
+      </p>
+      <div class="config-sub-tabs" id="config-sub-tabs">
+        <button class="active" data-model="adam">ADaM</button>
+        <button data-model="omop">OMOP</button>
+        <button data-model="fhir">FHIR</button>
+      </div>
+      <div id="config-model-adam">
+        ${renderMappingTable('adam', 'concepts', 'Derivation Concepts')}
+        ${renderMappingTable('adam', 'dimensions', 'Dimensional Concepts')}
+      </div>
+      <div id="config-model-omop" style="display:none;">
+        ${renderMappingTable('omop', 'concepts', 'Derivation Concepts')}
+        ${renderMappingTable('omop', 'dimensions', 'Dimensional Concepts')}
+      </div>
+      <div id="config-model-fhir" style="display:none;">
+        ${renderMappingTable('fhir', 'concepts', 'Derivation Concepts')}
+        ${renderMappingTable('fhir', 'dimensions', 'Dimensional Concepts')}
+      </div>
+    </div>
+  `;
+}
+
+function wireConfigurationTab(container) {
+  // Sub-tab switching
+  const modelKeys = ['adam', 'omop', 'fhir'];
+  container.querySelectorAll('#config-sub-tabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('#config-sub-tabs button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const model = btn.dataset.model;
+      modelKeys.forEach(key => {
+        const panel = container.querySelector(`#config-model-${key}`);
+        if (panel) panel.style.display = key === model ? '' : 'none';
+      });
+    });
+  });
+
+  // Variable input changes
+  container.querySelectorAll('.mapping-variable-input').forEach(input => {
+    input.addEventListener('input', () => {
+      const { model, type, concept } = input.dataset;
+      if (appState.conceptMappings?.[model]?.[type]?.[concept]) {
+        appState.conceptMappings[model][type][concept].variable = input.value;
+      }
+    });
+  });
+
+  // Notes input changes
+  container.querySelectorAll('.mapping-notes-input').forEach(input => {
+    input.addEventListener('input', () => {
+      const { model, type, concept } = input.dataset;
+      if (appState.conceptMappings?.[model]?.[type]?.[concept]) {
+        appState.conceptMappings[model][type][concept].notes = input.value;
+      }
+    });
+  });
+
+  // Reset to defaults
+  const resetBtn = container.querySelector('#reset-mappings-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', async () => {
+      try {
+        const basePath = location.pathname.includes('ac-dc-app')
+          ? location.pathname.substring(0, location.pathname.indexOf('ac-dc-app'))
+          : '/';
+        const resp = await fetch(basePath + 'ac-dc-app/data/concept-variable-mappings.json');
+        if (resp.ok) {
+          appState.conceptMappings = await resp.json();
+          // Re-render the configuration tab content
+          const configPanel = container.querySelector('#tab-configuration');
+          if (configPanel) {
+            configPanel.innerHTML = renderConfiguration();
+            wireConfigurationTab(container);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to reset mappings:', e);
+      }
+    });
+  }
 }
 
 function renderNarrative(study) {

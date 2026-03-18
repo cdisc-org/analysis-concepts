@@ -1,0 +1,451 @@
+{
+  "model": "OC",
+  "version": "0.16",
+  "description": "Observation Data Definitions for the CDRM. Value types aligned with FHIR R5 data types.",
+  "fhirAlignment": {
+    "specVersion": "R5 (5.0.0)",
+    "reference": "https://www.hl7.org/fhir/datatypes.html"
+  },
+
+  "valueTypes": {
+    "_note": "FHIR-aligned value type vocabulary. Complex types are used for observation results and data definition valueType. Primitive types are used for method role constraints and statistical concepts.",
+
+    "primitiveTypes": {
+      "decimal": {
+        "fhirType": "decimal",
+        "definition": "Rational numbers — continuous measured values",
+        "usage": "Continuous measurements (AVAL, lab results, scores, durations)"
+      },
+      "integer": {
+        "fhirType": "integer",
+        "definition": "Signed 32-bit integers — discrete counts",
+        "usage": "Discrete counts (event counts, subject counts, ranks)"
+      },
+      "code": {
+        "fhirType": "code",
+        "definition": "String value from a defined value set",
+        "usage": "Categorical values (treatment arms, visit names, severity grades)"
+      },
+      "string": {
+        "fhirType": "string",
+        "definition": "Unicode text — free-text values",
+        "usage": "Free-text values, verbatim terms, comments"
+      },
+      "boolean": {
+        "fhirType": "boolean",
+        "definition": "true | false",
+        "usage": "Event indicators, population flags, completion flags"
+      },
+      "date": {
+        "fhirType": "date",
+        "definition": "Date (YYYY-MM-DD)",
+        "usage": "Analysis dates, event dates"
+      },
+      "dateTime": {
+        "fhirType": "dateTime",
+        "definition": "Date + time + timezone",
+        "usage": "Precise timestamps, collection times"
+      },
+      "id": {
+        "fhirType": "id",
+        "definition": "Resource identifier",
+        "usage": "Subject identifiers, record identifiers"
+      }
+    },
+
+    "complexTypes": {
+      "Quantity": {
+        "fhirType": "Quantity",
+        "definition": "Measured amount with unit of measurement",
+        "usage": "Numeric clinical values — measurements, scores, durations, concentrations",
+        "components": {
+          "value": { "type": "decimal or integer" },
+          "unit": { "type": "string" },
+          "system": { "type": "string", "note": "Unit coding system (e.g. UCUM)" },
+          "code": { "type": "code", "note": "Coded unit" }
+        },
+        "compatiblePrimitives": ["decimal", "integer"]
+      },
+      "CodeableConcept": {
+        "fhirType": "CodeableConcept",
+        "definition": "Concept defined by one or more code systems",
+        "usage": "Categorical clinical values — coded responses, treatment arms, severity grades",
+        "components": {
+          "coding": { "type": "array of {system, code, display}" },
+          "text": { "type": "string", "note": "Plain text representation" }
+        },
+        "compatiblePrimitives": ["code"]
+      },
+      "Identifier": {
+        "fhirType": "Identifier",
+        "definition": "Entity identifier with system context",
+        "usage": "Subject and record identifiers",
+        "components": {
+          "system": { "type": "string" },
+          "value": { "type": "id" }
+        },
+        "compatiblePrimitives": ["id"]
+      }
+    }
+  },
+
+  "Observation": {
+    "definition": "A single collected fact about a subject. The atomic unit of clinical data collection.",
+    "instanceStructure": {
+      "Identification": {
+        "definition": "The identity of what is being observed",
+        "cardinality": "1",
+        "relationship": "hasIdentification",
+        "dataDefinitions": {
+          "Topic": {
+            "definition": "Core subject matter: reported term, test code, or treatment name",
+            "valueType": "CodeableConcept",
+            "cardinality": "1",
+            "relationship": "hasTopic",
+            "dataDefinitions": {
+              "DictionaryCoding": {
+                "definition": "Hierarchical coded-term mapping (MedDRA, WHODrug)",
+                "valueType": "CodeableConcept",
+                "cardinality": "0..1",
+                "relationship": "codedBy",
+                "dataDefinitions": {
+                  "PreferredTerm": {
+                    "definition": "Standardised term from coding dictionary",
+                    "valueType": "CodeableConcept",
+                    "cardinality": "1",
+                    "relationship": "hasPreferredTerm"
+                  },
+                  "HierarchyLevel": {
+                    "definition": "Level in dictionary tree (SOC, HLT, PT, LLT)",
+                    "valueType": "CodeableConcept",
+                    "cardinality": "1..*",
+                    "relationship": "hasLevels"
+                  }
+                }
+              }
+            }
+          },
+          "ObservationCategory": {
+            "definition": "Grouping of related observations (e.g. lab category, AE category)",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasCategory"
+          },
+          "Sequence": {
+            "definition": "Ordinal position distinguishing multiple records of same topic",
+            "valueType": "integer",
+            "cardinality": "0..1",
+            "relationship": "hasSequence"
+          }
+        }
+      },
+      "Result": {
+        "definition": "The observed outcome: a value with optional unit, qualified by range or limit",
+        "cardinality": "0..1",
+        "relationship": "hasResult",
+        "dataDefinitions": {
+          "Value": {
+            "definition": "The actual data content. Type depends on what is being observed.",
+            "cardinality": "1",
+            "relationship": "hasValue",
+            "valueType": "Quantity | CodeableConcept | boolean | string",
+            "_note": "The valueType determines physical representation: Quantity → numeric (AVAL/--STRESN), CodeableConcept/string → character (AVALC/--STRESC). SDTM unit standardisation (--ORRES → --STRESN) is a data pipeline concern, not a concept qualifier. Quantity for numeric measurements (SBP = 120 mmHg), CodeableConcept for coded responses (severity = MODERATE), boolean for binary results (positive/negative), string for free text."
+          },
+          "Unit": {
+            "definition": "Unit of measurement for this result",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasUnit",
+            "_note": "Part of Quantity when using FHIR complex type. Separated here because collected unit and standardised unit may differ."
+          },
+          "NormalRange": {
+            "definition": "Expected range for healthy individuals",
+            "cardinality": "0..1",
+            "relationship": "hasNormalRange",
+            "dataDefinitions": {
+              "Low": { "valueType": "Quantity", "cardinality": "0..1" },
+              "High": { "valueType": "Quantity", "cardinality": "0..1" }
+            }
+          },
+          "QuantitationLimit": {
+            "definition": "Detection/quantitation limit boundary",
+            "valueType": "Quantity",
+            "cardinality": "0..1",
+            "relationship": "hasQuantitationLimit"
+          }
+        }
+      },
+      "CollectionMethod": {
+        "definition": "Instrument or technique used to collect data",
+        "valueType": "CodeableConcept",
+        "cardinality": "0..1",
+        "relationship": "collectedVia"
+      },
+      "Location": {
+        "definition": "Anatomical site of observation",
+        "valueType": "CodeableConcept",
+        "cardinality": "0..1",
+        "relationship": "atLocation",
+        "dataDefinitions": {
+          "Laterality": {
+            "definition": "Left, right, bilateral",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasLaterality"
+          }
+        }
+      },
+      "Specimen": {
+        "definition": "Biological material collected for testing",
+        "valueType": "CodeableConcept",
+        "cardinality": "0..1",
+        "relationship": "hasSpecimen"
+      },
+      "Evaluator": {
+        "definition": "Person who performed a subjective assessment",
+        "valueType": "CodeableConcept",
+        "cardinality": "0..1",
+        "relationship": "assessedBy"
+      },
+      "CompletionStatus": {
+        "definition": "Whether observation was completed",
+        "valueType": "CodeableConcept",
+        "cardinality": "0..1",
+        "relationship": "hasStatus"
+      },
+      "Comment": {
+        "definition": "Free-text annotation",
+        "valueType": "string",
+        "cardinality": "0..*",
+        "relationship": "hasComment"
+      },
+      "GenomicContext": {
+        "definition": "Chromosome, gene, variant, sequence IDs",
+        "cardinality": "0..1",
+        "relationship": "hasGenomicContext",
+        "dataDefinitions": {
+          "Gene": { "valueType": "CodeableConcept", "cardinality": "0..1" },
+          "Variant": { "valueType": "CodeableConcept", "cardinality": "0..1" },
+          "Chromosome": { "valueType": "CodeableConcept", "cardinality": "0..1" }
+        }
+      }
+    },
+
+    "sharedDimensions": {
+      "Subject": {
+        "valueType": "Identifier",
+        "relationship": "aboutSubject",
+        "cardinality": "1"
+      },
+      "Study": {
+        "valueType": "Identifier",
+        "relationship": "withinStudy",
+        "cardinality": "1"
+      },
+      "Visit": {
+        "valueType": "CodeableConcept",
+        "relationship": "atVisit",
+        "cardinality": "0..1",
+        "qualifiers": {
+          "type": "DerivationStatus",
+          "values": {
+            "Protocol": "Protocol-defined visit label",
+            "Analysis": "Derived analysis visit (from windowing)"
+          }
+        }
+      },
+      "Timepoint": {
+        "valueType": "CodeableConcept",
+        "relationship": "atTimepoint",
+        "cardinality": "0..1"
+      },
+      "Timing": {
+        "relationship": "hasTiming",
+        "cardinality": "1",
+        "dataDefinitions": {
+          "StartDate": { "valueType": "dateTime", "cardinality": "1" },
+          "EndDate": { "valueType": "dateTime", "cardinality": "0..1" },
+          "Duration": { "valueType": "Quantity", "cardinality": "0..1", "_note": "Derived from start/end" },
+          "StudyDay": {
+            "valueType": "integer",
+            "cardinality": "0..1",
+            "qualifiers": {
+              "type": "ReferenceFrame",
+              "values": {
+                "Relative": "Day relative to reference event (maps to --DY, ADY)",
+                "Absolute": "Calendar date (maps to --DTC, ADT)"
+              }
+            }
+          }
+        }
+      },
+      "Treatment": {
+        "valueType": "CodeableConcept",
+        "relationship": "receivedTreatment",
+        "cardinality": "0..1",
+        "qualifiers": {
+          "type": "IntentType",
+          "values": {
+            "Planned": "Treatment assigned at randomisation",
+            "Actual": "Treatment actually received"
+          }
+        }
+      },
+      "Population": {
+        "valueType": "CodeableConcept",
+        "relationship": "inPopulation",
+        "cardinality": "0..*"
+      },
+      "Site": {
+        "valueType": "Identifier",
+        "relationship": "atSite",
+        "cardinality": "0..1"
+      }
+    },
+
+    "observationCategories": {
+      "EventObservation": {
+        "definition": "Observation about a clinical event (adverse event, medical history)",
+        "isA": "Observation",
+        "additionalDefinitions": {
+          "Severity": {
+            "definition": "Intensity of adverse event (mild/moderate/severe)",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasSeverity",
+            "dataDefinitions": {
+              "ToxicityGrade": {
+                "definition": "Standardised grade (e.g. CTCAE 1-5)",
+                "valueType": "integer",
+                "cardinality": "0..1",
+                "relationship": "gradedAs"
+              }
+            }
+          },
+          "Causality": {
+            "definition": "Relationship of event to study treatment",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasCausality"
+          },
+          "Outcome": {
+            "definition": "How event resolved (recovered, ongoing, fatal)",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasOutcome"
+          },
+          "SeriousnessCriteria": {
+            "definition": "SAE criteria: death, hospitalisation, disability",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasSeriousness"
+          },
+          "ActionTaken": {
+            "definition": "Action with study treatment due to event",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasAction"
+          }
+        }
+      },
+      "InterventionObservation": {
+        "definition": "Observation about a treatment or medication",
+        "isA": "Observation",
+        "additionalDefinitions": {
+          "Dose": {
+            "definition": "Amount of treatment administered",
+            "valueType": "Quantity",
+            "cardinality": "0..1",
+            "relationship": "hasDose",
+            "dataDefinitions": {
+              "DoseForm": {
+                "definition": "Physical form (tablet, injection)",
+                "valueType": "CodeableConcept",
+                "cardinality": "0..1",
+                "relationship": "inForm"
+              },
+              "Frequency": {
+                "definition": "How often administered (QD, BID)",
+                "valueType": "CodeableConcept",
+                "cardinality": "0..1",
+                "relationship": "atFrequency"
+              }
+            }
+          },
+          "Route": {
+            "definition": "Route of administration (oral, IV)",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasRoute"
+          },
+          "Indication": {
+            "definition": "Reason for the treatment/medication",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasIndication"
+          }
+        }
+      },
+      "FindingObservation": {
+        "definition": "Observation about a clinical finding (lab result, vital sign, ECG)",
+        "isA": "Observation",
+        "_note": "Uses base observation structure — no additional definitions needed"
+      },
+      "FindingAboutObservation": {
+        "definition": "Observation describing an attribute of another observation",
+        "isA": "Observation",
+        "additionalDefinitions": {
+          "ObjectOfObservation": {
+            "definition": "The event or intervention being described",
+            "valueType": "Identifier",
+            "cardinality": "1",
+            "relationship": "about"
+          }
+        }
+      }
+    }
+  },
+
+  "valueTypeUsageByLayer": {
+    "_note": "How different layers of the CRAFT framework use the value type vocabulary",
+    "observationDataDefinitions": {
+      "level": "complexTypes",
+      "examples": {
+        "Result.Value": "Quantity (for numeric) or CodeableConcept (for coded)",
+        "Topic": "CodeableConcept",
+        "Subject": "Identifier",
+        "Dose": "Quantity",
+        "Severity": "CodeableConcept"
+      }
+    },
+    "derivationDataDefinitions": {
+      "level": "complexTypes",
+      "examples": {
+        "Change": "Quantity (numeric, unit inherited)",
+        "Flag": "boolean",
+        "Category": "CodeableConcept",
+        "Measure": "Quantity | CodeableConcept",
+        "TimeToEvent": "Quantity (time unit)"
+      }
+    },
+    "analysisDataDefinitions": {
+      "level": "primitiveTypes",
+      "examples": {
+        "Estimate": "decimal",
+        "PValue": "decimal",
+        "SE": "decimal",
+        "DF": "decimal",
+        "NRisk": "integer",
+        "NEvent": "integer"
+      }
+    },
+    "methodRoleConstraints": {
+      "level": "primitiveTypes or complexTypes",
+      "examples": {
+        "M.MMRM.response": "Quantity (requires numeric input)",
+        "M.ChiSquareTest.variable": "CodeableConcept (requires categorical input)",
+        "M.LogRankTest.event": "boolean (requires event indicator)"
+      }
+    }
+  }
+}

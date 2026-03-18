@@ -1,4 +1,5 @@
 import { appState, navigateTo } from '../app.js';
+import { setActiveStudy } from '../data-loader.js';
 
 export function renderStudySelect(container) {
   const studies = appState.studies;
@@ -24,6 +25,8 @@ export function renderStudySelect(container) {
       appState.selectedStudy = appState.studies[idx];
       appState.selectedEndpoints = [];
       appState.esapAnalyses = {};
+      // Update rawUsdm and usdmIndex for the selected study
+      setActiveStudy(appState, idx);
       navigateTo(2);
     });
   });
@@ -75,15 +78,15 @@ function renderComingSoonCard() {
     <div class="card coming-soon">
       <div class="card-header">
         <div>
-          <div class="card-title">Study 2</div>
-          <div class="card-subtitle">Additional USDM study</div>
+          <div class="card-title">Breast Cancer Study</div>
+          <div class="card-subtitle">Oncology USDM study</div>
         </div>
       </div>
       <div class="study-card-meta">
         <span class="badge badge-blue">TBD</span>
       </div>
       <p style="margin-top:12px; font-size:12px; color:var(--cdisc-text-secondary);">
-        A second study will be available in a future update.
+        A breast cancer study will be available in a future update.
       </p>
       <div class="study-card-stats">
         <div class="stat-item"><div class="stat-value">-</div><div class="stat-label">Arms</div></div>

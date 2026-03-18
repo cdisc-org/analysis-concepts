@@ -21,39 +21,70 @@ async function fetchJSON(path) {
 }
 
 export async function loadAllData(state) {
-  // Load all data sources in parallel
+  // Load study manifest and all other data sources in parallel
   const [
-    usdm,
+    studyManifest,
     acModel,
     dcModel,
     transformationLibrary,
     methodsIndex,
     statisticsVocabulary,
-    outputClassTemplates
+    outputClassTemplates,
+    conceptVariableMappings,
+    qualifierTypes,
+    ocModel,
+    ocBcMapping
   ] = await Promise.all([
-    fetchJSON('ac-dc-app/data/CDISC_Pilot_Study_usdm.json'),
+    fetchJSON('ac-dc-app/data/usdm/studies.json'),
     fetchJSON('model/concept/AC_Concept_Model_v016.json'),
     fetchJSON('model/concept/Option_D_Clinical_with_Dimensions.json'),
     fetchJSON('lib/transformations/ACDC_Transformation_Library_v06.json'),
     fetchJSON('lib/methods/_index.json'),
     fetchJSON('model/method/statistics_vocabulary.json'),
-    fetchJSON('model/method/output_class_templates.json')
+    fetchJSON('model/method/output_class_templates.json'),
+    fetchJSON('ac-dc-app/data/concept-variable-mappings.json'),
+    fetchJSON('model/concept/CDDM_Shared_QualifierTypes.json'),
+    fetchJSON('model/concept/OC_Instance_Model_v016.json'),
+    fetchJSON('model/shared/oc_bc_property_mapping.json')
   ]);
 
-  // Store raw USDM and build index for reference resolution
-  state.rawUsdm = usdm;
-  state.usdmIndex = buildUsdmIndex(usdm);
+  // Load all USDM study files in parallel
+  const usdmFiles = await Promise.all(
+    studyManifest.map(entry =>
+      fetchJSON(`ac-dc-app/data/usdm/${entry.file}`)
+    )
+  );
 
-  // Parse USDM into a simplified study object
-  const parsedStudy = parseUSDM(usdm);
+  // Parse each USDM into a study object and store raw data
+  state.rawUsdmFiles = usdmFiles;
+  state.studies = usdmFiles.map(usdm => parseUSDM(usdm));
 
-  state.studies = [parsedStudy];
+  // Set first study as default for backward compat (rawUsdm/usdmIndex)
+  state.rawUsdm = usdmFiles[0];
+  state.usdmIndex = buildUsdmIndex(usdmFiles[0]);
+
   state.acModel = acModel;
   state.dcModel = dcModel;
   state.transformationLibrary = transformationLibrary;
   state.methodsIndex = methodsIndex;
   state.statisticsVocabulary = statisticsVocabulary;
   state.outputClassTemplates = outputClassTemplates;
+  // Deep-clone so user edits don't mutate the original
+  state.conceptMappings = JSON.parse(JSON.stringify(conceptVariableMappings));
+  state.qualifierTypes = qualifierTypes;
+  state.ocModel = ocModel;
+  state.ocBcMapping = ocBcMapping;
+}
+
+/**
+ * Set the active study by index. Updates rawUsdm and usdmIndex
+ * so that reference resolution and narrative views work correctly.
+ */
+export function setActiveStudy(state, index) {
+  if (state.rawUsdmFiles && state.rawUsdmFiles[index]) {
+    state.rawUsdm = state.rawUsdmFiles[index];
+    state.usdmIndex = buildUsdmIndex(state.rawUsdmFiles[index]);
+  }
 }
 
 export async function loadMethod(state, methodOid) {

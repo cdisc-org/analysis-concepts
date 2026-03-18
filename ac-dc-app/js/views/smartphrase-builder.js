@@ -1,11 +1,27 @@
 import { appState, navigateTo } from '../app.js';
-import { getAllEndpoints, getVisitLabels, getPopulationNames, getArmNames } from '../utils/usdm-parser.js';
+import { getAllEndpoints, getPopulationNames, getEndpointParameterOptions } from '../utils/usdm-parser.js';
 import {
-  groupPhrasesByRole, getRoleLabel, resolvePhrase,
-  composeFullSentence, findMatchingTransformations
+  groupPhrasesByRole, getRoleLabel,
+  findMatchingTransformations,
+  deriveImplicitPhraseOids, ENDPOINT_CONTEXT_ROLES
 } from '../utils/phrase-engine.js';
+import { buildSyntaxTemplate, buildSyntaxTemplatePlainText } from './endpoint-spec.js';
 
-let draggedOid = null;
+/**
+ * Get the current endpoint spec for the active endpoint, if any.
+ */
+function getActiveEndpointSpec() {
+  const epId = appState.currentEndpointId;
+  return epId ? appState.endpointSpecs?.[epId] : null;
+}
+
+/**
+ * Determine if the endpoint spec is sufficiently populated to drive implicit OIDs.
+ */
+function hasEndpointSpec() {
+  const spec = getActiveEndpointSpec();
+  return !!spec?.conceptCategory;
+}
 
 export function renderSmartPhraseBuilder(container) {
   const study = appState.selectedStudy;
@@ -13,16 +29,50 @@ export function renderSmartPhraseBuilder(container) {
   if (!study || !lib) { navigateTo(1); return; }
 
   const currentEp = getAllEndpoints(study).find(ep => ep.id === appState.currentEndpointId);
-  if (!currentEp) { navigateTo(3); return; }
+  if (!currentEp) { navigateTo(4); return; }
 
+  const epSpec = getActiveEndpointSpec();
+  const specActive = hasEndpointSpec();
+
+  // Pre-select transformation from endpoint spec (Step 3 → Step 5 flow)
+  if (epSpec?.selectedTransformationOid && !appState.selectedTransformation) {
+    const transforms = lib.analysisTransformations || [];
+    const preSelected = transforms.find(t => t.oid === epSpec.selectedTransformationOid);
+    if (preSelected) {
+      appState.selectedTransformation = preSelected;
+    }
+  }
+
+  // Compute implicit OIDs from endpoint spec
+  const implicitOids = specActive ? deriveImplicitPhraseOids(epSpec, lib.smartPhrases) : [];
+
+  // Build syntax template text for preview
+  const syntaxTemplate = specActive ? buildSyntaxTemplate(currentEp, epSpec, study) : null;
+  const syntaxPlainText = specActive ? buildSyntaxTemplatePlainText(currentEp, epSpec, study) : '';
+
+  // Filter palette: when endpoint spec is active, hide endpoint-context roles
   const groupedPhrases = groupPhrasesByRole(lib.smartPhrases);
+  const selectedOids = new Set(appState.composedPhrases.map(e => e.oid));
+
+  // Determine which palette groups to show
+  const filteredGroups = {};
+  for (const [role, phrases] of Object.entries(groupedPhrases)) {
+    if (specActive && ENDPOINT_CONTEXT_ROLES.has(role)) {
+      // Skip endpoint-context roles when spec is active
+      // Exception: SP_STRATIFICATION has role 'grouping' but empty references — keep it
+      const kept = phrases.filter(sp => sp.oid === 'SP_STRATIFICATION');
+      if (kept.length > 0) filteredGroups[role] = kept;
+      continue;
+    }
+    filteredGroups[role] = phrases;
+  }
 
   container.innerHTML = `
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
       <div>
         <h2 style="font-size:18px; font-weight:700;">SmartPhrase Builder</h2>
         <p style="color:var(--cdisc-gray); font-size:13px; margin-top:4px;">
-          Composing analysis for <strong>${currentEp.name}</strong>: ${currentEp.text || ''}
+          Composing analysis for <strong>${currentEp.name}</strong>${epSpec?.conceptCategory ? ` [${epSpec.conceptCategory}]` : ''}: ${currentEp.text || ''}
         </p>
       </div>
       <div style="display:flex; gap:8px;">
@@ -36,14 +86,25 @@ export function renderSmartPhraseBuilder(container) {
     <div class="sp-layout">
       <!-- Left: Phrase Palette -->
       <div class="sp-palette card">
-        <div class="card-title" style="margin-bottom:16px; font-size:14px;">SmartPhrases</div>
-        <p style="font-size:11px; color:var(--cdisc-gray); margin-bottom:16px;">Drag phrases to the composition area to build an analysis description.</p>
-        ${Object.entries(groupedPhrases).map(([role, phrases]) => `
+        ${specActive ? `
+          <div class="card-title" style="margin-bottom:12px; font-size:14px;">Analysis Method</div>
+          <p style="font-size:11px; color:var(--cdisc-gray); margin-bottom:16px;">
+            Endpoint context is provided by Step 3. Select the statistical method and qualifiers below.
+          </p>
+        ` : `
+          <div class="card-title" style="margin-bottom:16px; font-size:14px;">SmartPhrases</div>
+          <div style="padding:8px 12px; background:#FEF3C7; border:1px solid #F59E0B; border-radius:var(--radius); margin-bottom:16px; font-size:11px; color:#92400E;">
+            No endpoint spec found. Complete Step 3 (Endpoint Specification) for a streamlined experience.
+            All phrase roles are shown below.
+          </div>
+          <p style="font-size:11px; color:var(--cdisc-gray); margin-bottom:16px;">Click phrases to select or deselect them for your analysis description.</p>
+        `}
+        ${Object.entries(filteredGroups).map(([role, phrases]) => `
           <div class="sp-palette-group">
             <div class="sp-palette-group-title">${getRoleLabel(role)}</div>
             <div style="display:flex; flex-wrap:wrap;">
               ${phrases.map(sp => `
-                <div class="phrase-chip" data-role="${sp.role}" data-oid="${sp.oid}" draggable="true">
+                <div class="phrase-chip ${selectedOids.has(sp.oid) ? 'selected' : ''}" data-role="${sp.role}" data-oid="${sp.oid}">
                   ${sp.name}
                 </div>
               `).join('')}
@@ -54,11 +115,30 @@ export function renderSmartPhraseBuilder(container) {
 
       <!-- Right: Composition Area -->
       <div>
+        ${specActive && syntaxTemplate ? `
+        <!-- Endpoint Context (read-only, from Step 3) -->
+        <div class="card" style="margin-bottom:16px; border-left:3px solid var(--cdisc-teal);">
+          <div class="card-title" style="margin-bottom:8px; font-size:14px; display:flex; align-items:center; gap:8px;">
+            Endpoint Context
+            <span class="badge badge-teal" style="font-size:10px;">from Step 3</span>
+          </div>
+          <div class="ep-syntax-resolved" style="font-size:13px; line-height:1.8;">${syntaxTemplate.resolved}</div>
+          ${implicitOids.length > 0 ? `
+            <div style="margin-top:8px; font-size:11px; color:var(--cdisc-gray);">
+              Implicit phrases: ${implicitOids.map(oid => {
+                const sp = lib.smartPhrases.find(p => p.oid === oid);
+                return sp ? `<span class="badge badge-secondary" style="font-size:10px;">${sp.name}</span>` : oid;
+              }).join(' ')}
+            </div>
+          ` : ''}
+        </div>
+        ` : ''}
+
         <div class="card" style="margin-bottom:16px;">
-          <div class="card-title" style="margin-bottom:12px; font-size:14px;">Composition Area</div>
+          <div class="card-title" style="margin-bottom:12px; font-size:14px;">Selected Method Phrases</div>
           <div class="drop-zone" id="drop-zone">
             ${appState.composedPhrases.length === 0
-              ? '<span class="drop-zone-placeholder">Drop SmartPhrases here to compose your analysis description...</span>'
+              ? `<span class="drop-zone-placeholder">${specActive ? 'Select method and qualifier phrases from the left...' : 'Click SmartPhrases on the left to build your analysis description...'}</span>`
               : ''
             }
           </div>
@@ -87,79 +167,56 @@ export function renderSmartPhraseBuilder(container) {
     </div>
   `;
 
-  // Initialize existing phrases in the drop zone
+  // Initialize existing phrases in the composition display
   renderDropZoneContents();
   renderConfigFields();
   updatePreview();
+  findMatches();
 
-  // Drag from palette
+  // Click to toggle selection
   container.querySelectorAll('.sp-palette .phrase-chip').forEach(chip => {
-    chip.addEventListener('dragstart', (e) => {
-      draggedOid = chip.dataset.oid;
-      chip.classList.add('dragging');
-      e.dataTransfer.setData('text/plain', chip.dataset.oid);
-      e.dataTransfer.effectAllowed = 'copy';
-    });
-    chip.addEventListener('dragend', () => {
-      chip.classList.remove('dragging');
-      draggedOid = null;
-    });
-    // Click to add
     chip.addEventListener('click', () => {
-      addPhrase(chip.dataset.oid);
+      togglePhrase(chip.dataset.oid);
     });
-  });
-
-  // Drop zone
-  const dropZone = container.querySelector('#drop-zone');
-  dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-    dropZone.classList.add('drag-over');
-  });
-  dropZone.addEventListener('dragleave', () => {
-    dropZone.classList.remove('drag-over');
-  });
-  dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('drag-over');
-    const oid = e.dataTransfer.getData('text/plain');
-    if (oid) addPhrase(oid);
   });
 
   // Navigation
-  container.querySelector('#btn-back-esap').addEventListener('click', () => navigateTo(3));
+  container.querySelector('#btn-back-esap').addEventListener('click', () => navigateTo(4));
   container.querySelector('#btn-proceed-transform').addEventListener('click', () => {
     if (appState.matchedTransformations.length > 0) {
       if (!appState.selectedTransformation) {
         appState.selectedTransformation = appState.matchedTransformations[0];
       }
-      navigateTo(5);
+      navigateTo(6);
     }
   });
 }
 
-function addPhrase(oid) {
-  const lib = appState.transformationLibrary;
-  const sp = lib.smartPhrases.find(p => p.oid === oid);
-  if (!sp) return;
-
-  // Create default config
-  const config = {};
-  for (const key of sp.configurations) {
-    config[key] = getDefaultConfigValue(key);
+function togglePhrase(oid) {
+  const existingIndex = appState.composedPhrases.findIndex(e => e.oid === oid);
+  if (existingIndex >= 0) {
+    // Deselect: remove from composed phrases
+    appState.composedPhrases.splice(existingIndex, 1);
+  } else {
+    // Select: add with default config
+    const lib = appState.transformationLibrary;
+    const sp = lib.smartPhrases.find(p => p.oid === oid);
+    if (!sp) return;
+    const config = {};
+    for (const key of sp.configurations) {
+      config[key] = getDefaultConfigValue(key);
+    }
+    appState.composedPhrases.push({ oid, config });
   }
-
-  appState.composedPhrases.push({ oid, config });
-
-  renderDropZoneContents();
-  renderConfigFields();
-  updatePreview();
-  findMatches();
+  refreshAll();
 }
 
-function removePhrase(index) {
-  appState.composedPhrases.splice(index, 1);
+function refreshAll() {
+  // Update palette selected state
+  document.querySelectorAll('.sp-palette .phrase-chip').forEach(chip => {
+    const isSelected = appState.composedPhrases.some(e => e.oid === chip.dataset.oid);
+    chip.classList.toggle('selected', isSelected);
+  });
   renderDropZoneContents();
   renderConfigFields();
   updatePreview();
@@ -168,17 +225,18 @@ function removePhrase(index) {
 
 function getDefaultConfigValue(key) {
   const study = appState.selectedStudy;
-  const currentEp = getAllEndpoints(study).find(ep => ep.id === appState.currentEndpointId);
+  const lib = appState.transformationLibrary;
 
   switch (key) {
-    case 'parameter': return currentEp?.text || currentEp?.name || '';
-    case 'visit': return 'Week 24';
-    case 'population': return '';
-    case 'treatment': return study.arms.map(a => a.name).join(' vs ');
-    case 'conf_level': return '95';
-    case 'imputation': return 'LOCF';
+    case 'conf_level': return lib?.configurationOptions?.conf_level?.default || '95';
+    case 'imputation': return lib?.configurationOptions?.imputation?.default || 'LOCF';
     case 'event': return '';
     case 'strata': return '';
+    case 'parameter': {
+      // Only needed for covariate phrases (e.g. SP_COVARIATE_BASELINE)
+      const opts = getEndpointParameterOptions(study, appState.currentEndpointId, appState.endpointSpecs);
+      return opts[0] || '';
+    }
     default: return '';
   }
 }
@@ -186,27 +244,15 @@ function getDefaultConfigValue(key) {
 function getConfigOptions(key) {
   const study = appState.selectedStudy;
   switch (key) {
-    case 'parameter': {
-      const eps = getAllEndpoints(study);
-      return eps.map(ep => ep.text || ep.name);
+    case 'parameter':
+      return getEndpointParameterOptions(study, appState.currentEndpointId, appState.endpointSpecs);
+    case 'imputation':
+    case 'event':
+    case 'strata':
+    case 'conf_level': {
+      const lib = appState.transformationLibrary;
+      return lib?.configurationOptions?.[key]?.values || [];
     }
-    case 'visit': return getVisitLabels(study);
-    case 'population': return getPopulationNames(study);
-    case 'treatment': {
-      const arms = getArmNames(study);
-      const combos = [];
-      for (let i = 0; i < arms.length; i++) {
-        for (let j = i + 1; j < arms.length; j++) {
-          combos.push(`${arms[i]} vs ${arms[j]}`);
-        }
-      }
-      combos.push(arms.join(' vs '));
-      return combos;
-    }
-    case 'conf_level': return ['90', '95', '97.5', '99'];
-    case 'imputation': return ['LOCF', 'BOCF', 'WOCF', 'Mean', 'Median', 'MMRM (implicit)'];
-    case 'event': return ['death', 'discontinuation', 'first AE', 'disease progression'];
-    case 'strata': return ['site', 'region', 'baseline severity'];
     default: return [];
   }
 }
@@ -215,27 +261,28 @@ function renderDropZoneContents() {
   const dropZone = document.getElementById('drop-zone');
   if (!dropZone) return;
   const lib = appState.transformationLibrary;
+  const specActive = hasEndpointSpec();
 
   if (appState.composedPhrases.length === 0) {
-    dropZone.innerHTML = '<span class="drop-zone-placeholder">Drop SmartPhrases here to compose your analysis description...</span>';
+    dropZone.innerHTML = `<span class="drop-zone-placeholder">${specActive ? 'Select method and qualifier phrases from the left...' : 'Click SmartPhrases on the left to build your analysis description...'}</span>`;
     return;
   }
 
   dropZone.innerHTML = appState.composedPhrases.map((entry, i) => {
     const sp = lib.smartPhrases.find(p => p.oid === entry.oid);
     return `
-      <div class="phrase-chip" data-role="${sp.role}" data-index="${i}">
+      <div class="phrase-chip" data-role="${sp.role}" data-oid="${entry.oid}">
         ${sp.name}
-        <span class="chip-remove" data-index="${i}">&times;</span>
+        <span class="chip-remove" data-oid="${entry.oid}">&times;</span>
       </div>
     `;
   }).join('');
 
-  // Remove handlers
+  // Remove handlers (also deselects from palette)
   dropZone.querySelectorAll('.chip-remove').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      removePhrase(parseInt(btn.dataset.index, 10));
+      togglePhrase(btn.dataset.oid);
     });
   });
 }
@@ -312,6 +359,14 @@ function renderConfigFields() {
       for (const idx of indices) {
         appState.composedPhrases[idx].config[key] = value;
       }
+      // Bridge SmartPhrase config values into dimensionalSliceValues
+      if (appState.dimensionalSliceValues) {
+        const sliceKeyMap = { parameter: 'Parameter', visit: 'AnalysisVisit', population: 'Population' };
+        const sliceDim = sliceKeyMap[key];
+        if (sliceDim && sliceDim in appState.dimensionalSliceValues) {
+          appState.dimensionalSliceValues[sliceDim] = value;
+        }
+      }
       updatePreview();
       findMatches();
     };
@@ -325,12 +380,23 @@ function updatePreview() {
   if (!previewEl) return;
 
   const lib = appState.transformationLibrary;
-  if (appState.composedPhrases.length === 0) {
+  const study = appState.selectedStudy;
+  const currentEp = getAllEndpoints(study).find(ep => ep.id === appState.currentEndpointId);
+  const epSpec = getActiveEndpointSpec();
+  const specActive = hasEndpointSpec();
+
+  // Build syntax prefix from endpoint spec
+  const syntaxPrefix = specActive && currentEp
+    ? buildSyntaxTemplatePlainText(currentEp, epSpec, study)
+    : '';
+
+  if (appState.composedPhrases.length === 0 && !syntaxPrefix) {
     previewEl.innerHTML = '<em style="color:var(--cdisc-gray);">Your composed sentence will appear here...</em>';
     return;
   }
 
-  const parts = appState.composedPhrases.map(entry => {
+  // Build method phrase parts with HTML formatting
+  const methodParts = appState.composedPhrases.map(entry => {
     const sp = lib.smartPhrases.find(p => p.oid === entry.oid);
     if (!sp) return '';
     let text = sp.phrase_template;
@@ -339,7 +405,7 @@ function updatePreview() {
       if (val) {
         let displayVal = val;
         if (key === 'population') {
-          const popOptions = getConfigOptions('population');
+          const popOptions = getPopulationNames(study);
           const match = popOptions.find(o => typeof o === 'object' && o.value === val);
           if (match) displayVal = match.label;
         }
@@ -349,15 +415,22 @@ function updatePreview() {
       }
     }
     return text;
-  });
+  }).filter(Boolean);
 
-  previewEl.innerHTML = parts.filter(Boolean).join(' ');
+  const parts = [];
+  if (syntaxPrefix) parts.push(syntaxPrefix);
+  parts.push(...methodParts);
+  previewEl.innerHTML = parts.join(' ') || '<em style="color:var(--cdisc-gray);">Your composed sentence will appear here...</em>';
 }
 
 function findMatches() {
   const lib = appState.transformationLibrary;
+  const epSpec = getActiveEndpointSpec();
+  const specActive = hasEndpointSpec();
+
   const oids = appState.composedPhrases.map(e => e.oid);
-  const matches = findMatchingTransformations(oids, lib);
+  const implicitOids = specActive ? deriveImplicitPhraseOids(epSpec, lib.smartPhrases) : [];
+  const matches = findMatchingTransformations(oids, lib, implicitOids);
   appState.matchedTransformations = matches;
 
   const matchPanel = document.getElementById('match-panel');

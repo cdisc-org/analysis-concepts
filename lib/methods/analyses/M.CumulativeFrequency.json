@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -10,13 +10,15 @@
   "name": "Cumulative Frequency",
   "type": "analysis",
   "class": "Counting",
-  "intent": ["DescriptiveSummary"],
+  "intent": [
+    "DescriptiveSummary"
+  ],
   "codings": [],
   "description": "Computes cumulative frequency and percentage across ordered categories",
   "formula": {
     "notation": "assignment",
-    "default_expression": "result := CUMFREQ(category) OVER (group)",
-    "generic_expression": "result := CUMFREQ(<category>) OVER (<group>*)"
+    "default_expression": "result := CUMFREQ(response) OVER (group)",
+    "generic_expression": "result := CUMFREQ(<response>) OVER (<group>*)"
   },
   "configurations": [],
   "output_specification": {
@@ -25,17 +27,22 @@
         "class": "computed_value",
         "description": "The cumulative frequency and percentage per category per group",
         "cardinality": "per_group",
-        "indexed_by": ["group"],
-        "statistics": ["cumulative_n", "cumulative_pct"]
+        "indexed_by": [
+          "group"
+        ],
+        "statistics": [
+          "cumulative_n",
+          "cumulative_pct"
+        ]
       }
     ]
   },
   "assumptions": [],
   "input_roles": [
     {
-      "name": "category",
+      "name": "response",
       "statisticalRole": "response",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single",
       "description": "The categorical variable to summarize"
@@ -43,7 +50,7 @@
     {
       "name": "group",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": false,
       "cardinality": "single_or_multiple",
       "description": "Optional grouping variable(s)"

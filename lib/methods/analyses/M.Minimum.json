@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -10,7 +10,9 @@
   "name": "Minimum",
   "type": "analysis",
   "class": "Extremes",
-  "intent": ["DescriptiveSummary"],
+  "intent": [
+    "DescriptiveSummary"
+  ],
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
@@ -21,8 +23,8 @@
   "description": "Determines the minimum observed value of a numeric variable",
   "formula": {
     "notation": "assignment",
-    "default_expression": "result := MIN(variable) OVER (group)",
-    "generic_expression": "result := MIN(<variable>) OVER (<group>*)"
+    "default_expression": "result := MIN(response) OVER (group)",
+    "generic_expression": "result := MIN(<response>) OVER (<group>*)"
   },
   "configurations": [],
   "output_specification": {
@@ -31,17 +33,21 @@
         "class": "computed_value",
         "description": "The computed statistic per group",
         "cardinality": "per_group",
-        "indexed_by": ["group"],
-        "statistics": ["min"]
+        "indexed_by": [
+          "group"
+        ],
+        "statistics": [
+          "min"
+        ]
       }
     ]
   },
   "assumptions": [],
   "input_roles": [
     {
-      "name": "variable",
+      "name": "response",
       "statisticalRole": "response",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "The variable to summarize"
@@ -49,7 +55,7 @@
     {
       "name": "group",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": false,
       "cardinality": "single_or_multiple",
       "description": "Optional grouping variable(s)"

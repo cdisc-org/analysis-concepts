@@ -62,7 +62,8 @@ export function parseUSDM(usdm) {
         description: ep.description,
         purpose: ep.purpose,
         level: ep.level?.decode || '',
-        levelCode: ep.level?.code
+        levelCode: ep.level?.code,
+        biomedicalConceptIds: ep.biomedicalConceptIds || []
       }))
     })),
 
@@ -107,6 +108,35 @@ export function parseUSDM(usdm) {
       id: nc.id,
       name: nc.name,
       text: nc.text
+    })),
+
+    // Biomedical Concepts (including properties for OC facet classification)
+    biomedicalConcepts: (design?.biomedicalConcepts || version?.biomedicalConcepts || []).map(bc => ({
+      id: bc.id,
+      name: bc.name,
+      label: bc.label,
+      synonyms: bc.synonyms || [],
+      reference: bc.reference || null,
+      properties: (bc.properties || []).map(p => ({
+        id: p.id,
+        name: p.name,
+        label: p.label,
+        datatype: p.datatype || '',
+        isRequired: p.isRequired,
+        isEnabled: p.isEnabled,
+        code: p.code ? {
+          standardCode: p.code.standardCode ? {
+            code: p.code.standardCode.code,
+            decode: p.code.standardCode.decode,
+            codeSystem: p.code.standardCode.codeSystem
+          } : null
+        } : null,
+        responseCodes: (p.responseCodes || []).map(rc => ({
+          code: rc.code?.code,
+          decode: rc.code?.decode,
+          isEnabled: rc.isEnabled
+        }))
+      }))
     })),
 
     // Document sections (protocol section → narrative content mapping)
@@ -173,4 +203,47 @@ export function getPopulationNames(parsedStudy) {
  */
 export function getArmNames(parsedStudy) {
   return parsedStudy.arms.map(a => a.name);
+}
+
+/**
+ * Get the parameter options for an endpoint, respecting the endpoint spec.
+ * Priority: spec linked BCs → spec manual name → endpoint BCs → endpoint text.
+ */
+export function getEndpointParameterOptions(parsedStudy, endpointId, endpointSpecs) {
+  const spec = endpointSpecs?.[endpointId];
+  if (spec) {
+    // Spec with linked BCs
+    if (spec.linkedBCIds?.length > 0) {
+      const bcIndex = new Map((parsedStudy.biomedicalConcepts || []).map(bc => [bc.id, bc]));
+      const names = spec.linkedBCIds.map(id => bcIndex.get(id)?.name).filter(Boolean);
+      if (names.length > 0) return names;
+    }
+    // Spec with manual parameter name
+    if (spec.parameterName) return [spec.parameterName];
+  }
+  // Fall back to BCs on endpoint
+  const bcs = getBiomedicalConcepts(parsedStudy, endpointId);
+  if (bcs.length > 0) return bcs.map(bc => bc.name);
+  // Last resort: endpoint text
+  const ep = getAllEndpoints(parsedStudy).find(e => e.id === endpointId);
+  return ep ? [ep.text || ep.name] : [];
+}
+
+/**
+ * Get biomedical concepts linked to a specific endpoint.
+ * Falls back to an empty array if the endpoint has no BC references.
+ */
+export function getBiomedicalConcepts(parsedStudy, endpointId) {
+  const endpoint = getAllEndpoints(parsedStudy).find(ep => ep.id === endpointId);
+  if (!endpoint?.biomedicalConceptIds?.length) return [];
+  const bcIndex = new Map((parsedStudy.biomedicalConcepts || []).map(bc => [bc.id, bc]));
+  const bcs = endpoint.biomedicalConceptIds.map(id => bcIndex.get(id)).filter(Boolean);
+  // Deduplicate by name — USDM may have multiple BC instances for different
+  // activities (e.g. supine vs standing vital signs) that share the same name
+  const seen = new Set();
+  return bcs.filter(bc => {
+    if (seen.has(bc.name)) return false;
+    seen.add(bc.name);
+    return true;
+  });
 }

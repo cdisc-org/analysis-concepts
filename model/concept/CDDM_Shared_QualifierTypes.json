@@ -1,0 +1,72 @@
+{
+  "model": "CDDM",
+  "version": "0.1",
+  "description": "Shared qualifier types vocabulary for Clinical Data Definitions Model. Qualifier types represent semantically different versions of a data definition that a transformation binding must choose between. They are NOT different physical representations (like PARAM vs PARAMCD) — they are scientifically different values.",
+  "designPrinciples": [
+    "Qualifiers represent choices that change the scientific meaning, not just the physical encoding",
+    "A transformation binding MUST specify a qualifier value when the data definition has qualifiers",
+    "DC derivation concepts (Change, PeakValue, Flag, etc.) do not have qualifiers — they are outputs, not source selections",
+    "The qualifier is resolved at the transformation layer; the implementation layer maps qualifier values to physical columns"
+  ],
+  "qualifierTypes": {
+    "IntentType": {
+      "definition": "Whether the value reflects planned assignment or actual receipt",
+      "values": {
+        "Planned": "As assigned at randomisation",
+        "Actual": "As actually received/occurred"
+      },
+      "usedBy": ["Treatment", "Period"],
+      "implementationMapping": {
+        "adam": {
+          "Treatment": { "Planned": "TRTP", "Actual": "TRTA" },
+          "Period": { "Planned": "APERIOD (planned)", "Actual": "APERIOD (actual)" }
+        }
+      }
+    },
+    "DerivationStatus": {
+      "definition": "Whether the value is protocol-defined or analysis-derived",
+      "values": {
+        "Protocol": "As defined in the study protocol",
+        "Analysis": "As derived for analysis purposes (e.g., windowed visits)"
+      },
+      "usedBy": ["AnalysisVisit"],
+      "implementationMapping": {
+        "adam": {
+          "AnalysisVisit": { "Protocol": "VISIT", "Analysis": "AVISIT/AVISITN" }
+        }
+      }
+    },
+    "ReferenceFrame": {
+      "definition": "Whether timing is relative to an event or absolute calendar",
+      "values": {
+        "Relative": "Expressed as days/hours from a reference event",
+        "Absolute": "Expressed as a calendar date/time"
+      },
+      "usedBy": ["Timing"],
+      "implementationMapping": {
+        "adam": {
+          "Timing": { "Relative": "ADY", "Absolute": "ADT" }
+        },
+        "sdtm": {
+          "Timing": { "Relative": "--DY", "Absolute": "--DTC" }
+        }
+      }
+    },
+    "BoundaryType": {
+      "definition": "Whether a date marks the start or end of an interval",
+      "values": {
+        "Start": "The beginning of a time interval",
+        "End": "The end of a time interval"
+      },
+      "usedBy": ["Date"],
+      "implementationMapping": {
+        "adam": {
+          "Date": { "Start": "ASTDT", "End": "AENDT" }
+        },
+        "sdtm": {
+          "Date": { "Start": "--STDTC", "End": "--ENDTC" }
+        }
+      }
+    }
+  }
+}

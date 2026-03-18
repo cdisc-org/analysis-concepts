@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -24,7 +24,7 @@
   "description": "Exact test of independence for 2x2 contingency tables. Preferred over chi-squared when expected cell counts are small.",
   "formula": {
     "notation": "wilkinson_rogers",
-    "default_expression": "response ~ group",
+    "default_expression": "response ~ fixed_effect",
     "generic_expression": "<response> ~ <fixed_effect>",
     "notes": "Both variables must be binary for the standard 2x2 Fisher test."
   },
@@ -73,15 +73,15 @@
     {
       "name": "response",
       "statisticalRole": "response",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single",
       "description": "Binary response variable (e.g., responder flag)"
     },
     {
-      "name": "group",
+      "name": "fixed_effect",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single",
       "description": "Treatment grouping variable"

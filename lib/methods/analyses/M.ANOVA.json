@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -23,8 +23,8 @@
   "description": "Analysis of Variance - compares means across multiple groups",
   "formula": {
     "notation": "wilkinson_rogers",
-    "default_expression": "response ~ group",
-    "generic_expression": "<response> ~ <fixed_effect>+",
+    "default_expression": "response ~ fixed_effect",
+    "generic_expression": "<response> ~ <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)*",
     "notes": "One or more factors; interactions can be added with ':' or '*' operator"
   },
   "configurations": [
@@ -49,14 +49,16 @@
         "statistics": [
           "R_squared",
           "AIC"
-        ]
+        ],
+        "indexed_by": null
       },
       {
         "class": "type3_tests",
         "description": "ANOVA table: one row per model term",
         "cardinality": "per_term",
         "indexed_by": [
-          "term"
+          "fixed_effect",
+          "fixed_effect:fixed_effect"
         ],
         "statistics": [
           "SS",
@@ -71,8 +73,7 @@
         "description": "Marginal means per factor level",
         "cardinality": "per_level",
         "indexed_by": [
-          "factor",
-          "level"
+          "fixed_effect"
         ],
         "statistics": [
           "estimate",
@@ -87,7 +88,7 @@
         "description": "Pairwise differences between group means",
         "cardinality": "per_contrast",
         "indexed_by": [
-          "contrast"
+          "fixed_effect"
         ],
         "statistics": [
           "estimate",
@@ -110,15 +111,15 @@
     {
       "name": "response",
       "statisticalRole": "response",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "The response variable"
     },
     {
-      "name": "group",
+      "name": "fixed_effect",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single_or_multiple",
       "description": "Grouping/factor variable(s)"

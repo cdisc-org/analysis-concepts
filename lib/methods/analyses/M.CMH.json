@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -23,7 +23,7 @@
   "description": "Stratified analysis for 2x2xK tables controlling for strata. Tests the null hypothesis of no association between response and group after adjusting for strata.",
   "formula": {
     "notation": "wilkinson_rogers",
-    "default_expression": "response ~ group | strata",
+    "default_expression": "response ~ fixed_effect | strata",
     "generic_expression": "<response> ~ <fixed_effect> | <strata>+",
     "notes": "The '|' denotes stratification. Multiple strata variables produce cross-classified strata."
   },
@@ -76,7 +76,7 @@
           {
             "name": "stratum_specific_odds_ratios",
             "indexed_by": [
-              "stratum"
+              "strata"
             ],
             "description": "Odds ratio within each stratum",
             "statistics": [
@@ -108,15 +108,15 @@
     {
       "name": "response",
       "statisticalRole": "response",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single",
       "description": "Binary response variable"
     },
     {
-      "name": "group",
+      "name": "fixed_effect",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single",
       "description": "Treatment group (binary)"
@@ -124,7 +124,7 @@
     {
       "name": "strata",
       "statisticalRole": "strata",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single_or_multiple",
       "description": "Stratification variable(s)"

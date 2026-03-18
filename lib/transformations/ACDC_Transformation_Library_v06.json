@@ -1,116 +1,209 @@
 {
   "version": "0.6",
   "description": "Transformation library using Option D (clinical naming with dimensional relationships) for DC concepts and AC Concept Model v0.16 for analysis concepts. SmartPhrases compose into human-readable analysis descriptions.",
-
   "$references": {
     "dcConcepts": "Option_D_Clinical_with_Dimensions.json",
     "acConcepts": "AC_Concept_Model_v016.json",
+    "qualifierTypes": "CDDM_Shared_QualifierTypes.json",
     "methods": "Method definitions (M.MMRM, M.LogRankTest, M.Subtraction, etc.)"
   },
-
+  "configurationOptions": {
+    "imputation": {
+      "values": [
+        "LOCF",
+        "BOCF",
+        "WOCF",
+        "Mean",
+        "Median",
+        "MMRM (implicit)"
+      ],
+      "default": "LOCF"
+    },
+    "event": {
+      "values": [
+        "death",
+        "discontinuation",
+        "first AE",
+        "disease progression"
+      ]
+    },
+    "strata": {
+      "values": [
+        "site",
+        "region",
+        "baseline severity"
+      ]
+    },
+    "conf_level": {
+      "values": [
+        "90",
+        "95",
+        "97.5",
+        "99"
+      ],
+      "default": "95"
+    }
+  },
   "smartPhrases": [
     {
       "oid": "SP_CFB_ENDPOINT",
       "name": "Change from baseline endpoint",
       "role": "endpoint",
       "phrase_template": "change from baseline in {parameter}",
-      "configurations": ["parameter"],
-      "references": ["C.Change", "Parameter"]
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "C.Change",
+        "Parameter"
+      ]
     },
     {
       "oid": "SP_PCTCFB_ENDPOINT",
       "name": "Percent change from baseline endpoint",
       "role": "endpoint",
       "phrase_template": "percent change from baseline in {parameter}",
-      "configurations": ["parameter"],
-      "references": ["C.PercentChange", "Parameter"]
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "C.PercentChange",
+        "Parameter"
+      ]
     },
     {
       "oid": "SP_TTE_ENDPOINT",
       "name": "Time-to-event endpoint",
       "role": "endpoint",
       "phrase_template": "time to {event}",
-      "configurations": ["event"],
-      "references": ["C.TimeToEvent"]
+      "configurations": [
+        "event"
+      ],
+      "references": [
+        "C.TimeToEvent"
+      ]
     },
     {
       "oid": "SP_RESPONDER_ENDPOINT",
       "name": "Responder endpoint",
       "role": "endpoint",
       "phrase_template": "proportion of responders in {parameter}",
-      "configurations": ["parameter"],
-      "references": ["C.Flag", "Parameter"]
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "C.Flag",
+        "Parameter"
+      ]
     },
     {
       "oid": "SP_VALUE_ENDPOINT",
       "name": "Analysis value endpoint",
       "role": "endpoint",
       "phrase_template": "{parameter} value",
-      "configurations": ["parameter"],
-      "references": ["C.Measure", "Parameter"]
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "C.Measure",
+        "Parameter"
+      ]
     },
     {
       "oid": "SP_SHIFT_ENDPOINT",
       "name": "Shift endpoint",
       "role": "endpoint",
       "phrase_template": "shift from baseline in {parameter}",
-      "configurations": ["parameter"],
-      "references": ["C.Shift", "Parameter"]
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "C.Shift",
+        "Parameter"
+      ]
     },
     {
       "oid": "SP_PEAK_ENDPOINT",
       "name": "Peak value endpoint",
       "role": "endpoint",
       "phrase_template": "peak {parameter}",
-      "configurations": ["parameter"],
-      "references": ["C.PeakValue", "Parameter"]
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "C.PeakValue",
+        "Parameter"
+      ]
     },
     {
       "oid": "SP_AUC_ENDPOINT",
       "name": "Area under curve endpoint",
       "role": "endpoint",
       "phrase_template": "{parameter} AUC",
-      "configurations": ["parameter"],
-      "references": ["C.AreaUnderCurve", "Parameter"]
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "C.AreaUnderCurve",
+        "Parameter"
+      ]
     },
     {
       "oid": "SP_PARAMETER",
       "name": "Parameter",
       "role": "parameter",
       "phrase_template": "for {parameter}",
-      "configurations": ["parameter"],
-      "references": ["Parameter"]
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "Parameter"
+      ]
     },
     {
       "oid": "SP_TIMEPOINT",
       "name": "Timepoint",
       "role": "timepoint",
       "phrase_template": "at {visit}",
-      "configurations": ["visit"],
-      "references": ["AnalysisVisit"]
+      "configurations": [
+        "visit"
+      ],
+      "references": [
+        "AnalysisVisit"
+      ]
     },
     {
       "oid": "SP_POPULATION",
       "name": "Population",
       "role": "population",
       "phrase_template": "in the {population} population",
-      "configurations": ["population"],
-      "references": ["Population"]
+      "configurations": [
+        "population"
+      ],
+      "references": [
+        "Population"
+      ]
     },
     {
       "oid": "SP_GROUPING",
       "name": "Treatment grouping",
       "role": "grouping",
       "phrase_template": "comparing {treatment} groups",
-      "configurations": ["treatment"],
-      "references": ["Treatment"]
+      "configurations": [
+        "treatment"
+      ],
+      "references": [
+        "Treatment"
+      ]
     },
     {
       "oid": "SP_STRATIFICATION",
       "name": "Stratification",
       "role": "grouping",
       "phrase_template": "stratified by {strata}",
-      "configurations": ["strata"],
+      "configurations": [
+        "strata"
+      ],
       "references": []
     },
     {
@@ -119,7 +212,9 @@
       "role": "method",
       "phrase_template": "using mixed model repeated measures",
       "configurations": [],
-      "references": ["M.MMRM"]
+      "references": [
+        "M.MMRM"
+      ]
     },
     {
       "oid": "SP_METHOD_ANCOVA",
@@ -127,7 +222,9 @@
       "role": "method",
       "phrase_template": "using analysis of covariance",
       "configurations": [],
-      "references": ["M.ANCOVA"]
+      "references": [
+        "M.ANCOVA"
+      ]
     },
     {
       "oid": "SP_METHOD_LOGRANK",
@@ -135,7 +232,9 @@
       "role": "method",
       "phrase_template": "using the log-rank test",
       "configurations": [],
-      "references": ["M.LogRankTest"]
+      "references": [
+        "M.LogRankTest"
+      ]
     },
     {
       "oid": "SP_METHOD_KM",
@@ -143,7 +242,9 @@
       "role": "method",
       "phrase_template": "using Kaplan-Meier estimation",
       "configurations": [],
-      "references": ["M.KaplanMeier"]
+      "references": [
+        "M.KaplanMeier"
+      ]
     },
     {
       "oid": "SP_METHOD_DESCSTATS",
@@ -158,7 +259,9 @@
       "name": "Imputation qualifier",
       "role": "method_qualifier",
       "phrase_template": "with {imputation} imputation for missing data",
-      "configurations": ["imputation"],
+      "configurations": [
+        "imputation"
+      ],
       "references": []
     },
     {
@@ -166,7 +269,9 @@
       "name": "Confidence level qualifier",
       "role": "method_qualifier",
       "phrase_template": "with {conf_level}% confidence intervals",
-      "configurations": ["conf_level"],
+      "configurations": [
+        "conf_level"
+      ],
       "references": []
     },
     {
@@ -174,8 +279,12 @@
       "name": "Baseline covariate",
       "role": "covariate",
       "phrase_template": "adjusting for baseline {parameter}",
-      "configurations": ["parameter"],
-      "references": ["C.Measure"]
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "C.Measure"
+      ]
     },
     {
       "oid": "SP_COVARIATE_SITE",
@@ -186,7 +295,6 @@
       "references": []
     }
   ],
-
   "derivationTransformations": [
     {
       "oid": "T.BaselineSelection",
@@ -202,15 +310,29 @@
       "addedDimensions": {
         "AnalysisVisit": "partition"
       },
-      "inputConcepts": ["C.Measure"],
-      "outputConcept": "C.Flag",
       "methodConfigurations": {
         "selection_rule": "last_non_missing",
         "scope": "pre_treatment",
         "cardinality": "single",
         "reference_event": "first_dose"
       },
-      "validSmartPhrases": []
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "C.Measure",
+          "requiredValueType": null,
+          "note": "RecordSelection operates on records, not values — no value type constraint",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "value"
+        },
+        {
+          "concept": "C.Flag",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "flag"
+        }
+      ]
     },
     {
       "oid": "T.ChangeFromBaseline",
@@ -226,14 +348,45 @@
       "addedDimensions": {
         "AnalysisVisit": "partition"
       },
-      "inputConcepts": ["C.Measure", "C.Measure"],
-      "outputConcept": "C.Change",
-      "methodRoleMapping": {
-        "minuend": "C.Measure (current record)",
-        "subtrahend": "C.Measure (baseline-flagged record)"
-      },
-      "validSmartPhrases": ["SP_CFB_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT", "SP_IMPUTATION"],
-      "composedPhrase": "change from baseline in {parameter} at {visit} with {imputation} imputation for missing data"
+      "validSmartPhrases": [
+        "SP_CFB_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_IMPUTATION"
+      ],
+      "composedPhrase": "change from baseline in {parameter} at {visit} with {imputation} imputation for missing data",
+      "bindings": [
+        {
+          "concept": "C.Measure",
+          "requiredValueType": "Quantity",
+          "note": "Current visit value",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "minuend"
+        },
+        {
+          "concept": "C.Measure",
+          "requiredValueType": "Quantity",
+          "note": "Baseline-flagged record",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "subtrahend",
+          "slice": "baseline"
+        },
+        {
+          "concept": "C.Change",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "difference"
+        }
+      ],
+      "namedSlices": {
+        "baseline": {
+          "fixedDimensions": {
+            "AnalysisVisit": "Baseline"
+          }
+        }
+      }
     },
     {
       "oid": "T.PercentChangeFromBaseline",
@@ -249,9 +402,44 @@
       "addedDimensions": {
         "AnalysisVisit": "partition"
       },
-      "inputConcepts": ["C.Measure", "C.Measure"],
-      "outputConcept": "C.PercentChange",
-      "validSmartPhrases": ["SP_PCTCFB_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT", "SP_IMPUTATION"]
+      "validSmartPhrases": [
+        "SP_PCTCFB_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_IMPUTATION"
+      ],
+      "bindings": [
+        {
+          "concept": "C.Measure",
+          "requiredValueType": "Quantity",
+          "note": "Current visit value",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "pre"
+        },
+        {
+          "concept": "C.Measure",
+          "requiredValueType": "Quantity",
+          "note": "Baseline-flagged record",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "post",
+          "slice": "baseline"
+        },
+        {
+          "concept": "C.PercentChange",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        }
+      ],
+      "namedSlices": {
+        "baseline": {
+          "fixedDimensions": {
+            "AnalysisVisit": "Baseline"
+          }
+        }
+      }
     },
     {
       "oid": "T.ShiftFromBaseline",
@@ -267,9 +455,43 @@
       "addedDimensions": {
         "AnalysisVisit": "partition"
       },
-      "inputConcepts": ["C.Measure", "C.Measure"],
-      "outputConcept": "C.Shift",
-      "validSmartPhrases": ["SP_SHIFT_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT"]
+      "validSmartPhrases": [
+        "SP_SHIFT_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT"
+      ],
+      "bindings": [
+        {
+          "concept": "C.Measure",
+          "requiredValueType": "CodeableConcept",
+          "note": "Current visit categorical value",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "pre"
+        },
+        {
+          "concept": "C.Measure",
+          "requiredValueType": "CodeableConcept",
+          "note": "Baseline categorical value",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "post",
+          "slice": "baseline"
+        },
+        {
+          "concept": "C.Shift",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        }
+      ],
+      "namedSlices": {
+        "baseline": {
+          "fixedDimensions": {
+            "AnalysisVisit": "Baseline"
+          }
+        }
+      }
     },
     {
       "oid": "T.ResponderClassification",
@@ -285,9 +507,28 @@
       "addedDimensions": {
         "AnalysisVisit": "partition"
       },
-      "inputConcepts": ["C.Change"],
-      "outputConcept": "C.Flag",
-      "validSmartPhrases": ["SP_RESPONDER_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT"]
+      "validSmartPhrases": [
+        "SP_RESPONDER_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT"
+      ],
+      "bindings": [
+        {
+          "concept": "C.Change",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "value"
+        },
+        {
+          "concept": "C.Flag",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        }
+      ]
     },
     {
       "oid": "T.LOCF_Imputation",
@@ -303,14 +544,25 @@
       "addedDimensions": {
         "AnalysisVisit": "order"
       },
-      "inputConcepts": ["C.Measure"],
-      "outputConcept": "C.Measure",
-      "methodRoleMapping": {
-        "value": "C.Measure (observed values, may contain missing)",
-        "partition": "Subject, Parameter (inherited dimensions)",
-        "time_order": "AnalysisVisit (ordering dimension)"
-      },
-      "validSmartPhrases": ["SP_IMPUTATION"]
+      "validSmartPhrases": [
+        "SP_IMPUTATION"
+      ],
+      "bindings": [
+        {
+          "concept": "C.Measure",
+          "requiredValueType": null,
+          "note": "LOCF operates on records — value type is pass-through",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "value"
+        },
+        {
+          "concept": "C.Measure",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        }
+      ]
     },
     {
       "oid": "T.VisitWindowing",
@@ -323,12 +575,28 @@
         "Subject": "partition"
       },
       "addedDimensions": {},
-      "inputConcepts": ["Timing"],
-      "outputConcept": "C.Category",
       "methodConfigurations": {
         "window_definitions": "(provided at study instantiation)"
       },
-      "validSmartPhrases": []
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "Timing",
+          "qualifierType": "ReferenceFrame",
+          "qualifierValue": "Relative",
+          "requiredValueType": "Quantity",
+          "note": "Window assignment uses study day (relative timing)",
+          "direction": "input",
+          "dataStructureRole": "dimension",
+          "methodRole": "value"
+        },
+        {
+          "concept": "C.Category",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        }
+      ]
     },
     {
       "oid": "T.PopulationFlag",
@@ -341,9 +609,25 @@
         "Subject": "partition"
       },
       "addedDimensions": {},
-      "inputConcepts": ["C.Measure"],
-      "outputConcept": "C.Flag",
-      "validSmartPhrases": ["SP_POPULATION"]
+      "validSmartPhrases": [
+        "SP_POPULATION"
+      ],
+      "bindings": [
+        {
+          "concept": "C.Measure",
+          "requiredValueType": null,
+          "note": "CriterionEvaluation is criteria-dependent; the concept's valueType determines representation",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "value"
+        },
+        {
+          "concept": "C.Flag",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        }
+      ]
     },
     {
       "oid": "T.PeakConcentration",
@@ -358,9 +642,25 @@
         "Timing": "order"
       },
       "addedDimensions": {},
-      "inputConcepts": ["C.Measure"],
-      "outputConcept": "C.PeakValue",
-      "validSmartPhrases": ["SP_PEAK_ENDPOINT", "SP_PARAMETER"]
+      "validSmartPhrases": [
+        "SP_PEAK_ENDPOINT",
+        "SP_PARAMETER"
+      ],
+      "bindings": [
+        {
+          "concept": "C.Measure",
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "value"
+        },
+        {
+          "concept": "C.PeakValue",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        }
+      ]
     },
     {
       "oid": "T.AUCCalculation",
@@ -375,9 +675,25 @@
         "Timing": "order"
       },
       "addedDimensions": {},
-      "inputConcepts": ["C.Measure"],
-      "outputConcept": "C.AreaUnderCurve",
-      "validSmartPhrases": ["SP_AUC_ENDPOINT", "SP_PARAMETER"]
+      "validSmartPhrases": [
+        "SP_AUC_ENDPOINT",
+        "SP_PARAMETER"
+      ],
+      "bindings": [
+        {
+          "concept": "C.Measure",
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "value"
+        },
+        {
+          "concept": "C.AreaUnderCurve",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        }
+      ]
     },
     {
       "oid": "T.OverallSurvivalTime",
@@ -390,9 +706,27 @@
         "Subject": "partition"
       },
       "addedDimensions": {},
-      "inputConcepts": ["Timing"],
-      "outputConcept": "C.TimeToEvent",
-      "validSmartPhrases": ["SP_TTE_ENDPOINT"]
+      "validSmartPhrases": [
+        "SP_TTE_ENDPOINT"
+      ],
+      "bindings": [
+        {
+          "concept": "Timing",
+          "qualifierType": "ReferenceFrame",
+          "qualifierValue": "Absolute",
+          "requiredValueType": null,
+          "note": "Duration calculation uses absolute dates",
+          "direction": "input",
+          "dataStructureRole": "dimension",
+          "methodRole": "start_date"
+        },
+        {
+          "concept": "C.TimeToEvent",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "duration"
+        }
+      ]
     },
     {
       "oid": "T.DeathEventFlag",
@@ -405,12 +739,158 @@
         "Subject": "partition"
       },
       "addedDimensions": {},
-      "inputConcepts": [],
-      "outputConcept": "C.Flag",
-      "validSmartPhrases": []
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "C.Flag",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        }
+      ]
+    },
+    {
+      "oid": "T.ADAS_ItemMaxScore",
+      "name": "ADAS-Cog Item Max Score",
+      "transformationType": "derivation",
+      "description": "Max possible score for each ADAS-Cog item, used as scaling denominator when items are missing.",
+      "instanceOf": "C.Measure",
+      "usesMethod": "M.Aggregation",
+      "inheritedDimensions": {
+        "Parameter": "partition"
+      },
+      "addedDimensions": {},
+      "methodConfigurations": {
+        "agg_func": "max"
+      },
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "C.Measure",
+          "note": "11 ADAS-Cog item scores",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "value"
+        },
+        {
+          "concept": "C.Measure",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        }
+      ]
+    },
+    {
+      "oid": "T.ADAS_MissingScaleCapacity",
+      "name": "ADAS-Cog Missing Scale Capacity",
+      "transformationType": "derivation",
+      "description": "Sum of max-score capacity of missing items per subject/visit. Scaling factor = 70 / (70 - this value).",
+      "instanceOf": "C.Measure",
+      "usesMethod": "M.Aggregation",
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "AnalysisVisit": "partition"
+      },
+      "addedDimensions": {},
+      "methodConfigurations": {
+        "agg_func": "sum"
+      },
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "C.Measure",
+          "note": "Max scores from T.ADAS_ItemMaxScore, filtered to missing items",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "value"
+        },
+        {
+          "concept": "C.Measure",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        }
+      ]
+    },
+    {
+      "oid": "T.ADAS_ScoreableCheck",
+      "name": "ADAS-Cog Scoreable Check",
+      "transformationType": "derivation",
+      "description": "Flag whether enough items are present to compute total. Requires >= 8 of 11 items.",
+      "instanceOf": "C.Flag",
+      "usesMethod": "M.ThresholdCompare",
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "AnalysisVisit": "partition"
+      },
+      "addedDimensions": {},
+      "methodConfigurations": {
+        "operator": ">=",
+        "true_value": "Y",
+        "false_value": "N"
+      },
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "C.Measure",
+          "note": "Count of non-missing items (M.Aggregation count)",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "value"
+        },
+        {
+          "concept": "C.Flag",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        }
+      ]
+    },
+    {
+      "oid": "T.ADAS_Cog_11_TotalScore",
+      "name": "ADAS-Cog (11) Total Score",
+      "transformationType": "derivation",
+      "description": "total = sum_available / ((70 - missing_capacity) / 70). Missing if scoreable flag = N. Scale: 0-70.",
+      "instanceOf": "C.Measure",
+      "usesMethod": "M.Division",
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint",
+        "AnalysisVisit": "partition"
+      },
+      "addedDimensions": {},
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "C.Measure",
+          "note": "Sum of available item scores (M.Aggregation sum)",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "numerator"
+        },
+        {
+          "concept": "C.Measure",
+          "note": "Scale proportion from T.ADAS_MissingScaleCapacity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "denominator"
+        },
+        {
+          "concept": "C.Flag",
+          "note": "Scoreable flag from T.ADAS_ScoreableCheck",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "filter"
+        },
+        {
+          "concept": "C.Measure",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "quotient"
+        }
+      ]
     }
   ],
-
   "analysisTransformations": [
     {
       "oid": "T.CFB_MMRM_Primary",
@@ -427,22 +907,25 @@
         "model_fit": "FitStatistics",
         "covariance": "CovarianceParameters"
       },
-      "inputBindings": [
-        { "methodRole": "response",  "concept": "C.Change" },
-        { "methodRole": "covariate", "concept": "C.Measure",     "description": "Baseline value" },
-        { "methodRole": "time",      "concept": "AnalysisVisit", "type": "dimensional" },
-        { "methodRole": "group",     "concept": "Treatment",     "type": "dimensional" },
-        { "methodRole": "subject",   "concept": "Subject",       "type": "dimensional" }
-      ],
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint",
+        "AnalysisVisit": "partition"
+      },
       "methodConfigurations": {
         "covariance_structure": "UN",
         "estimation_method": "REML",
         "df_method": "KR"
       },
       "validSmartPhrases": [
-        "SP_CFB_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT",
-        "SP_POPULATION", "SP_GROUPING",
-        "SP_METHOD_MMRM", "SP_IMPUTATION", "SP_CONFIDENCE_LEVEL",
+        "SP_CFB_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
+        "SP_METHOD_MMRM",
+        "SP_IMPUTATION",
+        "SP_CONFIDENCE_LEVEL",
         "SP_COVARIATE_BASELINE"
       ],
       "composedPhrase": "change from baseline in {parameter} at {visit} in the {population} population comparing {treatment} groups using mixed model repeated measures adjusting for baseline {parameter} with {conf_level}% confidence intervals",
@@ -453,13 +936,77 @@
         "treatment": "Drug A vs Placebo",
         "conf_level": 95,
         "resolvedPhrase": "change from baseline in SBP (mmHg) at Week 24 in the ITT population comparing Drug A vs Placebo groups using mixed model repeated measures adjusting for baseline SBP (mmHg) with 95% confidence intervals"
-      }
+      },
+      "bindings": [
+        {
+          "methodRole": "response",
+          "concept": "C.Change",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "covariate",
+          "concept": "C.Measure",
+          "requiredValueType": "Quantity",
+          "description": "Baseline value of the endpoint parameter",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "slice": "baseline"
+        },
+        {
+          "methodRole": "repeated_factor",
+          "concept": "AnalysisVisit",
+          "qualifierType": "DerivationStatus",
+          "qualifierValue": "Analysis",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodRole": "fixed_effect",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodRole": "repeated_subject",
+          "concept": "Subject",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Identifier",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "namedSlices": {
+        "baseline": {
+          "fixedDimensions": {
+            "AnalysisVisit": "Baseline"
+          }
+        }
+      },
+      "sliceKeys": [
+        {
+          "dimension": "Parameter",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "Population",
+          "source": "population"
+        }
+      ]
     },
     {
-      "oid": "T.CFB_ANCOVA_Primary",
-      "name": "Change From Baseline ANCOVA Primary Analysis",
+      "oid": "T.CFB_ANCOVA",
+      "name": "Change From Baseline ANCOVA",
       "transformationType": "analysis",
-      "description": "Primary efficacy analysis: ANCOVA on change from baseline at a specific visit, comparing treatment groups with baseline as covariate.",
+      "description": "ANCOVA on change from baseline at a specific visit, comparing treatment groups with baseline as covariate.",
       "acCategory": "TreatmentComparison",
       "usesMethod": "M.ANCOVA",
       "methodOutputSlotMapping": {
@@ -469,21 +1016,76 @@
         "fixed_effects": "ParameterEstimates",
         "model_fit": "FitStatistics"
       },
-      "inputBindings": [
-        { "methodRole": "response",  "concept": "C.Change" },
-        { "methodRole": "covariate", "concept": "C.Measure",     "description": "Baseline value" },
-        { "methodRole": "group",     "concept": "Treatment",     "type": "dimensional" }
-      ],
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint",
+        "AnalysisVisit": "constraint"
+      },
       "methodConfigurations": {
         "ss_type": "III"
       },
       "validSmartPhrases": [
-        "SP_CFB_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT",
-        "SP_POPULATION", "SP_GROUPING",
-        "SP_METHOD_ANCOVA", "SP_CONFIDENCE_LEVEL",
-        "SP_COVARIATE_BASELINE", "SP_COVARIATE_SITE"
+        "SP_CFB_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
+        "SP_METHOD_ANCOVA",
+        "SP_CONFIDENCE_LEVEL",
+        "SP_COVARIATE_BASELINE",
+        "SP_COVARIATE_SITE"
       ],
-      "composedPhrase": "change from baseline in {parameter} at {visit} in the {population} population comparing {treatment} groups using analysis of covariance adjusting for baseline {parameter} and site with {conf_level}% confidence intervals"
+      "composedPhrase": "change from baseline in {parameter} at {visit} in the {population} population comparing {treatment} groups using analysis of covariance adjusting for baseline {parameter} and site with {conf_level}% confidence intervals",
+      "bindings": [
+        {
+          "methodRole": "response",
+          "concept": "C.Change",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "covariate",
+          "concept": "C.Measure",
+          "requiredValueType": "Quantity",
+          "description": "Baseline value of the endpoint parameter",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "slice": "baseline"
+        },
+        {
+          "methodRole": "fixed_effect",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "namedSlices": {
+        "baseline": {
+          "fixedDimensions": {
+            "AnalysisVisit": "Baseline"
+          }
+        }
+      },
+      "sliceKeys": [
+        {
+          "dimension": "Parameter",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "AnalysisVisit",
+          "source": "visit"
+        },
+        {
+          "dimension": "Population",
+          "source": "population"
+        }
+      ]
     },
     {
       "oid": "T.OS_LogRank",
@@ -495,24 +1097,60 @@
       "methodOutputSlotMapping": {
         "test": "TestResult"
       },
-      "inputBindings": [
-        { "methodRole": "time",   "concept": "C.TimeToEvent" },
-        { "methodRole": "event",  "concept": "C.Flag" },
-        { "methodRole": "group",  "concept": "Treatment",     "type": "dimensional" }
-      ],
+      "inheritedDimensions": {
+        "Subject": "partition"
+      },
       "methodConfigurations": {
         "rho": 0
       },
       "validSmartPhrases": [
-        "SP_TTE_ENDPOINT", "SP_POPULATION", "SP_GROUPING",
-        "SP_METHOD_LOGRANK", "SP_STRATIFICATION"
+        "SP_TTE_ENDPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
+        "SP_METHOD_LOGRANK",
+        "SP_STRATIFICATION"
       ],
       "composedPhrase": "time to death in the {population} population comparing {treatment} groups using the log-rank test",
       "exampleInstance": {
         "population": "ITT",
         "treatment": "Drug A vs Placebo",
         "resolvedPhrase": "time to death in the ITT population comparing Drug A vs Placebo groups using the log-rank test"
-      }
+      },
+      "bindings": [
+        {
+          "methodRole": "time",
+          "concept": "C.TimeToEvent",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "event",
+          "concept": "C.Flag",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "fixed_effect",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "sliceKeys": [
+        {
+          "dimension": "Population",
+          "source": "population"
+        }
+      ]
     },
     {
       "oid": "T.DescStats_CFB",
@@ -524,16 +1162,460 @@
       "methodOutputSlotMapping": {
         "summary": "ComputedValue"
       },
-      "inputBindings": [
-        { "methodRole": "variable", "concept": "C.Change" },
-        { "methodRole": "group",    "concept": "Treatment",     "type": "dimensional" }
-      ],
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint",
+        "AnalysisVisit": "partition"
+      },
       "validSmartPhrases": [
-        "SP_CFB_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT",
-        "SP_POPULATION", "SP_GROUPING",
+        "SP_CFB_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
         "SP_METHOD_DESCSTATS"
       ],
-      "composedPhrase": "change from baseline in {parameter} at {visit} in the {population} population comparing {treatment} groups summarised by descriptive statistics"
+      "composedPhrase": "change from baseline in {parameter} at {visit} in the {population} population comparing {treatment} groups summarised by descriptive statistics",
+      "bindings": [
+        {
+          "methodRole": "response",
+          "concept": "C.Change",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "group",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "sliceKeys": [
+        {
+          "dimension": "Parameter",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "AnalysisVisit",
+          "source": "visit"
+        },
+        {
+          "dimension": "Population",
+          "source": "population"
+        }
+      ]
+    },
+    {
+      "oid": "T.Count_Measure",
+      "name": "Count (n)",
+      "transformationType": "analysis",
+      "description": "Count of non-missing values for a measure by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.Count",
+      "methodOutputSlotMapping": {
+        "computed_value": "ComputedValue"
+      },
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint",
+        "AnalysisVisit": "partition"
+      },
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "composedPhrase": "count of {parameter} at {visit} in the {population} population by {treatment} group",
+      "bindings": [
+        {
+          "methodRole": "response",
+          "concept": "C.Measure",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "group",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "sliceKeys": [
+        {
+          "dimension": "Parameter",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "AnalysisVisit",
+          "source": "visit"
+        },
+        {
+          "dimension": "Population",
+          "source": "population"
+        }
+      ]
+    },
+    {
+      "oid": "T.Mean_Measure",
+      "name": "Mean",
+      "transformationType": "analysis",
+      "description": "Arithmetic mean of a measure by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.Mean",
+      "methodOutputSlotMapping": {
+        "computed_value": "ComputedValue"
+      },
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint",
+        "AnalysisVisit": "partition"
+      },
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "composedPhrase": "mean of {parameter} at {visit} in the {population} population by {treatment} group",
+      "bindings": [
+        {
+          "methodRole": "response",
+          "concept": "C.Measure",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "group",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "sliceKeys": [
+        {
+          "dimension": "Parameter",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "AnalysisVisit",
+          "source": "visit"
+        },
+        {
+          "dimension": "Population",
+          "source": "population"
+        }
+      ]
+    },
+    {
+      "oid": "T.SD_Measure",
+      "name": "Standard Deviation",
+      "transformationType": "analysis",
+      "description": "Standard deviation of a measure by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.StandardDeviation",
+      "methodOutputSlotMapping": {
+        "computed_value": "ComputedValue"
+      },
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint",
+        "AnalysisVisit": "partition"
+      },
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "composedPhrase": "standard deviation of {parameter} at {visit} in the {population} population by {treatment} group",
+      "bindings": [
+        {
+          "methodRole": "response",
+          "concept": "C.Measure",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "group",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "sliceKeys": [
+        {
+          "dimension": "Parameter",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "AnalysisVisit",
+          "source": "visit"
+        },
+        {
+          "dimension": "Population",
+          "source": "population"
+        }
+      ]
+    },
+    {
+      "oid": "T.Median_Measure",
+      "name": "Median",
+      "transformationType": "analysis",
+      "description": "Median of a measure by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.Median",
+      "methodOutputSlotMapping": {
+        "computed_value": "ComputedValue"
+      },
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint",
+        "AnalysisVisit": "partition"
+      },
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "composedPhrase": "median of {parameter} at {visit} in the {population} population by {treatment} group",
+      "bindings": [
+        {
+          "methodRole": "response",
+          "concept": "C.Measure",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "group",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "sliceKeys": [
+        {
+          "dimension": "Parameter",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "AnalysisVisit",
+          "source": "visit"
+        },
+        {
+          "dimension": "Population",
+          "source": "population"
+        }
+      ]
+    },
+    {
+      "oid": "T.Quartile_Measure",
+      "name": "Quartiles (Q1, Q3)",
+      "transformationType": "analysis",
+      "description": "First and third quartiles of a measure by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.Quartile",
+      "methodOutputSlotMapping": {
+        "computed_value": "ComputedValue"
+      },
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint",
+        "AnalysisVisit": "partition"
+      },
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "composedPhrase": "quartiles of {parameter} at {visit} in the {population} population by {treatment} group",
+      "bindings": [
+        {
+          "methodRole": "response",
+          "concept": "C.Measure",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "group",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "sliceKeys": [
+        {
+          "dimension": "Parameter",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "AnalysisVisit",
+          "source": "visit"
+        },
+        {
+          "dimension": "Population",
+          "source": "population"
+        }
+      ]
+    },
+    {
+      "oid": "T.Min_Measure",
+      "name": "Minimum",
+      "transformationType": "analysis",
+      "description": "Minimum value of a measure by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.Minimum",
+      "methodOutputSlotMapping": {
+        "computed_value": "ComputedValue"
+      },
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint",
+        "AnalysisVisit": "partition"
+      },
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "composedPhrase": "minimum of {parameter} at {visit} in the {population} population by {treatment} group",
+      "bindings": [
+        {
+          "methodRole": "response",
+          "concept": "C.Measure",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "group",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "sliceKeys": [
+        {
+          "dimension": "Parameter",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "AnalysisVisit",
+          "source": "visit"
+        },
+        {
+          "dimension": "Population",
+          "source": "population"
+        }
+      ]
+    },
+    {
+      "oid": "T.Max_Measure",
+      "name": "Maximum",
+      "transformationType": "analysis",
+      "description": "Maximum value of a measure by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.Maximum",
+      "methodOutputSlotMapping": {
+        "computed_value": "ComputedValue"
+      },
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint",
+        "AnalysisVisit": "partition"
+      },
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "composedPhrase": "maximum of {parameter} at {visit} in the {population} population by {treatment} group",
+      "bindings": [
+        {
+          "methodRole": "response",
+          "concept": "C.Measure",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "group",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "sliceKeys": [
+        {
+          "dimension": "Parameter",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "AnalysisVisit",
+          "source": "visit"
+        },
+        {
+          "dimension": "Population",
+          "source": "population"
+        }
+      ]
     },
     {
       "oid": "T.Responder_ChiSq",
@@ -541,20 +1623,58 @@
       "transformationType": "analysis",
       "description": "Compare responder proportions between treatment groups using chi-square test.",
       "acCategory": "TreatmentComparison",
-      "usesMethod": "M.ChiSquareTest",
+      "usesMethod": "M.ChiSquaredTest",
       "methodOutputSlotMapping": {
         "test": "TestResult"
       },
-      "inputBindings": [
-        { "methodRole": "variable", "concept": "C.Flag" },
-        { "methodRole": "group",    "concept": "Treatment",  "type": "dimensional" }
-      ],
+      "inheritedDimensions": {
+        "Subject": "partition",
+        "Parameter": "constraint",
+        "AnalysisVisit": "constraint"
+      },
       "validSmartPhrases": [
-        "SP_RESPONDER_ENDPOINT", "SP_PARAMETER", "SP_TIMEPOINT",
-        "SP_POPULATION", "SP_GROUPING",
+        "SP_RESPONDER_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
         "SP_METHOD_CHISQ"
       ],
-      "composedPhrase": "proportion of responders in {parameter} at {visit} in the {population} population comparing {treatment} groups using the chi-square test"
+      "composedPhrase": "proportion of responders in {parameter} at {visit} in the {population} population comparing {treatment} groups using the chi-square test",
+      "bindings": [
+        {
+          "methodRole": "response",
+          "concept": "C.Flag",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "fixed_effect",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "sliceKeys": [
+        {
+          "dimension": "Parameter",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "AnalysisVisit",
+          "source": "visit"
+        },
+        {
+          "dimension": "Population",
+          "source": "population"
+        }
+      ]
     }
   ]
 }

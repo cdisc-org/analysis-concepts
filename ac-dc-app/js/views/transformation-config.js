@@ -1,15 +1,17 @@
 import { appState, navigateTo } from '../app.js';
 import { loadMethod } from '../data-loader.js';
-import { getAllEndpoints, getPopulationNames } from '../utils/usdm-parser.js';
+import { getAllEndpoints, getVisitLabels, getPopulationNames, getArmNames, getBiomedicalConcepts, getEndpointParameterOptions } from '../utils/usdm-parser.js';
 import { composeFullSentence } from '../utils/phrase-engine.js';
+import { buildSyntaxTemplatePlainText } from './endpoint-spec.js';
 import {
   getOutputMapping, getInputBindings,
   getMethodConfigurations, getDimensions
 } from '../utils/transformation-linker.js';
+import { displayConcept, formatDimensionConstraints, formatSliceDisplay, resolveBindingShape } from '../utils/concept-display.js';
 
 // ===== Helper: Get concept dropdown options from DC model =====
 
-function getConceptOptions(role, dcModel) {
+export function getConceptOptions(role, dcModel) {
   if (!dcModel) return [];
   const options = [];
 
@@ -17,7 +19,15 @@ function getConceptOptions(role, dcModel) {
     // Dimensional concepts for categorical/factor roles
     const dims = dcModel.dimensionalConcepts || {};
     for (const [name, info] of Object.entries(dims)) {
+      if (name === 'note') continue;
       options.push({ value: name, label: name, type: 'dimensional', description: info.definition || '' });
+    }
+    // Also include shared dimensions from OC Instance Model
+    const sharedDims = appState?.ocModel?.Observation?.sharedDimensions || {};
+    for (const [name, info] of Object.entries(sharedDims)) {
+      if (!options.find(o => o.value === name)) {
+        options.push({ value: name, label: name, type: 'dimensional', description: info.relationship || '' });
+      }
     }
   }
 
@@ -40,8 +50,16 @@ function getConceptOptions(role, dcModel) {
   if (role.dataType === 'numeric' && role.statisticalRole !== 'fixed_effect') {
     const dims = dcModel.dimensionalConcepts || {};
     for (const [name, info] of Object.entries(dims)) {
+      if (name === 'note') continue;
       if (!options.find(o => o.value === name)) {
         options.push({ value: name, label: name, type: 'dimensional', description: info.definition || '' });
+      }
+    }
+    // Also include shared dimensions from OC Instance Model
+    const sharedDims = appState?.ocModel?.Observation?.sharedDimensions || {};
+    for (const [name, info] of Object.entries(sharedDims)) {
+      if (!options.find(o => o.value === name)) {
+        options.push({ value: name, label: name, type: 'dimensional', description: info.relationship || '' });
       }
     }
   }
@@ -51,7 +69,7 @@ function getConceptOptions(role, dcModel) {
 
 // ===== Helper: Parse default interactions from expression =====
 
-function parseDefaultInteractions(defaultExpression) {
+export function parseDefaultInteractions(defaultExpression) {
   if (!defaultExpression) return [];
   // Match patterns like "covariate:group" or "X:Y"
   const interactionPattern = /(\w+):(\w+)/g;
@@ -65,7 +83,7 @@ function parseDefaultInteractions(defaultExpression) {
 
 // ===== Helper: Classify bindings by statistical role =====
 
-function classifyBindings(customBindings, method) {
+export function classifyBindings(customBindings, method) {
   const inputRoles = method.input_roles || [];
   const roleMap = {};
   for (const role of inputRoles) {
@@ -88,7 +106,16 @@ function classifyBindings(customBindings, method) {
   for (const [roleName, bindings] of Object.entries(grouped)) {
     const role = roleMap[roleName];
     if (!role) continue;
-    const concepts = bindings.map(b => b.concept);
+    // Use concept + dimension suffix for formula display
+    const concepts = bindings.map(b => {
+      let suffix = '';
+      if (b.slice) {
+        suffix = ` @ ${b.slice.charAt(0).toUpperCase() + b.slice.slice(1)}`;
+      } else if (b.dimensionConstraints) {
+        suffix = formatDimensionConstraints(b.dimensionConstraints);
+      }
+      return b.concept + suffix.replace(/ @ /g, '@');
+    });
     const statRole = role.statisticalRole;
     if (statRole && result[statRole]) {
       result[statRole].push(...concepts);
@@ -102,7 +129,7 @@ function classifyBindings(customBindings, method) {
 
 // ===== Helper: Build expression string =====
 
-function buildExpressionString(customBindings, method, interactions) {
+export function buildExpressionString(customBindings, method, interactions) {
   if (!customBindings || !method) return '';
 
   const notation = method.formula?.notation || 'assignment';
@@ -118,7 +145,7 @@ function buildExpressionString(customBindings, method, interactions) {
   }
 }
 
-function buildWilkinsonExpression(cls, interactions) {
+export function buildWilkinsonExpression(cls, interactions) {
   const lhs = cls.response.join(' + ') || '?';
   const rhsParts = [...cls.covariate, ...cls.fixed_effect];
   let rhs = rhsParts.join(' + ') || '1';
@@ -139,7 +166,7 @@ function buildWilkinsonExpression(cls, interactions) {
   return expr;
 }
 
-function buildSurvivalExpression(cls, interactions) {
+export function buildSurvivalExpression(cls, interactions) {
   // Survival LHS: Surv(time, event) — response roles are time and event
   const survArgs = cls.response.length >= 2
     ? `Surv(${cls.response[0]}, ${cls.response[1]})`
@@ -161,7 +188,7 @@ function buildSurvivalExpression(cls, interactions) {
   return `${survArgs} ~ ${rhs}`;
 }
 
-function buildAssignmentExpression(customBindings, method, cls) {
+export function buildAssignmentExpression(customBindings, method, cls) {
   // Assignment notation: result := FUNC(variable) OVER (group)
   // Use the method's default_expression as template, substituting bound concepts
   const defaultExpr = method.formula?.default_expression || '';
@@ -196,7 +223,7 @@ function buildAssignmentExpression(customBindings, method, cls) {
 
 // ===== Helper: Render formula with colored spans =====
 
-function renderFormulaExpression(customBindings, method, interactions) {
+export function renderFormulaExpression(customBindings, method, interactions) {
   if (!customBindings || !method) return '';
 
   const notation = method.formula?.notation || 'assignment';
@@ -206,17 +233,39 @@ function renderFormulaExpression(customBindings, method, interactions) {
     roleMap[role.name] = role;
   }
 
-  // Build a lookup: concept -> statistical role
+  // Build lookups: concept -> statistical role, concept -> display options
+  // Use concept + dim suffix as key to distinguish same concept at different slices
   const conceptRoleMap = {};
+  const conceptOptsMap = {};
   for (const b of customBindings) {
     const role = roleMap[b.methodRole];
-    if (role && role.statisticalRole) conceptRoleMap[b.concept] = role.statisticalRole;
+    if (role) {
+      let suffix = '';
+      if (b.slice) {
+        suffix = ` @ ${b.slice.charAt(0).toUpperCase() + b.slice.slice(1)}`;
+      } else if (b.dimensionConstraints) {
+        suffix = formatDimensionConstraints(b.dimensionConstraints);
+      }
+      const key = b.concept + suffix.replace(/ @ /g, '@');
+      if (role.statisticalRole) conceptRoleMap[key] = role.statisticalRole;
+      const opts = {};
+      if (role.dataType) opts.dataType = role.dataType;
+      if (b.qualifierType) opts.qualifierType = b.qualifierType;
+      if (b.qualifierValue) opts.qualifierValue = b.qualifierValue;
+      if (b.slice) {
+        opts.slice = b.slice;
+        opts.namedSlices = appState.selectedTransformation?.namedSlices;
+      } else if (b.dimensionConstraints) {
+        opts.dimensionConstraints = b.dimensionConstraints;
+      }
+      conceptOptsMap[key] = opts;
+    }
   }
 
   function colorSpan(concept, overrideRole) {
     const statRole = overrideRole || conceptRoleMap[concept] || '';
     const cssClass = statRole ? `formula-term-${statRole.replace(/_/g, '-')}` : '';
-    return `<span class="${cssClass}">${concept}</span>`;
+    return `<span class="${cssClass}">${displayConcept(concept, conceptOptsMap[concept])}</span>`;
   }
 
   const op = (s) => `<span class="formula-operator">${s}</span>`;
@@ -226,13 +275,13 @@ function renderFormulaExpression(customBindings, method, interactions) {
   if (notation === 'assignment') {
     return renderAssignmentFormula(customBindings, method, cls, colorSpan, op);
   } else if (notation === 'survival') {
-    return renderSurvivalFormula(cls, interactions, colorSpan, op, conceptRoleMap);
+    return renderSurvivalFormula(cls, interactions, colorSpan, op, conceptRoleMap, conceptOptsMap);
   } else {
-    return renderWilkinsonFormula(cls, interactions, colorSpan, op, conceptRoleMap);
+    return renderWilkinsonFormula(cls, interactions, colorSpan, op, conceptRoleMap, conceptOptsMap);
   }
 }
 
-function renderWilkinsonFormula(cls, interactions, colorSpan, op, conceptRoleMap) {
+export function renderWilkinsonFormula(cls, interactions, colorSpan, op, conceptRoleMap, conceptOptsMap) {
   const lhs = cls.response.map(c => colorSpan(c)).join(` ${op('+')} `) || '?';
   const rhsParts = [
     ...cls.covariate.map(c => colorSpan(c)),
@@ -243,15 +292,15 @@ function renderWilkinsonFormula(cls, interactions, colorSpan, op, conceptRoleMap
     const [a, b] = inter.split(':');
     const aRole = conceptRoleMap[a] || 'covariate';
     const bRole = conceptRoleMap[b] || 'fixed_effect';
-    return `<span class="formula-term-${aRole.replace(/_/g, '-')}">${a}</span>${op(':')}<span class="formula-term-${bRole.replace(/_/g, '-')}">${b}</span>`;
+    return `<span class="formula-term-${aRole.replace(/_/g, '-')}">${displayConcept(a, conceptOptsMap[a])}</span>${op(':')}<span class="formula-term-${bRole.replace(/_/g, '-')}">${displayConcept(b, conceptOptsMap[b])}</span>`;
   });
 
   const allRhs = [...rhsParts, ...interParts];
   let html = `${lhs} ${op('~')} ${allRhs.join(` ${op('+')} `) || '1'}`;
 
   if (cls.repeated_subject.length > 0 || cls.repeated_factor.length > 0) {
-    const subj = cls.repeated_subject.map(c => `<span class="formula-term-repeated">${c}</span>`).join(', ');
-    const factor = cls.repeated_factor.map(c => `<span class="formula-term-repeated">${c}</span>`).join(', ');
+    const subj = cls.repeated_subject.map(c => `<span class="formula-term-repeated">${displayConcept(c, conceptOptsMap[c])}</span>`).join(', ');
+    const factor = cls.repeated_factor.map(c => `<span class="formula-term-repeated">${displayConcept(c, conceptOptsMap[c])}</span>`).join(', ');
     if (subj && factor) html += ` ${op('|')} ${subj} ${op('/')} ${factor}`;
     else if (subj) html += ` ${op('|')} ${subj}`;
   }
@@ -259,7 +308,7 @@ function renderWilkinsonFormula(cls, interactions, colorSpan, op, conceptRoleMap
   return html;
 }
 
-function renderSurvivalFormula(cls, interactions, colorSpan, op, conceptRoleMap) {
+export function renderSurvivalFormula(cls, interactions, colorSpan, op, conceptRoleMap, conceptOptsMap) {
   // Surv(time, event) ~ covariates + factors + strata(strata_var)
   let survLhs;
   if (cls.response.length >= 2) {
@@ -279,7 +328,7 @@ function renderSurvivalFormula(cls, interactions, colorSpan, op, conceptRoleMap)
     const [a, b] = inter.split(':');
     const aRole = conceptRoleMap[a] || 'covariate';
     const bRole = conceptRoleMap[b] || 'fixed_effect';
-    return `<span class="formula-term-${aRole.replace(/_/g, '-')}">${a}</span>${op(':')}<span class="formula-term-${bRole.replace(/_/g, '-')}">${b}</span>`;
+    return `<span class="formula-term-${aRole.replace(/_/g, '-')}">${displayConcept(a, conceptOptsMap[a])}</span>${op(':')}<span class="formula-term-${bRole.replace(/_/g, '-')}">${displayConcept(b, conceptOptsMap[b])}</span>`;
   });
 
   // Strata get special wrapping
@@ -291,7 +340,7 @@ function renderSurvivalFormula(cls, interactions, colorSpan, op, conceptRoleMap)
   return `${survLhs} ${op('~')} ${allRhs.join(` ${op('+')} `) || '1'}`;
 }
 
-function renderAssignmentFormula(customBindings, method, cls, colorSpan, op) {
+export function renderAssignmentFormula(customBindings, method, cls, colorSpan, op) {
   // For assignment notation, render the expression with substituted concepts
   const defaultExpr = method.formula?.default_expression || '';
   if (!defaultExpr) return '';
@@ -331,7 +380,7 @@ function renderAssignmentFormula(customBindings, method, cls, colorSpan, op) {
 
 // ===== Helper: Generate all possible interaction pairings =====
 
-function generateInteractionPairings(customBindings, method) {
+export function generateInteractionPairings(customBindings, method) {
   if (!customBindings || !method) return [];
   const notation = method.formula?.notation || 'assignment';
   // Interactions only apply to model-formula notations
@@ -359,7 +408,7 @@ function generateInteractionPairings(customBindings, method) {
 
 // ===== Helper: Render interactive bindings =====
 
-function renderInteractiveBindings(customBindings, method, dcModel) {
+export function renderInteractiveBindings(customBindings, method, dcModel) {
   if (!method || !customBindings) return '';
 
   const inputRoles = method.input_roles || [];
@@ -382,7 +431,8 @@ function renderInteractiveBindings(customBindings, method, dcModel) {
     t => t.oid === appState.selectedTransformation?.oid
   );
   const templateConcepts = new Set(
-    (originalTransform?.inputBindings || appState.selectedTransformation?.inputBindings || [])
+    (originalTransform?.bindings || appState.selectedTransformation?.bindings || [])
+      .filter(b => b.direction !== 'output')
       .map(b => `${b.methodRole}|${b.concept}`)
   );
 
@@ -397,6 +447,8 @@ function renderInteractiveBindings(customBindings, method, dcModel) {
 
     const canAdd = role.cardinality === 'multiple' || role.cardinality === 'single_or_multiple';
     const canRemove = (b) => {
+      const isTemplate = templateConcepts.has(`${b.methodRole}|${b.concept}`);
+      if (!isTemplate) return true;  // custom bindings always removable
       if (role.cardinality === 'single' && role.required) return false;
       if (role.required && bindings.length <= 1) return false;
       return true;
@@ -412,31 +464,283 @@ function renderInteractiveBindings(customBindings, method, dcModel) {
       const b = bindings[i];
       const isTemplate = templateConcepts.has(`${b.methodRole}|${b.concept}`);
       const isCustom = !isTemplate;
-      const isDimensional = b.type === 'dimensional';
+      const isDimensional = b.dataStructureRole === 'dimension';
 
-      html += `<div class="binding-row ${isCustom ? 'binding-row-custom' : ''}">
-        <span class="binding-concept"><code>${b.concept}</code>${b.description ? ` — "${b.description}"` : ''}</span>
-        <span class="binding-badge badge ${isDimensional ? 'badge-teal' : 'badge-blue'}">${isDimensional ? 'dimensional' : 'concept'}</span>
-        ${isCustom ? '<span class="binding-badge badge badge-secondary">custom</span>' : ''}
-        ${canRemove(b) ? `<button class="binding-remove" data-role="${role.name}" data-index="${i}" title="Remove">&times;</button>` : ''}
+      const bindingDisplayOpts = { dataType: role.dataType };
+      if (b.qualifierType) bindingDisplayOpts.qualifierType = b.qualifierType;
+      if (b.qualifierValue) bindingDisplayOpts.qualifierValue = b.qualifierValue;
+      if (b.slice) {
+        bindingDisplayOpts.slice = b.slice;
+        bindingDisplayOpts.namedSlices = appState.selectedTransformation?.namedSlices;
+      } else if (b.dimensionConstraints) {
+        bindingDisplayOpts.dimensionConstraints = b.dimensionConstraints;
+      }
+
+      // Resolve dimensional shape from DC/OC models
+      const namedSlicesStandalone = appState.selectedTransformation?.namedSlices || {};
+      const shapeStandalone = resolveBindingShape(b.concept, b, appState.dcModel, appState.ocModel, namedSlicesStandalone);
+      const standaloneBindingId = `standalone-${role.name}-${i}`;
+      const shapeHtmlStandalone = renderShapeAnnotation(shapeStandalone, standaloneBindingId);
+
+      html += `<div class="binding-row ${isCustom ? 'binding-row-custom' : ''}" style="flex-direction:column; align-items:flex-start;">
+        <div style="display:flex; align-items:center; gap:6px; width:100%;">
+          <span class="binding-concept"><code>${displayConcept(b.concept, bindingDisplayOpts)}</code>${b.description ? ` — "${b.description}"` : ''}</span>
+          <span class="binding-badge badge ${isDimensional ? 'badge-teal' : 'badge-blue'}">${b.dataStructureRole || (isDimensional ? 'dimension' : 'measure')}</span>
+          ${isCustom ? '<span class="binding-badge badge badge-secondary">custom</span>' : ''}
+          ${canRemove(b) ? `<button class="binding-remove" data-role="${role.name}" data-index="${i}" title="Remove" style="margin-left:auto;">&times;</button>` : ''}
+        </div>
+        ${shapeHtmlStandalone}
       </div>`;
     }
 
     if (canAdd) {
       const options = getConceptOptions(role, dcModel);
-      // Filter out already-bound concepts
-      const boundConcepts = new Set(bindings.map(b => b.concept));
-      const available = options.filter(o => !boundConcepts.has(o.value));
+      // For multi-cardinality roles, allow same concept with different dimensional constraints
+      // Only filter out exact duplicates (same concept + same constraints)
+      const boundKeys = new Set(bindings.map(b => {
+        const sliceStr = b.slice || (b.dimensionConstraints ? JSON.stringify(b.dimensionConstraints) : '');
+        return `${b.concept}|${sliceStr}`;
+      }));
+      const available = options.filter(o => !boundKeys.has(`${o.value}|`));
 
       const addLabel = role.statisticalRole === 'fixed_effect' ? 'Factor'
         : role.statisticalRole === 'covariate' ? 'Covariate'
         : 'Binding';
 
+      // Get available visit labels for dimensional constraint dropdown
+      const visitLabels = appState.selectedStudy ? getVisitLabels(appState.selectedStudy) : [];
+
       html += `<div class="binding-add-row">
         <span class="binding-add-label">+ Add ${addLabel}</span>
         <select class="binding-add-select" data-role="${role.name}">
           <option value="">Select concept...</option>
-          ${available.map(o => `<option value="${o.value}" data-type="${o.type}">${o.label}</option>`).join('')}
+          ${available.map(o => `<option value="${o.value}" data-type="${o.type}">${displayConcept(o.label)}</option>`).join('')}
+        </select>
+        <select class="binding-dim-constraint" data-role="${role.name}" style="display:none; margin-left:4px;">
+          <option value="">@ (no constraint)</option>
+          ${visitLabels.map(v => `<option value="${v}">@ ${v}</option>`).join('')}
+        </select>
+      </div>`;
+    }
+
+    html += `</div>`;
+  }
+
+  return html;
+}
+
+
+/**
+ * Render dimensional shape line and expandable provenance panel for a binding.
+ * Returns HTML string with a "Dims:" line and a hidden provenance detail block.
+ */
+function renderShapeAnnotation(shape, bindingId) {
+  if (!shape) return '';
+
+  let dimsLine = '';
+  if (shape.source === 'category') {
+    // C.* concept: show free dimensions joined with ×
+    const freeParts = shape.freeDimensions.length > 0 ? shape.freeDimensions.join(' × ') : 'scalar';
+    dimsLine = `Dims: ${freeParts}`;
+  } else {
+    // Dimensional concept or shared dimension: show cardinality
+    const card = shape.cardinality || '0..1';
+    dimsLine = `Dims: per observation (${card})`;
+  }
+
+  // Build provenance detail rows
+  const provenanceRows = [];
+  if (shape.source === 'category') {
+    provenanceRows.push(`Layer: DC (${shape.categoryName})`);
+    if (shape.valueType) provenanceRows.push(`ValueType: ${shape.valueType}`);
+    if (Object.keys(shape.fixedDimensions).length > 0) {
+      const fixed = Object.entries(shape.fixedDimensions).map(([k, v]) => `${k} = ${v}`).join(', ');
+      provenanceRows.push(`Fixed: ${fixed}`);
+    }
+  } else if (shape.source === 'dimensionalConcept') {
+    provenanceRows.push('Layer: DC (dimensionalConcept)');
+    if (shape.valueType) provenanceRows.push(`ValueType: ${shape.valueType}`);
+    if (shape.relationship) provenanceRows.push(`Relationship: ${shape.relationship}`);
+    if (shape.cardinality) provenanceRows.push(`Cardinality: ${shape.cardinality}`);
+  } else if (shape.source === 'sharedDimension') {
+    provenanceRows.push('Layer: OC (sharedDimensions)');
+    if (shape.valueType) provenanceRows.push(`ValueType: ${shape.valueType}`);
+    if (shape.relationship) provenanceRows.push(`Relationship: ${shape.relationship}`);
+    if (shape.cardinality) provenanceRows.push(`Cardinality: ${shape.cardinality}`);
+  }
+  if (shape.qualifierType && shape.qualifierValue) {
+    provenanceRows.push(`${shape.qualifierType} = ${shape.qualifierValue}`);
+  }
+
+  const provenanceHtml = provenanceRows.length > 0 ? `
+    <div class="binding-provenance" data-binding-id="${bindingId}" style="display:none; margin-top:4px; padding:6px 10px; background:rgba(0,0,0,0.02); border:1px solid var(--cdisc-border); border-radius:var(--radius); font-size:10px; line-height:1.6; color:var(--cdisc-text-secondary);">
+      ${provenanceRows.map(r => `<div>${r}</div>`).join('')}
+    </div>` : '';
+
+  return `
+    <div class="binding-shape-line" data-binding-id="${bindingId}" style="font-size:10px; color:var(--cdisc-gray); margin-top:2px; cursor:pointer;" title="Click to show model provenance">
+      ${dimsLine}
+    </div>
+    ${provenanceHtml}`;
+}
+
+
+/**
+ * Render interactive bindings filtered by dataStructureRole ('measure' or 'dimension').
+ * Used by endpoint-how.js to split bindings into "Input Measures" and "Input Dimensions" sections.
+ *
+ * Adds cube-structure annotations:
+ * - Endpoint linkage on response bindings ("from endpoint: ...")
+ * - Slice resolution inline ("slice: baseline -> AnalysisVisit = Baseline")
+ * - Value type badges
+ */
+export function renderInteractiveBindingsByRole(customBindings, method, dcModel, roleFilter, paramValue, derivation, transform) {
+  if (!method || !customBindings) return '';
+
+  const inputRoles = method.input_roles || [];
+  const roleMap = {};
+  for (const role of inputRoles) {
+    roleMap[role.name] = role;
+  }
+
+  // Filter bindings to only those matching the roleFilter
+  const filteredBindings = customBindings.filter(b => {
+    const dsRole = b.dataStructureRole || 'measure';
+    return dsRole === roleFilter;
+  });
+
+  if (filteredBindings.length === 0) return '';
+
+  // Group filtered bindings by methodRole
+  const grouped = {};
+  for (const b of filteredBindings) {
+    if (!grouped[b.methodRole]) grouped[b.methodRole] = [];
+    grouped[b.methodRole].push(b);
+  }
+
+  // Track template bindings
+  const lib = appState.transformationLibrary;
+  const originalTransform = lib?.analysisTransformations?.find(
+    t => t.oid === appState.selectedTransformation?.oid
+  );
+  const templateConcepts = new Set(
+    (originalTransform?.bindings || appState.selectedTransformation?.bindings || [])
+      .filter(b => b.direction !== 'output')
+      .map(b => `${b.methodRole}|${b.concept}`)
+  );
+
+  const namedSlices = transform?.namedSlices || {};
+
+  let html = '';
+
+  // Only show roles that have bindings matching this filter (or can add them)
+  for (const role of inputRoles) {
+    const bindings = grouped[role.name] || [];
+    // For dimension filter, only show roles whose bindings are dimensions
+    // For measure filter, only show roles whose bindings are measures
+    // Also show roles that have no bindings yet but would match (based on statisticalRole)
+    const roleMatchesFilter = roleFilter === 'dimension'
+      ? (role.statisticalRole === 'fixed_effect' || role.statisticalRole === 'strata')
+      : (role.statisticalRole !== 'fixed_effect' && role.statisticalRole !== 'strata');
+
+    if (bindings.length === 0 && !roleMatchesFilter) continue;
+
+    const cardinalityLabel = role.cardinality === 'single' ? 'single'
+      : role.cardinality === 'multiple' ? 'multiple'
+      : 'single or multiple';
+    const requiredLabel = role.required ? 'required' : 'optional';
+
+    const canAdd = role.cardinality === 'multiple' || role.cardinality === 'single_or_multiple';
+    const canRemove = (b) => {
+      const isTemplate = templateConcepts.has(`${b.methodRole}|${b.concept}`);
+      if (!isTemplate) return true;  // custom bindings always removable
+      if (role.cardinality === 'single' && role.required) return false;
+      if (role.required && bindings.length <= 1) return false;
+      return true;
+    };
+
+    html += `<div class="binding-role-group">`;
+    html += `<div class="binding-role-header">
+      <span class="binding-role-name">${role.name}</span>
+      <span class="binding-role-cardinality">(${cardinalityLabel}, ${requiredLabel})</span>
+    </div>`;
+
+    for (let i = 0; i < bindings.length; i++) {
+      const b = bindings[i];
+      const isTemplate = templateConcepts.has(`${b.methodRole}|${b.concept}`);
+      const isCustom = !isTemplate;
+
+      const bindingDisplayOpts = { dataType: role.dataType };
+      if (b.qualifierType) bindingDisplayOpts.qualifierType = b.qualifierType;
+      if (b.qualifierValue) bindingDisplayOpts.qualifierValue = b.qualifierValue;
+      if (b.slice) {
+        bindingDisplayOpts.slice = b.slice;
+        bindingDisplayOpts.namedSlices = namedSlices;
+      } else if (b.dimensionConstraints) {
+        bindingDisplayOpts.dimensionConstraints = b.dimensionConstraints;
+      }
+
+      // Endpoint linkage annotation for the response binding
+      const isResponse = role.statisticalRole === 'response' && i === 0;
+      const endpointLink = isResponse && paramValue
+        ? `<div style="font-size:10px; color:var(--cdisc-blue); margin-top:2px;">\u2190 from endpoint: "${paramValue}"</div>`
+        : '';
+
+      // Slice resolution annotation
+      let sliceAnnotation = '';
+      if (b.slice && namedSlices[b.slice]) {
+        const sliceDef = namedSlices[b.slice];
+        const dims = sliceDef.fixedDimensions || sliceDef;
+        const dimStr = Object.entries(dims).map(([k, v]) => `${k} = ${v}`).join(', ');
+        sliceAnnotation = `<div style="font-size:10px; color:var(--cdisc-teal); margin-top:2px;">slice: ${b.slice} \u2192 ${dimStr}</div>`;
+      }
+
+      // Value type badge
+      const valueType = b.requiredValueType || '';
+
+      // Resolve dimensional shape from DC/OC models
+      const shape = resolveBindingShape(b.concept, b, appState.dcModel, appState.ocModel, namedSlices);
+      const bindingId = `byrole-${role.name}-${i}`;
+      const shapeValueType = shape?.valueType || valueType;
+      const shapeHtml = renderShapeAnnotation(shape, bindingId);
+
+      html += `<div class="binding-row ${isCustom ? 'binding-row-custom' : ''}" style="flex-direction:column; align-items:flex-start;">
+        <div style="display:flex; align-items:center; gap:6px; width:100%;">
+          <span class="binding-concept"><code>${displayConcept(b.concept, bindingDisplayOpts)}</code></span>
+          <span class="binding-badge badge ${roleFilter === 'dimension' ? 'badge-teal' : 'badge-blue'}">${roleFilter}</span>
+          ${shapeValueType ? `<span style="font-size:9px; color:var(--cdisc-gray);">${shapeValueType}</span>` : ''}
+          ${isCustom ? '<span class="binding-badge badge badge-secondary">custom</span>' : ''}
+          ${canRemove(b) ? `<button class="binding-remove" data-role="${role.name}" data-index="${i}" title="Remove" style="margin-left:auto;">&times;</button>` : ''}
+        </div>
+        ${endpointLink}
+        ${sliceAnnotation}
+        ${shapeHtml}
+      </div>`;
+    }
+
+    if (canAdd) {
+      const options = getConceptOptions(role, dcModel);
+      const boundKeys = new Set(bindings.map(b => {
+        const sliceStr = b.slice || (b.dimensionConstraints ? JSON.stringify(b.dimensionConstraints) : '');
+        return `${b.concept}|${sliceStr}`;
+      }));
+      const available = options.filter(o => !boundKeys.has(`${o.value}|`));
+
+      const addLabel = role.statisticalRole === 'fixed_effect' ? 'Factor'
+        : role.statisticalRole === 'covariate' ? 'Covariate'
+        : 'Binding';
+
+      const visitLabels = appState.selectedStudy ? getVisitLabels(appState.selectedStudy) : [];
+
+      html += `<div class="binding-add-row">
+        <span class="binding-add-label">+ Add ${addLabel}</span>
+        <select class="binding-add-select" data-role="${role.name}">
+          <option value="">Select concept...</option>
+          ${available.map(o => `<option value="${o.value}" data-type="${o.type}">${displayConcept(o.label)}</option>`).join('')}
+        </select>
+        <select class="binding-dim-constraint" data-role="${role.name}" style="display:none; margin-left:4px;">
+          <option value="">@ (no constraint)</option>
+          ${visitLabels.map(v => `<option value="${v}">@ ${v}</option>`).join('')}
         </select>
       </div>`;
     }
@@ -455,7 +759,7 @@ export async function renderTransformationConfig(container) {
   const transformation = appState.selectedTransformation;
   const lib = appState.transformationLibrary;
 
-  if (!transformation || !study) { navigateTo(4); return; }
+  if (!transformation || !study) { navigateTo(5); return; }
 
   const currentEp = getAllEndpoints(study).find(ep => ep.id === appState.currentEndpointId);
 
@@ -471,7 +775,33 @@ export async function renderTransformationConfig(container) {
 
   // Initialize customInputBindings from template if null
   if (appState.customInputBindings === null) {
-    appState.customInputBindings = JSON.parse(JSON.stringify(transformation.inputBindings || []));
+    appState.customInputBindings = JSON.parse(JSON.stringify(
+      (transformation.bindings || []).filter(b => b.direction !== 'output')
+    ));
+  }
+
+  // Initialize dimensionalSliceValues as a flat { dim: value } map
+  if (appState.dimensionalSliceValues === null && transformation.sliceKeys) {
+    const values = {};
+    const configKeyMap = { Parameter: 'parameter', AnalysisVisit: 'visit', Population: 'population' };
+    const epSpec = appState.endpointSpecs?.[appState.currentEndpointId];
+    const specDimValues = epSpec?.dimensionValues || {};
+
+    for (const sk of transformation.sliceKeys) {
+      const dim = sk.dimension;
+      values[dim] = null;
+      if (specDimValues[dim]) {
+        values[dim] = specDimValues[dim];
+        continue;
+      }
+      const configKey = configKeyMap[dim];
+      if (configKey) {
+        for (const cp of appState.composedPhrases) {
+          if (cp.config[configKey]) { values[dim] = cp.config[configKey]; break; }
+        }
+      }
+    }
+    appState.dimensionalSliceValues = values;
   }
 
   // Initialize activeInteractions from default expression
@@ -496,7 +826,7 @@ export async function renderTransformationConfig(container) {
   }
 
   const customBindings = appState.customInputBindings;
-  const outputMapping = getOutputMapping(transformation, appState.acModel);
+  const outputMapping = getOutputMapping(transformation, appState.acModel, method, customBindings, appState.activeInteractions);
   const dimensions = getDimensions(transformation);
   const methodConfigs = method ? getMethodConfigurations(method) : [];
   const popNames = getPopulationNames(study);
@@ -504,7 +834,31 @@ export async function renderTransformationConfig(container) {
   for (const p of popNames) {
     popMap[p.value] = p.label;
   }
-  const resolvedSentence = composeFullSentence(appState.composedPhrases, lib, { population: popMap });
+  const epSpec = appState.endpointSpecs?.[appState.currentEndpointId];
+  const syntaxPrefix = (currentEp && epSpec) ? buildSyntaxTemplatePlainText(currentEp, epSpec, study) : '';
+  const resolvedSentence = composeFullSentence(appState.composedPhrases, lib, { population: popMap }, syntaxPrefix);
+
+  // Build concept → display options map at this scope (used by formula rendering + output spec cards)
+  // Each entry: { dataType, qualifierType, qualifierValue, dimensionConstraints }
+  const conceptDisplayOpts = {};
+  if (method?.input_roles && customBindings) {
+    const roleMap = {};
+    for (const role of method.input_roles) roleMap[role.name] = role;
+    for (const b of customBindings) {
+      const role = roleMap[b.methodRole];
+      const opts = {};
+      if (role?.dataType) opts.dataType = role.dataType;
+      if (b.qualifierType) opts.qualifierType = b.qualifierType;
+      if (b.qualifierValue) opts.qualifierValue = b.qualifierValue;
+      if (b.slice) {
+        opts.slice = b.slice;
+        opts.namedSlices = transformation.namedSlices;
+      } else if (b.dimensionConstraints) {
+        opts.dimensionConstraints = b.dimensionConstraints;
+      }
+      conceptDisplayOpts[b.concept] = opts;
+    }
+  }
 
   // Build formula and interaction data
   const hasFormula = !!method?.formula;
@@ -518,7 +872,7 @@ export async function renderTransformationConfig(container) {
       <div>
         <h2 style="font-size:18px; font-weight:700;">Transformation Configuration</h2>
         <p style="color:var(--cdisc-gray); font-size:13px; margin-top:4px;">
-          ${currentEp ? `${currentEp.name}: ` : ''}${transformation.name}
+          ${currentEp ? `${currentEp.name}${appState.endpointSpecs?.[appState.currentEndpointId]?.conceptCategory ? ` [${appState.endpointSpecs[appState.currentEndpointId].conceptCategory}]` : ''}: ` : ''}${transformation.name}
         </p>
       </div>
       <div style="display:flex; gap:8px;">
@@ -561,9 +915,12 @@ export async function renderTransformationConfig(container) {
                 ${getInputBindings(transformation).map(b => `
                   <tr>
                     <td style="font-weight:600;">${b.role}</td>
-                    <td><code>${b.concept}</code></td>
+                    <td><code>${displayConcept(b.concept, {
+                      qualifierType: b.qualifierType,
+                      qualifierValue: b.qualifierValue
+                    })}</code></td>
                     <td>${b.from || b.description || '-'}</td>
-                    <td><span class="badge ${b.type === 'dimensional' ? 'badge-teal' : 'badge-blue'}">${b.type}</span></td>
+                    <td><span class="badge ${b.dataStructureRole === 'dimension' ? 'badge-teal' : 'badge-blue'}">${b.dataStructureRole || 'measure'}</span></td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -572,6 +929,47 @@ export async function renderTransformationConfig(container) {
         </div>
       </div>
     </div>
+
+    <!-- Dimensional Slices -->
+    ${transformation.sliceKeys?.length > 0 ? `
+    <div class="card" style="margin-bottom:16px;">
+      <div class="transform-section" style="margin-bottom:0;">
+        <div class="transform-section-title">Dimensional Slices</div>
+        <p style="font-size:12px; color:var(--cdisc-gray); margin-bottom:12px;">
+          Configure the specific dimension values this analysis operates on.
+        </p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:12px;" id="dimensional-slices">
+          ${transformation.sliceKeys.map(sk => {
+            const dim = sk.dimension;
+            const userValue = (appState.dimensionalSliceValues || {})[dim] || null;
+            let options = [];
+            if (sk.source === 'biomedicalConcept' || sk.source === 'endpoint') {
+              options = getEndpointParameterOptions(study, appState.currentEndpointId, appState.endpointSpecs);
+            } else if (sk.source === 'visit') {
+              options = getVisitLabels(study);
+            } else if (sk.source === 'population') {
+              options = getPopulationNames(study);
+            }
+            return `
+              <div class="config-field">
+                <label class="config-label">${dim}</label>
+                <select class="config-select" data-slice-dim="${dim}">
+                  <option value="">-- Select --</option>
+                  ${options.map(opt => {
+                    const v = typeof opt === 'object' ? opt.value : opt;
+                    const l = typeof opt === 'object' ? opt.label : opt;
+                    const tip = typeof opt === 'object' && opt.label !== opt.value ? ` title="${l}"` : '';
+                    return `<option value="${v}"${tip} ${v === userValue ? 'selected' : ''}>${v}</option>`;
+                  }).join('')}
+                </select>
+                <div style="font-size:11px; color:var(--cdisc-gray); margin-top:4px;">Source: ${sk.source}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+    ` : ''}
 
     <!-- Model Expression -->
     ${hasFormula ? `
@@ -639,7 +1037,7 @@ export async function renderTransformationConfig(container) {
             <div style="font-weight:600; font-size:12px; margin-bottom:8px; color:var(--cdisc-text);">Inherited</div>
             ${dimensions.inherited.map(d => `
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                <span class="badge badge-teal">${d.dimension}</span>
+                <span class="badge badge-teal">${displayConcept(d.dimension)}</span>
                 <span style="font-size:12px; color:var(--cdisc-gray);">${d.role}</span>
               </div>
             `).join('')}
@@ -648,7 +1046,7 @@ export async function renderTransformationConfig(container) {
             <div style="font-weight:600; font-size:12px; margin-bottom:8px; color:var(--cdisc-text);">Added</div>
             ${dimensions.added.map(d => `
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                <span class="badge badge-blue">${d.dimension}</span>
+                <span class="badge badge-blue">${displayConcept(d.dimension)}</span>
                 <span style="font-size:12px; color:var(--cdisc-gray);">${d.role}</span>
               </div>
             `).join('')}
@@ -677,7 +1075,15 @@ export async function renderTransformationConfig(container) {
               ` : ''}
               ${slot.identifiedBy.length > 0 ? `
                 <div class="slot-card-stats" style="margin-top:4px;">
-                  Indexed by: ${slot.identifiedBy.join(', ')}
+                  Indexed by: ${slot.identifiedBy.map(id => {
+                    // For interaction terms like "C.Measure:Treatment", display each part
+                    if (id.includes(':')) {
+                      return id.split(':').map(part => {
+                        return displayConcept(part, conceptDisplayOpts[part]);
+                      }).join(':');
+                    }
+                    return displayConcept(id, conceptDisplayOpts[id]);
+                  }).join(', ')}
                 </div>
               ` : ''}
             </div>
@@ -689,6 +1095,18 @@ export async function renderTransformationConfig(container) {
   `;
 
   // ===== Wire event handlers =====
+
+  // Binding shape click-to-expand provenance
+  container.querySelectorAll('.binding-shape-line').forEach(line => {
+    line.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const bindingId = line.dataset.bindingId;
+      const prov = line.parentElement?.querySelector(`.binding-provenance[data-binding-id="${bindingId}"]`);
+      if (prov) {
+        prov.style.display = prov.style.display === 'none' ? 'block' : 'none';
+      }
+    });
+  });
 
   // Remove binding buttons
   container.querySelectorAll('.binding-remove').forEach(btn => {
@@ -716,26 +1134,77 @@ export async function renderTransformationConfig(container) {
     });
   });
 
-  // Add binding selects
+  // Add binding selects — show dimensional constraint dropdown for derivation concepts
   container.querySelectorAll('.binding-add-select').forEach(select => {
+    const dimSelect = select.parentElement?.querySelector('.binding-dim-constraint');
+
     select.addEventListener('change', () => {
-      const roleName = select.dataset.role;
       const value = select.value;
+      // Show dim constraint dropdown for derivation concepts (C.Measure, C.Change, etc.)
+      if (dimSelect) {
+        dimSelect.style.display = (value && value.startsWith('C.')) ? '' : 'none';
+      }
       if (!value) return;
 
+      // For dimensional concepts (no dim constraint needed), add immediately
       const selectedOption = select.options[select.selectedIndex];
       const type = selectedOption.dataset.type || 'concept';
-
-      appState.customInputBindings.push({
-        methodRole: roleName,
-        concept: value,
-        type: type,
-        description: '',
-        _custom: true
-      });
-
-      renderTransformationConfig(container);
+      if (type === 'dimensional' || !value.startsWith('C.')) {
+        appState.customInputBindings.push({
+          methodRole: select.dataset.role,
+          concept: value,
+          direction: 'input',
+          dataStructureRole: type === 'dimensional' ? 'dimension' : 'measure',
+          description: '',
+          _custom: true
+        });
+        renderTransformationConfig(container);
+      }
+      // For derivation concepts, wait for user to optionally pick a dim constraint
+      // and then click to confirm, or just re-render if no dim select
+      else if (!dimSelect) {
+        appState.customInputBindings.push({
+          methodRole: select.dataset.role,
+          concept: value,
+          direction: 'input',
+          dataStructureRole: type === 'dimensional' ? 'dimension' : 'measure',
+          description: '',
+          _custom: true
+        });
+        renderTransformationConfig(container);
+      }
     });
+
+    // When dim constraint is selected, add the binding with constraint
+    if (dimSelect) {
+      dimSelect.addEventListener('change', () => {
+        const conceptSelect = dimSelect.parentElement?.querySelector('.binding-add-select');
+        const concept = conceptSelect?.value;
+        if (!concept) return;
+        const roleName = dimSelect.dataset.role;
+        const dimValue = dimSelect.value;
+        const type = conceptSelect.options[conceptSelect.selectedIndex]?.dataset?.type || 'concept';
+
+        const binding = {
+          methodRole: roleName,
+          concept: concept,
+          direction: 'input',
+          dataStructureRole: type === 'dimensional' ? 'dimension' : 'measure',
+          description: dimValue ? `${concept} @ ${dimValue}` : '',
+          _custom: true
+        };
+        if (dimValue) {
+          binding.slice = dimValue.toLowerCase();
+          if (!transformation.namedSlices) transformation.namedSlices = {};
+          if (!transformation.namedSlices[binding.slice]) {
+            transformation.namedSlices[binding.slice] = { fixedDimensions: { AnalysisVisit: dimValue } };
+          }
+        }
+
+        appState.customInputBindings.push(binding);
+        renderTransformationConfig(container);
+      });
+    }
   });
 
   // Interaction checkboxes
@@ -749,22 +1218,36 @@ export async function renderTransformationConfig(container) {
       } else {
         appState.activeInteractions = appState.activeInteractions.filter(i => i !== inter);
       }
-      // Update formula display without full re-render
-      const formulaEl = container.querySelector('#formula-display');
-      if (formulaEl) {
-        formulaEl.innerHTML = renderFormulaExpression(appState.customInputBindings, method, appState.activeInteractions);
+      // Full re-render to update formula, output spec (indexed_by), and all displays
+      renderTransformationConfig(container);
+    });
+  });
+
+  // Dimensional slice dropdowns
+  container.querySelectorAll('[data-slice-dim]').forEach(select => {
+    select.addEventListener('change', () => {
+      const dim = select.dataset.sliceDim;
+      if (appState.dimensionalSliceValues) {
+        appState.dimensionalSliceValues[dim] = select.value;
       }
     });
   });
 
   // Navigation
-  container.querySelector('#btn-back-sp').addEventListener('click', () => navigateTo(4));
+  container.querySelector('#btn-back-sp').addEventListener('click', () => navigateTo(5));
   container.querySelector('#btn-configure-derivations').addEventListener('click', () => {
-    // Patch the transformation with custom bindings before navigating
-    appState.selectedTransformation = { ...transformation, inputBindings: appState.customInputBindings };
+    // Patch the transformation with custom bindings and dimensional slices before navigating
+    appState.selectedTransformation = {
+      ...transformation,
+      bindings: [
+        ...appState.customInputBindings,
+        ...(transformation.bindings || []).filter(b => b.direction === 'output')
+      ],
+      dimensionalSliceValues: appState.dimensionalSliceValues
+    };
     // Initialize derivation state if needed
     if (!appState.derivationChain) appState.derivationChain = [];
     if (!appState.confirmedTerminals) appState.confirmedTerminals = [];
-    navigateTo(6);
+    navigateTo(7);
   });
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -24,8 +24,8 @@
   "description": "Tests whether means of two independent samples differ significantly",
   "formula": {
     "notation": "wilkinson_rogers",
-    "default_expression": "response ~ group",
-    "generic_expression": "<response> ~ <group>",
+    "default_expression": "response ~ fixed_effect",
+    "generic_expression": "<response> ~ <fixed_effect>",
     "notes": "Single factor with exactly two levels"
   },
   "configurations": [
@@ -48,7 +48,7 @@
     },
     {
       "name": "conf_level",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "defaultValue": 0.95,
       "description": "Confidence level"
     }
@@ -71,7 +71,7 @@
         "description": "Group means",
         "cardinality": "per_level",
         "indexed_by": [
-          "group"
+          "fixed_effect"
         ],
         "statistics": [
           "mean",
@@ -106,15 +106,15 @@
     {
       "name": "response",
       "statisticalRole": "response",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "The response variable"
     },
     {
-      "name": "group",
+      "name": "fixed_effect",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single",
       "description": "Grouping variable (exactly two levels)"

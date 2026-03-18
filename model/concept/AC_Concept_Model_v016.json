@@ -3,6 +3,10 @@
   "version": "0.16",
   "description": "Analysis Concept model with three levels: Statistical Concepts (atoms), Result Patterns (molecules), and Categories (groupings). The shared statistics vocabulary is referenced by both methods and result patterns but owned by neither.",
 
+  "$vocabulary": {
+    "valueTypes": "../shared/fhir_value_types.json"
+  },
+
   "designPrinciples": [
     "Statistical concepts are individual data points — each has its own identity in the graph",
     "Result patterns group statistical concepts that belong together and should be interpreted together",
@@ -12,121 +16,126 @@
     "The model is representation-neutral — it works in tabular, graph, or any other physical format"
   ],
 
+  "qualifierTypes": {
+    "note": "Qualifier types are defined in the CDDM shared vocabulary (CDDM_Shared_QualifierTypes.json). They represent semantically different versions of a data definition. Statistical concepts and result patterns do not have qualifiers — qualifiers apply only to data definitions at the transformation/CDDM layer.",
+    "$ref": "CDDM_Shared_QualifierTypes.json"
+  },
+
   "sharedStatisticsVocabulary": {
     "note": "These are Level 1 Statistical Concepts. Both methods and result patterns reference them. Neither owns them.",
     "concepts": {
       "Estimate": {
         "definition": "Point estimate of a quantity",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000599"
       },
       "SE": {
         "definition": "Standard error of an estimate",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000562"
       },
       "CI_Lower": {
         "definition": "Lower bound of a confidence interval",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000315"
       },
       "CI_Upper": {
         "definition": "Upper bound of a confidence interval",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000314"
       },
       "DF": {
         "definition": "Degrees of freedom",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000069"
       },
       "PValue": {
         "definition": "P-value for a statistical test",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000193"
       },
       "TStatistic": {
         "definition": "t test statistic",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000176"
       },
       "FStatistic": {
         "definition": "F test statistic",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000282"
       },
       "ChiSquared": {
         "definition": "Chi-squared test statistic",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000030"
       },
       "Coefficient": {
         "definition": "Model coefficient (log scale for GLMs)",
-        "dataType": "numeric"
+        "dataType": "decimal"
       },
       "HazardRatio": {
         "definition": "Hazard ratio (exponentiated Cox coefficient)",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000224"
       },
       "OddsRatio": {
         "definition": "Odds ratio (exponentiated log-odds coefficient)",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000182"
       },
       "SurvivalProb": {
         "definition": "Estimated survival probability",
-        "dataType": "numeric"
+        "dataType": "decimal"
       },
       "Median": {
         "definition": "Median estimate",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000574"
       },
       "Mean": {
         "definition": "Mean estimate",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000573"
       },
       "NRisk": {
         "definition": "Number at risk",
-        "dataType": "numeric"
+        "dataType": "decimal"
       },
       "NEvent": {
         "definition": "Number of events",
-        "dataType": "numeric"
+        "dataType": "decimal"
       },
       "NCensored": {
         "definition": "Number censored",
-        "dataType": "numeric"
+        "dataType": "decimal"
       },
       "AIC": {
         "definition": "Akaike Information Criterion",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000328"
       },
       "BIC": {
         "definition": "Bayesian Information Criterion",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000327"
       },
       "Minus2LogL": {
         "definition": "-2 Log Likelihood",
-        "dataType": "numeric"
+        "dataType": "decimal"
       },
       "DF_Num": {
         "definition": "Numerator degrees of freedom",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000498"
       },
       "DF_Den": {
         "definition": "Denominator degrees of freedom",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "statoMapping": "STATO:0000527"
       },
       "Value": {
         "definition": "A computed/derived value (generic)",
-        "dataType": "numeric"
+        "dataType": "decimal"
       }
     }
   },

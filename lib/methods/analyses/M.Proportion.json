@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -10,7 +10,9 @@
   "name": "Proportion",
   "type": "analysis",
   "class": "Counting",
-  "intent": ["DescriptiveSummary"],
+  "intent": [
+    "DescriptiveSummary"
+  ],
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
@@ -21,20 +23,26 @@
   "description": "Computes the proportion and percentage per category of a categorical variable",
   "formula": {
     "notation": "assignment",
-    "default_expression": "result := PROP(category) OVER (group)",
-    "generic_expression": "result := PROP(<category>) OVER (<group>*)"
+    "default_expression": "result := PROP(response) OVER (group)",
+    "generic_expression": "result := PROP(<response>) OVER (<group>*)"
   },
   "configurations": [
     {
       "name": "ci_method",
       "dataType": "enum",
       "defaultValue": "exact_clopper_pearson",
-      "enumValues": ["exact_clopper_pearson", "wilson", "wald", "agresti_coull", "jeffreys"],
+      "enumValues": [
+        "exact_clopper_pearson",
+        "wilson",
+        "wald",
+        "agresti_coull",
+        "jeffreys"
+      ],
       "description": "Method for confidence interval calculation"
     },
     {
       "name": "ci_level",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "defaultValue": 0.95,
       "description": "Confidence level"
     }
@@ -45,17 +53,24 @@
         "class": "computed_value",
         "description": "The proportion, percentage, and confidence interval per category per group",
         "cardinality": "per_group",
-        "indexed_by": ["group"],
-        "statistics": ["proportion", "pct", "CI_lower", "CI_upper"]
+        "indexed_by": [
+          "group"
+        ],
+        "statistics": [
+          "proportion",
+          "pct",
+          "CI_lower",
+          "CI_upper"
+        ]
       }
     ]
   },
   "assumptions": [],
   "input_roles": [
     {
-      "name": "category",
+      "name": "response",
       "statisticalRole": "response",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single",
       "description": "The categorical variable to summarize"
@@ -63,7 +78,7 @@
     {
       "name": "group",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": false,
       "cardinality": "single_or_multiple",
       "description": "Optional grouping variable(s)"

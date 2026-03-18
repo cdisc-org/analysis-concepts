@@ -4,9 +4,10 @@ import { loadAllData } from './data-loader.js';
 import { renderStudySelect } from './views/study-select.js';
 import { renderStudyOverview } from './views/study-overview.js';
 import { renderEsapBuilder } from './views/esap-builder.js';
-import { renderSmartPhraseBuilder } from './views/smartphrase-builder.js';
-import { renderTransformationConfig } from './views/transformation-config.js';
 import { renderDerivationPipeline } from './views/derivation-pipeline.js';
+import { renderEndpointWhat } from './views/endpoint-what.js';
+import { renderEndpointHow } from './views/endpoint-how.js';
+import { renderEndpointSummary } from './views/endpoint-summary.js';
 
 // ===== Application State =====
 export const appState = {
@@ -17,6 +18,7 @@ export const appState = {
   selectedEndpoints: [],
   esapAnalyses: {},
   currentEndpointId: null,
+  activeEndpointId: null,
   composedPhrases: [],
   matchedTransformations: [],
   selectedTransformation: null,
@@ -24,18 +26,34 @@ export const appState = {
   derivationChain: [],
   confirmedTerminals: [],
   customInputBindings: null,   // null = use template defaults; array = user-modified
+  dimensionalSliceValues: null, // null = not yet initialized; object = user-configured slice values
   activeInteractions: [],      // array of "concept1:concept2" strings
+  endpointSpecs: {},           // keyed by endpoint ID: { conceptCategory, dataType, parameterSource, parameterName, linkedBCIds, dimensionValues, derivationNote }
   // Raw USDM and index for reference resolution
   rawUsdm: null,
+  rawUsdmFiles: [],
   usdmIndex: null,
   // eSAP narrative linking: sectionKey → array of NarrativeContentItem IDs
   esapLinkedNarratives: {
-    studyInfo: [],
-    studyDesign: [],
-    population: [],
+    abbreviations: [],
+    introduction: [],
     objectives: [],
-    methods: []
+    studyDesign: [],
+    protocolChanges: [],
+    estimands: [],
+    endpoints: [],
+    analysisSets: [],
+    statMethods: [],
+    statAnalysis: [],
+    software: [],
+    references: [],
+    shells: [],
+    appendices: []
   },
+  // Concept-to-variable mapping
+  conceptMappings: null,
+  configPanelOpen: false,
+  modelViewMode: 'concepts',  // concepts | adam | omop | fhir | concepts_adam | concepts_omop | concepts_fhir
   // Cached data sources
   acModel: null,
   dcModel: null,
@@ -51,10 +69,11 @@ export const appState = {
 export const STEPS = [
   { num: 1, label: 'Select Study', sublabel: 'Choose a study from USDM', icon: '1' },
   { num: 2, label: 'Study Overview', sublabel: 'Objectives, endpoints & design', icon: '2' },
-  { num: 3, label: 'eSAP Builder', sublabel: 'Create analysis plan', icon: '3' },
-  { num: 4, label: 'SmartPhrases', sublabel: 'Compose analysis descriptions', icon: '4' },
-  { num: 5, label: 'Configure', sublabel: 'Transformation templates', icon: '5' },
-  { num: 6, label: 'Derivations', sublabel: 'Build derivation pipeline', icon: '6' }
+  { num: 3, label: 'Endpoint', sublabel: 'Variable of interest', icon: '3' },
+  { num: 4, label: 'Analysis', sublabel: 'Summary measure', icon: '4' },
+  { num: 5, label: 'Summary', sublabel: 'Review all endpoints', icon: '5' },
+  { num: 6, label: 'Derivations', sublabel: 'Dependent derivation pipeline', icon: '6' },
+  { num: 7, label: 'eSAP Builder', sublabel: 'Generate analysis plan', icon: '7' }
 ];
 
 // ===== Router =====
@@ -64,11 +83,11 @@ function getStepFromHash() {
 }
 
 export function navigateTo(step) {
-  if (step < 1 || step > 6) return;
+  if (step < 1 || step > 7) return;
   location.hash = `#/step/${step}`;
 }
 
-function renderCurrentStep() {
+export function renderCurrentStep() {
   const content = document.getElementById('app-content');
   if (!content) return;
 
@@ -83,10 +102,11 @@ function renderCurrentStep() {
   switch (appState.currentStep) {
     case 1: renderStudySelect(content); break;
     case 2: renderStudyOverview(content); break;
-    case 3: renderEsapBuilder(content); break;
-    case 4: renderSmartPhraseBuilder(content); break;
-    case 5: renderTransformationConfig(content); break;
+    case 3: renderEndpointWhat(content); break;
+    case 4: renderEndpointHow(content); break;
+    case 5: renderEndpointSummary(content); break;
     case 6: renderDerivationPipeline(content); break;
+    case 7: renderEsapBuilder(content); break;
     default: renderStudySelect(content);
   }
 }
@@ -95,6 +115,12 @@ function renderCurrentStep() {
 async function init() {
   renderHeader();
   renderSidebar();
+
+  // Create study config panel container
+  const studyConfigPanel = document.createElement('div');
+  studyConfigPanel.id = 'study-config-panel';
+  document.getElementById('app-layout').appendChild(studyConfigPanel);
+
   renderCurrentStep();
 
   window.addEventListener('hashchange', renderCurrentStep);

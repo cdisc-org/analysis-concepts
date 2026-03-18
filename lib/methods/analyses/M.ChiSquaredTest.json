@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -23,9 +23,9 @@
   "description": "Tests association between two categorical variables using Pearson's chi-squared statistic",
   "formula": {
     "notation": "wilkinson_rogers",
-    "default_expression": "response ~ group",
+    "default_expression": "response ~ fixed_effect",
     "generic_expression": "<response> ~ <fixed_effect>",
-    "notes": "Both response and group are categorical. For RxC tables (more than 2x2)."
+    "notes": "Both response and fixed_effect are categorical. For RxC tables (more than 2x2)."
   },
   "configurations": [
     {
@@ -62,15 +62,15 @@
     {
       "name": "response",
       "statisticalRole": "response",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single",
       "description": "Response category variable"
     },
     {
-      "name": "group",
+      "name": "fixed_effect",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single",
       "description": "Grouping variable"

@@ -1,0 +1,26 @@
+{
+  "title": "CRAFT FHIR-Aligned Value Type Vocabulary",
+  "fhirSpecVersion": "R5 (5.0.0)",
+  "fhirReference": "https://www.hl7.org/fhir/datatypes.html",
+  "primitiveTypes": {
+    "decimal":  { "fhirDef": "Rational numbers", "usage": "Continuous measured values (AVAL, scores, lab results)" },
+    "integer":  { "fhirDef": "Signed 32-bit integers", "usage": "Discrete counts (event counts, subject counts)" },
+    "code":     { "fhirDef": "String from defined value set", "usage": "Categorical values (treatment arms, visit names)" },
+    "string":   { "fhirDef": "Unicode text", "usage": "Free-text values — rarely used in analysis" },
+    "boolean":  { "fhirDef": "true | false", "usage": "Event indicators, flags" },
+    "date":     { "fhirDef": "YYYY-MM-DD", "usage": "Analysis dates" },
+    "dateTime": { "fhirDef": "Date + time + timezone", "usage": "Precise timestamps" },
+    "id":       { "fhirDef": "Resource identifier", "usage": "Subject/record identifiers (USUBJID)" }
+  },
+  "complexTypes": {
+    "Quantity":        { "fhirDef": "Measured amount with unit", "usage": "Numeric clinical values (measurements, scores, durations)", "compatiblePrimitives": ["decimal", "integer"] },
+    "CodeableConcept": { "fhirDef": "Concept from code system(s)", "usage": "Categorical clinical values (treatment arms, visit categories, coded responses)", "compatiblePrimitives": ["code"] },
+    "Identifier":      { "fhirDef": "Entity identifier with system", "usage": "Subject and record identifiers", "compatiblePrimitives": ["id"] }
+  },
+  "layerMapping": {
+    "method_input_roles": "primitiveTypes",
+    "ac_concept_statistics": "primitiveTypes",
+    "dc_concept_valueType": "complexTypes",
+    "transformation_requiredValueType": "complexTypes"
+  }
+}

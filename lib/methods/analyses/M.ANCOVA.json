@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -23,9 +23,9 @@
   "description": "Analysis of Covariance - ANOVA with continuous covariate adjustment",
   "formula": {
     "notation": "wilkinson_rogers",
-    "default_expression": "response ~ covariate + group",
-    "generic_expression": "<response> ~ <covariate>* + <fixed_effect>+ + (<covariate>:<fixed_effect>)*",
-    "notes": "Covariates adjust the group comparison. Adding covariate:group interaction tests homogeneity of regression slopes. Multiple covariates and factors are supported."
+    "default_expression": "response ~ covariate + fixed_effect",
+    "generic_expression": "<response> ~ <covariate>* + <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)* + (<covariate>:<fixed_effect>)*",
+    "notes": "Covariates adjust the group comparison. Adding covariate:fixed_effect interaction tests homogeneity of regression slopes. Multiple covariates and factors are supported."
   },
   "configurations": [
     {
@@ -42,7 +42,7 @@
     },
     {
       "name": "alpha",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "defaultValue": 0.05,
       "description": "Significance level"
     }
@@ -66,7 +66,10 @@
         "description": "Type III tests for each model term (covariate, group, interactions)",
         "cardinality": "per_term",
         "indexed_by": [
-          "term"
+          "covariate",
+          "fixed_effect",
+          "fixed_effect:fixed_effect",
+          "covariate:fixed_effect"
         ],
         "statistics": [
           "SS",
@@ -82,8 +85,10 @@
         "description": "Solution for fixed effects (intercept, covariate slopes, group effects)",
         "cardinality": "per_coefficient",
         "indexed_by": [
-          "term",
-          "level"
+          "covariate",
+          "fixed_effect",
+          "fixed_effect:fixed_effect",
+          "covariate:fixed_effect"
         ],
         "statistics": [
           "coefficient",
@@ -100,8 +105,7 @@
         "description": "Least-squares means per group level, adjusted for covariates",
         "cardinality": "per_level",
         "indexed_by": [
-          "factor",
-          "level"
+          "fixed_effect"
         ],
         "statistics": [
           "estimate",
@@ -116,7 +120,7 @@
         "description": "Pairwise LS mean differences between group levels",
         "cardinality": "per_contrast",
         "indexed_by": [
-          "contrast"
+          "fixed_effect"
         ],
         "statistics": [
           "estimate",
@@ -142,14 +146,14 @@
   "assumptions": [
     "Independence of observations",
     "Normality of residuals",
-    "Homogeneity of regression slopes (if no covariate:group interaction)",
+    "Homogeneity of regression slopes (if no covariate:fixed_effect interaction)",
     "Linear relationship between covariate and response"
   ],
   "input_roles": [
     {
       "name": "response",
       "statisticalRole": "response",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "The response/dependent variable"
@@ -157,15 +161,15 @@
     {
       "name": "covariate",
       "statisticalRole": "covariate",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": false,
       "cardinality": "multiple",
       "description": "Continuous covariate(s) for adjustment (e.g., baseline value, age)"
     },
     {
-      "name": "group",
+      "name": "fixed_effect",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single_or_multiple",
       "description": "Grouping/factor variable(s) (e.g., treatment arm, region)"
