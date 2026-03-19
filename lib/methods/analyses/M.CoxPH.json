@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -16,7 +16,7 @@
   "description": "Semi-parametric regression for survival data modeling the hazard function",
   "formula": {
     "notation": "survival",
-    "default_expression": "Surv(time, event) ~ covariate + group",
+    "default_expression": "Surv(time, event) ~ covariate + fixed_effect",
     "generic_expression": "Surv(<time>, <event>) ~ <covariate>* + <fixed_effect>+ + (<covariate>:<fixed_effect>)* + strata(<strata>)*",
     "notes": "Multiple covariates, factors, and interactions supported. The strata() function creates a stratified baseline hazard (one per stratum level) without estimating a coefficient for that variable."
   },
@@ -51,9 +51,7 @@
         "class": "global_tests",
         "description": "Overall model significance tests (likelihood ratio, Wald, score)",
         "cardinality": "per_test_type",
-        "indexed_by": [
-          "test_type"
-        ],
+        "indexed_by": null,
         "statistics": [
           "chi_squared",
           "p_value",
@@ -65,7 +63,9 @@
         "description": "Type III Wald tests per model term",
         "cardinality": "per_term",
         "indexed_by": [
-          "term"
+          "covariate",
+          "fixed_effect",
+          "covariate:fixed_effect"
         ],
         "statistics": [
           "chi_squared",
@@ -78,8 +78,9 @@
         "description": "Regression coefficients on log-hazard scale with hazard ratios",
         "cardinality": "per_coefficient",
         "indexed_by": [
-          "term",
-          "level"
+          "covariate",
+          "fixed_effect",
+          "covariate:fixed_effect"
         ],
         "statistics": [
           "coefficient",
@@ -96,8 +97,9 @@
         "description": "Hazard ratios with confidence intervals (exponentiated coefficients)",
         "cardinality": "per_coefficient",
         "indexed_by": [
-          "term",
-          "level"
+          "covariate",
+          "fixed_effect",
+          "covariate:fixed_effect"
         ],
         "statistics": [
           "hazard_ratio",
@@ -116,7 +118,7 @@
     {
       "name": "time",
       "statisticalRole": "response",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "Time to event or censoring"
@@ -132,15 +134,15 @@
     {
       "name": "covariate",
       "statisticalRole": "covariate",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": false,
       "cardinality": "multiple",
       "description": "Continuous covariate(s)"
     },
     {
-      "name": "group",
+      "name": "fixed_effect",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single_or_multiple",
       "description": "Treatment group and/or other categorical factors"
@@ -148,7 +150,7 @@
     {
       "name": "strata",
       "statisticalRole": "strata",
-      "dataType": "string",
+      "dataType": "code",
       "required": false,
       "cardinality": "multiple",
       "description": "Stratification variable(s) for stratified Cox model"

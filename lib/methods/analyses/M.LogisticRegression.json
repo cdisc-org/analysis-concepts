@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -23,7 +23,7 @@
   "description": "Models binary outcome as function of predictors via a link function (logit by default)",
   "formula": {
     "notation": "wilkinson_rogers",
-    "default_expression": "response ~ covariate + group",
+    "default_expression": "response ~ covariate + fixed_effect",
     "generic_expression": "<response> ~ <covariate>* + <fixed_effect>+ + (<covariate>:<fixed_effect>)* + (<fixed_effect>:<fixed_effect>)*",
     "notes": "Generalized linear model with binomial family. Multiple covariates and factors supported. For stratified analyses, can include strata as a fixed effect."
   },
@@ -59,7 +59,10 @@
         "description": "Type III likelihood ratio or Wald tests per term",
         "cardinality": "per_term",
         "indexed_by": [
-          "term"
+          "covariate",
+          "fixed_effect",
+          "covariate:fixed_effect",
+          "fixed_effect:fixed_effect"
         ],
         "statistics": [
           "chi_squared",
@@ -72,8 +75,10 @@
         "description": "Maximum likelihood estimates on log-odds scale",
         "cardinality": "per_coefficient",
         "indexed_by": [
-          "term",
-          "level"
+          "covariate",
+          "fixed_effect",
+          "covariate:fixed_effect",
+          "fixed_effect:fixed_effect"
         ],
         "statistics": [
           "coefficient",
@@ -90,8 +95,10 @@
         "description": "Odds ratios with confidence intervals (exponentiated coefficients)",
         "cardinality": "per_coefficient",
         "indexed_by": [
-          "term",
-          "level"
+          "covariate",
+          "fixed_effect",
+          "covariate:fixed_effect",
+          "fixed_effect:fixed_effect"
         ],
         "statistics": [
           "odds_ratio",
@@ -110,7 +117,7 @@
     {
       "name": "response",
       "statisticalRole": "response",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single",
       "description": "Binary response variable (0/1 or event/no-event)"
@@ -118,15 +125,15 @@
     {
       "name": "covariate",
       "statisticalRole": "covariate",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": false,
       "cardinality": "multiple",
       "description": "Continuous covariate(s)"
     },
     {
-      "name": "group",
+      "name": "fixed_effect",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single_or_multiple",
       "description": "Treatment group and/or other categorical factors"

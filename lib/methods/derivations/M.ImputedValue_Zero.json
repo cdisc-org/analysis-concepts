@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -23,7 +23,7 @@
   "configurations": [
     {
       "name": "constant",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "defaultValue": 0,
       "description": "The fixed value to use for imputation. Defaults to 0 but can be set to any value (e.g., 999 for sentinel, or a clinically meaningful default)."
     }
@@ -33,7 +33,7 @@
       {
         "class": "computed_value",
         "role_name": "imputed_value",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "description": "The constant imputation value",
         "statistics": [
           "value"

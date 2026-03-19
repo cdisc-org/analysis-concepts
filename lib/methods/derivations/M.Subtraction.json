@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -25,7 +25,7 @@
       {
         "class": "computed_value",
         "role_name": "difference",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "description": "Result: minuend - subtrahend",
         "statistics": [
           "value"
@@ -38,14 +38,14 @@
   "input_roles": [
     {
       "name": "minuend",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "The value to subtract from"
     },
     {
       "name": "subtrahend",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "The value to subtract"

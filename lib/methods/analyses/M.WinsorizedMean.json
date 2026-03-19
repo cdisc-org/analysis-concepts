@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -10,18 +10,20 @@
   "name": "Winsorized Mean",
   "type": "analysis",
   "class": "Central Tendency",
-  "intent": ["DescriptiveSummary"],
+  "intent": [
+    "DescriptiveSummary"
+  ],
   "codings": [],
   "description": "Computes the Winsorized mean after replacing extreme values with boundary values",
   "formula": {
     "notation": "assignment",
-    "default_expression": "result := WINMEAN(variable, winsor_fraction) OVER (group)",
-    "generic_expression": "result := WINMEAN(<variable>, <winsor_fraction>) OVER (<group>*)"
+    "default_expression": "result := WINMEAN(response, winsor_fraction) OVER (group)",
+    "generic_expression": "result := WINMEAN(<response>, <winsor_fraction>) OVER (<group>*)"
   },
   "configurations": [
     {
       "name": "winsor_fraction",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "defaultValue": 0.05,
       "description": "Fraction to Winsorize from each tail (0 to 0.5)"
     }
@@ -32,17 +34,21 @@
         "class": "computed_value",
         "description": "Winsorized mean of the variable",
         "cardinality": "per_group",
-        "indexed_by": ["group"],
-        "statistics": ["winsorized_mean"]
+        "indexed_by": [
+          "group"
+        ],
+        "statistics": [
+          "winsorized_mean"
+        ]
       }
     ]
   },
   "assumptions": [],
   "input_roles": [
     {
-      "name": "variable",
+      "name": "response",
       "statisticalRole": "response",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "The variable to summarize"
@@ -50,7 +56,7 @@
     {
       "name": "group",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": false,
       "cardinality": "single_or_multiple",
       "description": "Optional grouping variable(s)"

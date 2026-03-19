@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -23,7 +23,7 @@
   "description": "Linear mixed model for longitudinal data with structured R-side covariance. No random effects (G-side); within-subject correlation modeled through the residual covariance structure.",
   "formula": {
     "notation": "wilkinson_rogers",
-    "default_expression": "response ~ covariate + time + group + time:group | subject / time",
+    "default_expression": "response ~ covariate + repeated_factor + fixed_effect + repeated_factor:fixed_effect | repeated_subject / repeated_factor",
     "generic_expression": "<response> ~ <covariate>* + <repeated_factor> + <fixed_effect>+ + (<fixed_effect>:<repeated_factor>)* + (<covariate>:<fixed_effect>)* | <repeated_subject> / <repeated_factor>",
     "notes": "The part after '|' specifies the repeated measures structure: subject is the clustering unit, time is the repeated factor within subject. Multiple covariates and fixed effects are supported. The time:group interaction is typically the term of primary interest for treatment comparison at each visit."
   },
@@ -82,7 +82,11 @@
         "description": "Type III F-tests for each fixed effect term",
         "cardinality": "per_term",
         "indexed_by": [
-          "term"
+          "covariate",
+          "repeated_factor",
+          "fixed_effect",
+          "fixed_effect:repeated_factor",
+          "covariate:fixed_effect"
         ],
         "statistics": [
           "F_statistic",
@@ -95,13 +99,13 @@
             "term": "covariate"
           },
           {
-            "term": "time"
+            "term": "repeated_factor"
           },
           {
-            "term": "group"
+            "term": "fixed_effect"
           },
           {
-            "term": "time:group"
+            "term": "repeated_factor:fixed_effect"
           }
         ]
       },
@@ -110,8 +114,11 @@
         "description": "Solution for all fixed effect coefficients",
         "cardinality": "per_coefficient",
         "indexed_by": [
-          "term",
-          "level"
+          "covariate",
+          "repeated_factor",
+          "fixed_effect",
+          "fixed_effect:repeated_factor",
+          "covariate:fixed_effect"
         ],
         "statistics": [
           "coefficient",
@@ -128,15 +135,15 @@
         "description": "LS means by group, by time, or by group×time. The indexing depends on which LSMEANS statement is requested.",
         "cardinality": "per_level_combination",
         "indexed_by": [
-          "factor",
-          "level"
+          "fixed_effect",
+          "repeated_factor"
         ],
         "sub_types": [
           {
             "name": "ls_means_by_group_time",
             "indexed_by": [
-              "group",
-              "time"
+              "fixed_effect",
+              "repeated_factor"
             ],
             "description": "LS means for each group at each timepoint",
             "statistics": [
@@ -150,7 +157,7 @@
           {
             "name": "ls_means_by_group",
             "indexed_by": [
-              "group"
+              "fixed_effect"
             ],
             "description": "Marginal LS means averaged over time",
             "statistics": [
@@ -164,7 +171,7 @@
           {
             "name": "ls_means_by_time",
             "indexed_by": [
-              "time"
+              "repeated_factor"
             ],
             "description": "Marginal LS means averaged over group",
             "statistics": [
@@ -185,8 +192,8 @@
           {
             "name": "group_contrast_at_time",
             "indexed_by": [
-              "contrast",
-              "time"
+              "fixed_effect",
+              "repeated_factor"
             ],
             "description": "Group difference at a specific timepoint (e.g., Treatment vs Placebo at Week 24)",
             "statistics": [
@@ -202,8 +209,8 @@
           {
             "name": "time_contrast_within_group",
             "indexed_by": [
-              "time_contrast",
-              "group"
+              "repeated_factor",
+              "fixed_effect"
             ],
             "description": "Change over time within a group (e.g., Week 24 vs Week 4 within Treatment)",
             "statistics": [
@@ -219,7 +226,7 @@
           {
             "name": "overall_group_contrast",
             "indexed_by": [
-              "contrast"
+              "fixed_effect"
             ],
             "description": "Overall group difference marginalized over time",
             "statistics": [
@@ -232,14 +239,15 @@
               "df"
             ]
           }
-        ]
+        ],
+        "indexed_by": null
       },
       {
         "class": "covariance_parameters",
         "description": "Estimated R-side covariance matrix parameters",
         "cardinality": "per_parameter",
         "indexed_by": [
-          "cov_param"
+          "repeated_factor"
         ],
         "statistics": [
           "estimate",
@@ -257,7 +265,7 @@
     {
       "name": "response",
       "statisticalRole": "response",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "The response variable at each timepoint (e.g., change from baseline)"
@@ -265,31 +273,31 @@
     {
       "name": "covariate",
       "statisticalRole": "covariate",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": false,
       "cardinality": "multiple",
       "description": "Continuous covariate(s) (e.g., baseline value, age, weight)"
     },
     {
-      "name": "time",
+      "name": "repeated_factor",
       "statisticalRole": "repeated_factor",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single",
       "description": "Timepoint/visit variable defining the repeated dimension"
     },
     {
-      "name": "group",
+      "name": "fixed_effect",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single_or_multiple",
       "description": "Treatment group (and optionally additional factors like region, sex)"
     },
     {
-      "name": "subject",
+      "name": "repeated_subject",
       "statisticalRole": "repeated_subject",
-      "dataType": "string",
+      "dataType": "id",
       "required": true,
       "cardinality": "single",
       "description": "Subject identifier for the repeated measures clustering"

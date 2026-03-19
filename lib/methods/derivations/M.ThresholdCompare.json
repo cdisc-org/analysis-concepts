@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -36,13 +36,13 @@
     },
     {
       "name": "true_value",
-      "dataType": "string",
+      "dataType": "code",
       "defaultValue": "Y",
       "description": "Value when condition is true"
     },
     {
       "name": "false_value",
-      "dataType": "string",
+      "dataType": "code",
       "defaultValue": "N",
       "description": "Value when condition is false"
     }
@@ -52,7 +52,7 @@
       {
         "class": "computed_value",
         "role_name": "result",
-        "dataType": "string",
+        "dataType": "code",
         "description": "Comparison result flag",
         "statistics": [
           "value"
@@ -65,14 +65,14 @@
   "input_roles": [
     {
       "name": "value",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "Value to compare"
     },
     {
       "name": "threshold",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "Threshold value"

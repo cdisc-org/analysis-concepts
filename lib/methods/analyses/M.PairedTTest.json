@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -24,20 +24,20 @@
   "description": "Tests whether the mean difference between paired observations differs from zero",
   "formula": {
     "notation": "wilkinson_rogers",
-    "default_expression": "response ~ 1 | subject",
-    "generic_expression": "<response> ~ 1 | <subject>",
+    "default_expression": "response ~ 1 | repeated_subject",
+    "generic_expression": "<response> ~ 1 | <repeated_subject>",
     "notes": "Intercept-only model on the within-subject differences"
   },
   "configurations": [
     {
       "name": "mu",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "defaultValue": 0,
       "description": "Hypothesized difference"
     },
     {
       "name": "conf_level",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "defaultValue": 0.95,
       "description": "Confidence level"
     }
@@ -77,15 +77,15 @@
     {
       "name": "response",
       "statisticalRole": "response",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "The paired difference values (or the raw values at two timepoints)"
     },
     {
-      "name": "subject",
+      "name": "repeated_subject",
       "statisticalRole": "repeated_subject",
-      "dataType": "string",
+      "dataType": "id",
       "required": true,
       "cardinality": "single",
       "description": "Subject identifier for pairing"

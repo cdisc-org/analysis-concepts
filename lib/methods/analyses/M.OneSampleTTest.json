@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -31,7 +31,7 @@
   "configurations": [
     {
       "name": "mu",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "defaultValue": 0,
       "description": "Hypothesized population mean"
     },
@@ -48,7 +48,7 @@
     },
     {
       "name": "conf_level",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "defaultValue": 0.95,
       "description": "Confidence level for interval"
     }
@@ -88,7 +88,7 @@
     {
       "name": "response",
       "statisticalRole": "response",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "The sample data"

@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -23,7 +23,7 @@
   "description": "Tests the hypothesis of no overall treatment effect across multiple correlated response variables simultaneously",
   "formula": {
     "notation": "wilkinson_rogers",
-    "default_expression": "cbind(response1, response2, ...) ~ group",
+    "default_expression": "cbind(response1, response2, ...) ~ fixed_effect",
     "generic_expression": "cbind(<response>+) ~ <covariate>* + <fixed_effect>+",
     "notes": "Left-hand side uses cbind() to specify the multivariate response. In long format with a parameter identifier, the model is fit as response ~ group with subject and parameter defining the multivariate structure."
   },
@@ -58,9 +58,7 @@
         "class": "multivariate_tests",
         "description": "Multivariate omnibus test statistics",
         "cardinality": "per_test_type",
-        "indexed_by": [
-          "test_type"
-        ],
+        "indexed_by": null,
         "statistics": [
           "estimate",
           "F_statistic",
@@ -81,7 +79,7 @@
         "cardinality": "per_response_per_term",
         "indexed_by": [
           "response",
-          "term"
+          "fixed_effect"
         ],
         "statistics": [
           "F_statistic",
@@ -96,8 +94,7 @@
         "cardinality": "per_response_per_coefficient",
         "indexed_by": [
           "response",
-          "term",
-          "level"
+          "fixed_effect"
         ],
         "statistics": [
           "coefficient",
@@ -120,31 +117,31 @@
     {
       "name": "response",
       "statisticalRole": "response",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "multiple",
       "description": "Multiple correlated response variables"
     },
     {
-      "name": "group",
+      "name": "fixed_effect",
       "statisticalRole": "fixed_effect",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single_or_multiple",
       "description": "Treatment/factor variable(s)"
     },
     {
-      "name": "subject",
+      "name": "repeated_subject",
       "statisticalRole": "repeated_subject",
-      "dataType": "string",
+      "dataType": "id",
       "required": true,
       "cardinality": "single",
       "description": "Subject identifier"
     },
     {
-      "name": "parameter",
+      "name": "repeated_factor",
       "statisticalRole": "repeated_factor",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "single",
       "description": "Parameter/subscale identifier (defines which response variable)"

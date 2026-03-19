@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -47,7 +47,7 @@
       {
         "class": "computed_value",
         "role_name": "imputed_value",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "description": "The worst observed value within the partition",
         "statistics": [
           "value"
@@ -65,14 +65,14 @@
   "input_roles": [
     {
       "name": "value",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "Source values from which the worst is selected"
     },
     {
       "name": "partition",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "multiple",
       "description": "Grouping variables (typically subject, parameter)"

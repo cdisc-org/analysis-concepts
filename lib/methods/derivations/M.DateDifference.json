@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -38,7 +38,7 @@
       {
         "class": "computed_value",
         "role_name": "result",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "description": "The difference in the specified unit",
         "statistics": [
           "value"

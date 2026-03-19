@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -60,13 +60,13 @@
     },
     {
       "name": "reference_event",
-      "dataType": "string",
+      "dataType": "code",
       "defaultValue": "first_dose",
       "description": "The event that defines scope boundaries (e.g. first dose date, randomisation date)"
     },
     {
       "name": "target_value",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "defaultValue": null,
       "description": "Target value for closest_to_target rule"
     }
@@ -76,7 +76,7 @@
       {
         "class": "computed_value",
         "role_name": "flag",
-        "dataType": "string",
+        "dataType": "code",
         "description": "Indicator marking selected record(s) ('Y' on selected, blank otherwise). In ADaM context: ABLFL for baseline, ANL01FL for analysis records, etc.",
         "statistics": [
           "value"
@@ -94,21 +94,21 @@
   "input_roles": [
     {
       "name": "value",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "The observed values to evaluate for selection"
     },
     {
       "name": "partition",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "multiple",
       "description": "Variables defining the selection scope (e.g. subject, parameter)"
     },
     {
       "name": "time_order",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "Variable defining temporal ordering within partition (e.g. visit number, analysis date)"

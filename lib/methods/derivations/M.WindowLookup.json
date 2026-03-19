@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.5.0",
+  "schema_version": "0.6.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -34,13 +34,13 @@
     },
     {
       "name": "offset",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "defaultValue": 1,
       "description": "Row offset for lag/lead"
     },
     {
       "name": "order_by",
-      "dataType": "string",
+      "dataType": "code",
       "description": "Variable defining row order within partition"
     }
   ],
@@ -49,7 +49,7 @@
       {
         "class": "computed_value",
         "role_name": "result",
-        "dataType": "numeric",
+        "dataType": "decimal",
         "description": "The looked-up value",
         "statistics": [
           "value"
@@ -64,14 +64,14 @@
   "input_roles": [
     {
       "name": "value",
-      "dataType": "numeric",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "Value to look up"
     },
     {
       "name": "partition",
-      "dataType": "string",
+      "dataType": "code",
       "required": true,
       "cardinality": "multiple",
       "description": "Partitioning variables"
