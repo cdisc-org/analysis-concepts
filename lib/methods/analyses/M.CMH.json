@@ -45,7 +45,7 @@
         "class": "test_result",
         "description": "CMH test of conditional independence",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "chi_squared",
           "p_value",
@@ -56,7 +56,7 @@
         "class": "association_measures",
         "description": "Common (Mantel-Haenszel) odds ratio across strata",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "odds_ratio",
           "CI_lower",
@@ -65,7 +65,7 @@
         "sub_types": [
           {
             "name": "common_odds_ratio",
-            "indexed_by": null,
+            "dimensions": null,
             "description": "Pooled MH odds ratio",
             "statistics": [
               "odds_ratio",
@@ -75,7 +75,7 @@
           },
           {
             "name": "stratum_specific_odds_ratios",
-            "indexed_by": [
+            "dimensions": [
               "strata"
             ],
             "description": "Odds ratio within each stratum",
@@ -91,7 +91,7 @@
         "class": "homogeneity_test",
         "description": "Breslow-Day test for homogeneity of odds ratios across strata",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "chi_squared",
           "p_value",

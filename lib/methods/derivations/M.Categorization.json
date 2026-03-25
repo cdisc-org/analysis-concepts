@@ -46,7 +46,7 @@
         "statistics": [
           "value"
         ],
-        "indexed_by": null
+        "dimensions": null
       }
     ]
   },

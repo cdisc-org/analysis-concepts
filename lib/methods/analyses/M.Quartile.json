@@ -33,7 +33,7 @@
         "class": "computed_value",
         "description": "The computed quartile values per group",
         "cardinality": "per_group",
-        "indexed_by": [
+        "dimensions": [
           "group"
         ],
         "statistics": [

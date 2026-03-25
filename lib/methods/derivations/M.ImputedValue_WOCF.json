@@ -52,7 +52,7 @@
         "statistics": [
           "value"
         ],
-        "indexed_by": [
+        "dimensions": [
           "partition"
         ]
       }

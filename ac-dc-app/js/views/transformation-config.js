@@ -1218,7 +1218,7 @@ export async function renderTransformationConfig(container) {
       } else {
         appState.activeInteractions = appState.activeInteractions.filter(i => i !== inter);
       }
-      // Full re-render to update formula, output spec (indexed_by), and all displays
+      // Full re-render to update formula, output spec (dimensions), and all displays
       renderTransformationConfig(container);
     });
   });

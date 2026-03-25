@@ -45,7 +45,7 @@
         "class": "test_result",
         "description": "Chi-squared test of independence",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "chi_squared",
           "p_value",

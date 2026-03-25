@@ -59,7 +59,7 @@
         "class": "test_result",
         "description": "Two-sample t-test result",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "t_statistic",
           "p_value",
@@ -70,7 +70,7 @@
         "class": "ls_means",
         "description": "Group means",
         "cardinality": "per_level",
-        "indexed_by": [
+        "dimensions": [
           "fixed_effect"
         ],
         "statistics": [
@@ -84,7 +84,7 @@
         "class": "contrasts",
         "description": "Difference between group means",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "estimate",
           "SE",

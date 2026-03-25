@@ -273,16 +273,16 @@ function patternToClass(patternId) {
 }
 
 /**
- * Resolve indexed_by from the method's output_class, substituting
+ * Resolve dimensions from the method's output_class, substituting
  * actual bound concept names for role names and interaction patterns.
  *
- * @param {Array} methodIndexedBy - The method's indexed_by array (role names and interaction patterns)
+ * @param {Array} methodDimensions - The method's dimensions array (role names and interaction patterns)
  * @param {Array} bindings - Current input bindings (customInputBindings)
  * @param {Array} activeInteractions - Currently active interaction terms (concept:concept pairs)
- * @returns {Array} Resolved indexed_by with actual concept/variable names
+ * @returns {Array} Resolved dimensions with actual concept/variable names
  */
-function resolveIndexedBy(methodIndexedBy, bindings, activeInteractions) {
-  if (!methodIndexedBy || !bindings) return [];
+function resolveIndexedBy(methodDimensions, bindings, activeInteractions) {
+  if (!methodDimensions || !bindings) return [];
 
   // Build role → concepts lookup
   const roleConcepts = {};
@@ -293,7 +293,7 @@ function resolveIndexedBy(methodIndexedBy, bindings, activeInteractions) {
 
   const resolved = [];
 
-  for (const entry of methodIndexedBy) {
+  for (const entry of methodDimensions) {
     if (entry.includes(':')) {
       // Interaction pattern like "covariate:fixed_effect" or "fixed_effect:fixed_effect"
       const [roleA, roleB] = entry.split(':');
@@ -363,11 +363,11 @@ function resolveRoleNames(identifiedBy, bindings) {
 
 /**
  * Get the output slot mapping for a transformation, enriched with
- * AC result pattern details AND resolved indexed_by from the method.
+ * AC result pattern details AND resolved dimensions from the method.
  *
  * @param {Object} transformation - The transformation definition
  * @param {Object} acModel - The AC Concept Model
- * @param {Object} [method] - The loaded method JSON (optional, enables resolved indexed_by)
+ * @param {Object} [method] - The loaded method JSON (optional, enables resolved dimensions)
  * @param {Array} [bindings] - Current input bindings (optional, for resolution)
  * @param {Array} [activeInteractions] - Active interaction terms (optional, for resolution)
  */
@@ -391,10 +391,10 @@ export function getOutputMapping(transformation, acModel, method, bindings, acti
     const className = patternToClass(patternId);
     const outputClass = outputClasses[className];
 
-    // Resolve indexed_by: prefer method-level resolved, fall back to AC model
+    // Resolve dimensions: prefer method-level resolved, fall back to AC model
     let identifiedBy = pattern?.identifiedBy || [];
-    if (outputClass?.indexed_by && bindings) {
-      const resolved = resolveIndexedBy(outputClass.indexed_by, bindings, activeInteractions);
+    if (outputClass?.dimensions && bindings) {
+      const resolved = resolveIndexedBy(outputClass.dimensions, bindings, activeInteractions);
       if (resolved.length > 0) {
         identifiedBy = resolved;
       }

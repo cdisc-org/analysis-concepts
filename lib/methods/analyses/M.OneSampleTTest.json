@@ -59,7 +59,7 @@
         "class": "test_result",
         "description": "Overall one-sample t-test result",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "t_statistic",
           "p_value",
@@ -70,7 +70,7 @@
         "class": "point_estimate",
         "description": "Estimated mean with inference",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "mean",
           "SE",

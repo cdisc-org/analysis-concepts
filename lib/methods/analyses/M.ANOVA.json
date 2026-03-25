@@ -50,13 +50,13 @@
           "R_squared",
           "AIC"
         ],
-        "indexed_by": null
+        "dimensions": null
       },
       {
         "class": "type3_tests",
         "description": "ANOVA table: one row per model term",
         "cardinality": "per_term",
-        "indexed_by": [
+        "dimensions": [
           "fixed_effect",
           "fixed_effect:fixed_effect"
         ],
@@ -72,7 +72,7 @@
         "class": "ls_means",
         "description": "Marginal means per factor level",
         "cardinality": "per_level",
-        "indexed_by": [
+        "dimensions": [
           "fixed_effect"
         ],
         "statistics": [
@@ -87,7 +87,7 @@
         "class": "contrasts",
         "description": "Pairwise differences between group means",
         "cardinality": "per_contrast",
-        "indexed_by": [
+        "dimensions": [
           "fixed_effect"
         ],
         "statistics": [

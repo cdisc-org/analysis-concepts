@@ -1988,8 +1988,8 @@
         <mxCell id="s5_inputbinding" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=9;fontStyle=1;" value="Binding" vertex="1">
           <mxGeometry height="65" width="65" x="800" y="685" as="geometry" />
         </mxCell>
-        <mxCell id="s5_inputbinding_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="&lt;div&gt;direction: input | output (required)&lt;/div&gt;&lt;div&gt;&amp;nbsp;dataStructureRole: (required)&lt;/div&gt;&lt;div&gt;&amp;nbsp;measure | dimension | attribute&lt;/div&gt;&lt;div&gt;&amp;nbsp;qualifierType: string&lt;/div&gt;&lt;div&gt;&amp;nbsp;qualifierValue: string&lt;/div&gt;&lt;div&gt;&amp;nbsp;requiredValueType: string&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="190" x="737.5" y="790" as="geometry" />
+        <mxCell id="s5_inputbinding_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="&lt;div&gt;concept: string (required)&lt;/div&gt;&lt;div&gt;methodRole: string (required)&lt;/div&gt;&lt;div&gt;direction: input | output (required)&lt;/div&gt;&lt;div&gt;dataStructureRole: measure | dimension | attribute (required)&lt;/div&gt;&lt;div&gt;qualifierType: string&lt;/div&gt;&lt;div&gt;qualifierValue: string&lt;/div&gt;&lt;div&gt;requiredValueType: string&lt;/div&gt;" vertex="1">
+          <mxGeometry height="100" width="200" x="737.5" y="790" as="geometry" />
         </mxCell>
         <mxCell id="s5_inputbinding_pc" edge="1" parent="1" source="s5_inputbinding" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s5_inputbinding_p">
           <mxGeometry relative="1" as="geometry" />
@@ -2006,7 +2006,7 @@
         <mxCell id="s5_namedslice" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=9;fontStyle=1;" value="Slice" vertex="1">
           <mxGeometry height="65" width="65" x="970" y="405" as="geometry" />
         </mxCell>
-        <mxCell id="s5_namedslice_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="name: string (key)&#xa;fixedDimensions: object&#xa;dimension: string&#xa;source: string" vertex="1">
+        <mxCell id="s5_namedslice_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="name: string (key)&#xa;dimension: string&#xa;constraint: string&#xa;description: string" vertex="1">
           <mxGeometry height="60" width="140" x="1060" y="382.5" as="geometry" />
         </mxCell>
         <mxCell id="s5_namedslice_pc" edge="1" parent="1" source="s5_namedslice" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s5_namedslice_p">

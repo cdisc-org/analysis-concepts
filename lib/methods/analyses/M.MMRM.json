@@ -70,7 +70,7 @@
         "class": "fit_statistics",
         "description": "Model fit measures for covariance structure selection",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "AIC",
           "BIC",
@@ -81,7 +81,7 @@
         "class": "type3_tests",
         "description": "Type III F-tests for each fixed effect term",
         "cardinality": "per_term",
-        "indexed_by": [
+        "dimensions": [
           "covariate",
           "repeated_factor",
           "fixed_effect",
@@ -113,7 +113,7 @@
         "class": "parameter_estimates",
         "description": "Solution for all fixed effect coefficients",
         "cardinality": "per_coefficient",
-        "indexed_by": [
+        "dimensions": [
           "covariate",
           "repeated_factor",
           "fixed_effect",
@@ -134,14 +134,14 @@
         "class": "ls_means",
         "description": "LS means by group, by time, or by group×time. The indexing depends on which LSMEANS statement is requested.",
         "cardinality": "per_level_combination",
-        "indexed_by": [
+        "dimensions": [
           "fixed_effect",
           "repeated_factor"
         ],
         "sub_types": [
           {
             "name": "ls_means_by_group_time",
-            "indexed_by": [
+            "dimensions": [
               "fixed_effect",
               "repeated_factor"
             ],
@@ -156,7 +156,7 @@
           },
           {
             "name": "ls_means_by_group",
-            "indexed_by": [
+            "dimensions": [
               "fixed_effect"
             ],
             "description": "Marginal LS means averaged over time",
@@ -170,7 +170,7 @@
           },
           {
             "name": "ls_means_by_time",
-            "indexed_by": [
+            "dimensions": [
               "repeated_factor"
             ],
             "description": "Marginal LS means averaged over group",
@@ -191,7 +191,7 @@
         "sub_types": [
           {
             "name": "group_contrast_at_time",
-            "indexed_by": [
+            "dimensions": [
               "fixed_effect",
               "repeated_factor"
             ],
@@ -208,7 +208,7 @@
           },
           {
             "name": "time_contrast_within_group",
-            "indexed_by": [
+            "dimensions": [
               "repeated_factor",
               "fixed_effect"
             ],
@@ -225,7 +225,7 @@
           },
           {
             "name": "overall_group_contrast",
-            "indexed_by": [
+            "dimensions": [
               "fixed_effect"
             ],
             "description": "Overall group difference marginalized over time",
@@ -240,13 +240,13 @@
             ]
           }
         ],
-        "indexed_by": null
+        "dimensions": null
       },
       {
         "class": "covariance_parameters",
         "description": "Estimated R-side covariance matrix parameters",
         "cardinality": "per_parameter",
-        "indexed_by": [
+        "dimensions": [
           "repeated_factor"
         ],
         "statistics": [

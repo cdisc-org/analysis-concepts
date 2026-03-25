@@ -8,7 +8,7 @@
     "fit_statistics": {
       "description": "Overall model goodness-of-fit measures",
       "cardinality": "singleton",
-      "indexed_by": null,
+      "dimensions": null,
       "statistics": [
         "AIC",
         "BIC",
@@ -18,7 +18,7 @@
     "type3_tests": {
       "description": "Type III (or other SS type) omnibus tests, one per model term",
       "cardinality": "per_term",
-      "indexed_by": [
+      "dimensions": [
         "term"
       ],
       "statistics": [
@@ -33,7 +33,7 @@
     "parameter_estimates": {
       "description": "Solution for fixed effects, one row per model coefficient",
       "cardinality": "per_coefficient",
-      "indexed_by": [
+      "dimensions": [
         "term",
         "level"
       ],
@@ -50,7 +50,7 @@
     "ls_means": {
       "description": "Least-squares means (adjusted marginal means) per factor level or level combination",
       "cardinality": "per_level",
-      "indexed_by": [
+      "dimensions": [
         "factor",
         "level"
       ],
@@ -65,7 +65,7 @@
     "contrasts": {
       "description": "Pairwise or custom contrasts between LS means",
       "cardinality": "per_contrast",
-      "indexed_by": [
+      "dimensions": [
         "contrast",
         "at_level"
       ],
@@ -82,7 +82,7 @@
     "covariance_parameters": {
       "description": "Estimated covariance/variance components",
       "cardinality": "per_parameter",
-      "indexed_by": [
+      "dimensions": [
         "cov_param"
       ],
       "statistics": [
@@ -93,7 +93,7 @@
     "test_result": {
       "description": "Single overall test result (for non-regression methods)",
       "cardinality": "singleton",
-      "indexed_by": null,
+      "dimensions": null,
       "statistics": [
         "chi_squared",
         "p_value",
@@ -103,7 +103,7 @@
     "association_measures": {
       "description": "Effect size / association measures with inference",
       "cardinality": "singleton_or_per_stratum",
-      "indexed_by": [
+      "dimensions": [
         "stratum"
       ],
       "statistics": [
@@ -115,7 +115,7 @@
     "survival_table": {
       "description": "Life table with survival estimates at each event time",
       "cardinality": "per_event_time",
-      "indexed_by": [
+      "dimensions": [
         "group",
         "time"
       ],
@@ -132,7 +132,7 @@
     "median_survival": {
       "description": "Median survival time per group",
       "cardinality": "per_group",
-      "indexed_by": [
+      "dimensions": [
         "group"
       ],
       "statistics": [
@@ -144,7 +144,7 @@
     "event_summary": {
       "description": "Summary counts of events and censoring per group",
       "cardinality": "per_group",
-      "indexed_by": [
+      "dimensions": [
         "group"
       ],
       "statistics": [
@@ -156,7 +156,7 @@
     "computed_value": {
       "description": "Single derived/computed output value (for derivation methods)",
       "cardinality": "per_row",
-      "indexed_by": null,
+      "dimensions": null,
       "statistics": [
         "value"
       ]
@@ -164,7 +164,7 @@
     "multivariate_tests": {
       "description": "Multivariate test statistics for overall hypothesis",
       "cardinality": "per_test_type",
-      "indexed_by": [
+      "dimensions": [
         "test_type"
       ],
       "statistics": [
@@ -178,7 +178,7 @@
     "point_estimate": {
       "description": "Estimated mean with inference",
       "cardinality": "singleton",
-      "indexed_by": null,
+      "dimensions": null,
       "statistics": [
         "mean",
         "SE",
@@ -189,7 +189,7 @@
     "homogeneity_test": {
       "description": "Breslow-Day test for homogeneity of odds ratios across strata",
       "cardinality": "singleton",
-      "indexed_by": null,
+      "dimensions": null,
       "statistics": [
         "chi_squared",
         "p_value",
@@ -199,7 +199,7 @@
     "odds_ratio_estimates": {
       "description": "Odds ratios with confidence intervals (exponentiated coefficients)",
       "cardinality": "per_coefficient",
-      "indexed_by": [
+      "dimensions": [
         "term",
         "level"
       ],
@@ -212,7 +212,7 @@
     "landmark_estimates": {
       "description": "Survival probability at specific landmark times",
       "cardinality": "per_group_per_landmark",
-      "indexed_by": [
+      "dimensions": [
         "group",
         "time"
       ],
@@ -226,7 +226,7 @@
     "global_tests": {
       "description": "Overall model significance tests (likelihood ratio, Wald, score)",
       "cardinality": "per_test_type",
-      "indexed_by": [
+      "dimensions": [
         "test_type"
       ],
       "statistics": [
@@ -238,7 +238,7 @@
     "hazard_ratio_estimates": {
       "description": "Hazard ratios with confidence intervals (exponentiated coefficients)",
       "cardinality": "per_coefficient",
-      "indexed_by": [
+      "dimensions": [
         "term",
         "level"
       ],

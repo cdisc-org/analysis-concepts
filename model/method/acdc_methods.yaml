@@ -187,7 +187,7 @@ classes:
         description: What this output class represents
       cardinality:
         description: How many rows this output class produces
-      indexed_by:
+      dimensions:
         description: Dimensions that index the output rows
         multivalued: true
       statistics:
@@ -201,7 +201,7 @@ classes:
       template_ref:
         description: Explicit reference to output class template (alternative to class)
       examples:
-        description: Example values for the indexed_by dimensions
+        description: Example values for the dimensions
         multivalued: true
         range: string
       test_types:
@@ -215,7 +215,7 @@ classes:
         description: Sub-type identifier
         identifier: true
         required: true
-      indexed_by:
+      dimensions:
         description: Dimensions for this sub-type
         multivalued: true
       description:
@@ -254,7 +254,7 @@ classes:
         description: Purpose of this output class
       cardinality:
         description: How many output rows this class produces
-      indexed_by:
+      dimensions:
         description: Dimensions that index the output rows
         multivalued: true
       statistics:

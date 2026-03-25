@@ -58,7 +58,7 @@
         "class": "multivariate_tests",
         "description": "Multivariate omnibus test statistics",
         "cardinality": "per_test_type",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "estimate",
           "F_statistic",
@@ -77,7 +77,7 @@
         "class": "type3_tests",
         "description": "Univariate Type III tests per response variable (follow-up to multivariate test)",
         "cardinality": "per_response_per_term",
-        "indexed_by": [
+        "dimensions": [
           "response",
           "fixed_effect"
         ],
@@ -92,7 +92,7 @@
         "class": "parameter_estimates",
         "description": "Regression coefficients per response variable",
         "cardinality": "per_response_per_coefficient",
-        "indexed_by": [
+        "dimensions": [
           "response",
           "fixed_effect"
         ],

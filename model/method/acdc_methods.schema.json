@@ -388,7 +388,7 @@
       "description": "One class of output from a method. References output_class_templates by the class field and statistics_vocabulary by the statistics field.",
       "properties": {
         "cardinality": {
-          "description": "DEPRECATED (v0.6.0): How many rows this output class produces. Use indexed_by + class for machine resolution instead.",
+          "description": "DEPRECATED (v0.6.0): How many rows this output class produces. Use dimensions + class for machine resolution instead.",
           "type": [
             "string",
             "null"
@@ -413,15 +413,15 @@
           ]
         },
         "examples": {
-          "description": "Example values for the indexed_by dimensions",
+          "description": "Example values for the dimensions",
           "items": {},
           "type": [
             "array",
             "null"
           ]
         },
-        "indexed_by": {
-          "description": "Dimensions that index the output rows",
+        "dimensions": {
+          "description": "Dimensions (role names from input_roles) that index the output rows — defines the structural axes of this output class",
           "items": {
             "type": "string"
           },
@@ -492,7 +492,7 @@
             "null"
           ]
         },
-        "indexed_by": {
+        "dimensions": {
           "description": "Dimensions for this sub-type",
           "items": {
             "type": "string"
@@ -541,7 +541,7 @@
             "null"
           ]
         },
-        "indexed_by": {
+        "dimensions": {
           "description": "Dimensions that index the output rows",
           "items": {
             "type": "string"

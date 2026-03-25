@@ -53,7 +53,7 @@
         "class": "computed_value",
         "description": "The proportion, percentage, and confidence interval per category per group",
         "cardinality": "per_group",
-        "indexed_by": [
+        "dimensions": [
           "group"
         ],
         "statistics": [

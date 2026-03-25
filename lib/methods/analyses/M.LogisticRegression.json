@@ -46,7 +46,7 @@
         "class": "fit_statistics",
         "description": "Model fit measures",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "AIC",
           "BIC",
@@ -58,7 +58,7 @@
         "class": "type3_tests",
         "description": "Type III likelihood ratio or Wald tests per term",
         "cardinality": "per_term",
-        "indexed_by": [
+        "dimensions": [
           "covariate",
           "fixed_effect",
           "covariate:fixed_effect",
@@ -74,7 +74,7 @@
         "class": "parameter_estimates",
         "description": "Maximum likelihood estimates on log-odds scale",
         "cardinality": "per_coefficient",
-        "indexed_by": [
+        "dimensions": [
           "covariate",
           "fixed_effect",
           "covariate:fixed_effect",
@@ -94,7 +94,7 @@
         "class": "odds_ratio_estimates",
         "description": "Odds ratios with confidence intervals (exponentiated coefficients)",
         "cardinality": "per_coefficient",
-        "indexed_by": [
+        "dimensions": [
           "covariate",
           "fixed_effect",
           "covariate:fixed_effect",

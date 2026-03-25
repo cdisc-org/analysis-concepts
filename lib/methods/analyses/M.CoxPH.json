@@ -39,7 +39,7 @@
         "class": "fit_statistics",
         "description": "Model fit and global tests",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "minus2LogL",
           "AIC",
@@ -51,7 +51,7 @@
         "class": "global_tests",
         "description": "Overall model significance tests (likelihood ratio, Wald, score)",
         "cardinality": "per_test_type",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "chi_squared",
           "p_value",
@@ -62,7 +62,7 @@
         "class": "type3_tests",
         "description": "Type III Wald tests per model term",
         "cardinality": "per_term",
-        "indexed_by": [
+        "dimensions": [
           "covariate",
           "fixed_effect",
           "covariate:fixed_effect"
@@ -77,7 +77,7 @@
         "class": "parameter_estimates",
         "description": "Regression coefficients on log-hazard scale with hazard ratios",
         "cardinality": "per_coefficient",
-        "indexed_by": [
+        "dimensions": [
           "covariate",
           "fixed_effect",
           "covariate:fixed_effect"
@@ -96,7 +96,7 @@
         "class": "hazard_ratio_estimates",
         "description": "Hazard ratios with confidence intervals (exponentiated coefficients)",
         "cardinality": "per_coefficient",
-        "indexed_by": [
+        "dimensions": [
           "covariate",
           "fixed_effect",
           "covariate:fixed_effect"

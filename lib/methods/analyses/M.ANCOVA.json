@@ -53,7 +53,7 @@
         "class": "fit_statistics",
         "description": "Model fit measures",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "AIC",
           "BIC",
@@ -65,7 +65,7 @@
         "class": "type3_tests",
         "description": "Type III tests for each model term (covariate, group, interactions)",
         "cardinality": "per_term",
-        "indexed_by": [
+        "dimensions": [
           "covariate",
           "fixed_effect",
           "fixed_effect:fixed_effect",
@@ -84,7 +84,7 @@
         "class": "parameter_estimates",
         "description": "Solution for fixed effects (intercept, covariate slopes, group effects)",
         "cardinality": "per_coefficient",
-        "indexed_by": [
+        "dimensions": [
           "covariate",
           "fixed_effect",
           "fixed_effect:fixed_effect",
@@ -104,7 +104,7 @@
         "class": "ls_means",
         "description": "Least-squares means per group level, adjusted for covariates",
         "cardinality": "per_level",
-        "indexed_by": [
+        "dimensions": [
           "fixed_effect"
         ],
         "statistics": [
@@ -119,7 +119,7 @@
         "class": "contrasts",
         "description": "Pairwise LS mean differences between group levels",
         "cardinality": "per_contrast",
-        "indexed_by": [
+        "dimensions": [
           "fixed_effect"
         ],
         "statistics": [
@@ -136,7 +136,7 @@
         "class": "covariance_parameters",
         "description": "Residual variance estimate",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "estimate"
         ]

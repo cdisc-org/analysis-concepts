@@ -33,7 +33,7 @@
         "class": "computed_value",
         "description": "Geometric mean of the variable",
         "cardinality": "per_group",
-        "indexed_by": [
+        "dimensions": [
           "group"
         ],
         "statistics": [

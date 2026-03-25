@@ -48,7 +48,7 @@
         "class": "test_result",
         "description": "Paired t-test result",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "t_statistic",
           "p_value",
@@ -59,7 +59,7 @@
         "class": "point_estimate",
         "description": "Mean of paired differences with inference",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "estimate",
           "SE",

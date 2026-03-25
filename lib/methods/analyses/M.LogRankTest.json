@@ -41,7 +41,7 @@
         "class": "test_result",
         "description": "Log-rank (or weighted) test result",
         "cardinality": "singleton",
-        "indexed_by": null,
+        "dimensions": null,
         "statistics": [
           "chi_squared",
           "p_value",
