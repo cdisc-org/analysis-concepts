@@ -1,0 +1,223 @@
+/* ===== Pipeline / Dependency Chain ===== */
+.pipeline {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  padding: 14px 0;
+}
+
+.pipeline-node {
+  background: var(--cdisc-surface);
+  border: 2px solid var(--cdisc-border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  min-width: 150px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.pipeline-node.active {
+  border-color: var(--cdisc-primary);
+  background: var(--cdisc-primary-light);
+}
+
+.pipeline-node-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cdisc-text);
+}
+
+.pipeline-node-sub {
+  font-size: 11px;
+  color: var(--cdisc-text-secondary);
+  margin-top: 4px;
+}
+
+.pipeline-arrow {
+  font-size: 18px;
+  color: var(--cdisc-text-secondary);
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+
+/* Pipeline node variants */
+.pipeline-node.terminal {
+  border-style: dashed;
+  border-color: var(--cdisc-text-secondary);
+  background: var(--cdisc-background);
+}
+
+.pipeline-node.terminal .pipeline-node-title {
+  color: var(--cdisc-text-secondary);
+}
+
+.pipeline-node.terminal.confirmed {
+  border-color: var(--cdisc-success);
+  border-style: solid;
+}
+
+.pipeline-node.terminal.confirmed .pipeline-node-title {
+  color: var(--cdisc-text);
+}
+
+.pipeline-node.resolved {
+  border-color: var(--cdisc-success);
+}
+
+.pipeline-node .pipeline-check {
+  color: var(--cdisc-success);
+  font-size: 13px;
+}
+
+.pipeline-node .pipeline-select {
+  font-size: 11px;
+  padding: 4px 8px;
+  margin-top: 6px;
+  width: 100%;
+  border: 1px solid var(--cdisc-border);
+  border-radius: 4px;
+  background: var(--cdisc-surface);
+}
+
+.pipeline-node.pending {
+  border-color: var(--cdisc-warning);
+  border-style: dashed;
+}
+
+/* ===== Derivation config accordion ===== */
+.derivation-accordion {
+  margin-top: 14px;
+}
+
+.derivation-accordion details {
+  border: 1px solid var(--cdisc-border);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.derivation-accordion summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 14px;
+  background: var(--cdisc-background);
+  color: var(--cdisc-text);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.derivation-accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.derivation-accordion summary::before {
+  content: '\25B8';
+  font-size: 12px;
+  color: var(--cdisc-text-secondary);
+  transition: transform 0.15s;
+}
+
+.derivation-accordion details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.derivation-accordion .derivation-detail {
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+/* ===== Derivation Pipeline Candidate Cards ===== */
+.derivation-prompt {
+  margin-bottom: 14px;
+}
+
+.derivation-prompt-label {
+  font-size: 13px;
+  color: var(--cdisc-text);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.derivation-prompt-label code {
+  background: var(--cdisc-primary-light);
+  color: var(--cdisc-primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.derivation-candidates {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.derivation-candidate-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 16px;
+  border: 1px solid var(--cdisc-border);
+  border-radius: var(--radius);
+  background: var(--cdisc-surface);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.derivation-candidate-card:hover {
+  border-color: var(--cdisc-primary);
+}
+
+.derivation-candidate-card.auto-suggested {
+  border-color: var(--cdisc-accent6);
+  background: rgba(64, 179, 229, 0.04);
+}
+
+.derivation-candidate-card.auto-suggested:hover {
+  border-color: var(--cdisc-primary);
+}
+
+.derivation-candidate-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.derivation-candidate-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cdisc-text);
+  margin-bottom: 4px;
+}
+
+.derivation-candidate-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.derivation-candidate-desc {
+  font-size: 12px;
+  color: var(--cdisc-text-secondary);
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+.derivation-candidate-inputs {
+  font-size: 11px;
+  color: var(--cdisc-text-secondary);
+  margin-top: 6px;
+}
+
+.derivation-candidate-inputs code {
+  background: var(--cdisc-background);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+}

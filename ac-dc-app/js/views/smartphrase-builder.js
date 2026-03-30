@@ -26,10 +26,16 @@ function hasEndpointSpec() {
 export function renderSmartPhraseBuilder(container) {
   const study = appState.selectedStudy;
   const lib = appState.transformationLibrary;
-  if (!study || !lib) { navigateTo(1); return; }
+  if (!study || !lib) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No study selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select a study in Step 1 first.</p></div>';
+    return;
+  }
 
   const currentEp = getAllEndpoints(study).find(ep => ep.id === appState.currentEndpointId);
-  if (!currentEp) { navigateTo(4); return; }
+  if (!currentEp) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No endpoint selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select an endpoint in Step 4 first.</p></div>';
+    return;
+  }
 
   const epSpec = getActiveEndpointSpec();
   const specActive = hasEndpointSpec();
@@ -71,7 +77,7 @@ export function renderSmartPhraseBuilder(container) {
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
       <div>
         <h2 style="font-size:18px; font-weight:700;">SmartPhrase Builder</h2>
-        <p style="color:var(--cdisc-gray); font-size:13px; margin-top:4px;">
+        <p style="color:var(--cdisc-text-secondary); font-size:13px; margin-top:4px;">
           Composing analysis for <strong>${currentEp.name}</strong>${epSpec?.conceptCategory ? ` [${epSpec.conceptCategory}]` : ''}: ${currentEp.text || ''}
         </p>
       </div>
@@ -88,7 +94,7 @@ export function renderSmartPhraseBuilder(container) {
       <div class="sp-palette card">
         ${specActive ? `
           <div class="card-title" style="margin-bottom:12px; font-size:14px;">Analysis Method</div>
-          <p style="font-size:11px; color:var(--cdisc-gray); margin-bottom:16px;">
+          <p style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:16px;">
             Endpoint context is provided by Step 3. Select the statistical method and qualifiers below.
           </p>
         ` : `
@@ -97,7 +103,7 @@ export function renderSmartPhraseBuilder(container) {
             No endpoint spec found. Complete Step 3 (Endpoint Specification) for a streamlined experience.
             All phrase roles are shown below.
           </div>
-          <p style="font-size:11px; color:var(--cdisc-gray); margin-bottom:16px;">Click phrases to select or deselect them for your analysis description.</p>
+          <p style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:16px;">Click phrases to select or deselect them for your analysis description.</p>
         `}
         ${Object.entries(filteredGroups).map(([role, phrases]) => `
           <div class="sp-palette-group">
@@ -117,14 +123,14 @@ export function renderSmartPhraseBuilder(container) {
       <div>
         ${specActive && syntaxTemplate ? `
         <!-- Endpoint Context (read-only, from Step 3) -->
-        <div class="card" style="margin-bottom:16px; border-left:3px solid var(--cdisc-teal);">
+        <div class="card" style="margin-bottom:16px; border-left:3px solid var(--cdisc-accent2);">
           <div class="card-title" style="margin-bottom:8px; font-size:14px; display:flex; align-items:center; gap:8px;">
             Endpoint Context
             <span class="badge badge-teal" style="font-size:10px;">from Step 3</span>
           </div>
           <div class="ep-syntax-resolved" style="font-size:13px; line-height:1.8;">${syntaxTemplate.resolved}</div>
           ${implicitOids.length > 0 ? `
-            <div style="margin-top:8px; font-size:11px; color:var(--cdisc-gray);">
+            <div style="margin-top:8px; font-size:11px; color:var(--cdisc-text-secondary);">
               Implicit phrases: ${implicitOids.map(oid => {
                 const sp = lib.smartPhrases.find(p => p.oid === oid);
                 return sp ? `<span class="badge badge-secondary" style="font-size:10px;">${sp.name}</span>` : oid;
@@ -154,7 +160,7 @@ export function renderSmartPhraseBuilder(container) {
         <div class="card" style="margin-bottom:16px;">
           <div class="card-title" style="margin-bottom:12px; font-size:14px;">Live Preview</div>
           <div class="sentence-preview" id="sentence-preview">
-            <em style="color:var(--cdisc-gray);">Your composed sentence will appear here...</em>
+            <em style="color:var(--cdisc-text-secondary);">Your composed sentence will appear here...</em>
           </div>
         </div>
 
@@ -391,7 +397,7 @@ function updatePreview() {
     : '';
 
   if (appState.composedPhrases.length === 0 && !syntaxPrefix) {
-    previewEl.innerHTML = '<em style="color:var(--cdisc-gray);">Your composed sentence will appear here...</em>';
+    previewEl.innerHTML = '<em style="color:var(--cdisc-text-secondary);">Your composed sentence will appear here...</em>';
     return;
   }
 
@@ -420,7 +426,7 @@ function updatePreview() {
   const parts = [];
   if (syntaxPrefix) parts.push(syntaxPrefix);
   parts.push(...methodParts);
-  previewEl.innerHTML = parts.join(' ') || '<em style="color:var(--cdisc-gray);">Your composed sentence will appear here...</em>';
+  previewEl.innerHTML = parts.join(' ') || '<em style="color:var(--cdisc-text-secondary);">Your composed sentence will appear here...</em>';
 }
 
 function findMatches() {
@@ -449,12 +455,12 @@ function findMatches() {
   if (proceedBtn) proceedBtn.disabled = false;
 
   matchList.innerHTML = matches.map((t, i) => `
-    <div class="card" style="margin-bottom:8px; padding:14px; cursor:pointer; ${i === 0 ? 'border-left:4px solid var(--cdisc-blue);' : 'border-left:4px solid var(--cdisc-border);'}"
+    <div class="card" style="margin-bottom:8px; padding:14px; cursor:pointer; ${i === 0 ? 'border-left:4px solid var(--cdisc-primary);' : 'border-left:4px solid var(--cdisc-border);'}"
          data-transform-index="${i}">
       <div style="display:flex; align-items:center; justify-content:space-between;">
         <div>
           <div style="font-weight:600; font-size:13px;">${t.name}</div>
-          <div style="font-size:12px; color:var(--cdisc-gray); margin-top:2px;">
+          <div style="font-size:12px; color:var(--cdisc-text-secondary); margin-top:2px;">
             Method: ${t.usesMethod} | Category: ${t.acCategory || 'N/A'}
           </div>
         </div>
@@ -471,7 +477,7 @@ function findMatches() {
       matchList.querySelectorAll('[data-transform-index]').forEach(c => {
         c.style.borderLeftColor = 'var(--cdisc-border)';
       });
-      card.style.borderLeftColor = 'var(--cdisc-blue)';
+      card.style.borderLeftColor = 'var(--cdisc-primary)';
     });
   });
 

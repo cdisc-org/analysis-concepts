@@ -7,7 +7,7 @@ import {
   getOutputMapping, getInputBindings,
   getMethodConfigurations, getDimensions
 } from '../utils/transformation-linker.js';
-import { displayConcept, formatDimensionConstraints, formatSliceDisplay, resolveBindingShape } from '../utils/concept-display.js';
+import { displayConcept, formatDimensionConstraints, formatSliceDisplay, resolveBindingShape, buildSliceLookup } from '../utils/concept-display.js';
 
 // ===== Helper: Get concept dropdown options from DC model =====
 
@@ -221,6 +221,21 @@ export function buildAssignmentExpression(customBindings, method, cls) {
   return expr;
 }
 
+/**
+ * Build a ResolvedExpression object for the study eSAP model.
+ * Includes notation, template (method default), resolved (with concepts), and active interactions.
+ */
+export function buildResolvedExpressionObject(customBindings, method, interactions) {
+  if (!method?.formula) return null;
+  const resolved = buildExpressionString(customBindings, method, interactions || []);
+  if (!resolved) return null;
+  return {
+    notation: method.formula.notation || 'assignment',
+    resolved,
+    interactions: (interactions || []).length > 0 ? [...interactions] : undefined
+  };
+}
+
 // ===== Helper: Render formula with colored spans =====
 
 export function renderFormulaExpression(customBindings, method, interactions) {
@@ -254,7 +269,7 @@ export function renderFormulaExpression(customBindings, method, interactions) {
       if (b.qualifierValue) opts.qualifierValue = b.qualifierValue;
       if (b.slice) {
         opts.slice = b.slice;
-        opts.namedSlices = appState.selectedTransformation?.namedSlices;
+        opts.namedSlices = buildSliceLookup(appState.selectedTransformation);
       } else if (b.dimensionConstraints) {
         opts.dimensionConstraints = b.dimensionConstraints;
       }
@@ -471,13 +486,13 @@ export function renderInteractiveBindings(customBindings, method, dcModel) {
       if (b.qualifierValue) bindingDisplayOpts.qualifierValue = b.qualifierValue;
       if (b.slice) {
         bindingDisplayOpts.slice = b.slice;
-        bindingDisplayOpts.namedSlices = appState.selectedTransformation?.namedSlices;
+        bindingDisplayOpts.namedSlices = buildSliceLookup(appState.selectedTransformation);
       } else if (b.dimensionConstraints) {
         bindingDisplayOpts.dimensionConstraints = b.dimensionConstraints;
       }
 
       // Resolve dimensional shape from DC/OC models
-      const namedSlicesStandalone = appState.selectedTransformation?.namedSlices || {};
+      const namedSlicesStandalone = buildSliceLookup(appState.selectedTransformation);
       const shapeStandalone = resolveBindingShape(b.concept, b, appState.dcModel, appState.ocModel, namedSlicesStandalone);
       const standaloneBindingId = `standalone-${role.name}-${i}`;
       const shapeHtmlStandalone = renderShapeAnnotation(shapeStandalone, standaloneBindingId);
@@ -578,7 +593,7 @@ function renderShapeAnnotation(shape, bindingId) {
     </div>` : '';
 
   return `
-    <div class="binding-shape-line" data-binding-id="${bindingId}" style="font-size:10px; color:var(--cdisc-gray); margin-top:2px; cursor:pointer;" title="Click to show model provenance">
+    <div class="binding-shape-line" data-binding-id="${bindingId}" style="font-size:10px; color:var(--cdisc-text-secondary); margin-top:2px; cursor:pointer;" title="Click to show model provenance">
       ${dimsLine}
     </div>
     ${provenanceHtml}`;
@@ -629,7 +644,7 @@ export function renderInteractiveBindingsByRole(customBindings, method, dcModel,
       .map(b => `${b.methodRole}|${b.concept}`)
   );
 
-  const namedSlices = transform?.namedSlices || {};
+  const namedSlices = buildSliceLookup(transform);
 
   let html = '';
 
@@ -683,7 +698,7 @@ export function renderInteractiveBindingsByRole(customBindings, method, dcModel,
       // Endpoint linkage annotation for the response binding
       const isResponse = role.statisticalRole === 'response' && i === 0;
       const endpointLink = isResponse && paramValue
-        ? `<div style="font-size:10px; color:var(--cdisc-blue); margin-top:2px;">\u2190 from endpoint: "${paramValue}"</div>`
+        ? `<div style="font-size:10px; color:var(--cdisc-primary); margin-top:2px;">\u2190 from endpoint: "${paramValue}"</div>`
         : '';
 
       // Slice resolution annotation
@@ -692,7 +707,7 @@ export function renderInteractiveBindingsByRole(customBindings, method, dcModel,
         const sliceDef = namedSlices[b.slice];
         const dims = sliceDef.fixedDimensions || sliceDef;
         const dimStr = Object.entries(dims).map(([k, v]) => `${k} = ${v}`).join(', ');
-        sliceAnnotation = `<div style="font-size:10px; color:var(--cdisc-teal); margin-top:2px;">slice: ${b.slice} \u2192 ${dimStr}</div>`;
+        sliceAnnotation = `<div style="font-size:10px; color:var(--cdisc-accent2); margin-top:2px;">slice: ${b.slice} \u2192 ${dimStr}</div>`;
       }
 
       // Value type badge
@@ -708,7 +723,7 @@ export function renderInteractiveBindingsByRole(customBindings, method, dcModel,
         <div style="display:flex; align-items:center; gap:6px; width:100%;">
           <span class="binding-concept"><code>${displayConcept(b.concept, bindingDisplayOpts)}</code></span>
           <span class="binding-badge badge ${roleFilter === 'dimension' ? 'badge-teal' : 'badge-blue'}">${roleFilter}</span>
-          ${shapeValueType ? `<span style="font-size:9px; color:var(--cdisc-gray);">${shapeValueType}</span>` : ''}
+          ${shapeValueType ? `<span style="font-size:9px; color:var(--cdisc-text-secondary);">${shapeValueType}</span>` : ''}
           ${isCustom ? '<span class="binding-badge badge badge-secondary">custom</span>' : ''}
           ${canRemove(b) ? `<button class="binding-remove" data-role="${role.name}" data-index="${i}" title="Remove" style="margin-left:auto;">&times;</button>` : ''}
         </div>
@@ -759,7 +774,10 @@ export async function renderTransformationConfig(container) {
   const transformation = appState.selectedTransformation;
   const lib = appState.transformationLibrary;
 
-  if (!transformation || !study) { navigateTo(5); return; }
+  if (!transformation || !study) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>Missing prerequisites</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select a study and configure a transformation first.</p></div>';
+    return;
+  }
 
   const currentEp = getAllEndpoints(study).find(ep => ep.id === appState.currentEndpointId);
 
@@ -804,6 +822,12 @@ export async function renderTransformationConfig(container) {
     appState.dimensionalSliceValues = values;
   }
 
+  // Initialize methodConfig from endpoint spec if null
+  if (appState.methodConfig === null) {
+    const epSpec = appState.endpointSpecs?.[appState.currentEndpointId];
+    appState.methodConfig = { ...(epSpec?.methodConfigOverrides || {}) };
+  }
+
   // Initialize activeInteractions from default expression
   if (appState.activeInteractions.length === 0 && method?.formula?.default_expression) {
     const defaultInteractions = parseDefaultInteractions(method.formula.default_expression);
@@ -828,7 +852,7 @@ export async function renderTransformationConfig(container) {
   const customBindings = appState.customInputBindings;
   const outputMapping = getOutputMapping(transformation, appState.acModel, method, customBindings, appState.activeInteractions);
   const dimensions = getDimensions(transformation);
-  const methodConfigs = method ? getMethodConfigurations(method) : [];
+  const methodConfigs = method ? getMethodConfigurations(method, transformation, appState.methodConfig || {}) : [];
   const popNames = getPopulationNames(study);
   const popMap = {};
   for (const p of popNames) {
@@ -852,7 +876,7 @@ export async function renderTransformationConfig(container) {
       if (b.qualifierValue) opts.qualifierValue = b.qualifierValue;
       if (b.slice) {
         opts.slice = b.slice;
-        opts.namedSlices = transformation.namedSlices;
+        opts.namedSlices = buildSliceLookup(transformation);
       } else if (b.dimensionConstraints) {
         opts.dimensionConstraints = b.dimensionConstraints;
       }
@@ -871,7 +895,7 @@ export async function renderTransformationConfig(container) {
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
       <div>
         <h2 style="font-size:18px; font-weight:700;">Transformation Configuration</h2>
-        <p style="color:var(--cdisc-gray); font-size:13px; margin-top:4px;">
+        <p style="color:var(--cdisc-text-secondary); font-size:13px; margin-top:4px;">
           ${currentEp ? `${currentEp.name}${appState.endpointSpecs?.[appState.currentEndpointId]?.conceptCategory ? ` [${appState.endpointSpecs[appState.currentEndpointId].conceptCategory}]` : ''}: ` : ''}${transformation.name}
         </p>
       </div>
@@ -935,7 +959,7 @@ export async function renderTransformationConfig(container) {
     <div class="card" style="margin-bottom:16px;">
       <div class="transform-section" style="margin-bottom:0;">
         <div class="transform-section-title">Dimensional Slices</div>
-        <p style="font-size:12px; color:var(--cdisc-gray); margin-bottom:12px;">
+        <p style="font-size:12px; color:var(--cdisc-text-secondary); margin-bottom:12px;">
           Configure the specific dimension values this analysis operates on.
         </p>
         <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:12px;" id="dimensional-slices">
@@ -962,7 +986,7 @@ export async function renderTransformationConfig(container) {
                     return `<option value="${v}"${tip} ${v === userValue ? 'selected' : ''}>${v}</option>`;
                   }).join('')}
                 </select>
-                <div style="font-size:11px; color:var(--cdisc-gray); margin-top:4px;">Source: ${sk.source}</div>
+                <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:4px;">Source: ${sk.source}</div>
               </div>
             `;
           }).join('')}
@@ -977,8 +1001,8 @@ export async function renderTransformationConfig(container) {
       <div class="transform-section" style="margin-bottom:0;">
         <div class="transform-section-title">Model Expression</div>
         ${method.formula.generic_expression ? `
-          <div style="font-size:12px; color:var(--cdisc-gray); margin-bottom:10px;">
-            Template: <code style="font-family:'SF Mono','Fira Code','Consolas',monospace; background:var(--cdisc-light-gray); padding:2px 6px; border-radius:4px;">${method.formula.generic_expression}</code>
+          <div style="font-size:12px; color:var(--cdisc-text-secondary); margin-bottom:10px;">
+            Template: <code style="font-family:'SF Mono','Fira Code','Consolas',monospace; background:var(--cdisc-background); padding:2px 6px; border-radius:4px;">${method.formula.generic_expression}</code>
           </div>
         ` : ''}
         <div class="formula-display" id="formula-display">${formulaHtml}</div>
@@ -993,7 +1017,7 @@ export async function renderTransformationConfig(container) {
             </div>
           </div>
         ` : `
-          <div style="margin-top:8px; font-size:12px; color:var(--cdisc-gray); font-style:italic;" id="interaction-placeholder">
+          <div style="margin-top:8px; font-size:12px; color:var(--cdisc-text-secondary); font-style:italic;" id="interaction-placeholder">
             Add covariates and factors to enable interaction terms
           </div>
         `) : ''}
@@ -1007,50 +1031,44 @@ export async function renderTransformationConfig(container) {
       <div class="transform-section">
         <div class="transform-section-title">Method Configuration (${transformation.usesMethod})</div>
         <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:16px;">
-          ${methodConfigs.map(cfg => `
+          ${methodConfigs.map(cfg => {
+            const sourceColor = cfg.source === 'user' ? 'var(--cdisc-accent2)' : cfg.source === 'transformation' ? 'var(--cdisc-primary)' : 'var(--cdisc-text-secondary)';
+            const sourceLabel = cfg.source === 'user' ? 'custom' : cfg.source === 'transformation' ? 'template' : 'default';
+            return `
             <div class="config-field">
-              <label class="config-label">${cfg.label}</label>
+              <label class="config-label" style="display:flex; align-items:center; gap:6px;">
+                ${cfg.label}
+                <span style="font-size:9px; color:${sourceColor}; font-weight:500; text-transform:none; letter-spacing:0;">${sourceLabel}</span>
+              </label>
               ${cfg.options.length > 0 ? `
                 <select class="config-select" data-config-key="${cfg.key}">
                   ${cfg.options.map(opt => `
-                    <option value="${opt}" ${opt === cfg.default ? 'selected' : ''}>${opt}</option>
+                    <option value="${opt}" ${String(opt) === String(cfg.value) ? 'selected' : ''}>${opt}</option>
                   `).join('')}
                 </select>
               ` : `
-                <input class="config-input" data-config-key="${cfg.key}" value="${cfg.value || cfg.default || ''}" placeholder="${cfg.description}">
+                <input class="config-input" data-config-key="${cfg.key}" value="${cfg.value != null ? cfg.value : ''}" placeholder="${cfg.description}">
               `}
-              ${cfg.description ? `<div style="font-size:11px; color:var(--cdisc-gray); margin-top:4px;">${cfg.description}</div>` : ''}
-            </div>
-          `).join('')}
+              ${cfg.description ? `<div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:4px;">${cfg.description}</div>` : ''}
+            </div>`;
+          }).join('')}
         </div>
       </div>
     </div>
     ` : ''}
 
     <!-- Dimensions -->
-    ${dimensions.inherited.length > 0 || dimensions.added.length > 0 ? `
+    ${(dimensions.dimensions || []).length > 0 ? `
     <div class="card" style="margin-bottom:16px;">
       <div class="transform-section">
-        <div class="transform-section-title">Dimensional Relationships</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-          <div>
-            <div style="font-weight:600; font-size:12px; margin-bottom:8px; color:var(--cdisc-text);">Inherited</div>
-            ${dimensions.inherited.map(d => `
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                <span class="badge badge-teal">${displayConcept(d.dimension)}</span>
-                <span style="font-size:12px; color:var(--cdisc-gray);">${d.role}</span>
-              </div>
-            `).join('')}
-          </div>
-          <div>
-            <div style="font-weight:600; font-size:12px; margin-bottom:8px; color:var(--cdisc-text);">Added</div>
-            ${dimensions.added.map(d => `
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                <span class="badge badge-blue">${displayConcept(d.dimension)}</span>
-                <span style="font-size:12px; color:var(--cdisc-gray);">${d.role}</span>
-              </div>
-            `).join('')}
-          </div>
+        <div class="transform-section-title">Dimensions</div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          ${dimensions.dimensions.map(d => `
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="badge badge-teal">${displayConcept(d.dimension)}</span>
+              <span style="font-size:12px; color:var(--cdisc-text-secondary);">${d.role}</span>
+            </div>
+          `).join('')}
         </div>
       </div>
     </div>
@@ -1061,7 +1079,7 @@ export async function renderTransformationConfig(container) {
     <div class="card" style="margin-bottom:16px;">
       <div class="transform-section">
         <div class="transform-section-title">Output Specification</div>
-        <p style="font-size:12px; color:var(--cdisc-gray); margin-bottom:12px;">
+        <p style="font-size:12px; color:var(--cdisc-text-secondary); margin-bottom:12px;">
           Method output slots mapped to AC result patterns
         </p>
         <div class="slot-grid">
@@ -1073,9 +1091,9 @@ export async function renderTransformationConfig(container) {
                   Statistics: ${slot.constituents.join(', ')}
                 </div>
               ` : ''}
-              ${slot.identifiedBy.length > 0 ? `
+              ${slot.dimensions.length > 0 ? `
                 <div class="slot-card-stats" style="margin-top:4px;">
-                  Indexed by: ${slot.identifiedBy.map(id => {
+                  Indexed by: ${slot.dimensions.map(id => {
                     // For interaction terms like "C.Measure:Treatment", display each part
                     if (id.includes(':')) {
                       return id.split(':').map(part => {
@@ -1195,9 +1213,9 @@ export async function renderTransformationConfig(container) {
         };
         if (dimValue) {
           binding.slice = dimValue.toLowerCase();
-          if (!transformation.namedSlices) transformation.namedSlices = {};
-          if (!transformation.namedSlices[binding.slice]) {
-            transformation.namedSlices[binding.slice] = { fixedDimensions: { AnalysisVisit: dimValue } };
+          if (!transformation.slices) transformation.slices = [];
+          if (!transformation.slices.find(s => s.name === binding.slice && s.dimension === 'AnalysisVisit')) {
+            transformation.slices.push({ name: binding.slice, dimension: 'AnalysisVisit', constraint: dimValue });
           }
         }
 
@@ -1230,6 +1248,39 @@ export async function renderTransformationConfig(container) {
       if (appState.dimensionalSliceValues) {
         appState.dimensionalSliceValues[dim] = select.value;
       }
+    });
+  });
+
+  // Method configuration change handlers
+  container.querySelectorAll('[data-config-key]').forEach(el => {
+    const eventType = el.tagName === 'SELECT' ? 'change' : 'change';
+    el.addEventListener(eventType, () => {
+      const configKey = el.dataset.configKey;
+      let value = el.value;
+      // Preserve numeric types for numeric configs
+      if (!isNaN(value) && value !== '') value = Number(value);
+
+      if (!appState.methodConfig) appState.methodConfig = {};
+
+      // Find the method default for this key
+      const cfgDef = (method?.configurations || []).find(c => c.name === configKey);
+      const methodDefault = cfgDef?.defaultValue;
+
+      // Sparse: only store if different from default
+      if (value === methodDefault || String(value) === String(methodDefault)) {
+        delete appState.methodConfig[configKey];
+      } else {
+        appState.methodConfig[configKey] = value;
+      }
+
+      // Persist to endpoint spec
+      const epId = appState.currentEndpointId;
+      if (epId && appState.endpointSpecs[epId]) {
+        appState.endpointSpecs[epId].methodConfigOverrides = { ...appState.methodConfig };
+      }
+
+      // Re-render to update source indicators
+      renderTransformationConfig(container);
     });
   });
 

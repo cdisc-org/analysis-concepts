@@ -1,0 +1,158 @@
+{
+  "$id": "https://cdisc.org/acdc/dc_concepts",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "title": "dc_concepts",
+  "description": "Derivation Concept model schema: categories of derivation concepts with shared dimensions and FHIR-aligned result types. SKOS-inspired taxonomy structure. Validates DC vocabulary files (Option A-D variants).",
+  "version": "0.20",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "model": {
+      "type": "string",
+      "const": "DC",
+      "description": "Model identifier (SKOS: inScheme)"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of the DC concept model"
+    },
+    "variant": {
+      "type": "string",
+      "description": "Model variant name (e.g. clinical, mathematical)"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Human-readable description of the model (SKOS: skos:note)"
+    },
+    "namingPrinciples": {
+      "type": ["array", "null"],
+      "items": { "type": "string" },
+      "description": "Guiding principles for naming derivation concepts"
+    },
+    "sharedDimensions": {
+      "type": "object",
+      "description": "Dimensional concepts defining the context in which derivations are performed. Not derivation concepts themselves — selected by the Transformation.",
+      "properties": {
+        "note": { "type": ["string", "null"] }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/SharedDimension"
+      }
+    },
+    "categories": {
+      "type": "object",
+      "description": "Derivation categories, each containing related derivation concepts (SKOS: skos:Collection)",
+      "additionalProperties": {
+        "$ref": "#/$defs/DerivationCategory"
+      }
+    }
+  },
+  "required": ["model", "version", "sharedDimensions", "categories"],
+  "$defs": {
+    "Cardinality": {
+      "description": "Multiplicity of a dimensional relationship",
+      "enum": ["0..1", "1", "0..*", "1..*"],
+      "title": "Cardinality",
+      "type": "string"
+    },
+    "FHIRPrimitiveType": {
+      "description": "FHIR R5 primitive data types",
+      "enum": ["decimal", "integer", "code", "string", "boolean", "date", "dateTime", "id"],
+      "title": "FHIRPrimitiveType",
+      "type": "string"
+    },
+    "FHIRComplexType": {
+      "description": "FHIR R5 complex data types",
+      "enum": ["Quantity", "CodeableConcept", "Identifier"],
+      "title": "FHIRComplexType",
+      "type": "string"
+    },
+    "ResultValueType": {
+      "description": "Semantic value type of a derivation result. Clinical naming with FHIR alignment: NumericValue ≈ Quantity, CharacterValue ≈ string, CodedResponse ≈ CodeableConcept.",
+      "enum": ["NumericValue", "CharacterValue", "CodedResponse"],
+      "title": "ResultValueType",
+      "type": "string"
+    },
+    "SharedDimension": {
+      "additionalProperties": false,
+      "description": "A dimensional concept that defines context for derivations (e.g. Subject, Timing, Treatment). Selected by the Transformation, mapped to physical columns by the Implementation.",
+      "type": "object",
+      "properties": {
+        "cardinality": {
+          "$ref": "#/$defs/Cardinality",
+          "description": "How many instances of this dimension apply to a derivation"
+        }
+      },
+      "required": ["cardinality"]
+    },
+    "DerivationConcept": {
+      "additionalProperties": false,
+      "description": "A single derivation concept: describes what kind of data the result IS, not how it is produced. Each concept produces a result of one or more value types (NumericValue, CharacterValue, CodedResponse). SKOS: skos:Concept, narrower than its DerivationCategory.",
+      "type": "object",
+      "properties": {
+        "mathematicalEquivalent": {
+          "type": "string",
+          "description": "Abstract mathematical name for this concept (e.g. AbsoluteDifference, SequenceMaximum)"
+        },
+        "definition": {
+          "type": "string",
+          "description": "Human-readable definition (SKOS: skos:definition)"
+        },
+        "math": {
+          "type": "string",
+          "description": "Mathematical formula or expression (e.g. x − x_ref, sup{yᵢ}, ∫y dt)"
+        },
+        "examples": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Concrete clinical examples of this derivation"
+        },
+        "result": {
+          "type": "object",
+          "description": "Result value type and unit behaviour. The valueType connects this concept to one or more ResultValueType nodes (NumericValue, CharacterValue, CodedResponse).",
+          "properties": {
+            "valueType": {
+              "description": "The value type(s) this derivation produces — connects to ResultValueType. Single type or array of allowed types.",
+              "oneOf": [
+                { "$ref": "#/$defs/ResultValueType" },
+                {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/ResultValueType" }
+                }
+              ]
+            },
+            "unit": {
+              "type": "string",
+              "description": "Unit behaviour (e.g. inherited, fixed: %, dimensionless, none, time unit)"
+            }
+          },
+          "required": ["valueType", "unit"]
+        }
+      },
+      "required": ["mathematicalEquivalent", "definition", "math", "examples", "result"]
+    },
+    "DerivationCategory": {
+      "additionalProperties": false,
+      "description": "A named group of related derivation concepts (SKOS: skos:Collection). Defines the input pattern and contains the concept map.",
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "description": "Human-readable definition of this derivation category (SKOS: skos:definition)"
+        },
+        "inputPattern": {
+          "type": "string",
+          "description": "Whether inputs are method-driven or concept-driven, and what the category requires"
+        },
+        "concepts": {
+          "type": "object",
+          "description": "Map of concept name (SKOS: prefLabel) to DerivationConcept definition",
+          "additionalProperties": {
+            "$ref": "#/$defs/DerivationConcept"
+          }
+        }
+      },
+      "required": ["definition", "inputPattern", "concepts"]
+    }
+  }
+}

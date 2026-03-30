@@ -11,11 +11,17 @@ import {
 
 export function renderEndpointWhat(container) {
   const study = appState.selectedStudy;
-  if (!study) { navigateTo(1); return; }
+  if (!study) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No study selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select a study in Step 1 first.</p></div>';
+    return;
+  }
 
   const allEndpoints = getAllEndpoints(study);
   const selectedEps = allEndpoints.filter(ep => appState.selectedEndpoints.includes(ep.id));
-  if (selectedEps.length === 0) { navigateTo(2); return; }
+  if (selectedEps.length === 0) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No endpoints selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select endpoints in Step 2 first.</p></div>';
+    return;
+  }
 
   if (!appState.endpointSpecs) appState.endpointSpecs = {};
 
@@ -104,8 +110,8 @@ export function renderEndpointWhat(container) {
         </div>
         <div class="ep-accordion-body">
           <!-- Protocol Endpoint Text -->
-          <div style="margin-bottom:16px; padding:10px 14px; background:var(--cdisc-light-blue); border-radius:var(--radius); border-left:3px solid var(--cdisc-blue);">
-            <div style="font-size:11px; font-weight:600; color:var(--cdisc-blue); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Protocol Endpoint (Original)</div>
+          <div style="margin-bottom:16px; padding:10px 14px; background:var(--cdisc-primary-light); border-radius:var(--radius); border-left:3px solid var(--cdisc-primary);">
+            <div style="font-size:11px; font-weight:600; color:var(--cdisc-primary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Protocol Endpoint (Original)</div>
             <div style="font-size:13px; line-height:1.5;">${originalText}</div>
           </div>
 
@@ -147,7 +153,7 @@ export function renderEndpointWhat(container) {
             <!-- Observation Path -->
             ${renderParameterPicker(ep, spec, bcs, allBCs, hasBCs, paramSource)}
             ${primaryBc && classifiedProps.length > 0 ? renderOcFacetCards(classifiedProps, spec, ep.id) : `
-              <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-light-gray); border-radius:var(--radius); font-size:11px; color:var(--cdisc-gray);">
+              <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius); font-size:11px; color:var(--cdisc-text-secondary);">
                 Link a Biomedical Concept above to see its observation structure.
               </div>
             `}
@@ -156,7 +162,7 @@ export function renderEndpointWhat(container) {
               <div style="font-weight:600; font-size:12px; margin-bottom:4px; color:var(--cdisc-text-secondary);">
                 Dimensional Context
               </div>
-              <div style="font-size:11px; color:var(--cdisc-gray); margin-bottom:8px;">
+              <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:8px;">
                 Specify which visits and populations this observation applies to.
               </div>
               <div class="ep-dim-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px;">
@@ -168,7 +174,7 @@ export function renderEndpointWhat(container) {
                     <div class="config-field">
                       <label class="config-label" style="display:flex; align-items:center; gap:6px;">
                         <span class="badge badge-teal" style="font-size:10px; padding:1px 6px;">${dim}</span>
-                        <span style="font-size:10px; color:var(--cdisc-gray);">${info.role}${isMulti ? ' (multi)' : ''}</span>
+                        <span style="font-size:10px; color:var(--cdisc-text-secondary);">${info.role}${isMulti ? ' (multi)' : ''}</span>
                       </label>
                       ${options && options.length > 0 ? `
                         <select class="config-select ep-obs-dim-value" data-ep-id="${ep.id}" data-dim="${dim}">
@@ -195,21 +201,21 @@ export function renderEndpointWhat(container) {
               ${renderDerivationConfigPanel(selectedDerivation, spec, study, ep)}
             ` : matchingDerivations.length === 0 ? `
               <!-- No derivation — source data endpoint -->
-              <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-light-gray); border-radius:var(--radius); font-size:11px; color:var(--cdisc-gray);">
+              <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius); font-size:11px; color:var(--cdisc-text-secondary);">
                 No endpoint-level derivation for <strong>${spec.conceptCategory}</strong> — source data endpoint.
               </div>
               ${renderParameterPicker(ep, spec, bcs, allBCs, hasBCs, paramSource)}
             ` : `
               <!-- Derivations available but none selected -->
-              <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-light-gray); border-radius:var(--radius); font-size:11px; color:var(--cdisc-gray);">
+              <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius); font-size:11px; color:var(--cdisc-text-secondary);">
                 Select a derivation template from the library panel on the right.
               </div>
             `}
           `}
 
           ${whatPreview ? `
-          <div style="margin-top:8px; padding:8px 12px; background:var(--cdisc-light-gray); border-radius:var(--radius); font-size:12px; line-height:1.6;">
-            <span style="font-size:10px; font-weight:600; color:var(--cdisc-gray); text-transform:uppercase; letter-spacing:0.5px;">What: </span>
+          <div style="margin-top:8px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius); font-size:12px; line-height:1.6;">
+            <span style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px;">What: </span>
             ${whatPreview}
           </div>
           ` : ''}
@@ -243,7 +249,7 @@ export function renderEndpointWhat(container) {
                 <div class="ep-library-card-name">${d.name}</div>
                 <div class="ep-library-card-meta">
                   ${d.usesMethod ? `<span class="badge badge-secondary" style="font-size:10px;">${d.usesMethod}</span>` : ''}
-                  <span style="font-size:11px; color:var(--cdisc-gray);">outputs: <code>${(d.bindings || []).find(b => b.direction === 'output')?.concept || d.outputConcept}</code></span>
+                  <span style="font-size:11px; color:var(--cdisc-text-secondary);">outputs: <code>${(d.bindings || []).find(b => b.direction === 'output')?.concept || d.outputConcept}</code></span>
                 </div>
                 ${d.description ? `<div class="ep-library-card-desc">${d.description.length > 100 ? d.description.slice(0, 100) + '...' : d.description}</div>` : ''}
               </div>`;
@@ -253,7 +259,7 @@ export function renderEndpointWhat(container) {
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
       <div>
         <h2 style="font-size:18px; font-weight:700;">Endpoint: Variable of Interest</h2>
-        <p style="color:var(--cdisc-gray); font-size:13px; margin-top:4px;">
+        <p style="color:var(--cdisc-text-secondary); font-size:13px; margin-top:4px;">
           Define what is being measured or computed for each endpoint
         </p>
       </div>
@@ -281,7 +287,7 @@ export function renderEndpointWhat(container) {
       .ep-syntax-template {
         font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
         font-size: 12px;
-        background: var(--cdisc-light-gray);
+        background: var(--cdisc-background);
         padding: 10px 14px;
         border-radius: var(--radius);
         color: var(--cdisc-text-secondary);
@@ -298,31 +304,31 @@ export function renderEndpointWhat(container) {
         color: var(--cdisc-text);
       }
       .ep-syntax-resolved .placeholder {
-        color: var(--cdisc-gray);
+        color: var(--cdisc-text-secondary);
         font-style: italic;
-        background: var(--cdisc-light-gray);
+        background: var(--cdisc-background);
         padding: 1px 6px;
         border-radius: 3px;
       }
-      .ep-syntax-resolved strong { color: var(--cdisc-blue); }
+      .ep-syntax-resolved strong { color: var(--cdisc-primary); }
       .ep-composed-phrase {
         font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
         font-size: 12px;
-        background: var(--cdisc-light-blue);
+        background: var(--cdisc-primary-light);
         padding: 10px 14px;
         border-radius: var(--radius);
         line-height: 1.6;
-        border-left: 3px solid var(--cdisc-blue);
+        border-left: 3px solid var(--cdisc-primary);
         margin-bottom: 12px;
       }
       .ep-composed-phrase .placeholder {
-        color: var(--cdisc-gray);
+        color: var(--cdisc-text-secondary);
         font-style: italic;
-        background: var(--cdisc-light-gray);
+        background: var(--cdisc-background);
         padding: 1px 6px;
         border-radius: 3px;
       }
-      .ep-composed-phrase strong { color: var(--cdisc-blue); }
+      .ep-composed-phrase strong { color: var(--cdisc-primary); }
       .ep-placeholder-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -456,8 +462,8 @@ function wireEndpointWhatEvents(container, study, selectedEps) {
       const allCards = container.querySelectorAll(`.ep-oc-facet-card[data-ep-id="${epId}"]`);
       allCards.forEach(c => {
         const isSel = c.dataset.facet === facet;
-        c.style.borderColor = isSel ? 'var(--cdisc-blue)' : 'var(--cdisc-border)';
-        c.style.background = isSel ? 'var(--cdisc-light-blue)' : 'white';
+        c.style.borderColor = isSel ? 'var(--cdisc-primary)' : 'var(--cdisc-border)';
+        c.style.background = isSel ? 'var(--cdisc-primary-light)' : 'white';
       });
       updateSyntaxPreview(container, epId, study);
     });
@@ -559,7 +565,7 @@ function updateLibraryPanel(container) {
           <div class="ep-library-card-name">${d.name}</div>
           <div class="ep-library-card-meta">
             ${d.usesMethod ? `<span class="badge badge-secondary" style="font-size:10px;">${d.usesMethod}</span>` : ''}
-            <span style="font-size:11px; color:var(--cdisc-gray);">outputs: <code>${(d.bindings || []).find(b => b.direction === 'output')?.concept || d.outputConcept}</code></span>
+            <span style="font-size:11px; color:var(--cdisc-text-secondary);">outputs: <code>${(d.bindings || []).find(b => b.direction === 'output')?.concept || d.outputConcept}</code></span>
           </div>
           ${d.description ? `<div class="ep-library-card-desc">${d.description.length > 100 ? d.description.slice(0, 100) + '...' : d.description}</div>` : ''}
         </div>`;

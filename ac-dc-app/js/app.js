@@ -27,6 +27,7 @@ export const appState = {
   confirmedTerminals: [],
   customInputBindings: null,   // null = use template defaults; array = user-modified
   dimensionalSliceValues: null, // null = not yet initialized; object = user-configured slice values
+  methodConfig: null,          // null = not yet initialized; object = user-configured method config overrides
   activeInteractions: [],      // array of "concept1:concept2" strings
   endpointSpecs: {},           // keyed by endpoint ID: { conceptCategory, dataType, parameterSource, parameterName, linkedBCIds, dimensionValues, derivationNote }
   // Raw USDM and index for reference resolution
@@ -84,14 +85,21 @@ function getStepFromHash() {
 
 export function navigateTo(step) {
   if (step < 1 || step > 7) return;
-  location.hash = `#/step/${step}`;
+  appState.currentStep = step;
+  // Update hash without triggering hashchange re-render
+  history.replaceState(null, '', `#/step/${step}`);
+  renderCurrentStep();
 }
 
 export function renderCurrentStep() {
   const content = document.getElementById('app-content');
   if (!content) return;
 
-  appState.currentStep = getStepFromHash();
+  // Sync from hash only if not already set by navigateTo
+  const hashStep = getStepFromHash();
+  if (hashStep !== appState.currentStep) {
+    appState.currentStep = hashStep;
+  }
   renderSidebar();
 
   if (!appState.loaded) {
@@ -135,8 +143,8 @@ async function init() {
     content.innerHTML = `
       <div class="card" style="text-align:center; padding:40px; color:var(--cdisc-error);">
         <h3>Failed to load data</h3>
-        <p style="margin-top:8px; color:var(--cdisc-gray);">${err.message}</p>
-        <p style="margin-top:12px; font-size:12px; color:var(--cdisc-gray);">
+        <p style="margin-top:8px; color:var(--cdisc-text-secondary);">${err.message}</p>
+        <p style="margin-top:12px; font-size:12px; color:var(--cdisc-text-secondary);">
           Make sure you are serving from the repository root:<br>
           <code>python3 ac-dc-app/serve.py</code>
         </p>

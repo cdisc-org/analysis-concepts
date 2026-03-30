@@ -1,0 +1,100 @@
+{
+  "$schema": "../../model/method/method_implementation_catalog.schema.json",
+  "model": "MethodImplementationCatalog",
+  "version": "0.1.0",
+  "description": "R implementations for analysis methods. Migrated from stato_r_implementation fields.",
+  "implementations": {
+    "M.PairedTTest": [
+      {
+        "methodOid": "M.PairedTTest",
+        "language": "R",
+        "package": "stats",
+        "function": "t.test",
+        "callTemplate": "t.test(<response> ~ <fixed_effect>, data = <dataset>, paired = TRUE, var.equal = FALSE, conf.level = <conf_level>)",
+        "outputMapping": [
+          {
+            "outputClass": "test_result",
+            "resultColumns": {
+              "estimate": "estimate",
+              "t_statistic": "statistic",
+              "df": "parameter",
+              "p_value": "p.value",
+              "CI_lower": "conf.int[1]",
+              "CI_upper": "conf.int[2]"
+            }
+          }
+        ],
+        "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/t.test.html",
+        "notes": "Paired t-test via formula interface. The repeated_subject pairing is implicit in data ordering or handled via the paired=TRUE argument."
+      }
+    ],
+    "M.OneSampleTTest": [
+      {
+        "methodOid": "M.OneSampleTTest",
+        "language": "R",
+        "package": "stats",
+        "function": "t.test",
+        "callTemplate": "t.test(x = <response>, mu = <mu>, alternative = <alternative>, conf.level = <conf_level>)",
+        "outputMapping": [
+          {
+            "outputClass": "test_result",
+            "resultColumns": {
+              "estimate": "estimate",
+              "t_statistic": "statistic",
+              "df": "parameter",
+              "p_value": "p.value",
+              "CI_lower": "conf.int[1]",
+              "CI_upper": "conf.int[2]"
+            }
+          }
+        ],
+        "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/t.test.html",
+        "notes": "One-sample t-test. Tests whether the mean of x differs from mu."
+      }
+    ],
+    "M.TwoSampleTTest": [
+      {
+        "methodOid": "M.TwoSampleTTest",
+        "language": "R",
+        "package": "stats",
+        "function": "t.test",
+        "callTemplate": "t.test(<response> ~ <fixed_effect>, data = <dataset>, paired = FALSE, var.equal = FALSE, alternative = <alternative>, conf.level = <conf_level>)",
+        "outputMapping": [
+          {
+            "outputClass": "test_result",
+            "resultColumns": {
+              "estimate": "estimate",
+              "t_statistic": "statistic",
+              "df": "parameter",
+              "p_value": "p.value",
+              "CI_lower": "conf.int[1]",
+              "CI_upper": "conf.int[2]"
+            }
+          }
+        ],
+        "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/t.test.html",
+        "notes": "Two-sample (Welch) t-test via formula interface. fixed_effect must have exactly two levels."
+      }
+    ],
+    "M.FisherExactTest": [
+      {
+        "methodOid": "M.FisherExactTest",
+        "language": "R",
+        "package": "stats",
+        "function": "fisher.test",
+        "callTemplate": "fisher.test(table(<response>, <fixed_effect>))",
+        "outputMapping": [
+          {
+            "outputClass": "test_result",
+            "resultColumns": {
+              "p_value": "p.value",
+              "estimate": "estimate"
+            }
+          }
+        ],
+        "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/fisher.test.html",
+        "notes": "Fisher's exact test for 2x2 contingency tables. Both response and fixed_effect must be categorical/binary."
+      }
+    ]
+  }
+}

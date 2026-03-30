@@ -1,0 +1,147 @@
+/* ===== Study Card Grid ===== */
+.study-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.study-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.study-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--cdisc-border);
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--cdisc-primary);
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--cdisc-text-secondary);
+  margin-top: 2px;
+}
+
+/* ===== Objective Tree ===== */
+.objective-group {
+  margin-bottom: 16px;
+}
+
+.objective-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--cdisc-background);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+}
+
+.objective-text {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.endpoint-list {
+  margin-left: 40px;
+}
+
+.endpoint-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  border-left: 2px solid var(--cdisc-border);
+  margin-left: 14px;
+}
+
+.endpoint-item:hover {
+  background: var(--cdisc-primary-light);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+/* ===== Hero Banner ===== */
+.hero-banner {
+  background: var(--cdisc-primary);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  color: var(--cdisc-surface);
+  margin-bottom: 24px;
+}
+
+.hero-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.hero-subtitle {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+/* ===== Inline Config Dropdown ===== */
+.inline-config {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+.inline-config select {
+  appearance: none;
+  background: rgba(19, 70, 120, 0.06);
+  border: 1px solid rgba(19, 70, 120, 0.2);
+  border-radius: 4px;
+  padding: 2px 20px 2px 8px;
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cdisc-primary);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23134678' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+}
+
+/* ===== Narrative Content ===== */
+.narrative-content {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--cdisc-text);
+}
+
+.narrative-content h1,
+.narrative-content h2,
+.narrative-content h3 {
+  color: var(--cdisc-primary);
+  margin: 14px 0 8px;
+}
+
+.narrative-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+}
+
+.narrative-content table th,
+.narrative-content table td {
+  border: 1px solid var(--cdisc-border);
+  padding: 6px 8px;
+  text-align: left;
+  font-size: 12px;
+}

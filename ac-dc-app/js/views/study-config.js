@@ -26,7 +26,7 @@ export function renderConfigPanel() {
     <div class="config-panel-header">
       <div>
         <div style="font-size:15px; font-weight:700; color:var(--cdisc-text);">Study Configuration</div>
-        <div style="font-size:11px; color:var(--cdisc-gray); margin-top:2px;">Variable mappings</div>
+        <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:2px;">Variable mappings</div>
       </div>
       <button class="config-panel-close" id="config-panel-close">&times;</button>
     </div>
@@ -41,7 +41,7 @@ export function renderConfigPanel() {
 function renderPanelContent() {
   const mappings = appState.conceptMappings;
   if (!mappings) {
-    return '<p style="color:var(--cdisc-gray); padding:16px;">Mappings not loaded yet.</p>';
+    return '<p style="color:var(--cdisc-text-secondary); padding:16px;">Mappings not loaded yet.</p>';
   }
 
   const modelKeys = Object.keys(MODEL_LABELS).filter(k => mappings[k]);
@@ -67,7 +67,7 @@ function renderGroupCards(modelKey, typeKey, typeLabel) {
 
   return `
     <div style="margin-bottom:16px;">
-      <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-gray); margin-bottom:8px;">${typeLabel}</div>
+      <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-text-secondary); margin-bottom:8px;">${typeLabel}</div>
       ${Object.entries(entries).map(([name, entry]) => renderConceptCard(modelKey, typeKey, name, entry)).join('')}
     </div>
   `;
@@ -79,15 +79,15 @@ function renderConceptCard(modelKey, typeKey, name, entry) {
     <tr>
       <td style="font-size:11px; color:var(--cdisc-text-secondary);">${dt}</td>
       <td><input class="cp-dt-var" data-model="${modelKey}" data-type="${typeKey}" data-concept="${name}" data-dt="${dt}" value="${varName}" style="font-size:11px; width:100%; border:1px solid transparent; border-radius:3px; padding:2px 4px; font-family:var(--font-family); color:var(--cdisc-text); background:transparent;"></td>
-      <td style="width:24px; text-align:center;"><span class="cp-dt-remove" data-model="${modelKey}" data-type="${typeKey}" data-concept="${name}" data-dt="${dt}" style="cursor:pointer; color:var(--cdisc-gray); font-size:14px;" title="Remove">&times;</span></td>
+      <td style="width:24px; text-align:center;"><span class="cp-dt-remove" data-model="${modelKey}" data-type="${typeKey}" data-concept="${name}" data-dt="${dt}" style="cursor:pointer; color:var(--cdisc-text-secondary); font-size:14px;" title="Remove">&times;</span></td>
     </tr>
   `).join('');
 
   return `
     <div class="config-concept-card">
       <div class="config-concept-card-header" data-card="${modelKey}-${typeKey}-${name}">
-        <span style="font-size:10px; color:var(--cdisc-gray); margin-right:6px;">&#9654;</span>
-        <code style="font-size:12px; font-weight:600; color:var(--cdisc-blue);">${name}</code>
+        <span style="font-size:10px; color:var(--cdisc-text-secondary); margin-right:6px;">&#9654;</span>
+        <code style="font-size:12px; font-weight:600; color:var(--cdisc-primary);">${name}</code>
       </div>
       <div class="config-concept-card-body" id="card-${modelKey}-${typeKey}-${name}" style="display:none;">
         <div style="margin-bottom:8px;">
@@ -103,8 +103,8 @@ function renderConceptCard(modelKey, typeKey, name, entry) {
           <label style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.3px;">By Data Type</label>
           <table style="width:100%; border-collapse:collapse; margin-top:4px;">
             <thead><tr>
-              <th style="text-align:left; font-size:10px; color:var(--cdisc-gray); padding:2px 4px; font-weight:600;">Type</th>
-              <th style="text-align:left; font-size:10px; color:var(--cdisc-gray); padding:2px 4px; font-weight:600;">Variable</th>
+              <th style="text-align:left; font-size:10px; color:var(--cdisc-text-secondary); padding:2px 4px; font-weight:600;">Type</th>
+              <th style="text-align:left; font-size:10px; color:var(--cdisc-text-secondary); padding:2px 4px; font-weight:600;">Variable</th>
               <th></th>
             </tr></thead>
             <tbody>${dtRows}</tbody>

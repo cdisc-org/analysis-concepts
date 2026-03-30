@@ -2011,7 +2011,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="sheet5" name="Transformation &amp; Method Model">
-    <mxGraphModel dx="1796" dy="997" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -2020,9 +2020,6 @@
         </mxCell>
         <mxCell id="s5_method" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=11;fontStyle=1;" value="Method" vertex="1">
           <mxGeometry height="80" width="80" x="390" y="170" as="geometry" />
-        </mxCell>
-        <mxCell id="oErE6qdatPtY02smCH3l-1" edge="1" parent="1" source="s5_method_p" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="s5_formula" value="">
-          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="s5_method_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="oid: string&#xa;schema_version: string&#xa;name: string&#xa;type: derivation | analysis&#xa;class: string&#xa;description: string&#xa;assumptions: string[]&#xa;intent: Intent[]&#xa;stato_r_implementation: string" vertex="1">
           <mxGeometry height="135" width="170" x="177.5" y="80" as="geometry" />

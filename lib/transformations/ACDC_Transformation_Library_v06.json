@@ -1,8 +1,8 @@
 {
   "version": "0.6",
-  "description": "Transformation library using Option D (clinical naming with dimensional relationships) for DC concepts and AC Concept Model v0.16 for analysis concepts. SmartPhrases compose into human-readable analysis descriptions.",
+  "description": "Transformation library using Option B (atomic clinical concepts) for DC concepts and AC Concept Model v0.16 for analysis concepts. Dimensions expressed through bindings with dataStructureRole. SmartPhrases compose into human-readable analysis descriptions.",
   "$references": {
-    "dcConcepts": "Option_D_Clinical_with_Dimensions.json",
+    "dcConcepts": "Option_B_Clinical.json",
     "acConcepts": "AC_Concept_Model_v016.json",
     "qualifierTypes": "CDDM_Shared_QualifierTypes.json",
     "methods": "Method definitions (M.MMRM, M.LogRankTest, M.Subtraction, etc.)"
@@ -303,19 +303,24 @@
       "description": "Identify the baseline record per subject per parameter using M.RecordSelection configured for baseline.",
       "instanceOf": "C.Flag",
       "usesMethod": "M.RecordSelection",
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "partition"
-      },
-      "addedDimensions": {
-        "AnalysisVisit": "partition"
-      },
-      "methodConfigurations": {
-        "selection_rule": "last_non_missing",
-        "scope": "pre_treatment",
-        "cardinality": "single",
-        "reference_event": "first_dose"
-      },
+      "methodConfigurations": [
+        {
+          "configurationName": "selection_rule",
+          "value": "last_non_missing"
+        },
+        {
+          "configurationName": "scope",
+          "value": "pre_treatment"
+        },
+        {
+          "configurationName": "cardinality",
+          "value": "single"
+        },
+        {
+          "configurationName": "reference_event",
+          "value": "first_dose"
+        }
+      ],
       "validSmartPhrases": [],
       "bindings": [
         {
@@ -331,6 +336,24 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "flag"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ]
     },
@@ -341,13 +364,6 @@
       "description": "Calculate the arithmetic change from baseline value.",
       "instanceOf": "C.Change",
       "usesMethod": "M.Subtraction",
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint"
-      },
-      "addedDimensions": {
-        "AnalysisVisit": "partition"
-      },
       "validSmartPhrases": [
         "SP_CFB_ENDPOINT",
         "SP_PARAMETER",
@@ -378,15 +394,34 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "difference"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
-      "namedSlices": {
-        "baseline": {
-          "fixedDimensions": {
-            "AnalysisVisit": "Baseline"
-          }
+      "slices": [
+        {
+          "name": "baseline",
+          "dimension": "AnalysisVisit",
+          "constraint": "Baseline"
         }
-      }
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.PercentChangeFromBaseline",
@@ -395,13 +430,6 @@
       "description": "Calculate the percent change from baseline value.",
       "instanceOf": "C.PercentChange",
       "usesMethod": "M.RelativeDifference",
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint"
-      },
-      "addedDimensions": {
-        "AnalysisVisit": "partition"
-      },
       "validSmartPhrases": [
         "SP_PCTCFB_ENDPOINT",
         "SP_PARAMETER",
@@ -431,15 +459,34 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
-      "namedSlices": {
-        "baseline": {
-          "fixedDimensions": {
-            "AnalysisVisit": "Baseline"
-          }
+      "slices": [
+        {
+          "name": "baseline",
+          "dimension": "AnalysisVisit",
+          "constraint": "Baseline"
         }
-      }
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.ShiftFromBaseline",
@@ -448,13 +495,6 @@
       "description": "Determine categorical shift between baseline and post-baseline values.",
       "instanceOf": "C.Shift",
       "usesMethod": "M.CategoricalTransition",
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint"
-      },
-      "addedDimensions": {
-        "AnalysisVisit": "partition"
-      },
       "validSmartPhrases": [
         "SP_SHIFT_ENDPOINT",
         "SP_PARAMETER",
@@ -483,15 +523,34 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
-      "namedSlices": {
-        "baseline": {
-          "fixedDimensions": {
-            "AnalysisVisit": "Baseline"
-          }
+      "slices": [
+        {
+          "name": "baseline",
+          "dimension": "AnalysisVisit",
+          "constraint": "Baseline"
         }
-      }
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.ResponderClassification",
@@ -500,13 +559,6 @@
       "description": "Classify subjects as responders based on threshold criterion applied to a derived value.",
       "instanceOf": "C.Flag",
       "usesMethod": "M.ThresholdEvaluation",
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "partition"
-      },
-      "addedDimensions": {
-        "AnalysisVisit": "partition"
-      },
       "validSmartPhrases": [
         "SP_RESPONDER_ENDPOINT",
         "SP_PARAMETER",
@@ -527,8 +579,27 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.LOCF_Imputation",
@@ -537,13 +608,6 @@
       "description": "Impute missing values by carrying forward the last non-missing observation within each subject-parameter partition, ordered by analysis visit.",
       "instanceOf": "C.Measure",
       "usesMethod": "M.ImputedValue_LOCF",
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "partition"
-      },
-      "addedDimensions": {
-        "AnalysisVisit": "order"
-      },
       "validSmartPhrases": [
         "SP_IMPUTATION"
       ],
@@ -561,8 +625,27 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "order",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.VisitWindowing",
@@ -571,13 +654,12 @@
       "description": "Assign records to analysis visit windows based on timing relative to protocol-defined encounters.",
       "instanceOf": "C.Category",
       "usesMethod": "M.WindowAssignment",
-      "inheritedDimensions": {
-        "Subject": "partition"
-      },
-      "addedDimensions": {},
-      "methodConfigurations": {
-        "window_definitions": "(provided at study instantiation)"
-      },
+      "methodConfigurations": [
+        {
+          "configurationName": "window_definitions",
+          "value": "(provided at study instantiation)"
+        }
+      ],
       "validSmartPhrases": [],
       "bindings": [
         {
@@ -595,6 +677,12 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ]
     },
@@ -605,10 +693,6 @@
       "description": "Assign subjects to analysis populations based on eligibility criteria.",
       "instanceOf": "C.Flag",
       "usesMethod": "M.CriterionEvaluation",
-      "inheritedDimensions": {
-        "Subject": "partition"
-      },
-      "addedDimensions": {},
       "validSmartPhrases": [
         "SP_POPULATION"
       ],
@@ -626,8 +710,15 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.PeakConcentration",
@@ -636,12 +727,6 @@
       "description": "Find the maximum concentration in an ordered PK profile.",
       "instanceOf": "C.PeakValue",
       "usesMethod": "M.Maximum",
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "partition",
-        "Timing": "order"
-      },
-      "addedDimensions": {},
       "validSmartPhrases": [
         "SP_PEAK_ENDPOINT",
         "SP_PARAMETER"
@@ -659,8 +744,27 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Timing",
+          "methodRole": "order",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.AUCCalculation",
@@ -669,12 +773,6 @@
       "description": "Calculate the area under the concentration-time curve.",
       "instanceOf": "C.AreaUnderCurve",
       "usesMethod": "M.TrapezoidalIntegration",
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "partition",
-        "Timing": "order"
-      },
-      "addedDimensions": {},
       "validSmartPhrases": [
         "SP_AUC_ENDPOINT",
         "SP_PARAMETER"
@@ -692,8 +790,27 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Timing",
+          "methodRole": "order",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.OverallSurvivalTime",
@@ -702,10 +819,6 @@
       "description": "Calculate time from randomisation to death or censoring.",
       "instanceOf": "C.TimeToEvent",
       "usesMethod": "M.DurationCalculation",
-      "inheritedDimensions": {
-        "Subject": "partition"
-      },
-      "addedDimensions": {},
       "validSmartPhrases": [
         "SP_TTE_ENDPOINT"
       ],
@@ -725,8 +838,15 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "duration"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.DeathEventFlag",
@@ -735,10 +855,6 @@
       "description": "Create censoring indicator for survival analysis (death = event, alive = censored).",
       "instanceOf": "C.Flag",
       "usesMethod": "M.CriterionEvaluation",
-      "inheritedDimensions": {
-        "Subject": "partition"
-      },
-      "addedDimensions": {},
       "validSmartPhrases": [],
       "bindings": [
         {
@@ -746,8 +862,15 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.ADAS_ItemMaxScore",
@@ -756,13 +879,12 @@
       "description": "Max possible score for each ADAS-Cog item, used as scaling denominator when items are missing.",
       "instanceOf": "C.Measure",
       "usesMethod": "M.Aggregation",
-      "inheritedDimensions": {
-        "Parameter": "partition"
-      },
-      "addedDimensions": {},
-      "methodConfigurations": {
-        "agg_func": "max"
-      },
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "max"
+        }
+      ],
       "validSmartPhrases": [],
       "bindings": [
         {
@@ -777,6 +899,12 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ]
     },
@@ -787,14 +915,12 @@
       "description": "Sum of max-score capacity of missing items per subject/visit. Scaling factor = 70 / (70 - this value).",
       "instanceOf": "C.Measure",
       "usesMethod": "M.Aggregation",
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "AnalysisVisit": "partition"
-      },
-      "addedDimensions": {},
-      "methodConfigurations": {
-        "agg_func": "sum"
-      },
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "sum"
+        }
+      ],
       "validSmartPhrases": [],
       "bindings": [
         {
@@ -809,6 +935,18 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ]
     },
@@ -819,16 +957,20 @@
       "description": "Flag whether enough items are present to compute total. Requires >= 8 of 11 items.",
       "instanceOf": "C.Flag",
       "usesMethod": "M.ThresholdCompare",
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "AnalysisVisit": "partition"
-      },
-      "addedDimensions": {},
-      "methodConfigurations": {
-        "operator": ">=",
-        "true_value": "Y",
-        "false_value": "N"
-      },
+      "methodConfigurations": [
+        {
+          "configurationName": "operator",
+          "value": ">="
+        },
+        {
+          "configurationName": "true_value",
+          "value": "Y"
+        },
+        {
+          "configurationName": "false_value",
+          "value": "N"
+        }
+      ],
       "validSmartPhrases": [],
       "bindings": [
         {
@@ -843,6 +985,18 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ]
     },
@@ -853,12 +1007,6 @@
       "description": "total = sum_available / ((70 - missing_capacity) / 70). Missing if scoreable flag = N. Scale: 0-70.",
       "instanceOf": "C.Measure",
       "usesMethod": "M.Division",
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint",
-        "AnalysisVisit": "partition"
-      },
-      "addedDimensions": {},
       "validSmartPhrases": [],
       "bindings": [
         {
@@ -887,8 +1035,27 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "quotient"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
-      ]
+      ],
+      "methodConfigurations": []
     }
   ],
   "analysisTransformations": [
@@ -907,16 +1074,20 @@
         "model_fit": "FitStatistics",
         "covariance": "CovarianceParameters"
       },
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint",
-        "AnalysisVisit": "partition"
-      },
-      "methodConfigurations": {
-        "covariance_structure": "UN",
-        "estimation_method": "REML",
-        "df_method": "KR"
-      },
+      "methodConfigurations": [
+        {
+          "configurationName": "covariance_structure",
+          "value": "UN"
+        },
+        {
+          "configurationName": "estimation_method",
+          "value": "REML"
+        },
+        {
+          "configurationName": "df_method",
+          "value": "KR"
+        }
+      ],
       "validSmartPhrases": [
         "SP_CFB_ENDPOINT",
         "SP_PARAMETER",
@@ -982,15 +1153,14 @@
           "requiredValueType": "Identifier",
           "direction": "input",
           "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
-      "namedSlices": {
-        "baseline": {
-          "fixedDimensions": {
-            "AnalysisVisit": "Baseline"
-          }
-        }
-      },
       "sliceKeys": [
         {
           "dimension": "Parameter",
@@ -999,6 +1169,13 @@
         {
           "dimension": "Population",
           "source": "population"
+        }
+      ],
+      "slices": [
+        {
+          "name": "baseline",
+          "dimension": "AnalysisVisit",
+          "constraint": "Baseline"
         }
       ]
     },
@@ -1016,14 +1193,12 @@
         "fixed_effects": "ParameterEstimates",
         "model_fit": "FitStatistics"
       },
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint",
-        "AnalysisVisit": "constraint"
-      },
-      "methodConfigurations": {
-        "ss_type": "III"
-      },
+      "methodConfigurations": [
+        {
+          "configurationName": "ss_type",
+          "value": "III"
+        }
+      ],
       "validSmartPhrases": [
         "SP_CFB_ENDPOINT",
         "SP_PARAMETER",
@@ -1063,15 +1238,26 @@
           "requiredValueType": "CodeableConcept",
           "direction": "input",
           "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
-      "namedSlices": {
-        "baseline": {
-          "fixedDimensions": {
-            "AnalysisVisit": "Baseline"
-          }
-        }
-      },
       "sliceKeys": [
         {
           "dimension": "Parameter",
@@ -1085,6 +1271,13 @@
           "dimension": "Population",
           "source": "population"
         }
+      ],
+      "slices": [
+        {
+          "name": "baseline",
+          "dimension": "AnalysisVisit",
+          "constraint": "Baseline"
+        }
       ]
     },
     {
@@ -1097,12 +1290,12 @@
       "methodOutputSlotMapping": {
         "test": "TestResult"
       },
-      "inheritedDimensions": {
-        "Subject": "partition"
-      },
-      "methodConfigurations": {
-        "rho": 0
-      },
+      "methodConfigurations": [
+        {
+          "configurationName": "rho",
+          "value": 0
+        }
+      ],
       "validSmartPhrases": [
         "SP_TTE_ENDPOINT",
         "SP_POPULATION",
@@ -1143,6 +1336,12 @@
           "requiredValueType": "CodeableConcept",
           "direction": "input",
           "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
       "sliceKeys": [
@@ -1161,11 +1360,6 @@
       "usesMethod": "M.DescriptiveStatistics",
       "methodOutputSlotMapping": {
         "summary": "ComputedValue"
-      },
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint",
-        "AnalysisVisit": "partition"
       },
       "validSmartPhrases": [
         "SP_CFB_ENDPOINT",
@@ -1194,6 +1388,24 @@
           "requiredValueType": "CodeableConcept",
           "direction": "input",
           "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
       "sliceKeys": [
@@ -1209,7 +1421,8 @@
           "dimension": "Population",
           "source": "population"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.Count_Measure",
@@ -1220,11 +1433,6 @@
       "usesMethod": "M.Count",
       "methodOutputSlotMapping": {
         "computed_value": "ComputedValue"
-      },
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint",
-        "AnalysisVisit": "partition"
       },
       "validSmartPhrases": [
         "SP_VALUE_ENDPOINT",
@@ -1252,6 +1460,24 @@
           "requiredValueType": "CodeableConcept",
           "direction": "input",
           "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
       "sliceKeys": [
@@ -1267,7 +1493,8 @@
           "dimension": "Population",
           "source": "population"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.Mean_Measure",
@@ -1278,11 +1505,6 @@
       "usesMethod": "M.Mean",
       "methodOutputSlotMapping": {
         "computed_value": "ComputedValue"
-      },
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint",
-        "AnalysisVisit": "partition"
       },
       "validSmartPhrases": [
         "SP_VALUE_ENDPOINT",
@@ -1310,6 +1532,24 @@
           "requiredValueType": "CodeableConcept",
           "direction": "input",
           "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
       "sliceKeys": [
@@ -1325,7 +1565,8 @@
           "dimension": "Population",
           "source": "population"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.SD_Measure",
@@ -1336,11 +1577,6 @@
       "usesMethod": "M.StandardDeviation",
       "methodOutputSlotMapping": {
         "computed_value": "ComputedValue"
-      },
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint",
-        "AnalysisVisit": "partition"
       },
       "validSmartPhrases": [
         "SP_VALUE_ENDPOINT",
@@ -1368,6 +1604,24 @@
           "requiredValueType": "CodeableConcept",
           "direction": "input",
           "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
       "sliceKeys": [
@@ -1383,7 +1637,8 @@
           "dimension": "Population",
           "source": "population"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.Median_Measure",
@@ -1394,11 +1649,6 @@
       "usesMethod": "M.Median",
       "methodOutputSlotMapping": {
         "computed_value": "ComputedValue"
-      },
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint",
-        "AnalysisVisit": "partition"
       },
       "validSmartPhrases": [
         "SP_VALUE_ENDPOINT",
@@ -1426,6 +1676,24 @@
           "requiredValueType": "CodeableConcept",
           "direction": "input",
           "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
       "sliceKeys": [
@@ -1441,7 +1709,8 @@
           "dimension": "Population",
           "source": "population"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.Quartile_Measure",
@@ -1452,11 +1721,6 @@
       "usesMethod": "M.Quartile",
       "methodOutputSlotMapping": {
         "computed_value": "ComputedValue"
-      },
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint",
-        "AnalysisVisit": "partition"
       },
       "validSmartPhrases": [
         "SP_VALUE_ENDPOINT",
@@ -1484,6 +1748,24 @@
           "requiredValueType": "CodeableConcept",
           "direction": "input",
           "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
       "sliceKeys": [
@@ -1499,7 +1781,8 @@
           "dimension": "Population",
           "source": "population"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.Min_Measure",
@@ -1510,11 +1793,6 @@
       "usesMethod": "M.Minimum",
       "methodOutputSlotMapping": {
         "computed_value": "ComputedValue"
-      },
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint",
-        "AnalysisVisit": "partition"
       },
       "validSmartPhrases": [
         "SP_VALUE_ENDPOINT",
@@ -1542,6 +1820,24 @@
           "requiredValueType": "CodeableConcept",
           "direction": "input",
           "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
       "sliceKeys": [
@@ -1557,7 +1853,8 @@
           "dimension": "Population",
           "source": "population"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.Max_Measure",
@@ -1568,11 +1865,6 @@
       "usesMethod": "M.Maximum",
       "methodOutputSlotMapping": {
         "computed_value": "ComputedValue"
-      },
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint",
-        "AnalysisVisit": "partition"
       },
       "validSmartPhrases": [
         "SP_VALUE_ENDPOINT",
@@ -1600,6 +1892,24 @@
           "requiredValueType": "CodeableConcept",
           "direction": "input",
           "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
       "sliceKeys": [
@@ -1615,7 +1925,8 @@
           "dimension": "Population",
           "source": "population"
         }
-      ]
+      ],
+      "methodConfigurations": []
     },
     {
       "oid": "T.Responder_ChiSq",
@@ -1626,11 +1937,6 @@
       "usesMethod": "M.ChiSquaredTest",
       "methodOutputSlotMapping": {
         "test": "TestResult"
-      },
-      "inheritedDimensions": {
-        "Subject": "partition",
-        "Parameter": "constraint",
-        "AnalysisVisit": "constraint"
       },
       "validSmartPhrases": [
         "SP_RESPONDER_ENDPOINT",
@@ -1659,6 +1965,24 @@
           "requiredValueType": "CodeableConcept",
           "direction": "input",
           "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
         }
       ],
       "sliceKeys": [
@@ -1674,7 +1998,8 @@
           "dimension": "Population",
           "source": "population"
         }
-      ]
+      ],
+      "methodConfigurations": []
     }
   ]
 }

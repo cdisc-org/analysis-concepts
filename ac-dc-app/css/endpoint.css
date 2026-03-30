@@ -1,0 +1,222 @@
+/* ===== Collapsible Sections ===== */
+.collapsible {
+  border: 1px solid var(--cdisc-border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  background: var(--cdisc-surface);
+}
+
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--cdisc-text);
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.collapsible-header:hover {
+  background: var(--cdisc-primary-light);
+}
+
+.collapsible-arrow {
+  transition: transform 0.2s;
+  font-size: 10px;
+  color: var(--cdisc-text-secondary);
+}
+
+.collapsible.open .collapsible-arrow {
+  transform: rotate(90deg);
+}
+
+.collapsible-body {
+  display: none;
+  padding: 0 16px 16px;
+}
+
+.collapsible.open .collapsible-body {
+  display: block;
+}
+
+/* ===== Sentence Preview ===== */
+.sentence-preview {
+  background: var(--cdisc-background);
+  border-left: 3px solid var(--cdisc-primary);
+  padding: 14px 18px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--cdisc-text);
+  margin-top: 14px;
+}
+
+.sentence-preview .placeholder {
+  color: var(--cdisc-accent6);
+  font-weight: 600;
+  font-style: italic;
+}
+
+/* ===== Config Form ===== */
+.config-field {
+  margin-bottom: 14px;
+}
+
+.config-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cdisc-text-secondary);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.config-input,
+.config-select {
+  width: 100%;
+  padding: 7px 12px;
+  border: 1px solid var(--cdisc-border);
+  border-radius: var(--radius);
+  font-family: var(--font-family);
+  font-size: 13px;
+  color: var(--cdisc-text);
+  background: var(--cdisc-surface);
+  transition: border-color 0.15s;
+}
+
+.config-input:focus,
+.config-select:focus {
+  outline: none;
+  border-color: var(--cdisc-primary);
+  box-shadow: 0 0 0 2px rgba(19, 70, 120, 0.1);
+}
+
+/* ===== Carry-forward section ===== */
+.ep-carry-forward {
+  padding: 10px 14px;
+  background: var(--cdisc-background);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--cdisc-primary);
+  margin-bottom: 14px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ep-carry-forward-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cdisc-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+/* ===== Summary step cards ===== */
+.ep-summary-card {
+  border: 1px solid var(--cdisc-border);
+  border-radius: var(--radius-lg);
+  background: var(--cdisc-surface);
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+
+.ep-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--cdisc-border);
+}
+
+.ep-summary-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ep-summary-col-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.ep-summary-col-text {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  line-height: 1.5;
+  border-left: 3px solid;
+}
+
+.ep-summary-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ep-summary-detail {
+  padding: 10px 14px;
+  background: var(--cdisc-background);
+  border-radius: var(--radius);
+}
+
+.ep-summary-detail-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cdisc-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+/* ===== Endpoint accordion ===== */
+.ep-accordion-item {
+  border: 1px solid var(--cdisc-border);
+  border-radius: var(--radius-lg);
+  background: var(--cdisc-surface);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.ep-accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.ep-accordion-header:hover {
+  background: var(--cdisc-background);
+}
+
+.ep-accordion-arrow {
+  font-size: 10px;
+  transition: transform 0.2s;
+  color: var(--cdisc-text-secondary);
+}
+
+.ep-accordion-item.open .ep-accordion-arrow {
+  transform: rotate(90deg);
+}
+
+.ep-accordion-body {
+  display: none;
+  padding: 14px;
+  border-top: 1px solid var(--cdisc-border);
+}
+
+.ep-accordion-item.open .ep-accordion-body {
+  display: block;
+}

@@ -33,11 +33,13 @@ export async function loadAllData(state) {
     conceptVariableMappings,
     qualifierTypes,
     ocModel,
-    ocBcMapping
+    ocBcMapping,
+    methodImplementationCatalog,
+    esapSchema
   ] = await Promise.all([
     fetchJSON('ac-dc-app/data/usdm/studies.json'),
     fetchJSON('model/concept/AC_Concept_Model_v016.json'),
-    fetchJSON('model/concept/Option_D_Clinical_with_Dimensions.json'),
+    fetchJSON('model/concept/Option_B_Clinical.json'),
     fetchJSON('lib/transformations/ACDC_Transformation_Library_v06.json'),
     fetchJSON('lib/methods/_index.json'),
     fetchJSON('model/method/statistics_vocabulary.json'),
@@ -45,7 +47,9 @@ export async function loadAllData(state) {
     fetchJSON('ac-dc-app/data/concept-variable-mappings.json'),
     fetchJSON('model/concept/CDDM_Shared_QualifierTypes.json'),
     fetchJSON('model/concept/OC_Instance_Model_v016.json'),
-    fetchJSON('model/shared/oc_bc_property_mapping.json')
+    fetchJSON('model/shared/oc_bc_property_mapping.json'),
+    fetchJSON('model/method/method_implementation_catalog.schema.json'),
+    fetchJSON('model/study/study_esap.schema.json')
   ]);
 
   // Load all USDM study files in parallel
@@ -74,6 +78,8 @@ export async function loadAllData(state) {
   state.qualifierTypes = qualifierTypes;
   state.ocModel = ocModel;
   state.ocBcMapping = ocBcMapping;
+  state.methodImplementationCatalog = methodImplementationCatalog;
+  state.esapSchema = esapSchema;
 }
 
 /**

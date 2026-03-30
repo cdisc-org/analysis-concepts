@@ -1,0 +1,115 @@
+{
+  "$id": "https://cdisc.org/acdc/method_implementation_catalog",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "title": "method_implementation_catalog",
+  "description": "Executable implementation catalog: maps abstract methods to language-specific code templates. Separate from method definitions to maintain the principle that methods know nothing about implementation. The callTemplate uses the same <role> placeholders as formula.generic_expression.",
+  "version": "0.1.0",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "model": {
+      "type": "string",
+      "const": "MethodImplementationCatalog",
+      "description": "Model identifier"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of the implementation catalog"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Human-readable description"
+    },
+    "implementations": {
+      "type": "object",
+      "description": "Method OID → array of implementations. Each method can have implementations in multiple languages.",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "$ref": "#/$defs/MethodImplementation" }
+      }
+    }
+  },
+  "required": ["model", "version", "implementations"],
+
+  "$defs": {
+
+    "Language": {
+      "description": "Supported implementation languages/platforms",
+      "enum": ["R", "SAS", "Python", "Julia"],
+      "type": "string"
+    },
+
+    "MethodImplementation": {
+      "description": "An executable implementation of a method in a specific language/platform. The callTemplate uses <role> placeholders matching the method's input_roles names.",
+      "type": "object",
+      "properties": {
+        "methodOid": {
+          "type": "string",
+          "pattern": "^M\\..+$",
+          "description": "OID of the method this implements (e.g. M.ANCOVA, M.PairedTTest)"
+        },
+        "language": {
+          "$ref": "#/$defs/Language",
+          "description": "Implementation language/platform"
+        },
+        "package": {
+          "type": ["string", "null"],
+          "description": "Package or library name (e.g. stats, mmrm, scipy.stats, SAS/STAT)"
+        },
+        "procedure": {
+          "type": ["string", "null"],
+          "description": "SAS procedure name (e.g. PROC TTEST, PROC MIXED). Null for non-SAS languages."
+        },
+        "function": {
+          "type": ["string", "null"],
+          "description": "Function name (e.g. t.test, lmer, ttest_ind). Null for SAS procedure-based implementations."
+        },
+        "callTemplate": {
+          "type": "string",
+          "description": "Template call using <role> placeholders from the method's input_roles. The transformation resolves roles to concepts, the study resolves concepts to variables, and the code engine substitutes."
+        },
+        "outputMapping": {
+          "type": ["array", "null"],
+          "items": { "$ref": "#/$defs/OutputMapping" },
+          "description": "How method output_classes map to language-specific output extraction"
+        },
+        "configurations": {
+          "type": ["object", "null"],
+          "description": "Language-specific configuration defaults (e.g. SAS options, R arguments)",
+          "additionalProperties": true
+        },
+        "documentation": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "URI to language-specific documentation"
+        },
+        "notes": {
+          "type": ["string", "null"],
+          "description": "Additional context or usage notes"
+        }
+      },
+      "required": ["methodOid", "language", "callTemplate"]
+    },
+
+    "OutputMapping": {
+      "description": "Maps a method output_class to language-specific output extraction. Tells the code engine how to capture structured results from the language's output objects.",
+      "type": "object",
+      "properties": {
+        "outputClass": {
+          "type": "string",
+          "description": "Name of the method output_class this maps (e.g. ls_means, type3_tests, test_result)"
+        },
+        "extractionCode": {
+          "type": ["string", "null"],
+          "description": "Language-specific code to extract this output class from the model result (e.g. emmeans(model, specs = ~<fixed_effect>))"
+        },
+        "resultColumns": {
+          "type": ["object", "null"],
+          "description": "Maps method statistic names to language-specific column names in the output (e.g. { estimate: 'emmean', SE: 'SE', CI_lower: 'lower.CL' })",
+          "additionalProperties": { "type": "string" }
+        }
+      },
+      "required": ["outputClass"]
+    }
+  }
+}

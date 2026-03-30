@@ -1,6 +1,24 @@
 import { appState } from '../app.js';
 
 /**
+ * Convert the new slices array format to the old namedSlices lookup format.
+ * Handles both new (slices array) and legacy (namedSlices object) formats.
+ */
+export function buildSliceLookup(transformation) {
+  const slices = transformation?.slices || [];
+  if (slices.length > 0) {
+    const lookup = {};
+    for (const s of slices) {
+      if (!lookup[s.name]) lookup[s.name] = { fixedDimensions: {} };
+      lookup[s.name].fixedDimensions[s.dimension] = s.constraint;
+    }
+    return lookup;
+  }
+  // Legacy fallback
+  return transformation?.namedSlices || {};
+}
+
+/**
  * Normalize an inputConcept entry that may be either a plain string
  * ("C.Measure") or an object ({ concept: "C.Measure", note: "..." }).
  * Returns the bare concept string in all cases.
@@ -121,7 +139,8 @@ export function formatDimensionConstraints(constraints) {
 
 /**
  * Resolve a named slice to a human-readable display suffix.
- * Looks up the slice name in namedSlices and formats fixedDimensions.
+ * Accepts a namedSlices lookup object (either legacy namedSlices or the
+ * result of buildSliceLookup()) and formats fixedDimensions.
  * e.g., formatSliceDisplay("baseline", { baseline: { fixedDimensions: { AnalysisVisit: "Baseline" } } })
  *       → " @ Baseline"
  */
@@ -146,7 +165,7 @@ export function formatSliceDisplay(sliceName, namedSlices) {
  * @param {Object} binding - The binding object (with slice, dimensionConstraints, qualifierType, etc.)
  * @param {Object} dcModel - The DC (derivation concept) model
  * @param {Object} ocModel - The OC (observation concept) model
- * @param {Object} [namedSlices] - Named slices from the transformation
+ * @param {Object} [namedSlices] - Named slices lookup object (legacy namedSlices or result of buildSliceLookup())
  * @returns {Object|null} Shape info or null if unresolvable
  */
 export function resolveBindingShape(conceptName, binding, dcModel, ocModel, namedSlices) {
@@ -183,7 +202,7 @@ export function resolveBindingShape(conceptName, binding, dcModel, ocModel, name
         result.valueType = Array.isArray(vt) ? vt[0] : (vt || null);
 
         // Get dimensional relationships for this category
-        const dimRels = cat.dimensionalRelationships || {};
+        const dimRels = (cat && cat.dimensionalRelationships) ? cat.dimensionalRelationships : {};
 
         // Compute fixed dimensions from slice
         let fixedDimNames = {};

@@ -1,0 +1,641 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.6 Chrome/144.0.7559.236 Electron/40.8.4 Safari/537.36" version="29.6.6" pages="5">
+  <diagram id="sheet6" name="AC Concept Schema">
+    <mxGraphModel dx="1323" dy="735" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="s6_title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=16;fontStyle=1;" value="AC Concept Schema — Analysis Concept Model" vertex="1">
+          <mxGeometry height="30" width="500" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#666666;" value="3-level SKOS-inspired hierarchy: Statistical Concepts (atoms) → Result Patterns (molecules) → Categories (groupings)" vertex="1">
+          <mxGeometry height="20" width="600" x="40" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_category" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=11;fontStyle=1;" value="Category" vertex="1">
+          <mxGeometry height="70" width="70" x="200" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_category_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="definition: string (required)&#xa;typicallyInvolves: string[] (required)&#xa;typicalMethods: string[]" vertex="1">
+          <mxGeometry height="50" width="200" x="40" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_category_pc" edge="1" parent="1" source="s6_category" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s6_category_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_resultpattern" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=11;fontStyle=1;" value="Result&#xa;Pattern" vertex="1">
+          <mxGeometry height="70" width="70" x="530" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_resultpattern_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="definition: string (required)&#xa;constituents: string[] (required)&#xa;identifiedBy: string[] (required)" vertex="1">
+          <mxGeometry height="50" width="200" x="620" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_resultpattern_pc" edge="1" parent="1" source="s6_resultpattern" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s6_resultpattern_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_statconcept" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=11;fontStyle=1;" value="Statistical&#xa;Concept" vertex="1">
+          <mxGeometry height="70" width="70" x="870" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_statconcept_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="definition: string (required)&#xa;dataType: FHIRPrimitiveType (required)&#xa;statoMapping: string (SKOS: notation)" vertex="1">
+          <mxGeometry height="50" width="210" x="960" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_statconcept_pc" edge="1" parent="1" source="s6_statconcept" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s6_statconcept_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_slotmapping" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=10;fontStyle=1;" value="Method Output&#xa;Slot Mapping" vertex="1">
+          <mxGeometry height="70" width="85" x="270" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_slotmapping_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="{ [methodOid]: { [slot]: patternName } }" vertex="1">
+          <mxGeometry height="30" width="230" x="25" y="298" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_slotmapping_pc" edge="1" parent="1" source="s6_slotmapping" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s6_slotmapping_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_e_cat_rp" edge="1" parent="1" source="s6_category" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="s6_resultpattern" value="typicallyInvolves 1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_e_rp_sc" edge="1" parent="1" source="s6_resultpattern" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="s6_statconcept" value="constituents 1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_e_slot_rp" edge="1" parent="1" source="s6_slotmapping" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;curved=1;" target="s6_resultpattern" value="maps to">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_fhirtype" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=10;fontStyle=1;" value="FHIR&#xa;PrimitiveType" vertex="1">
+          <mxGeometry height="60" width="80" x="1050" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_fhirtype_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="enum: decimal | integer | code |&#xa;  string | boolean | date |&#xa;  dateTime | id" vertex="1">
+          <mxGeometry height="45" width="185" x="1155" y="298" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_fhirtype_pc" edge="1" parent="1" source="s6_fhirtype" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s6_fhirtype_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_e_sc_fhir" edge="1" parent="1" source="s6_statconcept" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;curved=1;" target="s6_fhirtype" value="dataType 1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_examples" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#CCCCCC;fontSize=8;align=left;spacingLeft=6;" value="&lt;b&gt;Example instances:&lt;/b&gt;&#xa;&#xa;Category: TreatmentComparison&#xa;  typicallyInvolves: [Contrasts, LSMeans, Type3Tests]&#xa;  typicalMethods: [M.MMRM, M.ANCOVA]&#xa;&#xa;ResultPattern: LSMeans&#xa;  constituents: [Estimate, SE, CI_Lower, CI_Upper, DF]&#xa;  identifiedBy: [group, visit]&#xa;&#xa;StatisticalConcept: Estimate&#xa;  dataType: decimal&#xa;  statoMapping: STATO:0000599" vertex="1">
+          <mxGeometry height="160" width="260" x="440" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_legend_blue" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=9;fontStyle=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="40" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_legend_blue_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="AC Concept Entity" vertex="1">
+          <mxGeometry height="20" width="150" x="70" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_legend_yellow" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=9;fontStyle=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="40" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_legend_yellow_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="Cross-layer Bridge (Method ↔ AC)" vertex="1">
+          <mxGeometry height="20" width="200" x="70" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_legend_purple" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=9;fontStyle=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="40" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="s6_legend_purple_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="Shared Type (FHIR)" vertex="1">
+          <mxGeometry height="20" width="150" x="70" y="580" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="sheet7" name="DC Concept Schema">
+    <mxGraphModel dx="1257" dy="698" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="s7_title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=16;fontStyle=1;" value="DC Concept Schema — Derivation Concept Model" vertex="1">
+          <mxGeometry height="30" width="500" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#666666;" value="5 categories of derivation concepts with shared dimensions and FHIR-aligned result types" vertex="1">
+          <mxGeometry height="20" width="550" x="40" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_category" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=11;fontStyle=1;" value="Derivation&#xa;Category" vertex="1">
+          <mxGeometry height="70" width="80" x="180" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_category_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="definition: string (required)&#xa;inputPattern: string (required)&#xa;concepts: { [name]: DerivationConcept }" vertex="1">
+          <mxGeometry height="50" width="220" x="35" y="82.5" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_category_pc" edge="1" parent="1" source="s7_category" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s7_category_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_concept" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=11;fontStyle=1;" value="Derivation&#xa;Concept" vertex="1">
+          <mxGeometry height="70" width="80" x="450" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_concept_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="mathematicalEquivalent: string (required)&#xa;definition: string (required)&#xa;math: string (required)&#xa;examples: string[] (required)&#xa;result: DerivationResult (required)" vertex="1">
+          <mxGeometry height="75" width="240" x="510" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_concept_pc" edge="1" parent="1" source="s7_concept" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s7_concept_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_vt_numeric" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=10;fontStyle=1;" value="Result Value Type" vertex="1">
+          <mxGeometry height="55" width="65" x="810" y="132.5" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_shareddim" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=11;fontStyle=1;" value="Shared&#xa;Dimension" vertex="1">
+          <mxGeometry height="70" width="70" x="120" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_shareddim_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="cardinality: Cardinality (required)" vertex="1">
+          <mxGeometry height="25" width="190" x="215" y="383" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_shareddim_pc" edge="1" parent="1" source="s7_shareddim" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s7_shareddim_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_cardinality" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=10;fontStyle=1;" value="Cardinality" vertex="1">
+          <mxGeometry height="50" width="70" x="120" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_cardinality_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="enum: 0..1 | 1 | 0..* | 1..*" vertex="1">
+          <mxGeometry height="25" width="165" x="215" y="498" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_cardinality_pc" edge="1" parent="1" source="s7_cardinality" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s7_cardinality_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_e_cat_concept" edge="1" parent="1" source="s7_category" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="s7_concept" value="concepts 1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_e_concept_vt" edge="1" parent="1" source="s7_concept" style="endArrow=classic;html=1;strokeColor=#9673A6;fontSize=9;dashed=1;" target="s7_vt_numeric" value="result 1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_e_dim_card" edge="1" parent="1" source="s7_shareddim" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="s7_cardinality" value="cardinality 1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_examples" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#CCCCCC;fontSize=8;align=left;spacingLeft=6;" value="&lt;b&gt;Example instances:&lt;/b&gt;&#xa;&#xa;Category: Comparison&#xa;  inputPattern: Concept-driven. Requires 2× Measure.&#xa;&#xa;  Concept: Change&#xa;    mathematicalEquivalent: AbsoluteDifference&#xa;    math: x − x_ref&#xa;    result: { valueType: NumericValue, unit: inherited }&#xa;&#xa;SharedDimension: Subject { cardinality: 1 }&#xa;SharedDimension: AnalysisVisit { cardinality: 0..1 }" vertex="1">
+          <mxGeometry height="170" width="290" x="460" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_legend_blue" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=9;fontStyle=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="40" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_legend_blue_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="DC Concept Entity" vertex="1">
+          <mxGeometry height="20" width="150" x="70" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_legend_purple" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=9;fontStyle=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="40" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="s7_legend_purple_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="Shared Type (Cardinality, FHIR)" vertex="1">
+          <mxGeometry height="20" width="200" x="70" y="630" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="sheet8" name="OC Concept Schema">
+    <mxGraphModel dx="1479" dy="821" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="s8_title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=16;fontStyle=1;" value="OC Concept Schema — Observation Concept Model" vertex="1">
+          <mxGeometry height="30" width="500" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#666666;" value="Recursive DataDefinition structure with FHIR R5 value types, shared dimensions, and observation subtypes" vertex="1">
+          <mxGeometry height="20" width="600" x="40" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_datadef" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=11;fontStyle=1;" value="Data&#xa;Definition" vertex="1">
+          <mxGeometry height="80" width="80" x="487.5" y="145" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_datadef_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="definition: string&#xa;valueType: string (FHIR type)&#xa;cardinality: Cardinality (required)&#xa;relationship: string&#xa;qualifiers: QualifierSpec&#xa;dataDefinitions: { [name]: DataDefinition }" vertex="1">
+          <mxGeometry height="90" width="240" x="620" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_datadef_pc" edge="1" parent="1" source="s8_datadef" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s8_datadef_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_e_datadef_self" edge="1" parent="1" source="s8_datadef" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;curved=1;" target="s8_datadef" value="dataDefinitions 0..*&#xa;(recursive)">
+          <mxGeometry relative="1" x="0.1206" y="21" as="geometry">
+            <mxPoint x="22" y="-16" as="offset" />
+            <Array as="points">
+              <mxPoint x="640" y="185" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="s8_obsdim" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=11;fontStyle=1;" value="Observation&#xa;Dimension" vertex="1">
+          <mxGeometry height="70" width="80" x="220" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_obsdim_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="valueType: string (FHIR type)&#xa;relationship: string (required)&#xa;cardinality: Cardinality (required)&#xa;qualifiers: QualifierSpec&#xa;dataDefinitions: { [name]: DataDefinition }" vertex="1">
+          <mxGeometry height="75" width="240" x="40" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_obsdim_pc" edge="1" parent="1" source="s8_obsdim" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s8_obsdim_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_obscat" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=11;fontStyle=1;" value="Observation&#xa;Category" vertex="1">
+          <mxGeometry height="70" width="80" x="250" y="212.5" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_obscat_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="definition: string (required)&#xa;isA: string (required, = &#39;Observation&#39;)&#xa;additionalDefinitions: { [name]: DataDefinition }" vertex="1">
+          <mxGeometry height="50" width="250" x="610" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_obscat_pc" edge="1" parent="1" source="s8_obscat" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s8_obscat_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_qualspec" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=10;fontStyle=1;" value="Qualifier&#xa;Spec" vertex="1">
+          <mxGeometry height="60" width="70" x="900" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_qualspec_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="type: string (required)&#xa;values: { [name]: description }" vertex="1">
+          <mxGeometry height="35" width="175" x="900" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_qualspec_pc" edge="1" parent="1" source="s8_qualspec" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s8_qualspec_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_valuetypes" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=11;fontStyle=1;" value="Value&#xa;Types" vertex="1">
+          <mxGeometry height="70" width="70" x="1100" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_valuetypes_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="primitiveTypes: { [name]: PrimitiveType }&#xa;complexTypes: { [name]: ComplexType }" vertex="1">
+          <mxGeometry height="35" width="230" x="1195" y="148" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_valuetypes_pc" edge="1" parent="1" source="s8_valuetypes" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s8_valuetypes_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_primtype" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=10;fontStyle=1;" value="Primitive&#xa;Type" vertex="1">
+          <mxGeometry height="55" width="65" x="1050" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_primtype_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="fhirType: string (required)&#xa;definition: string (required)&#xa;usage: string (required)" vertex="1">
+          <mxGeometry height="45" width="175" x="1060" y="555" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_primtype_pc" edge="1" parent="1" source="s8_primtype" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s8_primtype_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_comptype" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=10;fontStyle=1;" value="Complex&#xa;Type" vertex="1">
+          <mxGeometry height="55" width="65" x="1200" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_comptype_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="fhirType: string (required)&#xa;definition: string (required)&#xa;usage: string (required)&#xa;components: { [name]: Component }&#xa;compatiblePrimitives: string[]" vertex="1">
+          <mxGeometry height="75" width="195" x="1290" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_comptype_pc" edge="1" parent="1" source="s8_comptype" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s8_comptype_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_cardinality" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=10;fontStyle=1;" value="Cardinality" vertex="1">
+          <mxGeometry height="50" width="70" x="492.5" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_cardinality_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="enum: 0..1 | 1 | 0..* | 1..*" vertex="1">
+          <mxGeometry height="25" width="165" x="445" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_cardinality_pc" edge="1" parent="1" source="s8_cardinality" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s8_cardinality_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_observation" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#000000;fontSize=11;fontStyle=1;" value="Observation" vertex="1">
+          <mxGeometry height="70" width="80" x="90" y="142.5" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_observation_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="definition: string&#xa;instanceStructure: { [name]: DataDefinition }&#xa;sharedDimensions: { [name]: ObsDimension }&#xa;observationCategories: { [name]: ObsCategory }" vertex="1">
+          <mxGeometry height="65" width="260" x="40" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_observation_pc" edge="1" parent="1" source="s8_observation" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s8_observation_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_e_obs_datadef" edge="1" parent="1" source="s8_observation" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="s8_datadef" value="instanceStructure 1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_e_obs_dim" edge="1" parent="1" source="s8_observation" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="s8_obsdim" value="sharedDimensions 0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_e_obs_cat" edge="1" parent="1" source="s8_observation" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;curved=1;" target="s8_obscat" value="observationCategories 0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_e_obscat_datadef" edge="1" parent="1" source="s8_obscat" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;curved=1;" target="s8_datadef" value="additionalDefinitions 0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_e_obsdim_datadef" edge="1" parent="1" source="s8_obsdim" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;curved=1;" target="s8_datadef" value="dataDefinitions 0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_e_datadef_qual" edge="1" parent="1" source="s8_datadef" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;curved=1;" target="s8_qualspec" value="qualifiers 0..1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_e_datadef_card" edge="1" parent="1" source="s8_datadef" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;curved=1;" target="s8_cardinality" value="cardinality 1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_e_vt_prim" edge="1" parent="1" source="s8_valuetypes" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="s8_primtype" value="primitiveTypes 1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_e_vt_comp" edge="1" parent="1" source="s8_valuetypes" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="s8_comptype" value="complexTypes 1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_legend_blue" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=9;fontStyle=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="40" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_legend_blue_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="OC Structural Entity (DataDefinition, Dimension, Category)" vertex="1">
+          <mxGeometry height="20" width="310" x="70" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_legend_green" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#000000;fontSize=9;fontStyle=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="40" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_legend_green_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="Top-Level Container (Observation)" vertex="1">
+          <mxGeometry height="20" width="220" x="70" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_legend_purple" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=9;fontStyle=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="40" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="s8_legend_purple_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="Shared Type (FHIR ValueTypes, Cardinality, QualifierSpec)" vertex="1">
+          <mxGeometry height="20" width="310" x="70" y="680" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="sheet_esap_schema" name="eSAP Schema">
+    <mxGraphModel dx="1934" dy="2274" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="se_title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=16;fontStyle=1;" value="eSAP Schema — Study eSAP Model" vertex="1">
+          <mxGeometry height="30" width="500" x="10" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="se_subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2;fontColor=#666666;" value="Binds AC/DC Transformations to study objectives, endpoints, and estimands. USDM provenance tracked via x-provenance annotations." vertex="1">
+          <mxGeometry height="25" width="800" x="10" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="se_provenance_box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6E6E6;strokeColor=#999999;fontSize=9;align=left;spacingLeft=6;spacingTop=4;fontColor=#333333;" value="&lt;b&gt;$provenance (bill of materials)&lt;/b&gt;&#xa;&#xa;usdm: CDISC USDM v4.0 — 15 entities&#xa;acdc_transformation: Transformation &amp; Method Model — 2 entities&#xa;ars: Analysis Results Standard — 1 entity&#xa;&#xa;&lt;b&gt;x-provenance per entity:&lt;/b&gt;&#xa;  source: usdm | esap | acdc_transformation | ars&#xa;  conformance: reference | owned | cross-reference" vertex="1">
+          <mxGeometry height="130" width="300" x="1400" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="se_study" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#000000;fontSize=11;fontStyle=1;" value="Study" vertex="1">
+          <mxGeometry height="70" width="70" x="375" y="65" as="geometry" />
+        </mxCell>
+        <mxCell id="se_study_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="x-provenance: usdm/reference&#xa;id: string&#xa;name: string&#xa;label: string&#xa;description: string&#xa;additionalProperties: true" vertex="1">
+          <mxGeometry height="90" width="165" x="725" y="-30" as="geometry" />
+        </mxCell>
+        <mxCell id="se_study_pc" edge="1" parent="1" source="se_study" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="se_study_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_studyver" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#000000;fontSize=9;fontStyle=1;" value="Study&#xa;Version" vertex="1">
+          <mxGeometry height="60" width="60" x="180" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="se_estimand" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#000000;fontSize=11;fontStyle=1;" value="Estimand" vertex="1">
+          <mxGeometry height="70" width="70" x="520" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="se_estimand_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="x-provenance: usdm/reference&#xa;id, name, label,&#xa;populationSummary: string" vertex="1">
+          <mxGeometry height="50" width="175" x="620" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="se_estimand_pc" edge="1" parent="1" source="se_estimand" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="se_estimand_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_endpoint" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#000000;fontSize=9;fontStyle=1;" value="Endpoint" vertex="1">
+          <mxGeometry height="60" width="60" x="520" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="se_analpop" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#000000;fontSize=8;fontStyle=1;" value="Analysis&#xa;Population" vertex="1">
+          <mxGeometry height="55" width="55" x="740" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="se_intervention" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#000000;fontSize=8;fontStyle=1;" value="Study&#xa;Intervention" vertex="1">
+          <mxGeometry height="55" width="55" x="935" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="se_ice" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#000000;fontSize=8;fontStyle=1;" value="Intercurrent&#xa;Event" vertex="1">
+          <mxGeometry height="55" width="55" x="910" y="127.5" as="geometry" />
+        </mxCell>
+        <mxCell id="se_objective" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#000000;fontSize=9;fontStyle=1;" value="Objective" vertex="1">
+          <mxGeometry height="60" width="60" x="310" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="se_studystep" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=10;fontStyle=1;" value="StudyStep&#xa;(abstract)" vertex="1">
+          <mxGeometry height="75" width="75" x="520" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="se_studystep_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="x-provenance: esap/owned&#xa;sequence: integer (required)&#xa;basedOn: TransformationRef (required)&#xa;configurationValues: StudyConfigValue[]&#xa;implementationBindings: StudyBinding[] (required, 1..*)&#xa;resolvedSlices: StudySlice[]&#xa;resolvedPhrases: StudySmartPhrase[]" vertex="1">
+          <mxGeometry height="105" width="230" x="640" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="se_studystep_pc" edge="1" parent="1" source="se_studystep" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="se_studystep_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_studyanalysis" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=10;fontStyle=1;" value="Study&#xa;Analysis" vertex="1">
+          <mxGeometry height="65" width="65" x="350" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="se_studyanalysis_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="x-provenance: esap/owned&#xa;allOf: [StudyStep]&#xa;arsAnalysis: ARSAnalysisRef" vertex="1">
+          <mxGeometry height="50" width="170" x="190" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="se_studyanalysis_pc" edge="1" parent="1" source="se_studyanalysis" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="se_studyanalysis_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_studyderiv" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=10;fontStyle=1;" value="Study&#xa;Derivation" vertex="1">
+          <mxGeometry height="65" width="65" x="700" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="se_studyderiv_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="x-provenance: esap/owned&#xa;allOf: [StudyStep]" vertex="1">
+          <mxGeometry height="35" width="145" x="790" y="575" as="geometry" />
+        </mxCell>
+        <mxCell id="se_studyderiv_pc" edge="1" parent="1" source="se_studyderiv" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="se_studyderiv_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_binding" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=9;fontStyle=1;" value="Study&#xa;Binding" vertex="1">
+          <mxGeometry height="55" width="55" x="320" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="se_binding_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="x-provenance: esap/owned&#xa;standard, dataset, variable: string" vertex="1">
+          <mxGeometry height="35" width="190" x="190" y="840" as="geometry" />
+        </mxCell>
+        <mxCell id="se_binding_pc" edge="1" parent="1" source="se_binding" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="se_binding_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_configval" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=8;fontStyle=1;" value="Study&#xa;Config&#xa;Value" vertex="1">
+          <mxGeometry height="55" width="55" x="430" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="se_slice" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=9;fontStyle=1;" value="Study&#xa;Slice" vertex="1">
+          <mxGeometry height="55" width="55" x="540" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="se_smartphrase" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=8;fontStyle=1;" value="Study&#xa;Smart&#xa;Phrase" vertex="1">
+          <mxGeometry height="55" width="55" x="650" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="se_transref" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=8;fontStyle=1;dashed=1;" value="Transformation&#xa;Ref" vertex="1">
+          <mxGeometry height="55" width="55" x="200" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="se_transref_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="x-provenance: acdc_transformation/cross-reference&#xa;transformationId: string (required)" vertex="1">
+          <mxGeometry height="35" width="230" x="15" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="se_transref_pc" edge="1" parent="1" source="se_transref" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="se_transref_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_spref" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=8;fontStyle=1;dashed=1;" value="SmartPhrase&#xa;Ref" vertex="1">
+          <mxGeometry height="55" width="55" x="760" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="se_arsref" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=8;fontStyle=1;dashed=1;" value="ARS&#xa;Analysis&#xa;Ref" vertex="1">
+          <mxGeometry height="55" width="55" x="200" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_study_ver" edge="1" parent="1" source="se_study" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_studyver" value="versions 0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_ver_obj" edge="1" parent="1" source="se_studyver" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_objective" value="studyDesigns.objectives 0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_obj_ep" edge="1" parent="1" source="se_objective" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_endpoint" value="endpoints 0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_study_estimand" edge="1" parent="1" source="se_study" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;curved=1;" target="se_estimand" value="estimands 0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_est_ep" edge="1" parent="1" source="se_estimand" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_endpoint" value="variableOfInterest 1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_est_pop" edge="1" parent="1" source="se_estimand" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_analpop" value="analysisPopulation 1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_est_intv" edge="1" parent="1" source="se_estimand" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_intervention" value="interventions 1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_est_ice" edge="1" parent="1" source="se_estimand" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_ice" value="intercurrentEvents 0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_est_analysis" edge="1" parent="1" source="se_estimand" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_studyanalysis" value="analysisSteps 1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_ep_deriv" edge="1" parent="1" source="se_endpoint" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_studyderiv" value="derivationSteps 0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_analysis_step" edge="1" parent="1" source="se_studyanalysis" style="endArrow=classic;html=1;strokeColor=#9673A6;fontSize=9;dashed=1;" target="se_studystep" value="allOf: StudyStep">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_deriv_step" edge="1" parent="1" source="se_studyderiv" style="endArrow=classic;html=1;strokeColor=#9673A6;fontSize=9;dashed=1;" target="se_studystep" value="allOf: StudyStep">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_step_trans" edge="1" parent="1" source="se_studystep" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_transref" value="basedOn 1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_step_binding" edge="1" parent="1" source="se_studystep" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_binding" value="implementationBindings 1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_step_config" edge="1" parent="1" source="se_studystep" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_configval" value="configurationValues 0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_step_slice" edge="1" parent="1" source="se_studystep" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_slice" value="resolvedSlices 0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_step_phrase" edge="1" parent="1" source="se_studystep" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_smartphrase" value="resolvedPhrases 0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_phrase_spref" edge="1" parent="1" source="se_smartphrase" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="se_spref" value="basedOn 1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_e_analysis_ars" edge="1" parent="1" source="se_studyanalysis" style="endArrow=classic;html=1;strokeColor=#D79B00;fontSize=9;dashed=1;" target="se_arsref" value="is-a (arsAnalysis)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se_legend_green" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#000000;fontSize=9;fontStyle=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="1400" y="900" as="geometry" />
+        </mxCell>
+        <mxCell id="se_legend_green_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="USDM Reference (x-provenance: usdm/reference)" vertex="1">
+          <mxGeometry height="20" width="300" x="1430" y="900" as="geometry" />
+        </mxCell>
+        <mxCell id="se_legend_purple" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=9;fontStyle=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="1400" y="930" as="geometry" />
+        </mxCell>
+        <mxCell id="se_legend_purple_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="eSAP-Owned (x-provenance: esap/owned)" vertex="1">
+          <mxGeometry height="20" width="280" x="1430" y="930" as="geometry" />
+        </mxCell>
+        <mxCell id="se_legend_yellow" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=9;fontStyle=1;dashed=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="1400" y="960" as="geometry" />
+        </mxCell>
+        <mxCell id="se_legend_yellow_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="Cross-ref: Transformation (x-provenance: acdc_transformation/cross-reference)" vertex="1">
+          <mxGeometry height="20" width="370" x="1430" y="960" as="geometry" />
+        </mxCell>
+        <mxCell id="se_legend_orange" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=9;fontStyle=1;dashed=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="1400" y="990" as="geometry" />
+        </mxCell>
+        <mxCell id="se_legend_orange_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="Cross-ref: ARS (x-provenance: ars/cross-reference)" vertex="1">
+          <mxGeometry height="20" width="300" x="1430" y="990" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="sheet9" name="Implementation Layer">
+    <mxGraphModel dx="1347" dy="754" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="s9_title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=16;fontStyle=1;" value="Implementation Layer" vertex="1">
+          <mxGeometry height="30" width="400" x="10" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2;fontColor=#666666;" value="Bridges abstract definitions (methods, concepts) to language-specific executable code and standard-specific variable mappings. Neither methods nor concepts know about this layer." vertex="1">
+          <mxGeometry height="25" width="900" x="10" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_divider" parent="1" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=0;spacingRight=0;rotatable=0;strokeColor=#CCCCCC;" value="" vertex="1">
+          <mxGeometry height="10" width="1760" x="20" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_section_method" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=5;fontColor=#D79B00;" value="Method Implementation Catalog" vertex="1">
+          <mxGeometry height="25" width="300" x="10" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_section_concept" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=5;fontColor=#6C8EBF;" value="Concept Implementation Catalog (future)" vertex="1">
+          <mxGeometry height="25" width="350" x="10" y="545" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_method_ref" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=10;fontStyle=1;dashed=1;" value="Method&#xa;(Sheet 5)" vertex="1">
+          <mxGeometry height="70" width="70" x="100" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_method_ref_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="oid: string&#xa;name: string&#xa;formula.generic_expression&#xa;input_roles[]&#xa;output_specification" vertex="1">
+          <mxGeometry height="75" width="150" x="15" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_method_ref_pc" edge="1" parent="1" source="s9_method_ref" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s9_method_ref_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_method_impl" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=10;fontStyle=1;" value="Method&#xa;Implementation" vertex="1">
+          <mxGeometry height="80" width="80" x="400" y="205" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_method_impl_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="methodOid: string (required)&#xa;language: R | SAS | Python | Julia (required)&#xa;package: string&#xa;procedure: string&#xa;function: string&#xa;callTemplate: string (required)&#xa;configurations: object&#xa;documentation: URI&#xa;notes: string" vertex="1">
+          <mxGeometry height="135" width="200" x="510" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_method_impl_pc" edge="1" parent="1" source="s9_method_impl" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s9_method_impl_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_output_mapping" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=9;fontStyle=1;" value="OutputMapping" vertex="1">
+          <mxGeometry height="65" width="65" x="600" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_output_mapping_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="outputClass: string (required)&#xa;extractionCode: string&#xa;resultColumns: { statistic: colName }" vertex="1">
+          <mxGeometry height="50" width="195" x="700" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_output_mapping_pc" edge="1" parent="1" source="s9_output_mapping" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s9_output_mapping_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_outputclass_ref" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=9;fontStyle=1;dashed=1;" value="OutputClass&#xa;(Sheet 5)" vertex="1">
+          <mxGeometry height="65" width="65" x="400" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_inputrole_ref" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=9;fontStyle=1;dashed=1;" value="InputRole&#xa;(Sheet 5)" vertex="1">
+          <mxGeometry height="65" width="65" x="250" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_e_impl_method" edge="1" parent="1" source="s9_method_impl" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="s9_method_ref" value="methodOid 1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_e_impl_outputmapping" edge="1" parent="1" source="s9_method_impl" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="s9_output_mapping" value="outputMapping 0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_e_outputmapping_outputclass" edge="1" parent="1" source="s9_output_mapping" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;curved=1;" target="s9_outputclass_ref" value="outputClass 1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_e_calltemplate_inputrole" edge="1" parent="1" source="s9_method_impl" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;dashed=1;dashPattern=8 4;" target="s9_inputrole_ref" value="callTemplate uses &lt;role&gt; placeholders">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_example_box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#CCCCCC;fontSize=9;align=left;spacingLeft=6;spacingTop=4;fontColor=#333333;" value="&lt;b&gt;Example: M.PairedTTest → R&lt;/b&gt;&#xa;&#xa;callTemplate:&#xa;  t.test(&lt;response&gt; ~ &lt;fixed_effect&gt;,&#xa;    data = &lt;dataset&gt;, paired = TRUE)&#xa;&#xa;outputMapping:&#xa;  outputClass: test_result&#xa;  resultColumns:&#xa;    estimate → estimate&#xa;    t_statistic → statistic&#xa;    p_value → p.value&#xa;    CI_lower → conf.int[1]" vertex="1">
+          <mxGeometry height="170" width="230" x="1050" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_example_arrow" edge="1" parent="1" source="s9_method_impl" style="endArrow=open;html=1;strokeColor=#CCCCCC;dashed=1;fontSize=9;" target="s9_example_box">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_concept_ref" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=10;fontStyle=1;dashed=1;" value="Concept&#xa;(Sheets 2-4)" vertex="1">
+          <mxGeometry height="70" width="70" x="100" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_concept_ref_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="conceptId: string&#xa;  (e.g. C.Change, C.Measure)&#xa;type: DC | OC dimension" vertex="1">
+          <mxGeometry height="50" width="155" x="15" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_concept_ref_pc" edge="1" parent="1" source="s9_concept_ref" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s9_concept_ref_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_concept_impl" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=10;fontStyle=1;" value="Concept&#xa;Variable&#xa;Mapping" vertex="1">
+          <mxGeometry height="80" width="80" x="400" y="675" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_concept_impl_p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="conceptId: string (required)&#xa;standard: ADaM | OMOP | FHIR (required)&#xa;variable: string (required)&#xa;byDataType: { dataType: variable }&#xa;notes: string" vertex="1">
+          <mxGeometry height="80" width="195" x="510" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_concept_impl_pc" edge="1" parent="1" source="s9_concept_impl" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="s9_concept_impl_p">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_e_conceptimpl_concept" edge="1" parent="1" source="s9_concept_impl" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="s9_concept_ref" value="conceptId 1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_concept_example_box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#CCCCCC;fontSize=9;align=left;spacingLeft=6;spacingTop=4;fontColor=#333333;" value="&lt;b&gt;Example: C.Change → ADaM&lt;/b&gt;&#xa;&#xa;standard: ADaM&#xa;variable: CHG&#xa;byDataType:&#xa;  decimal → CHG&#xa;&#xa;&lt;b&gt;Example: C.Measure → FHIR&lt;/b&gt;&#xa;&#xa;standard: FHIR&#xa;variable: Observation.valueQuantity.value&#xa;byDataType:&#xa;  decimal → Observation.valueQuantity.value&#xa;  code → Observation.valueCodeableConcept&#xa;  string → Observation.valueString" vertex="1">
+          <mxGeometry height="210" width="240" x="1050" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_concept_example_arrow" edge="1" parent="1" source="s9_concept_impl" style="endArrow=open;html=1;strokeColor=#CCCCCC;dashed=1;fontSize=9;" target="s9_concept_example_box">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_flow_box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6E6E6;strokeColor=#999999;fontSize=9;align=left;spacingLeft=6;spacingTop=4;fontColor=#333333;" value="&lt;b&gt;Code Engine Flow&lt;/b&gt;&#xa;&#xa;1. Transformation (Sheet 5)&#xa;   → resolves concepts to method roles&#xa;&#xa;2. Study Instance (Sheet 1)&#xa;   → resolves concrete values&#xa;     (dataset, visits, treatments)&#xa;&#xa;3. Method Implementation (this sheet)&#xa;   → provides language-specific&#xa;     code template for the method OID&#xa;&#xa;4. Concept Variable Mapping (this sheet)&#xa;   → resolves concept to standard-&#xa;     specific variable name&#xa;&#xa;5. Engine substitutes all → executable code" vertex="1">
+          <mxGeometry height="255" width="230" x="1400" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_legend_red" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=9;fontStyle=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="1400" y="980" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_legend_red_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="Method Implementation (executable code link)" vertex="1">
+          <mxGeometry height="20" width="280" x="1430" y="980" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_legend_green" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=9;fontStyle=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="1400" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_legend_green_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="Concept Variable Mapping (standard-specific variable link)" vertex="1">
+          <mxGeometry height="20" width="310" x="1430" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_legend_orange" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=9;fontStyle=1;dashed=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="1400" y="1040" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_legend_orange_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="Method/OutputClass/InputRole (cross-ref to Sheet 5)" vertex="1">
+          <mxGeometry height="20" width="310" x="1430" y="1040" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_legend_yellow" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=9;fontStyle=1;dashed=1;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="1400" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="s9_legend_yellow_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;" value="Concept Layer (cross-ref to Sheets 2-4)" vertex="1">
+          <mxGeometry height="20" width="250" x="1430" y="1070" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -145,67 +145,67 @@
     "LSMeans": {
       "definition": "Least-squares means (adjusted marginal means) per factor level or level combination",
       "constituents": ["Estimate", "SE", "CI_Lower", "CI_Upper", "DF"],
-      "identifiedBy": ["group", "visit"]
+      "dimensions": ["group", "visit"]
     },
     "Contrasts": {
       "definition": "Pairwise or custom contrasts between LS means",
       "constituents": ["Estimate", "SE", "CI_Lower", "CI_Upper", "TStatistic", "PValue", "DF"],
-      "identifiedBy": ["contrast", "visit"]
+      "dimensions": ["contrast", "visit"]
     },
     "Type3Tests": {
       "definition": "Type III omnibus tests, one per model term",
       "constituents": ["FStatistic", "PValue", "DF_Num", "DF_Den"],
-      "identifiedBy": ["term"]
+      "dimensions": ["term"]
     },
     "ParameterEstimates": {
       "definition": "Solution for fixed effects, one row per model coefficient",
       "constituents": ["Coefficient", "SE", "TStatistic", "PValue", "CI_Lower", "CI_Upper", "DF"],
-      "identifiedBy": ["term", "level"]
+      "dimensions": ["term", "level"]
     },
     "FitStatistics": {
       "definition": "Overall model goodness-of-fit measures",
       "constituents": ["AIC", "BIC", "Minus2LogL"],
-      "identifiedBy": []
+      "dimensions": []
     },
     "CovarianceParameters": {
       "definition": "Estimated covariance/variance components",
       "constituents": ["Estimate", "SE"],
-      "identifiedBy": ["cov_param"]
+      "dimensions": ["cov_param"]
     },
     "TestResult": {
       "definition": "Single overall test result",
       "constituents": ["ChiSquared", "PValue", "DF"],
-      "identifiedBy": []
+      "dimensions": []
     },
     "SurvivalTable": {
       "definition": "Life table with survival estimates at each event time",
       "constituents": ["NRisk", "NEvent", "NCensored", "SurvivalProb", "SE", "CI_Lower", "CI_Upper"],
-      "identifiedBy": ["group", "time"]
+      "dimensions": ["group", "time"]
     },
     "MedianSurvival": {
       "definition": "Median survival time per group",
       "constituents": ["Median", "CI_Lower", "CI_Upper"],
-      "identifiedBy": ["group"]
+      "dimensions": ["group"]
     },
     "EventSummary": {
       "definition": "Summary counts of events and censoring per group",
       "constituents": ["NRisk", "NEvent", "NCensored"],
-      "identifiedBy": ["group"]
+      "dimensions": ["group"]
     },
     "ComputedValue": {
       "definition": "Single derived/computed output value",
       "constituents": ["Value"],
-      "identifiedBy": ["group"]
+      "dimensions": ["group"]
     },
     "HazardRatioEstimates": {
       "definition": "Hazard ratios with confidence intervals",
       "constituents": ["HazardRatio", "CI_Lower", "CI_Upper"],
-      "identifiedBy": ["term", "level"]
+      "dimensions": ["term", "level"]
     },
     "OddsRatioEstimates": {
       "definition": "Odds ratios with confidence intervals",
       "constituents": ["OddsRatio", "CI_Lower", "CI_Upper"],
-      "identifiedBy": ["term", "level"]
+      "dimensions": ["term", "level"]
     }
   },
 

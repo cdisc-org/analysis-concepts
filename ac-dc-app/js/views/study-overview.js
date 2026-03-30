@@ -4,7 +4,7 @@ import { resolveNarrative } from '../utils/usdm-ref-resolver.js';
 export function renderStudyOverview(container) {
   const study = appState.selectedStudy;
   if (!study) {
-    navigateTo(1);
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No study selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select a study in Step 1 first.</p></div>';
     return;
   }
 
@@ -12,7 +12,7 @@ export function renderStudyOverview(container) {
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
       <div>
         <h2 style="font-size:22px; font-weight:700;">${study.name}</h2>
-        <p style="color:var(--cdisc-gray); font-size:13px; margin-top:4px;">${study.identifiers.map(i => i.text).join(' | ')}</p>
+        <p style="color:var(--cdisc-text-secondary); font-size:13px; margin-top:4px;">${study.identifiers.map(i => i.text).join(' | ')}</p>
       </div>
       <button class="btn btn-primary" id="btn-proceed-esap">
         Specify Endpoints &rarr;
@@ -93,7 +93,7 @@ function updateSelectionCount(container) {
   const el = container.querySelector('#selection-count');
   if (el) {
     el.textContent = count > 0 ? `${count} endpoint${count > 1 ? 's' : ''} selected` : 'No endpoints selected';
-    el.style.color = count > 0 ? 'var(--cdisc-success)' : 'var(--cdisc-gray)';
+    el.style.color = count > 0 ? 'var(--cdisc-success)' : 'var(--cdisc-text-secondary)';
   }
 }
 
@@ -107,7 +107,7 @@ function renderSummary(study) {
           <tr><td style="width:180px; font-weight:600;">Study Name</td><td>${study.name}</td></tr>
           <tr><td style="font-weight:600;">Phase</td><td><span class="badge badge-blue">${study.phase}</span></td></tr>
           <tr><td style="font-weight:600;">Therapeutic Area</td><td>${study.therapeuticAreas.map(ta => `<span class="badge badge-teal" style="margin-right:6px;">${ta.decode}</span>`).join('')}</td></tr>
-          <tr><td style="font-weight:600;">Identifiers</td><td>${study.identifiers.map(i => `<code style="background:var(--cdisc-light-gray);padding:2px 6px;border-radius:3px;margin-right:8px;">${i.text}</code>`).join('')}</td></tr>
+          <tr><td style="font-weight:600;">Identifiers</td><td>${study.identifiers.map(i => `<code style="background:var(--cdisc-background);padding:2px 6px;border-radius:3px;margin-right:8px;">${i.text}</code>`).join('')}</td></tr>
           ${pop ? `
           <tr><td style="font-weight:600;">Population</td><td>${pop.description || pop.name}</td></tr>
           <tr><td style="font-weight:600;">Planned Enrollment</td><td>${pop.plannedEnrollment || 'N/A'}</td></tr>
@@ -154,7 +154,7 @@ function renderObjectives(study) {
   return `
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
       <div>
-        <span id="selection-count" style="font-size:13px; font-weight:500; color:var(--cdisc-gray);">No endpoints selected</span>
+        <span id="selection-count" style="font-size:13px; font-weight:500; color:var(--cdisc-text-secondary);">No endpoints selected</span>
       </div>
       <button class="btn btn-sm btn-secondary" id="select-all-endpoints">Toggle All</button>
     </div>
@@ -188,7 +188,7 @@ function renderObjectives(study) {
 function renderConfiguration() {
   const mappings = appState.conceptMappings;
   if (!mappings) {
-    return '<div class="card"><p style="color:var(--cdisc-gray);">Mappings not loaded yet.</p></div>';
+    return '<div class="card"><p style="color:var(--cdisc-text-secondary);">Mappings not loaded yet.</p></div>';
   }
 
   function renderMappingTable(modelKey, typeKey, typeLabel) {
@@ -224,7 +224,7 @@ function renderConfiguration() {
         <div class="card-title">Concept-to-Variable Mappings</div>
         <button class="btn btn-sm btn-secondary" id="reset-mappings-btn">Reset to Defaults</button>
       </div>
-      <p style="font-size:12px; color:var(--cdisc-gray); margin-bottom:16px; line-height:1.5;">
+      <p style="font-size:12px; color:var(--cdisc-text-secondary); margin-bottom:16px; line-height:1.5;">
         Edit variable names to customize how concepts are displayed when using the model view toggle in the header.
         Changes take effect immediately when viewing other steps.
       </p>
@@ -311,7 +311,7 @@ function wireConfigurationTab(container) {
 
 function renderNarrative(study) {
   if (!study.narrativeContent || study.narrativeContent.length === 0) {
-    return '<div class="card"><p style="color:var(--cdisc-gray);">No narrative content available.</p></div>';
+    return '<div class="card"><p style="color:var(--cdisc-text-secondary);">No narrative content available.</p></div>';
   }
 
   const index = appState.usdmIndex;
@@ -324,7 +324,7 @@ function renderNarrative(study) {
           const html = resolveNarrative(nc, index);
           return `
             <div style="margin-bottom:16px;">
-              <div style="font-size:11px; color:var(--cdisc-gray); margin-bottom:4px; font-weight:500;">${nc.name} (${nc.id})</div>
+              <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:4px; font-weight:500;">${nc.name} (${nc.id})</div>
               ${html}
             </div>`;
         }).join('')}

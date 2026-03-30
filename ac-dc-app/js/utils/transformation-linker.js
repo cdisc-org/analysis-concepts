@@ -333,11 +333,11 @@ function resolveIndexedBy(methodDimensions, bindings, activeInteractions) {
 }
 
 /**
- * Map any remaining method role names in an identifiedBy array to
+ * Map any remaining method role names in an dimensions array to
  * their bound concept names.  Items that are already concept names
  * (i.e. don't match any role) pass through unchanged.
  */
-function resolveRoleNames(identifiedBy, bindings) {
+function resolveRoleNames(dimensions, bindings) {
   const roleConcepts = {};
   for (const b of bindings) {
     if (!roleConcepts[b.methodRole]) roleConcepts[b.methodRole] = [];
@@ -345,7 +345,7 @@ function resolveRoleNames(identifiedBy, bindings) {
   }
 
   const result = [];
-  for (const entry of identifiedBy) {
+  for (const entry of dimensions) {
     if (entry.includes(':')) {
       // Interaction pair — resolve each half
       const [a, b] = entry.split(':');
@@ -392,17 +392,17 @@ export function getOutputMapping(transformation, acModel, method, bindings, acti
     const outputClass = outputClasses[className];
 
     // Resolve dimensions: prefer method-level resolved, fall back to AC model
-    let identifiedBy = pattern?.identifiedBy || [];
+    let dimensions = pattern?.dimensions || [];
     if (outputClass?.dimensions && bindings) {
       const resolved = resolveIndexedBy(outputClass.dimensions, bindings, activeInteractions);
       if (resolved.length > 0) {
-        identifiedBy = resolved;
+        dimensions = resolved;
       }
     }
 
     // Ensure any remaining role names are resolved to concept names from bindings
-    if (identifiedBy.length > 0 && bindings) {
-      identifiedBy = resolveRoleNames(identifiedBy, bindings);
+    if (dimensions.length > 0 && bindings) {
+      dimensions = resolveRoleNames(dimensions, bindings);
     }
 
     return {
@@ -411,7 +411,7 @@ export function getOutputMapping(transformation, acModel, method, bindings, acti
       patternName: patternId,
       description: pattern?.definition || '',
       constituents: pattern?.constituents || [],
-      identifiedBy
+      dimensions
     };
   });
 }
@@ -436,35 +436,81 @@ export function getInputBindings(transformation) {
 }
 
 /**
- * Get method configurations with their current values and available options.
- * Method configurations is an array of { name, dataType, defaultValue, enumValues, description }.
+ * Resolve transformation-level method config overrides from either format.
+ * New format: [{ configurationName, value }]  Old format: { key: value }
  */
-export function getMethodConfigurations(method) {
-  const configs = method.configurations || [];
-  if (!Array.isArray(configs)) return [];
-
-  return configs.map(cfg => ({
-    key: cfg.name,
-    label: (cfg.name || '').replace(/_/g, ' '),
-    description: cfg.description || '',
-    type: cfg.dataType || 'string',
-    default: cfg.defaultValue,
-    options: cfg.enumValues || [],
-    value: cfg.defaultValue
-  }));
+function resolveTransformationOverrides(transformation) {
+  const mc = transformation?.methodConfigurations;
+  if (!mc) return {};
+  if (Array.isArray(mc)) {
+    return Object.fromEntries(mc.map(c => [c.configurationName, c.value]));
+  }
+  return { ...mc };
 }
 
 /**
- * Get inherited and added dimensions for display.
+ * Build method configurations with 3-layer merge:
+ * method defaults → transformation overrides → user overrides.
+ * Returns array of config objects with effective value and source indicator.
+ */
+export function getMethodConfigurations(method, transformation = null, userOverrides = {}) {
+  const configs = method?.configurations || [];
+  if (!Array.isArray(configs)) return [];
+
+  const txOverrides = resolveTransformationOverrides(transformation);
+  const userOvr = userOverrides || {};
+
+  return configs.map(cfg => {
+    const key = cfg.name;
+    let value = cfg.defaultValue;
+    let source = 'method';
+
+    if (key in txOverrides) {
+      value = txOverrides[key];
+      source = 'transformation';
+    }
+    if (key in userOvr) {
+      value = userOvr[key];
+      source = 'user';
+    }
+
+    return {
+      key,
+      label: (key || '').replace(/_/g, ' '),
+      description: cfg.description || '',
+      type: cfg.dataType || 'string',
+      default: cfg.defaultValue,
+      options: cfg.enumValues || [],
+      value,
+      source
+    };
+  });
+}
+
+/**
+ * Get dimensions for display. With Option_B, dimensions come from bindings
+ * with dataStructureRole: "dimension". Falls back to legacy fields if
+ * no dimension bindings exist (unmigrated library).
  */
 export function getDimensions(transformation) {
-  const inherited = transformation.inheritedDimensions || {};
-  const added = transformation.addedDimensions || {};
+  const dimBindings = (transformation.bindings || []).filter(b => b.dataStructureRole === 'dimension');
   const sliceKeys = transformation.sliceKeys || [];
 
+  if (dimBindings.length > 0) {
+    return {
+      dimensions: dimBindings.map(b => ({ dimension: b.concept, role: b.methodRole || 'dimension' })),
+      slices: sliceKeys.map(sk => ({ dimension: sk.dimension, source: sk.source, configurable: true }))
+    };
+  }
+
+  // Legacy fallback for unmigrated transformation library
+  const inherited = transformation.inheritedDimensions || {};
+  const added = transformation.addedDimensions || {};
   return {
-    inherited: Object.entries(inherited).map(([dim, role]) => ({ dimension: dim, role })),
-    added: Object.entries(added).map(([dim, role]) => ({ dimension: dim, role })),
+    dimensions: [
+      ...Object.entries(inherited).map(([dim, role]) => ({ dimension: dim, role })),
+      ...Object.entries(added).map(([dim, role]) => ({ dimension: dim, role }))
+    ],
     slices: sliceKeys.map(sk => ({ dimension: sk.dimension, source: sk.source, configurable: true }))
   };
 }

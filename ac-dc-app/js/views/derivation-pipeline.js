@@ -59,7 +59,7 @@ function renderPipelineVisualization(transformation, lib, chain, confirmedTermin
       <div class="pipeline-node resolved">
         <div class="pipeline-node-title">${entry.derivation.name} <span class="pipeline-check">&#10003;</span></div>
         <div class="pipeline-node-sub">${entry.derivation.usesMethod || ''}</div>
-        <div class="pipeline-node-sub" style="color:var(--cdisc-accent);">${displayConcept(entry.concept)}</div>
+        <div class="pipeline-node-sub" style="color:var(--cdisc-accent6);">${displayConcept(entry.concept)}</div>
       </div>`);
   }
 
@@ -68,7 +68,7 @@ function renderPipelineVisualization(transformation, lib, chain, confirmedTermin
     <div class="pipeline-node active">
       <div class="pipeline-node-title">${transformation.name}</div>
       <div class="pipeline-node-sub">${transformation.usesMethod}</div>
-      <div class="pipeline-node-sub" style="color:var(--cdisc-accent);">${transformation.acCategory || ''}</div>
+      <div class="pipeline-node-sub" style="color:var(--cdisc-accent6);">${transformation.acCategory || ''}</div>
     </div>`);
 
   return nodes.join('<div class="pipeline-arrow">&#9654;</div>');
@@ -80,7 +80,7 @@ function renderPipelineVisualization(transformation, lib, chain, confirmedTermin
 function renderCandidateCards(slot, candidates) {
   const { slotKey, concept, roleLabel } = slot;
   const isSingle = candidates.length === 1;
-  const roleDisplay = roleLabel ? ` <span style="color:var(--cdisc-gray);">(${roleLabel})</span>` : '';
+  const roleDisplay = roleLabel ? ` <span style="color:var(--cdisc-text-secondary);">(${roleLabel})</span>` : '';
 
   return `
     <div class="derivation-prompt">
@@ -96,7 +96,7 @@ function renderCandidateCards(slot, candidates) {
               <div class="derivation-candidate-name">${c.name}</div>
               <div class="derivation-candidate-meta">
                 <span class="badge badge-secondary">${c.usesMethod || ''}</span>
-                <span style="font-size:11px; color:var(--cdisc-gray);">outputs: <code>${displayConcept((c.bindings || []).find(b => b.direction === 'output')?.concept || c.outputConcept)}</code></span>
+                <span style="font-size:11px; color:var(--cdisc-text-secondary);">outputs: <code>${displayConcept((c.bindings || []).find(b => b.direction === 'output')?.concept || c.outputConcept)}</code></span>
               </div>
               ${c.description ? `<div class="derivation-candidate-desc">${c.description}</div>` : ''}
               ${(c.bindings || []).filter(b => b.direction !== 'output').length > 0 ? `
@@ -114,7 +114,7 @@ function renderCandidateCards(slot, candidates) {
           <div class="derivation-candidate-info">
             <div class="derivation-candidate-name">${displayConcept(concept)}${roleLabel ? ` — ${roleLabel}` : ''} (raw)</div>
             <div class="derivation-candidate-meta">
-              <span class="badge" style="background:var(--cdisc-light-gray); color:var(--cdisc-gray);">No derivation</span>
+              <span class="badge" style="background:var(--cdisc-background); color:var(--cdisc-text-secondary);">No derivation</span>
             </div>
             <div class="derivation-candidate-desc">Use source data directly without applying a derivation template.</div>
           </div>
@@ -134,7 +134,7 @@ function renderTerminalCards(terminalSlots) {
 
   return terminalSlots.map(slot => {
     const { slotKey, concept, roleLabel } = slot;
-    const roleDisplay = roleLabel ? ` <span style="color:var(--cdisc-gray);">(${roleLabel})</span>` : '';
+    const roleDisplay = roleLabel ? ` <span style="color:var(--cdisc-text-secondary);">(${roleLabel})</span>` : '';
     return `
     <div class="derivation-prompt">
       <div class="derivation-prompt-label">
@@ -145,8 +145,8 @@ function renderTerminalCards(terminalSlots) {
           <div class="derivation-candidate-info">
             <div class="derivation-candidate-name">${displayConcept(concept)}${roleLabel ? ` — ${roleLabel}` : ''}</div>
             <div class="derivation-candidate-meta">
-              <span class="badge" style="background:var(--cdisc-light-gray); color:var(--cdisc-gray);">Terminal</span>
-              <span style="font-size:11px; color:var(--cdisc-gray);">No derivation available — sourced directly from dataset</span>
+              <span class="badge" style="background:var(--cdisc-background); color:var(--cdisc-text-secondary);">Terminal</span>
+              <span style="font-size:11px; color:var(--cdisc-text-secondary);">No derivation available — sourced directly from dataset</span>
             </div>
             <div class="derivation-candidate-desc">
               This concept is a leaf node in the derivation chain. It will be bound to actual data columns during execution.
@@ -179,9 +179,11 @@ function renderSelectedAccordion(lib, chain) {
             const inputBindings = (d.bindings || []).filter(b => b.direction !== 'output');
             const outputBinding = (d.bindings || []).find(b => b.direction === 'output');
             const outputConceptDisplay = outputBinding?.concept || d.outputConcept || '';
-            const inherited = d.inheritedDimensions || {};
-            const added = d.addedDimensions || {};
-            const hasDimensions = Object.keys(inherited).length > 0 || Object.keys(added).length > 0;
+            // Derive dimensions from bindings with dataStructureRole: "dimension"
+            // Fall back to legacy fields if no dimension bindings exist (unmigrated library)
+            const dimBindings = (d.bindings || []).filter(b => b.dataStructureRole === 'dimension');
+            const legacyDims = { ...(d.inheritedDimensions || {}), ...(d.addedDimensions || {}) };
+            const hasDimensions = dimBindings.length > 0 || Object.keys(legacyDims).length > 0;
             const hasBindings = inputBindings.length > 0;
 
             return `
@@ -206,7 +208,7 @@ function renderSelectedAccordion(lib, chain) {
 
                   ${hasBindings ? `
                   <div style="margin-top:16px;">
-                    <div style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-gray); margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid var(--cdisc-border);">
+                    <div style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-text-secondary); margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid var(--cdisc-border);">
                       Bindings
                     </div>
                     <table class="data-table">
@@ -234,30 +236,22 @@ function renderSelectedAccordion(lib, chain) {
 
                   ${hasDimensions ? `
                   <div style="margin-top:16px;">
-                    <div style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-gray); margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid var(--cdisc-border);">
+                    <div style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-text-secondary); margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid var(--cdisc-border);">
                       Dimensions
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                      ${Object.keys(inherited).length > 0 ? `
-                      <div>
-                        <div style="font-weight:600; font-size:11px; margin-bottom:6px; color:var(--cdisc-text);">Inherited</div>
-                        ${Object.entries(inherited).map(([dim, role]) => `
-                          <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                            <span class="badge badge-teal">${displayConcept(dim)}</span>
-                            <span style="font-size:11px; color:var(--cdisc-gray);">${role}</span>
-                          </div>
-                        `).join('')}
-                      </div>` : ''}
-                      ${Object.keys(added).length > 0 ? `
-                      <div>
-                        <div style="font-weight:600; font-size:11px; margin-bottom:6px; color:var(--cdisc-text);">Added</div>
-                        ${Object.entries(added).map(([dim, role]) => `
-                          <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                            <span class="badge badge-blue">${displayConcept(dim)}</span>
-                            <span style="font-size:11px; color:var(--cdisc-gray);">${role}</span>
-                          </div>
-                        `).join('')}
-                      </div>` : ''}
+                    <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                      ${(dimBindings.length > 0
+                        ? dimBindings.map(b => `
+                            <div style="display:flex; align-items:center; gap:6px;">
+                              <span class="badge badge-teal">${displayConcept(b.concept)}</span>
+                              <span style="font-size:11px; color:var(--cdisc-text-secondary);">${b.methodRole || ''}</span>
+                            </div>`)
+                        : Object.entries(legacyDims).map(([dim, role]) => `
+                            <div style="display:flex; align-items:center; gap:6px;">
+                              <span class="badge badge-teal">${displayConcept(dim)}</span>
+                              <span style="font-size:11px; color:var(--cdisc-text-secondary);">${role}</span>
+                            </div>`)
+                      ).join('')}
                     </div>
                   </div>
                   ` : ''}
@@ -291,7 +285,10 @@ export function renderDerivationPipeline(container) {
   const study = appState.selectedStudy;
   const lib = appState.transformationLibrary;
 
-  if (!study) { navigateTo(1); return; }
+  if (!study) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No study selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select a study in Step 1 first.</p></div>';
+    return;
+  }
 
   // Find endpoints with analysis transformations
   const allEps = getAllEndpoints(study);
@@ -300,7 +297,10 @@ export function renderDerivationPipeline(container) {
     return spec?.selectedTransformationOid && appState.selectedEndpoints.includes(ep.id);
   });
 
-  if (analysisEps.length === 0) { navigateTo(5); return; }
+  if (analysisEps.length === 0) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No analysis transformations configured</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please configure analysis transformations in Step 5 first.</p></div>';
+    return;
+  }
 
   // Set active endpoint if needed
   if (!appState.activeEndpointId || !analysisEps.find(ep => ep.id === appState.activeEndpointId)) {
@@ -311,7 +311,10 @@ export function renderDerivationPipeline(container) {
   const activeSpec = appState.endpointSpecs[appState.activeEndpointId];
   const transformation = lib?.analysisTransformations?.find(t => t.oid === activeSpec.selectedTransformationOid);
 
-  if (!transformation) { navigateTo(5); return; }
+  if (!transformation) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No transformation found</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please configure analysis transformations in Step 5 first.</p></div>';
+    return;
+  }
 
   // Initialize per-endpoint derivation state
   if (!activeSpec.derivationChain) activeSpec.derivationChain = [];
@@ -343,7 +346,7 @@ export function renderDerivationPipeline(container) {
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
       <div>
         <h2 style="font-size:18px; font-weight:700;">Derivation Pipeline</h2>
-        <p style="color:var(--cdisc-gray); font-size:13px; margin-top:4px;">
+        <p style="color:var(--cdisc-text-secondary); font-size:13px; margin-top:4px;">
           Build the derivation chain step by step for each endpoint
         </p>
       </div>
@@ -393,7 +396,7 @@ export function renderDerivationPipeline(container) {
         <div style="width:36px; height:36px; border-radius:50%; background:#D1FAE5; display:flex; align-items:center; justify-content:center; color:var(--cdisc-success); font-size:18px; font-weight:700;">&#10003;</div>
         <div>
           <div style="font-weight:600; color:var(--cdisc-text);">Pipeline Complete</div>
-          <div style="font-size:12px; color:var(--cdisc-gray); margin-top:2px;">
+          <div style="font-size:12px; color:var(--cdisc-text-secondary); margin-top:2px;">
             All derivation dependencies have been resolved.
             ${activeSpec.confirmedTerminals.length > 0
               ? `Source data: ${activeSpec.confirmedTerminals.map(t => {

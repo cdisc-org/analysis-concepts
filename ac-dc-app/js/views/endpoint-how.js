@@ -15,20 +15,26 @@ import {
   classifyBindings, buildExpressionString, parseDefaultInteractions, getConceptOptions
 } from './transformation-config.js';
 import { getOutputMapping, getInputBindings, getMethodConfigurations, getDimensions } from '../utils/transformation-linker.js';
-import { displayConcept, formatDimensionConstraints, formatSliceDisplay } from '../utils/concept-display.js';
+import { displayConcept, formatDimensionConstraints, formatSliceDisplay, buildSliceLookup } from '../utils/concept-display.js';
 
 
 // ===== Main render function =====
 
 export async function renderEndpointHow(container) {
   const study = appState.selectedStudy;
-  if (!study) { navigateTo(1); return; }
+  if (!study) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No study selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select a study in Step 1 first.</p></div>';
+    return;
+  }
 
   const allEndpoints = getAllEndpoints(study);
   const selectedEps = allEndpoints.filter(ep => appState.selectedEndpoints.includes(ep.id));
   // Only show endpoints that have conceptCategory set (configured in step 3)
   const configuredEps = selectedEps.filter(ep => appState.endpointSpecs[ep.id]?.conceptCategory);
-  if (configuredEps.length === 0) { navigateTo(3); return; }
+  if (configuredEps.length === 0) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No endpoints configured</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please configure endpoint specifications in Step 3 first.</p></div>';
+    return;
+  }
 
   if (!appState.activeEndpointId || !configuredEps.find(ep => ep.id === appState.activeEndpointId)) {
     appState.activeEndpointId = configuredEps[0].id;
@@ -107,12 +113,16 @@ export async function renderEndpointHow(container) {
 
       appState.selectedTransformation = prevTransform;
 
+      // Method configurations with 3-layer merge
+      const userConfigOverrides = spec?.methodConfigOverrides || {};
+      const methodConfigs = method ? getMethodConfigurations(method, transform, userConfigOverrides) : [];
+
       const outputMapping = (method && customBindings)
         ? getOutputMapping(transform, appState.acModel, method, customBindings, analysis.activeInteractions || [])
         : [];
 
       // Build named slices section
-      const namedSlices = transform.namedSlices || {};
+      const namedSlices = buildSliceLookup(transform);
       const namedSliceEntries = Object.entries(namedSlices);
       // Find which bindings reference each named slice
       const sliceUsage = {};
@@ -123,12 +133,12 @@ export async function renderEndpointHow(container) {
       }
 
       return `
-        <div class="ep-analysis-card card" style="margin-bottom:12px; padding:16px; border-left:3px solid var(--cdisc-blue);" data-ep-id="${ep.id}" data-analysis-idx="${aIdx}">
+        <div class="ep-analysis-card card" style="margin-bottom:12px; padding:16px; border-left:3px solid var(--cdisc-primary);" data-ep-id="${ep.id}" data-analysis-idx="${aIdx}">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
             <div style="display:flex; align-items:center; gap:8px;">
               <strong style="font-size:13px;">${transform.name}</strong>
               <span class="badge badge-secondary" style="font-size:10px;">${transform.acCategory || ''}</span>
-              ${transform.usesMethod ? `<span style="font-size:11px; color:var(--cdisc-gray);">${transform.usesMethod}</span>` : ''}
+              ${transform.usesMethod ? `<span style="font-size:11px; color:var(--cdisc-text-secondary);">${transform.usesMethod}</span>` : ''}
             </div>
             <button class="btn btn-secondary ep-remove-analysis" data-ep-id="${ep.id}" data-analysis-idx="${aIdx}" style="padding:2px 8px; font-size:11px;" title="Remove this analysis">&times;</button>
           </div>
@@ -136,7 +146,7 @@ export async function renderEndpointHow(container) {
           ${method && customBindings ? `
           <!-- Input Measures -->
           <div style="margin-bottom:12px; padding:10px 14px; background:rgba(0,100,200,0.03); border:1px solid rgba(0,100,200,0.12); border-radius:var(--radius);">
-            <div style="font-weight:600; font-size:11px; margin-bottom:6px; color:var(--cdisc-blue); text-transform:uppercase; letter-spacing:0.5px;">Input Measures</div>
+            <div style="font-weight:600; font-size:11px; margin-bottom:6px; color:var(--cdisc-primary); text-transform:uppercase; letter-spacing:0.5px;">Input Measures</div>
             <div class="ep-analysis-bindings" data-ep-id="${ep.id}" data-analysis-idx="${aIdx}">
               ${measureBindingsHtml}
             </div>
@@ -145,7 +155,7 @@ export async function renderEndpointHow(container) {
           <!-- Input Dimensions -->
           ${dimensionBindingsHtml ? `
           <div style="margin-bottom:12px; padding:10px 14px; background:rgba(0,133,124,0.03); border:1px solid rgba(0,133,124,0.12); border-radius:var(--radius);">
-            <div style="font-weight:600; font-size:11px; margin-bottom:6px; color:var(--cdisc-teal); text-transform:uppercase; letter-spacing:0.5px;">Input Dimensions</div>
+            <div style="font-weight:600; font-size:11px; margin-bottom:6px; color:var(--cdisc-accent2); text-transform:uppercase; letter-spacing:0.5px;">Input Dimensions</div>
             <div class="ep-analysis-bindings" data-ep-id="${ep.id}" data-analysis-idx="${aIdx}">
               ${dimensionBindingsHtml}
             </div>
@@ -155,7 +165,7 @@ export async function renderEndpointHow(container) {
 
           ${transform.sliceKeys?.length > 0 ? `
           <!-- Analysis Scope (Slice Keys) -->
-          <div style="margin-bottom:12px; padding:10px 14px; background:var(--cdisc-light-gray); border:1px solid var(--cdisc-border); border-radius:var(--radius);">
+          <div style="margin-bottom:12px; padding:10px 14px; background:var(--cdisc-background); border:1px solid var(--cdisc-border); border-radius:var(--radius);">
             <div style="font-weight:600; font-size:11px; margin-bottom:6px; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px;">Analysis Scope</div>
             <div class="ep-dim-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:8px;">
               ${transform.sliceKeys.map(sk => {
@@ -188,14 +198,14 @@ export async function renderEndpointHow(container) {
           ${namedSliceEntries.length > 0 ? `
           <!-- Named Slices -->
           <div style="margin-bottom:12px; padding:8px 14px; background:rgba(0,133,124,0.03); border:1px solid rgba(0,133,124,0.1); border-radius:var(--radius);">
-            <div style="font-weight:600; font-size:11px; margin-bottom:4px; color:var(--cdisc-teal); text-transform:uppercase; letter-spacing:0.5px;">Named Slices</div>
+            <div style="font-weight:600; font-size:11px; margin-bottom:4px; color:var(--cdisc-accent2); text-transform:uppercase; letter-spacing:0.5px;">Named Slices</div>
             ${namedSliceEntries.map(([sliceName, sliceDef]) => {
               const dims = sliceDef.fixedDimensions || sliceDef;
               const dimStr = Object.entries(dims).map(([k, v]) => `${k} = ${v}`).join(', ');
               const usedBy = sliceUsage[sliceName] || [];
               return `<div style="font-size:12px; line-height:1.6;">
                 <code>${sliceName}</code>: ${dimStr}
-                ${usedBy.length > 0 ? `<span style="font-size:10px; color:var(--cdisc-gray);"> (used by: ${usedBy.join(', ')})</span>` : ''}
+                ${usedBy.length > 0 ? `<span style="font-size:10px; color:var(--cdisc-text-secondary);"> (used by: ${usedBy.join(', ')})</span>` : ''}
               </div>`;
             }).join('')}
           </div>
@@ -219,6 +229,35 @@ export async function renderEndpointHow(container) {
           </div>
           ` : ''}
 
+          ${methodConfigs.length > 0 ? `
+          <div style="margin-bottom:12px;">
+            <div style="font-weight:600; font-size:11px; margin-bottom:8px; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px;">Method Configuration</div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:10px;">
+              ${methodConfigs.map(cfg => {
+                const sourceColor = cfg.source === 'user' ? 'var(--cdisc-accent2)' : cfg.source === 'transformation' ? 'var(--cdisc-primary)' : 'var(--cdisc-text-secondary)';
+                const sourceLabel = cfg.source === 'user' ? 'custom' : cfg.source === 'transformation' ? 'template' : 'default';
+                return `
+                <div>
+                  <label style="font-size:11px; font-weight:600; color:var(--cdisc-text-secondary); display:flex; align-items:center; gap:4px; margin-bottom:3px;">
+                    ${cfg.label}
+                    <span style="font-size:9px; color:${sourceColor}; font-weight:500;">${sourceLabel}</span>
+                  </label>
+                  ${cfg.options.length > 0 ? `
+                    <select class="config-select ep-method-config" data-ep-id="${ep.id}" data-analysis-idx="${aIdx}" data-config-key="${cfg.key}" style="font-size:12px; padding:4px 8px;">
+                      ${cfg.options.map(opt => `
+                        <option value="${opt}" ${String(opt) === String(cfg.value) ? 'selected' : ''}>${opt}</option>
+                      `).join('')}
+                    </select>
+                  ` : `
+                    <input class="config-input ep-method-config" data-ep-id="${ep.id}" data-analysis-idx="${aIdx}" data-config-key="${cfg.key}" value="${cfg.value != null ? cfg.value : ''}" style="font-size:12px; padding:4px 8px; width:120px;">
+                  `}
+                  ${cfg.description ? `<div style="font-size:10px; color:var(--cdisc-text-secondary); margin-top:2px;">${cfg.description}</div>` : ''}
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+          ` : ''}
+
           ${transform.methodOutputSlotMapping ? (() => {
             const outputSlots = getOutputMapping(transform, appState.acModel, method, customBindings, analysis.activeInteractions || []);
             return `
@@ -229,16 +268,16 @@ export async function renderEndpointHow(container) {
                 const isSummary = analysis.estimandSummaryPattern === slot.patternName;
                 return `
                 <div class="ep-output-pattern-card" data-ep-id="${ep.id}" data-analysis-idx="${aIdx}" data-pattern-name="${slot.patternName}"
-                  style="padding:6px 10px; border:2px solid ${isSummary ? 'var(--cdisc-teal)' : 'var(--cdisc-border)'}; border-radius:var(--radius); cursor:pointer; background:${isSummary ? 'rgba(0,133,124,0.06)' : 'white'}; min-width:120px; max-width:200px;">
+                  style="padding:6px 10px; border:2px solid ${isSummary ? 'var(--cdisc-accent2)' : 'var(--cdisc-border)'}; border-radius:var(--radius); cursor:pointer; background:${isSummary ? 'rgba(0,133,124,0.06)' : 'white'}; min-width:120px; max-width:200px;">
                   <div style="display:flex; align-items:center; gap:4px; margin-bottom:2px;">
                     ${isSummary ? '<span style="font-size:11px;">&#9733;</span>' : ''}
                     <strong style="font-size:11px;">${slot.patternName}</strong>
                   </div>
-                  <span class="ep-summary-badge" style="display:${isSummary ? 'inline-block' : 'none'}; font-size:8px; font-weight:600; color:var(--cdisc-teal); text-transform:uppercase;">Summary Measure</span>
+                  <span class="ep-summary-badge" style="display:${isSummary ? 'inline-block' : 'none'}; font-size:8px; font-weight:600; color:var(--cdisc-accent2); text-transform:uppercase;">Summary Measure</span>
                   <div style="font-size:9px; color:var(--cdisc-text-secondary);">${slot.constituents.slice(0, 3).join(', ')}${slot.constituents.length > 3 ? ', ...' : ''}</div>
-                  ${slot.identifiedBy.length > 0 ? `
-                  <div style="font-size:9px; color:var(--cdisc-blue); margin-top:3px; border-top:1px solid var(--cdisc-border); padding-top:3px;">
-                    Indexed by: ${slot.identifiedBy.map(id => {
+                  ${slot.dimensions.length > 0 ? `
+                  <div style="font-size:9px; color:var(--cdisc-primary); margin-top:3px; border-top:1px solid var(--cdisc-border); padding-top:3px;">
+                    Indexed by: ${slot.dimensions.map(id => {
                       if (id.includes(':')) {
                         return id.split(':').map(part => `<code>${displayConcept(part)}</code>`).join(':');
                       }
@@ -292,7 +331,7 @@ export async function renderEndpointHow(container) {
             ${analysisCardsHtml}
           </div>
           ` : `
-          <div style="padding:16px; background:var(--cdisc-light-gray); border-radius:var(--radius); font-size:12px; color:var(--cdisc-gray); text-align:center;">
+          <div style="padding:16px; background:var(--cdisc-background); border-radius:var(--radius); font-size:12px; color:var(--cdisc-text-secondary); text-align:center;">
             Select analysis templates from the library panel on the right.
           </div>
           `}
@@ -303,22 +342,22 @@ export async function renderEndpointHow(container) {
             <div style="font-weight:700; font-size:13px; margin-bottom:8px;">Endpoint</div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
               <div>
-                <div style="font-size:10px; font-weight:600; color:var(--cdisc-gray); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Original (Protocol)</div>
-                <div style="padding:10px 14px; background:var(--cdisc-light-gray); border-radius:var(--radius); font-size:12px; line-height:1.5; border-left:3px solid var(--cdisc-gray);">${originalText}</div>
+                <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Original (Protocol)</div>
+                <div style="padding:10px 14px; background:var(--cdisc-background); border-radius:var(--radius); font-size:12px; line-height:1.5; border-left:3px solid var(--cdisc-text-secondary);">${originalText}</div>
               </div>
               <div>
-                <div style="font-size:10px; font-weight:600; color:var(--cdisc-blue); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Formalized (Repaired)</div>
-                <div id="formalized-${ep.id}" style="padding:10px 14px; background:var(--cdisc-light-blue); border-radius:var(--radius); font-size:12px; line-height:1.5; border-left:3px solid var(--cdisc-blue); font-weight:500;">${formalized || '<span style="color:var(--cdisc-gray); font-style:italic;">Configure analysis to generate</span>'}</div>
+                <div style="font-size:10px; font-weight:600; color:var(--cdisc-primary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Formalized (Repaired)</div>
+                <div id="formalized-${ep.id}" style="padding:10px 14px; background:var(--cdisc-primary-light); border-radius:var(--radius); font-size:12px; line-height:1.5; border-left:3px solid var(--cdisc-primary); font-weight:500;">${formalized || '<span style="color:var(--cdisc-text-secondary); font-style:italic;">Configure analysis to generate</span>'}</div>
               </div>
             </div>
             <!-- Row 2: Estimand Framework (ICH E9(R1)) -->
-            <div style="font-weight:700; font-size:13px; margin-bottom:8px;">Estimand <span style="font-weight:400; font-size:11px; color:var(--cdisc-gray);">(ICH E9(R1))</span> <span style="position:relative; display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px; border-radius:50%; background:var(--cdisc-teal); color:#fff; font-size:10px; font-weight:700; cursor:help; vertical-align:middle; margin-left:2px;" class="estimator-info-trigger">i<span class="estimator-info-tooltip" style="display:none; position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); width:340px; padding:12px 14px; background:#fff; border:1px solid var(--cdisc-border); border-radius:var(--radius); box-shadow:0 4px 12px rgba(0,0,0,0.15); font-size:11px; font-weight:400; color:var(--cdisc-text); line-height:1.5; z-index:100; text-align:left; cursor:default;"><strong style="color:var(--cdisc-teal);">Estimand</strong> (ICH E9(R1) §A.3)<br><br>A precise description of the treatment effect reflecting the clinical question posed by the trial objective.<br><br><strong>Attributes:</strong> Population, Treatment, Variable, Intercurrent events, Population-level summary<br><br><span style="color:var(--cdisc-gray); font-size:10px;">Estimand = what to estimate &nbsp;|&nbsp; Estimator = how to estimate &nbsp;|&nbsp; Estimate = numerical result</span></span></span></div>
+            <div style="font-weight:700; font-size:13px; margin-bottom:8px;">Estimand <span style="font-weight:400; font-size:11px; color:var(--cdisc-text-secondary);">(ICH E9(R1))</span> <span style="position:relative; display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px; border-radius:50%; background:var(--cdisc-accent2); color:#fff; font-size:10px; font-weight:700; cursor:help; vertical-align:middle; margin-left:2px;" class="estimator-info-trigger">i<span class="estimator-info-tooltip" style="display:none; position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); width:340px; padding:12px 14px; background:#fff; border:1px solid var(--cdisc-border); border-radius:var(--radius); box-shadow:0 4px 12px rgba(0,0,0,0.15); font-size:11px; font-weight:400; color:var(--cdisc-text); line-height:1.5; z-index:100; text-align:left; cursor:default;"><strong style="color:var(--cdisc-accent2);">Estimand</strong> (ICH E9(R1) §A.3)<br><br>A precise description of the treatment effect reflecting the clinical question posed by the trial objective.<br><br><strong>Attributes:</strong> Population, Treatment, Variable, Intercurrent events, Population-level summary<br><br><span style="color:var(--cdisc-text-secondary); font-size:10px;">Estimand = what to estimate &nbsp;|&nbsp; Estimator = how to estimate &nbsp;|&nbsp; Estimate = numerical result</span></span></span></div>
             <div id="estimand-${ep.id}" style="margin-bottom:12px;">
               ${buildEstimandFrameworkHtml(ep, spec, study, estimandDesc)}
             </div>
 
             <!-- Implementation & Write-back options -->
-            <div style="display:flex; gap:20px; padding:8px 12px; background:var(--cdisc-light-gray); border-radius:var(--radius); flex-wrap:wrap; align-items:center;">
+            <div style="display:flex; gap:20px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius); flex-wrap:wrap; align-items:center;">
               <label style="font-size:12px; display:flex; align-items:center; gap:6px; cursor:pointer;">
                 <input type="checkbox" class="ep-use-esap" data-ep-id="${ep.id}" ${spec.useInEsap !== false ? 'checked' : ''}>
                 Use in eSAP
@@ -328,7 +367,7 @@ export async function renderEndpointHow(container) {
                 Write back to USDM
               </label>
               <div style="display:flex; align-items:center; gap:6px; margin-left:auto;">
-                <span style="font-size:11px; font-weight:600; color:var(--cdisc-gray);">Target Dataset:</span>
+                <span style="font-size:11px; font-weight:600; color:var(--cdisc-text-secondary);">Target Dataset:</span>
                 <input class="config-input ep-target-dataset" data-ep-id="${ep.id}" value="${spec.targetDataset || ''}" placeholder="e.g., ADQS" style="width:80px; font-size:11px; padding:2px 6px;">
               </div>
             </div>
@@ -349,12 +388,12 @@ export async function renderEndpointHow(container) {
         return `
           <div class="ep-library-card ${isSelected ? 'selected-teal' : ''}" data-transform-oid="${t.oid}" data-ep-id="${appState.activeEndpointId}">
             <div style="display:flex; align-items:center; gap:6px;">
-              ${isSelected ? '<span style="color:var(--cdisc-teal); font-weight:700;">&#10003;</span>' : '<span style="color:var(--cdisc-border); font-size:14px;">&#9634;</span>'}
+              ${isSelected ? '<span style="color:var(--cdisc-accent2); font-weight:700;">&#10003;</span>' : '<span style="color:var(--cdisc-border); font-size:14px;">&#9634;</span>'}
               <div class="ep-library-card-name">${t.name}</div>
             </div>
             <div class="ep-library-card-meta">
               <span class="badge badge-secondary" style="font-size:10px;">${t.acCategory || ''}</span>
-              ${t.usesMethod ? `<span style="font-size:11px; color:var(--cdisc-gray);">${t.usesMethod}</span>` : ''}
+              ${t.usesMethod ? `<span style="font-size:11px; color:var(--cdisc-text-secondary);">${t.usesMethod}</span>` : ''}
             </div>
             ${t.description ? `<div class="ep-library-card-desc">${t.description.length > 100 ? t.description.slice(0, 100) + '...' : t.description}</div>` : ''}
           </div>`;
@@ -366,7 +405,7 @@ export async function renderEndpointHow(container) {
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
       <div>
         <h2 style="font-size:18px; font-weight:700;">Analysis Specification</h2>
-        <p style="color:var(--cdisc-gray); font-size:13px; margin-top:4px;">
+        <p style="color:var(--cdisc-text-secondary); font-size:13px; margin-top:4px;">
           Configure analysis inputs, scope, and summary measures for each endpoint
         </p>
       </div>
@@ -414,12 +453,12 @@ function updateAnalysisLibraryPanel(container) {
     return `
       <div class="ep-library-card ${isSelected ? 'selected-teal' : ''}" data-transform-oid="${t.oid}" data-ep-id="${appState.activeEndpointId}">
         <div style="display:flex; align-items:center; gap:6px;">
-          ${isSelected ? '<span style="color:var(--cdisc-teal); font-weight:700;">&#10003;</span>' : '<span style="color:var(--cdisc-border); font-size:14px;">&#9634;</span>'}
+          ${isSelected ? '<span style="color:var(--cdisc-accent2); font-weight:700;">&#10003;</span>' : '<span style="color:var(--cdisc-border); font-size:14px;">&#9634;</span>'}
           <div class="ep-library-card-name">${t.name}</div>
         </div>
         <div class="ep-library-card-meta">
           <span class="badge badge-secondary" style="font-size:10px;">${t.acCategory || ''}</span>
-          ${t.usesMethod ? `<span style="font-size:11px; color:var(--cdisc-gray);">${t.usesMethod}</span>` : ''}
+          ${t.usesMethod ? `<span style="font-size:11px; color:var(--cdisc-text-secondary);">${t.usesMethod}</span>` : ''}
         </div>
         ${t.description ? `<div class="ep-library-card-desc">${t.description.length > 100 ? t.description.slice(0, 100) + '...' : t.description}</div>` : ''}
       </div>`;
@@ -594,7 +633,7 @@ function wireEndpointHowEvents(container, study, configuredEps) {
           if (!isNaN(aIdx) && otherCard.dataset.analysisIdx !== String(aIdx)) return;
           const otherPattern = otherCard.dataset.patternName;
           const isSummary = activePattern === otherPattern;
-          otherCard.style.borderColor = isSummary ? 'var(--cdisc-teal)' : 'var(--cdisc-border)';
+          otherCard.style.borderColor = isSummary ? 'var(--cdisc-accent2)' : 'var(--cdisc-border)';
           otherCard.style.background = isSummary ? 'rgba(0,133,124,0.06)' : 'white';
           const badge = otherCard.querySelector('.ep-summary-badge');
           if (badge) badge.style.display = isSummary ? 'inline-block' : 'none';
@@ -645,6 +684,32 @@ function wireEndpointHowEvents(container, study, configuredEps) {
         } else {
           spec.activeInteractions = spec.activeInteractions.filter(i => i !== inter);
         }
+      }
+
+      renderEndpointHow(container);
+    });
+  });
+
+  // --- Method configuration change handlers ---
+  container.querySelectorAll('.ep-method-config').forEach(el => {
+    el.addEventListener('change', () => {
+      const epId = el.dataset.epId;
+      const configKey = el.dataset.configKey;
+      let value = el.value;
+      if (!isNaN(value) && value !== '') value = Number(value);
+      if (!epId) return;
+
+      ensureSpec(epId);
+      const spec = appState.endpointSpecs[epId];
+      if (!spec.methodConfigOverrides) spec.methodConfigOverrides = {};
+
+      // Sparse: only store if different from method default
+      const method = appState.methodsCache?.[spec.selectedTransformationOid?.replace('T.', 'M.')] || null;
+      const cfgDef = (method?.configurations || []).find(c => c.name === configKey);
+      if (cfgDef && (value === cfgDef.defaultValue || String(value) === String(cfgDef.defaultValue))) {
+        delete spec.methodConfigOverrides[configKey];
+      } else {
+        spec.methodConfigOverrides[configKey] = value;
       }
 
       renderEndpointHow(container);

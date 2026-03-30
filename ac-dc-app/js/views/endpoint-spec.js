@@ -4,6 +4,7 @@ import {
   getVisitLabels, getPopulationNames, getArmNames,
   getEndpointParameterOptions
 } from '../utils/usdm-parser.js';
+import { buildSliceLookup } from '../utils/concept-display.js';
 
 export const DATA_TYPES = ['Quantity', 'CodeableConcept', 'Ordinal', 'Boolean', 'DateTime', 'Duration'];
 
@@ -118,10 +119,12 @@ export function getCategoryInfo(conceptCategory) {
 
 /**
  * Get dimensional relationships for a concept category from the DC model.
+ * NOTE: DC model Option_B (atomic concepts) no longer uses dimensionalRelationships.
+ * This function is retained for backward compatibility but always returns null.
  */
 export function getDimensionalRelationships(conceptCategory) {
-  const info = getCategoryInfo(conceptCategory);
-  return info?.category?.dimensionalRelationships || null;
+  // Option_B atomic concepts have no dimensionalRelationships field
+  return null;
 }
 
 /**
@@ -231,7 +234,9 @@ export function buildSyntaxTemplate(ep, spec, study) {
     return null;
   }
 
-  const dimRels = catInfo.category.dimensionalRelationships;
+  // Option_B atomic concepts no longer carry dimensionalRelationships;
+  // gracefully fall back to null when the field is absent.
+  const dimRels = catInfo.category.dimensionalRelationships || null;
   if (!dimRels) return null;
 
   const dimValues = spec.dimensionValues || {};
@@ -440,11 +445,17 @@ export function buildSyntaxTemplatePlainText(ep, spec, study) {
 
 export function renderEndpointSpec(container) {
   const study = appState.selectedStudy;
-  if (!study) { navigateTo(1); return; }
+  if (!study) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No study selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select a study in Step 1 first.</p></div>';
+    return;
+  }
 
   const allEndpoints = getAllEndpoints(study);
   const selectedEps = allEndpoints.filter(ep => appState.selectedEndpoints.includes(ep.id));
-  if (selectedEps.length === 0) { navigateTo(2); return; }
+  if (selectedEps.length === 0) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No endpoints selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select endpoints in Step 2 first.</p></div>';
+    return;
+  }
 
   if (!appState.endpointSpecs) appState.endpointSpecs = {};
 
@@ -455,7 +466,7 @@ export function renderEndpointSpec(container) {
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
       <div>
         <h2 style="font-size:18px; font-weight:700;">Endpoint Specification</h2>
-        <p style="color:var(--cdisc-gray); font-size:13px; margin-top:4px;">
+        <p style="color:var(--cdisc-text-secondary); font-size:13px; margin-top:4px;">
           Decompose protocol endpoints into concept structure and dimensional values
         </p>
       </div>
@@ -475,7 +486,7 @@ export function renderEndpointSpec(container) {
       .ep-syntax-template {
         font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
         font-size: 12px;
-        background: var(--cdisc-light-gray);
+        background: var(--cdisc-background);
         padding: 10px 14px;
         border-radius: var(--radius);
         color: var(--cdisc-text-secondary);
@@ -492,14 +503,14 @@ export function renderEndpointSpec(container) {
         color: var(--cdisc-text);
       }
       .ep-syntax-resolved .placeholder {
-        color: var(--cdisc-gray);
+        color: var(--cdisc-text-secondary);
         font-style: italic;
-        background: var(--cdisc-light-gray);
+        background: var(--cdisc-background);
         padding: 1px 6px;
         border-radius: 3px;
       }
       .ep-syntax-resolved strong {
-        color: var(--cdisc-blue);
+        color: var(--cdisc-primary);
       }
       .ep-dim-grid {
         display: grid;
@@ -507,34 +518,34 @@ export function renderEndpointSpec(container) {
         gap: 12px;
       }
       .ep-derivation-card:hover, .ep-transform-card:hover {
-        border-color: var(--cdisc-blue) !important;
+        border-color: var(--cdisc-primary) !important;
       }
       .ep-output-pattern-card:hover {
-        border-color: var(--cdisc-teal, #00857c) !important;
+        border-color: var(--cdisc-accent2) !important;
         background: rgba(0,133,124,0.03) !important;
       }
       .ep-oc-facet-card { transition: border-color 0.15s, background 0.15s; }
-      .ep-oc-facet-card:hover { border-color: var(--cdisc-blue) !important; }
+      .ep-oc-facet-card:hover { border-color: var(--cdisc-primary) !important; }
       .ep-derivation-config { margin-top: 12px; }
       .ep-composed-phrase {
         font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
         font-size: 12px;
-        background: var(--cdisc-light-blue);
+        background: var(--cdisc-primary-light);
         padding: 10px 14px;
         border-radius: var(--radius);
         line-height: 1.6;
-        border-left: 3px solid var(--cdisc-blue);
+        border-left: 3px solid var(--cdisc-primary);
         margin-bottom: 12px;
       }
       .ep-composed-phrase .placeholder {
-        color: var(--cdisc-gray);
+        color: var(--cdisc-text-secondary);
         font-style: italic;
-        background: var(--cdisc-light-gray);
+        background: var(--cdisc-background);
         padding: 1px 6px;
         border-radius: 3px;
       }
       .ep-composed-phrase strong {
-        color: var(--cdisc-blue);
+        color: var(--cdisc-primary);
       }
       .ep-placeholder-grid {
         display: grid;
@@ -714,7 +725,7 @@ function wireEventHandlers(container, study) {
       const allCards = container.querySelectorAll(`.ep-output-pattern-card[data-ep-id="${epId}"]`);
       allCards.forEach(c => {
         const isSel = c.dataset.patternName === patternName;
-        c.style.borderColor = isSel ? 'var(--cdisc-teal, #00857c)' : 'var(--cdisc-border)';
+        c.style.borderColor = isSel ? 'var(--cdisc-accent2)' : 'var(--cdisc-border)';
         c.style.background = isSel ? 'rgba(0,133,124,0.06)' : 'white';
         const badge = c.querySelector('.ep-summary-badge');
         if (badge) badge.style.display = isSel ? 'inline-block' : 'none';
@@ -733,8 +744,8 @@ function wireEventHandlers(container, study) {
       const allCards = container.querySelectorAll(`.ep-oc-facet-card[data-ep-id="${epId}"]`);
       allCards.forEach(c => {
         const isSel = c.dataset.facet === facet;
-        c.style.borderColor = isSel ? 'var(--cdisc-blue)' : 'var(--cdisc-border)';
-        c.style.background = isSel ? 'var(--cdisc-light-blue)' : 'white';
+        c.style.borderColor = isSel ? 'var(--cdisc-primary)' : 'var(--cdisc-border)';
+        c.style.background = isSel ? 'var(--cdisc-primary-light)' : 'white';
         // Update star
         const starSpan = c.querySelector('strong')?.previousElementSibling;
         if (starSpan && starSpan.textContent.includes('★')) {
@@ -744,7 +755,7 @@ function wireEventHandlers(container, study) {
           const strong = c.querySelector('strong');
           if (strong && !strong.previousElementSibling?.textContent?.includes('★')) {
             const star = document.createElement('span');
-            star.style.cssText = 'font-size:12px; color:var(--cdisc-blue);';
+            star.style.cssText = 'font-size:12px; color:var(--cdisc-primary);';
             star.innerHTML = '&#9733;';
             strong.parentElement.insertBefore(star, strong);
           }
@@ -896,7 +907,7 @@ export function buildEstimandFrameworkHtml(ep, spec, study, estimandDesc) {
   // Estimator (the method)
   const estimatorMethod = transform?.usesMethod || null;
 
-  const unspecified = '<span style="color:var(--cdisc-gray); font-style:italic;">not specified</span>';
+  const unspecified = '<span style="color:var(--cdisc-text-secondary); font-style:italic;">not specified</span>';
   const notAddressed = '<span style="color:var(--cdisc-warning, #d97706); font-style:italic;">not yet addressed</span>';
 
   const attrRow = (label, value, icon) => `
@@ -908,7 +919,7 @@ export function buildEstimandFrameworkHtml(ep, spec, study, estimandDesc) {
   return `
     <div style="border:1px solid rgba(0,133,124,0.2); border-radius:var(--radius); overflow:hidden;">
       ${estimandDesc ? `
-      <div style="padding:10px 14px; background:rgba(0,133,124,0.06); border-bottom:1px solid rgba(0,133,124,0.15); font-size:12px; line-height:1.5; font-weight:500; border-left:3px solid var(--cdisc-teal);">
+      <div style="padding:10px 14px; background:rgba(0,133,124,0.06); border-bottom:1px solid rgba(0,133,124,0.15); font-size:12px; line-height:1.5; font-weight:500; border-left:3px solid var(--cdisc-accent2);">
         ${estimandDesc}
       </div>` : ''}
       <table style="width:100%; border-collapse:collapse;">
@@ -920,8 +931,8 @@ export function buildEstimandFrameworkHtml(ep, spec, study, estimandDesc) {
           ${attrRow('Intercurrent Events', notAddressed, '&#9633;')}
         </tbody>
       </table>
-      <div style="padding:6px 14px; background:var(--cdisc-light-gray); border-top:1px solid var(--cdisc-border); display:flex; align-items:center; gap:8px;">
-        <span style="font-size:10px; font-weight:600; color:var(--cdisc-gray); text-transform:uppercase; letter-spacing:0.5px;">Estimator</span>
+      <div style="padding:6px 14px; background:var(--cdisc-background); border-top:1px solid var(--cdisc-border); display:flex; align-items:center; gap:8px;">
+        <span style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px;">Estimator</span>
         <span style="font-size:11px;">${estimatorMethod ? `<code>${estimatorMethod}</code>` : unspecified}</span>
       </div>
     </div>`;
@@ -948,7 +959,7 @@ export function updateSyntaxPreview(container, epId, study) {
   const formalized = buildFormalizedDescription(ep, spec, study);
   const formalEl = container.querySelector(`#formalized-${CSS.escape(epId)}`);
   if (formalEl) {
-    formalEl.innerHTML = formalized || '<span style="color:var(--cdisc-gray); font-style:italic;">Complete the What + How sections above</span>';
+    formalEl.innerHTML = formalized || '<span style="color:var(--cdisc-text-secondary); font-style:italic;">Complete the What + How sections above</span>';
   }
   if (spec.writeBackToUsdm && formalized) {
     ep.text = formalized;
@@ -1399,7 +1410,7 @@ export function renderParameterPicker(ep, spec, bcs, allBCs, hasBCs, paramSource
       ${paramSource === 'bc' ? `
         ${hasBCs ? `
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-            <span style="font-size:12px; color:var(--cdisc-gray);">${bcs.length > 0 ? `${bcs.length} linked BCs` : 'All study BCs'}</span>
+            <span style="font-size:12px; color:var(--cdisc-text-secondary);">${bcs.length > 0 ? `${bcs.length} linked BCs` : 'All study BCs'}</span>
             <button class="btn btn-sm btn-secondary ep-bc-select-all" data-ep-id="${ep.id}" style="font-size:11px; padding:2px 8px;">Toggle All</button>
           </div>
           <div style="max-height:200px; overflow-y:auto; border:1px solid var(--cdisc-border); border-radius:var(--radius); padding:8px;">
@@ -1413,7 +1424,7 @@ export function renderParameterPicker(ep, spec, bcs, allBCs, hasBCs, paramSource
             }).join('')}
           </div>
         ` : `
-          <div style="font-size:12px; color:var(--cdisc-gray); font-style:italic;">
+          <div style="font-size:12px; color:var(--cdisc-text-secondary); font-style:italic;">
             No biomedical concepts linked to this endpoint. Switch to Manual mode.
           </div>
         `}
@@ -1441,7 +1452,7 @@ export function renderOcFacetCards(classifiedProps, spec, epId) {
   }
 
   const roleColors = {
-    result: 'var(--cdisc-blue)',
+    result: 'var(--cdisc-primary)',
     unit: '#6b7280',
     qualifier: '#8b5cf6',
     context: '#059669',
@@ -1454,14 +1465,14 @@ export function renderOcFacetCards(classifiedProps, spec, epId) {
   return `
     <div style="margin-bottom:12px;">
       <div style="font-weight:600; font-size:12px; margin-bottom:4px; color:var(--cdisc-text-secondary);">Observation Structure</div>
-      <div style="font-size:11px; color:var(--cdisc-gray); margin-bottom:8px;">
+      <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:8px;">
         Click a facet to tag it as the analysis target. <strong>&#9733;</strong> = current target.
       </div>
       <div style="display:flex; flex-wrap:wrap; gap:8px;">
         ${facetEntries.map(([facet, group]) => {
           const isTarget = spec.selectedOcFacet === facet;
-          const borderColor = isTarget ? 'var(--cdisc-blue)' : 'var(--cdisc-border)';
-          const bg = isTarget ? 'var(--cdisc-light-blue)' : 'white';
+          const borderColor = isTarget ? 'var(--cdisc-primary)' : 'var(--cdisc-border)';
+          const bg = isTarget ? 'var(--cdisc-primary-light)' : 'white';
           const roleBadgeColor = roleColors[group.role] || '#6b7280';
           const propNames = group.props.map(p => p.name).join(', ');
           const firstProp = group.props[0];
@@ -1475,13 +1486,13 @@ export function renderOcFacetCards(classifiedProps, spec, epId) {
             <div class="ep-oc-facet-card" data-ep-id="${epId}" data-facet="${facet}"
               style="padding:8px 12px; border:2px solid ${borderColor}; border-radius:var(--radius); cursor:pointer; background:${bg}; min-width:140px; max-width:200px; transition:border-color 0.15s, background 0.15s;">
               <div style="display:flex; align-items:center; gap:4px; margin-bottom:4px;">
-                ${isTarget ? '<span style="font-size:12px; color:var(--cdisc-blue);">&#9733;</span>' : ''}
+                ${isTarget ? '<span style="font-size:12px; color:var(--cdisc-primary);">&#9733;</span>' : ''}
                 <strong style="font-size:12px;">${facet}</strong>
               </div>
               <div style="font-size:10px; color:${roleBadgeColor}; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:4px;">${group.role}</div>
               <div style="font-size:10px; color:var(--cdisc-text-secondary); margin-bottom:2px;">${propNames}</div>
-              ${dtype ? `<div style="font-size:10px; color:var(--cdisc-gray);">${dtype}</div>` : ''}
-              ${responsePreview ? `<div style="font-size:9px; color:var(--cdisc-gray); margin-top:2px; font-style:italic;">${responsePreview}</div>` : ''}
+              ${dtype ? `<div style="font-size:10px; color:var(--cdisc-text-secondary);">${dtype}</div>` : ''}
+              ${responsePreview ? `<div style="font-size:9px; color:var(--cdisc-text-secondary); margin-top:2px; font-style:italic;">${responsePreview}</div>` : ''}
             </div>`;
         }).join('')}
       </div>
@@ -1524,11 +1535,13 @@ export function renderDerivationConfigPanel(derivation, spec, study, ep) {
     );
   }
 
-  // Collect dimensions from derivation (inherited + added, excluding Subject)
-  const inheritedDims = derivation.inheritedDimensions || {};
-  const addedDims = derivation.addedDimensions || {};
-  const allDims = { ...inheritedDims, ...addedDims };
-  // Filter out dimensions already covered by a placeholder
+  // With Option_B atomic concepts, dimensions are expressed through bindings
+  // with dataStructureRole: "dimension", not via separate dimension fields.
+  // Fall back to legacy fields if no dimension-role bindings exist (unmigrated library).
+  const dimBindings = (derivation.bindings || []).filter(b => b.dataStructureRole === 'dimension');
+  const allDims = dimBindings.length > 0
+    ? Object.fromEntries(dimBindings.map(b => [b.concept, b.methodRole || 'dimension']))
+    : { ...(derivation.inheritedDimensions || {}), ...(derivation.addedDimensions || {}) };
   const placeholderDimSet = new Set(
     placeholders.map(ph => PLACEHOLDER_DIM_MAP[ph]).filter(Boolean)
   );
@@ -1557,7 +1570,7 @@ export function renderDerivationConfigPanel(derivation, spec, study, ep) {
                   <label class="config-label" style="display:flex; align-items:center; gap:6px;">
                     <span class="badge badge-teal" style="font-size:10px; padding:1px 6px;">parameter</span>
                   </label>
-                  <div style="padding:6px 10px; background:var(--cdisc-light-gray); border:1px solid var(--cdisc-border); border-radius:var(--radius); font-size:12px; color:${paramValue ? 'var(--cdisc-text)' : 'var(--cdisc-gray)'}; font-style:${paramValue ? 'normal' : 'italic'};">
+                  <div style="padding:6px 10px; background:var(--cdisc-background); border:1px solid var(--cdisc-border); border-radius:var(--radius); font-size:12px; color:${paramValue ? 'var(--cdisc-text)' : 'var(--cdisc-text-secondary)'}; font-style:${paramValue ? 'normal' : 'italic'};">
                     ${paramValue || 'Set via Parameter section below'}
                   </div>
                 </div>`;
@@ -1621,7 +1634,7 @@ export function renderDerivationConfigPanel(derivation, spec, study, ep) {
               <div class="config-field">
                 <label class="config-label" style="display:flex; align-items:center; gap:6px;">
                   <span class="badge badge-teal" style="font-size:10px; padding:1px 6px;">${dim}</span>
-                  ${role ? `<span style="font-size:10px; color:var(--cdisc-gray);">${role}</span>` : ''}
+                  ${role ? `<span style="font-size:10px; color:var(--cdisc-text-secondary);">${role}</span>` : ''}
                 </label>
                 ${options && options.length > 0 ? `
                   <select class="config-select ep-deriv-dim-value" data-ep-id="${ep.id}" data-dim="${dim}">
@@ -1661,19 +1674,20 @@ export function renderDerivationConfigPanel(derivation, spec, study, ep) {
 function renderCubeSummary(derivation, paramValue) {
   if (!derivation) return '';
 
-  const namedSlices = derivation.namedSlices || {};
+  const namedSlices = buildSliceLookup(derivation);
   const outputBinding = (derivation.bindings || []).find(b => b.direction === 'output');
   const inputBindings = (derivation.bindings || []).filter(b => b.direction !== 'output');
   const outputConcept = outputBinding?.concept || derivation.instanceOf || '?';
 
-  const inheritedDims = derivation.inheritedDimensions || {};
-  const addedDims = derivation.addedDimensions || {};
-
-  // Build the full set of dimensions for this derivation
-  const allDimEntries = [
-    ...Object.entries(inheritedDims).map(([d, r]) => ({ dim: d, role: r, source: 'inherited' })),
-    ...Object.entries(addedDims).map(([d, r]) => ({ dim: d, role: r, source: 'added' }))
-  ];
+  // With Option_B, dimensions come from bindings with dataStructureRole: "dimension".
+  // Fall back to legacy inheritedDimensions/addedDimensions if no dimension bindings exist.
+  const dimBindings = (derivation.bindings || []).filter(b => b.dataStructureRole === 'dimension');
+  const allDimEntries = dimBindings.length > 0
+    ? dimBindings.map(b => ({ dim: b.concept, role: b.methodRole || 'dimension', source: 'binding' }))
+    : [
+        ...Object.entries(derivation.inheritedDimensions || {}).map(([d, r]) => ({ dim: d, role: r, source: 'inherited' })),
+        ...Object.entries(derivation.addedDimensions || {}).map(([d, r]) => ({ dim: d, role: r, source: 'added' }))
+      ];
 
   // Group input bindings by their dimensional context (slice key or 'full')
   // Bindings with no slice share the full dimensional context;
@@ -1697,7 +1711,7 @@ function renderCubeSummary(derivation, paramValue) {
 
     const conceptList = group.bindings.map(b => {
       const label = b.concept + (b.slice ? ` @ ${b.slice}` : '');
-      return `<code style="font-size:11px;">${label}</code> <span style="font-size:10px; color:var(--cdisc-gray);">${b.methodRole}</span>`;
+      return `<code style="font-size:11px;">${label}</code> <span style="font-size:10px; color:var(--cdisc-text-secondary);">${b.methodRole}</span>`;
     }).join('<br>');
 
     const isSliced = !!group.slice;
@@ -1706,7 +1720,7 @@ function renderCubeSummary(derivation, paramValue) {
 
     // Fixed-dimension annotation
     const fixedAnnotation = Object.entries(fixedDims).map(([k, v]) =>
-      `<span style="font-size:10px; color:var(--cdisc-teal);">${k} = <strong>${v}</strong></span>`
+      `<span style="font-size:10px; color:var(--cdisc-accent2);">${k} = <strong>${v}</strong></span>`
     ).join(', ');
 
     return `
@@ -1715,7 +1729,7 @@ function renderCubeSummary(derivation, paramValue) {
           Input${isSliced ? ' (sliced)' : ''}
         </div>
         <div style="margin-bottom:4px;">${conceptList}</div>
-        <div style="font-size:10px; color:var(--cdisc-gray); margin-bottom:2px;">
+        <div style="font-size:10px; color:var(--cdisc-text-secondary); margin-bottom:2px;">
           Dims: ${freeDimStr || 'scalar'}
         </div>
         ${fixedAnnotation ? `<div style="margin-top:2px;">${fixedAnnotation}</div>` : ''}
@@ -1726,9 +1740,9 @@ function renderCubeSummary(derivation, paramValue) {
   const outputFreeDims = allDimEntries.map(d => d.dim).join(' \u00d7 ');
   const outputCard = `
     <div style="flex:1; min-width:160px; padding:8px 10px; border:1px solid rgba(0,100,200,0.3); border-radius:var(--radius); background:rgba(0,100,200,0.05);">
-      <div style="font-size:10px; font-weight:600; color:var(--cdisc-blue); text-transform:uppercase; letter-spacing:0.3px; margin-bottom:4px;">Output</div>
-      <div style="margin-bottom:4px;"><code style="font-size:11px;">${outputConcept}</code> <span style="font-size:10px; color:var(--cdisc-gray);">${outputBinding?.methodRole || ''}</span></div>
-      <div style="font-size:10px; color:var(--cdisc-gray);">Dims: ${outputFreeDims}</div>
+      <div style="font-size:10px; font-weight:600; color:var(--cdisc-primary); text-transform:uppercase; letter-spacing:0.3px; margin-bottom:4px;">Output</div>
+      <div style="margin-bottom:4px;"><code style="font-size:11px;">${outputConcept}</code> <span style="font-size:10px; color:var(--cdisc-text-secondary);">${outputBinding?.methodRole || ''}</span></div>
+      <div style="font-size:10px; color:var(--cdisc-text-secondary);">Dims: ${outputFreeDims}</div>
     </div>`;
 
   // Build the per-combination description for the output
@@ -1740,7 +1754,7 @@ function renderCubeSummary(derivation, paramValue) {
   return `
     <div style="margin-top:12px; margin-bottom:12px; padding:12px 16px; background:rgba(0,133,124,0.04); border:1px solid rgba(0,133,124,0.15); border-radius:var(--radius);">
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-        <span style="font-size:11px; font-weight:600; color:var(--cdisc-teal); text-transform:uppercase; letter-spacing:0.5px;">Endpoint Data Structure</span>
+        <span style="font-size:11px; font-weight:600; color:var(--cdisc-accent2); text-transform:uppercase; letter-spacing:0.5px;">Endpoint Data Structure</span>
         <span class="badge badge-secondary" style="font-size:10px;">${derivation.usesMethod}</span>
       </div>
 
@@ -1752,7 +1766,7 @@ function renderCubeSummary(derivation, paramValue) {
         </div>
 
         <!-- Arrow -->
-        <div style="display:flex; align-items:center; padding:0 10px; font-size:18px; color:var(--cdisc-gray);">\u2192</div>
+        <div style="display:flex; align-items:center; padding:0 10px; font-size:18px; color:var(--cdisc-text-secondary);">\u2192</div>
 
         <!-- Output cube -->
         ${outputCard}
@@ -1866,8 +1880,8 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
 
       <div class="ep-spec-body" style="display:none; margin-top:16px;">
         <!-- Protocol Endpoint Text (Original) -->
-        <div style="margin-bottom:16px; padding:10px 14px; background:var(--cdisc-light-blue); border-radius:var(--radius); border-left:3px solid var(--cdisc-blue);">
-          <div style="font-size:11px; font-weight:600; color:var(--cdisc-blue); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Protocol Endpoint (Original)</div>
+        <div style="margin-bottom:16px; padding:10px 14px; background:var(--cdisc-primary-light); border-radius:var(--radius); border-left:3px solid var(--cdisc-primary);">
+          <div style="font-size:11px; font-weight:600; color:var(--cdisc-primary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Protocol Endpoint (Original)</div>
           <div style="font-size:13px; line-height:1.5; color:var(--cdisc-text);">${originalText}</div>
         </div>
 
@@ -1894,10 +1908,10 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
 
         ${spec.conceptCategory ? `
         <!-- ═══ WHAT ═══ -->
-        <div style="margin-bottom:16px; border-top:2px solid var(--cdisc-blue); padding-top:12px;">
+        <div style="margin-bottom:16px; border-top:2px solid var(--cdisc-primary); padding-top:12px;">
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <span style="font-weight:700; font-size:13px; color:var(--cdisc-blue); letter-spacing:0.5px;">WHAT</span>
-            <span style="font-size:12px; color:var(--cdisc-gray);">${isObservation ? 'Observation &mdash; direct measured/observed value' : 'Derivation &mdash; what quantity is being measured or computed'}</span>
+            <span style="font-weight:700; font-size:13px; color:var(--cdisc-primary); letter-spacing:0.5px;">WHAT</span>
+            <span style="font-size:12px; color:var(--cdisc-text-secondary);">${isObservation ? 'Observation &mdash; direct measured/observed value' : 'Derivation &mdash; what quantity is being measured or computed'}</span>
           </div>
 
           ${isObservation ? `
@@ -1908,7 +1922,7 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
           <!-- OC Facet Cards -->
           ${renderOcFacetCards(classifiedProps, spec, ep.id)}
           ` : `
-          <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-light-gray); border-radius:var(--radius); font-size:11px; color:var(--cdisc-gray);">
+          <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius); font-size:11px; color:var(--cdisc-text-secondary);">
             Link a Biomedical Concept above to see its observation structure.
           </div>
           `}
@@ -1924,27 +1938,27 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
                 const isSelected = spec.selectedDerivationOid === d.oid || isAuto;
                 return `
                   <div class="ep-derivation-card" data-ep-id="${ep.id}" data-derivation-oid="${d.oid}"
-                    style="padding:10px 14px; border:2px solid ${isSelected ? 'var(--cdisc-blue)' : 'var(--cdisc-border)'}; border-radius:var(--radius); cursor:pointer; background:${isSelected ? 'var(--cdisc-light-blue)' : 'white'}; transition:border-color 0.15s, background 0.15s;">
+                    style="padding:10px 14px; border:2px solid ${isSelected ? 'var(--cdisc-primary)' : 'var(--cdisc-border)'}; border-radius:var(--radius); cursor:pointer; background:${isSelected ? 'var(--cdisc-primary-light)' : 'white'}; transition:border-color 0.15s, background 0.15s;">
                     <div style="display:flex; align-items:center; gap:8px;">
-                      <span style="font-size:16px; color:${isSelected ? 'var(--cdisc-blue)' : 'var(--cdisc-gray)'};">${isSelected ? '●' : '○'}</span>
+                      <span style="font-size:16px; color:${isSelected ? 'var(--cdisc-primary)' : 'var(--cdisc-text-secondary)'};">${isSelected ? '●' : '○'}</span>
                       <strong style="font-size:13px;">${d.name}</strong>
                       ${d.usesMethod ? `<span class="badge badge-secondary" style="font-size:10px;">${d.usesMethod}</span>` : ''}
-                      ${isAuto ? `<span style="font-size:10px; color:var(--cdisc-gray); font-style:italic; margin-left:auto;">auto-selected</span>` : ''}
+                      ${isAuto ? `<span style="font-size:10px; color:var(--cdisc-text-secondary); font-style:italic; margin-left:auto;">auto-selected</span>` : ''}
                     </div>
-                    ${d.description ? `<div style="font-size:11px; color:var(--cdisc-gray); margin-top:4px; margin-left:24px;">${d.description.length > 120 ? d.description.slice(0, 120) + '...' : d.description}</div>` : ''}
+                    ${d.description ? `<div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:4px; margin-left:24px;">${d.description.length > 120 ? d.description.slice(0, 120) + '...' : d.description}</div>` : ''}
                   </div>`;
               }).join('')}
             </div>
           </div>
 
           ${selectedDerivation ? renderDerivationConfigPanel(selectedDerivation, spec, study, ep) : `
-          <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-light-gray); border-radius:var(--radius); font-size:11px; color:var(--cdisc-gray);">
+          <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius); font-size:11px; color:var(--cdisc-text-secondary);">
             Select a derivation transformation above to configure its parameters.
           </div>
           `}
           ` : `
           <!-- No derivation — source data endpoint, show parameter picker directly -->
-          <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-light-gray); border-radius:var(--radius); font-size:11px; color:var(--cdisc-gray);">
+          <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius); font-size:11px; color:var(--cdisc-text-secondary);">
             No endpoint-level derivation for <strong>${spec.conceptCategory}</strong> &mdash; source data endpoint.
           </div>
           ${renderParameterPicker(ep, spec, bcs, allBCs, hasBCs, paramSource)}
@@ -1953,8 +1967,8 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
 
           ${whatPreview ? `
           <!-- What Template Preview -->
-          <div style="margin-bottom:4px; padding:8px 12px; background:var(--cdisc-light-gray); border-radius:var(--radius); font-size:12px; line-height:1.6;">
-            <span style="font-size:10px; font-weight:600; color:var(--cdisc-gray); text-transform:uppercase; letter-spacing:0.5px;">What: </span>
+          <div style="margin-bottom:4px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius); font-size:12px; line-height:1.6;">
+            <span style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px;">What: </span>
             ${whatPreview}
           </div>
           ` : ''}
@@ -1963,10 +1977,10 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
 
         ${spec.conceptCategory ? `
         <!-- ═══ HOW: Analysis ═══ -->
-        <div style="margin-bottom:16px; border-top:2px solid var(--cdisc-teal, #00857c); padding-top:12px;">
+        <div style="margin-bottom:16px; border-top:2px solid var(--cdisc-accent2); padding-top:12px;">
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <span style="font-weight:700; font-size:13px; color:var(--cdisc-teal, #00857c); letter-spacing:0.5px;">HOW</span>
-            <span style="font-size:12px; color:var(--cdisc-gray);">Analysis &mdash; how the quantity is statistically evaluated</span>
+            <span style="font-weight:700; font-size:13px; color:var(--cdisc-accent2); letter-spacing:0.5px;">HOW</span>
+            <span style="font-size:12px; color:var(--cdisc-text-secondary);">Analysis &mdash; how the quantity is statistically evaluated</span>
           </div>
 
           ${matchingTransforms.length > 0 ? `
@@ -1978,20 +1992,20 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
                 const isSelected = spec.selectedTransformationOid === t.oid;
                 return `
                   <div class="ep-transform-card" data-ep-id="${ep.id}" data-transform-oid="${t.oid}"
-                    style="padding:10px 14px; border:2px solid ${isSelected ? 'var(--cdisc-teal, #00857c)' : 'var(--cdisc-border)'}; border-radius:var(--radius); cursor:pointer; background:${isSelected ? 'rgba(0,133,124,0.06)' : 'white'}; transition:border-color 0.15s, background 0.15s;">
+                    style="padding:10px 14px; border:2px solid ${isSelected ? 'var(--cdisc-accent2)' : 'var(--cdisc-border)'}; border-radius:var(--radius); cursor:pointer; background:${isSelected ? 'rgba(0,133,124,0.06)' : 'white'}; transition:border-color 0.15s, background 0.15s;">
                     <div style="display:flex; align-items:center; gap:8px;">
-                      <span style="font-size:16px; color:${isSelected ? 'var(--cdisc-teal, #00857c)' : 'var(--cdisc-gray)'};">${isSelected ? '●' : '○'}</span>
+                      <span style="font-size:16px; color:${isSelected ? 'var(--cdisc-accent2)' : 'var(--cdisc-text-secondary)'};">${isSelected ? '●' : '○'}</span>
                       <strong style="font-size:13px;">${t.name}</strong>
                       <span class="badge badge-secondary" style="font-size:10px;">${t.acCategory || ''}</span>
-                      ${t.usesMethod ? `<span style="font-size:11px; color:var(--cdisc-gray);">${t.usesMethod}</span>` : ''}
+                      ${t.usesMethod ? `<span style="font-size:11px; color:var(--cdisc-text-secondary);">${t.usesMethod}</span>` : ''}
                     </div>
-                    ${t.description ? `<div style="font-size:11px; color:var(--cdisc-gray); margin-top:4px; margin-left:24px;">${t.description.length > 120 ? t.description.slice(0, 120) + '...' : t.description}</div>` : ''}
+                    ${t.description ? `<div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:4px; margin-left:24px;">${t.description.length > 120 ? t.description.slice(0, 120) + '...' : t.description}</div>` : ''}
                   </div>`;
               }).join('')}
             </div>
           </div>
           ` : `
-          <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-light-gray); border-radius:var(--radius); font-size:11px; color:var(--cdisc-gray);">
+          <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius); font-size:11px; color:var(--cdisc-text-secondary);">
             No analysis transformations found for <strong>${spec.conceptCategory}</strong>. Analysis method to be defined in SAP.
           </div>
           `}
@@ -2000,7 +2014,7 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
           <!-- Slice-Driven Dimensional Values -->
           <div style="margin-bottom:12px;">
             <div style="font-weight:600; font-size:12px; margin-bottom:4px; color:var(--cdisc-text-secondary);">Dimensional Slices</div>
-            <div style="font-size:11px; color:var(--cdisc-gray); margin-bottom:12px;">
+            <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:12px;">
               Dimensions configured by <strong>${selectedTransform.name}</strong>.
             </div>
             <div class="ep-dim-grid">
@@ -2014,7 +2028,7 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
                     <div class="config-field">
                       <label class="config-label" style="display:flex; align-items:center; gap:6px;">
                         <span class="badge badge-teal" style="font-size:10px; padding:1px 6px;">${dim}</span>
-                        ${sk.source ? `<span style="font-size:10px; color:var(--cdisc-gray);">from ${sk.source}</span>` : ''}
+                        ${sk.source ? `<span style="font-size:10px; color:var(--cdisc-text-secondary);">from ${sk.source}</span>` : ''}
                       </label>
                       ${options && options.length > 0 ? `
                         <select class="config-select ep-dim-value" data-ep-id="${ep.id}" data-dim="${dim}">
@@ -2037,7 +2051,7 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
           <!-- Fallback: DC Model Dimension Values -->
           <div style="margin-bottom:12px;">
             <div style="font-weight:600; font-size:12px; margin-bottom:4px; color:var(--cdisc-text-secondary);">Dimensional Values</div>
-            <div style="font-size:11px; color:var(--cdisc-gray); margin-bottom:12px;">
+            <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:12px;">
               Set values for each dimension inherited from <strong>${spec.conceptCategory}</strong>.
               Select an analysis transformation above for a more precise configuration.
             </div>
@@ -2054,7 +2068,7 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
                   <div class="config-field">
                     <label class="config-label" style="display:flex; align-items:center; gap:6px;">
                       <span class="badge badge-teal" style="font-size:10px; padding:1px 6px;">${dim}</span>
-                      <span style="font-size:10px; color:var(--cdisc-gray);">${roleBadge}${isOptional ? ' (optional)' : ''}</span>
+                      <span style="font-size:10px; color:var(--cdisc-text-secondary);">${roleBadge}${isOptional ? ' (optional)' : ''}</span>
                     </label>
                     ${options && options.length > 0 ? `
                       <select class="config-select ep-dim-value" data-ep-id="${ep.id}" data-dim="${dim}">
@@ -2092,7 +2106,7 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
           <!-- Result Output Patterns -->
           <div style="margin-bottom:12px;">
             <div style="font-weight:600; font-size:12px; margin-bottom:4px; color:var(--cdisc-text-secondary);">Result Outputs</div>
-            <div style="font-size:11px; color:var(--cdisc-gray); margin-bottom:8px;">
+            <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:8px;">
               Click a result pattern to tag it as the estimand summary measure.
             </div>
             <div style="display:flex; flex-wrap:wrap; gap:8px;">
@@ -2102,13 +2116,13 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
                 const constituents = patternDef?.constituents || [];
                 return `
                 <div class="ep-output-pattern-card" data-ep-id="${ep.id}" data-pattern-name="${patternName}"
-                  style="padding:8px 12px; border:2px solid ${isSummary ? 'var(--cdisc-teal, #00857c)' : 'var(--cdisc-border)'}; border-radius:var(--radius); cursor:pointer; background:${isSummary ? 'rgba(0,133,124,0.06)' : 'white'}; min-width:140px; max-width:200px; transition:border-color 0.15s, background 0.15s;">
+                  style="padding:8px 12px; border:2px solid ${isSummary ? 'var(--cdisc-accent2)' : 'var(--cdisc-border)'}; border-radius:var(--radius); cursor:pointer; background:${isSummary ? 'rgba(0,133,124,0.06)' : 'white'}; min-width:140px; max-width:200px; transition:border-color 0.15s, background 0.15s;">
                   <div style="display:flex; align-items:center; gap:4px; margin-bottom:4px;">
                     ${isSummary ? '<span style="font-size:12px;">&#9733;</span>' : ''}
                     <strong style="font-size:12px;">${patternName}</strong>
                   </div>
-                  <span class="ep-summary-badge" style="display:${isSummary ? 'inline-block' : 'none'}; font-size:9px; font-weight:600; color:var(--cdisc-teal, #00857c); text-transform:uppercase; letter-spacing:0.3px; margin-bottom:4px;">Summary Measure</span>
-                  ${patternDef?.definition ? `<div style="font-size:10px; color:var(--cdisc-gray); margin-bottom:4px; line-height:1.3;">${patternDef.definition.length > 60 ? patternDef.definition.slice(0, 60) + '...' : patternDef.definition}</div>` : ''}
+                  <span class="ep-summary-badge" style="display:${isSummary ? 'inline-block' : 'none'}; font-size:9px; font-weight:600; color:var(--cdisc-accent2); text-transform:uppercase; letter-spacing:0.3px; margin-bottom:4px;">Summary Measure</span>
+                  ${patternDef?.definition ? `<div style="font-size:10px; color:var(--cdisc-text-secondary); margin-bottom:4px; line-height:1.3;">${patternDef.definition.length > 60 ? patternDef.definition.slice(0, 60) + '...' : patternDef.definition}</div>` : ''}
                   <div style="font-size:10px; color:var(--cdisc-text-secondary);">
                     ${constituents.slice(0, 4).join(', ')}${constituents.length > 4 ? ', ...' : ''}
                   </div>
@@ -2124,7 +2138,7 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
         <!-- Formalized Endpoint Description -->
         <div style="margin-bottom:16px; border-top:2px solid var(--cdisc-border); padding-top:12px;">
           <div style="font-weight:700; font-size:13px; margin-bottom:4px;">Formalized Endpoint Description</div>
-          <div style="font-size:11px; color:var(--cdisc-gray); margin-bottom:12px;">
+          <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:12px;">
             Structured decomposition that makes implicit aspects of the protocol text explicit.
             ${estimandDesc ? ' Includes ICH E9(R1) estimand-style statement.' : ''}
           </div>
@@ -2132,21 +2146,21 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
           <!-- Before / After / Estimand comparison -->
           <div style="display:grid; grid-template-columns:${estimandDesc ? '1fr 1fr 1fr' : '1fr 1fr'}; gap:12px; margin-bottom:12px;">
             <div>
-              <div style="font-size:10px; font-weight:600; color:var(--cdisc-gray); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Original (Protocol)</div>
-              <div style="padding:10px 14px; background:var(--cdisc-light-gray); border-radius:var(--radius); font-size:12px; line-height:1.5; color:var(--cdisc-text-secondary); border-left:3px solid var(--cdisc-gray);">
+              <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Original (Protocol)</div>
+              <div style="padding:10px 14px; background:var(--cdisc-background); border-radius:var(--radius); font-size:12px; line-height:1.5; color:var(--cdisc-text-secondary); border-left:3px solid var(--cdisc-text-secondary);">
                 ${originalText}
               </div>
             </div>
             <div>
-              <div style="font-size:10px; font-weight:600; color:var(--cdisc-blue); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Formalized (Repaired)</div>
-              <div id="formalized-${ep.id}" style="padding:10px 14px; background:var(--cdisc-light-blue); border-radius:var(--radius); font-size:12px; line-height:1.5; color:var(--cdisc-text); border-left:3px solid var(--cdisc-blue); font-weight:500;">
-                ${formalized || '<span style="color:var(--cdisc-gray); font-style:italic;">Complete the What + How sections above</span>'}
+              <div style="font-size:10px; font-weight:600; color:var(--cdisc-primary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Formalized (Repaired)</div>
+              <div id="formalized-${ep.id}" style="padding:10px 14px; background:var(--cdisc-primary-light); border-radius:var(--radius); font-size:12px; line-height:1.5; color:var(--cdisc-text); border-left:3px solid var(--cdisc-primary); font-weight:500;">
+                ${formalized || '<span style="color:var(--cdisc-text-secondary); font-style:italic;">Complete the What + How sections above</span>'}
               </div>
             </div>
             ${estimandDesc ? `
             <div>
-              <div style="font-size:10px; font-weight:600; color:var(--cdisc-teal, #00857c); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Estimand (ICH E9(R1))</div>
-              <div id="estimand-${ep.id}" style="padding:10px 14px; background:rgba(0,133,124,0.06); border-radius:var(--radius); font-size:12px; line-height:1.5; color:var(--cdisc-text); border-left:3px solid var(--cdisc-teal, #00857c); font-weight:500;">
+              <div style="font-size:10px; font-weight:600; color:var(--cdisc-accent2); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Estimand (ICH E9(R1))</div>
+              <div id="estimand-${ep.id}" style="padding:10px 14px; background:rgba(0,133,124,0.06); border-radius:var(--radius); font-size:12px; line-height:1.5; color:var(--cdisc-text); border-left:3px solid var(--cdisc-accent2); font-weight:500;">
                 ${estimandDesc}
               </div>
             </div>
@@ -2161,7 +2175,7 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
           ` : ''}
 
           <!-- Write-back options -->
-          <div style="display:flex; gap:20px; padding:8px 12px; background:var(--cdisc-light-gray); border-radius:var(--radius);">
+          <div style="display:flex; gap:20px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius);">
             <label style="font-size:12px; display:flex; align-items:center; gap:6px; cursor:pointer;">
               <input type="checkbox" class="ep-use-esap" data-ep-id="${ep.id}" ${spec.useInEsap !== false ? 'checked' : ''}>
               Use in eSAP
@@ -2170,7 +2184,7 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
               <input type="checkbox" class="ep-write-usdm" data-ep-id="${ep.id}" ${spec.writeBackToUsdm ? 'checked' : ''}>
               Write back to USDM
             </label>
-            <span style="font-size:10px; color:var(--cdisc-gray); margin-left:auto; align-self:center;">
+            <span style="font-size:10px; color:var(--cdisc-text-secondary); margin-left:auto; align-self:center;">
               ${spec.writeBackToUsdm ? 'Protocol text will be updated with formalized description' : ''}
             </span>
           </div>

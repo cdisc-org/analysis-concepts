@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cdisc.org/acdc/transformations/v0.1.0",
+  "title": "ACDC Transformation Schema",
+  "description": "Defines Transformations that compose Methods with Concepts. A Transformation binds domain concepts to method input/output roles, optionally constraining them with named slices and method configurations. Aligned with Sheet 5 of ACDC_Model_Diagrams.drawio.",
+  "type": "object",
+  "required": ["schema_version", "transformations"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Schema version identifier.",
+      "const": "0.1.0"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this transformation library."
+    },
+    "$references": {
+      "type": "object",
+      "description": "Pointers to referenced model files (DC concepts, AC concepts, methods, etc.).",
+      "additionalProperties": { "type": "string" }
+    },
+    "configurationOptions": {
+      "type": "object",
+      "description": "Global catalogue of configuration option sets available to transformations.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "default": { "type": "string" }
+        },
+        "required": ["values"]
+      }
+    },
+    "smartPhrases": {
+      "type": "array",
+      "description": "Reusable phrase templates that compose into human-readable analysis descriptions.",
+      "items": { "$ref": "#/$defs/SmartPhrase" }
+    },
+    "derivationTransformations": {
+      "type": "array",
+      "description": "Transformations that derive new variables from source data or other derivations.",
+      "items": { "$ref": "#/$defs/Transformation" }
+    },
+    "analysisTransformations": {
+      "type": "array",
+      "description": "Transformations that produce statistical analysis results.",
+      "items": { "$ref": "#/$defs/Transformation" }
+    },
+    "transformations": {
+      "type": "array",
+      "description": "All transformations (when not split by type).",
+      "items": { "$ref": "#/$defs/Transformation" }
+    }
+  },
+  "$defs": {
+    "Transformation": {
+      "type": "object",
+      "description": "An applied analysis or derivation that composes a Method with Concepts via Bindings. Dimensions are expressed through bindings with dataStructureRole 'dimension', not as a separate field.",
+      "required": ["oid", "name", "transformationType", "usesMethod", "bindings"],
+      "properties": {
+        "oid": {
+          "type": "string",
+          "pattern": "^T\\.",
+          "description": "Unique identifier for this transformation (e.g. T.ChangeFromBaseline)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name."
+        },
+        "transformationType": {
+          "type": "string",
+          "enum": ["derivation", "analysis"],
+          "description": "Whether this transformation derives a new variable or produces analysis results."
+        },
+        "description": {
+          "type": "string",
+          "description": "What this transformation does."
+        },
+        "composedPhrase": {
+          "type": "string",
+          "description": "Human-readable phrase template with {placeholder} tokens, composed from SmartPhrases."
+        },
+        "instanceOf": {
+          "type": "string",
+          "description": "The concept this transformation instantiates (DC concept OID for derivations, AC concept OID for analyses)."
+        },
+        "usesMethod": {
+          "type": "string",
+          "pattern": "^M\\.",
+          "description": "The method OID this transformation applies (e.g. M.Subtraction, M.ANCOVA)."
+        },
+        "bindings": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/Binding" },
+          "description": "Concrete bindings of concepts to method input/output roles. Dimensions are bindings with dataStructureRole 'dimension'."
+        },
+        "slices": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Slice" },
+          "description": "Named dimensional constraints (e.g. 'baseline' slice fixing AnalysisVisit to 'Baseline')."
+        },
+        "validSmartPhrases": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "SmartPhrase OIDs that can compose a description for this transformation."
+        },
+        "methodConfigurations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/TransformationConfiguration" },
+          "description": "Method configuration overrides specific to this transformation."
+        }
+      }
+    },
+    "Binding": {
+      "type": "object",
+      "description": "Links a concept to a method role with direction and structural role. The dataStructureRole indicates whether the bound concept serves as a measure, dimension, or attribute in this transformation.",
+      "required": ["concept", "methodRole", "direction", "dataStructureRole"],
+      "properties": {
+        "concept": {
+          "type": "string",
+          "description": "Concept OID or name being bound (e.g. C.Measure, C.Change, Subject, AnalysisVisit)."
+        },
+        "methodRole": {
+          "type": "string",
+          "description": "The method input role or output class this concept is bound to (e.g. response, minuend, difference)."
+        },
+        "direction": {
+          "type": "string",
+          "enum": ["input", "output"],
+          "description": "Whether this binding supplies input to the method or captures its output."
+        },
+        "dataStructureRole": {
+          "type": "string",
+          "enum": ["measure", "dimension", "attribute"],
+          "description": "The structural role of this concept: measure (the value being computed/analysed), dimension (grouping/partitioning context), or attribute (descriptive metadata)."
+        },
+        "slice": {
+          "type": "string",
+          "description": "Reference to a named slice that constrains this binding (e.g. 'baseline')."
+        },
+        "qualifierType": {
+          "type": "string",
+          "description": "Qualifier type from shared qualifier vocabulary."
+        },
+        "qualifierValue": {
+          "type": "string",
+          "description": "Value for the qualifier type."
+        },
+        "requiredValueType": {
+          "type": ["string", "null"],
+          "description": "Required FHIR/data type for the bound concept (e.g. Quantity, CodeableConcept)."
+        },
+        "note": {
+          "type": "string",
+          "description": "Implementation note for this binding."
+        }
+      }
+    },
+    "Slice": {
+      "type": "object",
+      "description": "A named dimensional constraint that fixes a dimension to a specific value or range.",
+      "required": ["name", "dimension", "constraint"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Slice identifier, referenced by bindings (e.g. 'baseline')."
+        },
+        "dimension": {
+          "type": "string",
+          "description": "The dimension being constrained (e.g. AnalysisVisit)."
+        },
+        "constraint": {
+          "type": "string",
+          "description": "The constraint value or expression (e.g. 'Baseline', 'Week 12')."
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of what this slice represents."
+        }
+      }
+    },
+    "TransformationConfiguration": {
+      "type": "object",
+      "description": "An override of a method configuration parameter specific to this transformation.",
+      "required": ["configurationName"],
+      "properties": {
+        "configurationName": {
+          "type": "string",
+          "description": "Name of the method configuration being overridden (must match a Configuration.name in the referenced method)."
+        },
+        "value": {
+          "description": "The value to set for this configuration."
+        },
+        "description": {
+          "type": "string",
+          "description": "Why this configuration is set to this value for this transformation."
+        }
+      }
+    },
+    "SmartPhrase": {
+      "type": "object",
+      "description": "A reusable phrase template that composes into human-readable analysis descriptions.",
+      "required": ["oid", "name", "role", "phrase_template"],
+      "properties": {
+        "oid": {
+          "type": "string",
+          "pattern": "^SP_",
+          "description": "Unique identifier for this SmartPhrase (e.g. SP_CFB_ENDPOINT)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["endpoint", "parameter", "timepoint", "population", "grouping", "method", "method_qualifier", "covariate"],
+          "description": "The compositional role this phrase plays in a full analysis description."
+        },
+        "phrase_template": {
+          "type": "string",
+          "description": "Template string with {placeholder} tokens (e.g. 'change from baseline in {parameter}')."
+        },
+        "configurations": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Configuration keys whose values fill the template placeholders."
+        },
+        "references": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Concept or method OIDs this phrase relates to."
+        }
+      }
+    }
+  }
+}

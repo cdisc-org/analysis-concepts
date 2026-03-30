@@ -111,12 +111,18 @@ function groupNarrativesForPicker(narratives, nciToSection, esapSectionKey) {
 
 export async function renderEsapBuilder(container) {
   const study = appState.selectedStudy;
-  if (!study) { navigateTo(1); return; }
+  if (!study) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No study selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select a study in Step 1 first.</p></div>';
+    return;
+  }
 
   const allEndpoints = getAllEndpoints(study);
   const selectedEps = allEndpoints.filter(ep => appState.selectedEndpoints.includes(ep.id));
 
-  if (selectedEps.length === 0) { navigateTo(2); return; }
+  if (selectedEps.length === 0) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No endpoints selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select endpoints in Step 2 first.</p></div>';
+    return;
+  }
 
   // Group selected endpoints by objective
   const byObjective = {};
@@ -153,10 +159,10 @@ export async function renderEsapBuilder(container) {
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
       <div>
         <h2 style="font-size:22px; font-weight:700;">Electronic Statistical Analysis Plan</h2>
-        <p style="color:var(--cdisc-gray); font-size:13px; margin-top:4px;">${study.name}</p>
+        <p style="color:var(--cdisc-text-secondary); font-size:13px; margin-top:4px;">${study.name}</p>
       </div>
       <div style="display:flex; gap:8px;">
-        <button class="btn btn-secondary esap-view-toggle active" data-view="document" style="font-size:11px; background:var(--cdisc-blue); color:#fff;">SAP Document</button>
+        <button class="btn btn-secondary esap-view-toggle active" data-view="document" style="font-size:11px; background:var(--cdisc-primary); color:#fff;">SAP Document</button>
         <button class="btn btn-secondary esap-view-toggle" data-view="datasets" style="font-size:11px;">ADaM Datasets</button>
         <button class="btn btn-secondary esap-view-toggle" data-view="json" style="font-size:11px;">{ } JSON</button>
         <button class="btn btn-secondary" id="btn-back-pipeline">&larr; Back to Pipeline</button>
@@ -254,7 +260,7 @@ export async function renderEsapBuilder(container) {
         b.style.color = '';
       });
       btn.classList.add('active');
-      btn.style.background = 'var(--cdisc-blue)';
+      btn.style.background = 'var(--cdisc-primary)';
       btn.style.color = '#fff';
 
       // Show/hide panels
@@ -296,7 +302,7 @@ export async function renderEsapBuilder(container) {
 // ===== Section Renderers — Front Matter (1-5) =====
 
 function renderPlaceholderSection(text) {
-  return `<p style="font-size:12px; color:var(--cdisc-gray); font-style:italic;">${text}</p>`;
+  return `<p style="font-size:12px; color:var(--cdisc-text-secondary); font-style:italic;">${text}</p>`;
 }
 
 function renderIntroductionSection(study) {
@@ -322,7 +328,7 @@ function renderObjectivesSection(selectedEps, byObjective) {
     html += `<div style="margin-bottom:16px;">
       <div style="font-weight:600; font-size:13px; margin-bottom:8px;">${subNum} ${level} Objective(s)</div>
       ${objs.map(([, obj]) => `
-        <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-light-gray); border-radius:var(--radius);">
+        <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius);">
           <strong>${obj.objectiveName}</strong>
           <p style="font-size:12px; margin-top:4px; line-height:1.5;">${obj.objectiveText || ''}</p>
           ${obj.endpoints.map(ep => `<div style="font-size:12px; margin-top:4px;"><span class="badge badge-blue">${ep.name}</span> ${ep.text || ''}</div>`).join('')}
@@ -330,7 +336,7 @@ function renderObjectivesSection(selectedEps, byObjective) {
       `).join('')}
     </div>`;
   }
-  return html || '<p style="color:var(--cdisc-gray);">No objectives configured.</p>';
+  return html || '<p style="color:var(--cdisc-text-secondary);">No objectives configured.</p>';
 }
 
 function renderStudyDesignSection(study) {
@@ -358,7 +364,7 @@ function renderStudyDesignSection(study) {
       </tbody>
     </table>
     <div style="font-weight:600; font-size:13px; margin-bottom:8px;">4.3 Blinding/Unblinding</div>
-    <p style="font-size:12px;">${study.blindingSchema || '<span style="color:var(--cdisc-gray); font-style:italic;">Not specified in USDM</span>'}</p>
+    <p style="font-size:12px;">${study.blindingSchema || '<span style="color:var(--cdisc-text-secondary); font-style:italic;">Not specified in USDM</span>'}</p>
   `;
 }
 
@@ -390,7 +396,7 @@ function renderEstimandsSection(selectedEps, study) {
   html += renderEstimandGroup('6.2 Secondary Estimand(s)', secondaryEps);
   if (otherEps.length > 0) html += renderEstimandGroup('6.3 Other Estimand(s)', otherEps);
 
-  if (!html) html = '<p style="color:var(--cdisc-gray);">Configure endpoints and analyses to auto-generate estimands.</p>';
+  if (!html) html = '<p style="color:var(--cdisc-text-secondary);">Configure endpoints and analyses to auto-generate estimands.</p>';
 
   html += `<div style="margin-top:8px;"><button class="btn btn-sm btn-secondary esap-edit-btn" data-step="4">Edit in Endpoint How &rarr;</button></div>`;
   return html;
@@ -407,7 +413,7 @@ function renderEndpointsSection(selectedEps, study) {
       <div style="font-size:12px;">
         ${visitLabels.length > 0
           ? `<div style="display:flex; flex-wrap:wrap; gap:4px;">${visitLabels.map(v => `<span class="badge badge-teal">${v}</span>`).join('')}</div>`
-          : '<span style="color:var(--cdisc-gray);">No timepoints defined in study.</span>'}
+          : '<span style="color:var(--cdisc-text-secondary);">No timepoints defined in study.</span>'}
       </div>
     </div>`;
 
@@ -436,11 +442,11 @@ function renderEndpointCard(ep) {
   const formalized = study ? getFormalizedDescription(ep.id, study) : null;
   const displayText = formalized || ep.text || '';
   return `
-    <div style="padding:8px 12px; margin-bottom:6px; background:var(--cdisc-light-gray); border-radius:var(--radius); font-size:12px;">
+    <div style="padding:8px 12px; margin-bottom:6px; background:var(--cdisc-background); border-radius:var(--radius); font-size:12px;">
       <strong>${ep.name}</strong>
       <span class="badge ${ep.level.includes('Primary') ? 'badge-primary' : 'badge-secondary'}" style="margin-left:6px;">${ep.level}</span>
       <div style="color:var(--cdisc-text-secondary); margin-top:4px; line-height:1.4;">${displayText}</div>
-      ${formalized ? '<div style="font-size:10px; color:var(--cdisc-blue); margin-top:2px; font-style:italic;">Formalized description</div>' : ''}
+      ${formalized ? '<div style="font-size:10px; color:var(--cdisc-primary); margin-top:2px; font-style:italic;">Formalized description</div>' : ''}
     </div>
   `;
 }
@@ -451,7 +457,7 @@ function renderAnalysisSetsSection(study) {
   const analysisPopulations = study.analysisPopulations || [];
 
   if (analysisPopulations.length === 0) {
-    return '<p style="color:var(--cdisc-gray);">No analysis sets defined in study.</p>';
+    return '<p style="color:var(--cdisc-text-secondary);">No analysis sets defined in study.</p>';
   }
 
   return `
@@ -494,7 +500,7 @@ function renderStatMethodsSection(selectedEps, study, loadedMethods) {
   }
 
   if (methodUsage.size === 0) {
-    return '<p style="color:var(--cdisc-gray);">No statistical methods configured. Select analyses in the Endpoint How step.</p>';
+    return '<p style="color:var(--cdisc-text-secondary);">No statistical methods configured. Select analyses in the Endpoint How step.</p>';
   }
 
   let html = '<div style="font-weight:600; font-size:13px; margin-bottom:12px;">9.1 General Methodology</div>';
@@ -509,13 +515,13 @@ function renderStatMethodsSection(selectedEps, study, loadedMethods) {
           <span class="badge badge-secondary">${m?.class || ''}</span>
         </div>
         ${m?.description ? `<p style="font-size:12px; margin-bottom:8px;">${m.description}</p>` : ''}
-        ${m?.formula ? `<div style="font-size:11px; color:var(--cdisc-gray); margin-bottom:4px;">Formula: <code>${m.formula.default_expression || ''}</code></div>` : ''}
+        ${m?.formula ? `<div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:4px;">Formula: <code>${m.formula.default_expression || ''}</code></div>` : ''}
         <div style="font-size:11px; color:var(--cdisc-text-secondary);">
           Used by: ${usage.endpoints.map(ep => `<span class="badge badge-teal">${ep.name}</span>`).join(' ')}
         </div>
         ${m?.input_roles ? `
         <div style="margin-top:8px;">
-          <div style="font-size:10px; font-weight:600; color:var(--cdisc-gray); text-transform:uppercase; margin-bottom:4px;">Input Roles</div>
+          <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; margin-bottom:4px;">Input Roles</div>
           <table class="data-table" style="font-size:11px;">
             <thead><tr><th>Role</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
             <tbody>
@@ -532,9 +538,9 @@ function renderStatMethodsSection(selectedEps, study, loadedMethods) {
 
   html += `
     <div style="font-weight:600; font-size:13px; margin-top:16px; margin-bottom:8px;">9.3 Handling of Dropouts or Missing Data</div>
-    <p style="font-size:12px; color:var(--cdisc-gray); font-style:italic;">Link USDM content or describe imputation methods.</p>
+    <p style="font-size:12px; color:var(--cdisc-text-secondary); font-style:italic;">Link USDM content or describe imputation methods.</p>
     <div style="font-weight:600; font-size:13px; margin-top:16px; margin-bottom:8px;">9.5 Multiple Comparisons/Multiplicity</div>
-    <p style="font-size:12px; color:var(--cdisc-gray); font-style:italic;">Link USDM content describing multiplicity adjustments.</p>
+    <p style="font-size:12px; color:var(--cdisc-text-secondary); font-style:italic;">Link USDM content describing multiplicity adjustments.</p>
   `;
 
   html += `<div style="margin-top:8px;"><button class="btn btn-sm btn-secondary esap-edit-btn" data-step="4">Edit in Endpoint How &rarr;</button></div>`;
@@ -566,7 +572,7 @@ function renderStatAnalysisSection(selectedEps, study) {
   }
 
   if (!html) {
-    html = '<p style="color:var(--cdisc-gray);">No analyses configured. Use the Endpoint How step to add analyses.</p>';
+    html = '<p style="color:var(--cdisc-text-secondary);">No analyses configured. Use the Endpoint How step to add analyses.</p>';
   }
 
   html += `<div style="margin-top:8px; display:flex; gap:8px;">
@@ -587,11 +593,11 @@ function renderStatAnalysisCard(ep, study, lib) {
   if (derivChain.length > 0) {
     const derivations = lib?.derivationTransformations || [];
     derivHtml = `<div style="margin-top:8px;">
-      <div style="font-size:10px; font-weight:600; color:var(--cdisc-gray); text-transform:uppercase; margin-bottom:4px;">Derivation Chain</div>
+      <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; margin-bottom:4px;">Derivation Chain</div>
       <div style="display:flex; flex-wrap:wrap; align-items:center; gap:4px;">
         ${derivChain.map(entry => {
           const d = derivations.find(x => x.oid === entry.derivationOid);
-          return d ? `<span class="badge badge-teal">${d.name}</span><span style="color:var(--cdisc-gray);">&#9654;</span>` : '';
+          return d ? `<span class="badge badge-teal">${d.name}</span><span style="color:var(--cdisc-text-secondary);">&#9654;</span>` : '';
         }).join('')}
       </div>
     </div>`;
@@ -625,18 +631,18 @@ function renderStatAnalysisCard(ep, study, lib) {
         </div>
         ${formulaHtml ? `
         <div style="margin-bottom:8px;">
-          <div style="font-size:10px; font-weight:600; color:var(--cdisc-gray); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Model Expression${notationLabel ? ` <span style="font-weight:400; text-transform:none; letter-spacing:0;">(${notationLabel})</span>` : ''}</div>
-          <div class="formula-display" style="font-family:'SF Mono','Fira Code','Consolas',monospace; font-size:12px; background:var(--cdisc-light-gray); padding:8px 12px; border-radius:var(--radius); border-left:3px solid var(--cdisc-blue); line-height:1.6;">${formulaHtml}</div>
+          <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Model Expression${notationLabel ? ` <span style="font-weight:400; text-transform:none; letter-spacing:0;">(${notationLabel})</span>` : ''}</div>
+          <div class="formula-display" style="font-family:'SF Mono','Fira Code','Consolas',monospace; font-size:12px; background:var(--cdisc-background); padding:8px 12px; border-radius:var(--radius); border-left:3px solid var(--cdisc-primary); line-height:1.6;">${formulaHtml}</div>
         </div>` : ''}
         ${outputSlots.length > 0 ? `
         <div style="margin-top:8px;">
-          <div style="font-size:10px; font-weight:600; color:var(--cdisc-gray); text-transform:uppercase; margin-bottom:4px;">Outputs</div>
+          <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; margin-bottom:4px;">Outputs</div>
           <div style="display:flex; flex-wrap:wrap; gap:6px;">
             ${outputSlots.map(slot => `
               <div style="padding:4px 8px; border:1px solid var(--cdisc-border); border-radius:var(--radius); font-size:11px;">
                 <strong>${slot.patternName}</strong>
                 <div style="font-size:9px; color:var(--cdisc-text-secondary);">${slot.constituents.slice(0, 3).join(', ')}</div>
-                ${slot.identifiedBy.length > 0 ? `<div style="font-size:9px; color:var(--cdisc-blue);">Indexed by: ${slot.identifiedBy.map(id => {
+                ${slot.dimensions.length > 0 ? `<div style="font-size:9px; color:var(--cdisc-primary);">Indexed by: ${slot.dimensions.map(id => {
                   if (id.includes(':')) return id.split(':').map(p => displayConcept(p)).join(':');
                   return displayConcept(id);
                 }).join(', ')}</div>` : ''}
@@ -649,15 +655,15 @@ function renderStatAnalysisCard(ep, study, lib) {
 
   return `
     <details style="margin-bottom:12px; border:1px solid var(--cdisc-border); border-radius:var(--radius); overflow:hidden;">
-      <summary style="padding:10px 14px; cursor:pointer; background:var(--cdisc-light-gray); font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;">
+      <summary style="padding:10px 14px; cursor:pointer; background:var(--cdisc-background); font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;">
         ${ep.name}
         <span class="badge ${ep.level.includes('Primary') ? 'badge-primary' : 'badge-secondary'}">${ep.level}</span>
-        ${analyses.length > 0 ? `<span class="badge badge-blue">${analyses.length} analysis${analyses.length > 1 ? 'es' : ''}</span>` : '<span class="badge" style="background:var(--cdisc-light-gray); color:var(--cdisc-gray);">not configured</span>'}
+        ${analyses.length > 0 ? `<span class="badge badge-blue">${analyses.length} analysis${analyses.length > 1 ? 'es' : ''}</span>` : '<span class="badge" style="background:var(--cdisc-background); color:var(--cdisc-text-secondary);">not configured</span>'}
       </summary>
       <div style="padding:12px 14px;">
-        ${formalized ? `<div style="font-size:12px; margin-bottom:8px; padding:8px 12px; background:var(--cdisc-light-blue); border-left:3px solid var(--cdisc-blue); border-radius:var(--radius);">${formalized}</div>` : ''}
+        ${formalized ? `<div style="font-size:12px; margin-bottom:8px; padding:8px 12px; background:var(--cdisc-primary-light); border-left:3px solid var(--cdisc-primary); border-radius:var(--radius);">${formalized}</div>` : ''}
         ${derivHtml}
-        ${analysisHtml || '<p style="color:var(--cdisc-gray); font-size:12px;">No analysis configured for this endpoint.</p>'}
+        ${analysisHtml || '<p style="color:var(--cdisc-text-secondary); font-size:12px;">No analysis configured for this endpoint.</p>'}
       </div>
     </details>`;
 }
@@ -713,7 +719,7 @@ function renderDatasetsPanel(selectedEps, study) {
 
   if (allInstances.length === 0) {
     return `<div class="card" style="padding:24px; text-align:center;">
-      <p style="color:var(--cdisc-gray);">No transformations configured. Configure endpoints and analyses first.</p>
+      <p style="color:var(--cdisc-text-secondary);">No transformations configured. Configure endpoints and analyses first.</p>
     </div>`;
   }
 
@@ -735,12 +741,12 @@ function renderDatasetsPanel(selectedEps, study) {
   let html = `
     <div class="card" style="padding:16px; margin-bottom:16px;">
       <div style="font-weight:700; font-size:14px; margin-bottom:4px;">ADaM Dataset Assignment</div>
-      <p style="font-size:12px; color:var(--cdisc-gray); margin-bottom:16px;">
+      <p style="font-size:12px; color:var(--cdisc-text-secondary); margin-bottom:16px;">
         Assign each endpoint's configured transformation instances to an ADaM dataset. The template is a generic recipe &mdash; the dataset is an implementation choice made per study instance.
       </p>
 
       <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:16px;">
-        <span style="font-size:11px; color:var(--cdisc-gray); margin-right:4px;">Common datasets:</span>
+        <span style="font-size:11px; color:var(--cdisc-text-secondary); margin-right:4px;">Common datasets:</span>
         ${commonDatasets.map(ds => {
           const count = byDataset[ds]?.length || 0;
           return `<span class="badge ${count > 0 ? 'badge-blue' : 'badge-secondary'}" style="font-size:10px;">${ds}${count > 0 ? ` (${count})` : ''}</span>`;
@@ -840,13 +846,13 @@ function renderLinkedNarratives(sectionKey) {
     if (!nc) return '';
     const resolved = resolveNarrative(nc, index);
     return `
-      <div style="border-left:3px solid var(--cdisc-accent); padding:8px 12px; margin-bottom:8px; background:var(--cdisc-light-blue); border-radius:0 var(--radius) var(--radius) 0;">
+      <div style="border-left:3px solid var(--cdisc-accent6); padding:8px 12px; margin-bottom:8px; background:var(--cdisc-primary-light); border-radius:0 var(--radius) var(--radius) 0;">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
-          <span style="font-size:11px; font-weight:600; color:var(--cdisc-accent);">
+          <span style="font-size:11px; font-weight:600; color:var(--cdisc-accent6);">
             Linked: ${nc.name} (${nc.id})
           </span>
           <button class="btn-remove-linked" data-section="${sectionKey}" data-nci-id="${nciId}"
-                  style="background:none; border:none; color:var(--cdisc-gray); cursor:pointer; font-size:14px; padding:0 4px;" title="Remove">
+                  style="background:none; border:none; color:var(--cdisc-text-secondary); cursor:pointer; font-size:14px; padding:0 4px;" title="Remove">
             &times;
           </button>
         </div>
@@ -857,7 +863,7 @@ function renderLinkedNarratives(sectionKey) {
 
   return `
     <div style="margin-top:16px;">
-      <div style="font-size:11px; font-weight:600; color:var(--cdisc-gray); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">
+      <div style="font-size:11px; font-weight:600; color:var(--cdisc-text-secondary); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">
         Linked USDM Content
       </div>
       ${blocks.join('')}
@@ -902,7 +908,7 @@ function showNarrativePicker(container, sectionKey) {
           <h3>Link USDM Narrative &mdash; ${sectionLabel}</h3>
           <div class="picker-subtitle">Select items to link, click to preview</div>
         </div>
-        <button class="picker-close" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--cdisc-gray);padding:4px;">&times;</button>
+        <button class="picker-close" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--cdisc-text-secondary);padding:4px;">&times;</button>
       </div>
       <div class="narrative-picker-search">
         <input type="text" placeholder="Search by section title or content..." class="picker-search-input">

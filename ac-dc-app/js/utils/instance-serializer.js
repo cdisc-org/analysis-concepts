@@ -1,5 +1,6 @@
 import { composeFullSentence, findMatchingTransformations, ENDPOINT_CONTEXT_ROLES } from './phrase-engine.js';
 import { getOutputMapping } from './transformation-linker.js';
+import { buildResolvedExpressionObject } from '../views/transformation-config.js';
 
 /**
  * Compute the delta between template input bindings and user-customized bindings.
@@ -159,15 +160,6 @@ export function serializeStudyInstance(appState) {
  */
 export function buildResolvedSpecification(appState, selectedEps, study) {
   const lib = appState.transformationLibrary;
-  const conceptMappings = appState.conceptMappings;
-  const modelViewMode = appState.modelViewMode || 'concepts';
-
-  // Resolve ADaM mapping for a concept
-  function adamVar(conceptName) {
-    const entry = conceptMappings?.adam?.concepts?.[conceptName]
-      || conceptMappings?.adam?.dimensions?.[conceptName];
-    return entry?.variable || null;
-  }
 
   const endpoints = selectedEps.map(ep => {
     const spec = appState.endpointSpecs?.[ep.id] || {};
@@ -183,7 +175,7 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
       const inputs = (d.bindings || []).filter(b => b.direction !== 'output').map(b => ({
         concept: b.concept,
         role: b.methodRole,
-        adam: adamVar(b.concept),
+        dataStructureRole: b.dataStructureRole,
         ...(b.slice ? { slice: b.slice } : {})
       }));
       const output = (d.bindings || []).find(b => b.direction === 'output');
@@ -192,7 +184,7 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
         name: d.name,
         method: d.usesMethod,
         inputs,
-        output: output ? { concept: output.concept, adam: adamVar(output.concept) } : null
+        output: output ? { concept: output.concept } : null
       };
     }).filter(Boolean);
 
@@ -200,41 +192,50 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
     const analysisSpecs = analyses.map(analysis => {
       const transform = (lib?.analysisTransformations || []).find(t => t.oid === analysis.transformationOid);
       if (!transform) return null;
-      const method = appState.methodsCache?.[transform.usesMethod] || null;
+      const methodObj = appState.methodsCache?.[transform.usesMethod] || null;
       const customBindings = analysis.customInputBindings || [];
 
-      // Bindings
+      // Bindings — include all schema-defined fields
       const bindings = customBindings.map(b => ({
         role: b.methodRole,
         concept: b.concept,
-        adam: adamVar(b.concept),
         direction: b.direction || 'input',
         dataStructureRole: b.dataStructureRole,
+        ...(b.requiredValueType ? { requiredValueType: b.requiredValueType } : {}),
         ...(b.slice ? { slice: b.slice } : {}),
         ...(b.qualifierType ? { qualifierType: b.qualifierType, qualifierValue: b.qualifierValue } : {}),
-        ...(b._custom ? { custom: true } : {})
+        ...(b.note ? { note: b.note } : {}),
+        ...(b.description ? { description: b.description } : {})
       }));
 
       // Outputs
       let outputs = [];
-      if (appState.acModel && method) {
-        const outputMapping = getOutputMapping(transform, appState.acModel, method, customBindings, analysis.activeInteractions || []);
+      if (appState.acModel && methodObj) {
+        const outputMapping = getOutputMapping(transform, appState.acModel, methodObj, customBindings, analysis.activeInteractions || []);
         outputs = outputMapping.map(slot => ({
           pattern: slot.patternName,
           statistics: slot.constituents,
-          indexedBy: slot.identifiedBy
+          dimensions: slot.dimensions
         }));
       }
 
+      // Build resolved expression
+      const resolvedExpression = methodObj
+        ? buildResolvedExpressionObject(customBindings, methodObj, analysis.activeInteractions || [])
+        : null;
+
+      // Nest method-related properties under a method object
       return {
         transformationOid: transform.oid,
         name: transform.name,
-        method: transform.usesMethod,
-        category: transform.acCategory || null,
+        method: {
+          oid: transform.usesMethod,
+          category: transform.acCategory || null,
+          configurationValues: analysis.methodConfigOverrides || {},
+          ...(resolvedExpression ? { resolvedExpression } : {})
+        },
         bindings,
-        interactions: analysis.activeInteractions || [],
-        outputs,
-        methodConfig: analysis.methodConfigOverrides || {}
+        outputs
       };
     }).filter(Boolean);
 
@@ -261,21 +262,6 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
     const visitVal = dimValues.AnalysisVisit || dimValues.Timing || null;
     if (estimand.variable && visitVal) estimand.variable += ` at ${visitVal}`;
 
-    // ADaM variable mapping for all concepts used
-    const adamMapping = {};
-    const allConcepts = new Set();
-    for (const b of (analyses.flatMap(a => a.customInputBindings || []))) {
-      allConcepts.add(b.concept);
-    }
-    for (const entry of derivChain) {
-      const d = derivations.find(x => x.oid === entry.derivationOid);
-      if (d) for (const b of d.bindings || []) allConcepts.add(b.concept);
-    }
-    for (const c of allConcepts) {
-      const v = adamVar(c);
-      if (v) adamMapping[c] = v;
-    }
-
     return {
       id: ep.id,
       name: ep.name,
@@ -284,8 +270,7 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
       targetDataset: spec.targetDataset || null,
       estimand,
       derivationPipeline: pipeline,
-      analyses: analysisSpecs,
-      adamMapping
+      analyses: analysisSpecs
     };
   });
 

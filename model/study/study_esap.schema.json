@@ -1,0 +1,679 @@
+{
+  "$id": "https://cdisc.org/acdc/study_esap",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "title": "study_esap",
+  "description": "Study eSAP Model schema: binds AC/DC Transformations and Methods to a study's objectives, endpoints, and estimands. Bridges USDM study structure, AC/DC concept/method library, and ARS. Validates study eSAP instance files.",
+  "version": "0.1.0",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "model": {
+      "type": "string",
+      "const": "eSAP",
+      "description": "Model identifier"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of the study eSAP model"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Human-readable description of the model"
+    },
+    "$provenance": {
+      "type": "object",
+      "description": "Declares external model dependencies — bill of materials for referenced entities",
+      "properties": {
+        "usdm": {
+          "type": "object",
+          "description": "CDISC Unified Study Definitions Model — source for study structure entities",
+          "properties": {
+            "model": { "type": "string", "const": "CDISC Unified Study Definitions Model" },
+            "version": { "type": "string" },
+            "uri": { "type": "string", "format": "uri" },
+            "entities": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "USDM entity names referenced in this schema"
+            }
+          }
+        },
+        "acdc_transformation": {
+          "type": "object",
+          "description": "AC/DC Transformation & Method Model — source for reusable transformation and phrase templates",
+          "properties": {
+            "model": { "type": "string" },
+            "schemaRef": { "type": "string", "format": "uri" },
+            "entities": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "ars": {
+          "type": "object",
+          "description": "Analysis Results Standard — source for analysis result definitions",
+          "properties": {
+            "model": { "type": "string" },
+            "uri": { "type": "string", "format": "uri" },
+            "entities": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "study": {
+      "$ref": "#/$defs/Study"
+    }
+  },
+  "required": ["model", "version", "study"],
+
+  "$defs": {
+
+    "_comment_cross_references": "Cross-reference stubs for entities defined in other schemas",
+
+    "TransformationRef": {
+      "x-provenance": {
+        "source": "acdc_transformation",
+        "conformance": "cross-reference"
+      },
+      "description": "Reference to a Transformation defined in the Transformation & Method Model (Sheet 5)",
+      "$comment": "When transformation.schema.json is published, replace with $ref to https://cdisc.org/acdc/transformation#/$defs/Transformation",
+      "type": "object",
+      "properties": {
+        "transformationId": {
+          "type": "string",
+          "description": "Identifier of the referenced Transformation"
+        }
+      },
+      "required": ["transformationId"]
+    },
+
+    "SmartPhraseRef": {
+      "x-provenance": {
+        "source": "acdc_transformation",
+        "conformance": "cross-reference"
+      },
+      "description": "Reference to a SmartPhrase template defined in the Transformation & Method Model (Sheet 5)",
+      "$comment": "When transformation.schema.json is published, replace with $ref to https://cdisc.org/acdc/transformation#/$defs/SmartPhrase",
+      "type": "object",
+      "properties": {
+        "smartPhraseId": {
+          "type": "string",
+          "description": "Identifier of the referenced SmartPhrase"
+        }
+      },
+      "required": ["smartPhraseId"]
+    },
+
+    "ARSAnalysisRef": {
+      "x-provenance": {
+        "source": "ars",
+        "conformance": "cross-reference"
+      },
+      "description": "Reference to an ARS Analysis. StudyAnalysis is-a ARS Analysis.",
+      "$comment": "Links to the CDISC Analysis Results Standard model",
+      "type": "object",
+      "properties": {
+        "analysisId": {
+          "type": "string",
+          "description": "Identifier of the referenced ARS Analysis"
+        }
+      },
+      "required": ["analysisId"]
+    },
+
+    "_comment_esap_owned": "eSAP-owned entities (purple in diagram) — defined and governed by this schema",
+
+    "StudyBinding": {
+      "x-provenance": {
+        "source": "esap",
+        "conformance": "owned"
+      },
+      "description": "Maps a study-level analysis or derivation step to its physical implementation in a standard dataset",
+      "type": "object",
+      "properties": {
+        "standard": {
+          "type": "string",
+          "description": "Target standard (e.g. ADaM, SDTM)"
+        },
+        "dataset": {
+          "type": "string",
+          "description": "Target dataset name"
+        },
+        "variable": {
+          "type": "string",
+          "description": "Target variable name"
+        },
+        "transformation": {
+          "type": "string",
+          "description": "Transformation identifier used for this binding"
+        }
+      },
+      "required": ["standard", "dataset", "variable"]
+    },
+
+    "StudyConfigurationValue": {
+      "x-provenance": {
+        "source": "esap",
+        "conformance": "owned"
+      },
+      "description": "A resolved configuration parameter value for a study-level analysis or derivation step",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Configuration parameter name (matches a Method Configuration name)"
+        },
+        "value": {
+          "type": "string",
+          "description": "Resolved value for this study"
+        }
+      },
+      "required": ["name", "value"]
+    },
+
+    "StudySlice": {
+      "x-provenance": {
+        "source": "esap",
+        "conformance": "owned"
+      },
+      "description": "A resolved data slice for a study-level step — specifies the concrete dimension values that segment the data",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Slice name (matches a Transformation Slice name)"
+        },
+        "resolvedValues": {
+          "type": "object",
+          "description": "Dimension name → resolved value(s) for this study",
+          "additionalProperties": true
+        }
+      },
+      "required": ["name", "resolvedValues"]
+    },
+
+    "StudySmartPhrase": {
+      "x-provenance": {
+        "source": "esap",
+        "conformance": "owned"
+      },
+      "description": "A resolved SmartPhrase — a template phrase with study-specific parameter values filled in",
+      "type": "object",
+      "properties": {
+        "basedOn": {
+          "$ref": "#/$defs/SmartPhraseRef",
+          "description": "The SmartPhrase template this resolved phrase is based on"
+        },
+        "resolvedText": {
+          "type": "string",
+          "description": "The fully resolved text with all parameters substituted"
+        }
+      },
+      "required": ["basedOn", "resolvedText"]
+    },
+
+    "ResolvedExpression": {
+      "x-provenance": {
+        "source": "esap",
+        "conformance": "owned"
+      },
+      "description": "A method formula resolved with study-level concept bindings — the method provides the template, the transformation provides bindings, the study resolves to actual concepts and interactions",
+      "type": "object",
+      "properties": {
+        "notation": {
+          "type": "string",
+          "enum": ["assignment", "wilkinson_rogers", "survival"],
+          "description": "Formula notation system from the method"
+        },
+        "resolved": {
+          "type": "string",
+          "description": "The fully resolved expression with study-level concept names substituted (e.g., 'C.Change ~ C.Measure@Baseline + Treatment + Site')"
+        },
+        "interactions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Active interaction terms in the resolved expression (e.g., ['C.Measure@Baseline:Treatment'])"
+        }
+      },
+      "required": ["notation", "resolved"]
+    },
+
+    "StudyStep": {
+      "x-provenance": {
+        "source": "esap",
+        "conformance": "owned"
+      },
+      "description": "Abstract base for StudyAnalysis and StudyDerivation — shared composition of transformation binding, configurations, slices, and phrases",
+      "type": "object",
+      "properties": {
+        "sequence": {
+          "type": "integer",
+          "description": "Execution order within the parent step list"
+        },
+        "basedOn": {
+          "$ref": "#/$defs/TransformationRef",
+          "description": "The Transformation template this step instantiates"
+        },
+        "configurationValues": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StudyConfigurationValue" },
+          "description": "Resolved configuration parameter values for this step"
+        },
+        "implementationBindings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StudyBinding" },
+          "minItems": 1,
+          "description": "Mappings to physical dataset/variable implementations"
+        },
+        "resolvedSlices": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StudySlice" },
+          "description": "Resolved data slices for this step"
+        },
+        "resolvedPhrases": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StudySmartPhrase" },
+          "description": "Resolved SmartPhrase texts for this step"
+        },
+        "resolvedExpression": {
+          "$ref": "#/$defs/ResolvedExpression",
+          "description": "The method formula resolved with study-level concept bindings and active interactions"
+        }
+      },
+      "required": ["sequence", "basedOn", "implementationBindings"]
+    },
+
+    "StudyDerivation": {
+      "x-provenance": {
+        "source": "esap",
+        "conformance": "owned"
+      },
+      "description": "A study-level derivation step — instantiates a Transformation template to derive a variable for an endpoint",
+      "allOf": [
+        { "$ref": "#/$defs/StudyStep" }
+      ]
+    },
+
+    "StudyAnalysis": {
+      "x-provenance": {
+        "source": "esap",
+        "conformance": "owned"
+      },
+      "description": "A study-level analysis step — instantiates a Transformation template to produce statistical results. Is-a ARS Analysis.",
+      "allOf": [
+        { "$ref": "#/$defs/StudyStep" },
+        {
+          "type": "object",
+          "properties": {
+            "arsAnalysis": {
+              "$ref": "#/$defs/ARSAnalysisRef",
+              "description": "Link to the corresponding ARS Analysis definition (StudyAnalysis is-a ARS Analysis)"
+            }
+          }
+        }
+      ]
+    },
+
+    "_comment_usdm_references": "USDM reference entities (green in diagram) — minimal projections of CDISC USDM entities. additionalProperties: true allows pass-through of full USDM data.",
+
+    "StudyTitle": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: Text representation of the study title",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "text": { "type": "string" }
+      },
+      "required": ["id", "text"]
+    },
+
+    "NarrativeContentItem": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: An individual content item within narrative content",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "text": { "type": "string" }
+      },
+      "required": ["id"]
+    },
+
+    "NarrativeContent": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: Structured narrative content within a document version, with recursive children",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "sectionNumber": { "type": "string" },
+        "sectionTitle": { "type": "string" },
+        "contentItem": {
+          "$ref": "#/$defs/NarrativeContentItem",
+          "description": "The content item for this section (0..1)"
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/NarrativeContent" },
+          "description": "Child narrative content sections (recursive, 0..*)"
+        }
+      },
+      "required": ["id"]
+    },
+
+    "AnalysisPopulation": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: A subset of the study population used for analysis",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
+
+    "StudyIntervention": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: A treatment or intervention applied in the study",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": ["string", "null"] }
+      },
+      "required": ["id", "name"]
+    },
+
+    "IntercurrentEvent": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: An event occurring after treatment initiation that affects interpretation or existence of measurements",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "strategy": {
+          "type": "string",
+          "description": "Strategy for handling the intercurrent event (e.g. treatment policy, composite, hypothetical)"
+        }
+      },
+      "required": ["id", "name"]
+    },
+
+    "SyntaxTemplate": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: A template definition with parameterizable text (SmartPhrase is-a SyntaxTemplate)",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Template text with parameter placeholders"
+        },
+        "parameterMaps": {
+          "type": "array",
+          "description": "Parameter substitution maps"
+        }
+      },
+      "required": ["text"]
+    },
+
+    "StudyDefinitionDocumentVersion": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: A version of a study definition document",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "status": { "type": "string" },
+        "version": { "type": "string" },
+        "contents": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/NarrativeContent" },
+          "description": "Narrative content sections in this document version (0..*)"
+        }
+      },
+      "required": ["id"]
+    },
+
+    "StudyDefinitionDocument": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: A study definition document (e.g. the eSAP). Note: type 'eSAP' requires USDM codelist extension of C215477.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": {
+          "type": "string",
+          "description": "Document type — 'eSAP' is a proposed extension to USDM codelist C215477"
+        },
+        "templateName": { "type": "string" },
+        "language": { "type": "string" },
+        "versions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StudyDefinitionDocumentVersion" },
+          "description": "Document versions (0..*)"
+        }
+      },
+      "required": ["id"]
+    },
+
+    "Endpoint": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: A study endpoint — the variable of interest measured to address an objective",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "text": { "type": "string" },
+        "level": {
+          "type": "string",
+          "enum": ["primary", "secondary"]
+        },
+        "derivationSteps": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StudyDerivation" },
+          "description": "Derivation steps that produce this endpoint's analysis variable (0..*)"
+        }
+      },
+      "required": ["id", "name"]
+    },
+
+    "Objective": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: A study objective — a goal the study is designed to achieve",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "level": {
+          "type": "string",
+          "enum": ["primary", "secondary"]
+        },
+        "endpoints": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Endpoint" },
+          "description": "Endpoints associated with this objective (0..*)"
+        }
+      },
+      "required": ["id", "name"]
+    },
+
+    "Estimand": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: An estimand — a precise description of the treatment effect to be estimated (ICH E9 R1)",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "label": { "type": "string" },
+        "populationSummary": {
+          "type": "string",
+          "description": "Description of the target population"
+        },
+        "variableOfInterest": {
+          "$ref": "#/$defs/Endpoint",
+          "description": "The endpoint this estimand targets (1)"
+        },
+        "analysisPopulation": {
+          "$ref": "#/$defs/AnalysisPopulation",
+          "description": "The analysis population for this estimand (1)"
+        },
+        "interventions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StudyIntervention" },
+          "minItems": 1,
+          "description": "Study interventions compared in this estimand (1..*)"
+        },
+        "intercurrentEvents": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/IntercurrentEvent" },
+          "description": "Intercurrent events and their handling strategies (0..*)"
+        },
+        "analysisSteps": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StudyAnalysis" },
+          "minItems": 1,
+          "description": "Analysis steps that address this estimand (1..*)"
+        }
+      },
+      "required": ["id", "name", "variableOfInterest", "analysisPopulation", "interventions", "analysisSteps"]
+    },
+
+    "StudyDesign": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: The experimental design of the study",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": ["string", "null"] },
+        "objectives": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Objective" },
+          "description": "Study objectives (0..*)"
+        }
+      },
+      "required": ["id"]
+    },
+
+    "StudyVersion": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: A version of the study definition",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "versionIdentifier": { "type": "string" },
+        "rationale": { "type": ["string", "null"] },
+        "titles": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StudyTitle" },
+          "minItems": 1,
+          "description": "Study titles (1..*)"
+        },
+        "documentVersions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StudyDefinitionDocumentVersion" },
+          "description": "Document versions associated with this study version (0..*)"
+        },
+        "studyDesigns": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StudyDesign" },
+          "description": "Study designs (0..*)"
+        }
+      },
+      "required": ["id", "titles"]
+    },
+
+    "Study": {
+      "x-provenance": {
+        "source": "usdm",
+        "conformance": "reference"
+      },
+      "description": "USDM: The root study entity — top-level container for the eSAP",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "label": { "type": "string" },
+        "description": { "type": ["string", "null"] },
+        "versions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StudyVersion" },
+          "description": "Study versions (0..*)"
+        },
+        "estimands": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Estimand" },
+          "description": "Estimands defined for this study (0..*)"
+        },
+        "documentedBy": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StudyDefinitionDocument" },
+          "description": "Study definition documents (e.g. the eSAP document) (0..*)"
+        }
+      },
+      "required": ["id", "name"]
+    }
+  }
+}
