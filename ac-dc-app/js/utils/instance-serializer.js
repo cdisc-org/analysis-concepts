@@ -63,9 +63,11 @@ export function buildMergedDataStructure(spec, analysisTransform) {
     }
   }
 
-  // 4. Analysis template contributions
-  if (analysisTransform) {
-    for (const b of (analysisTransform.bindings || [])) {
+  // 4. Analysis contributions — use customInputBindings (user's actual config) if available
+  const analyses = spec?.selectedAnalyses || [];
+  const analysisBindings = analyses[0]?.customInputBindings || analysisTransform?.bindings || [];
+  if (analysisTransform || analysisBindings.length > 0) {
+    for (const b of analysisBindings) {
       if (b.direction === 'output') continue;
 
       if (b.dataStructureRole === 'measure') {

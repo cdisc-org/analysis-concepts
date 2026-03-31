@@ -274,7 +274,7 @@ export function buildSyntaxTemplate(ep, spec, study) {
   }
 
   const template = `${conceptCategory} ${templateBase}${templateSuffix}`;
-  const resolved = `<span class="badge badge-teal" style="font-size:12px; vertical-align:middle;">${conceptCategory}</span> ${resolvedBase}${resolvedSuffix}`;
+  const resolved = `${resolvedBase}${resolvedSuffix}`;
 
   return { template, resolved };
 }
@@ -1106,20 +1106,47 @@ export function getDerivationEndpointPhrase(derivation) {
 export function buildFormalizedDescription(ep, spec, study) {
   if (!spec?.conceptCategory) return null;
 
-  // The formalized endpoint is the variable description from Step 3.
-  // It does NOT include the analysis method (estimator) or population (estimand).
-  const syntax = buildSyntaxTemplatePlainText(ep, spec, study);
-  if (syntax) {
-    return syntax.charAt(0).toUpperCase() + syntax.slice(1);
-  }
-
+  // The formalized endpoint is the VARIABLE description only.
+  // No concept prefix (C.Change), no estimand attributes (Population, Treatment).
+  const lib = appState.transformationLibrary;
+  const smartPhrases = lib?.smartPhrases || [];
+  const cubeDims = spec.cubeDimensions || [];
   const paramValue = getSpecParameterValue(ep.id, spec, study);
-  if (paramValue) {
-    const bare = spec.conceptCategory.startsWith('C.') ? spec.conceptCategory.slice(2) : spec.conceptCategory;
-    return `${bare} of ${paramValue}`;
+
+  // Find the endpoint phrase
+  const epPhrase = spec.selectedEndpointPhrase
+    ? smartPhrases.find(sp => sp.oid === spec.selectedEndpointPhrase)
+    : smartPhrases.find(sp => sp.role === 'endpoint' && sp.references?.includes(spec.conceptCategory));
+
+  if (!epPhrase) {
+    if (paramValue) {
+      const bare = spec.conceptCategory.startsWith('C.') ? spec.conceptCategory.slice(2) : spec.conceptCategory;
+      return `${bare} of ${paramValue}`;
+    }
+    return null;
   }
 
-  return null;
+  // Resolve the base phrase
+  let desc = epPhrase.phrase_template;
+  if (desc.includes('{parameter}')) desc = desc.replace('{parameter}', paramValue || '{parameter}');
+  if (desc.includes('{event}')) desc = desc.replace('{event}', paramValue || '{event}');
+
+  // Append only variable-relevant dimension phrases (AnalysisVisit/Timing, NOT Population/Treatment)
+  const variableDimRefs = new Set(['AnalysisVisit', 'Timing']);
+  for (const oid of (spec.selectedDimPhrases || [])) {
+    const sp = smartPhrases.find(s => s.oid === oid);
+    if (!sp?.references?.[0]) continue;
+    if (!variableDimRefs.has(sp.references[0])) continue; // skip non-variable dims
+    let phrase = sp.phrase_template;
+    const dimEntry = cubeDims.find(d => d.dimension === sp.references[0]);
+    const val = dimEntry?.sliceValue || spec.dimensionValues?.[sp.references[0]] || '';
+    for (const cfg of (sp.configurations || [])) {
+      phrase = phrase.replace(`{${cfg}}`, val || `{${cfg}}`);
+    }
+    desc += ` ${phrase}`;
+  }
+
+  return desc.charAt(0).toUpperCase() + desc.slice(1);
 }
 
 /**
