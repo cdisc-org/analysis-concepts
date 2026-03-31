@@ -10,43 +10,8 @@ import { getOutputMapping } from '../utils/transformation-linker.js';
 import { displayConcept } from '../utils/concept-display.js';
 import { loadMethod } from '../data-loader.js';
 import { renderFormulaExpression } from './transformation-config.js';
-import { buildResolvedSpecification } from '../utils/instance-serializer.js';
-
-// ===== SAP ToC Section Mapping =====
-
-const ESAP_SECTION_PREFIXES = {
-  abbreviations:   ['13'],
-  introduction:    ['0', '1'],
-  objectives:      ['2'],
-  studyDesign:     ['3.1', '3.2', '3.3', '3.5', '3.6', '3.7'],
-  protocolChanges: [],
-  estimands:       [],
-  endpoints:       ['3.9'],
-  analysisSets:    ['3.4'],
-  statMethods:     ['4'],
-  statAnalysis:    [],
-  software:        [],
-  references:      ['14'],
-  shells:          [],
-  appendices:      ['12']
-};
-
-const ESAP_SECTION_LABELS = {
-  abbreviations:   '1. List of Abbreviations',
-  introduction:    '2. Introduction',
-  objectives:      '3. Study Objectives',
-  studyDesign:     '4. Study Design',
-  protocolChanges: '5. Changes in the Protocol',
-  estimands:       '6. Estimands',
-  endpoints:       '7. Study Endpoints',
-  analysisSets:    '8. Analysis Sets',
-  statMethods:     '9. Statistical Methods',
-  statAnalysis:    '10. Statistical Analysis',
-  software:        '11. Computer Software',
-  references:      '12. References',
-  shells:          '13. Table/Figure/Listing Shells',
-  appendices:      '14. Appendices'
-};
+import { buildEsapSpecification } from '../utils/instance-serializer.js';
+import { ESAP_SECTION_PREFIXES, ESAP_SECTION_LABELS } from '../utils/esap-constants.js';
 
 // ===== Helper: build contentItemId → section mapping =====
 function buildNciToSectionMap(study) {
@@ -193,7 +158,7 @@ export async function renderEsapBuilder(container) {
     <div id="esap-json-panel" style="display:none; margin-top:16px;">
       <div class="card" style="padding:16px;">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-          <div style="font-weight:700; font-size:14px;">Resolved Analysis Specification (JSON)</div>
+          <div style="font-weight:700; font-size:14px;">eSAP Specification (study_esap.schema.json)</div>
           <button class="btn btn-sm btn-secondary" id="btn-copy-json" style="font-size:11px;">Copy to Clipboard</button>
         </div>
         <pre id="esap-json-content" style="max-height:600px; overflow:auto; padding:12px; background:#1e1e1e; color:#d4d4d4; border-radius:var(--radius); font-size:11px; line-height:1.5; white-space:pre-wrap; word-wrap:break-word;"></pre>
@@ -268,10 +233,10 @@ export async function renderEsapBuilder(container) {
         if (panel) panel.style.display = key === view ? '' : 'none';
       }
 
-      // Lazy-generate JSON
+      // Lazy-generate JSON — schema-aligned eSAP specification
       if (view === 'json' && jsonContent) {
-        const resolved = buildResolvedSpecification(appState, selectedEps, study);
-        jsonContent.textContent = JSON.stringify(resolved, null, 2);
+        const esapSpec = buildEsapSpecification(appState);
+        jsonContent.textContent = JSON.stringify(esapSpec, null, 2);
       }
     });
   });

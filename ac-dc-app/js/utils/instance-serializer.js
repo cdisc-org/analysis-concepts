@@ -1,8 +1,9 @@
 import { composeFullSentence, findMatchingTransformations, ENDPOINT_CONTEXT_ROLES } from './phrase-engine.js';
 import { getOutputMapping } from './transformation-linker.js';
 import { buildResolvedExpressionObject } from '../views/transformation-config.js';
-import { buildSyntaxTemplatePlainText } from '../views/endpoint-spec.js';
+import { buildSyntaxTemplatePlainText, getSummaryMeasurePhrase } from '../views/endpoint-spec.js';
 import { displayConcept } from './concept-display.js';
+import { ESAP_SECTION_LABELS } from './esap-constants.js';
 
 /**
  * Build a W3C Data Cube-aligned merged data structure from endpoint spec + analysis template.
@@ -373,7 +374,7 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
       };
     }).filter(Boolean);
 
-    // Build analyses
+    // Build analyses — each gets its own input data structure (DSD + slices)
     const analysisSpecs = analyses.map(analysis => {
       const transform = (lib?.analysisTransformations || []).find(t => t.oid === analysis.transformationOid);
       if (!transform) return null;
@@ -392,6 +393,9 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
         ...(b.note ? { note: b.note } : {}),
         ...(b.description ? { description: b.description } : {})
       }));
+
+      // Input data structure — built per analysis from endpoint spec + this analysis transform
+      const mergedDSD = buildMergedDataStructure(spec, transform);
 
       // Outputs
       let outputs = [];
@@ -419,34 +423,66 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
           configurationValues: analysis.methodConfigOverrides || {},
           ...(resolvedExpression ? { resolvedExpression } : {})
         },
+        inputDataStructure: {
+          measures: mergedDSD.measures,
+          dimensions: mergedDSD.dimensions,
+          ...(mergedDSD.sliceKeys?.length > 0 ? { sliceKeys: mergedDSD.sliceKeys } : {}),
+          slices: mergedDSD.slices
+        },
         bindings,
         outputs
       };
     }).filter(Boolean);
 
+    // Treatment — check dimValues first, then fall back to analysis bindings
+    let treatmentVal = dimValues.Treatment || null;
+    if (!treatmentVal) {
+      for (const analysis of analyses) {
+        const treatBinding = (analysis.customInputBindings || []).find(
+          b => b.concept === 'Treatment' && b.dataStructureRole === 'dimension'
+        );
+        if (treatBinding?.qualifierValue) {
+          treatmentVal = `${treatBinding.concept} (${treatBinding.qualifierValue})`;
+          break;
+        } else if (treatBinding) {
+          treatmentVal = treatBinding.concept;
+          break;
+        }
+      }
+    }
+
+    // Population-level summary — derive from selected estimand summary pattern + method
+    let populationLevelSummary = null;
+    const primaryAnalysis = analyses[0];
+    if (primaryAnalysis && spec.estimandSummaryPattern) {
+      const transform = (lib?.analysisTransformations || [])
+        .find(t => t.oid === primaryAnalysis.transformationOid);
+      if (transform) {
+        populationLevelSummary = getSummaryMeasurePhrase(
+          spec.estimandSummaryPattern, transform.usesMethod
+        );
+      }
+    }
+
     // Estimand attributes
     const estimand = {
       population: dimValues.Population || null,
-      treatment: dimValues.Treatment || null,
+      treatment: treatmentVal,
       variable: null,
-      populationLevelSummary: null,
+      populationLevelSummary,
       intercurrentEvents: null
     };
 
-    // Variable description — use formalized endpoint from Step 3
+    // Variable description — use formalized endpoint text, strip concept code prefix
     const syntax = buildSyntaxTemplatePlainText(ep, spec, study);
     if (syntax) {
-      estimand.variable = syntax.charAt(0).toUpperCase() + syntax.slice(1);
+      // Remove leading concept code (e.g. "C.Change ") that comes from the badge
+      const cleaned = syntax.replace(/^[A-Z]\.\w+\s+/i, '');
+      estimand.variable = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
     } else {
       const paramValue = spec.parameterValue || dimValues.Parameter || null;
       if (paramValue) estimand.variable = paramValue;
     }
-
-    // W3C QB-aligned merged data structure
-    const analysisTransform = spec.selectedTransformationOid
-      ? (lib?.analysisTransformations || []).find(t => t.oid === spec.selectedTransformationOid)
-      : null;
-    const mergedDSD = buildMergedDataStructure(spec, analysisTransform);
 
     return {
       id: ep.id,
@@ -454,12 +490,6 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
       level: ep.level,
       originalText: ep.text || '',
       targetDataset: spec.targetDataset || null,
-      dataStructureDefinition: {
-        measures: mergedDSD.measures,
-        dimensions: mergedDSD.dimensions,
-        ...(mergedDSD.sliceKeys?.length > 0 ? { sliceKeys: mergedDSD.sliceKeys } : {})
-      },
-      slices: mergedDSD.slices,
       estimand,
       derivationPipeline: pipeline,
       analyses: analysisSpecs
@@ -481,6 +511,482 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
     },
     endpoints
   };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// eSAP Schema-Aligned Specification (study_esap.schema.json)
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Build a schema-aligned eSAP specification following study_esap.schema.json.
+ * Produces USDM-style hierarchy: Study → StudyVersion → StudyDesign → Objectives → Endpoints,
+ * with Estimands at the Study level containing StudyAnalysis steps.
+ */
+export function buildEsapSpecification(appState) {
+  const study = appState.selectedStudy;
+  const rawStudy = appState.rawUsdm?.study;
+  const studyName = study?.name || rawStudy?.name || 'Untitled Study';
+
+  return {
+    model: 'eSAP',
+    version: '0.1.0',
+    description: `Study eSAP for ${studyName}`,
+    $provenance: buildProvenance(appState),
+    study: buildStudyEntity(appState)
+  };
+}
+
+/** Build $provenance declaring external model dependencies. */
+function buildProvenance(appState) {
+  const lib = appState.transformationLibrary;
+  return {
+    usdm: {
+      model: 'CDISC Unified Study Definitions Model',
+      version: '4.0',
+      uri: 'https://www.cdisc.org/usdm',
+      entities: [
+        'Study', 'StudyVersion', 'StudyDesign', 'Objective', 'Endpoint',
+        'AnalysisPopulation', 'StudyIntervention', 'IntercurrentEvent',
+        'StudyDefinitionDocument', 'NarrativeContent', 'StudyTitle'
+      ]
+    },
+    acdc_transformation: {
+      model: 'AC/DC Transformation & Method Model',
+      schemaRef: 'https://cdisc.org/acdc/transformation',
+      entities: ['Transformation', 'SmartPhrase'],
+      ...(lib?.version ? { version: lib.version } : {})
+    },
+    ars: {
+      model: 'Analysis Results Standard',
+      uri: 'https://www.cdisc.org/ars',
+      entities: ['Analysis']
+    }
+  };
+}
+
+/** Build the root Study entity with USDM hierarchy. */
+function buildStudyEntity(appState) {
+  const study = appState.selectedStudy;
+  const raw = appState.rawUsdm?.study;
+
+  return {
+    id: raw?.id || 'Study_1',
+    name: raw?.name || study?.name || 'Untitled Study',
+    ...(raw?.label ? { label: raw.label } : {}),
+    ...(raw?.description ? { description: raw.description } : {}),
+    versions: [buildStudyVersion(appState)],
+    estimands: buildEstimands(appState),
+    documentedBy: buildDocumentedBy(appState)
+  };
+}
+
+/** Build StudyVersion with titles and nested StudyDesign. */
+function buildStudyVersion(appState) {
+  const raw = appState.rawUsdm?.study;
+  const rawVersion = raw?.versions?.[0];
+  const study = appState.selectedStudy;
+
+  // Titles — carry through from raw USDM or synthesize
+  const titles = rawVersion?.titles?.map(t => ({
+    id: t.id,
+    text: t.text,
+    ...(t.type?.decode ? { type: t.type.decode } : {})
+  })) || [{ id: 'StudyTitle_1', text: study?.name || 'Untitled' }];
+
+  return {
+    id: rawVersion?.id || 'StudyVersion_1',
+    versionIdentifier: rawVersion?.versionIdentifier || '1',
+    ...(rawVersion?.rationale ? { rationale: rawVersion.rationale } : {}),
+    titles,
+    studyDesigns: [buildStudyDesign(appState)]
+  };
+}
+
+/** Build StudyDesign with filtered objectives containing only selected endpoints. */
+function buildStudyDesign(appState) {
+  const raw = appState.rawUsdm?.study;
+  const rawDesign = raw?.versions?.[0]?.studyDesigns?.[0];
+
+  return {
+    id: rawDesign?.id || 'StudyDesign_1',
+    name: rawDesign?.name || 'Study Design 1',
+    ...(rawDesign?.description ? { description: rawDesign.description } : {}),
+    objectives: buildObjectives(appState)
+  };
+}
+
+/** Build Objective[] filtered to only those containing selected endpoints. */
+function buildObjectives(appState) {
+  const study = appState.selectedStudy;
+  // selectedEndpoints may be string IDs or objects with .id
+  const selectedIds = new Set(
+    (appState.selectedEndpoints || []).map(ref => typeof ref === 'string' ? ref : ref.id)
+  );
+  if (!study?.objectives || selectedIds.size === 0) return [];
+
+  return study.objectives
+    .map(obj => {
+      const selectedEps = obj.endpoints.filter(ep => selectedIds.has(ep.id));
+      if (selectedEps.length === 0) return null;
+      return {
+        id: obj.id,
+        name: obj.name,
+        ...(obj.level ? { level: obj.level.toLowerCase().includes('primary') ? 'primary' : 'secondary' } : {}),
+        endpoints: selectedEps.map(ep => buildEndpointEntity(appState, ep))
+      };
+    })
+    .filter(Boolean);
+}
+
+/** Build a single Endpoint entity with derivationSteps. */
+function buildEndpointEntity(appState, ep) {
+  const result = {
+    id: ep.id,
+    name: ep.name,
+    ...(ep.text ? { text: ep.text } : {}),
+    ...(ep.level ? { level: ep.level.toLowerCase().includes('primary') ? 'primary' : 'secondary' } : {})
+  };
+
+  const derivSteps = buildDerivationSteps(appState, ep.id);
+  if (derivSteps.length > 0) {
+    result.derivationSteps = derivSteps;
+  }
+
+  return result;
+}
+
+/** Build StudyDerivation[] from the endpoint's derivation chain. */
+function buildDerivationSteps(appState, epId) {
+  const spec = appState.endpointSpecs?.[epId];
+  const chain = spec?.derivationChain || [];
+  const lib = appState.transformationLibrary;
+  if (chain.length === 0) return [];
+
+  return chain.map((entry, i) => {
+    const template = (lib?.derivationTransformations || [])
+      .find(d => d.oid === entry.derivationOid);
+    const outputBinding = template?.bindings?.find(b => b.direction === 'output');
+
+    return {
+      sequence: i + 1,
+      basedOn: { transformationId: entry.derivationOid },
+      implementationBindings: [{
+        standard: 'ADaM',
+        dataset: spec.targetDataset || 'ADSL',
+        variable: outputBinding?.concept || entry.concept
+      }],
+      ...(template?.configurations
+        ? { configurationValues: [] }
+        : {}),
+      resolvedSlices: [],
+      resolvedPhrases: []
+    };
+  });
+}
+
+/** Build Estimand[] — one per configured endpoint that has analysis steps. */
+function buildEstimands(appState) {
+  const study = appState.selectedStudy;
+  const selectedEps = appState.selectedEndpoints || [];
+  const allEndpoints = getAllEndpointsFlat(study);
+
+  // selectedEndpoints may be string IDs or objects with .id
+  const selectedIds = selectedEps.map(ref => typeof ref === 'string' ? ref : ref.id);
+
+  return selectedIds
+    .map(epId => {
+      const ep = allEndpoints.find(e => e.id === epId);
+      if (!ep) return null;
+
+      const spec = appState.endpointSpecs?.[ep.id] || {};
+      const analyses = spec.selectedAnalyses || [];
+      if (analyses.length === 0) return null;
+
+      const dimValues = spec.dimensionValues || {};
+      const analysisSteps = buildAnalysisSteps(appState, ep.id);
+      if (analysisSteps.length === 0) return null;
+
+      // Resolve USDM entity references
+      const populationRef = resolveAnalysisPopulation(appState, dimValues.Population);
+      const interventionRefs = resolveInterventions(appState, dimValues.Treatment);
+
+      // Build variable description from formalized endpoint, strip concept code prefix
+      let variableDescription = null;
+      const syntax = buildSyntaxTemplatePlainText(ep, spec, study);
+      if (syntax) {
+        const cleaned = syntax.replace(/^[A-Z]\.\w+\s+/i, '');
+        variableDescription = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+      }
+
+      // Population-level summary from USDM estimand
+      const rawDesign = appState.rawUsdm?.study?.versions?.[0]?.studyDesigns?.[0];
+      const rawEstimand = (rawDesign?.estimands || [])
+        .find(est => est.variableOfInterestId === ep.id);
+      const populationSummary = rawEstimand?.populationSummary || dimValues.Population || null;
+
+      return {
+        id: `Estimand_${ep.id}`,
+        name: `Estimand for ${ep.name}`,
+        ...(variableDescription ? { label: variableDescription } : {}),
+        ...(populationSummary ? { populationSummary } : {}),
+        // Schema inline refs
+        variableOfInterest: { id: ep.id, name: ep.name },
+        analysisPopulation: populationRef,
+        interventions: interventionRefs,
+        intercurrentEvents: resolveIntercurrentEvents(appState, ep.id),
+        analysisSteps
+      };
+    })
+    .filter(Boolean);
+}
+
+/** Resolve analysis population by matching dimension value to USDM AnalysisPopulation. */
+function resolveAnalysisPopulation(appState, populationName) {
+  if (!populationName) return { id: 'AnalysisPopulation_unknown', name: 'Unknown' };
+
+  const study = appState.selectedStudy;
+  const pops = study?.analysisPopulations || [];
+  const normalised = populationName.toLowerCase().trim();
+
+  // Try exact name match, then text match, then substring
+  const match = pops.find(p => p.name?.toLowerCase().trim() === normalised)
+    || pops.find(p => p.text?.toLowerCase().trim() === normalised)
+    || pops.find(p => p.text?.toLowerCase().includes(normalised) || normalised.includes(p.text?.toLowerCase()));
+
+  if (match) return { id: match.id, name: match.name };
+  return { id: 'AnalysisPopulation_unresolved', name: populationName };
+}
+
+/** Resolve interventions by parsing the Treatment dimension value against USDM arms. */
+function resolveInterventions(appState, treatmentValue) {
+  if (!treatmentValue) {
+    // Schema requires minItems: 1 — fall back to USDM interventions or placeholder
+    const rawVersion = appState.rawUsdm?.study?.versions?.[0];
+    const fallbackInterventions = rawVersion?.studyInterventions || [];
+    if (fallbackInterventions.length > 0) {
+      return fallbackInterventions.map(si => ({
+        id: si.id, name: si.name,
+        ...(si.label ? { description: si.label } : {})
+      }));
+    }
+    return [{ id: 'Intervention_unspecified', name: 'Unspecified' }];
+  }
+
+  const study = appState.selectedStudy;
+  const arms = study?.arms || [];
+
+  // Also check raw USDM for StudyIntervention entities
+  const rawVersion = appState.rawUsdm?.study?.versions?.[0];
+  const interventions = rawVersion?.studyInterventions || [];
+
+  // Split on " vs " or " versus "
+  const parts = treatmentValue.split(/\s+(?:vs\.?|versus)\s+/i).map(s => s.trim()).filter(Boolean);
+
+  // Match each part against arms
+  const matched = [];
+  for (const part of parts) {
+    const partLower = part.toLowerCase();
+    const arm = arms.find(a =>
+      a.name?.toLowerCase() === partLower
+      || a.label?.toLowerCase() === partLower
+      || a.name?.toLowerCase().includes(partLower)
+      || partLower.includes(a.name?.toLowerCase())
+    );
+    if (arm) {
+      matched.push({
+        id: arm.id,
+        name: arm.name,
+        ...(arm.type ? { type: arm.type } : {})
+      });
+    } else {
+      matched.push({ id: `Intervention_${part.replace(/[^a-zA-Z0-9]+/g, '_')}`, name: part });
+    }
+  }
+
+  // If nothing matched from splitting, try using the full value
+  if (matched.length === 0) {
+    // Fall back: use the USDM StudyIntervention if only one exists
+    if (interventions.length > 0) {
+      return interventions.map(si => ({
+        id: si.id,
+        name: si.name,
+        ...(si.label ? { description: si.label } : {})
+      }));
+    }
+    return [{ id: 'Intervention_unresolved', name: treatmentValue }];
+  }
+
+  return matched;
+}
+
+/** Resolve intercurrent events for an endpoint. Currently placeholder — ICE not yet captured in wizard. */
+function resolveIntercurrentEvents(appState, epId) {
+  // Check raw USDM for estimand ICEs
+  const rawDesign = appState.rawUsdm?.study?.versions?.[0]?.studyDesigns?.[0];
+  const rawEstimands = rawDesign?.estimands || [];
+
+  // If there's a matching USDM estimand referencing this endpoint, use its ICEs
+  for (const est of rawEstimands) {
+    if (est.variableOfInterestId === epId && est.intercurrentEvents?.length > 0) {
+      return est.intercurrentEvents.map(ice => ({
+        id: ice.id,
+        name: ice.name,
+        ...(ice.strategy ? { strategy: ice.strategy } : {})
+      }));
+    }
+  }
+
+  return [];
+}
+
+/** Build StudyAnalysis[] for an endpoint's selected analyses. */
+function buildAnalysisSteps(appState, epId) {
+  const spec = appState.endpointSpecs?.[epId] || {};
+  const analyses = spec.selectedAnalyses || [];
+  const lib = appState.transformationLibrary;
+
+  return analyses.map((analysis, i) => {
+    const transform = (lib?.analysisTransformations || [])
+      .find(t => t.oid === analysis.transformationOid);
+    if (!transform) return null;
+
+    const customBindings = analysis.customInputBindings || [];
+    const methodObj = appState.methodsCache?.[transform.usesMethod] || null;
+    const interactions = analysis.activeInteractions || [];
+
+    // Configuration values
+    const configValues = Object.entries(analysis.methodConfigOverrides || {})
+      .map(([name, value]) => ({ name, value: String(value) }));
+
+    // Implementation bindings
+    const implBindings = customBindings
+      .filter(b => b.direction !== 'output')
+      .map(b => ({
+        standard: 'ADaM',
+        dataset: spec.targetDataset || 'ADEFF',
+        variable: b.concept,
+        ...(b.methodRole ? { transformation: analysis.transformationOid } : {})
+      }));
+
+    // Resolved slices — from merged data structure
+    const mergedDSD = buildMergedDataStructure(spec, transform);
+    const resolvedSlices = (mergedDSD.slices || []).map(s => ({
+      name: s.name,
+      resolvedValues: s.fixedDimensions || {}
+    }));
+
+    // Resolved phrases
+    const resolvedPhrases = buildResolvedPhrases(appState, epId);
+
+    // Resolved expression (reuse existing helper)
+    const resolvedExpression = methodObj
+      ? buildResolvedExpressionObject(customBindings, methodObj, interactions)
+      : undefined;
+
+    return {
+      sequence: i + 1,
+      basedOn: { transformationId: analysis.transformationOid },
+      ...(configValues.length > 0 ? { configurationValues: configValues } : {}),
+      implementationBindings: implBindings.length > 0
+        ? implBindings
+        : [{ standard: 'ADaM', dataset: spec.targetDataset || 'ADEFF', variable: spec.conceptCategory || 'AVAL' }],
+      ...(resolvedSlices.length > 0 ? { resolvedSlices } : {}),
+      ...(resolvedPhrases.length > 0 ? { resolvedPhrases } : {}),
+      ...(resolvedExpression ? { resolvedExpression } : {}),
+      arsAnalysis: { analysisId: `ARS_${analysis.transformationOid}_${epId}` }
+    };
+  }).filter(Boolean);
+}
+
+/** Build StudySmartPhrase[] from the endpoint's composed phrases. */
+function buildResolvedPhrases(appState, epId) {
+  const esapAnalysis = appState.esapAnalyses?.[epId];
+  const phrases = esapAnalysis?.phrases || [];
+  const lib = appState.transformationLibrary;
+  if (phrases.length === 0 || !lib) return [];
+
+  return phrases.map(p => {
+    const sp = lib.smartPhrases?.find(s => s.oid === p.oid);
+    if (!sp) return null;
+
+    // Resolve the phrase text
+    const resolvedText = composeFullSentence([p], lib);
+    if (!resolvedText) return null;
+
+    return {
+      basedOn: { smartPhraseId: p.oid },
+      resolvedText
+    };
+  }).filter(Boolean);
+}
+
+/** Build Study.documentedBy with eSAP document and linked narrative content. */
+function buildDocumentedBy(appState) {
+  const linked = appState.esapLinkedNarratives;
+  if (!linked) return [];
+
+  const contents = buildEsapNarrativeContents(appState);
+
+  return [{
+    id: 'eSAP_Document',
+    name: 'electronic Statistical Analysis Plan',
+    type: 'eSAP',
+    versions: [{
+      id: 'eSAP_DocVersion_1',
+      contents
+    }]
+  }];
+}
+
+/** Build NarrativeContent[] for each eSAP section. */
+function buildEsapNarrativeContents(appState) {
+  const linked = appState.esapLinkedNarratives || {};
+  const study = appState.selectedStudy;
+  const narrativeItems = study?.narrativeContent || [];
+  const nciMap = new Map(narrativeItems.map(nc => [nc.id, nc]));
+
+  let sectionIndex = 1;
+  return Object.entries(ESAP_SECTION_LABELS).map(([key, label]) => {
+    const linkedIds = linked[key] || [];
+    const section = {
+      id: `eSAP_Section_${key}`,
+      name: key,
+      sectionNumber: String(sectionIndex++),
+      sectionTitle: label
+    };
+
+    // Resolve linked content items
+    if (linkedIds.length === 1) {
+      const nci = nciMap.get(linkedIds[0]);
+      if (nci) {
+        section.contentItem = { id: nci.id, name: nci.name, ...(nci.text ? { text: nci.text } : {}) };
+      }
+    } else if (linkedIds.length > 1) {
+      section.children = linkedIds.map(id => {
+        const nci = nciMap.get(id);
+        if (!nci) return null;
+        return {
+          id: nci.id,
+          name: nci.name,
+          ...(nci.text ? { contentItem: { id: nci.id, text: nci.text } } : {})
+        };
+      }).filter(Boolean);
+    }
+
+    return section;
+  });
+}
+
+/** Get all endpoints flat across all objectives (local helper). */
+function getAllEndpointsFlat(study) {
+  if (!study?.objectives) return [];
+  const eps = [];
+  for (const obj of study.objectives) {
+    for (const ep of (obj.endpoints || [])) {
+      eps.push(ep);
+    }
+  }
+  return eps;
 }
 
 /**
