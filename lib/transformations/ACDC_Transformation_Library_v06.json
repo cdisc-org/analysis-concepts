@@ -951,6 +951,90 @@
       ]
     },
     {
+      "oid": "T.ADAS_SumAvailableScores",
+      "name": "ADAS-Cog Sum of Available Item Scores",
+      "transformationType": "derivation",
+      "description": "Sum of available (non-missing) ADAS-Cog item scores per subject/visit.",
+      "instanceOf": "C.Measure",
+      "usesMethod": "M.Aggregation",
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "sum"
+        }
+      ],
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "C.Measure",
+          "note": "11 ADAS-Cog item scores (from BCs)",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "value"
+        },
+        {
+          "concept": "C.Measure",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ]
+    },
+    {
+      "oid": "T.ADAS_NonMissingCount",
+      "name": "ADAS-Cog Non-Missing Item Count",
+      "transformationType": "derivation",
+      "description": "Count of non-missing ADAS-Cog item scores per subject/visit. Used to determine if enough items are present for scoring.",
+      "instanceOf": "C.Measure",
+      "usesMethod": "M.Aggregation",
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "count"
+        }
+      ],
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "C.Measure",
+          "note": "11 ADAS-Cog item scores (from BCs)",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "value"
+        },
+        {
+          "concept": "C.Measure",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ]
+    },
+    {
       "oid": "T.ADAS_ScoreableCheck",
       "name": "ADAS-Cog Scoreable Check",
       "transformationType": "derivation",
@@ -969,6 +1053,10 @@
         {
           "configurationName": "false_value",
           "value": "N"
+        },
+        {
+          "configurationName": "threshold",
+          "value": 8
         }
       ],
       "validSmartPhrases": [],

@@ -1,6 +1,6 @@
 import { appState, navigateTo } from '../app.js';
 import {
-  getAllEndpoints, getBiomedicalConcepts,
+  getAllEndpoints, getBiomedicalConcepts, getBCScheduledTimings,
   getVisitLabels, getPopulationNames, getArmNames,
   getEndpointParameterOptions
 } from '../utils/usdm-parser.js';
@@ -160,11 +160,16 @@ export function getDimensionOptions(dimName, study) {
  */
 export function getSpecParameterValue(epId, spec, study) {
   if (!spec) return null;
+  // Priority 1: cubeDimensions Parameter slice
+  const paramDim = (spec.cubeDimensions || []).find(d => d.dimension === 'Parameter');
+  if (paramDim?.sliceValue) return paramDim.sliceValue;
+  // Priority 2: linked BCs
   if (spec.linkedBCIds?.length > 0) {
-    const bcIndex = new Map((study.biomedicalConcepts || []).map(bc => [bc.id, bc]));
+    const bcIndex = new Map(((study?.biomedicalConcepts || study?.versions?.[0]?.biomedicalConcepts) || []).map(bc => [bc.id, bc]));
     const names = spec.linkedBCIds.map(id => bcIndex.get(id)?.name).filter(Boolean);
     if (names.length > 0) return names.join(', ');
   }
+  // Priority 3: manual parameter name
   if (spec.parameterName) return spec.parameterName;
   return null;
 }
@@ -201,130 +206,75 @@ export function buildSyntaxTemplate(ep, spec, study) {
     }
   }
 
-  // === Fallback: DC model category-based mode ===
-  const catInfo = getCategoryInfo(spec.conceptCategory);
-  if (!catInfo) {
-    // Observation concept — include dimensional context when present
-    if (spec.conceptCategory === 'Observation') {
-      const paramValue = getSpecParameterValue(ep.id, spec, study);
-      const conceptLabel = 'Observation';
-      const dimValues = spec.dimensionValues || {};
+  // === Fallback: Smart-phrase-based mode (from selected phrases + cube dimensions) ===
+  const lib = appState.transformationLibrary;
+  const smartPhrases = lib?.smartPhrases || [];
+  const conceptCategory = spec.conceptCategory;
+  const cubeDims = spec.cubeDimensions || [];
 
-      let template = `${conceptLabel} of {Parameter}`;
-      let resolved = paramValue
-        ? `<span class="badge badge-teal" style="font-size:12px; vertical-align:middle;">${conceptLabel}</span> of <strong>${paramValue}</strong>`
-        : `<span class="badge badge-teal" style="font-size:12px; vertical-align:middle;">${conceptLabel}</span> of <span class="placeholder">{Parameter}</span>`;
+  // Find cube slice value for a dimension
+  function getCubeSliceValue(dimName) {
+    const entry = cubeDims.find(d => d.dimension === dimName);
+    return entry?.sliceValue || spec.dimensionValues?.[dimName] || '';
+  }
 
-      // Append dimensional parts when values are set
-      if (dimValues.AnalysisVisit) {
-        template += ` at {AnalysisVisit}`;
-        resolved += ` at <strong>${dimValues.AnalysisVisit}</strong>`;
-      }
-      if (dimValues.Population) {
-        template += ` in the {Population} population`;
-        resolved += ` in the <strong>${dimValues.Population}</strong> population`;
-      }
-      if (dimValues.Treatment) {
-        template += ` comparing {Treatment}`;
-        resolved += ` comparing <strong>${dimValues.Treatment}</strong>`;
-      }
+  // Find the selected endpoint phrase (or first match)
+  const selectedEpOid = spec.selectedEndpointPhrase;
+  const endpointPhrase = selectedEpOid
+    ? smartPhrases.find(sp => sp.oid === selectedEpOid)
+    : smartPhrases.find(sp => sp.role === 'endpoint' && sp.references?.includes(conceptCategory));
 
-      return { template, resolved };
+  // Build base template from endpoint phrase
+  let templateBase = endpointPhrase?.phrase_template || `${conceptCategory}`;
+  let resolvedBase = templateBase;
+
+  // Resolve placeholders in the endpoint phrase
+  for (const cfg of (endpointPhrase?.configurations || [])) {
+    const token = `{${cfg}}`;
+    if (!templateBase.includes(token)) continue;
+
+    // Map config name to dimension/value
+    let val = '';
+    if (cfg === 'parameter') val = getSpecParameterValue(ep.id, spec, study) || '';
+    else if (cfg === 'event') val = getSpecParameterValue(ep.id, spec, study) || '';
+    else val = getCubeSliceValue(cfg.charAt(0).toUpperCase() + cfg.slice(1)) || '';
+
+    resolvedBase = val
+      ? resolvedBase.replace(token, `<strong>${val}</strong>`)
+      : resolvedBase.replace(token, `<span class="placeholder">${token}</span>`);
+  }
+
+  // Append selected dimension phrases
+  const selectedDimOids = spec.selectedDimPhrases || [];
+  let templateSuffix = '';
+  let resolvedSuffix = '';
+
+  for (const oid of selectedDimOids) {
+    const sp = smartPhrases.find(s => s.oid === oid);
+    if (!sp) continue;
+
+    const phTpl = sp.phrase_template;
+    templateSuffix += ` ${phTpl}`;
+
+    // Resolve this phrase's placeholders from cube values
+    let resolvedPh = phTpl;
+    for (const cfg of (sp.configurations || [])) {
+      const token = `{${cfg}}`;
+      if (!resolvedPh.includes(token)) continue;
+
+      // Map config name to dimension name and get cube value
+      const dimRef = sp.references?.[0] || '';
+      const val = getCubeSliceValue(dimRef) || '';
+
+      resolvedPh = val
+        ? resolvedPh.replace(token, `<strong>${val}</strong>`)
+        : resolvedPh.replace(token, `<span class="placeholder">${token}</span>`);
     }
-    return null;
+    resolvedSuffix += ` ${resolvedPh}`;
   }
 
-  // Option_B atomic concepts no longer carry dimensionalRelationships;
-  // gracefully fall back to null when the field is absent.
-  const dimRels = catInfo.category.dimensionalRelationships || null;
-  if (!dimRels) return null;
-
-  const dimValues = spec.dimensionValues || {};
-  const paramValue = getSpecParameterValue(ep.id, spec, study);
-  const categoryName = catInfo.categoryName;
-
-  // Category-specific structural parts come first
-  const templateParts = [];
-  const resolvedParts = [];
-
-  function addPart(prep, key, suffix, value) {
-    const fullTemplate = `${prep} {${key}}${suffix ? ' ' + suffix : ''}`;
-    templateParts.push(fullTemplate);
-    if (value) {
-      resolvedParts.push(`${prep} <strong>${value}</strong>${suffix ? ' ' + suffix : ''}`);
-    } else {
-      resolvedParts.push(`${prep} <span class="placeholder">{${key}}</span>${suffix ? ' ' + suffix : ''}`);
-    }
-  }
-
-  function addOptionalPart(prep, key, suffix, value) {
-    if (!value) return; // Optional: skip entirely when empty
-    addPart(prep, key, suffix, value);
-  }
-
-  // === Category-specific structure ===
-
-  if (categoryName === 'Comparison') {
-    // "Change in {Parameter} at {AnalysisVisit} ..."
-    addPart('in', 'Parameter', '', paramValue);
-  } else if (categoryName === 'SequenceAggregate') {
-    // "PeakValue of {Parameter} over {Timing} ..."
-    addPart('of', 'Parameter', '', paramValue);
-    // Timing has role "order" in SequenceAggregate — use "over" not "at"
-    if (dimRels.Timing) {
-      const timingVal = dimValues.Timing || dimValues.AnalysisVisit || null;
-      const isOptional = dimRels.Timing.cardinality === '0..1';
-      if (isOptional) {
-        addOptionalPart('over', 'Timing', '', timingVal);
-      } else {
-        addPart('over', 'Timing', '', timingVal);
-      }
-    }
-  } else {
-    // PointComputation, EventAggregate, Classification:
-    // "{Concept} of {Parameter} ..."
-    addPart('of', 'Parameter', '', paramValue);
-  }
-
-  // === Remaining dimensions (skip already-handled ones) ===
-  const handledDims = new Set(['Subject', 'Parameter']);
-  if (categoryName === 'SequenceAggregate') {
-    handledDims.add('Timing');
-  }
-
-  const dimOrder = ['AnalysisVisit', 'Timing', 'Population', 'Treatment', 'Period'];
-  const dimPrep = {
-    AnalysisVisit: 'at',
-    Timing:        'at',
-    Population:    'in the',
-    Treatment:     'comparing',
-    Period:        'during'
-  };
-  const dimSuffix = { Population: 'population' };
-
-  for (const dim of dimOrder) {
-    if (handledDims.has(dim)) continue;
-    const rel = dimRels[dim];
-    if (!rel) continue;
-    if (rel.cardinality === '0') continue;
-    // Skip Timing when AnalysisVisit is also present (redundant source)
-    if (dim === 'Timing' && dimRels['AnalysisVisit']) continue;
-
-    const isOptional = rel.cardinality === '0..1';
-    const value = dimValues[dim] || null;
-    const prep = dimPrep[dim] || '';
-    const suffix = dimSuffix[dim] || '';
-
-    if (isOptional) {
-      addOptionalPart(prep, dim, suffix, value);
-    } else {
-      addPart(prep, dim, suffix, value);
-    }
-  }
-
-  const conceptLabel = spec.conceptCategory;
-  const template = `${conceptLabel} ${templateParts.join(' ')}`;
-  const resolved = `<span class="badge badge-teal" style="font-size:12px; vertical-align:middle;">${conceptLabel}</span> ${resolvedParts.join(' ')}`;
+  const template = `${conceptCategory} ${templateBase}${templateSuffix}`;
+  const resolved = `<span class="badge badge-teal" style="font-size:12px; vertical-align:middle;">${conceptCategory}</span> ${resolvedBase}${resolvedSuffix}`;
 
   return { template, resolved };
 }
@@ -856,22 +806,8 @@ export function buildEstimandFrameworkHtml(ep, spec, study, estimandDesc) {
   const dimValues = spec?.dimensionValues || {};
   const paramValue = getSpecParameterValue(ep.id, spec, study);
 
-  // Derive variable/endpoint description (includes timing — ICH E9(R1) Variable attribute)
-  const derivation = spec?.selectedDerivationOid
-    ? getDerivationTransformationByOid(spec.selectedDerivationOid) : null;
-  const derivName = derivation?.name || null;
-  const visitVal = dimValues.AnalysisVisit || dimValues.Timing || null;
-  let variableDesc = '';
-  if (derivName && paramValue) {
-    variableDesc = `${derivName} of ${paramValue}`;
-  } else if (derivName) {
-    variableDesc = derivName;
-  } else if (paramValue) {
-    variableDesc = paramValue;
-  }
-  if (variableDesc && visitVal) {
-    variableDesc += ` at ${visitVal}`;
-  }
+  // Derive variable/endpoint description from formalized endpoint (Step 3 syntax template)
+  const variableDesc = buildFormalizedDescription(ep, spec, study) || paramValue || '';
 
   // Population
   const popVal = dimValues.Population || null;
@@ -1170,80 +1106,20 @@ export function getDerivationEndpointPhrase(derivation) {
 export function buildFormalizedDescription(ep, spec, study) {
   if (!spec?.conceptCategory) return null;
 
+  // The formalized endpoint is the variable description from Step 3.
+  // It does NOT include the analysis method (estimator) or population (estimand).
+  const syntax = buildSyntaxTemplatePlainText(ep, spec, study);
+  if (syntax) {
+    return syntax.charAt(0).toUpperCase() + syntax.slice(1);
+  }
+
   const paramValue = getSpecParameterValue(ep.id, spec, study);
-  const dimValues = spec.dimensionValues || {};
-  const parts = [];
-
-  // === WHAT part ===
-  const derivation = spec.selectedDerivationOid
-    ? getDerivationTransformationByOid(spec.selectedDerivationOid)
-    : null;
-  const derivPhrase = getDerivationEndpointPhrase(derivation);
-
-  const configVals = spec.derivationConfigValues || {};
-
-  if (derivPhrase) {
-    let what = derivPhrase.phrase_template;
-    if (what.includes('{parameter}')) {
-      what = what.replace('{parameter}', paramValue || '{parameter}');
-    }
-    if (what.includes('{event}')) {
-      what = what.replace('{event}', configVals.event || dimValues.event || dimValues.Event || '{event}');
-    }
-    // Resolve all remaining derivation config placeholders
-    for (const [key, val] of Object.entries(configVals)) {
-      if (key === 'parameter' || key === 'event') continue;
-      const ph = `{${key}}`;
-      if (what.includes(ph)) {
-        what = what.replace(ph, val || ph);
-      }
-    }
-    // Capitalize first letter
-    what = what.charAt(0).toUpperCase() + what.slice(1);
-    parts.push(what);
-  } else if (spec.conceptCategory === 'Observation' && paramValue) {
-    // Observation — simple direct phrasing
-    parts.push(paramValue);
-  } else if (paramValue) {
-    // No derivation phrase — use concept + parameter
+  if (paramValue) {
     const bare = spec.conceptCategory.startsWith('C.') ? spec.conceptCategory.slice(2) : spec.conceptCategory;
-    parts.push(`${bare} of ${paramValue}`);
-  } else {
-    return null; // Not enough info for a formalized description
+    return `${bare} of ${paramValue}`;
   }
 
-  // === HOW part ===
-  const analysisTransform = spec.selectedTransformationOid
-    ? getTransformationByOid(spec.selectedTransformationOid)
-    : null;
-
-  if (analysisTransform) {
-    const methodName = analysisTransform.usesMethod
-      ? analysisTransform.usesMethod.replace(/^M\./, '')
-      : analysisTransform.name;
-    parts.push(`analyzed by ${methodName}`);
-  }
-
-  // === Dimensional context ===
-  const dimPrep = {
-    AnalysisVisit: 'at',
-    Timing:        'at',
-    Population:    'in the',
-    Treatment:     'comparing',
-    Period:        'during'
-  };
-  const dimSuffix = { Population: 'population' };
-  const dimOrder = ['AnalysisVisit', 'Timing', 'Population', 'Treatment', 'Period'];
-
-  for (const dim of dimOrder) {
-    const value = dimValues[dim];
-    if (!value) continue;
-    const prep = dimPrep[dim] || '';
-    const suffix = dimSuffix[dim] || '';
-    parts.push(`${prep} ${value}${suffix ? ' ' + suffix : ''}`);
-  }
-
-  return parts.join(', ').replace(/,\s*,/g, ',').replace(/\s+/g, ' ').trim();
+  return null;
 }
 
 /**
@@ -1387,6 +1263,418 @@ export function getDimensionOptionsForSlice(dimName, sliceDef, study, epId) {
 
 
 // ===== Rendering helpers =====
+
+/**
+ * Render the endpoint data cube: measure (from concept), dimension checkboxes,
+ * and slice value inputs. The cube defines the data shape the analysis will consume.
+ */
+export function renderDataCube(ep, spec, study) {
+  if (!spec.conceptCategory) return '';
+
+  const concept = spec.conceptCategory;
+  const dataType = spec.dataType || 'Quantity';
+
+  /**
+   * Build grouped BC options for the Parameter picker.
+   * Filters BCs by OC Result.Value compatibility with the selected concept.
+   */
+  function buildBCParameterOptions(conceptCat, study) {
+    const mapping = appState.bcOcInstanceMapping;
+    if (!mapping) return [];
+
+    const studyVersion = study?.versions?.[0] || study;
+    const studyBCs = studyVersion?.biomedicalConcepts || [];
+    if (studyBCs.length === 0) return [];
+
+    const isNumeric = conceptCat !== 'Observation'; // Derived concepts need Quantity
+    const compatibleBCs = [];
+
+    for (const bcMap of (mapping.bcMappings || [])) {
+      const hasValue = bcMap.propertyMappings?.some(p =>
+        p.ocFacet === 'Result.Value' && (isNumeric ? p.ocValueType === 'Quantity' : true)
+      );
+      if (!hasValue) continue;
+      const studyBC = studyBCs.find(bc => bc.id === bcMap.bcId || bc.name === bcMap.bcName);
+      if (studyBC) compatibleBCs.push({ id: studyBC.id, name: studyBC.name, code: bcMap.bcCode });
+    }
+
+    // Group by domain
+    const groups = {};
+    for (const bc of compatibleBCs) {
+      let group = 'Other';
+      const n = bc.name || '';
+      if (n.includes('ADAS-Cog')) group = 'ADAS-Cog Items';
+      else if (n.includes('Blood Pressure') || n.includes('Heart Rate') || n.includes('Temperature') || n.includes('Weight') || n.includes('Height') || n.includes('Pulse')) group = 'Vital Signs';
+      else if (n.includes('Concentration') || n.includes('Presence') || n.includes('Glucose') || n.includes('Aminotransferase') || n.includes('Phosphatase') || n.includes('Albumin') || n.includes('Creatinine') || n.includes('Sodium') || n.includes('Potassium') || n.includes('HbA1c')) group = 'Laboratory';
+      else if (n.includes('ECG') || n.includes('Electrocardiogram')) group = 'ECG';
+      else if (n.includes('MMSE') || n.includes('CDR') || n.includes('NPI') || n.includes('DAD')) group = 'Efficacy Scales';
+      if (!groups[group]) groups[group] = [];
+      groups[group].push(bc);
+    }
+
+    return Object.entries(groups)
+      .sort(([a], [b]) => a === 'Other' ? 1 : b === 'Other' ? -1 : a.localeCompare(b))
+      .map(([group, bcs]) => ({ group, bcs }));
+  }
+
+  // Available dimensions from DC model (filter non-dimension entries)
+  const sharedDims = appState.dcModel?.sharedDimensions || {};
+  const allDimNames = Object.entries(sharedDims)
+    .filter(([, def]) => typeof def === 'object' && def.cardinality)
+    .map(([dim]) => dim);
+
+  // Cube dimensions: array of { dimension, sliceValue }
+  if (!spec.cubeDimensions || !Array.isArray(spec.cubeDimensions) || (spec.cubeDimensions.length > 0 && typeof spec.cubeDimensions[0] === 'string')) {
+    spec.cubeDimensions = [];
+  }
+
+  // Auto-add dimensions implied by selected smart phrases
+  const lib = appState.transformationLibrary;
+  const allSmartPhrases = lib?.smartPhrases || [];
+
+  // From endpoint phrase
+  const epPhraseOid = spec.selectedEndpointPhrase
+    || allSmartPhrases.find(sp => sp.role === 'endpoint' && sp.references?.includes(concept))?.oid
+    || null;
+  if (epPhraseOid && !spec.selectedEndpointPhrase) {
+    spec.selectedEndpointPhrase = epPhraseOid;
+  }
+  const epPhrase = epPhraseOid ? allSmartPhrases.find(sp => sp.oid === epPhraseOid) : null;
+  if (epPhrase?.references) {
+    for (const ref of epPhrase.references) {
+      if (ref.startsWith('C.') || ref.startsWith('M.')) continue;
+      if (!spec.cubeDimensions.some(d => d.dimension === ref)) {
+        spec.cubeDimensions.push({ dimension: ref, sliceValue: '' });
+      }
+    }
+  }
+
+  // From selected dimension phrases
+  for (const oid of (spec.selectedDimPhrases || [])) {
+    const sp = allSmartPhrases.find(s => s.oid === oid);
+    if (!sp?.references) continue;
+    for (const ref of sp.references) {
+      if (ref.startsWith('C.') || ref.startsWith('M.')) continue;
+      if (!spec.cubeDimensions.some(d => d.dimension === ref)) {
+        spec.cubeDimensions.push({ dimension: ref, sliceValue: '' });
+      }
+    }
+  }
+
+  const dims = spec.cubeDimensions;
+
+  // Sync cube dimensions to dimensionValues for downstream consumers (eSAP, estimand, etc.)
+  if (!spec.dimensionValues) spec.dimensionValues = {};
+  for (const d of dims) {
+    if (d.sliceValue) spec.dimensionValues[d.dimension] = d.sliceValue;
+  }
+
+  // Which dimensions are already added
+  const addedDimNames = new Set(dims.map(d => d.dimension));
+  const availableDims = allDimNames.filter(d => !addedDimNames.has(d));
+
+  // Build BC options for Parameter dimension (grouped by domain)
+  // Is this an observation concept?
+  const isObservation = concept === 'Observation';
+
+  // No BC picker for Parameter slice — for Observation, BCs are selected via OC facet section above
+  // For DC concepts, parameter is a plain text input
+  const bcParameterOptions = [];
+
+  // Dimension rows — for observations, skip slice key dims (Parameter shown as QB slices above)
+  const dimRows = dims.filter(d => !(isObservation && d.isSliceKey) && d.dimension !== 'Subject').map((d, i) => {
+    const origIdx = dims.indexOf(d); // preserve original index for data-idx
+    const options = getDimensionOptions(d.dimension, study);
+    const val = d.sliceValue || '';
+    const isParameter = d.dimension === 'Parameter';
+
+    let sliceInput;
+    if (options && options.length > 0) {
+      sliceInput = `
+        <select class="config-select ep-cube-slice-value" data-ep-id="${ep.id}" data-idx="${origIdx}" style="width:100%;">
+          <option value="">(all values)</option>
+          ${options.map(opt => {
+            const v = typeof opt === 'object' ? opt.value : opt;
+            return `<option value="${v}" ${v === val ? 'selected' : ''}>${v}</option>`;
+          }).join('')}
+        </select>`;
+    } else {
+      sliceInput = `
+        <input class="config-input ep-cube-slice-value" data-ep-id="${ep.id}" data-idx="${origIdx}"
+          value="${val}" placeholder="Enter value or leave empty for all" style="width:100%;">`;
+    }
+
+    return `
+      <tr style="border-bottom:1px solid var(--cdisc-border);">
+        <td style="padding:6px 10px; width:140px; vertical-align:middle;">
+          <span class="badge badge-teal" style="font-size:11px; padding:2px 8px;">${d.dimension}</span>
+        </td>
+        <td style="padding:6px 10px;">${sliceInput}</td>
+        <td style="padding:6px 4px; width:32px; text-align:center; vertical-align:middle;">
+          <button class="ep-cube-remove-dim" data-ep-id="${ep.id}" data-idx="${origIdx}"
+            style="border:none; background:none; color:var(--cdisc-error); cursor:pointer; font-size:14px; padding:2px 6px;">&times;</button>
+        </td>
+      </tr>`;
+  }).join('');
+
+  // Smart phrase for this concept (reuse lib and allSmartPhrases from above)
+  const conceptPhrases = allSmartPhrases.filter(sp =>
+    sp.role === 'endpoint' && sp.references?.includes(concept)
+  );
+  const selectedPhrase = spec.selectedEndpointPhrase
+    ? allSmartPhrases.find(sp => sp.oid === spec.selectedEndpointPhrase)
+    : conceptPhrases[0] || null;
+  const phraseInfo = selectedPhrase
+    ? `<div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:10px; padding:6px 10px; background:var(--cdisc-background); border-radius:var(--radius);">
+        Smart phrase: <em>${selectedPhrase.phrase_template}</em>
+       </div>`
+    : '';
+
+  // Observation-specific: OC facet selection and BC picker
+  let observationSection = '';
+  if (isObservation) {
+    const ocModel = appState.ocModel;
+    const instanceFacets = ocModel?.Observation?.instanceStructure || {};
+    const mapping = appState.bcOcInstanceMapping;
+    const studyVersion = study?.versions?.[0] || study;
+    const studyBCs = studyVersion?.biomedicalConcepts || [];
+
+    // Data type compatibility from OC model (no hardcoded map)
+    const complexType = ocModel?.valueTypes?.complexTypes?.[dataType];
+    const compatPrimitives = new Set(complexType?.compatiblePrimitives || []);
+    function isTypeCompatible(facetValueType) {
+      if (!facetValueType) return true; // container facets (no valueType) always shown
+      const types = facetValueType.split(' | ').map(t => t.trim());
+      return types.some(t => t === dataType || compatPrimitives.has(t));
+    }
+
+    // Collect OC facets filtered by data type compatibility
+    const facetOptions = [];
+    function collectFacets(obj, prefix) {
+      for (const [key, def] of Object.entries(obj)) {
+        if (typeof def !== 'object' || !def.definition) continue;
+        if (isTypeCompatible(def.valueType)) {
+          facetOptions.push({ path: prefix ? `${prefix}.${key}` : key, definition: def.definition, valueType: def.valueType || '' });
+        }
+        if (def.dataDefinitions) collectFacets(def.dataDefinitions, prefix ? `${prefix}.${key}` : key);
+      }
+    }
+    collectFacets(instanceFacets, '');
+
+    const selectedFacet = spec.selectedOcFacet || 'Result.Value';
+
+    // Find DISTINCT BCs matching the selected facet + data type
+    const seenBCNames = new Set();
+    const matchingBCs = [];
+    if (mapping?.bcMappings) {
+      for (const bcMap of mapping.bcMappings) {
+        const matchingProp = bcMap.propertyMappings?.find(p => p.ocFacet === selectedFacet);
+        if (!matchingProp) continue;
+        // Filter by valueType compatibility using OC model
+        if (!isTypeCompatible(matchingProp.ocValueType)) continue;
+        // Deduplicate by BC name
+        if (seenBCNames.has(bcMap.bcName)) continue;
+        seenBCNames.add(bcMap.bcName);
+
+        const studyBC = studyBCs.find(bc => bc.id === bcMap.bcId || bc.name === bcMap.bcName);
+        if (studyBC) matchingBCs.push({ id: studyBC.id, name: studyBC.name, code: bcMap.bcCode });
+      }
+    }
+
+    const linkedBCIds = new Set(spec.linkedBCIds || []);
+
+    observationSection = `
+      <!-- OC Facet Selection -->
+      <div style="margin-bottom:14px;">
+        <div style="font-weight:600; font-size:12px; margin-bottom:6px; color:var(--cdisc-text-secondary);">Observation Concept (OC Facet)</div>
+        <select class="config-select ep-oc-facet-select" data-ep-id="${ep.id}" style="width:100%; margin-bottom:8px;">
+          ${facetOptions.map(f => `<option value="${f.path}" ${f.path === selectedFacet ? 'selected' : ''}>${f.path}${f.valueType ? ' (' + f.valueType + ')' : ''}</option>`).join('')}
+        </select>
+        <div style="font-size:11px; color:var(--cdisc-text-secondary);">
+          ${facetOptions.find(f => f.path === selectedFacet)?.definition || ''}
+        </div>
+      </div>
+
+      <!-- BC Selection for this facet -->
+      <div style="margin-bottom:14px;">
+        <div style="font-weight:600; font-size:12px; margin-bottom:6px; color:var(--cdisc-text-secondary);">
+          Biomedical Concepts with ${selectedFacet} <span class="badge badge-secondary" style="font-size:10px;">${matchingBCs.length}</span>
+        </div>
+        <div style="max-height:280px; overflow-y:auto; border:1px solid var(--cdisc-border); border-radius:var(--radius); padding:4px;">
+          ${matchingBCs.length > 0 ? matchingBCs.map(bc => {
+            const timings = getBCScheduledTimings(bc.id, study);
+            const mainVisits = timings.filter(t => t.isMainTimeline).map(t => t.instanceName);
+            const subTimings = timings.filter(t => !t.isMainTimeline);
+            const subByTimeline = {};
+            for (const st of subTimings) {
+              if (!subByTimeline[st.timelineName]) subByTimeline[st.timelineName] = [];
+              subByTimeline[st.timelineName].push(st.instanceName);
+            }
+            return `
+              <div style="padding:4px 8px; ${linkedBCIds.has(bc.id) ? 'background:var(--cdisc-primary-light);' : ''} border-bottom:1px solid var(--cdisc-border);">
+                <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
+                  <input type="checkbox" class="ep-obs-bc-checkbox" data-ep-id="${ep.id}" data-bc-id="${bc.id}" ${linkedBCIds.has(bc.id) ? 'checked' : ''}>
+                  <strong>${bc.name}</strong>
+                  <span style="font-size:10px; color:var(--cdisc-text-secondary); margin-left:auto;">${bc.code || ''}</span>
+                </label>
+                ${mainVisits.length > 0 ? `<div style="font-size:10px; color:var(--cdisc-text-secondary); margin:2px 0 0 22px;">Visits: ${mainVisits.join(', ')}</div>` : ''}
+                ${Object.entries(subByTimeline).map(([tlName, insts]) =>
+                  `<div style="font-size:10px; color:var(--cdisc-accent2); margin:1px 0 0 22px;">${tlName}: ${insts.join(', ')}</div>`
+                ).join('')}
+              </div>`;
+          }).join('') : '<div style="padding:8px; font-size:11px; color:var(--cdisc-text-secondary); font-style:italic; text-align:center;">No BCs found with this facet and data type.</div>'}
+        </div>
+      </div>`;
+
+    // Auto-build QB-compliant cube from selected BCs
+    const selectedBCs = matchingBCs.filter(bc => linkedBCIds.has(bc.id));
+    if (selectedBCs.length > 0) {
+      // Structural dimensions: Subject (always), Parameter (slice key), Timing
+      if (!dims.some(d => d.dimension === 'Subject')) {
+        dims.push({ dimension: 'Subject', sliceValue: '' });
+      }
+      if (!dims.some(d => d.dimension === 'Parameter')) {
+        dims.push({ dimension: 'Parameter', sliceValue: '', isSliceKey: true });
+      }
+      // Don't force isSliceKey if Parameter already exists — user may have toggled it off
+      if (!dims.some(d => d.dimension === 'Timing') && !dims.some(d => d.dimension === 'AnalysisVisit')) {
+        dims.push({ dimension: 'Timing', sliceValue: '' });
+      }
+
+      // Discover additional dimensions from BC properties
+      if (mapping?.bcMappings) {
+        for (const bc of selectedBCs) {
+          const bcMap = mapping.bcMappings.find(m => m.bcId === bc.id || m.bcName === bc.name);
+          if (!bcMap) continue;
+          for (const prop of (bcMap.propertyMappings || [])) {
+            if (prop.ocFacet !== selectedFacet && !dims.some(d => d.dimension === prop.ocFacet)) {
+              dims.push({ dimension: prop.ocFacet, sliceValue: '', source: 'bc_property' });
+            }
+          }
+        }
+      }
+
+      // Build QB slices: one per selected BC (Parameter = BC name)
+      if (!spec.cubeSlices) spec.cubeSlices = [];
+      spec.cubeSlices = selectedBCs.map(bc => {
+        const timings = getBCScheduledTimings(bc.id, study);
+        const mainVisits = timings.filter(t => t.isMainTimeline).map(t => t.instanceName);
+        const subTimings = timings.filter(t => !t.isMainTimeline);
+        return {
+          name: bc.name,
+          fixedDimensions: { Parameter: bc.name },
+          linkedBCId: bc.id,
+          scheduledVisits: mainVisits,
+          scheduledSubTimings: subTimings
+        };
+      });
+
+      // Sync first BC name to dimensionValues for syntax resolution
+      if (!spec.dimensionValues) spec.dimensionValues = {};
+      spec.dimensionValues.Parameter = selectedBCs.length === 1 ? selectedBCs[0].name : '';
+    }
+  }
+
+  // Build cross-product resolved slices: merge BC slices × user dimension slices
+  // Collect user-set dimension values (non-sliceKey, non-Subject, non-empty)
+  const userFixedDims = {};
+  for (const d of dims) {
+    if (d.sliceValue && !d.isSliceKey && d.dimension !== 'Subject') {
+      userFixedDims[d.dimension] = d.sliceValue;
+    }
+  }
+  const baseSlices = spec.cubeSlices || [];
+  // Cross-product: merge user fixed dims into each base slice
+  const resolvedSlices = baseSlices.length > 0
+    ? baseSlices.map(s => ({
+        ...s,
+        fixedDimensions: { ...s.fixedDimensions, ...userFixedDims }
+      }))
+    : Object.keys(userFixedDims).length > 0
+      ? [{ name: 'endpoint', fixedDimensions: userFixedDims }]
+      : [];
+  // Build slice key: union of all fixed dimension names
+  const sliceKeyDims = [...new Set(resolvedSlices.flatMap(s => Object.keys(s.fixedDimensions || {})))];
+  // Store for JSON output
+  spec.resolvedSlices = resolvedSlices;
+  spec.sliceKeyDimensions = sliceKeyDims;
+
+  return `
+    <div style="margin-top:16px; border:1px solid var(--cdisc-border); border-radius:var(--radius); overflow:hidden;">
+      <div style="padding:8px 14px; background:var(--cdisc-background); border-bottom:1px solid var(--cdisc-border);">
+        <span style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-text-secondary);">Endpoint Data Cube</span>
+      </div>
+      <div style="padding:14px;">
+        <!-- Measure -->
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding:8px 12px; background:var(--cdisc-primary-light); border-radius:var(--radius);">
+          <span class="badge badge-blue">measure</span>
+          <code style="font-size:13px; font-weight:600;">${isObservation ? (spec.selectedOcFacet || 'Result.Value') : concept}</code>
+          <span style="font-size:11px; color:var(--cdisc-text-secondary);">(${dataType})</span>
+        </div>
+
+        ${observationSection}
+
+        <!-- Dimensions -->
+        <div style="margin-bottom:14px;">
+          <div style="font-weight:600; font-size:12px; margin-bottom:6px; color:var(--cdisc-text-secondary);">Dimensions</div>
+          ${dims.length > 0 ? `
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
+            ${dims.map((d, i) => `
+              <span class="ep-cube-dim-tag" data-ep-id="${ep.id}" data-idx="${i}"
+                style="display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border:1px solid ${d.isSliceKey ? 'var(--cdisc-primary)' : 'var(--cdisc-border)'}; border-radius:var(--radius); font-size:12px; cursor:pointer; ${d.isSliceKey ? 'background:var(--cdisc-primary-light);' : ''}"
+                title="Click to toggle slice key">
+                ${d.dimension}
+                ${d.isSliceKey ? '<span style="font-size:9px; color:var(--cdisc-primary);">&#128273;</span>' : ''}
+                <button class="ep-cube-remove-dim" data-ep-id="${ep.id}" data-idx="${i}" style="border:none; background:none; color:var(--cdisc-error); cursor:pointer; font-size:12px; padding:0 2px;">&times;</button>
+              </span>
+            `).join('')}
+          </div>
+          ` : `
+          <div style="padding:12px; font-size:12px; color:var(--cdisc-text-secondary); font-style:italic; border:1px dashed var(--cdisc-border); border-radius:var(--radius); text-align:center;">
+            No dimensions yet.
+          </div>
+          `}
+          ${availableDims.length > 0 ? `
+          <select class="config-select ep-cube-add-dim" data-ep-id="${ep.id}" style="font-size:12px; padding:4px 8px; border:1px dashed var(--cdisc-border);">
+            <option value="">+ Add dimension...</option>
+            ${availableDims.map(d => `<option value="${d}">${d}</option>`).join('')}
+          </select>
+          ` : ''}
+        </div>
+
+        <!-- Slice inputs (for setting dimension values) -->
+        ${dimRows ? `
+        <div style="margin-bottom:14px;">
+          <div style="font-weight:600; font-size:12px; margin-bottom:6px; color:var(--cdisc-text-secondary);">Dimension Values</div>
+          <table style="width:100%; border-collapse:collapse; border:1px solid var(--cdisc-border); border-radius:var(--radius); overflow:hidden;">
+            <tbody>${dimRows}</tbody>
+          </table>
+        </div>
+        ` : ''}
+
+        <!-- Resolved slices (cross-product of BC slices × dimension values) -->
+        ${resolvedSlices.length > 0 ? `
+        <div>
+          <div style="font-weight:600; font-size:12px; margin-bottom:4px; color:var(--cdisc-text-secondary);">
+            Slices <span style="font-size:10px; font-weight:400;">(${resolvedSlices.length})</span>
+          </div>
+          ${sliceKeyDims.length > 0 ? `<div style="font-size:10px; color:var(--cdisc-text-secondary); margin-bottom:6px;">Slice key: ${sliceKeyDims.map(d => `<span class="badge badge-secondary" style="font-size:9px;">${d}</span>`).join(' × ')}</div>` : ''}
+          ${resolvedSlices.map(s => `
+            <div style="padding:6px 10px; border:1px solid var(--cdisc-border); border-radius:var(--radius); margin-bottom:4px; font-size:12px;">
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                ${Object.entries(s.fixedDimensions || {}).map(([dim, val]) =>
+                  `<span><span class="badge badge-teal" style="font-size:10px;">${dim}</span> = <strong>${val}</strong></span>`
+                ).join('<span style="color:var(--cdisc-text-secondary);">&middot;</span>')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
+
+        ${phraseInfo}
+      </div>
+    </div>`;
+}
 
 /**
  * Render the parameter picker (BC/manual radio + BC checkboxes or text input).

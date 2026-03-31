@@ -1,6 +1,189 @@
 import { composeFullSentence, findMatchingTransformations, ENDPOINT_CONTEXT_ROLES } from './phrase-engine.js';
 import { getOutputMapping } from './transformation-linker.js';
 import { buildResolvedExpressionObject } from '../views/transformation-config.js';
+import { buildSyntaxTemplatePlainText } from '../views/endpoint-spec.js';
+import { displayConcept } from './concept-display.js';
+
+/**
+ * Build a W3C Data Cube-aligned merged data structure from endpoint spec + analysis template.
+ * The DSD (measures + dimensions) is structural. Slices declare constraints.
+ */
+export function buildMergedDataStructure(spec, analysisTransform) {
+  const measures = [];
+  const dimensions = [];
+  const slices = [];
+  const cubeDims = spec?.cubeDimensions || [];
+
+  // 1. Endpoint measure (from Step 3 concept category)
+  if (spec?.conceptCategory) {
+    measures.push({
+      concept: spec.conceptCategory,
+      role: 'response',
+      source: 'endpoint'
+    });
+  }
+
+  // 2. Endpoint dimensions (from Step 3 cube — structure only, no values)
+  for (const d of cubeDims) {
+    dimensions.push({
+      concept: d.dimension,
+      role: d.isSliceKey ? 'sliceKey' : 'constraint',
+      source: 'endpoint'
+    });
+  }
+
+  // 3. Endpoint slices — use pre-computed resolved slices (cross-product of BC slices × dimension values)
+  const sliceKeys = [];
+  if (spec?.resolvedSlices?.length > 0) {
+    for (const s of spec.resolvedSlices) {
+      slices.push({
+        name: s.name || 'endpoint',
+        fixedDimensions: s.fixedDimensions || {},
+        source: 'endpoint',
+        ...(s.linkedBCId ? { linkedBCId: s.linkedBCId } : {})
+      });
+    }
+    if (spec.sliceKeyDimensions?.length > 0) {
+      sliceKeys.push({ dimensions: spec.sliceKeyDimensions });
+    }
+  } else {
+    // Fallback: derived concept path — single slice from dimension values
+    const endpointFixed = {};
+    for (const d of cubeDims) {
+      if (d.sliceValue) endpointFixed[d.dimension] = d.sliceValue;
+    }
+    if (Object.keys(endpointFixed).length > 0) {
+      slices.push({
+        name: 'endpoint',
+        appliesTo: [spec.conceptCategory],
+        fixedDimensions: endpointFixed,
+        source: 'endpoint'
+      });
+      sliceKeys.push({ dimensions: Object.keys(endpointFixed) });
+    }
+  }
+
+  // 4. Analysis template contributions
+  if (analysisTransform) {
+    for (const b of (analysisTransform.bindings || [])) {
+      if (b.direction === 'output') continue;
+
+      if (b.dataStructureRole === 'measure') {
+        if (measures.some(m => m.concept === b.concept && m.role === (b.methodRole || 'response'))) continue;
+        measures.push({
+          concept: b.concept,
+          role: b.methodRole || 'measure',
+          source: 'analysis',
+          ...(b.slice ? { slice: b.slice } : {})
+        });
+      } else {
+        if (!dimensions.some(d => d.concept === b.concept)) {
+          dimensions.push({
+            concept: b.concept,
+            role: b.methodRole || 'dimension',
+            source: 'analysis',
+            ...(b.qualifierType ? {
+              qualifier: { type: b.qualifierType, value: b.qualifierValue }
+            } : {})
+          });
+        }
+      }
+    }
+
+    // Analysis-defined slices
+    for (const s of (analysisTransform.slices || [])) {
+      const measureBinding = (analysisTransform.bindings || [])
+        .find(b => b.slice === s.name && b.dataStructureRole === 'measure');
+      slices.push({
+        name: s.name,
+        appliesTo: measureBinding ? [measureBinding.concept] : [],
+        fixedDimensions: { [s.dimension]: s.constraint },
+        source: 'analysis'
+      });
+    }
+  }
+
+  return { measures, dimensions, slices };
+}
+
+/**
+ * Render a W3C QB-aligned data structure card as HTML.
+ */
+export function renderMergedDSD(dataStructure) {
+  if (!dataStructure) return '';
+  const { measures, dimensions, slices, sliceKeys } = dataStructure;
+
+  const sourceBadge = (src) => `<span style="font-size:9px; color:var(--cdisc-text-secondary); margin-left:auto;">&larr; ${src}</span>`;
+
+  const measureRows = measures.map(m => `
+    <tr>
+      <td style="padding:4px 10px;"><code style="font-weight:600;">${displayConcept(m.concept)}</code></td>
+      <td style="padding:4px 10px;"><span class="badge badge-blue" style="font-size:10px;">${m.role}</span></td>
+      <td style="padding:4px 10px;">${m.slice ? `<span style="font-size:10px; color:var(--cdisc-accent2);">@ ${m.slice}</span>` : ''}</td>
+      <td style="padding:4px 10px; text-align:right;">${sourceBadge(m.source)}</td>
+    </tr>
+  `).join('');
+
+  const dimRows = dimensions.map(d => `
+    <tr>
+      <td style="padding:4px 10px;"><code>${displayConcept(d.concept)}</code></td>
+      <td style="padding:4px 10px;"><span class="badge badge-teal" style="font-size:10px;">${d.role}</span></td>
+      <td style="padding:4px 10px;">${d.qualifier ? `<span style="font-size:10px; color:var(--cdisc-text-secondary);">${d.qualifier.type}: ${d.qualifier.value}</span>` : ''}</td>
+      <td style="padding:4px 10px; text-align:right;">${sourceBadge(d.source)}</td>
+    </tr>
+  `).join('');
+
+  const sliceCards = slices.map(s => {
+    const fixedEntries = Object.entries(s.fixedDimensions || {}).map(([dim, val]) =>
+      `<div style="display:flex; gap:6px; align-items:center; font-size:12px;">
+        <span class="badge badge-teal" style="font-size:10px; padding:1px 6px;">${dim}</span>
+        <span>=</span>
+        <strong>${val}</strong>
+      </div>`
+    ).join('');
+    const appliesLabel = (s.appliesTo || []).map(c => `<code>${displayConcept(c)}</code>`).join(', ');
+
+    return `
+      <div style="padding:8px 12px; border:1px solid var(--cdisc-border); border-radius:var(--radius); margin-bottom:6px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+          <span style="font-weight:600; font-size:12px;">"${s.name}"</span>
+          <span style="font-size:10px; color:var(--cdisc-text-secondary);">applies to ${appliesLabel}</span>
+          ${sourceBadge(s.source)}
+        </div>
+        ${fixedEntries}
+      </div>`;
+  }).join('');
+
+  return `
+    <div style="border:1px solid var(--cdisc-border); border-radius:var(--radius); overflow:hidden; margin-top:16px;">
+      <div style="padding:8px 14px; background:var(--cdisc-background); border-bottom:1px solid var(--cdisc-border);">
+        <span style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-text-secondary);">Data Structure Definition</span>
+        <span style="font-size:10px; color:var(--cdisc-text-secondary); margin-left:8px;">(W3C QB)</span>
+      </div>
+      <div style="padding:14px;">
+        <div style="font-weight:600; font-size:11px; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Measures</div>
+        <table style="width:100%; border-collapse:collapse; margin-bottom:12px;">
+          <tbody>${measureRows}</tbody>
+        </table>
+
+        <div style="font-weight:600; font-size:11px; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Dimensions</div>
+        <table style="width:100%; border-collapse:collapse; margin-bottom:12px;">
+          <tbody>${dimRows}</tbody>
+        </table>
+
+        ${sliceKeys?.length > 0 ? `
+        <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:8px;">
+          Slice keys: ${sliceKeys.map(sk => `<span class="badge badge-secondary" style="font-size:10px;">${sk.dimensions.join(', ')}</span>`).join(' ')}
+        </div>
+        ` : ''}
+
+        ${slices.length > 0 ? `
+        <div style="font-weight:600; font-size:11px; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Slices</div>
+        ${sliceCards}
+        ` : ''}
+      </div>
+    </div>`;
+}
 
 /**
  * Compute the delta between template input bindings and user-customized bindings.
@@ -248,19 +431,20 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
       intercurrentEvents: null
     };
 
-    // Variable description
-    const derivation = spec.selectedDerivationOid
-      ? derivations.find(d => d.oid === spec.selectedDerivationOid) : null;
-    const paramValue = spec.parameterValue || null;
-    if (derivation && paramValue) {
-      estimand.variable = `${derivation.name} of ${paramValue}`;
-    } else if (derivation) {
-      estimand.variable = derivation.name;
-    } else if (paramValue) {
-      estimand.variable = paramValue;
+    // Variable description — use formalized endpoint from Step 3
+    const syntax = buildSyntaxTemplatePlainText(ep, spec, study);
+    if (syntax) {
+      estimand.variable = syntax.charAt(0).toUpperCase() + syntax.slice(1);
+    } else {
+      const paramValue = spec.parameterValue || dimValues.Parameter || null;
+      if (paramValue) estimand.variable = paramValue;
     }
-    const visitVal = dimValues.AnalysisVisit || dimValues.Timing || null;
-    if (estimand.variable && visitVal) estimand.variable += ` at ${visitVal}`;
+
+    // W3C QB-aligned merged data structure
+    const analysisTransform = spec.selectedTransformationOid
+      ? (lib?.analysisTransformations || []).find(t => t.oid === spec.selectedTransformationOid)
+      : null;
+    const mergedDSD = buildMergedDataStructure(spec, analysisTransform);
 
     return {
       id: ep.id,
@@ -268,6 +452,12 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
       level: ep.level,
       originalText: ep.text || '',
       targetDataset: spec.targetDataset || null,
+      dataStructureDefinition: {
+        measures: mergedDSD.measures,
+        dimensions: mergedDSD.dimensions,
+        ...(mergedDSD.sliceKeys?.length > 0 ? { sliceKeys: mergedDSD.sliceKeys } : {})
+      },
+      slices: mergedDSD.slices,
       estimand,
       derivationPipeline: pipeline,
       analyses: analysisSpecs

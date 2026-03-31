@@ -9,6 +9,7 @@ import {
   SKIP_IN_DIM_GRID, SUMMARY_MEASURE_PHRASES, getDerivationTransformationByOid,
   buildEstimandFrameworkHtml
 } from './endpoint-spec.js';
+import { buildMergedDataStructure, renderMergedDSD } from '../utils/instance-serializer.js';
 import {
   renderFormulaExpression, renderInteractiveBindings, renderInteractiveBindingsByRole,
   generateInteractionPairings,
@@ -314,12 +315,11 @@ export async function renderEndpointHow(container) {
           <div class="ep-carry-forward">
             <div class="ep-carry-forward-label">Endpoint Definition (from Step 3)</div>
             <div style="margin-bottom:4px;">${originalText}</div>
+            ${syntax ? `<div style="margin-top:8px; font-size:13px; line-height:1.6;">${syntax.resolved}</div>` : `
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
               <span class="badge badge-teal">${spec.conceptCategory}</span>
-              ${derivation ? `<span class="badge badge-secondary">${derivation.name}</span>` : ''}
               ${paramValue ? `<span style="font-size:12px; color:var(--cdisc-text-secondary);">Parameter: <strong>${paramValue}</strong></span>` : ''}
-            </div>
-            ${syntax ? `<div style="margin-top:8px; font-size:12px; color:var(--cdisc-text-secondary);">${syntax.resolved}</div>` : ''}
+            </div>`}
           </div>
 
           ${analyses.length > 0 ? `
@@ -335,6 +335,16 @@ export async function renderEndpointHow(container) {
             Select analysis templates from the library panel on the right.
           </div>
           `}
+
+          <!-- Merged Data Structure (W3C QB) -->
+          ${(() => {
+            const primaryAnalysis = analyses[0];
+            const analysisT = primaryAnalysis
+              ? (appState.transformationLibrary?.analysisTransformations || []).find(t => t.oid === primaryAnalysis.transformationOid)
+              : null;
+            const mergedDSD = buildMergedDataStructure(spec, analysisT);
+            return renderMergedDSD(mergedDSD);
+          })()}
 
           <!-- Endpoint & Estimand Descriptions -->
           <div style="margin-top:16px; border-top:2px solid var(--cdisc-border); padding-top:12px;">

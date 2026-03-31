@@ -221,3 +221,304 @@
   border-radius: 3px;
   font-size: 11px;
 }
+
+/* ===== 3-Zone Pipeline Layout ===== */
+.pipeline-3zone {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pipeline-split-lower {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  align-items: start;
+}
+
+.pipeline-config-zone {
+  min-height: 120px;
+}
+
+/* ===== Dependency Tree ===== */
+.pipeline-tree {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 12px 8px;
+  min-width: min-content;
+}
+
+.pipeline-tree-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pipeline-tree-children {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  padding-top: 24px;
+}
+
+/* Horizontal rail across siblings */
+.pipeline-tree-children::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  height: 2px;
+  background: var(--cdisc-border);
+  pointer-events: none;
+}
+
+/* For 2+ children, rail spans from first to last center */
+.pipeline-tree-children:has(.pipeline-tree-branch:nth-child(2))::before {
+  left: 0;
+  right: 0;
+}
+
+/* Single child: no horizontal rail needed, just vertical line */
+.pipeline-tree-children:not(:has(.pipeline-tree-branch:nth-child(2)))::before {
+  display: none;
+}
+
+.pipeline-tree-branch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 12px;
+  position: relative;
+}
+
+/* Vertical connector from top of branch down to the node */
+.pipeline-tree-branch::before {
+  content: '';
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  width: 2px;
+  height: 24px;
+  background: var(--cdisc-border);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* Horizontal connector: extends left/right to meet the rail */
+.pipeline-tree-branch::after {
+  content: '';
+  position: absolute;
+  top: -24px;
+  height: 2px;
+  background: var(--cdisc-border);
+  pointer-events: none;
+}
+
+/* First child extends from center to right edge */
+.pipeline-tree-branch:first-child:not(:only-child)::after {
+  left: 50%;
+  right: 0;
+}
+
+/* Last child extends from left edge to center */
+.pipeline-tree-branch:last-child:not(:only-child)::after {
+  left: 0;
+  right: 50%;
+}
+
+/* Middle children span full width */
+.pipeline-tree-branch:not(:first-child):not(:last-child)::after {
+  left: 0;
+  right: 0;
+}
+
+/* Only child — just vertical line, no horizontal */
+.pipeline-tree-branch:only-child::after {
+  display: none;
+}
+
+/* Vertical connector from root down to children */
+.pipeline-tree-root > .pipeline-tree-children::after {
+  content: '';
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  width: 2px;
+  height: 24px;
+  background: var(--cdisc-border);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* Vertical line below any node that has children */
+.pipeline-tree-connector-down {
+  width: 2px;
+  height: 24px;
+  background: var(--cdisc-border);
+  flex-shrink: 0;
+}
+
+/* ===== Tree Node Styling ===== */
+.pipeline-tree-node {
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  min-width: 140px;
+  max-width: 200px;
+}
+
+.pipeline-tree-node:hover {
+  box-shadow: 0 0 0 2px rgba(19, 70, 120, 0.15);
+}
+
+/* Active/highlighted node in tree */
+.pipeline-node-highlight {
+  box-shadow: 0 0 0 3px rgba(19, 70, 120, 0.3) !important;
+  border-color: var(--cdisc-primary) !important;
+}
+
+/* ===== Config Panel Sections ===== */
+.config-panel-section {
+  margin-bottom: 16px;
+}
+
+.config-panel-section-title {
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--cdisc-text-secondary);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--cdisc-border);
+}
+
+/* Library panel derivation cards in pipeline context */
+.pipeline-lib-card {
+  padding: 10px 12px;
+  border: 1px solid var(--cdisc-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  background: var(--cdisc-surface);
+  transition: border-color 0.15s;
+  margin-bottom: 6px;
+}
+
+.pipeline-lib-card:hover {
+  border-color: var(--cdisc-primary);
+}
+
+.pipeline-lib-card.selected {
+  border-color: var(--cdisc-success);
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.pipeline-lib-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cdisc-text);
+  margin-bottom: 3px;
+}
+
+.pipeline-lib-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.pipeline-lib-card-desc {
+  font-size: 11px;
+  color: var(--cdisc-text-secondary);
+  line-height: 1.4;
+}
+
+.pipeline-lib-card-inputs {
+  font-size: 11px;
+  color: var(--cdisc-text-secondary);
+  margin-top: 4px;
+}
+
+.pipeline-lib-card-inputs code {
+  background: var(--cdisc-background);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.pipeline-lib-card-source {
+  padding: 10px 12px;
+  border: 1px dashed var(--cdisc-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  background: var(--cdisc-surface);
+  transition: border-color 0.15s;
+  margin-bottom: 6px;
+  opacity: 0.85;
+}
+
+.pipeline-lib-card-source:hover {
+  border-color: var(--cdisc-primary);
+  opacity: 1;
+}
+
+/* ===== Dimension nodes in tree ===== */
+.pipeline-node.dimension {
+  border-color: var(--cdisc-accent2);
+  border-style: dashed;
+  background: rgba(161, 208, 202, 0.06);
+  min-width: 100px;
+  max-width: 140px;
+  padding: 6px 10px;
+}
+
+.pipeline-node.dimension .pipeline-node-title {
+  font-size: 11px;
+}
+
+.pipeline-node.dimension .pipeline-node-sub {
+  font-size: 10px;
+}
+
+.pipeline-node.dimension.confirmed {
+  border-style: solid;
+  border-color: var(--cdisc-accent2);
+}
+
+/* ===== BC picker in terminal config ===== */
+.terminal-bc-list {
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid var(--cdisc-border);
+  border-radius: var(--radius);
+  padding: 8px;
+  margin-top: 8px;
+}
+
+.terminal-bc-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  font-size: 12px;
+  color: var(--cdisc-text);
+}
+
+.terminal-bc-item input[type="checkbox"] {
+  flex-shrink: 0;
+}
+
+.terminal-bc-group-header {
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--cdisc-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--cdisc-border);
+}
+
+.terminal-bc-group-header:first-child {
+  margin-top: 0;
+}

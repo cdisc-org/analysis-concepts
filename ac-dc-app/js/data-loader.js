@@ -34,6 +34,7 @@ export async function loadAllData(state) {
     qualifierTypes,
     ocModel,
     ocBcMapping,
+    bcOcInstanceMapping,
     methodImplementationCatalog,
     esapSchema
   ] = await Promise.all([
@@ -48,6 +49,7 @@ export async function loadAllData(state) {
     fetchJSON('model/concept/CDDM_Shared_QualifierTypes.json'),
     fetchJSON('model/concept/OC_Instance_Model_v016.json'),
     fetchJSON('model/shared/oc_bc_property_mapping.json'),
+    fetchJSON('model/shared/bc_to_oc_instance_mapping.json'),
     fetchJSON('model/method/method_implementation_catalog.schema.json'),
     fetchJSON('model/study/study_esap.schema.json')
   ]);
@@ -78,6 +80,7 @@ export async function loadAllData(state) {
   state.qualifierTypes = qualifierTypes;
   state.ocModel = ocModel;
   state.ocBcMapping = ocBcMapping;
+  state.bcOcInstanceMapping = bcOcInstanceMapping;
   state.methodImplementationCatalog = methodImplementationCatalog;
   state.esapSchema = esapSchema;
 }

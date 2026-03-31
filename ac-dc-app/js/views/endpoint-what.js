@@ -1,12 +1,9 @@
 import { appState, navigateTo } from '../app.js';
-import { getAllEndpoints, getBiomedicalConcepts, getVisitLabels, getPopulationNames, getArmNames, getEndpointParameterOptions } from '../utils/usdm-parser.js';
+import { getAllEndpoints } from '../utils/usdm-parser.js';
 import {
-  ensureSpec, getConceptCategoryOptions, classifyBcProperties,
-  getMatchingDerivationTransformations, getDerivationTransformationByOid,
-  getDerivationEndpointPhrase, getSpecParameterValue,
-  renderParameterPicker, renderOcFacetCards, renderDerivationConfigPanel,
-  buildSyntaxTemplate, updateSyntaxPreview, DATA_TYPES, PLACEHOLDER_DIM_MAP,
-  OBSERVATION_DIMENSIONS, getDimensionOptions
+  ensureSpec, getConceptCategoryOptions,
+  buildSyntaxTemplate, updateSyntaxPreview,
+  DATA_TYPES, renderDataCube
 } from './endpoint-spec.js';
 
 export function renderEndpointWhat(container) {
@@ -27,78 +24,18 @@ export function renderEndpointWhat(container) {
 
   const conceptOptions = getConceptCategoryOptions();
   const hasAnySpec = selectedEps.some(ep => appState.endpointSpecs[ep.id]?.conceptCategory);
+  const dcModel = appState.dcModel;
 
-  // Set initial active endpoint if not set
   if (!appState.activeEndpointId && selectedEps.length > 0) {
     appState.activeEndpointId = selectedEps[0].id;
   }
 
-  // Build left content (endpoint accordions)
-  const endpointCards = selectedEps.map((ep, i) => {
+  const endpointCards = selectedEps.map((ep) => {
     const isActive = ep.id === appState.activeEndpointId;
     const spec = appState.endpointSpecs[ep.id] || {};
-    const isObservation = spec.conceptCategory === 'Observation';
-
-    // Get BCs for this endpoint
-    const bcs = getBiomedicalConcepts(study, ep.id);
-    const allBCs = study.biomedicalConcepts || [];
-    const hasBCs = bcs.length > 0 || allBCs.length > 0;
-    const paramSource = spec.parameterSource || 'bc';
-
-    // Derivation handling
-    const matchingDerivations = isObservation ? [] : getMatchingDerivationTransformations(spec.conceptCategory);
-
-    // Auto-select single derivation
-    if (matchingDerivations.length === 1 && !spec.selectedDerivationOid && spec.conceptCategory) {
-      ensureSpec(ep.id);
-      appState.endpointSpecs[ep.id].selectedDerivationOid = matchingDerivations[0].oid;
-    }
-
-    const selectedDerivation = spec.selectedDerivationOid
-      ? getDerivationTransformationByOid(spec.selectedDerivationOid)
-      : null;
-
-    // Build "What" preview
-    const derivPhrase = getDerivationEndpointPhrase(selectedDerivation);
-    const paramValue = getSpecParameterValue(ep.id, spec, study);
-    let whatPreview = null;
-    if (derivPhrase) {
-      let whatTpl = derivPhrase.phrase_template;
-      if (whatTpl.includes('{parameter}')) {
-        whatTpl = paramValue
-          ? whatTpl.replace('{parameter}', `<strong>${paramValue}</strong>`)
-          : whatTpl.replace('{parameter}', '<span class="placeholder">{parameter}</span>');
-      }
-      // Resolve other config placeholders
-      for (const [key, val] of Object.entries(spec.derivationConfigValues || {})) {
-        const ph = `{${key}}`;
-        if (whatTpl.includes(ph)) {
-          whatTpl = val ? whatTpl.replace(ph, `<strong>${val}</strong>`) : whatTpl;
-        }
-      }
-      whatPreview = whatTpl;
-    }
-
-    // OC facets for observation
-    const linkedBcs = getBiomedicalConcepts(study, ep.id);
-    const primaryBc = (spec.linkedBCIds?.length > 0)
-      ? (study.biomedicalConcepts || []).find(bc => spec.linkedBCIds.includes(bc.id))
-      : linkedBcs[0] || null;
-    const classifiedProps = (isObservation && primaryBc) ? classifyBcProperties(primaryBc) : [];
-
-    // Auto-select Result.Value facet
-    if (isObservation && classifiedProps.length > 0 && !spec.selectedOcFacet) {
-      if (classifiedProps.some(p => p.ocFacet === 'Result.Value')) {
-        ensureSpec(ep.id);
-        appState.endpointSpecs[ep.id].selectedOcFacet = 'Result.Value';
-      }
-    }
-
-    const syntax = buildSyntaxTemplate(ep, spec, study);
+    let syntax = null;
+    try { syntax = buildSyntaxTemplate(ep, spec, study); } catch (e) { console.warn('Syntax template error:', e); }
     const originalText = ep.text || ep.description || ep.name;
-
-    // DC model hover descriptions for concept categories
-    const dcModel = appState.dcModel;
 
     return `
       <div class="ep-accordion-item ${isActive ? 'open' : ''}" data-ep-id="${ep.id}">
@@ -122,11 +59,10 @@ export function renderEndpointWhat(container) {
               <select class="config-select ep-concept-category" data-ep-id="${ep.id}">
                 <option value="">-- Select --</option>
                 ${conceptOptions.map(opt => {
-                  // Get hover description from DC model
                   const bare = opt.value.startsWith('C.') ? opt.value.slice(2) : opt.value;
                   let title = '';
                   if (dcModel?.categories) {
-                    for (const [catName, cat] of Object.entries(dcModel.categories)) {
+                    for (const [, cat] of Object.entries(dcModel.categories)) {
                       if (cat.concepts?.[bare]?.definition) {
                         title = cat.concepts[bare].definition;
                         break;
@@ -149,111 +85,24 @@ export function renderEndpointWhat(container) {
           </div>
 
           ${spec.conceptCategory ? `
-          ${isObservation ? `
-            <!-- Observation Path -->
-            ${renderParameterPicker(ep, spec, bcs, allBCs, hasBCs, paramSource)}
-            ${primaryBc && classifiedProps.length > 0 ? renderOcFacetCards(classifiedProps, spec, ep.id) : `
-              <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius); font-size:11px; color:var(--cdisc-text-secondary);">
-                Link a Biomedical Concept above to see its observation structure.
-              </div>
-            `}
-            <!-- Observation Dimensions -->
-            <div style="margin-top:12px; margin-bottom:12px;">
-              <div style="font-weight:600; font-size:12px; margin-bottom:4px; color:var(--cdisc-text-secondary);">
-                Dimensional Context
-              </div>
-              <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:8px;">
-                Specify which visits and populations this observation applies to.
-              </div>
-              <div class="ep-dim-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px;">
-                ${Object.entries(OBSERVATION_DIMENSIONS).map(([dim, info]) => {
-                  const options = getDimensionOptions(dim, study);
-                  const currentVal = (spec.dimensionValues || {})[dim] || '';
-                  const isMulti = info.cardinality === '0..*';
-                  return `
-                    <div class="config-field">
-                      <label class="config-label" style="display:flex; align-items:center; gap:6px;">
-                        <span class="badge badge-teal" style="font-size:10px; padding:1px 6px;">${dim}</span>
-                        <span style="font-size:10px; color:var(--cdisc-text-secondary);">${info.role}${isMulti ? ' (multi)' : ''}</span>
-                      </label>
-                      ${options && options.length > 0 ? `
-                        <select class="config-select ep-obs-dim-value" data-ep-id="${ep.id}" data-dim="${dim}">
-                          <option value="">-- Select --</option>
-                          ${isMulti ? '<option value="__ALL__"' + (currentVal === '__ALL__' ? ' selected' : '') + '>All visits</option>' : ''}
-                          ${options.map(opt => {
-                            const v = typeof opt === 'object' ? opt.value : opt;
-                            const l = typeof opt === 'object' ? opt.label : opt;
-                            const tip = typeof opt === 'object' && opt.label !== opt.value ? ` title="${l}"` : '';
-                            return `<option value="${v}"${tip} ${v === currentVal ? 'selected' : ''}>${v}</option>`;
-                          }).join('')}
-                        </select>
-                      ` : `
-                        <input class="config-input ep-obs-dim-value" data-ep-id="${ep.id}" data-dim="${dim}" value="${currentVal}" placeholder="Enter ${dim.toLowerCase()} value">
-                      `}
-                    </div>`;
-                }).join('')}
-              </div>
-            </div>
-          ` : `
-            <!-- Derived Concept Path -->
-            ${matchingDerivations.length > 0 && selectedDerivation ? `
-              <!-- Derivation selected — show config panel -->
-              ${renderDerivationConfigPanel(selectedDerivation, spec, study, ep)}
-            ` : matchingDerivations.length === 0 ? `
-              <!-- No derivation — source data endpoint -->
-              <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius); font-size:11px; color:var(--cdisc-text-secondary);">
-                No endpoint-level derivation for <strong>${spec.conceptCategory}</strong> — source data endpoint.
-              </div>
-              ${renderParameterPicker(ep, spec, bcs, allBCs, hasBCs, paramSource)}
-            ` : `
-              <!-- Derivations available but none selected -->
-              <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius); font-size:11px; color:var(--cdisc-text-secondary);">
-                Select a derivation template from the library panel on the right.
-              </div>
-            `}
-          `}
-
-          ${whatPreview ? `
-          <div style="margin-top:8px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius); font-size:12px; line-height:1.6;">
-            <span style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px;">What: </span>
-            ${whatPreview}
-          </div>
-          ` : ''}
-
+          <!-- Syntax Template + Preview -->
           ${syntax ? `
-          <div id="syntax-preview-${ep.id}" style="margin-top:12px;">
+          <div id="syntax-preview-${ep.id}" style="margin-bottom:16px;">
             <div class="ep-syntax-template">${syntax.template}</div>
             <div class="ep-syntax-resolved">${syntax.resolved}</div>
           </div>
           ` : ''}
+
+          <!-- Data Cube -->
+          ${(() => { try { return renderDataCube(ep, spec, study); } catch(e) { console.error('renderDataCube error:', e); return `<div style="color:var(--cdisc-error); padding:8px; font-size:12px;">Error rendering data cube: ${e.message}</div>`; } })()}
           ` : ''}
         </div>
       </div>`;
   }).join('');
 
-  // Build right panel (derivation library)
+  // Smart phrase panel
   const activeSpec = appState.endpointSpecs[appState.activeEndpointId] || {};
-  const isActiveObservation = activeSpec.conceptCategory === 'Observation';
-  const activeDerivations = isActiveObservation ? [] : getMatchingDerivationTransformations(activeSpec.conceptCategory);
-
-  const libraryContent = !activeSpec.conceptCategory
-    ? '<div class="ep-library-panel-empty">Select a concept category first</div>'
-    : isActiveObservation
-      ? '<div class="ep-library-panel-empty">Observation concepts use direct measurement — no derivation templates</div>'
-      : activeDerivations.length === 0
-        ? `<div class="ep-library-panel-empty">No derivation templates for ${activeSpec.conceptCategory}</div>`
-        : activeDerivations.map(d => {
-            const isSelected = activeSpec.selectedDerivationOid === d.oid;
-            return `
-              <div class="ep-library-card ${isSelected ? 'selected' : ''}" data-derivation-oid="${d.oid}" data-ep-id="${appState.activeEndpointId}">
-                <div class="ep-library-card-name">${d.name}</div>
-                <div class="ep-library-card-meta">
-                  ${d.usesMethod ? `<span class="badge badge-secondary" style="font-size:10px;">${d.usesMethod}</span>` : ''}
-                  <span style="font-size:11px; color:var(--cdisc-text-secondary);">outputs: <code>${(d.bindings || []).find(b => b.direction === 'output')?.concept || d.outputConcept}</code></span>
-                </div>
-                ${d.description ? `<div class="ep-library-card-desc">${d.description.length > 100 ? d.description.slice(0, 100) + '...' : d.description}</div>` : ''}
-              </div>`;
-          }).join('');
+  const smartPhrasePanel = renderSmartPhrasePanel(activeSpec);
 
   container.innerHTML = `
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
@@ -275,12 +124,7 @@ export function renderEndpointWhat(container) {
       <div class="ep-main-content">
         ${endpointCards}
       </div>
-      <div class="ep-library-panel" id="derivation-library-panel">
-        <div class="ep-library-panel-title">Derivation Templates</div>
-        <div id="library-cards">
-          ${libraryContent}
-        </div>
-      </div>
+      ${smartPhrasePanel}
     </div>
 
     <style>
@@ -311,57 +155,96 @@ export function renderEndpointWhat(container) {
         border-radius: 3px;
       }
       .ep-syntax-resolved strong { color: var(--cdisc-primary); }
-      .ep-composed-phrase {
-        font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-        font-size: 12px;
-        background: var(--cdisc-primary-light);
-        padding: 10px 14px;
-        border-radius: var(--radius);
-        line-height: 1.6;
-        border-left: 3px solid var(--cdisc-primary);
-        margin-bottom: 12px;
-      }
-      .ep-composed-phrase .placeholder {
-        color: var(--cdisc-text-secondary);
-        font-style: italic;
-        background: var(--cdisc-background);
-        padding: 1px 6px;
-        border-radius: 3px;
-      }
-      .ep-composed-phrase strong { color: var(--cdisc-primary); }
-      .ep-placeholder-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 12px;
-        margin-bottom: 12px;
-      }
     </style>
   `;
 
-  // Wire event handlers
   wireEndpointWhatEvents(container, study, selectedEps);
 }
 
+/**
+ * Render the smart phrase panel for the active endpoint's concept.
+ */
+function renderSmartPhrasePanel(spec) {
+  const lib = appState.transformationLibrary;
+  const smartPhrases = lib?.smartPhrases || [];
+  const concept = spec.conceptCategory;
+
+  if (!concept) {
+    return `
+      <div class="ep-library-panel">
+        <div class="ep-library-panel-title">Smart Phrases</div>
+        <div class="ep-library-panel-empty">Select a concept category to see matching smart phrases.</div>
+      </div>`;
+  }
+
+  // Endpoint phrases — match by concept reference
+  const endpointPhrases = smartPhrases.filter(sp =>
+    sp.role === 'endpoint' && sp.references?.includes(concept)
+  );
+
+  // Dimension phrases
+  const dimPhrases = smartPhrases.filter(sp =>
+    sp.role && sp.role !== 'endpoint' && sp.references?.length === 1
+  );
+
+  const selectedEpPhrase = spec.selectedEndpointPhrase || (endpointPhrases[0]?.oid || null);
+  const selectedDimPhrases = new Set(spec.selectedDimPhrases || []);
+
+  return `
+    <div class="ep-library-panel">
+      <div class="ep-library-panel-title">Smart Phrases</div>
+
+      ${endpointPhrases.length > 0 ? `
+      <div style="font-size:11px; font-weight:600; color:var(--cdisc-text-secondary); margin-bottom:6px;">Endpoint Phrases</div>
+      ${endpointPhrases.map(sp => {
+        const isSelected = sp.oid === selectedEpPhrase;
+        return `
+          <label class="ep-library-card ${isSelected ? 'selected' : ''}" style="display:flex; align-items:flex-start; gap:8px; cursor:pointer;">
+            <input type="radio" name="ep-phrase" class="ep-phrase-radio" data-oid="${sp.oid}" ${isSelected ? 'checked' : ''} style="margin-top:3px;">
+            <div>
+              <div class="ep-library-card-name">${sp.name}</div>
+              <div class="ep-library-card-desc" style="font-style:italic;">${sp.phrase_template}</div>
+            </div>
+          </label>`;
+      }).join('')}
+      ` : `
+      <div class="ep-library-panel-empty">No endpoint phrases match ${concept}.</div>
+      `}
+
+      ${dimPhrases.length > 0 ? `
+      <div style="font-size:11px; font-weight:600; color:var(--cdisc-text-secondary); margin-top:12px; margin-bottom:6px; padding-top:8px; border-top:1px solid var(--cdisc-border);">Dimension Phrases</div>
+      ${dimPhrases.map(sp => {
+        const isChecked = selectedDimPhrases.has(sp.oid);
+        const dimRef = sp.references?.[0] || '';
+        return `
+          <label class="ep-library-card" style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; ${isChecked ? 'border-color:var(--cdisc-accent2); background:rgba(161,208,202,0.08);' : ''}">
+            <input type="checkbox" class="ep-dim-phrase-cb" data-oid="${sp.oid}" data-dim-ref="${dimRef}" ${isChecked ? 'checked' : ''} style="margin-top:3px;">
+            <div>
+              <div class="ep-library-card-name">${sp.name}</div>
+              <div class="ep-library-card-desc" style="font-style:italic;">${sp.phrase_template}</div>
+              <div style="font-size:10px; color:var(--cdisc-text-secondary);">${dimRef}</div>
+            </div>
+          </label>`;
+      }).join('')}
+      ` : ''}
+    </div>`;
+}
+
 function wireEndpointWhatEvents(container, study, selectedEps) {
-  // Accordion toggles — clicking header sets activeEndpointId and re-renders library
+  // Accordion toggles
   container.querySelectorAll('.ep-accordion-header').forEach(header => {
     header.addEventListener('click', () => {
       const epId = header.dataset.epId;
       const item = header.parentElement;
       const wasOpen = item.classList.contains('open');
-
-      // Close all
       container.querySelectorAll('.ep-accordion-item').forEach(el => el.classList.remove('open'));
-
       if (!wasOpen) {
         item.classList.add('open');
         appState.activeEndpointId = epId;
       } else {
         appState.activeEndpointId = null;
       }
-
-      // Update library panel
-      updateLibraryPanel(container);
+      renderEndpointWhat(container);
     });
   });
 
@@ -371,16 +254,15 @@ function wireEndpointWhatEvents(container, study, selectedEps) {
       const epId = select.dataset.epId;
       ensureSpec(epId);
       appState.endpointSpecs[epId].conceptCategory = select.value;
+      appState.endpointSpecs[epId].cubeDimensions = [];
+      appState.endpointSpecs[epId].cubeSlices = [];
+      appState.endpointSpecs[epId].selectedEndpointPhrase = null;
+      appState.endpointSpecs[epId].selectedDimPhrases = [];
       appState.endpointSpecs[epId].selectedDerivationOid = null;
       appState.endpointSpecs[epId].selectedTransformationOid = null;
       appState.endpointSpecs[epId].selectedAnalyses = [];
-      appState.endpointSpecs[epId].customInputBindings = null;
-      appState.endpointSpecs[epId].activeInteractions = [];
-      appState.endpointSpecs[epId].estimandSummaryPattern = null;
-      appState.endpointSpecs[epId].dimensionValues = {};
+      appState.endpointSpecs[epId].linkedBCIds = [];
       appState.endpointSpecs[epId].selectedOcFacet = null;
-      appState.endpointSpecs[epId].derivationConfigValues = {};
-      appState.endpointSpecs[epId].derivationDimensionValues = {};
       renderEndpointWhat(container);
     });
   });
@@ -394,142 +276,181 @@ function wireEndpointWhatEvents(container, study, selectedEps) {
     });
   });
 
-  // Parameter source radios
-  container.querySelectorAll('.ep-param-source').forEach(radio => {
-    radio.addEventListener('change', () => {
-      const epId = radio.dataset.epId;
+  // Add dimension to cube
+  container.querySelectorAll('.ep-cube-add-dim').forEach(select => {
+    select.addEventListener('change', () => {
+      const epId = select.dataset.epId;
+      const dim = select.value;
+      if (!dim) return;
       ensureSpec(epId);
-      appState.endpointSpecs[epId].parameterSource = radio.value;
+      const spec = appState.endpointSpecs[epId];
+      if (!spec.cubeDimensions) spec.cubeDimensions = [];
+      if (!spec.cubeDimensions.some(d => d.dimension === dim)) {
+        spec.cubeDimensions.push({ dimension: dim, sliceValue: '' });
+      }
       renderEndpointWhat(container);
     });
   });
 
-  // BC checkboxes
-  container.querySelectorAll('.ep-bc-checkbox').forEach(cb => {
+  // Remove dimension from cube
+  container.querySelectorAll('.ep-cube-remove-dim').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const epId = btn.dataset.epId;
+      const idx = parseInt(btn.dataset.idx, 10);
+      ensureSpec(epId);
+      const spec = appState.endpointSpecs[epId];
+      if (spec.cubeDimensions?.[idx]) {
+        spec.cubeDimensions.splice(idx, 1);
+      }
+      renderEndpointWhat(container);
+    });
+  });
+
+  // Toggle slice key on dimension tag click
+  container.querySelectorAll('.ep-cube-dim-tag').forEach(tag => {
+    tag.addEventListener('click', (e) => {
+      if (e.target.closest('.ep-cube-remove-dim')) return; // don't toggle when clicking remove
+      const epId = tag.dataset.epId;
+      const idx = parseInt(tag.dataset.idx, 10);
+      ensureSpec(epId);
+      const spec = appState.endpointSpecs[epId];
+      if (spec.cubeDimensions?.[idx]) {
+        spec.cubeDimensions[idx].isSliceKey = !spec.cubeDimensions[idx].isSliceKey;
+      }
+      renderEndpointWhat(container);
+    });
+  });
+
+  // Slice value change
+  container.querySelectorAll('.ep-cube-slice-value').forEach(el => {
+    const handler = () => {
+      const epId = el.dataset.epId;
+      const idx = parseInt(el.dataset.idx, 10);
+      ensureSpec(epId);
+      const spec = appState.endpointSpecs[epId];
+      if (spec.cubeDimensions?.[idx]) {
+        spec.cubeDimensions[idx].sliceValue = el.value;
+        // Sync to dimensionValues for syntax resolution
+        if (!spec.dimensionValues) spec.dimensionValues = {};
+        spec.dimensionValues[spec.cubeDimensions[idx].dimension] = el.value;
+      }
+      updateSyntaxPreview(container, epId, study);
+    };
+    el.addEventListener('change', handler);
+    el.addEventListener('input', handler);
+  });
+
+  // Observation: OC facet select
+  container.querySelectorAll('.ep-oc-facet-select').forEach(select => {
+    select.addEventListener('change', () => {
+      const epId = select.dataset.epId;
+      ensureSpec(epId);
+      appState.endpointSpecs[epId].selectedOcFacet = select.value;
+      appState.endpointSpecs[epId].linkedBCIds = []; // reset BCs when facet changes
+      renderEndpointWhat(container);
+    });
+  });
+
+  // Observation: BC checkboxes
+  container.querySelectorAll('.ep-obs-bc-checkbox').forEach(cb => {
     cb.addEventListener('change', () => {
       const epId = cb.dataset.epId;
       const bcId = cb.dataset.bcId;
       ensureSpec(epId);
       const spec = appState.endpointSpecs[epId];
+      if (!spec.linkedBCIds) spec.linkedBCIds = [];
       if (cb.checked) {
         if (!spec.linkedBCIds.includes(bcId)) spec.linkedBCIds.push(bcId);
       } else {
         spec.linkedBCIds = spec.linkedBCIds.filter(id => id !== bcId);
       }
-      updateSyntaxPreview(container, epId, study);
+      renderEndpointWhat(container);
     });
   });
 
-  // BC toggle all
-  container.querySelectorAll('.ep-bc-select-all').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const epId = btn.dataset.epId;
+  // BC parameter picker: toggle list visibility on input focus
+  container.querySelectorAll('.ep-cube-slice-value[list]').forEach(input => {
+    const listEl = input.parentElement?.querySelector('.ep-bc-param-list');
+    if (!listEl) return;
+    input.addEventListener('focus', () => { listEl.style.display = ''; });
+    input.addEventListener('blur', () => {
+      // Delay to allow click on item
+      setTimeout(() => { listEl.style.display = 'none'; }, 200);
+    });
+  });
+
+  // BC parameter picker: click item to select
+  container.querySelectorAll('.ep-bc-param-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const epId = item.dataset.epId;
+      const idx = parseInt(item.dataset.idx, 10);
+      const bcName = item.dataset.bcName;
+      const bcId = item.dataset.bcId;
       ensureSpec(epId);
       const spec = appState.endpointSpecs[epId];
-      const checkboxes = container.querySelectorAll(`.ep-bc-checkbox[data-ep-id="${epId}"]`);
-      const allChecked = [...checkboxes].every(cb => cb.checked);
-      checkboxes.forEach(cb => {
-        cb.checked = !allChecked;
-        const bcId = cb.dataset.bcId;
-        if (!allChecked) {
-          if (!spec.linkedBCIds.includes(bcId)) spec.linkedBCIds.push(bcId);
-        } else {
-          spec.linkedBCIds = spec.linkedBCIds.filter(id => id !== bcId);
-        }
-      });
-      updateSyntaxPreview(container, epId, study);
-    });
-  });
-
-  // Manual parameter name
-  container.querySelectorAll('.ep-param-name').forEach(input => {
-    input.addEventListener('input', () => {
-      const epId = input.dataset.epId;
-      ensureSpec(epId);
-      appState.endpointSpecs[epId].parameterName = input.value;
-      updateSyntaxPreview(container, epId, study);
-    });
-  });
-
-  // OC facet card click
-  container.querySelectorAll('.ep-oc-facet-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const epId = card.dataset.epId;
-      const facet = card.dataset.facet;
-      ensureSpec(epId);
-      appState.endpointSpecs[epId].selectedOcFacet = facet;
-      // Update highlights inline
-      const allCards = container.querySelectorAll(`.ep-oc-facet-card[data-ep-id="${epId}"]`);
-      allCards.forEach(c => {
-        const isSel = c.dataset.facet === facet;
-        c.style.borderColor = isSel ? 'var(--cdisc-primary)' : 'var(--cdisc-border)';
-        c.style.background = isSel ? 'var(--cdisc-primary-light)' : 'white';
-      });
-      updateSyntaxPreview(container, epId, study);
-    });
-  });
-
-  // Observation dimension inputs
-  container.querySelectorAll('.ep-obs-dim-value').forEach(el => {
-    const handler = () => {
-      const epId = el.dataset.epId;
-      const dim = el.dataset.dim;
-      ensureSpec(epId);
-      const val = el.value === '__ALL__' ? 'All visits' : el.value;
-      appState.endpointSpecs[epId].dimensionValues[dim] = val;
-      updateSyntaxPreview(container, epId, study);
-    };
-    el.addEventListener('change', handler);
-    el.addEventListener('input', handler);
-  });
-
-  // Derivation config placeholder inputs
-  container.querySelectorAll('.ep-deriv-config-value').forEach(el => {
-    const handler = () => {
-      const epId = el.dataset.epId;
-      const key = el.dataset.configKey;
-      ensureSpec(epId);
-      appState.endpointSpecs[epId].derivationConfigValues[key] = el.value;
-      const dimName = PLACEHOLDER_DIM_MAP[key];
-      if (dimName && el.value) {
-        appState.endpointSpecs[epId].dimensionValues[dimName] = el.value;
+      if (spec.cubeDimensions?.[idx]) {
+        spec.cubeDimensions[idx].sliceValue = bcName;
+        spec.cubeDimensions[idx].linkedBCId = bcId;
+        if (!spec.dimensionValues) spec.dimensionValues = {};
+        spec.dimensionValues[spec.cubeDimensions[idx].dimension] = bcName;
       }
-      updateSyntaxPreview(container, epId, study);
-    };
-    el.addEventListener('change', handler);
-    el.addEventListener('input', handler);
+      renderEndpointWhat(container);
+    });
   });
 
-  // Derivation dimension inputs
-  container.querySelectorAll('.ep-deriv-dim-value').forEach(el => {
-    const handler = () => {
-      const epId = el.dataset.epId;
-      const dim = el.dataset.dim;
+  // Smart phrase: endpoint phrase radio
+  container.querySelectorAll('.ep-phrase-radio').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const epId = appState.activeEndpointId;
+      if (!epId) return;
       ensureSpec(epId);
-      appState.endpointSpecs[epId].derivationDimensionValues[dim] = el.value;
-      appState.endpointSpecs[epId].dimensionValues[dim] = el.value;
-      updateSyntaxPreview(container, epId, study);
-    };
-    el.addEventListener('change', handler);
-    el.addEventListener('input', handler);
+      const spec = appState.endpointSpecs[epId];
+      spec.selectedEndpointPhrase = radio.dataset.oid;
+
+      // Auto-add dimensions implied by phrase placeholders (e.g., {parameter} → Parameter)
+      const lib = appState.transformationLibrary;
+      const sp = (lib?.smartPhrases || []).find(s => s.oid === radio.dataset.oid);
+      if (sp?.references) {
+        if (!spec.cubeDimensions) spec.cubeDimensions = [];
+        for (const ref of sp.references) {
+          // Skip the concept itself (e.g., C.Change) — only add dimension references
+          if (ref.startsWith('C.') || ref.startsWith('M.')) continue;
+          if (!spec.cubeDimensions.some(d => d.dimension === ref)) {
+            spec.cubeDimensions.push({ dimension: ref, sliceValue: '' });
+          }
+        }
+      }
+      renderEndpointWhat(container);
+    });
   });
 
-  // Library panel card clicks (derivation selection)
-  container.querySelectorAll('.ep-library-card[data-derivation-oid]').forEach(card => {
-    card.addEventListener('click', () => {
-      const epId = card.dataset.epId;
-      const oid = card.dataset.derivationOid;
+  // Smart phrase: dimension phrase checkbox
+  container.querySelectorAll('.ep-dim-phrase-cb').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const epId = appState.activeEndpointId;
+      if (!epId) return;
       ensureSpec(epId);
-      appState.endpointSpecs[epId].selectedDerivationOid = oid;
-      // Reset downstream
-      appState.endpointSpecs[epId].selectedTransformationOid = null;
-      appState.endpointSpecs[epId].selectedAnalyses = [];
-      appState.endpointSpecs[epId].customInputBindings = null;
-      appState.endpointSpecs[epId].activeInteractions = [];
-      appState.endpointSpecs[epId].estimandSummaryPattern = null;
-      appState.endpointSpecs[epId].dimensionValues = {};
-      appState.endpointSpecs[epId].derivationConfigValues = {};
-      appState.endpointSpecs[epId].derivationDimensionValues = {};
+      const spec = appState.endpointSpecs[epId];
+      if (!spec.selectedDimPhrases) spec.selectedDimPhrases = [];
+      const dimRef = cb.dataset.dimRef;
+
+      if (cb.checked) {
+        if (!spec.selectedDimPhrases.includes(cb.dataset.oid)) {
+          spec.selectedDimPhrases.push(cb.dataset.oid);
+        }
+        // Auto-add the dimension to cube if not already there
+        if (!spec.cubeDimensions) spec.cubeDimensions = [];
+        if (dimRef && !spec.cubeDimensions.some(d => d.dimension === dimRef)) {
+          spec.cubeDimensions.push({ dimension: dimRef, sliceValue: '' });
+        }
+      } else {
+        spec.selectedDimPhrases = spec.selectedDimPhrases.filter(id => id !== cb.dataset.oid);
+        // Remove the dimension from cube
+        if (dimRef && spec.cubeDimensions) {
+          spec.cubeDimensions = spec.cubeDimensions.filter(d => d.dimension !== dimRef);
+        }
+      }
       renderEndpointWhat(container);
     });
   });
@@ -541,50 +462,4 @@ function wireEndpointWhatEvents(container, study, selectedEps) {
       navigateTo(4);
     }
   });
-}
-
-function updateLibraryPanel(container) {
-  const activeSpec = appState.endpointSpecs[appState.activeEndpointId] || {};
-  const isObservation = activeSpec.conceptCategory === 'Observation';
-  const derivations = isObservation ? [] : getMatchingDerivationTransformations(activeSpec.conceptCategory);
-
-  const libraryCards = container.querySelector('#library-cards');
-  if (!libraryCards) return;
-
-  if (!activeSpec.conceptCategory) {
-    libraryCards.innerHTML = '<div class="ep-library-panel-empty">Select a concept category first</div>';
-  } else if (isObservation) {
-    libraryCards.innerHTML = '<div class="ep-library-panel-empty">Observation concepts use direct measurement — no derivation templates</div>';
-  } else if (derivations.length === 0) {
-    libraryCards.innerHTML = `<div class="ep-library-panel-empty">No derivation templates for ${activeSpec.conceptCategory}</div>`;
-  } else {
-    libraryCards.innerHTML = derivations.map(d => {
-      const isSelected = activeSpec.selectedDerivationOid === d.oid;
-      return `
-        <div class="ep-library-card ${isSelected ? 'selected' : ''}" data-derivation-oid="${d.oid}" data-ep-id="${appState.activeEndpointId}">
-          <div class="ep-library-card-name">${d.name}</div>
-          <div class="ep-library-card-meta">
-            ${d.usesMethod ? `<span class="badge badge-secondary" style="font-size:10px;">${d.usesMethod}</span>` : ''}
-            <span style="font-size:11px; color:var(--cdisc-text-secondary);">outputs: <code>${(d.bindings || []).find(b => b.direction === 'output')?.concept || d.outputConcept}</code></span>
-          </div>
-          ${d.description ? `<div class="ep-library-card-desc">${d.description.length > 100 ? d.description.slice(0, 100) + '...' : d.description}</div>` : ''}
-        </div>`;
-    }).join('');
-
-    // Re-wire library card clicks
-    libraryCards.querySelectorAll('.ep-library-card[data-derivation-oid]').forEach(card => {
-      card.addEventListener('click', () => {
-        const epId = card.dataset.epId;
-        const oid = card.dataset.derivationOid;
-        ensureSpec(epId);
-        appState.endpointSpecs[epId].selectedDerivationOid = oid;
-        appState.endpointSpecs[epId].selectedTransformationOid = null;
-        appState.endpointSpecs[epId].estimandSummaryPattern = null;
-        appState.endpointSpecs[epId].dimensionValues = {};
-        appState.endpointSpecs[epId].derivationConfigValues = {};
-        appState.endpointSpecs[epId].derivationDimensionValues = {};
-        renderEndpointWhat(container);
-      });
-    });
-  }
 }

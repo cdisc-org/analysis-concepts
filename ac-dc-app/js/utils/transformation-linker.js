@@ -182,22 +182,52 @@ export function buildPipelineGraph(transformation, library, selectedDerivations 
         const idx = seen.get(concept) || 0;
         seen.set(concept, idx + 1);
         const child = buildSlot(concept, selected.oid, idx);
-        if (child) children.push(child);
+        if (child) {
+          child.methodRole = b.methodRole || '';
+          child.slice = b.slice || '';
+          children.push(child);
+        }
       }
     }
 
-    return { key, concept, methodRole: '', candidates, selected, status, children };
+    return { key, concept, methodRole: '', slice: '', dataStructureRole: 'measure', candidates, selected, status, children };
   }
 
   const slots = [];
-  const bindings = getMeasureBindings(transformation);
+  // Include ALL input bindings (measures + dimensions) for the top-level transformation
+  const bindings = getInputBindingsArray(transformation);
 
   for (let i = 0; i < bindings.length; i++) {
     const b = bindings[i];
-    const slot = buildSlot(b.concept, transformation.oid, i);
-    if (slot) {
-      slot.methodRole = b.methodRole || '';
-      slots.push(slot);
+    const isDimension = b.dataStructureRole === 'dimension';
+
+    // Dimension slots are terminal by definition — they don't recurse into derivations
+    if (isDimension) {
+      const key = `${transformation.oid}/${b.concept}/${i}`;
+      if (!visited.has(key)) {
+        visited.add(key);
+        slots.push({
+          key,
+          concept: b.concept,
+          methodRole: b.methodRole || '',
+          slice: b.slice || '',
+          dataStructureRole: 'dimension',
+          candidates: [],
+          selected: null,
+          status: 'terminal',
+          children: [],
+          qualifierType: b.qualifierType || '',
+          qualifierValue: b.qualifierValue || ''
+        });
+      }
+    } else {
+      const slot = buildSlot(b.concept, transformation.oid, i);
+      if (slot) {
+        slot.methodRole = b.methodRole || '';
+        slot.slice = b.slice || '';
+        slot.dataStructureRole = b.dataStructureRole || 'measure';
+        slots.push(slot);
+      }
     }
   }
 

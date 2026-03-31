@@ -4,7 +4,7 @@ import {
   buildSyntaxTemplate, buildFormalizedDescription, buildEstimandDescription,
   getSpecParameterValue, getTransformationByOid, getDerivationTransformationByOid
 } from './endpoint-spec.js';
-import { buildResolvedSpecification } from '../utils/instance-serializer.js';
+import { buildResolvedSpecification, buildMergedDataStructure, renderMergedDSD } from '../utils/instance-serializer.js';
 import { buildSliceLookup, displayConcept } from '../utils/concept-display.js';
 import { getMethodConfigurations } from '../utils/transformation-linker.js';
 import { buildResolvedExpressionObject } from './transformation-config.js';
@@ -252,6 +252,12 @@ export function renderEndpointSummary(container) {
           </div>
           ` : ''}
         </div>
+
+        <!-- Merged Data Structure (W3C QB) -->
+          ${(() => {
+            const mergedDSD = buildMergedDataStructure(spec, transform);
+            return renderMergedDSD(mergedDSD);
+          })()}
 
         <!-- JSON Panel (hidden by default) -->
         <div class="ep-json-panel" data-ep-id="${ep.id}" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--cdisc-border);">

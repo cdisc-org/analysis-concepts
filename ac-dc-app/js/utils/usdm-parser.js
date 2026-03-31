@@ -247,3 +247,38 @@ export function getBiomedicalConcepts(parsedStudy, endpointId) {
     return true;
   });
 }
+
+/**
+ * Get the scheduled visits/timepoints where a BC is collected.
+ * Searches ALL timelines (main + sub-timelines like VS blood pressure timeline).
+ * Returns array of { timeline, timelineName, instance, instanceName }.
+ */
+export function getBCScheduledTimings(bcId, parsedStudy) {
+  const design = parsedStudy?.versions?.[0]?.studyDesigns?.[0]
+    || parsedStudy?.studyDesigns?.[0]
+    || {};
+  const activities = design.activities || [];
+  const timelines = design.scheduleTimelines || [];
+
+  // Find activity IDs that include this BC
+  const actIdsWithBC = new Set(
+    activities.filter(a => (a.biomedicalConceptIds || []).includes(bcId)).map(a => a.id)
+  );
+  if (actIdsWithBC.size === 0) return [];
+
+  const results = [];
+  for (const tl of timelines) {
+    for (const inst of (tl.instances || [])) {
+      if ((inst.activityIds || []).some(aid => actIdsWithBC.has(aid))) {
+        results.push({
+          timeline: tl.id,
+          timelineName: tl.name || tl.id,
+          isMainTimeline: !!tl.mainTimeline,
+          instance: inst.id,
+          instanceName: inst.name || inst.id
+        });
+      }
+    }
+  }
+  return results;
+}
