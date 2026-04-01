@@ -307,7 +307,7 @@ function patternToClass(patternId) {
  * actual bound concept names for role names and interaction patterns.
  *
  * @param {Array} methodDimensions - The method's dimensions array (role names and interaction patterns)
- * @param {Array} bindings - Current input bindings (customInputBindings)
+ * @param {Array} bindings - Current input bindings (resolvedBindings)
  * @param {Array} activeInteractions - Currently active interaction terms (concept:concept pairs)
  * @returns {Array} Resolved dimensions with actual concept/variable names
  */

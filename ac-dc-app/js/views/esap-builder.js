@@ -574,7 +574,7 @@ function renderStatAnalysisCard(ep, study, lib) {
     if (!transform) return '';
 
     const method = appState.methodsCache?.[transform.usesMethod] || null;
-    const customBindings = analysis.customInputBindings || [];
+    const customBindings = analysis.resolvedBindings || [];
     const outputSlots = getOutputMapping(transform, appState.acModel, method, customBindings, analysis.activeInteractions || []);
 
     // Temporarily set selectedTransformation so renderFormulaExpression can resolve named slices

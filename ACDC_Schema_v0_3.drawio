@@ -194,11 +194,11 @@
         <mxCell id="e14" edge="1" parent="1" source="n12" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="n7" value="dimension 1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="n13" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=8;fontStyle=1;spacing=0;" value="Implementation&#xa;Binding" vertex="1">
+        <mxCell id="n13" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=8;fontStyle=1;spacing=0;" value="Study&#xa;Binding" vertex="1">
           <mxGeometry height="70" width="70" x="1040" y="495" as="geometry" />
         </mxCell>
-        <mxCell id="n13p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="standard: string&#xa;dataset: string&#xa;variable: string&#xa;transformation: string" vertex="1">
-          <mxGeometry height="60" width="120" x="1130" y="430" as="geometry" />
+        <mxCell id="n13p" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;fontSize=9;align=left;spacingLeft=4;" value="concept: string&#xa;methodRole: string&#xa;direction: input | output&#xa;dataStructureRole: measure | dimension | attribute&#xa;slice?: string&#xa;qualifierType?: string&#xa;qualifierValue?: string" vertex="1">
+          <mxGeometry height="100" width="200" x="1130" y="400" as="geometry" />
         </mxCell>
         <mxCell id="n13c" edge="1" parent="1" source="n13" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" target="n13p">
           <mxGeometry relative="1" as="geometry" />
@@ -239,7 +239,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="e19" edge="1" parent="1" source="n14" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="n13" value="implementationBindings 1..*">
+        <mxCell id="e19" edge="1" parent="1" source="n14" style="endArrow=classic;html=1;strokeColor=#000000;fontSize=9;" target="n13" value="resolvedBindings 1..*">
           <mxGeometry relative="1" x="0.0435" y="15" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>

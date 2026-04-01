@@ -10,7 +10,14 @@ export function buildSliceLookup(transformation) {
     const lookup = {};
     for (const s of slices) {
       if (!lookup[s.name]) lookup[s.name] = { fixedDimensions: {} };
-      lookup[s.name].fixedDimensions[s.dimension] = s.constraint;
+      // New format: constraints[] array (W3C QB multi-dimension)
+      for (const c of (s.constraints || [])) {
+        lookup[s.name].fixedDimensions[c.dimension] = c.value;
+      }
+      // Backward compat: old single-dimension format
+      if (s.dimension && s.constraint) {
+        lookup[s.name].fixedDimensions[s.dimension] = s.constraint;
+      }
     }
     return lookup;
   }

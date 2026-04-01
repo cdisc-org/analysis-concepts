@@ -132,27 +132,53 @@
         "source": "esap",
         "conformance": "owned"
       },
-      "description": "Maps a study-level analysis or derivation step to its physical implementation in a standard dataset",
+      "description": "A study-level resolved binding — a copy of a transformation template Binding with study-specific modifications (added, removed, or changed bindings). Same shape as acdc_transformations.schema Binding.",
       "type": "object",
       "properties": {
-        "standard": {
+        "concept": {
           "type": "string",
-          "description": "Target standard (e.g. ADaM, SDTM)"
+          "description": "Concept OID or name being bound (e.g. C.Measure, C.Change, Subject, AnalysisVisit)"
         },
-        "dataset": {
+        "methodRole": {
           "type": "string",
-          "description": "Target dataset name"
+          "description": "The method input role this concept is bound to (e.g. response, covariate, fixed_effect)"
         },
-        "variable": {
+        "direction": {
           "type": "string",
-          "description": "Target variable name"
+          "enum": ["input", "output"],
+          "description": "Whether this binding supplies input to the method or captures its output"
         },
-        "transformation": {
+        "dataStructureRole": {
           "type": "string",
-          "description": "Transformation identifier used for this binding"
+          "enum": ["measure", "dimension", "attribute"],
+          "description": "The structural role: measure (value being computed), dimension (grouping/partitioning), or attribute (metadata)"
+        },
+        "slice": {
+          "type": "string",
+          "description": "Reference to a named slice that constrains this binding (e.g. 'baseline')"
+        },
+        "qualifierType": {
+          "type": "string",
+          "description": "Qualifier type from shared qualifier vocabulary"
+        },
+        "qualifierValue": {
+          "type": "string",
+          "description": "Value for the qualifier type"
+        },
+        "requiredValueType": {
+          "type": ["string", "null"],
+          "description": "Required FHIR/data type for the bound concept (e.g. Quantity, CodeableConcept)"
+        },
+        "note": {
+          "type": "string",
+          "description": "Implementation note for this binding"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of this binding's purpose"
         }
       },
-      "required": ["standard", "dataset", "variable"]
+      "required": ["concept", "methodRole", "direction", "dataStructureRole"]
     },
 
     "StudyConfigurationValue": {
@@ -263,11 +289,11 @@
           "items": { "$ref": "#/$defs/StudyConfigurationValue" },
           "description": "Resolved configuration parameter values for this step"
         },
-        "implementationBindings": {
+        "resolvedBindings": {
           "type": "array",
           "items": { "$ref": "#/$defs/StudyBinding" },
           "minItems": 1,
-          "description": "Mappings to physical dataset/variable implementations"
+          "description": "Study-level resolved bindings — copies of the transformation template bindings with study-specific modifications (added, removed, or changed bindings)"
         },
         "resolvedSlices": {
           "type": "array",
@@ -284,7 +310,7 @@
           "description": "The method formula resolved with study-level concept bindings and active interactions"
         }
       },
-      "required": ["sequence", "basedOn", "implementationBindings"]
+      "required": ["sequence", "basedOn", "resolvedBindings"]
     },
 
     "StudyDerivation": {

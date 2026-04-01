@@ -387,7 +387,7 @@
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "subtrahend",
-          "slice": "baseline"
+          "slice": "parameter_baseline"
         },
         {
           "concept": "C.Change",
@@ -416,9 +416,11 @@
       ],
       "slices": [
         {
-          "name": "baseline",
-          "dimension": "AnalysisVisit",
-          "constraint": "Baseline"
+          "name": "parameter_baseline",
+          "constraints": [
+            { "dimension": "Parameter", "value": "{parameter}" },
+            { "dimension": "AnalysisVisit", "value": "Baseline" }
+          ]
         }
       ],
       "methodConfigurations": []
@@ -452,7 +454,7 @@
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "post",
-          "slice": "baseline"
+          "slice": "parameter_baseline"
         },
         {
           "concept": "C.PercentChange",
@@ -481,9 +483,11 @@
       ],
       "slices": [
         {
-          "name": "baseline",
-          "dimension": "AnalysisVisit",
-          "constraint": "Baseline"
+          "name": "parameter_baseline",
+          "constraints": [
+            { "dimension": "Parameter", "value": "{parameter}" },
+            { "dimension": "AnalysisVisit", "value": "Baseline" }
+          ]
         }
       ],
       "methodConfigurations": []
@@ -516,7 +520,7 @@
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "post",
-          "slice": "baseline"
+          "slice": "parameter_baseline"
         },
         {
           "concept": "C.Shift",
@@ -545,9 +549,11 @@
       ],
       "slices": [
         {
-          "name": "baseline",
-          "dimension": "AnalysisVisit",
-          "constraint": "Baseline"
+          "name": "parameter_baseline",
+          "constraints": [
+            { "dimension": "Parameter", "value": "{parameter}" },
+            { "dimension": "AnalysisVisit", "value": "Baseline" }
+          ]
         }
       ],
       "methodConfigurations": []
@@ -1213,7 +1219,7 @@
           "description": "Baseline value of the endpoint parameter",
           "direction": "input",
           "dataStructureRole": "measure",
-          "slice": "baseline"
+          "slice": "parameter_baseline"
         },
         {
           "methodRole": "repeated_factor",
@@ -1261,9 +1267,11 @@
       ],
       "slices": [
         {
-          "name": "baseline",
-          "dimension": "AnalysisVisit",
-          "constraint": "Baseline"
+          "name": "parameter_baseline",
+          "constraints": [
+            { "dimension": "Parameter", "value": "{parameter}" },
+            { "dimension": "AnalysisVisit", "value": "Baseline" }
+          ]
         }
       ]
     },
@@ -1316,7 +1324,7 @@
           "description": "Baseline value of the endpoint parameter",
           "direction": "input",
           "dataStructureRole": "measure",
-          "slice": "baseline"
+          "slice": "parameter_baseline"
         },
         {
           "methodRole": "fixed_effect",
@@ -1362,9 +1370,11 @@
       ],
       "slices": [
         {
-          "name": "baseline",
-          "dimension": "AnalysisVisit",
-          "constraint": "Baseline"
+          "name": "parameter_baseline",
+          "constraints": [
+            { "dimension": "Parameter", "value": "{parameter}" },
+            { "dimension": "AnalysisVisit", "value": "Baseline" }
+          ]
         }
       ]
     },

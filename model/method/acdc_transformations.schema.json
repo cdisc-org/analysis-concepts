@@ -163,20 +163,31 @@
     },
     "Slice": {
       "type": "object",
-      "description": "A named dimensional constraint that fixes a dimension to a specific value or range.",
-      "required": ["name", "dimension", "constraint"],
+      "description": "A named cross-section of the data cube that fixes one or more dimensions to specific values (W3C QB SliceKey pattern). Bindings reference slices by name.",
+      "required": ["name", "constraints"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "Slice identifier, referenced by bindings (e.g. 'baseline')."
+          "description": "Slice identifier, referenced by bindings (e.g. 'parameter_baseline')."
         },
-        "dimension": {
-          "type": "string",
-          "description": "The dimension being constrained (e.g. AnalysisVisit)."
-        },
-        "constraint": {
-          "type": "string",
-          "description": "The constraint value or expression (e.g. 'Baseline', 'Week 12')."
+        "constraints": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["dimension", "value"],
+            "properties": {
+              "dimension": {
+                "type": "string",
+                "description": "The dimension being constrained (e.g. AnalysisVisit, Parameter)."
+              },
+              "value": {
+                "type": "string",
+                "description": "The constraint value — may be a literal (e.g. 'Baseline') or a {placeholder} for study-level resolution (e.g. '{parameter}')."
+              }
+            }
+          },
+          "description": "Dimension constraints that define this slice."
         },
         "description": {
           "type": "string",

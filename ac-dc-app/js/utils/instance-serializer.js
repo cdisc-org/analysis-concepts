@@ -64,9 +64,9 @@ export function buildMergedDataStructure(spec, analysisTransform) {
     }
   }
 
-  // 4. Analysis contributions — use customInputBindings (user's actual config) if available
+  // 4. Analysis contributions — use resolvedBindings (user's actual config) if available
   const analyses = spec?.selectedAnalyses || [];
-  const analysisBindings = analyses[0]?.customInputBindings || analysisTransform?.bindings || [];
+  const analysisBindings = analyses[0]?.resolvedBindings || analysisTransform?.bindings || [];
   if (analysisTransform || analysisBindings.length > 0) {
     for (const b of analysisBindings) {
       if (b.direction === 'output') continue;
@@ -93,16 +93,37 @@ export function buildMergedDataStructure(spec, analysisTransform) {
       }
     }
 
-    // Analysis-defined slices
+    // Analysis-defined slices (W3C QB multi-dimension)
     for (const s of (analysisTransform.slices || [])) {
       const measureBinding = (analysisTransform.bindings || [])
         .find(b => b.slice === s.name && b.dataStructureRole === 'measure');
+      const fixedDimensions = {};
+      // New format: constraints[] array
+      for (const c of (s.constraints || [])) {
+        fixedDimensions[c.dimension] = c.value;
+      }
+      // Backward compat: old single-dimension format
+      if (s.dimension && s.constraint) {
+        fixedDimensions[s.dimension] = s.constraint;
+      }
       slices.push({
         name: s.name,
         appliesTo: measureBinding ? [measureBinding.concept] : [],
-        fixedDimensions: { [s.dimension]: s.constraint },
+        fixedDimensions,
         source: 'analysis'
       });
+    }
+  }
+
+  // Resolve {placeholder} tokens in slice values using endpoint dimension values
+  const dimValues = spec?.dimensionValues || {};
+  for (const slice of slices) {
+    for (const [dim, val] of Object.entries(slice.fixedDimensions)) {
+      if (typeof val === 'string' && val.startsWith('{') && val.endsWith('}')) {
+        const key = val.slice(1, -1);
+        const dimKey = key.charAt(0).toUpperCase() + key.slice(1);
+        if (dimValues[dimKey]) slice.fixedDimensions[dim] = dimValues[dimKey];
+      }
     }
   }
 
@@ -308,7 +329,7 @@ export function serializeStudyInstance(appState) {
     const templateBindings = allBindings.filter(b => b.direction !== 'output');
 
     // Compute binding delta
-    const bindingEdits = computeBindingEdits(templateBindings, analysis.customInputBindings);
+    const bindingEdits = computeBindingEdits(templateBindings, analysis.resolvedBindings);
 
     // Extract method config overrides (only non-default values)
     const methodConfigOverrides = analysis.methodConfig || {};
@@ -374,17 +395,17 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
       };
     }).filter(Boolean);
 
-    // Build analyses — each gets its own input data structure (DSD + slices)
-    const analysisSpecs = analyses.map(analysis => {
+    // Build analyses — StudyAnalysis shape (study_esap.schema.json)
+    const analysisSpecs = analyses.map((analysis, i) => {
       const transform = (lib?.analysisTransformations || []).find(t => t.oid === analysis.transformationOid);
       if (!transform) return null;
       const methodObj = appState.methodsCache?.[transform.usesMethod] || null;
-      const customBindings = analysis.customInputBindings || [];
+      const studyBindings = analysis.resolvedBindings || [];
 
-      // Bindings — include all schema-defined fields
-      const bindings = customBindings.map(b => ({
-        role: b.methodRole,
+      // Resolved bindings — study-level copies of template bindings (Binding shape)
+      const resolvedBindings = studyBindings.map(b => ({
         concept: b.concept,
+        methodRole: b.methodRole,
         direction: b.direction || 'input',
         dataStructureRole: b.dataStructureRole,
         ...(b.requiredValueType ? { requiredValueType: b.requiredValueType } : {}),
@@ -394,13 +415,34 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
         ...(b.description ? { description: b.description } : {})
       }));
 
-      // Input data structure — built per analysis from endpoint spec + this analysis transform
-      const mergedDSD = buildMergedDataStructure(spec, transform);
+      // Configuration values — StudyConfigurationValue shape
+      const configValues = Object.entries(analysis.methodConfigOverrides || {})
+        .map(([name, value]) => ({ name, value: String(value) }));
 
-      // Outputs
+      // Resolved slices — StudySlice shape from merged data structure
+      const mergedDSD = buildMergedDataStructure(spec, transform);
+      const resolvedSlices = (mergedDSD.slices || []).map(s => ({
+        name: s.name,
+        resolvedValues: s.fixedDimensions || {}
+      }));
+
+      // Resolved phrases
+      const esapAnalysis = appState.esapAnalyses?.[ep.id];
+      const resolvedPhrases = (esapAnalysis?.phrases || []).map(p => {
+        const resolvedText = composeFullSentence([p], lib);
+        if (!resolvedText) return null;
+        return { basedOn: { smartPhraseId: p.oid }, resolvedText };
+      }).filter(Boolean);
+
+      // Resolved expression
+      const resolvedExpression = methodObj
+        ? buildResolvedExpressionObject(studyBindings, methodObj, analysis.activeInteractions || [])
+        : null;
+
+      // Outputs (additional property — useful for detail view)
       let outputs = [];
       if (appState.acModel && methodObj) {
-        const outputMapping = getOutputMapping(transform, appState.acModel, methodObj, customBindings, analysis.activeInteractions || []);
+        const outputMapping = getOutputMapping(transform, appState.acModel, methodObj, studyBindings, analysis.activeInteractions || []);
         outputs = outputMapping.map(slot => ({
           pattern: slot.patternName,
           statistics: slot.constituents,
@@ -408,28 +450,19 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
         }));
       }
 
-      // Build resolved expression
-      const resolvedExpression = methodObj
-        ? buildResolvedExpressionObject(customBindings, methodObj, analysis.activeInteractions || [])
-        : null;
-
-      // Nest method-related properties under a method object
       return {
-        transformationOid: transform.oid,
-        name: transform.name,
-        method: {
-          oid: transform.usesMethod,
-          category: transform.acCategory || null,
-          configurationValues: analysis.methodConfigOverrides || {},
-          ...(resolvedExpression ? { resolvedExpression } : {})
-        },
-        inputDataStructure: {
-          measures: mergedDSD.measures,
-          dimensions: mergedDSD.dimensions,
-          ...(mergedDSD.sliceKeys?.length > 0 ? { sliceKeys: mergedDSD.sliceKeys } : {}),
-          slices: mergedDSD.slices
-        },
-        bindings,
+        // StudyStep fields (study_esap.schema.json)
+        sequence: i + 1,
+        basedOn: { transformationId: transform.oid },
+        resolvedBindings,
+        ...(configValues.length > 0 ? { configurationValues: configValues } : {}),
+        ...(resolvedSlices.length > 0 ? { resolvedSlices } : {}),
+        ...(resolvedPhrases.length > 0 ? { resolvedPhrases } : {}),
+        ...(resolvedExpression ? { resolvedExpression } : {}),
+        // StudyAnalysis extension
+        arsAnalysis: { analysisId: `ARS_${transform.oid}_${ep.id}` },
+        // Additional properties (transformation-level detail, useful for display)
+        method: { oid: transform.usesMethod, category: transform.acCategory || null },
         outputs
       };
     }).filter(Boolean);
@@ -438,7 +471,7 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
     let treatmentVal = dimValues.Treatment || null;
     if (!treatmentVal) {
       for (const analysis of analyses) {
-        const treatBinding = (analysis.customInputBindings || []).find(
+        const treatBinding = (analysis.resolvedBindings || []).find(
           b => b.concept === 'Treatment' && b.dataStructureRole === 'dimension'
         );
         if (treatBinding?.qualifierValue) {
@@ -667,17 +700,22 @@ function buildDerivationSteps(appState, epId) {
       .find(d => d.oid === entry.derivationOid);
     const outputBinding = template?.bindings?.find(b => b.direction === 'output');
 
+    // Resolved bindings — from derivation template bindings (Binding shape)
+    const resolvedBindings = (template?.bindings || []).map(b => ({
+      concept: b.concept,
+      methodRole: b.methodRole,
+      direction: b.direction || 'input',
+      dataStructureRole: b.dataStructureRole,
+      ...(b.slice ? { slice: b.slice } : {}),
+      ...(b.requiredValueType ? { requiredValueType: b.requiredValueType } : {})
+    }));
+
     return {
       sequence: i + 1,
       basedOn: { transformationId: entry.derivationOid },
-      implementationBindings: [{
-        standard: 'ADaM',
-        dataset: spec.targetDataset || 'ADSL',
-        variable: outputBinding?.concept || entry.concept
-      }],
-      ...(template?.configurations
-        ? { configurationValues: [] }
-        : {}),
+      resolvedBindings: resolvedBindings.length > 0
+        ? resolvedBindings
+        : [{ concept: entry.concept, methodRole: 'output', direction: 'output', dataStructureRole: 'measure' }],
       resolvedSlices: [],
       resolvedPhrases: []
     };
@@ -850,25 +888,28 @@ function buildAnalysisSteps(appState, epId) {
       .find(t => t.oid === analysis.transformationOid);
     if (!transform) return null;
 
-    const customBindings = analysis.customInputBindings || [];
+    const studyBindings = analysis.resolvedBindings || [];
     const methodObj = appState.methodsCache?.[transform.usesMethod] || null;
     const interactions = analysis.activeInteractions || [];
 
-    // Configuration values
+    // Configuration values — StudyConfigurationValue shape
     const configValues = Object.entries(analysis.methodConfigOverrides || {})
       .map(([name, value]) => ({ name, value: String(value) }));
 
-    // Implementation bindings
-    const implBindings = customBindings
-      .filter(b => b.direction !== 'output')
-      .map(b => ({
-        standard: 'ADaM',
-        dataset: spec.targetDataset || 'ADEFF',
-        variable: b.concept,
-        ...(b.methodRole ? { transformation: analysis.transformationOid } : {})
-      }));
+    // Resolved bindings — study-level copies of template bindings (Binding shape)
+    const resolvedBindings = studyBindings.map(b => ({
+      concept: b.concept,
+      methodRole: b.methodRole,
+      direction: b.direction || 'input',
+      dataStructureRole: b.dataStructureRole,
+      ...(b.requiredValueType ? { requiredValueType: b.requiredValueType } : {}),
+      ...(b.slice ? { slice: b.slice } : {}),
+      ...(b.qualifierType ? { qualifierType: b.qualifierType, qualifierValue: b.qualifierValue } : {}),
+      ...(b.note ? { note: b.note } : {}),
+      ...(b.description ? { description: b.description } : {})
+    }));
 
-    // Resolved slices — from merged data structure
+    // Resolved slices — StudySlice shape
     const mergedDSD = buildMergedDataStructure(spec, transform);
     const resolvedSlices = (mergedDSD.slices || []).map(s => ({
       name: s.name,
@@ -878,18 +919,16 @@ function buildAnalysisSteps(appState, epId) {
     // Resolved phrases
     const resolvedPhrases = buildResolvedPhrases(appState, epId);
 
-    // Resolved expression (reuse existing helper)
+    // Resolved expression
     const resolvedExpression = methodObj
-      ? buildResolvedExpressionObject(customBindings, methodObj, interactions)
+      ? buildResolvedExpressionObject(studyBindings, methodObj, interactions)
       : undefined;
 
     return {
       sequence: i + 1,
       basedOn: { transformationId: analysis.transformationOid },
+      resolvedBindings,
       ...(configValues.length > 0 ? { configurationValues: configValues } : {}),
-      implementationBindings: implBindings.length > 0
-        ? implBindings
-        : [{ standard: 'ADaM', dataset: spec.targetDataset || 'ADEFF', variable: spec.conceptCategory || 'AVAL' }],
       ...(resolvedSlices.length > 0 ? { resolvedSlices } : {}),
       ...(resolvedPhrases.length > 0 ? { resolvedPhrases } : {}),
       ...(resolvedExpression ? { resolvedExpression } : {}),
@@ -1030,7 +1069,7 @@ export function deserializeStudyInstance(json, appState) {
       continue;
     }
 
-    // Reconstruct customInputBindings from template + edits
+    // Reconstruct resolvedBindings from template + edits
     const templateBindings = JSON.parse(JSON.stringify(
       (transformation.bindings || []).filter(b => b.direction !== 'output')
     ));
@@ -1067,7 +1106,7 @@ export function deserializeStudyInstance(json, appState) {
       selectedDerivations: {},
       derivationChain: saved.derivationChain || [],
       confirmedTerminals: saved.confirmedTerminals || [],
-      customInputBindings: customBindings,
+      resolvedBindings: customBindings,
       activeInteractions: saved.activeInteractions || [],
       dimensionalSliceValues: saved.dimensionalSliceValues || null
     };
@@ -1086,7 +1125,7 @@ export function deserializeStudyInstance(json, appState) {
   appState.selectedDerivations = {};
   appState.derivationChain = [];
   appState.confirmedTerminals = [];
-  appState.customInputBindings = null;
+  appState.resolvedBindings = null;
   appState.activeInteractions = [];
   appState.dimensionalSliceValues = null;
 

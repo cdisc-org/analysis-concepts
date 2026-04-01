@@ -791,9 +791,9 @@ export async function renderTransformationConfig(container) {
     console.warn('Could not load method:', e);
   }
 
-  // Initialize customInputBindings from template if null
-  if (appState.customInputBindings === null) {
-    appState.customInputBindings = JSON.parse(JSON.stringify(
+  // Initialize resolvedBindings from template if null
+  if (appState.resolvedBindings === null) {
+    appState.resolvedBindings = JSON.parse(JSON.stringify(
       (transformation.bindings || []).filter(b => b.direction !== 'output')
     ));
   }
@@ -839,7 +839,7 @@ export async function renderTransformationConfig(container) {
       }
       // Build a role->concepts lookup from current bindings
       const roleConcepts = {};
-      for (const b of appState.customInputBindings) {
+      for (const b of appState.resolvedBindings) {
         if (!roleConcepts[b.methodRole]) roleConcepts[b.methodRole] = [];
         roleConcepts[b.methodRole].push(b.concept);
       }
@@ -849,7 +849,7 @@ export async function renderTransformationConfig(container) {
     }
   }
 
-  const customBindings = appState.customInputBindings;
+  const customBindings = appState.resolvedBindings;
   const outputMapping = getOutputMapping(transformation, appState.acModel, method, customBindings, appState.activeInteractions);
   const dimensions = getDimensions(transformation);
   const methodConfigs = method ? getMethodConfigurations(method, transformation, appState.methodConfig || {}) : [];
@@ -1133,17 +1133,17 @@ export async function renderTransformationConfig(container) {
       const idx = parseInt(btn.dataset.index, 10);
       // Find and remove the idx-th binding for this role
       let count = 0;
-      for (let i = 0; i < appState.customInputBindings.length; i++) {
-        if (appState.customInputBindings[i].methodRole === roleName) {
+      for (let i = 0; i < appState.resolvedBindings.length; i++) {
+        if (appState.resolvedBindings[i].methodRole === roleName) {
           if (count === idx) {
-            appState.customInputBindings.splice(i, 1);
+            appState.resolvedBindings.splice(i, 1);
             break;
           }
           count++;
         }
       }
       // Clean up interactions referencing removed concept
-      const removedConcepts = new Set(appState.customInputBindings.map(b => b.concept));
+      const removedConcepts = new Set(appState.resolvedBindings.map(b => b.concept));
       appState.activeInteractions = appState.activeInteractions.filter(inter => {
         const [a, b] = inter.split(':');
         return removedConcepts.has(a) && removedConcepts.has(b);
@@ -1168,7 +1168,7 @@ export async function renderTransformationConfig(container) {
       const selectedOption = select.options[select.selectedIndex];
       const type = selectedOption.dataset.type || 'concept';
       if (type === 'dimensional' || !value.startsWith('C.')) {
-        appState.customInputBindings.push({
+        appState.resolvedBindings.push({
           methodRole: select.dataset.role,
           concept: value,
           direction: 'input',
@@ -1181,7 +1181,7 @@ export async function renderTransformationConfig(container) {
       // For derivation concepts, wait for user to optionally pick a dim constraint
       // and then click to confirm, or just re-render if no dim select
       else if (!dimSelect) {
-        appState.customInputBindings.push({
+        appState.resolvedBindings.push({
           methodRole: select.dataset.role,
           concept: value,
           direction: 'input',
@@ -1214,12 +1214,15 @@ export async function renderTransformationConfig(container) {
         if (dimValue) {
           binding.slice = dimValue.toLowerCase();
           if (!transformation.slices) transformation.slices = [];
-          if (!transformation.slices.find(s => s.name === binding.slice && s.dimension === 'AnalysisVisit')) {
-            transformation.slices.push({ name: binding.slice, dimension: 'AnalysisVisit', constraint: dimValue });
+          if (!transformation.slices.find(s => s.name === binding.slice)) {
+            transformation.slices.push({
+              name: binding.slice,
+              constraints: [{ dimension: 'AnalysisVisit', value: dimValue }]
+            });
           }
         }
 
-        appState.customInputBindings.push(binding);
+        appState.resolvedBindings.push(binding);
         renderTransformationConfig(container);
       });
     }
@@ -1291,7 +1294,7 @@ export async function renderTransformationConfig(container) {
     appState.selectedTransformation = {
       ...transformation,
       bindings: [
-        ...appState.customInputBindings,
+        ...appState.resolvedBindings,
         ...(transformation.bindings || []).filter(b => b.direction === 'output')
       ],
       dimensionalSliceValues: appState.dimensionalSliceValues

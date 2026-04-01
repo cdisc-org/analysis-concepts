@@ -25,7 +25,7 @@ export const appState = {
   selectedDerivations: {},
   derivationChain: [],
   confirmedTerminals: [],
-  customInputBindings: null,   // null = use template defaults; array = user-modified
+  resolvedBindings: null,   // null = use template defaults; array = user-modified
   dimensionalSliceValues: null, // null = not yet initialized; object = user-configured slice values
   methodConfig: null,          // null = not yet initialized; object = user-configured method config overrides
   activeInteractions: [],      // array of "concept1:concept2" strings

@@ -4,8 +4,8 @@ import {
   buildSyntaxTemplate, buildFormalizedDescription, buildEstimandDescription,
   getSpecParameterValue, getTransformationByOid, getDerivationTransformationByOid
 } from './endpoint-spec.js';
-import { buildResolvedSpecification, buildMergedDataStructure, renderMergedDSD } from '../utils/instance-serializer.js';
-import { buildSliceLookup, displayConcept } from '../utils/concept-display.js';
+import { buildResolvedSpecification, buildMergedDataStructure } from '../utils/instance-serializer.js';
+import { displayConcept } from '../utils/concept-display.js';
 import { getMethodConfigurations } from '../utils/transformation-linker.js';
 import { buildResolvedExpressionObject } from './transformation-config.js';
 
@@ -37,7 +37,7 @@ export function renderEndpointSummary(container) {
         transformation: transform,
         endpointSpec: spec,
         resolvedSentence: buildFormalizedDescription(ep, spec, study) || '',
-        customInputBindings: spec.customInputBindings || null,
+        resolvedBindings: spec.resolvedBindings || null,
         activeInteractions: spec.activeInteractions || [],
         dimensionalSliceValues: spec.dimensionValues || {},
         methodConfig: spec.methodConfigOverrides || {}
@@ -59,15 +59,17 @@ export function renderEndpointSummary(container) {
       ? getTransformationByOid(spec.selectedTransformationOid) : null;
 
     // Build resolved expression
-    const customBindings = spec.customInputBindings || transform?.bindings?.filter(b => b.direction !== 'output') || [];
+    const customBindings = spec.resolvedBindings || transform?.bindings?.filter(b => b.direction !== 'output') || [];
     const method = transform?.usesMethod ? appState.methodsCache?.[transform.usesMethod] : null;
     const resolvedExpr = method ? buildResolvedExpressionObject(customBindings, method, spec.activeInteractions || []) : null;
 
     // Build expanded detail sections
-    const dimValues = spec.dimensionValues || {};
-    const dimEntries = Object.entries(dimValues).filter(([, v]) => v);
     const bindings = customBindings;
-    const sliceLookup = transform ? buildSliceLookup(transform) : {};
+    const mergedDSD = buildMergedDataStructure(spec, transform);
+    const resolvedSlices = (mergedDSD.slices || []).map(s => ({
+      name: s.name,
+      resolvedValues: s.fixedDimensions || {}
+    }));
     const methodConfigs = method ? getMethodConfigurations(method, transform, spec.methodConfigOverrides || {}) : [];
     const derivChain = spec.derivationChain || [];
     const derivLib = appState.transformationLibrary?.derivationTransformations || [];
@@ -159,22 +161,9 @@ export function renderEndpointSummary(container) {
         <!-- Expanded Detail Panel (hidden by default) -->
         <div class="ep-detail-panel" data-ep-id="${ep.id}" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--cdisc-border);">
 
-          ${dimEntries.length > 0 ? `
-          <div style="margin-bottom:14px;">
-            <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Dimensions</div>
-            <div style="display:flex; flex-wrap:wrap; gap:8px;">
-              ${dimEntries.map(([dim, val]) => `
-                <div style="font-size:12px; padding:4px 10px; background:var(--cdisc-background); border-radius:var(--radius); border-left:3px solid var(--cdisc-accent2);">
-                  <span style="color:var(--cdisc-text-secondary);">${dim}:</span> <strong>${val}</strong>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-          ` : ''}
-
           ${bindings.length > 0 ? `
           <div style="margin-bottom:14px;">
-            <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Input Bindings</div>
+            <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Resolved Bindings</div>
             <table class="data-table" style="font-size:12px;">
               <thead><tr><th>Role</th><th>Concept</th><th>Value Type</th><th>Structure</th><th>Slice</th><th>Note</th></tr></thead>
               <tbody>
@@ -211,13 +200,23 @@ export function renderEndpointSummary(container) {
           </div>
           ` : ''}
 
-          ${Object.keys(sliceLookup).length > 0 ? `
+          ${resolvedSlices.length > 0 ? `
           <div style="margin-bottom:14px;">
-            <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Named Slices</div>
-            ${Object.entries(sliceLookup).map(([name, def]) => {
-              const dims = def.fixedDimensions || def;
-              return `<div style="font-size:12px; margin-bottom:2px;"><code>${name}</code>: ${Object.entries(dims).map(([k, v]) => `${k} = ${v}`).join(', ')}</div>`;
-            }).join('')}
+            <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Resolved Slices</div>
+            ${resolvedSlices.map(s => `
+              <div style="padding:6px 12px; border:1px solid var(--cdisc-border); border-radius:var(--radius); margin-bottom:6px;">
+                <span style="font-weight:600; font-size:12px;">"${s.name}"</span>
+                <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;">
+                  ${Object.entries(s.resolvedValues).map(([dim, val]) => `
+                    <div style="font-size:12px; display:flex; gap:6px; align-items:center;">
+                      <span class="badge badge-teal" style="font-size:10px; padding:1px 6px;">${dim}</span>
+                      <span>=</span>
+                      <strong>${val}</strong>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
           </div>
           ` : ''}
 
@@ -252,12 +251,6 @@ export function renderEndpointSummary(container) {
           </div>
           ` : ''}
         </div>
-
-        <!-- Merged Data Structure (W3C QB) -->
-          ${(() => {
-            const mergedDSD = buildMergedDataStructure(spec, transform);
-            return renderMergedDSD(mergedDSD);
-          })()}
 
         <!-- JSON Panel (hidden by default) -->
         <div class="ep-json-panel" data-ep-id="${ep.id}" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--cdisc-border);">

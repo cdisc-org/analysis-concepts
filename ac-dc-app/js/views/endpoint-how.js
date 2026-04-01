@@ -9,7 +9,6 @@ import {
   SKIP_IN_DIM_GRID, SUMMARY_MEASURE_PHRASES, getDerivationTransformationByOid,
   buildEstimandFrameworkHtml
 } from './endpoint-spec.js';
-import { buildMergedDataStructure, renderMergedDSD } from '../utils/instance-serializer.js';
 import {
   renderFormulaExpression, renderInteractiveBindings, renderInteractiveBindingsByRole,
   generateInteractionPairings,
@@ -77,8 +76,8 @@ export async function renderEndpointHow(container) {
     // Initialize per-analysis custom input bindings if needed
     for (const analysis of analyses) {
       const transform = getTransformationByOid(analysis.transformationOid);
-      if (transform && !analysis.customInputBindings) {
-        analysis.customInputBindings = JSON.parse(JSON.stringify(
+      if (transform && !analysis.resolvedBindings) {
+        analysis.resolvedBindings = JSON.parse(JSON.stringify(
           (transform.bindings || []).filter(b => b.direction !== 'output')
         ));
         if (!analysis.activeInteractions) analysis.activeInteractions = [];
@@ -96,7 +95,7 @@ export async function renderEndpointHow(container) {
       if (!transform) return '';
 
       const method = isActive ? activeMethodMap[analysis.transformationOid] || null : null;
-      const customBindings = analysis.customInputBindings || (transform.bindings ? JSON.parse(JSON.stringify(transform.bindings.filter(b => b.direction !== 'output'))) : null);
+      const customBindings = analysis.resolvedBindings || (transform.bindings ? JSON.parse(JSON.stringify(transform.bindings.filter(b => b.direction !== 'output'))) : null);
 
       // Temporarily set global state for renderInteractiveBindings compatibility
       const prevTransform = appState.selectedTransformation;
@@ -336,16 +335,6 @@ export async function renderEndpointHow(container) {
           </div>
           `}
 
-          <!-- Merged Data Structure (W3C QB) -->
-          ${(() => {
-            const primaryAnalysis = analyses[0];
-            const analysisT = primaryAnalysis
-              ? (appState.transformationLibrary?.analysisTransformations || []).find(t => t.oid === primaryAnalysis.transformationOid)
-              : null;
-            const mergedDSD = buildMergedDataStructure(spec, analysisT);
-            return renderMergedDSD(mergedDSD);
-          })()}
-
           <!-- Endpoint & Estimand Descriptions -->
           <div style="margin-top:16px; border-top:2px solid var(--cdisc-border); padding-top:12px;">
             <!-- Row 1: Endpoint -->
@@ -502,7 +491,7 @@ function wireLibraryCardEvents(container) {
         // Add new analysis with template defaults
         spec.selectedAnalyses.push({
           transformationOid: transformOid,
-          customInputBindings: JSON.parse(JSON.stringify(
+          resolvedBindings: JSON.parse(JSON.stringify(
             (transform.bindings || []).filter(b => b.direction !== 'output')
           )),
           activeInteractions: [],
@@ -746,10 +735,10 @@ function wireEndpointHowEvents(container, study, configuredEps) {
         const aIdx = parseInt(analysisCard.dataset.analysisIdx, 10);
         if (!isNaN(aIdx) && spec.selectedAnalyses?.[aIdx]) {
           analysis = spec.selectedAnalyses[aIdx];
-          bindings = analysis.customInputBindings;
+          bindings = analysis.resolvedBindings;
         }
       }
-      if (!bindings) bindings = spec.customInputBindings;
+      if (!bindings) bindings = spec.resolvedBindings;
       if (!bindings) return;
 
       let count = 0;
@@ -800,10 +789,10 @@ function wireEndpointHowEvents(container, study, configuredEps) {
       if (analysisCard) {
         const aIdx = parseInt(analysisCard.dataset.analysisIdx, 10);
         if (!isNaN(aIdx) && spec.selectedAnalyses?.[aIdx]) {
-          bindings = spec.selectedAnalyses[aIdx].customInputBindings;
+          bindings = spec.selectedAnalyses[aIdx].resolvedBindings;
         }
       }
-      if (!bindings) bindings = spec.customInputBindings;
+      if (!bindings) bindings = spec.resolvedBindings;
       if (!bindings) return;
 
       bindings.push({

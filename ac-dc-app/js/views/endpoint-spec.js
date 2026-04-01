@@ -528,7 +528,7 @@ function wireEventHandlers(container, study) {
       appState.endpointSpecs[epId].selectedTransformationOid = null;
       appState.endpointSpecs[epId].selectedAnalyses = [];
       appState.endpointSpecs[epId].estimandSummaryPattern = null;
-      appState.endpointSpecs[epId].customInputBindings = null;
+      appState.endpointSpecs[epId].resolvedBindings = null;
       appState.endpointSpecs[epId].activeInteractions = [];
       appState.endpointSpecs[epId].dimensionValues = {};
       appState.endpointSpecs[epId].selectedOcFacet = null;
@@ -615,7 +615,7 @@ function wireEventHandlers(container, study) {
       appState.endpointSpecs[epId].selectedTransformationOid = null;
       appState.endpointSpecs[epId].selectedAnalyses = [];
       appState.endpointSpecs[epId].estimandSummaryPattern = null;
-      appState.endpointSpecs[epId].customInputBindings = null;
+      appState.endpointSpecs[epId].resolvedBindings = null;
       appState.endpointSpecs[epId].activeInteractions = [];
       appState.endpointSpecs[epId].dimensionValues = {};
       appState.endpointSpecs[epId].derivationConfigValues = {};
@@ -635,13 +635,13 @@ function wireEventHandlers(container, study) {
       const selectedTransform = getTransformationByOid(oid);
       appState.endpointSpecs[epId].selectedAnalyses = [{
         transformationOid: oid,
-        customInputBindings: selectedTransform ? JSON.parse(JSON.stringify(
+        resolvedBindings: selectedTransform ? JSON.parse(JSON.stringify(
           (selectedTransform.bindings || []).filter(b => b.direction !== 'output')
         )) : null,
         activeInteractions: [],
         estimandSummaryPattern: null
       }];
-      appState.endpointSpecs[epId].customInputBindings = appState.endpointSpecs[epId].selectedAnalyses[0].customInputBindings;
+      appState.endpointSpecs[epId].resolvedBindings = appState.endpointSpecs[epId].selectedAnalyses[0].resolvedBindings;
       appState.endpointSpecs[epId].activeInteractions = [];
       // Reset dimension values and summary measure — slice structure may differ
       appState.endpointSpecs[epId].estimandSummaryPattern = null;
@@ -818,7 +818,7 @@ export function buildEstimandFrameworkHtml(ep, spec, study, estimandDesc) {
     // Look for treatment in per-analysis bindings (it's a fixed_effect, not a sliceKey)
     const analyses = spec?.selectedAnalyses || [];
     for (const analysis of analyses) {
-      const bindings = analysis.customInputBindings || [];
+      const bindings = analysis.resolvedBindings || [];
       const treatBinding = bindings.find(b =>
         b.concept === 'Treatment' && b.dataStructureRole === 'dimension'
       );
@@ -995,7 +995,7 @@ export function ensureSpec(epId) {
       // Migrate existing single selection
       appState.endpointSpecs[epId].selectedAnalyses = [{
         transformationOid: spec.selectedTransformationOid,
-        customInputBindings: spec.customInputBindings || null,
+        resolvedBindings: spec.resolvedBindings || null,
         activeInteractions: spec.activeInteractions || [],
         estimandSummaryPattern: spec.estimandSummaryPattern || null
       }];
@@ -1016,11 +1016,11 @@ export function syncLegacyTransformationOid(epId) {
   spec.selectedTransformationOid = analyses.length > 0 ? analyses[0].transformationOid : null;
   // Also sync top-level fields from first analysis for backward compat
   if (analyses.length > 0) {
-    spec.customInputBindings = analyses[0].customInputBindings;
+    spec.resolvedBindings = analyses[0].resolvedBindings;
     spec.activeInteractions = analyses[0].activeInteractions || [];
     spec.estimandSummaryPattern = analyses[0].estimandSummaryPattern;
   } else {
-    spec.customInputBindings = null;
+    spec.resolvedBindings = null;
     spec.activeInteractions = [];
     spec.estimandSummaryPattern = null;
   }
