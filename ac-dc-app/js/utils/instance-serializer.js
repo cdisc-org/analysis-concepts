@@ -1,8 +1,11 @@
 import { composeFullSentence, findMatchingTransformations, ENDPOINT_CONTEXT_ROLES } from './phrase-engine.js';
-import { getOutputMapping } from './transformation-linker.js';
+import { getOutputMapping, getMethodConfigurations } from './transformation-linker.js';
 import { buildResolvedExpressionObject } from '../views/transformation-config.js';
-import { buildSyntaxTemplatePlainText, getSummaryMeasurePhrase } from '../views/endpoint-spec.js';
-import { displayConcept } from './concept-display.js';
+import {
+  buildSyntaxTemplatePlainText, buildSyntaxTemplate, buildFormalizedDescription,
+  buildEstimandDescription, getSpecParameterValue, getSummaryMeasurePhrase,
+  getTransformationByOid, getDerivationTransformationByOid
+} from '../views/endpoint-spec.js';
 import { ESAP_SECTION_LABELS } from './esap-constants.js';
 
 /**
@@ -39,6 +42,7 @@ export function buildMergedDataStructure(spec, analysisTransform) {
     for (const s of spec.resolvedSlices) {
       slices.push({
         name: s.name || 'endpoint',
+        appliesTo: [spec.conceptCategory],
         fixedDimensions: s.fixedDimensions || {},
         source: 'endpoint',
         ...(s.linkedBCId ? { linkedBCId: s.linkedBCId } : {})
@@ -128,85 +132,6 @@ export function buildMergedDataStructure(spec, analysisTransform) {
   }
 
   return { measures, dimensions, slices };
-}
-
-/**
- * Render a W3C QB-aligned data structure card as HTML.
- */
-export function renderMergedDSD(dataStructure) {
-  if (!dataStructure) return '';
-  const { measures, dimensions, slices, sliceKeys } = dataStructure;
-
-  const sourceBadge = (src) => `<span style="font-size:9px; color:var(--cdisc-text-secondary); margin-left:auto;">&larr; ${src}</span>`;
-
-  const measureRows = measures.map(m => `
-    <tr>
-      <td style="padding:4px 10px;"><code style="font-weight:600;">${displayConcept(m.concept)}</code></td>
-      <td style="padding:4px 10px;"><span class="badge badge-blue" style="font-size:10px;">${m.role}</span></td>
-      <td style="padding:4px 10px;">${m.slice ? `<span style="font-size:10px; color:var(--cdisc-accent2);">@ ${m.slice}</span>` : ''}</td>
-      <td style="padding:4px 10px; text-align:right;">${sourceBadge(m.source)}</td>
-    </tr>
-  `).join('');
-
-  const dimRows = dimensions.map(d => `
-    <tr>
-      <td style="padding:4px 10px;"><code>${displayConcept(d.concept)}</code></td>
-      <td style="padding:4px 10px;"><span class="badge badge-teal" style="font-size:10px;">${d.role}</span></td>
-      <td style="padding:4px 10px;">${d.qualifier ? `<span style="font-size:10px; color:var(--cdisc-text-secondary);">${d.qualifier.type}: ${d.qualifier.value}</span>` : ''}</td>
-      <td style="padding:4px 10px; text-align:right;">${sourceBadge(d.source)}</td>
-    </tr>
-  `).join('');
-
-  const sliceCards = slices.map(s => {
-    const fixedEntries = Object.entries(s.fixedDimensions || {}).map(([dim, val]) =>
-      `<div style="display:flex; gap:6px; align-items:center; font-size:12px;">
-        <span class="badge badge-teal" style="font-size:10px; padding:1px 6px;">${dim}</span>
-        <span>=</span>
-        <strong>${val}</strong>
-      </div>`
-    ).join('');
-    const appliesLabel = (s.appliesTo || []).map(c => `<code>${displayConcept(c)}</code>`).join(', ');
-
-    return `
-      <div style="padding:8px 12px; border:1px solid var(--cdisc-border); border-radius:var(--radius); margin-bottom:6px;">
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-          <span style="font-weight:600; font-size:12px;">"${s.name}"</span>
-          <span style="font-size:10px; color:var(--cdisc-text-secondary);">applies to ${appliesLabel}</span>
-          ${sourceBadge(s.source)}
-        </div>
-        ${fixedEntries}
-      </div>`;
-  }).join('');
-
-  return `
-    <div style="border:1px solid var(--cdisc-border); border-radius:var(--radius); overflow:hidden; margin-top:16px;">
-      <div style="padding:8px 14px; background:var(--cdisc-background); border-bottom:1px solid var(--cdisc-border);">
-        <span style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-text-secondary);">Data Structure Definition</span>
-        <span style="font-size:10px; color:var(--cdisc-text-secondary); margin-left:8px;">(W3C QB)</span>
-      </div>
-      <div style="padding:14px;">
-        <div style="font-weight:600; font-size:11px; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Measures</div>
-        <table style="width:100%; border-collapse:collapse; margin-bottom:12px;">
-          <tbody>${measureRows}</tbody>
-        </table>
-
-        <div style="font-weight:600; font-size:11px; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Dimensions</div>
-        <table style="width:100%; border-collapse:collapse; margin-bottom:12px;">
-          <tbody>${dimRows}</tbody>
-        </table>
-
-        ${sliceKeys?.length > 0 ? `
-        <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:8px;">
-          Slice keys: ${sliceKeys.map(sk => `<span class="badge badge-secondary" style="font-size:10px;">${sk.dimensions.join(', ')}</span>`).join(' ')}
-        </div>
-        ` : ''}
-
-        ${slices.length > 0 ? `
-        <div style="font-weight:600; font-size:11px; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Slices</div>
-        ${sliceCards}
-        ` : ''}
-      </div>
-    </div>`;
 }
 
 /**
@@ -509,13 +434,34 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
     // Variable description — use formalized endpoint text, strip concept code prefix
     const syntax = buildSyntaxTemplatePlainText(ep, spec, study);
     if (syntax) {
-      // Remove leading concept code (e.g. "C.Change ") that comes from the badge
-      const cleaned = syntax.replace(/^[A-Z]\.\w+\s+/i, '');
+      // Remove leading concept name (e.g. "Change ") from the syntax if present
+      const cleaned = syntax;
       estimand.variable = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
     } else {
       const paramValue = spec.parameterValue || dimValues.Parameter || null;
       if (paramValue) estimand.variable = paramValue;
     }
+
+    // --- UI-enrichment fields (for JSON-driven rendering) ---
+    const primaryTransform = primaryAnalysis
+      ? (lib?.analysisTransformations || []).find(t => t.oid === primaryAnalysis.transformationOid)
+      : null;
+    const primaryMethod = primaryTransform?.usesMethod ? appState.methodsCache?.[primaryTransform.usesMethod] : null;
+    const primaryBindings = primaryAnalysis?.resolvedBindings || primaryTransform?.bindings?.filter(b => b.direction !== 'output') || [];
+    const primaryResolvedExpr = primaryMethod
+      ? buildResolvedExpressionObject(primaryBindings, primaryMethod, primaryAnalysis?.activeInteractions || [])
+      : null;
+    const primaryMergedDSD = primaryTransform ? buildMergedDataStructure(spec, primaryTransform) : { slices: [] };
+    const primarySlices = (primaryMergedDSD.slices || []).map(s => ({
+      name: s.name,
+      resolvedValues: s.fixedDimensions || {}
+    }));
+    const primaryMethodConfigs = primaryMethod && primaryTransform
+      ? getMethodConfigurations(primaryMethod, primaryTransform, spec.methodConfigOverrides || {})
+      : [];
+    const derivTransform = spec.selectedDerivationOid
+      ? getDerivationTransformationByOid(spec.selectedDerivationOid)
+      : null;
 
     return {
       id: ep.id,
@@ -525,7 +471,30 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
       targetDataset: spec.targetDataset || null,
       estimand,
       derivationPipeline: pipeline,
-      analyses: analysisSpecs
+      analyses: analysisSpecs,
+      // UI enrichment — pre-computed display values
+      $ui: {
+        conceptCategory: spec.conceptCategory || null,
+        dataType: spec.dataType || null,
+        parameterValue: getSpecParameterValue(ep.id, spec, study),
+        formalized: buildFormalizedDescription(ep, spec, study) || null,
+        estimandDescription: buildEstimandDescription(ep, spec, study) || null,
+        syntax: buildSyntaxTemplate(ep, spec, study) || null,
+        selectedTransformationOid: spec.selectedTransformationOid || null,
+        selectedDerivationOid: spec.selectedDerivationOid || null,
+        derivationName: derivTransform?.name || null,
+        transformName: primaryTransform?.name || null,
+        transformMethod: primaryTransform?.usesMethod || null,
+        transformCategory: primaryTransform?.acCategory || null,
+        resolvedBindings: primaryBindings,
+        resolvedExpression: primaryResolvedExpr,
+        resolvedSlices: primarySlices,
+        methodConfigs: primaryMethodConfigs,
+        derivationChain: spec.derivationChain || [],
+        activeInteractions: primaryAnalysis?.activeInteractions || [],
+        useInEsap: spec.useInEsap !== false,
+        estimandSummaryPattern: spec.estimandSummaryPattern || null
+      }
     };
   });
 

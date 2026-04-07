@@ -8,6 +8,8 @@ import { renderDerivationPipeline } from './views/derivation-pipeline.js';
 import { renderEndpointWhat } from './views/endpoint-what.js';
 import { renderEndpointHow } from './views/endpoint-how.js';
 import { renderEndpointSummary } from './views/endpoint-summary.js';
+import { buildResolvedSpecification } from './utils/instance-serializer.js';
+import { getAllEndpoints } from './utils/usdm-parser.js';
 
 // ===== Application State =====
 export const appState = {
@@ -63,8 +65,25 @@ export const appState = {
   methodsCache: {},
   statisticsVocabulary: null,
   outputClassTemplates: null,
-  loaded: false
+  loaded: false,
+  // JSON-driven UI: cached resolved specification (single source of truth for rendering)
+  resolvedSpec: null
 };
+
+/**
+ * Rebuild the resolved specification from current appState.
+ * Called before each step render so views can read from appState.resolvedSpec.
+ */
+export function rebuildSpec() {
+  const study = appState.selectedStudy;
+  if (!study || !appState.loaded) {
+    appState.resolvedSpec = null;
+    return;
+  }
+  const allEndpoints = getAllEndpoints(study);
+  const selectedEps = allEndpoints.filter(ep => appState.selectedEndpoints.includes(ep.id));
+  appState.resolvedSpec = buildResolvedSpecification(appState, selectedEps, study);
+}
 
 // ===== Step definitions =====
 export const STEPS = [
@@ -106,6 +125,9 @@ export function renderCurrentStep() {
     content.innerHTML = `<div class="loading"><div class="spinner"></div><span>Loading data...</span></div>`;
     return;
   }
+
+  // Rebuild resolved specification before rendering (JSON-driven UI)
+  rebuildSpec();
 
   switch (appState.currentStep) {
     case 1: renderStudySelect(content); break;

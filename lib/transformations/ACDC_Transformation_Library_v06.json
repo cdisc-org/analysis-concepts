@@ -54,7 +54,7 @@
         "parameter"
       ],
       "references": [
-        "C.Change",
+        "Change",
         "Parameter"
       ]
     },
@@ -67,7 +67,7 @@
         "parameter"
       ],
       "references": [
-        "C.PercentChange",
+        "PercentChange",
         "Parameter"
       ]
     },
@@ -80,7 +80,7 @@
         "event"
       ],
       "references": [
-        "C.TimeToEvent"
+        "TimeToEvent"
       ]
     },
     {
@@ -92,7 +92,7 @@
         "parameter"
       ],
       "references": [
-        "C.Flag",
+        "Flag",
         "Parameter"
       ]
     },
@@ -105,7 +105,7 @@
         "parameter"
       ],
       "references": [
-        "C.Measure",
+        "Measure",
         "Parameter"
       ]
     },
@@ -118,7 +118,7 @@
         "parameter"
       ],
       "references": [
-        "C.Shift",
+        "Shift",
         "Parameter"
       ]
     },
@@ -131,7 +131,7 @@
         "parameter"
       ],
       "references": [
-        "C.PeakValue",
+        "PeakValue",
         "Parameter"
       ]
     },
@@ -144,7 +144,7 @@
         "parameter"
       ],
       "references": [
-        "C.AreaUnderCurve",
+        "AreaUnderCurve",
         "Parameter"
       ]
     },
@@ -283,7 +283,7 @@
         "parameter"
       ],
       "references": [
-        "C.Measure"
+        "Measure"
       ]
     },
     {
@@ -301,7 +301,7 @@
       "name": "Baseline Selection",
       "transformationType": "derivation",
       "description": "Identify the baseline record per subject per parameter using M.RecordSelection configured for baseline.",
-      "instanceOf": "C.Flag",
+      "instanceOf": "Flag",
       "usesMethod": "M.RecordSelection",
       "methodConfigurations": [
         {
@@ -324,7 +324,7 @@
       "validSmartPhrases": [],
       "bindings": [
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "requiredValueType": null,
           "note": "RecordSelection operates on records, not values — no value type constraint",
           "direction": "input",
@@ -332,7 +332,7 @@
           "methodRole": "value"
         },
         {
-          "concept": "C.Flag",
+          "concept": "Flag",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "flag"
@@ -362,7 +362,7 @@
       "name": "Change From Baseline",
       "transformationType": "derivation",
       "description": "Calculate the arithmetic change from baseline value.",
-      "instanceOf": "C.Change",
+      "instanceOf": "Change",
       "usesMethod": "M.Subtraction",
       "validSmartPhrases": [
         "SP_CFB_ENDPOINT",
@@ -373,7 +373,7 @@
       "composedPhrase": "change from baseline in {parameter} at {visit} with {imputation} imputation for missing data",
       "bindings": [
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "requiredValueType": "Quantity",
           "note": "Current visit value",
           "direction": "input",
@@ -381,7 +381,7 @@
           "methodRole": "minuend"
         },
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "requiredValueType": "Quantity",
           "note": "Baseline-flagged record",
           "direction": "input",
@@ -390,7 +390,7 @@
           "slice": "parameter_baseline"
         },
         {
-          "concept": "C.Change",
+          "concept": "Change",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "difference"
@@ -430,7 +430,7 @@
       "name": "Percent Change From Baseline",
       "transformationType": "derivation",
       "description": "Calculate the percent change from baseline value.",
-      "instanceOf": "C.PercentChange",
+      "instanceOf": "PercentChange",
       "usesMethod": "M.RelativeDifference",
       "validSmartPhrases": [
         "SP_PCTCFB_ENDPOINT",
@@ -440,7 +440,7 @@
       ],
       "bindings": [
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "requiredValueType": "Quantity",
           "note": "Current visit value",
           "direction": "input",
@@ -448,7 +448,7 @@
           "methodRole": "pre"
         },
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "requiredValueType": "Quantity",
           "note": "Baseline-flagged record",
           "direction": "input",
@@ -457,7 +457,7 @@
           "slice": "parameter_baseline"
         },
         {
-          "concept": "C.PercentChange",
+          "concept": "PercentChange",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
@@ -497,7 +497,7 @@
       "name": "Shift From Baseline",
       "transformationType": "derivation",
       "description": "Determine categorical shift between baseline and post-baseline values.",
-      "instanceOf": "C.Shift",
+      "instanceOf": "Shift",
       "usesMethod": "M.CategoricalTransition",
       "validSmartPhrases": [
         "SP_SHIFT_ENDPOINT",
@@ -506,7 +506,7 @@
       ],
       "bindings": [
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "requiredValueType": "CodeableConcept",
           "note": "Current visit categorical value",
           "direction": "input",
@@ -514,7 +514,7 @@
           "methodRole": "pre"
         },
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "requiredValueType": "CodeableConcept",
           "note": "Baseline categorical value",
           "direction": "input",
@@ -523,7 +523,7 @@
           "slice": "parameter_baseline"
         },
         {
-          "concept": "C.Shift",
+          "concept": "Shift",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
@@ -563,7 +563,7 @@
       "name": "Responder Classification",
       "transformationType": "derivation",
       "description": "Classify subjects as responders based on threshold criterion applied to a derived value.",
-      "instanceOf": "C.Flag",
+      "instanceOf": "Flag",
       "usesMethod": "M.ThresholdEvaluation",
       "validSmartPhrases": [
         "SP_RESPONDER_ENDPOINT",
@@ -572,7 +572,7 @@
       ],
       "bindings": [
         {
-          "concept": "C.Change",
+          "concept": "Change",
           "qualifierType": null,
           "qualifierValue": null,
           "requiredValueType": "Quantity",
@@ -581,7 +581,7 @@
           "methodRole": "value"
         },
         {
-          "concept": "C.Flag",
+          "concept": "Flag",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
@@ -612,14 +612,14 @@
       "name": "LOCF Imputation",
       "transformationType": "derivation",
       "description": "Impute missing values by carrying forward the last non-missing observation within each subject-parameter partition, ordered by analysis visit.",
-      "instanceOf": "C.Measure",
+      "instanceOf": "Measure",
       "usesMethod": "M.ImputedValue_LOCF",
       "validSmartPhrases": [
         "SP_IMPUTATION"
       ],
       "bindings": [
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "requiredValueType": null,
           "note": "LOCF operates on records — value type is pass-through",
           "direction": "input",
@@ -627,7 +627,7 @@
           "methodRole": "value"
         },
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
@@ -658,7 +658,7 @@
       "name": "Analysis Visit Assignment",
       "transformationType": "derivation",
       "description": "Assign records to analysis visit windows based on timing relative to protocol-defined encounters.",
-      "instanceOf": "C.Category",
+      "instanceOf": "Category",
       "usesMethod": "M.WindowAssignment",
       "methodConfigurations": [
         {
@@ -679,7 +679,7 @@
           "methodRole": "value"
         },
         {
-          "concept": "C.Category",
+          "concept": "Category",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
@@ -697,14 +697,14 @@
       "name": "Population Flag Assignment",
       "transformationType": "derivation",
       "description": "Assign subjects to analysis populations based on eligibility criteria.",
-      "instanceOf": "C.Flag",
+      "instanceOf": "Flag",
       "usesMethod": "M.CriterionEvaluation",
       "validSmartPhrases": [
         "SP_POPULATION"
       ],
       "bindings": [
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "requiredValueType": null,
           "note": "CriterionEvaluation is criteria-dependent; the concept's valueType determines representation",
           "direction": "input",
@@ -712,7 +712,7 @@
           "methodRole": "value"
         },
         {
-          "concept": "C.Flag",
+          "concept": "Flag",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
@@ -731,7 +731,7 @@
       "name": "Peak Concentration",
       "transformationType": "derivation",
       "description": "Find the maximum concentration in an ordered PK profile.",
-      "instanceOf": "C.PeakValue",
+      "instanceOf": "PeakValue",
       "usesMethod": "M.Maximum",
       "validSmartPhrases": [
         "SP_PEAK_ENDPOINT",
@@ -739,14 +739,14 @@
       ],
       "bindings": [
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "requiredValueType": "Quantity",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "value"
         },
         {
-          "concept": "C.PeakValue",
+          "concept": "PeakValue",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
@@ -777,7 +777,7 @@
       "name": "Area Under Curve",
       "transformationType": "derivation",
       "description": "Calculate the area under the concentration-time curve.",
-      "instanceOf": "C.AreaUnderCurve",
+      "instanceOf": "AreaUnderCurve",
       "usesMethod": "M.TrapezoidalIntegration",
       "validSmartPhrases": [
         "SP_AUC_ENDPOINT",
@@ -785,14 +785,14 @@
       ],
       "bindings": [
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "requiredValueType": "Quantity",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "value"
         },
         {
-          "concept": "C.AreaUnderCurve",
+          "concept": "AreaUnderCurve",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
@@ -823,7 +823,7 @@
       "name": "Overall Survival Time",
       "transformationType": "derivation",
       "description": "Calculate time from randomisation to death or censoring.",
-      "instanceOf": "C.TimeToEvent",
+      "instanceOf": "TimeToEvent",
       "usesMethod": "M.DurationCalculation",
       "validSmartPhrases": [
         "SP_TTE_ENDPOINT"
@@ -840,7 +840,7 @@
           "methodRole": "start_date"
         },
         {
-          "concept": "C.TimeToEvent",
+          "concept": "TimeToEvent",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "duration"
@@ -859,12 +859,12 @@
       "name": "Death Event Flag",
       "transformationType": "derivation",
       "description": "Create censoring indicator for survival analysis (death = event, alive = censored).",
-      "instanceOf": "C.Flag",
+      "instanceOf": "Flag",
       "usesMethod": "M.CriterionEvaluation",
       "validSmartPhrases": [],
       "bindings": [
         {
-          "concept": "C.Flag",
+          "concept": "Flag",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
@@ -883,7 +883,7 @@
       "name": "ADAS-Cog Item Max Score",
       "transformationType": "derivation",
       "description": "Max possible score for each ADAS-Cog item, used as scaling denominator when items are missing.",
-      "instanceOf": "C.Measure",
+      "instanceOf": "Measure",
       "usesMethod": "M.Aggregation",
       "methodConfigurations": [
         {
@@ -894,14 +894,14 @@
       "validSmartPhrases": [],
       "bindings": [
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "note": "11 ADAS-Cog item scores",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "value"
         },
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
@@ -919,7 +919,7 @@
       "name": "ADAS-Cog Missing Scale Capacity",
       "transformationType": "derivation",
       "description": "Sum of max-score capacity of missing items per subject/visit. Scaling factor = 70 / (70 - this value).",
-      "instanceOf": "C.Measure",
+      "instanceOf": "Measure",
       "usesMethod": "M.Aggregation",
       "methodConfigurations": [
         {
@@ -930,14 +930,14 @@
       "validSmartPhrases": [],
       "bindings": [
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "note": "Max scores from T.ADAS_ItemMaxScore, filtered to missing items",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "value"
         },
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
@@ -961,7 +961,7 @@
       "name": "ADAS-Cog Sum of Available Item Scores",
       "transformationType": "derivation",
       "description": "Sum of available (non-missing) ADAS-Cog item scores per subject/visit.",
-      "instanceOf": "C.Measure",
+      "instanceOf": "Measure",
       "usesMethod": "M.Aggregation",
       "methodConfigurations": [
         {
@@ -972,14 +972,14 @@
       "validSmartPhrases": [],
       "bindings": [
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "note": "11 ADAS-Cog item scores (from BCs)",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "value"
         },
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
@@ -1003,7 +1003,7 @@
       "name": "ADAS-Cog Non-Missing Item Count",
       "transformationType": "derivation",
       "description": "Count of non-missing ADAS-Cog item scores per subject/visit. Used to determine if enough items are present for scoring.",
-      "instanceOf": "C.Measure",
+      "instanceOf": "Measure",
       "usesMethod": "M.Aggregation",
       "methodConfigurations": [
         {
@@ -1014,14 +1014,14 @@
       "validSmartPhrases": [],
       "bindings": [
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "note": "11 ADAS-Cog item scores (from BCs)",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "value"
         },
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
@@ -1045,7 +1045,7 @@
       "name": "ADAS-Cog Scoreable Check",
       "transformationType": "derivation",
       "description": "Flag whether enough items are present to compute total. Requires >= 8 of 11 items.",
-      "instanceOf": "C.Flag",
+      "instanceOf": "Flag",
       "usesMethod": "M.ThresholdCompare",
       "methodConfigurations": [
         {
@@ -1068,14 +1068,14 @@
       "validSmartPhrases": [],
       "bindings": [
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "note": "Count of non-missing items (M.Aggregation count)",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "value"
         },
         {
-          "concept": "C.Flag",
+          "concept": "Flag",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
@@ -1099,33 +1099,33 @@
       "name": "ADAS-Cog (11) Total Score",
       "transformationType": "derivation",
       "description": "total = sum_available / ((70 - missing_capacity) / 70). Missing if scoreable flag = N. Scale: 0-70.",
-      "instanceOf": "C.Measure",
+      "instanceOf": "Measure",
       "usesMethod": "M.Division",
       "validSmartPhrases": [],
       "bindings": [
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "note": "Sum of available item scores (M.Aggregation sum)",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "numerator"
         },
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "note": "Scale proportion from T.ADAS_MissingScaleCapacity",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "denominator"
         },
         {
-          "concept": "C.Flag",
+          "concept": "Flag",
           "note": "Scoreable flag from T.ADAS_ScoreableCheck",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "filter"
         },
         {
-          "concept": "C.Measure",
+          "concept": "Measure",
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "quotient"
@@ -1205,7 +1205,7 @@
       "bindings": [
         {
           "methodRole": "response",
-          "concept": "C.Change",
+          "concept": "Change",
           "qualifierType": null,
           "qualifierValue": null,
           "requiredValueType": "Quantity",
@@ -1214,7 +1214,7 @@
         },
         {
           "methodRole": "covariate",
-          "concept": "C.Measure",
+          "concept": "Measure",
           "requiredValueType": "Quantity",
           "description": "Baseline value of the endpoint parameter",
           "direction": "input",
@@ -1310,7 +1310,7 @@
       "bindings": [
         {
           "methodRole": "response",
-          "concept": "C.Change",
+          "concept": "Change",
           "qualifierType": null,
           "qualifierValue": null,
           "requiredValueType": "Quantity",
@@ -1319,7 +1319,7 @@
         },
         {
           "methodRole": "covariate",
-          "concept": "C.Measure",
+          "concept": "Measure",
           "requiredValueType": "Quantity",
           "description": "Baseline value of the endpoint parameter",
           "direction": "input",
@@ -1410,7 +1410,7 @@
       "bindings": [
         {
           "methodRole": "time",
-          "concept": "C.TimeToEvent",
+          "concept": "TimeToEvent",
           "qualifierType": null,
           "qualifierValue": null,
           "requiredValueType": "Quantity",
@@ -1419,7 +1419,7 @@
         },
         {
           "methodRole": "event",
-          "concept": "C.Flag",
+          "concept": "Flag",
           "qualifierType": null,
           "qualifierValue": null,
           "requiredValueType": "CodeableConcept",
@@ -1471,7 +1471,7 @@
       "bindings": [
         {
           "methodRole": "response",
-          "concept": "C.Change",
+          "concept": "Change",
           "qualifierType": null,
           "qualifierValue": null,
           "requiredValueType": "Quantity",
@@ -1543,7 +1543,7 @@
       "bindings": [
         {
           "methodRole": "response",
-          "concept": "C.Measure",
+          "concept": "Measure",
           "qualifierType": null,
           "qualifierValue": null,
           "requiredValueType": "Quantity",
@@ -1615,7 +1615,7 @@
       "bindings": [
         {
           "methodRole": "response",
-          "concept": "C.Measure",
+          "concept": "Measure",
           "qualifierType": null,
           "qualifierValue": null,
           "requiredValueType": "Quantity",
@@ -1687,7 +1687,7 @@
       "bindings": [
         {
           "methodRole": "response",
-          "concept": "C.Measure",
+          "concept": "Measure",
           "qualifierType": null,
           "qualifierValue": null,
           "requiredValueType": "Quantity",
@@ -1759,7 +1759,7 @@
       "bindings": [
         {
           "methodRole": "response",
-          "concept": "C.Measure",
+          "concept": "Measure",
           "qualifierType": null,
           "qualifierValue": null,
           "requiredValueType": "Quantity",
@@ -1831,7 +1831,7 @@
       "bindings": [
         {
           "methodRole": "response",
-          "concept": "C.Measure",
+          "concept": "Measure",
           "qualifierType": null,
           "qualifierValue": null,
           "requiredValueType": "Quantity",
@@ -1903,7 +1903,7 @@
       "bindings": [
         {
           "methodRole": "response",
-          "concept": "C.Measure",
+          "concept": "Measure",
           "qualifierType": null,
           "qualifierValue": null,
           "requiredValueType": "Quantity",
@@ -1975,7 +1975,7 @@
       "bindings": [
         {
           "methodRole": "response",
-          "concept": "C.Measure",
+          "concept": "Measure",
           "qualifierType": null,
           "qualifierValue": null,
           "requiredValueType": "Quantity",
@@ -2048,7 +2048,7 @@
       "bindings": [
         {
           "methodRole": "response",
-          "concept": "C.Flag",
+          "concept": "Flag",
           "qualifierType": null,
           "qualifierValue": null,
           "requiredValueType": "CodeableConcept",

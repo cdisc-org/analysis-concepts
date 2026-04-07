@@ -1,4 +1,4 @@
-import { appState, navigateTo } from '../app.js';
+import { appState, navigateTo, rebuildSpec } from '../app.js';
 import { getAllEndpoints } from '../utils/usdm-parser.js';
 import {
   ensureSpec, getConceptCategoryOptions,
@@ -22,6 +22,9 @@ export function renderEndpointWhat(container) {
 
   if (!appState.endpointSpecs) appState.endpointSpecs = {};
 
+  // Rebuild resolved spec so $ui fields are fresh for display-only elements
+  rebuildSpec();
+
   const conceptOptions = getConceptCategoryOptions();
   const hasAnySpec = selectedEps.some(ep => appState.endpointSpecs[ep.id]?.conceptCategory);
   const dcModel = appState.dcModel;
@@ -33,8 +36,10 @@ export function renderEndpointWhat(container) {
   const endpointCards = selectedEps.map((ep) => {
     const isActive = ep.id === appState.activeEndpointId;
     const spec = appState.endpointSpecs[ep.id] || {};
-    let syntax = null;
-    try { syntax = buildSyntaxTemplate(ep, spec, study); } catch (e) { console.warn('Syntax template error:', e); }
+    // Use pre-computed syntax from resolved spec, fall back to inline build
+    const resolvedEp = appState.resolvedSpec?.endpoints?.find(r => r.id === ep.id);
+    let syntax = resolvedEp?.$ui?.syntax || null;
+    if (!syntax) { try { syntax = buildSyntaxTemplate(ep, spec, study); } catch (e) { console.warn('Syntax template error:', e); } }
     const originalText = ep.text || ep.description || ep.name;
 
     return `
@@ -59,12 +64,11 @@ export function renderEndpointWhat(container) {
               <select class="config-select ep-concept-category" data-ep-id="${ep.id}">
                 <option value="">-- Select --</option>
                 ${conceptOptions.map(opt => {
-                  const bare = opt.value.startsWith('C.') ? opt.value.slice(2) : opt.value;
                   let title = '';
                   if (dcModel?.categories) {
                     for (const [, cat] of Object.entries(dcModel.categories)) {
-                      if (cat.concepts?.[bare]?.definition) {
-                        title = cat.concepts[bare].definition;
+                      if (cat.concepts?.[opt.value]?.definition) {
+                        title = cat.concepts[opt.value].definition;
                         break;
                       }
                     }
@@ -413,9 +417,14 @@ function wireEndpointWhatEvents(container, study, selectedEps) {
       const sp = (lib?.smartPhrases || []).find(s => s.oid === radio.dataset.oid);
       if (sp?.references) {
         if (!spec.cubeDimensions) spec.cubeDimensions = [];
+        // Build set of known concepts to skip (only add dimension references)
+        const dcCats = appState.dcModel?.categories || {};
+        const conceptNames = new Set();
+        for (const cat of Object.values(dcCats)) {
+          for (const name of Object.keys(cat.concepts || {})) conceptNames.add(name);
+        }
         for (const ref of sp.references) {
-          // Skip the concept itself (e.g., C.Change) — only add dimension references
-          if (ref.startsWith('C.') || ref.startsWith('M.')) continue;
+          if (conceptNames.has(ref) || ref.startsWith('M.')) continue;
           if (!spec.cubeDimensions.some(d => d.dimension === ref)) {
             spec.cubeDimensions.push({ dimension: ref, sliceValue: '' });
           }

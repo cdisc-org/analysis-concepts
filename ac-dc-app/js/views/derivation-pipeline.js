@@ -1,4 +1,4 @@
-import { appState, navigateTo } from '../app.js';
+import { appState, navigateTo, rebuildSpec } from '../app.js';
 import { getAllEndpoints } from '../utils/usdm-parser.js';
 import {
   buildPipelineGraph, getUnresolvedConcepts
@@ -134,7 +134,7 @@ function renderTerminalBCPicker(slot, activeSpec) {
   if (studyBCs.length === 0) return '';
 
   // Filter BCs that have Result.Value with compatible type
-  const isNumericConcept = slot.concept === 'C.Measure';
+  const isNumericConcept = slot.concept === 'Measure';
   const compatibleBCs = [];
 
   for (const bcMapping of mapping.bcMappings || []) {
@@ -1058,6 +1058,9 @@ function buildAndAutoSelect(transformation, lib, activeSpec) {
 export function renderDerivationPipeline(container) {
   const study = appState.selectedStudy;
   const lib = appState.transformationLibrary;
+
+  // Rebuild resolved spec so downstream steps have fresh data
+  rebuildSpec();
 
   if (!study) {
     container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No study selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select a study in Step 1 first.</p></div>';

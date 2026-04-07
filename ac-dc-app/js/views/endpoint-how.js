@@ -1,4 +1,4 @@
-import { appState, navigateTo } from '../app.js';
+import { appState, navigateTo, rebuildSpec } from '../app.js';
 import { loadMethod } from '../data-loader.js';
 import { getAllEndpoints, getBiomedicalConcepts, getVisitLabels, getPopulationNames, getEndpointParameterOptions } from '../utils/usdm-parser.js';
 import {
@@ -36,6 +36,9 @@ export async function renderEndpointHow(container) {
     return;
   }
 
+  // Rebuild resolved spec so $ui fields are fresh for display-only elements
+  rebuildSpec();
+
   if (!appState.activeEndpointId || !configuredEps.find(ep => ep.id === appState.activeEndpointId)) {
     appState.activeEndpointId = configuredEps[0].id;
   }
@@ -63,10 +66,13 @@ export async function renderEndpointHow(container) {
     const isActive = ep.id === appState.activeEndpointId;
     const spec = appState.endpointSpecs[ep.id] || {};
     const originalText = ep.text || ep.description || ep.name;
-    const syntax = buildSyntaxTemplate(ep, spec, study);
-    const formalized = buildFormalizedDescription(ep, spec, study);
-    const estimandDesc = buildEstimandDescription(ep, spec, study);
-    const paramValue = getSpecParameterValue(ep.id, spec, study);
+    // Use pre-computed display values from resolved spec where available
+    const resolvedEp = appState.resolvedSpec?.endpoints?.find(r => r.id === ep.id);
+    const ui = resolvedEp?.$ui || {};
+    const syntax = ui.syntax || buildSyntaxTemplate(ep, spec, study);
+    const formalized = ui.formalized || buildFormalizedDescription(ep, spec, study);
+    const estimandDesc = ui.estimandDescription || buildEstimandDescription(ep, spec, study);
+    const paramValue = ui.parameterValue ?? getSpecParameterValue(ep.id, spec, study);
     const analyses = spec.selectedAnalyses || [];
 
     // Get derivation name for carry-forward display
@@ -581,6 +587,36 @@ function wireEndpointHowEvents(container, study, configuredEps) {
     if (el.tagName === 'INPUT') {
       el.addEventListener('input', handler);
     }
+  });
+
+  // --- Slice dimension value inputs (inline on binding cards) ---
+  container.querySelectorAll('.ep-slice-dim-input').forEach(input => {
+    const handler = () => {
+      const dim = input.dataset.dim;
+      const sliceName = input.dataset.sliceName;
+      if (!dim) return;
+      const epId = appState.activeEndpointId;
+      if (!epId) return;
+
+      ensureSpec(epId);
+      const spec = appState.endpointSpecs[epId];
+
+      // Store per-slice overrides (independent from endpoint dimension values)
+      if (sliceName) {
+        if (!spec.sliceDimensionOverrides) spec.sliceDimensionOverrides = {};
+        if (!spec.sliceDimensionOverrides[sliceName]) spec.sliceDimensionOverrides[sliceName] = {};
+        spec.sliceDimensionOverrides[sliceName][dim] = input.value;
+      }
+
+      // Also update global dimensionValues for endpoint-level dimensions (syntax preview)
+      if (!spec.dimensionValues) spec.dimensionValues = {};
+      if (!sliceName || sliceName === 'endpoint') {
+        spec.dimensionValues[dim] = input.value;
+      }
+      updateSyntaxPreview(container, epId, study);
+    };
+    input.addEventListener('change', handler);
+    input.addEventListener('input', handler);
   });
 
   // --- Remove analysis button ---

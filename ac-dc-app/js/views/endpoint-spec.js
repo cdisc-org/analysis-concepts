@@ -93,8 +93,7 @@ export function getConceptCategoryOptions() {
   options.push({ value: 'Observation', label: 'Observation (OC)', category: 'Observation' });
   for (const [catName, cat] of Object.entries(dcModel.categories)) {
     for (const conceptName of Object.keys(cat.concepts || {})) {
-      const prefixed = `C.${conceptName}`;
-      options.push({ value: prefixed, label: `${prefixed} (${catName})`, category: catName });
+      options.push({ value: conceptName, label: `${conceptName} (${catName})`, category: catName });
     }
   }
   return options;
@@ -108,10 +107,9 @@ export function getCategoryInfo(conceptCategory) {
   const dcModel = appState.dcModel;
   if (!dcModel?.categories || !conceptCategory) return null;
 
-  const bare = conceptCategory.startsWith('C.') ? conceptCategory.slice(2) : conceptCategory;
   for (const [catName, cat] of Object.entries(dcModel.categories)) {
-    if (cat.concepts?.[bare]) {
-      return { categoryName: catName, category: cat, concept: cat.concepts[bare] };
+    if (cat.concepts?.[conceptCategory]) {
+      return { categoryName: catName, category: cat, concept: cat.concepts[conceptCategory] };
     }
   }
   return null;
@@ -1035,7 +1033,7 @@ export function getMatchingAnalysisTransformations(conceptCategory) {
   if (!conceptCategory) return [];
   // Observation maps to C.Measure as proxy — observation results and C.Measure
   // outputs are the same type (Quantity), so the same analysis methods apply.
-  const matchConcept = conceptCategory === 'Observation' ? 'C.Measure' : conceptCategory;
+  const matchConcept = conceptCategory === 'Observation' ? 'Measure' : conceptCategory;
   return transforms.filter(t =>
     (t.bindings || []).some(b =>
       b.direction !== 'output' && b.dataStructureRole !== 'dimension' && b.concept === matchConcept
@@ -1120,8 +1118,7 @@ export function buildFormalizedDescription(ep, spec, study) {
 
   if (!epPhrase) {
     if (paramValue) {
-      const bare = spec.conceptCategory.startsWith('C.') ? spec.conceptCategory.slice(2) : spec.conceptCategory;
-      return `${bare} of ${paramValue}`;
+      return `${spec.conceptCategory} of ${paramValue}`;
     }
     return null;
   }
@@ -1214,8 +1211,7 @@ export function buildEstimandDescription(ep, spec, study) {
   } else if (spec.conceptCategory === 'Observation' && paramValue) {
     whatPart = paramValue;
   } else if (paramValue) {
-    const bare = spec.conceptCategory?.startsWith('C.') ? spec.conceptCategory.slice(2) : spec.conceptCategory;
-    whatPart = `${bare} of ${paramValue}`;
+    whatPart = `${spec.conceptCategory} of ${paramValue}`;
   } else {
     return null;
   }
@@ -1367,9 +1363,18 @@ export function renderDataCube(ep, spec, study) {
     spec.selectedEndpointPhrase = epPhraseOid;
   }
   const epPhrase = epPhraseOid ? allSmartPhrases.find(sp => sp.oid === epPhraseOid) : null;
+  // Build set of known concept names from DC model to distinguish concepts from dimensions
+  const knownConcepts = new Set();
+  const dcModel = appState.dcModel;
+  if (dcModel?.categories) {
+    for (const cat of Object.values(dcModel.categories)) {
+      for (const name of Object.keys(cat.concepts || {})) knownConcepts.add(name);
+    }
+  }
+
   if (epPhrase?.references) {
     for (const ref of epPhrase.references) {
-      if (ref.startsWith('C.') || ref.startsWith('M.')) continue;
+      if (knownConcepts.has(ref) || ref.startsWith('M.')) continue;
       if (!spec.cubeDimensions.some(d => d.dimension === ref)) {
         spec.cubeDimensions.push({ dimension: ref, sliceValue: '' });
       }
@@ -1381,7 +1386,7 @@ export function renderDataCube(ep, spec, study) {
     const sp = allSmartPhrases.find(s => s.oid === oid);
     if (!sp?.references) continue;
     for (const ref of sp.references) {
-      if (ref.startsWith('C.') || ref.startsWith('M.')) continue;
+      if (knownConcepts.has(ref) || ref.startsWith('M.')) continue;
       if (!spec.cubeDimensions.some(d => d.dimension === ref)) {
         spec.cubeDimensions.push({ dimension: ref, sliceValue: '' });
       }

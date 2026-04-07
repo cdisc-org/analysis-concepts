@@ -39,7 +39,7 @@ export function normalizeTransformation(t) {
   // Per-binding normalization
   for (const b of (t.bindings || [])) {
     if (b.type === 'dimensional' && !b.dataStructureRole) b.dataStructureRole = 'dimension';
-    if (!b.dataStructureRole) b.dataStructureRole = b.concept?.startsWith('C.') ? 'measure' : 'dimension';
+    if (!b.dataStructureRole) b.dataStructureRole = 'measure';
     if (!b.direction) b.direction = 'input';
     // dimensionConstraints → namedSlice inline (temporary compat)
     if (b.dimensionConstraints && !b.slice) {
@@ -142,7 +142,7 @@ export function findDerivationsForConcept(concept, library) {
  *
  * Each PipelineSlot: {
  *   key: string,              // unique key for state tracking
- *   concept: string,          // required concept (e.g., "C.Change")
+ *   concept: string,          // required concept (e.g., "Change")
  *   methodRole: string,       // e.g., "response"
  *   candidates: Derivation[], // derivations producing this concept
  *   selected: Derivation|null,// auto or user-selected
@@ -238,7 +238,7 @@ export function buildPipelineGraph(transformation, library, selectedDerivations 
  * Compute the set of concept **slots** that still need resolution.
  *
  * Each slot has a unique key (parentOid/concept/index) so that duplicate
- * concepts (e.g., two C.Measure inputs with different method roles) are
+ * concepts (e.g., two Measure inputs with different method roles) are
  * tracked independently.
  *
  * Returns an array of { slotKey, concept, roleLabel } objects.
@@ -457,7 +457,7 @@ export function getInputBindings(transformation) {
     concept: binding.concept,
     from: binding.from || null,
     type: binding.dataStructureRole === 'dimension' ? 'dimensional' : 'concept',
-    dataStructureRole: binding.dataStructureRole || (binding.concept?.startsWith('C.') ? 'measure' : 'dimension'),
+    dataStructureRole: binding.dataStructureRole || 'measure',
     description: binding.description || '',
     qualifierType: binding.qualifierType || null,
     qualifierValue: binding.qualifierValue || null,

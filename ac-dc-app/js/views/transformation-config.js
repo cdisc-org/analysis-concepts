@@ -36,10 +36,9 @@ export function getConceptOptions(role, dcModel) {
   for (const [catName, cat] of Object.entries(categories)) {
     const concepts = cat.concepts || {};
     for (const [conceptName, conceptInfo] of Object.entries(concepts)) {
-      const prefixed = `C.${conceptName}`;
       options.push({
-        value: prefixed,
-        label: `${prefixed} (${catName})`,
+        value: conceptName,
+        label: `${conceptName} (${catName})`,
         type: 'concept',
         description: conceptInfo.definition || ''
       });
@@ -644,7 +643,41 @@ export function renderInteractiveBindingsByRole(customBindings, method, dcModel,
       .map(b => `${b.methodRole}|${b.concept}`)
   );
 
-  const namedSlices = buildSliceLookup(transform);
+  const rawSlices = buildSliceLookup(transform);
+
+  // Resolve slice dimension values: per-slice user overrides > {placeholder} resolution > template defaults
+  const activeSpec = appState.endpointSpecs?.[appState.activeEndpointId] || {};
+  const dimValues = activeSpec.dimensionValues || {};
+  const sliceOverrides = activeSpec.sliceDimensionOverrides || {};
+  const resolvedParamValue = paramValue || dimValues.Parameter || '';
+  const namedSlices = {};
+  for (const [name, def] of Object.entries(rawSlices)) {
+    const fixedDims = {};
+    const overrides = sliceOverrides[name] || {};
+    for (const [dim, val] of Object.entries(def.fixedDimensions || def)) {
+      // 1. Per-slice user override takes precedence
+      if (overrides[dim] !== undefined && overrides[dim] !== '') {
+        fixedDims[dim] = overrides[dim];
+      } else if (typeof val === 'string' && val.startsWith('{') && val.endsWith('}')) {
+        // 2. Full placeholder — resolve from endpoint dimension values
+        const key = val.slice(1, -1);
+        const dimKey = key.charAt(0).toUpperCase() + key.slice(1);
+        fixedDims[dim] = dimValues[dimKey] || dimValues[key] || val;
+      } else if (typeof val === 'string' && val.includes('{')) {
+        // 3. Partial placeholder — resolve inline tokens
+        let resolved = val;
+        resolved = resolved.replace(/\{parameter\}/gi, resolvedParamValue || '{parameter}');
+        resolved = resolved.replace(/\{(\w+)\}/g, (match, key) => {
+          const dimKey = key.charAt(0).toUpperCase() + key.slice(1);
+          return dimValues[dimKey] || dimValues[key] || match;
+        });
+        fixedDims[dim] = resolved;
+      } else {
+        fixedDims[dim] = val;  // 4. Literal — preserve as-is
+      }
+    }
+    namedSlices[name] = { fixedDimensions: fixedDims };
+  }
 
   let html = '';
 
@@ -701,13 +734,23 @@ export function renderInteractiveBindingsByRole(customBindings, method, dcModel,
         ? `<div style="font-size:10px; color:var(--cdisc-primary); margin-top:2px;">\u2190 from endpoint: "${paramValue}"</div>`
         : '';
 
-      // Slice resolution annotation
+      // Slice resolution annotation — editable inline inputs for each dimension value
       let sliceAnnotation = '';
       if (b.slice && namedSlices[b.slice]) {
         const sliceDef = namedSlices[b.slice];
         const dims = sliceDef.fixedDimensions || sliceDef;
-        const dimStr = Object.entries(dims).map(([k, v]) => `${k} = ${v}`).join(', ');
-        sliceAnnotation = `<div style="font-size:10px; color:var(--cdisc-accent2); margin-top:2px;">slice: ${b.slice} \u2192 ${dimStr}</div>`;
+        const dimInputs = Object.entries(dims).map(([k, v]) => {
+          const inputId = `slice-dim-${b.slice}-${k}-${role.name}-${i}`;
+          return `<span style="display:inline-flex; align-items:center; gap:2px;">
+            <span class="badge badge-teal" style="font-size:9px; padding:0 4px;">${k}</span>=<input
+              class="ep-slice-dim-input" data-slice-name="${b.slice}" data-dim="${k}" data-role="${role.name}" data-binding-idx="${i}"
+              id="${inputId}" value="${v}" placeholder="${k}"
+              style="font-size:10px; padding:1px 4px; border:1px solid var(--cdisc-border); border-radius:3px; width:${Math.max(60, v.length * 7)}px; color:var(--cdisc-accent2); background:transparent;">
+          </span>`;
+        }).join(' ');
+        sliceAnnotation = `<div style="font-size:10px; color:var(--cdisc-accent2); margin-top:4px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+          <span style="color:var(--cdisc-text-secondary);">slice: ${b.slice} →</span> ${dimInputs}
+        </div>`;
       }
 
       // Value type badge
@@ -1094,7 +1137,7 @@ export async function renderTransformationConfig(container) {
               ${slot.dimensions.length > 0 ? `
                 <div class="slot-card-stats" style="margin-top:4px;">
                   Indexed by: ${slot.dimensions.map(id => {
-                    // For interaction terms like "C.Measure:Treatment", display each part
+                    // For interaction terms like "Measure:Treatment", display each part
                     if (id.includes(':')) {
                       return id.split(':').map(part => {
                         return displayConcept(part, conceptDisplayOpts[part]);
@@ -1158,16 +1201,16 @@ export async function renderTransformationConfig(container) {
 
     select.addEventListener('change', () => {
       const value = select.value;
-      // Show dim constraint dropdown for derivation concepts (C.Measure, C.Change, etc.)
+      // Show dim constraint dropdown for measure concepts (Change, Measure, etc.)
+      const selectedOption = select.options[select.selectedIndex];
+      const type = selectedOption.dataset.type || 'concept';
       if (dimSelect) {
-        dimSelect.style.display = (value && value.startsWith('C.')) ? '' : 'none';
+        dimSelect.style.display = (value && type === 'concept') ? '' : 'none';
       }
       if (!value) return;
 
       // For dimensional concepts (no dim constraint needed), add immediately
-      const selectedOption = select.options[select.selectedIndex];
-      const type = selectedOption.dataset.type || 'concept';
-      if (type === 'dimensional' || !value.startsWith('C.')) {
+      if (type === 'dimensional') {
         appState.resolvedBindings.push({
           methodRole: select.dataset.role,
           concept: value,

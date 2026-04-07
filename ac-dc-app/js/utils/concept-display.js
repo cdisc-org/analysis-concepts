@@ -27,7 +27,7 @@ export function buildSliceLookup(transformation) {
 
 /**
  * Normalize an inputConcept entry that may be either a plain string
- * ("C.Measure") or an object ({ concept: "C.Measure", note: "..." }).
+ * ("Measure") or an object ({ concept: "Measure", note: "..." }).
  * Returns the bare concept string in all cases.
  */
 export function normalizeConcept(ic) {
@@ -46,7 +46,7 @@ export function normalizeConcept(ic) {
  * 2. DataType-based: concept + dataType → byDataType in concept-variable-mappings
  * 3. Fallback: concept → generic variable string from concept-variable-mappings
  *
- * @param {string} conceptName - Canonical concept name (e.g., "C.Measure", "Treatment")
+ * @param {string} conceptName - Canonical concept name (e.g., "Measure", "Treatment")
  * @param {Object} [options] - Resolution hints
  * @param {string} [options.dataType] - Method dataType (e.g., "decimal", "code")
  * @param {string} [options.qualifierType] - Qualifier type (e.g., "IntentType", "DerivationStatus", "ReferenceFrame")
@@ -78,7 +78,7 @@ export function displayConcept(conceptName, options) {
   const modelKey = combined ? mode.slice(9) : mode;
   if (!modelKey || !appState.conceptMappings?.[modelKey]) return conceptName + dimSuffix;
 
-  // Strip @suffix (e.g., "C.Measure@Baseline" → "C.Measure") for mapping lookup;
+  // Strip @suffix (e.g., "Measure@Baseline" → "Measure") for mapping lookup;
   // the suffix is a formula display artefact, not part of the concept identifier
   const lookupName = conceptName.includes('@') ? conceptName.split('@')[0] : conceptName;
 
@@ -88,10 +88,7 @@ export function displayConcept(conceptName, options) {
   if (opts.qualifierType && opts.qualifierValue && appState.qualifierTypes) {
     const qt = appState.qualifierTypes?.qualifierTypes?.[opts.qualifierType];
     if (qt?.implementationMapping?.[modelKey]) {
-      // The concept name in the qualifier mapping is the bare name (e.g., "Treatment", "Measure")
-      // Strip "C." prefix for lookup
-      const bareName = lookupName.startsWith('C.') ? lookupName.slice(2) : lookupName;
-      const implMap = qt.implementationMapping[modelKey][bareName];
+      const implMap = qt.implementationMapping[modelKey][lookupName];
       if (implMap?.[opts.qualifierValue]) {
         variable = implMap[opts.qualifierValue];
       }
@@ -118,7 +115,7 @@ export function displayConcept(conceptName, options) {
     }
   }
 
-  // Preserve inline @suffix for display (e.g., C.Measure@Baseline → AVAL@Baseline)
+  // Preserve inline @suffix for display (e.g., Measure@Baseline → AVAL@Baseline)
   const inlineSuffix = hasInlineSuffix ? conceptName.slice(conceptName.indexOf('@')) : '';
 
   if (!variable) return conceptName + dimSuffix;
@@ -163,7 +160,7 @@ export function formatSliceDisplay(sliceName, namedSlices) {
  * Resolve the dimensional shape and model provenance for a binding.
  *
  * Resolution order:
- * 1. C.* concept → find category in DC model → get dimensionalRelationships
+ * 1. Concept → find category in DC model → get dimensionalRelationships
  *    → compute free/fixed dimensions based on slice
  * 2. DC dimensionalConcept (Treatment, Population, etc.) → lookup in DC + OC
  * 3. OC sharedDimension only (Site, Age) → lookup in OC sharedDimensions
@@ -191,20 +188,19 @@ export function resolveBindingShape(conceptName, binding, dcModel, ocModel, name
     qualifierValue: null
   };
 
-  // === Path 1: C.* concept → DC category lookup ===
-  if (conceptName.startsWith('C.') && dcModel) {
-    const bareName = conceptName.slice(2);
+  // === Path 1: Concept → DC category lookup ===
+  if (dcModel) {
     const categories = dcModel.categories || {};
 
     for (const [catName, cat] of Object.entries(categories)) {
       const concepts = cat.concepts || {};
-      if (concepts[bareName]) {
+      if (concepts[conceptName]) {
         result.layer = 'DC';
         result.source = 'category';
         result.categoryName = catName;
 
         // Get value type from the concept's result definition
-        const conceptDef = concepts[bareName];
+        const conceptDef = concepts[conceptName];
         const vt = conceptDef.result?.valueType;
         result.valueType = Array.isArray(vt) ? vt[0] : (vt || null);
 

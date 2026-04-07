@@ -161,8 +161,11 @@ export function parseUSDM(usdm) {
  */
 export function getAllEndpoints(parsedStudy) {
   const endpoints = [];
+  const seen = new Set();
   for (const obj of parsedStudy.objectives) {
     for (const ep of obj.endpoints) {
+      if (seen.has(ep.id)) continue;
+      seen.add(ep.id);
       endpoints.push({
         ...ep,
         objectiveId: obj.id,

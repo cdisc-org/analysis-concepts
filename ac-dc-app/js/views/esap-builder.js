@@ -1,4 +1,4 @@
-import { appState, navigateTo } from '../app.js';
+import { appState, navigateTo, rebuildSpec } from '../app.js';
 import { getAllEndpoints, getVisitLabels } from '../utils/usdm-parser.js';
 import {
   getFormalizedDescription, buildEstimandFrameworkHtml, buildEstimandDescription,
@@ -75,6 +75,9 @@ function groupNarrativesForPicker(narratives, nciToSection, esapSectionKey) {
 // ===== Main render function =====
 
 export async function renderEsapBuilder(container) {
+  // Rebuild resolved spec so JSON export reflects latest state
+  rebuildSpec();
+
   const study = appState.selectedStudy;
   if (!study) {
     container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No study selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select a study in Step 1 first.</p></div>';

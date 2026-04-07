@@ -1,13 +1,7 @@
 import { appState, navigateTo } from '../app.js';
 import { getAllEndpoints } from '../utils/usdm-parser.js';
-import {
-  buildSyntaxTemplate, buildFormalizedDescription, buildEstimandDescription,
-  getSpecParameterValue, getTransformationByOid, getDerivationTransformationByOid
-} from './endpoint-spec.js';
-import { buildResolvedSpecification, buildMergedDataStructure } from '../utils/instance-serializer.js';
+import { getTransformationByOid } from './endpoint-spec.js';
 import { displayConcept } from '../utils/concept-display.js';
-import { getMethodConfigurations } from '../utils/transformation-linker.js';
-import { buildResolvedExpressionObject } from './transformation-config.js';
 
 export function renderEndpointSummary(container) {
   const study = appState.selectedStudy;
@@ -16,75 +10,59 @@ export function renderEndpointSummary(container) {
     return;
   }
 
-  const allEndpoints = getAllEndpoints(study);
-  const selectedEps = allEndpoints.filter(ep => appState.selectedEndpoints.includes(ep.id));
-  const configuredEps = selectedEps.filter(ep => {
-    const spec = appState.endpointSpecs[ep.id];
-    return spec?.conceptCategory;
-  });
+  // Read from resolved spec (JSON-driven UI)
+  const resolvedSpec = appState.resolvedSpec;
+  const resolvedEndpoints = resolvedSpec?.endpoints || [];
 
-  if (configuredEps.length === 0) {
+  // Filter to endpoints that have been configured (have a concept category)
+  const configuredReps = resolvedEndpoints.filter(rep => rep.$ui?.conceptCategory);
+
+  if (configuredReps.length === 0) {
     container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No endpoints configured</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please configure endpoint specifications in Step 3 first.</p></div>';
     return;
   }
 
-  // Save analysis specs to esapAnalyses for later eSAP generation
-  for (const ep of configuredEps) {
-    const spec = appState.endpointSpecs[ep.id];
-    if (spec?.selectedTransformationOid && spec.useInEsap !== false) {
-      const transform = getTransformationByOid(spec.selectedTransformationOid);
-      appState.esapAnalyses[ep.id] = {
+  // Save analysis specs to esapAnalyses for later eSAP generation (still reads raw spec for mutation)
+  const allEndpoints = getAllEndpoints(study);
+  for (const rep of configuredReps) {
+    const rawSpec = appState.endpointSpecs[rep.id];
+    const ep = allEndpoints.find(e => e.id === rep.id);
+    if (rawSpec?.selectedTransformationOid && rep.$ui.useInEsap) {
+      const transform = getTransformationByOid(rawSpec.selectedTransformationOid);
+      appState.esapAnalyses[rep.id] = {
         transformation: transform,
-        endpointSpec: spec,
-        resolvedSentence: buildFormalizedDescription(ep, spec, study) || '',
-        resolvedBindings: spec.resolvedBindings || null,
-        activeInteractions: spec.activeInteractions || [],
-        dimensionalSliceValues: spec.dimensionValues || {},
-        methodConfig: spec.methodConfigOverrides || {}
+        endpointSpec: rawSpec,
+        resolvedSentence: rep.$ui.formalized || '',
+        resolvedBindings: rawSpec.resolvedBindings || null,
+        activeInteractions: rawSpec.activeInteractions || [],
+        dimensionalSliceValues: rawSpec.dimensionValues || {},
+        methodConfig: rawSpec.methodConfigOverrides || {}
       };
     }
   }
 
-  const cards = configuredEps.map(ep => {
-    const spec = appState.endpointSpecs[ep.id];
-    const originalText = ep.text || ep.description || ep.name;
-    const formalized = buildFormalizedDescription(ep, spec, study);
-    const estimandDesc = buildEstimandDescription(ep, spec, study);
-    const syntax = buildSyntaxTemplate(ep, spec, study);
-    const paramValue = getSpecParameterValue(ep.id, spec, study);
+  const derivLib = appState.transformationLibrary?.derivationTransformations || [];
 
-    const derivation = spec.selectedDerivationOid
-      ? getDerivationTransformationByOid(spec.selectedDerivationOid) : null;
-    const transform = spec.selectedTransformationOid
-      ? getTransformationByOid(spec.selectedTransformationOid) : null;
-
-    // Build resolved expression
-    const customBindings = spec.resolvedBindings || transform?.bindings?.filter(b => b.direction !== 'output') || [];
-    const method = transform?.usesMethod ? appState.methodsCache?.[transform.usesMethod] : null;
-    const resolvedExpr = method ? buildResolvedExpressionObject(customBindings, method, spec.activeInteractions || []) : null;
-
-    // Build expanded detail sections
-    const bindings = customBindings;
-    const mergedDSD = buildMergedDataStructure(spec, transform);
-    const resolvedSlices = (mergedDSD.slices || []).map(s => ({
-      name: s.name,
-      resolvedValues: s.fixedDimensions || {}
-    }));
-    const methodConfigs = method ? getMethodConfigurations(method, transform, spec.methodConfigOverrides || {}) : [];
-    const derivChain = spec.derivationChain || [];
-    const derivLib = appState.transformationLibrary?.derivationTransformations || [];
+  const cards = configuredReps.map(rep => {
+    const ui = rep.$ui;
+    const bindings = ui.resolvedBindings || [];
+    const resolvedSlices = ui.resolvedSlices || [];
+    const methodConfigs = ui.methodConfigs || [];
+    const derivChain = ui.derivationChain || [];
+    const resolvedExpr = ui.resolvedExpression;
+    const syntax = ui.syntax;
 
     return `
       <div class="ep-summary-card">
         <!-- Header -->
         <div class="ep-summary-header">
-          <strong style="font-size:15px;">${ep.name}</strong>
-          <span class="badge ${ep.level.includes('Primary') ? 'badge-primary' : 'badge-secondary'}">${ep.level}</span>
-          ${spec.conceptCategory ? `<span class="badge badge-teal">${spec.conceptCategory}</span>` : ''}
+          <strong style="font-size:15px;">${rep.name}</strong>
+          <span class="badge ${rep.level.includes('Primary') ? 'badge-primary' : 'badge-secondary'}">${rep.level}</span>
+          ${ui.conceptCategory ? `<span class="badge badge-teal">${ui.conceptCategory}</span>` : ''}
           <div style="margin-left:auto; display:flex; gap:6px;">
-            <button class="btn btn-sm btn-secondary ep-detail-toggle" data-ep-id="${ep.id}" style="font-size:11px;">Detail</button>
-            <button class="btn btn-sm btn-secondary ep-json-toggle" data-ep-id="${ep.id}" style="font-size:11px;">JSON</button>
-            <button class="btn btn-sm btn-secondary ep-edit-btn" data-ep-id="${ep.id}" style="font-size:11px;">Edit</button>
+            <button class="btn btn-sm btn-secondary ep-detail-toggle" data-ep-id="${rep.id}" style="font-size:11px;">Detail</button>
+            <button class="btn btn-sm btn-secondary ep-json-toggle" data-ep-id="${rep.id}" style="font-size:11px;">JSON</button>
+            <button class="btn btn-sm btn-secondary ep-edit-btn" data-ep-id="${rep.id}" style="font-size:11px;">Edit</button>
           </div>
         </div>
 
@@ -93,19 +71,19 @@ export function renderEndpointSummary(container) {
           <div>
             <div class="ep-summary-col-label" style="color:var(--cdisc-text-secondary);">Original (Protocol)</div>
             <div class="ep-summary-col-text" style="background:var(--cdisc-background); border-left-color:var(--cdisc-text-secondary); color:var(--cdisc-text-secondary);">
-              ${originalText}
+              ${rep.originalText}
             </div>
           </div>
           <div>
             <div class="ep-summary-col-label" style="color:var(--cdisc-primary);">Formalized (Repaired)</div>
             <div class="ep-summary-col-text" style="background:var(--cdisc-primary-light); border-left-color:var(--cdisc-primary); font-weight:500;">
-              ${formalized || '<span style="color:var(--cdisc-text-secondary); font-style:italic;">Not yet formalized</span>'}
+              ${ui.formalized || '<span style="color:var(--cdisc-text-secondary); font-style:italic;">Not yet formalized</span>'}
             </div>
           </div>
           <div>
             <div class="ep-summary-col-label" style="color:var(--cdisc-accent2);">Estimand (ICH E9(R1))</div>
             <div class="ep-summary-col-text" style="background:rgba(0,133,124,0.06); border-left-color:var(--cdisc-accent2); font-weight:500;">
-              ${estimandDesc || '<span style="color:var(--cdisc-text-secondary); font-style:italic;">No summary measure tagged</span>'}
+              ${ui.estimandDescription || '<span style="color:var(--cdisc-text-secondary); font-style:italic;">No summary measure tagged</span>'}
             </div>
           </div>
         </div>
@@ -115,18 +93,18 @@ export function renderEndpointSummary(container) {
           <div class="ep-summary-detail">
             <div class="ep-summary-detail-label">Endpoint (What)</div>
             <div style="font-size:13px;">
-              <strong>${displayConcept(spec.conceptCategory)}</strong>
-              ${derivation ? ` — ${derivation.name}` : ''}
-              ${paramValue ? `<br><span style="color:var(--cdisc-text-secondary);">Parameter: ${paramValue}</span>` : ''}
+              <strong>${displayConcept(ui.conceptCategory)}</strong>
+              ${ui.derivationName ? ` — ${ui.derivationName}` : ''}
+              ${ui.parameterValue ? `<br><span style="color:var(--cdisc-text-secondary);">Parameter: ${ui.parameterValue}</span>` : ''}
             </div>
           </div>
           <div class="ep-summary-detail">
             <div class="ep-summary-detail-label">Analysis (How)</div>
             <div style="font-size:13px;">
-              ${transform ? `
-                <strong>${transform.name}</strong>
-                ${transform.usesMethod ? `<br><span style="color:var(--cdisc-text-secondary);">Method: ${transform.usesMethod}</span>` : ''}
-                ${transform.acCategory ? `<br><span class="badge badge-secondary" style="font-size:10px;">${transform.acCategory}</span>` : ''}
+              ${ui.transformName ? `
+                <strong>${ui.transformName}</strong>
+                ${ui.transformMethod ? `<br><span style="color:var(--cdisc-text-secondary);">Method: ${ui.transformMethod}</span>` : ''}
+                ${ui.transformCategory ? `<br><span class="badge badge-secondary" style="font-size:10px;">${ui.transformCategory}</span>` : ''}
               ` : '<span style="color:var(--cdisc-text-secondary); font-style:italic;">No analysis selected</span>'}
             </div>
           </div>
@@ -159,7 +137,7 @@ export function renderEndpointSummary(container) {
         ` : ''}
 
         <!-- Expanded Detail Panel (hidden by default) -->
-        <div class="ep-detail-panel" data-ep-id="${ep.id}" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--cdisc-border);">
+        <div class="ep-detail-panel" data-ep-id="${rep.id}" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--cdisc-border);">
 
           ${bindings.length > 0 ? `
           <div style="margin-bottom:14px;">
@@ -171,7 +149,7 @@ export function renderEndpointSummary(container) {
                   <tr>
                     <td style="font-weight:600;">${b.methodRole || ''}</td>
                     <td>
-                      <code>${displayConcept(b.concept, { dataType: spec.dataType, qualifierType: b.qualifierType, qualifierValue: b.qualifierValue })}</code>
+                      <code>${displayConcept(b.concept, { dataType: ui.dataType, qualifierType: b.qualifierType, qualifierValue: b.qualifierValue })}</code>
                       ${b.qualifierType && b.qualifierValue ? `<br><span style="font-size:10px; color:var(--cdisc-text-secondary);">${b.qualifierType}: ${b.qualifierValue}</span>` : ''}
                     </td>
                     <td>${b.requiredValueType ? `<span style="font-size:11px;">${b.requiredValueType}</span>` : ''}</td>
@@ -235,32 +213,32 @@ export function renderEndpointSummary(container) {
               }).join('')}
               <span style="padding:0 6px; color:var(--cdisc-text-secondary);">→</span>
               <div style="padding:6px 10px; border:1px solid var(--cdisc-primary); border-radius:var(--radius); background:var(--cdisc-primary-light); font-size:11px; white-space:nowrap;">
-                <strong>${transform?.name || 'Analysis'}</strong>
-                <div style="font-size:10px; color:var(--cdisc-text-secondary);">${transform?.usesMethod || ''}</div>
+                <strong>${ui.transformName || 'Analysis'}</strong>
+                <div style="font-size:10px; color:var(--cdisc-text-secondary);">${ui.transformMethod || ''}</div>
               </div>
             </div>
           </div>
           ` : ''}
 
-          ${spec.activeInteractions?.length > 0 ? `
+          ${ui.activeInteractions?.length > 0 ? `
           <div style="margin-bottom:14px;">
             <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Interactions</div>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              ${spec.activeInteractions.map(i => `<code style="font-size:11px; padding:2px 6px; background:var(--cdisc-background); border-radius:var(--radius);">${i}</code>`).join('')}
+              ${ui.activeInteractions.map(i => `<code style="font-size:11px; padding:2px 6px; background:var(--cdisc-background); border-radius:var(--radius);">${i}</code>`).join('')}
             </div>
           </div>
           ` : ''}
         </div>
 
         <!-- JSON Panel (hidden by default) -->
-        <div class="ep-json-panel" data-ep-id="${ep.id}" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--cdisc-border);">
+        <div class="ep-json-panel" data-ep-id="${rep.id}" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--cdisc-border);">
           <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">eSAP Specification (JSON)</div>
-          <pre style="font-family:'SF Mono','Fira Code','Consolas',monospace; font-size:11px; background:var(--cdisc-background); padding:14px; border-radius:var(--radius); overflow-x:auto; max-height:400px; overflow-y:auto; line-height:1.5; white-space:pre-wrap;" class="ep-json-content" data-ep-id="${ep.id}"></pre>
+          <pre style="font-family:'SF Mono','Fira Code','Consolas',monospace; font-size:11px; background:var(--cdisc-background); padding:14px; border-radius:var(--radius); overflow-x:auto; max-height:400px; overflow-y:auto; line-height:1.5; white-space:pre-wrap;" class="ep-json-content" data-ep-id="${rep.id}"></pre>
         </div>
       </div>`;
   }).join('');
 
-  const hasAnyAnalysis = configuredEps.some(ep => appState.endpointSpecs[ep.id]?.selectedTransformationOid);
+  const hasAnyAnalysis = configuredReps.some(rep => rep.$ui.selectedTransformationOid);
 
   container.innerHTML = `
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
@@ -281,15 +259,15 @@ export function renderEndpointSummary(container) {
     <!-- Summary stats -->
     <div style="display:flex; gap:16px; margin-bottom:24px;">
       <div class="card" style="padding:12px 20px; flex:1; text-align:center;">
-        <div style="font-size:24px; font-weight:700; color:var(--cdisc-primary);">${configuredEps.length}</div>
+        <div style="font-size:24px; font-weight:700; color:var(--cdisc-primary);">${configuredReps.length}</div>
         <div style="font-size:11px; color:var(--cdisc-text-secondary);">Endpoints Configured</div>
       </div>
       <div class="card" style="padding:12px 20px; flex:1; text-align:center;">
-        <div style="font-size:24px; font-weight:700; color:var(--cdisc-accent2);">${configuredEps.filter(ep => appState.endpointSpecs[ep.id]?.selectedTransformationOid).length}</div>
+        <div style="font-size:24px; font-weight:700; color:var(--cdisc-accent2);">${configuredReps.filter(rep => rep.$ui.selectedTransformationOid).length}</div>
         <div style="font-size:11px; color:var(--cdisc-text-secondary);">With Analysis</div>
       </div>
       <div class="card" style="padding:12px 20px; flex:1; text-align:center;">
-        <div style="font-size:24px; font-weight:700; color:var(--cdisc-success);">${configuredEps.filter(ep => appState.endpointSpecs[ep.id]?.estimandSummaryPattern).length}</div>
+        <div style="font-size:24px; font-weight:700; color:var(--cdisc-success);">${configuredReps.filter(rep => rep.$ui.estimandSummaryPattern).length}</div>
         <div style="font-size:11px; color:var(--cdisc-text-secondary);">With Estimand</div>
       </div>
     </div>
@@ -317,13 +295,12 @@ export function renderEndpointSummary(container) {
       panel.style.display = isOpen ? 'none' : 'block';
       if (jsonPanel) jsonPanel.style.display = 'none';
       btn.textContent = isOpen ? 'Detail' : 'Hide Detail';
-      // Reset JSON button text
       const jsonBtn = container.querySelector(`.ep-json-toggle[data-ep-id="${epId}"]`);
       if (jsonBtn) jsonBtn.textContent = 'JSON';
     });
   });
 
-  // JSON toggle buttons
+  // JSON toggle buttons — now uses cached resolvedSpec instead of rebuilding
   container.querySelectorAll('.ep-json-toggle').forEach(btn => {
     btn.addEventListener('click', () => {
       const epId = btn.dataset.epId;
@@ -334,19 +311,18 @@ export function renderEndpointSummary(container) {
       panel.style.display = isOpen ? 'none' : 'block';
       if (detailPanel) detailPanel.style.display = 'none';
       btn.textContent = isOpen ? 'JSON' : 'Hide JSON';
-      // Reset detail button text
       const detailBtn = container.querySelector(`.ep-detail-toggle[data-ep-id="${epId}"]`);
       if (detailBtn) detailBtn.textContent = 'Detail';
 
-      // Populate JSON on first open
+      // Populate JSON on first open — read from cached resolvedSpec
       if (!isOpen) {
         const pre = panel.querySelector('.ep-json-content');
         if (pre && !pre.dataset.populated) {
-          const ep = configuredEps.find(e => e.id === epId);
-          if (ep) {
-            const resolved = buildResolvedSpecification(appState, [ep], study);
-            const epJson = resolved.endpoints?.[0] || {};
-            pre.textContent = JSON.stringify(epJson, null, 2);
+          const rep = configuredReps.find(r => r.id === epId);
+          if (rep) {
+            // Strip $ui from the JSON export view
+            const { $ui, ...exportShape } = rep;
+            pre.textContent = JSON.stringify(exportShape, null, 2);
             pre.dataset.populated = 'true';
           }
         }

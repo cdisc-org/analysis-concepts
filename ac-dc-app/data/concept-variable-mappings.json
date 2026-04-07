@@ -1,52 +1,52 @@
 {
   "adam": {
     "concepts": {
-      "C.Measure": {
+      "Measure": {
         "variable": "AVAL/AVALC",
         "byDataType": { "decimal": "AVAL", "code": "AVALC", "string": "AVALC" },
         "notes": "Analysis value (numeric or character)"
       },
-      "C.Change": {
+      "Change": {
         "variable": "CHG",
         "byDataType": { "decimal": "CHG" },
         "notes": "Change from baseline"
       },
-      "C.PercentChange": {
+      "PercentChange": {
         "variable": "PCHG",
         "byDataType": { "decimal": "PCHG" },
         "notes": "Percent change from baseline"
       },
-      "C.Shift": {
+      "Shift": {
         "variable": "AVALC",
         "byDataType": { "code": "AVALC", "string": "AVALC" },
         "notes": "Shift category (character)"
       },
-      "C.PeakValue": {
+      "PeakValue": {
         "variable": "AVAL",
         "byDataType": { "decimal": "AVAL" },
         "notes": "Peak/extreme analysis value"
       },
-      "C.AreaUnderCurve": {
+      "AreaUnderCurve": {
         "variable": "AVAL",
         "byDataType": { "decimal": "AVAL" },
         "notes": "AUC-derived analysis value"
       },
-      "C.EventCount": {
+      "EventCount": {
         "variable": "AVAL",
         "byDataType": { "decimal": "AVAL", "integer": "AVAL" },
         "notes": "Count of events"
       },
-      "C.TimeToEvent": {
+      "TimeToEvent": {
         "variable": "AVAL",
         "byDataType": { "decimal": "AVAL" },
         "notes": "Time-to-event duration"
       },
-      "C.Flag": {
+      "Flag": {
         "variable": "AVALC/xxxFL",
         "byDataType": { "code": "AVALC", "boolean": "xxxFL", "string": "AVALC" },
         "notes": "Flag indicator variable"
       },
-      "C.Category": {
+      "Category": {
         "variable": "AVALC",
         "byDataType": { "code": "AVALC", "string": "AVALC" },
         "notes": "Categorized analysis value"
@@ -112,21 +112,21 @@
   },
   "omop": {
     "concepts": {
-      "C.Measure": {
+      "Measure": {
         "variable": "measurement.value_as_number",
         "byDataType": { "decimal": "measurement.value_as_number", "code": "measurement.value_as_concept_id", "string": "measurement.value_as_string" },
         "notes": "Measurement value"
       },
-      "C.Change": { "variable": "measurement.value_as_number", "notes": "Derived change value" },
-      "C.PeakValue": { "variable": "measurement.value_as_number", "notes": "Peak measurement value" },
-      "C.EventCount": { "variable": "observation.value_as_number", "notes": "Event count observation" },
-      "C.TimeToEvent": { "variable": "observation.value_as_number", "notes": "Time-to-event observation" },
-      "C.Flag": {
+      "Change": { "variable": "measurement.value_as_number", "notes": "Derived change value" },
+      "PeakValue": { "variable": "measurement.value_as_number", "notes": "Peak measurement value" },
+      "EventCount": { "variable": "observation.value_as_number", "notes": "Event count observation" },
+      "TimeToEvent": { "variable": "observation.value_as_number", "notes": "Time-to-event observation" },
+      "Flag": {
         "variable": "observation.value_as_concept_id",
         "byDataType": { "boolean": "observation.value_as_concept_id", "code": "observation.value_as_concept_id" },
         "notes": "Flag as concept reference"
       },
-      "C.Shift": { "variable": "observation.value_as_string", "notes": "Shift as string observation" }
+      "Shift": { "variable": "observation.value_as_string", "notes": "Shift as string observation" }
     },
     "dimensions": {
       "Subject": { "variable": "person_id", "notes": "Person identifier" },
@@ -144,52 +144,52 @@
   },
   "fhir": {
     "concepts": {
-      "C.Measure": {
+      "Measure": {
         "variable": "Observation.valueQuantity.value",
         "byDataType": { "decimal": "Observation.valueQuantity.value", "code": "Observation.valueCodeableConcept", "string": "Observation.valueString" },
         "notes": "Observation value (R5 value[x])"
       },
-      "C.Change": {
+      "Change": {
         "variable": "Observation.valueQuantity.value",
         "byDataType": { "decimal": "Observation.valueQuantity.value" },
         "notes": "Change from baseline observation"
       },
-      "C.PercentChange": {
+      "PercentChange": {
         "variable": "Observation.valueQuantity.value",
         "byDataType": { "decimal": "Observation.valueQuantity.value" },
         "notes": "Percent change observation"
       },
-      "C.Shift": {
+      "Shift": {
         "variable": "Observation.valueCodeableConcept",
         "byDataType": { "code": "Observation.valueCodeableConcept", "string": "Observation.valueString" },
         "notes": "Shift category observation"
       },
-      "C.PeakValue": {
+      "PeakValue": {
         "variable": "Observation.valueQuantity.value",
         "byDataType": { "decimal": "Observation.valueQuantity.value" },
         "notes": "Peak value observation"
       },
-      "C.AreaUnderCurve": {
+      "AreaUnderCurve": {
         "variable": "Observation.valueQuantity.value",
         "byDataType": { "decimal": "Observation.valueQuantity.value" },
         "notes": "AUC-derived observation"
       },
-      "C.EventCount": {
+      "EventCount": {
         "variable": "Observation.valueInteger",
         "byDataType": { "decimal": "Observation.valueQuantity.value", "integer": "Observation.valueInteger" },
         "notes": "Event count observation"
       },
-      "C.TimeToEvent": {
+      "TimeToEvent": {
         "variable": "Observation.valueQuantity.value",
         "byDataType": { "decimal": "Observation.valueQuantity.value" },
         "notes": "Time-to-event duration"
       },
-      "C.Flag": {
+      "Flag": {
         "variable": "Observation.valueBoolean",
         "byDataType": { "boolean": "Observation.valueBoolean", "code": "Observation.valueCodeableConcept", "string": "Observation.valueString" },
         "notes": "Flag indicator observation"
       },
-      "C.Category": {
+      "Category": {
         "variable": "Observation.valueCodeableConcept",
         "byDataType": { "code": "Observation.valueCodeableConcept", "string": "Observation.valueString" },
         "notes": "Categorized observation value"
