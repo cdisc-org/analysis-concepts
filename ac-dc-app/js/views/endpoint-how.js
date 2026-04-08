@@ -371,10 +371,6 @@ export async function renderEndpointHow(container) {
                 <input type="checkbox" class="ep-write-usdm" data-ep-id="${ep.id}" ${spec.writeBackToUsdm ? 'checked' : ''}>
                 Write back to USDM
               </label>
-              <div style="display:flex; align-items:center; gap:6px; margin-left:auto;">
-                <span style="font-size:11px; font-weight:600; color:var(--cdisc-text-secondary);">Target Dataset:</span>
-                <input class="config-input ep-target-dataset" data-ep-id="${ep.id}" value="${spec.targetDataset || ''}" placeholder="e.g., ADQS" style="width:80px; font-size:11px; padding:2px 6px;">
-              </div>
             </div>
           </div>
         </div>
@@ -862,16 +858,6 @@ function wireEndpointHowEvents(container, study, configuredEps) {
       if (!epId) return;
       ensureSpec(epId);
       appState.endpointSpecs[epId].writeBackToUsdm = cb.checked;
-    });
-  });
-
-  // --- Target dataset input ---
-  container.querySelectorAll('.ep-target-dataset').forEach(input => {
-    input.addEventListener('change', () => {
-      const epId = input.dataset.epId;
-      if (!epId) return;
-      ensureSpec(epId);
-      appState.endpointSpecs[epId].targetDataset = input.value.trim().toUpperCase();
     });
   });
 

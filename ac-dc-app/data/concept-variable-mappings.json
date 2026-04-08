@@ -2,9 +2,9 @@
   "adam": {
     "concepts": {
       "Measure": {
-        "variable": "AVAL/AVALC",
-        "byDataType": { "decimal": "AVAL", "code": "AVALC", "string": "AVALC" },
-        "notes": "Analysis value (numeric or character)"
+        "variable": "AVAL/AVALC/BASE",
+        "byDataType": { "decimal": "AVAL", "baseline": "BASE", "code": "AVALC", "string": "AVALC" },
+        "notes": "Analysis value (numeric or character). BASE is the baseline value."
       },
       "Change": {
         "variable": "CHG",
@@ -79,9 +79,9 @@
         "notes": "Actual/planned treatment"
       },
       "Population": {
-        "variable": "SAFFL/ITTFL",
-        "byDataType": { "code": "SAFFL", "boolean": "SAFFL", "string": "SAFFL" },
-        "notes": "Population flag variables"
+        "variable": "ITTFL/SAFFL/EFFFL",
+        "byDataType": { "intent_to_treat": "ITTFL", "safety": "SAFFL", "efficacy": "EFFFL" },
+        "notes": "Population flag variables (Y/N)"
       },
       "Period": {
         "variable": "APERIOD/APERIODC",
@@ -89,9 +89,9 @@
         "notes": "Analysis period (numeric/character)"
       },
       "Site": {
-        "variable": "SITEID",
-        "byDataType": { "id": "SITEID", "string": "SITEID", "code": "SITEID" },
-        "notes": "Study site identifier"
+        "variable": "SITEID/SITEGR1",
+        "byDataType": { "id": "SITEID", "code": "SITEGR1", "string": "SITEID" },
+        "notes": "Study site identifier (SITEID) or pooled site group (SITEGR1)"
       },
       "Visit": {
         "variable": "VISIT/VISITNUM",

@@ -95,6 +95,60 @@
         "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/fisher.test.html",
         "notes": "Fisher's exact test for 2x2 contingency tables. Both response and fixed_effect must be categorical/binary."
       }
+    ],
+    "M.ANCOVA": [
+      {
+        "methodOid": "M.ANCOVA",
+        "language": "R",
+        "packages": ["stats", "car", "emmeans"],
+        "function": "lm",
+        "callTemplate": "model <- lm(<response> ~ <covariate> + <fixed_effect>, data = <dataset>)\ncar::Anova(model, type = \"<ss_type>\")\nemmeans::emmeans(model, ~ <fixed_effect>)",
+        "outputMapping": [
+          {
+            "outputClass": "fit_statistics",
+            "resultColumns": {
+              "R_squared": "summary(model)$r.squared",
+              "Adj_R_squared": "summary(model)$adj.r.squared",
+              "AIC": "AIC(model)",
+              "BIC": "BIC(model)"
+            }
+          },
+          {
+            "outputClass": "type3_tests",
+            "resultColumns": {
+              "Term": "rownames(anova_result)",
+              "SS": "anova_result[['Sum Sq']]",
+              "df": "anova_result[['Df']]",
+              "F_statistic": "anova_result[['F value']]",
+              "p_value": "anova_result[['Pr(>F)']]"
+            }
+          },
+          {
+            "outputClass": "ls_means",
+            "resultColumns": {
+              "Group": "lsm_df[[1]]",
+              "estimate": "lsm_df$emmean",
+              "SE": "lsm_df$SE",
+              "df": "lsm_df$df",
+              "CI_lower": "lsm_df$lower.CL",
+              "CI_upper": "lsm_df$upper.CL"
+            }
+          },
+          {
+            "outputClass": "contrasts",
+            "resultColumns": {
+              "Contrast": "contr_df$contrast",
+              "estimate": "contr_df$estimate",
+              "SE": "contr_df$SE",
+              "df": "contr_df$df",
+              "t_statistic": "contr_df$t.ratio",
+              "p_value": "contr_df$p.value"
+            }
+          }
+        ],
+        "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/lm.html",
+        "notes": "ANCOVA via lm() with Type III SS from car::Anova() and LS means from emmeans. Covariate adjusts the group comparison."
+      }
     ]
   }
 }

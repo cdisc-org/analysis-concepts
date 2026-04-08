@@ -8,6 +8,7 @@ import { renderDerivationPipeline } from './views/derivation-pipeline.js';
 import { renderEndpointWhat } from './views/endpoint-what.js';
 import { renderEndpointHow } from './views/endpoint-how.js';
 import { renderEndpointSummary } from './views/endpoint-summary.js';
+import { renderExecuteAnalysis } from './views/execute-analysis.js';
 import { buildResolvedSpecification } from './utils/instance-serializer.js';
 import { getAllEndpoints } from './utils/usdm-parser.js';
 
@@ -67,7 +68,10 @@ export const appState = {
   outputClassTemplates: null,
   loaded: false,
   // JSON-driven UI: cached resolved specification (single source of truth for rendering)
-  resolvedSpec: null
+  resolvedSpec: null,
+  // WebR execution state
+  loadedDatasets: [],    // array of { name, nrow, ncol, columns }
+  endpointResults: {}    // keyed by endpoint ID: { status, code, results, error }
 };
 
 /**
@@ -80,6 +84,28 @@ export function rebuildSpec() {
     appState.resolvedSpec = null;
     return;
   }
+  // Sync resolvedSlices from current dimensionValues before rebuilding
+  for (const [, spec] of Object.entries(appState.endpointSpecs || {})) {
+    if (!spec?.cubeDimensions) continue;
+    const fixedDims = {};
+    for (const d of spec.cubeDimensions) {
+      if (d.sliceValue && !d.isSliceKey && d.dimension !== 'Subject') {
+        fixedDims[d.dimension] = d.sliceValue;
+      }
+    }
+    // Also pull from dimensionValues (updated by input handlers)
+    for (const [dim, val] of Object.entries(spec.dimensionValues || {})) {
+      if (val) fixedDims[dim] = val;
+    }
+    if (Object.keys(fixedDims).length > 0) {
+      const baseSlices = spec.cubeSlices || [];
+      spec.resolvedSlices = baseSlices.length > 0
+        ? baseSlices.map(s => ({ ...s, fixedDimensions: { ...s.fixedDimensions, ...fixedDims } }))
+        : [{ name: 'endpoint', fixedDimensions: fixedDims }];
+      spec.sliceKeyDimensions = [...new Set(Object.keys(fixedDims))];
+    }
+  }
+
   const allEndpoints = getAllEndpoints(study);
   const selectedEps = allEndpoints.filter(ep => appState.selectedEndpoints.includes(ep.id));
   appState.resolvedSpec = buildResolvedSpecification(appState, selectedEps, study);
@@ -93,7 +119,8 @@ export const STEPS = [
   { num: 4, label: 'Analysis', sublabel: 'Summary measure', icon: '4' },
   { num: 5, label: 'Summary', sublabel: 'Review all endpoints', icon: '5' },
   { num: 6, label: 'Derivations', sublabel: 'Dependent derivation pipeline', icon: '6' },
-  { num: 7, label: 'eSAP Builder', sublabel: 'Generate analysis plan', icon: '7' }
+  { num: 7, label: 'eSAP Builder', sublabel: 'Generate analysis plan', icon: '7' },
+  { num: 8, label: 'Execute', sublabel: 'Run analysis via WebR', icon: '8' }
 ];
 
 // ===== Router =====
@@ -103,7 +130,7 @@ function getStepFromHash() {
 }
 
 export function navigateTo(step) {
-  if (step < 1 || step > 7) return;
+  if (step < 1 || step > 8) return;
   appState.currentStep = step;
   // Update hash without triggering hashchange re-render
   history.replaceState(null, '', `#/step/${step}`);
@@ -137,6 +164,7 @@ export function renderCurrentStep() {
     case 5: renderEndpointSummary(content); break;
     case 6: renderDerivationPipeline(content); break;
     case 7: renderEsapBuilder(content); break;
+    case 8: renderExecuteAnalysis(content); break;
     default: renderStudySelect(content);
   }
 }

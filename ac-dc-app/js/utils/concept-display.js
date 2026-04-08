@@ -245,7 +245,7 @@ export function resolveBindingShape(conceptName, binding, dcModel, ocModel, name
       }
 
       // Look up in OC sharedDimensions for valueType/cardinality/relationship
-      const ocDim = ocModel?.sharedDimensions?.[conceptName];
+      const ocDim = ocModel?.Observation?.sharedDimensions?.[conceptName];
       if (ocDim) {
         result.valueType = ocDim.valueType || null;
         result.cardinality = ocDim.cardinality || null;
@@ -258,7 +258,7 @@ export function resolveBindingShape(conceptName, binding, dcModel, ocModel, name
 
   // === Path 3: OC sharedDimension only ===
   if (ocModel) {
-    const sharedDims = ocModel.sharedDimensions || {};
+    const sharedDims = ocModel.Observation?.sharedDimensions || {};
     if (sharedDims[conceptName]) {
       const ocDim = sharedDims[conceptName];
       result.layer = 'OC';
