@@ -223,13 +223,111 @@ Maps abstract concepts to physical variable names within specific data standards
 | Methods | `model/method/acdc_methods.schema.json` | v0.6.0 | Method definitions with input/output roles, formulas, and STATO codings |
 | Transformations | `model/method/acdc_transformations.schema.json` | v0.1.0 | Transformation bindings, SmartPhrases, and configuration options |
 | Implementations | `model/method/method_implementation_catalog.schema.json` | v0.1.0 | Language-specific code templates with callTemplate and outputMapping |
-| Study eSAP | `model/study/study_esap.schema.json` | — | Study-level electronic Statistical Analysis Plan structure |
+| Study eSAP | `model/study/study_esap.schema.json` | v0.1.0 | Study-level eSAP binding USDM entities, AC/DC transformations, and ARS analyses into estimand-driven specifications |
+
+---
+
+## Study Layer, USDM, and the eSAP Model
+
+### Relationship to USDM
+
+The [CDISC Unified Study Definitions Model (USDM)](https://www.cdisc.org/usdm) provides the study context that drives the entire AC/DC pipeline. USDM defines the protocol-level structure — study design, objectives, endpoints, arms, populations, encounters, and biomedical concepts. The AC/DC framework consumes USDM as its upstream input:
+
+```
+USDM Study Definition
+├── Study → StudyVersion → StudyDesign
+│   ├── Objectives (primary, secondary)
+│   │   └── Endpoints (the variables of interest)
+│   │       └── BiomedicalConcepts (what is measured)
+│   ├── Arms (treatment groups)
+│   ├── Populations & AnalysisPopulations
+│   ├── Encounters (visits / timepoints)
+│   └── Activities → ScheduleTimelines (when BCs are collected)
+│
+└── feeds into ──→ AC/DC eSAP (study-level analysis specification)
+```
+
+The app parses USDM JSON via `usdm-parser.js`, extracting a simplified study object with objectives, endpoints, arms, populations, encounters, biomedical concepts, and narrative content. This parsed study provides the concrete values that resolve abstract AC/DC concepts into study-specific specifications.
+
+### The eSAP Model
+
+**Schema:** `model/study/study_esap.schema.json` (v0.1.0)
+
+The electronic Statistical Analysis Plan (eSAP) is the study-level document that binds AC/DC Transformations and Methods to a study's objectives, endpoints, and estimands. It bridges three models:
+
+| Source | Role | Provenance |
+| --- | --- | --- |
+| **USDM** | Study structure (objectives, endpoints, populations, arms, encounters) | Reference entities (green) |
+| **AC/DC Transformation & Method Model** | Reusable transformation templates and SmartPhrases | Cross-reference entities |
+| **ARS** (Analysis Results Standard) | Analysis result definitions | Cross-reference entities |
+| **eSAP** | Study-level resolved bindings, configurations, slices, and phrases | Owned entities (purple) |
+
+The schema uses `$provenance` annotations on every entity to make this dependency graph explicit and machine-readable.
+
+### Estimands (ICH E9 R1)
+
+The Estimand is the central organizing concept of the eSAP, following the ICH E9(R1) framework. Each estimand precisely defines *what treatment effect is being estimated* by combining five components:
+
+| Component | eSAP Entity | Source |
+| --- | --- | --- |
+| **Population** | `AnalysisPopulation` | USDM |
+| **Variable of interest** | `Endpoint` (with `derivationSteps`) | USDM + AC/DC |
+| **Interventions** | `StudyIntervention` | USDM |
+| **Intercurrent events** | `IntercurrentEvent` (with strategy) | USDM |
+| **Summary measure** | `StudyAnalysis` (analysis steps) | AC/DC |
+
+Each Estimand's `analysisSteps` are `StudyAnalysis` instances — study-level resolutions of AC/DC Transformation templates. Each step carries:
+
+- **`resolvedBindings`** — Concept-to-method-role bindings with study-specific values
+- **`resolvedSlices`** — Data slice definitions with concrete dimension values (e.g., "baseline" = Week 0)
+- **`resolvedPhrases`** — SmartPhrase templates filled with study-specific parameters
+- **`resolvedExpression`** — The method formula with study-level concepts substituted
+- **`configurationValues`** — Resolved configuration choices (e.g., imputation = LOCF, conf_level = 95)
+
+Similarly, each Endpoint can have `derivationSteps` (`StudyDerivation` instances) that specify the chain of derivations needed to produce the analysis variable.
+
+### eSAP Document Structure
+
+The eSAP follows a standard SAP outline with 14 sections:
+
+| # | Section | Content Source |
+| --- | --- | --- |
+| 1 | List of Abbreviations | USDM narrative |
+| 2 | Introduction | USDM narrative |
+| 3 | Study Objectives | USDM objectives |
+| 4 | Study Design | USDM design, arms, populations |
+| 5 | Changes in the Protocol | Manual |
+| 6 | Estimands | USDM + AC/DC |
+| 7 | Study Endpoints | USDM endpoints + AC/DC derivation specs |
+| 8 | Analysis Sets | USDM analysis populations |
+| 9 | Statistical Methods | AC/DC methods + transformations |
+| 10 | Statistical Analysis | AC/DC resolved specifications |
+| 11 | Computer Software | Implementation catalog |
+| 12 | References | USDM narrative |
+| 13 | Table/Figure/Listing Shells | Generated from AC/DC output specs |
+| 14 | Appendices | USDM narrative |
+
+### End-to-End Flow: USDM → eSAP → Execution
+
+```
+ USDM Study         AC/DC Library          Study eSAP            Execution
+┌──────────┐     ┌────────────────┐     ┌──────────────┐     ┌────────────┐
+│Objectives│     │ Methods        │     │ Estimands    │     │ WebR       │
+│Endpoints │────→│ Transformations│────→│  StudyAnalysis│────→│ acdc_engine│
+│Arms      │     │ SmartPhrases   │     │  StudyDeriv. │     │ .R         │
+│Populations│    │ Configurations │     │ Resolved:    │     │            │
+│Encounters│     │                │     │  bindings    │     │ Results    │
+│BCs       │     │ Impl. Catalog  │     │  slices      │     │ (JSON)     │
+└──────────┘     └────────────────┘     │  phrases     │     └────────────┘
+                                        │  expressions │
+                                        └──────────────┘
+```
 
 ---
 
 ## The eSAP Builder App
 
-The `ac-dc-app/` directory contains a browser-based electronic Statistical Analysis Plan (eSAP) builder that demonstrates the framework end-to-end — from study selection to in-browser R execution.
+The `ac-dc-app/` directory contains a browser-based eSAP builder that demonstrates the framework end-to-end — from study selection to in-browser R execution.
 
 ### Technology Stack
 
