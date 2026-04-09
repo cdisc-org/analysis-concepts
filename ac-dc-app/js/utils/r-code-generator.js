@@ -14,7 +14,8 @@
  * @param {Object} [overrides]         - User variable overrides { concept: adamVar }
  * @returns {{ specJson: string, mappingJson: string, bootstrapCode: string }}
  */
-export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, overrides) {
+export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, overrides,
+                                          methodDef, rImplementation) {
   const adam = conceptMappings?.adam || {};
 
   // Strip $ui fields for clean spec
@@ -22,6 +23,8 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
 
   const specJson = JSON.stringify(cleanSpec, null, 2);
   const mappingJson = JSON.stringify(adam, null, 2);
+  const methodJson = methodDef ? JSON.stringify(methodDef, null, 2) : 'null';
+  const rImplJson = rImplementation ? JSON.stringify(rImplementation) : 'null';
   const overridesJson = overrides && Object.keys(overrides).length > 0
     ? JSON.stringify(overrides) : 'NULL';
 
@@ -30,12 +33,14 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
   const bootstrapCode = [
     `# ═══════════════════════════════════════════════════════════════`,
     `# AC/DC Execution Bootstrap`,
-    `# This code passes the specification to the generic AC/DC engine`,
+    `# Passes specification + implementation metadata to the engine`,
     `# ═══════════════════════════════════════════════════════════════`,
     ``,
-    `# Parse the specification and mappings from JSON`,
+    `# Parse metadata from JSON`,
     `spec <- jsonlite::fromJSON(spec_json, simplifyVector = FALSE)`,
     `mappings <- jsonlite::fromJSON(mapping_json, simplifyVector = FALSE)`,
+    `method_def <- jsonlite::fromJSON(method_json, simplifyVector = FALSE)`,
+    `r_impl <- jsonlite::fromJSON(r_impl_json, simplifyVector = FALSE)`,
     ``,
     `# User variable overrides (selected in UI)`,
     overridesJson === 'NULL'
@@ -47,13 +52,13 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
     `cat("Dataset: ${datasetName},", nrow(dataset), "rows\\n")`,
     ``,
     `# Execute using the generic AC/DC engine`,
-    `result <- acdc_execute(spec, mappings, dataset, overrides)`,
+    `result <- acdc_execute(spec, mappings, dataset, overrides, method_def, r_impl)`,
     ``,
     `# Return results as JSON`,
     `jsonlite::toJSON(result, auto_unbox = TRUE, pretty = TRUE)`,
   ].join('\n');
 
-  return { specJson, mappingJson, overridesJson, bootstrapCode };
+  return { specJson, mappingJson, methodJson, rImplJson, overridesJson, bootstrapCode };
 }
 
 /** Data type keys that are numeric (compatible with Quantity/NumericValue) */

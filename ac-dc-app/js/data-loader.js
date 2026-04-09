@@ -50,7 +50,7 @@ export async function loadAllData(state) {
     fetchJSON('model/concept/OC_Instance_Model_v016.json'),
     fetchJSON('model/shared/oc_bc_property_mapping.json'),
     fetchJSON('model/shared/bc_to_oc_instance_mapping.json'),
-    fetchJSON('model/method/method_implementation_catalog.schema.json'),
+    fetchJSON('lib/method_implementations/r_implementations.json'),
     fetchJSON('model/study/study_esap.schema.json')
   ]);
 

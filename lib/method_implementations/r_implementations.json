@@ -102,13 +102,13 @@
         "language": "R",
         "packages": ["stats", "car", "emmeans"],
         "function": "lm",
-        "callTemplate": "model <- lm(<response> ~ <covariate> + <fixed_effect>, data = <dataset>)\ncar::Anova(model, type = \"<ss_type>\")\nemmeans::emmeans(model, ~ <fixed_effect>)",
+        "callTemplate": "model <- lm(<response> ~ <covariate> + <fixed_effect>, data = <dataset>)\nmodel_summary <- summary(model)\nanova_result <- car::Anova(model, type = \"<ss_type>\")\nlsm <- emmeans::emmeans(model, ~ <fixed_effect>)\nlsm_df <- as.data.frame(summary(lsm, infer = TRUE, level = 1 - <alpha>))\ncontr <- pairs(lsm, adjust = \"<multiplicity_adjustment>\")\ncontr_df <- as.data.frame(summary(contr, infer = TRUE, level = 1 - <alpha>))",
         "outputMapping": [
           {
             "outputClass": "fit_statistics",
             "resultColumns": {
-              "R_squared": "summary(model)$r.squared",
-              "Adj_R_squared": "summary(model)$adj.r.squared",
+              "R_squared": "model_summary$r.squared",
+              "Adj_R_squared": "model_summary$adj.r.squared",
               "AIC": "AIC(model)",
               "BIC": "BIC(model)"
             }
@@ -137,12 +137,20 @@
           {
             "outputClass": "contrasts",
             "resultColumns": {
-              "Contrast": "contr_df$contrast",
+              "Contrast": "as.character(contr_df$contrast)",
               "estimate": "contr_df$estimate",
               "SE": "contr_df$SE",
               "df": "contr_df$df",
+              "CI_lower": "contr_df$lower.CL",
+              "CI_upper": "contr_df$upper.CL",
               "t_statistic": "contr_df$t.ratio",
               "p_value": "contr_df$p.value"
+            }
+          },
+          {
+            "outputClass": "covariance_parameters",
+            "resultColumns": {
+              "residual_variance": "sum(model$residuals^2) / model$df.residual"
             }
           }
         ],

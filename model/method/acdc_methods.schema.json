@@ -645,7 +645,10 @@
   "$id": "https://cdisc.org/acdc/method",
   "$schema": "https://json-schema.org/draft/2019-09/schema",
   "$vocabulary": {
-    "valueTypes": "../shared/fhir_value_types.json"
+    "valueTypes": "../shared/fhir_value_types.json",
+    "statistics": "./statistics_vocabulary.json",
+    "output_classes": "./output_class_templates.json",
+    "formula_grammar": "./formula_grammar.json"
   },
   "additionalProperties": true,
   "description": "A reusable statistical or derivation method definition. Distinguished by type (analysis vs derivation) and formula notation.",

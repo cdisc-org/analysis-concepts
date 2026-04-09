@@ -111,12 +111,17 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
 
   const analysis = resolvedEp?.analyses?.[0];
   const methodOid = analysis?.method?.oid || '';
-  const methodName = appState.methodsCache?.[methodOid]?.name || methodOid;
+  const methodDef = appState.methodsCache?.[methodOid] || null;
+  const methodName = methodDef?.name || methodOid;
+
+  // Look up R implementation from the catalog
+  const implCatalog = appState.methodImplementationCatalog?.implementations || {};
+  const rImpl = implCatalog[methodOid]?.[0] || null;
 
   // Generate execution payload from the resolved spec (with any user overrides)
   const specWithDataset = resolvedEp ? { ...resolvedEp, targetDataset: selectedDataset || resolvedEp.targetDataset } : null;
   const payload = specWithDataset
-    ? generateExecutionPayload(specWithDataset, appState.conceptMappings, result.varOverrides)
+    ? generateExecutionPayload(specWithDataset, appState.conceptMappings, result.varOverrides, methodDef, rImpl)
     : null;
 
   const statusClass = result.status === 'complete' ? 'exec-card-complete'
@@ -279,77 +284,20 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
       ${result.results ? _renderARDResults(result.results) : ''}
 
       <!-- Generated R Program (shown after results) -->
-      ${result.results ? (() => {
-        const resolvedFormula = (() => {
-          if (!expression?.resolved) return '';
-          let f = expression.resolved.replace(/@\w+/g, '');
-          const vMap = {};
-          for (const b of bindings) {
-            if (b.direction === 'output') continue;
-            const c = (b.concept || '').replace(/@.*/, '');
-            vMap[c] = result.varOverrides?.[c] || getDefaultVariable(c, b.dataStructureRole, adam);
-          }
-          for (const k of Object.keys(vMap).sort((a, b) => b.length - a.length)) {
-            f = f.replace(new RegExp(`\\b${k}(@\\w+)?\\b`, 'g'), vMap[k]);
-          }
-          return f;
-        })();
-
-        // Build resolved filter lines from slices
-        const filterLines = slices.map(s => {
-          if (bindings.some(b => b.slice === s.name)) return null; // skip binding slices
-          const dims = s.resolvedValues || {};
-          return Object.entries(dims).map(([dim, val]) => {
-            const so = result.sliceOverrides?.[`${s.name}|${dim}`];
-            const v = so?.value ?? val;
-            const adamVar = so?.variable || getDefaultVariable(dim, 'dimension', adam);
-            return `  ${adamVar} == "${v}"`;
-          }).join(' &\n');
-        }).filter(Boolean).join(' &\n');
-
-        const dsName = selectedDataset || 'dataset';
-        const groupVar = (() => {
-          const fe = bindings.find(b => b.methodRole === 'fixed_effect' && b.direction !== 'output');
-          if (!fe) return 'TRTP';
-          return result.varOverrides?.[fe.concept] || getDefaultVariable(fe.concept, 'dimension', adam);
-        })();
-
-        const resolvedScript = [
-          `# ═══════════════════════════════════════════════════`,
-          `# Resolved R Program (standalone)`,
-          `# Generated from AC/DC specification`,
-          `# ═══════════════════════════════════════════════════`,
-          ``,
-          `# --- Filter data ---`,
-          `analysis_data <- subset(${dsName},`,
-          filterLines + `)`,
-          ``,
-          `# --- Fit model ---`,
-          `model <- lm(${resolvedFormula}, data = analysis_data)`,
-          ``,
-          `# --- Results ---`,
-          `car::Anova(model, type = "III")`,
-          ``,
-          `lsm <- emmeans::emmeans(model, ~ ${groupVar})`,
-          `summary(lsm)`,
-          `pairs(lsm)`,
-        ].join('\n');
-
-        return `
-        <div class="exec-bindings-section" style="margin-top:16px;">
-          <div class="exec-bindings-title">GENERATED R PROGRAM</div>
-          <div style="display:flex; gap:0; flex-wrap:wrap;">
-            <details class="exec-code-details" open>
-              <summary>Metadata-Driven (via engine)</summary>
-              <pre class="exec-code-pre">${payload ? _escapeHtml(payload.bootstrapCode) : ''}</pre>
-            </details>
-            <details class="exec-code-details" open>
-              <summary>Resolved (standalone)</summary>
-              <pre class="exec-code-pre">${_escapeHtml(resolvedScript)}</pre>
-            </details>
-          </div>
-        </div>`;
-      })() : ''}
+      ${result.results ? `
+      <div class="exec-bindings-section" style="margin-top:16px;">
+        <div class="exec-bindings-title">GENERATED R PROGRAM</div>
+        <div style="display:flex; gap:0; flex-wrap:wrap;">
+          <details class="exec-code-details" open>
+            <summary>Metadata-Driven (via engine)</summary>
+            <pre class="exec-code-pre">${payload ? _escapeHtml(payload.bootstrapCode) : ''}</pre>
+          </details>
+          <details class="exec-code-details" open>
+            <summary>Resolved (standalone)</summary>
+            <pre class="exec-code-pre">${result.results.resolved_code ? _escapeHtml(result.results.resolved_code) : 'Not available'}</pre>
+          </details>
+        </div>
+      </div>` : ''}
     </div>
   `;
 }
@@ -560,7 +508,13 @@ async function _executeEndpoint(container, epId) {
     }
   }
 
-  const payload = generateExecutionPayload(patchedSpec, appState.conceptMappings, overrides);
+  // Look up method definition and R implementation
+  const methodOid = resolvedEp.analyses?.[0]?.method?.oid || '';
+  const methodDef = appState.methodsCache?.[methodOid] || null;
+  const implCatalog = appState.methodImplementationCatalog?.implementations || {};
+  const rImpl = implCatalog[methodOid]?.[0] || null;
+
+  const payload = generateExecutionPayload(patchedSpec, appState.conceptMappings, overrides, methodDef, rImpl);
 
   appState.endpointResults[epId] = {
     ...appState.endpointResults[epId],
@@ -569,9 +523,11 @@ async function _executeEndpoint(container, epId) {
   renderExecuteAnalysis(container);
 
   try {
-    // Pass the spec, mapping, and overrides JSONs to R as string variables
+    // Pass all metadata JSONs to R as string variables
     await setJsonVariable('spec_json', payload.specJson);
     await setJsonVariable('mapping_json', payload.mappingJson);
+    await setJsonVariable('method_json', payload.methodJson);
+    await setJsonVariable('r_impl_json', payload.rImplJson);
     if (payload.overridesJson !== 'NULL') {
       await setJsonVariable('overrides_json', payload.overridesJson);
     }

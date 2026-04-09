@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.6.0",
+  "schema_version": "0.7.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -45,6 +45,19 @@
       "dataType": "decimal",
       "defaultValue": 0.05,
       "description": "Significance level"
+    },
+    {
+      "name": "multiplicity_adjustment",
+      "dataType": "enum",
+      "defaultValue": "None",
+      "enumValues": ["None", "Tukey", "Bonferroni", "Holm", "Dunnett", "Sidak"],
+      "description": "Multiplicity adjustment method for pairwise comparisons",
+      "codings": [
+        { "system": "http://purl.obolibrary.org/obo/stato", "code": "STATO_0000182", "display": "Tukey" },
+        { "system": "http://purl.obolibrary.org/obo/stato", "code": "STATO_0000067", "display": "Bonferroni" },
+        { "system": "http://purl.obolibrary.org/obo/stato", "code": "STATO_0000068", "display": "Holm" },
+        { "system": "http://purl.obolibrary.org/obo/stato", "code": "STATO_0000183", "display": "Dunnett" }
+      ]
     }
   ],
   "output_specification": {
