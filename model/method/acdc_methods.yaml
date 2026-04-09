@@ -1,6 +1,6 @@
 id: https://cdisc.org/acdc/method
 name: acdc_methods
-version: "0.5.0"
+version: "0.7.0"
 title: ACDC Method Model
 description: >-
   Schema for ACDC (Analysis Concepts / Derivation Concepts) method definitions.
@@ -20,6 +20,13 @@ default_range: string
 
 imports:
   - linkml:types
+
+# External vocabulary references
+settings:
+  valueTypes: "../shared/fhir_value_types.json"
+  statistics: "./statistics_vocabulary.json"
+  output_classes: "./output_class_templates.json"
+  formula_grammar: "./formula_grammar.json"
 
 # ──────────────────────────────────────────────
 # Classes
@@ -85,7 +92,8 @@ classes:
         range: Coding
         inlined_as_list: true
       stato_r_implementation:
-        description: R command or function reference from STATO ontology
+        description: "DEPRECATED (v0.7.0): Use method_implementation_catalog instead. R command or function reference from STATO ontology."
+        deprecated: "Use method_implementation_catalog instead"
 
   Coding:
     description: A reference to a code in a terminology or ontology
@@ -93,6 +101,7 @@ classes:
       system:
         description: URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/stato)
         required: true
+        range: uri
       code:
         description: The code value within the system (e.g., STATO_0000179)
         required: true
@@ -137,6 +146,41 @@ classes:
         range: Cardinality
       description:
         description: Explanation of this input role
+
+  InputBinding:
+    description: >-
+      A concrete binding of a concept to a method role within a transformation
+      template. Aligned with W3C Data Cube RoleBinding semantics: each binding
+      declares direction (input/output) and dataStructureRole
+      (measure/dimension/attribute). Named slices at the transformation level
+      replace per-binding dimensionConstraints.
+    attributes:
+      concept:
+        description: The bound concept (e.g., C.Measure, C.Change, Treatment)
+        required: true
+      methodRole:
+        description: The method role this binding fills (e.g., response, covariate, fixed_effect, minuend, difference)
+        required: true
+      direction:
+        description: Whether this binding is an input to or output from the transformation
+        range: BindingDirection
+        required: true
+      dataStructureRole:
+        description: "W3C Data Cube role: measure (observed/computed value), dimension (identifies/locates observation), or attribute (metadata)"
+        range: DataStructureRole
+        required: true
+      slice:
+        description: Reference to a named slice defined in the transformation's namedSlices. Replaces inline dimensionConstraints.
+      qualifierType:
+        description: Qualifier type (e.g., IntentType, DerivationStatus, ReferenceFrame)
+      qualifierValue:
+        description: Qualifier value (e.g., Planned, Analysis, Relative)
+      requiredValueType:
+        description: FHIR value type constraint (e.g., Quantity, CodeableConcept, Identifier)
+      description:
+        description: Human-readable description of what this binding represents
+      note:
+        description: Additional context or clarification for this binding
 
   Configuration:
     description: A configurable parameter for a method
@@ -186,9 +230,10 @@ classes:
       description:
         description: What this output class represents
       cardinality:
-        description: How many rows this output class produces
+        description: "DEPRECATED (v0.6.0): How many rows this output class produces. Use dimensions + class for machine resolution instead."
+        deprecated: "Use dimensions + class for machine resolution instead"
       dimensions:
-        description: Dimensions that index the output rows
+        description: Dimensions (role names from input_roles) that index the output rows — defines the structural axes of this output class
         multivalued: true
       statistics:
         description: Statistic names from statistics_vocabulary
@@ -304,18 +349,24 @@ enums:
         description: Offset term in the model
 
   DataType:
-    description: Data types for inputs, outputs, and configurations
+    description: FHIR primitive data types for method inputs and outputs
     permissible_values:
-      numeric:
-        description: Numeric (integer or float)
+      decimal:
+        description: Decimal number (FHIR decimal)
+      integer:
+        description: Integer number (FHIR integer)
+      code:
+        description: Coded value from a controlled vocabulary (FHIR code)
       string:
-        description: Character/text
+        description: Character/text (FHIR string)
       boolean:
-        description: True/false
+        description: True/false (FHIR boolean)
       date:
-        description: Date value
-      datetime:
-        description: Date-time value
+        description: Date value (FHIR date)
+      dateTime:
+        description: Date-time value (FHIR dateTime)
+      id:
+        description: Identifier value (FHIR id)
       enum:
         description: Enumerated set of allowed values
 
@@ -328,6 +379,24 @@ enums:
         description: One or more variables
       single_or_multiple:
         description: One or more variables (flexible)
+
+  BindingDirection:
+    description: Whether a binding supplies input to or captures output from a method
+    permissible_values:
+      input:
+        description: Supplies data to the method
+      output:
+        description: Captures results from the method
+
+  DataStructureRole:
+    description: W3C Data Cube structural role for a binding
+    permissible_values:
+      measure:
+        description: Observed or computed value
+      dimension:
+        description: Identifies or locates an observation (grouping/partitioning axis)
+      attribute:
+        description: Metadata about the observation
 
   Intent:
     description: Semantic purpose tags for methods
@@ -356,3 +425,5 @@ enums:
         description: Modeling binary or other outcomes
       TimeToEventEstimate:
         description: Estimating survival/time-to-event outcomes
+      DescriptiveSummary:
+        description: Summarizing data with descriptive statistics
