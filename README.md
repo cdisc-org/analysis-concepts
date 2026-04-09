@@ -23,29 +23,31 @@ The AC/DC (Analysis Concepts / Derivation Concepts) Framework provides a metadat
 
 ## Framework Layers
 
-The framework is organized into three layers:
+The framework is organized into three layers, with the Concept layer in the middle — serving as the standard-agnostic connector between specification and implementation:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Conceptual Layer                                           │
+│  Specification Layer                                        │
+│  Methods · Transformations · SmartPhrases                   │
+│  Formulas · Configuration Options · Bindings                │
+│  Describes HOW to derive and analyze                        │
+├─────────────────────────────────────────────────────────────┤
+│  Concept Layer                                              │
 │  AC (Analysis Concepts) · DC (Derivation Concepts)          │
 │  OC (Observation Concepts) · Shared Definitions             │
-│  Standard-agnostic, human-readable                          │
-├─────────────────────────────────────────────────────────────┤
-│  Transformation Layer                                       │
-│  Methods + Concepts → Transformations                       │
-│  SmartPhrases · Configuration Options · Bindings            │
+│  Standard-agnostic bridge — describes WHAT things mean      │
 ├─────────────────────────────────────────────────────────────┤
 │  Implementation Layer                                       │
 │  Language-specific code templates (R, SAS, Python, Julia)   │
 │  Variable mappings (ADaM, SDTM) · Executable specifications│
+│  Describes WHERE and IN WHAT FORM data lives                │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 | Layer | Location | Role |
 | --- | --- | --- |
-| **Conceptual** | `model/concept/`, `model/shared/` | Defines what things mean, independent of data standards |
-| **Transformation** | `lib/transformations/`, `lib/methods/` | Bridges methods and concepts via bindings, formulas, and configurations |
+| **Specification** | `lib/methods/`, `lib/transformations/` | Describes how to derive and analyze — methods, formulas, bindings, configurations |
+| **Concept** | `model/concept/`, `model/shared/` | Standard-agnostic bridge defining what things mean — connects specification to implementation |
 | **Implementation** | `lib/method_implementations/`, `ac-dc-app/data/` | Maps concepts to physical variables and methods to executable code |
 
 ---
