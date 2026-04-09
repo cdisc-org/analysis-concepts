@@ -367,13 +367,22 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
       // Outputs (additional property — useful for detail view)
       let outputs = [];
       if (appState.acModel && methodObj) {
-        const outputMapping = getOutputMapping(transform, appState.acModel, methodObj, studyBindings, analysis.activeInteractions || []);
+        const outputMapping = getOutputMapping(transform, appState.acModel, methodObj, studyBindings, analysis.activeInteractions || [], analysis.outputConfig);
         outputs = outputMapping.map(slot => ({
           pattern: slot.patternName,
           statistics: slot.constituents,
-          dimensions: slot.dimensions
+          dimensions: slot.dimensions,
+          ...(slot.outputClassName ? { outputClass: slot.outputClassName } : {})
         }));
       }
+
+      // Output configuration — StudyOutputClassConfig[] (only when user has customised)
+      const outputConfiguration = analysis.outputConfig
+        ? Object.entries(analysis.outputConfig).map(([cls, cfg]) => ({
+            outputClass: cls,
+            selectedDimensions: cfg.selectedDimensions
+          }))
+        : null;
 
       return {
         // StudyStep fields (study_esap.schema.json)
@@ -384,6 +393,7 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
         ...(resolvedSlices.length > 0 ? { resolvedSlices } : {}),
         ...(resolvedPhrases.length > 0 ? { resolvedPhrases } : {}),
         ...(resolvedExpression ? { resolvedExpression } : {}),
+        ...(outputConfiguration ? { outputConfiguration } : {}),
         // StudyAnalysis extension
         arsAnalysis: { analysisId: `ARS_${transform.oid}_${ep.id}` },
         // Additional properties (transformation-level detail, useful for display)

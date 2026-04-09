@@ -53,15 +53,23 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
   # 4. Parse method configurations (defaults from method_def, overridden by user values)
   configs <- parse_configs(analysis$configurationValues, method_def)
 
-  # 5. Execute method using r_implementations.json metadata
+  # 5. Pre-process callTemplate for output dimension selection
+  #    Narrow <fixed_effect> in emmeans/pairs lines to only selected dimensions,
+  #    while keeping the full set in the model formula (for correct estimation).
+  narrowed_impl <- r_impl
+  narrowed_impl$callTemplate <- narrow_template_for_output_config(
+    r_impl$callTemplate, analysis$outputConfiguration, concept_vars
+  )
+
+  # 6. Execute method using r_implementations.json metadata
   #    - Resolve callTemplate placeholders via the binding chain
   #    - Evaluate the call in a sandbox environment
   #    - Extract results using outputMapping expressions
-  result <- execute_method(analysis_data, concept_vars$by_role, configs, r_impl)
+  result <- execute_method(analysis_data, concept_vars$by_role, configs, narrowed_impl)
 
-  # 6. Build resolved R code from what was actually executed
+  # 7. Build resolved R code from what was actually executed
   result$resolved_code <- build_resolved_code(
-    r_impl, concept_vars, configs,
+    narrowed_impl, concept_vars, configs,
     analysis$resolvedSlices, analysis$resolvedBindings, mappings$dimensions
   )
 
@@ -356,6 +364,57 @@ parse_configs <- function(config_values, method_def = NULL) {
 }
 
 # ---------------------------------------------------------------------------
+# Output configuration — pre-process callTemplate for dimension selection
+# ---------------------------------------------------------------------------
+
+#' Narrow <fixed_effect> in post-hoc lines of a callTemplate based on
+#' outputConfiguration.  The model formula keeps ALL fixed effects (correct
+#' for estimation), but post-hoc lines use only the selected ones.
+#'
+#' Identification is metadata-driven: the model formula line is the one
+#' containing <response> (the dependent variable placeholder).  All other
+#' lines with <fixed_effect> are post-hoc lines whose factors should be
+#' narrowed to the user's selection.
+narrow_template_for_output_config <- function(template, output_config, concept_vars) {
+  if (is.null(output_config) || length(output_config) == 0) return(template)
+
+  # Find the first output class with a dimension selection
+  # (ls_means/contrasts share the same factors in current templates)
+  oc <- Find(function(x) !is.null(x$selectedDimensions) && length(x$selectedDimensions) > 0,
+             output_config)
+  if (is.null(oc)) return(template)
+
+  selected <- oc$selectedDimensions
+
+  # Resolve selected concept names → ADaM variable names
+  concept_to_var <- concept_vars$by_concept
+  main_vars <- character(0)
+  for (s in selected) {
+    if (grepl(":", s)) next  # Skip interaction concepts for emmeans formula
+    var <- concept_to_var[[s]]
+    if (!is.null(var)) main_vars <- c(main_vars, var)
+  }
+  if (length(main_vars) == 0) return(template)
+
+  narrowed_value <- paste(main_vars, collapse = " + ")
+
+  # Narrow <fixed_effect> only in POST-HOC lines (after the model formula).
+  # The model formula line contains <response> — everything before and including
+  # it is model-related (e.g., SAS CLASS, R lm(), MODEL statements).
+  # Everything after is post-hoc (emmeans, LSMEANS, pairs, ESTIMATE, etc.).
+  lines <- strsplit(template, "\n")[[1]]
+  model_line <- which(grepl("<response>", lines, fixed = TRUE))[1]
+  if (is.na(model_line)) model_line <- 0L
+  for (i in seq_along(lines)) {
+    if (i > model_line && grepl("<fixed_effect>", lines[i], fixed = TRUE)) {
+      lines[i] <- gsub("<fixed_effect>", narrowed_value, lines[i], fixed = TRUE)
+    }
+  }
+
+  return(paste(lines, collapse = "\n"))
+}
+
+# ---------------------------------------------------------------------------
 # Build resolved R code from metadata (for display)
 # ---------------------------------------------------------------------------
 
@@ -428,7 +487,7 @@ build_resolved_code <- function(r_impl, concept_vars, configs,
   }
   lines <- c(lines, "")
 
-  # Resolved call template
+  # Resolved call template (already narrowed by output config if applicable)
   lines <- c(lines, "# --- Execute (from r_implementations.json callTemplate) ---")
   resolved_call <- resolve_call_template(r_impl$callTemplate, concept_vars$by_role, configs)
   lines <- c(lines, strsplit(resolved_call, "\n")[[1]])

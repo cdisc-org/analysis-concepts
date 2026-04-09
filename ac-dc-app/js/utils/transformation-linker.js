@@ -363,6 +363,63 @@ function resolveIndexedBy(methodDimensions, bindings, activeInteractions) {
 }
 
 /**
+ * Like resolveIndexedBy(), but preserves the method-role provenance of
+ * each resolved concept name.  Returns an array of { role, resolved }
+ * objects so callers can filter by role while displaying concept names.
+ *
+ * @param {Array} methodDimensions - e.g. ["covariate","fixed_effect","fixed_effect:fixed_effect"]
+ * @param {Array} bindings - resolvedBindings with { methodRole, concept }
+ * @param {Array} activeInteractions - concept:concept pairs currently active
+ * @returns {Array<{ role: string, resolved: string[] }>}
+ */
+export function resolveIndexedByWithRoles(methodDimensions, bindings, activeInteractions) {
+  if (!methodDimensions || !bindings) return [];
+
+  const roleConcepts = {};
+  for (const b of bindings) {
+    if (!roleConcepts[b.methodRole]) roleConcepts[b.methodRole] = [];
+    roleConcepts[b.methodRole].push(b.concept);
+  }
+
+  const result = [];
+
+  for (const entry of methodDimensions) {
+    const resolved = [];
+
+    if (entry.includes(':')) {
+      const [roleA, roleB] = entry.split(':');
+      const conceptsA = roleConcepts[roleA] || [];
+      const conceptsB = roleConcepts[roleB] || [];
+
+      if (roleA === roleB) {
+        for (let i = 0; i < conceptsA.length; i++) {
+          for (let j = i + 1; j < conceptsA.length; j++) {
+            const pair = `${conceptsA[i]}:${conceptsA[j]}`;
+            if (activeInteractions?.includes(pair)) resolved.push(pair);
+          }
+        }
+      } else {
+        for (const a of conceptsA) {
+          for (const b of conceptsB) {
+            const pair = `${a}:${b}`;
+            if (activeInteractions?.includes(pair)) resolved.push(pair);
+          }
+        }
+      }
+    } else {
+      const concepts = roleConcepts[entry] || [];
+      resolved.push(...concepts);
+    }
+
+    if (resolved.length > 0) {
+      result.push({ role: entry, resolved });
+    }
+  }
+
+  return result;
+}
+
+/**
  * Map any remaining method role names in an dimensions array to
  * their bound concept names.  Items that are already concept names
  * (i.e. don't match any role) pass through unchanged.
@@ -400,8 +457,9 @@ function resolveRoleNames(dimensions, bindings) {
  * @param {Object} [method] - The loaded method JSON (optional, enables resolved dimensions)
  * @param {Array} [bindings] - Current input bindings (optional, for resolution)
  * @param {Array} [activeInteractions] - Active interaction terms (optional, for resolution)
+ * @param {Object} [outputConfig] - Per-output-class dimension selection { className: { selectedDimensions: string[] } }
  */
-export function getOutputMapping(transformation, acModel, method, bindings, activeInteractions) {
+export function getOutputMapping(transformation, acModel, method, bindings, activeInteractions, outputConfig) {
   const mapping = transformation.methodOutputSlotMapping || {};
   const resultPatterns = acModel.resultPatterns || {};
 
@@ -421,13 +479,23 @@ export function getOutputMapping(transformation, acModel, method, bindings, acti
     const className = patternToClass(patternId);
     const outputClass = outputClasses[className];
 
-    // Resolve dimensions: prefer method-level resolved, fall back to AC model
+    // Resolve dimensions with role provenance for UI checkboxes
+    let availableDimensions = [];  // { role, resolved[] } pairs — all resolvable dimensions
     let dimensions = pattern?.dimensions || [];
+
     if (outputClass?.dimensions && bindings) {
+      availableDimensions = resolveIndexedByWithRoles(outputClass.dimensions, bindings, activeInteractions);
       const resolved = resolveIndexedBy(outputClass.dimensions, bindings, activeInteractions);
       if (resolved.length > 0) {
         dimensions = resolved;
       }
+    }
+
+    // Apply outputConfig filtering: keep only selected resolved concept names
+    const classConfig = outputConfig?.[className];
+    if (classConfig?.selectedDimensions && dimensions.length > 0) {
+      const selected = new Set(classConfig.selectedDimensions);
+      dimensions = dimensions.filter(d => selected.has(d));
     }
 
     // Ensure any remaining role names are resolved to concept names from bindings
@@ -441,7 +509,9 @@ export function getOutputMapping(transformation, acModel, method, bindings, acti
       patternName: patternId,
       description: pattern?.definition || '',
       constituents: pattern?.constituents || [],
-      dimensions
+      dimensions,
+      availableDimensions,  // for UI: all resolvable { role, resolved[] } pairs
+      outputClassName: className  // for linking back to outputConfig key
     };
   });
 }

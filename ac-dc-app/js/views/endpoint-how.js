@@ -14,7 +14,7 @@ import {
   generateInteractionPairings,
   classifyBindings, buildExpressionString, parseDefaultInteractions, getConceptOptions
 } from './transformation-config.js';
-import { getOutputMapping, getInputBindings, getMethodConfigurations, getDimensions } from '../utils/transformation-linker.js';
+import { getOutputMapping, getInputBindings, getMethodConfigurations, getDimensions, resolveIndexedByWithRoles } from '../utils/transformation-linker.js';
 import { displayConcept, formatDimensionConstraints, formatSliceDisplay, buildSliceLookup } from '../utils/concept-display.js';
 
 
@@ -265,16 +265,25 @@ export async function renderEndpointHow(container) {
           ` : ''}
 
           ${transform.methodOutputSlotMapping ? (() => {
-            const outputSlots = getOutputMapping(transform, appState.acModel, method, customBindings, analysis.activeInteractions || []);
+            const outputSlots = getOutputMapping(transform, appState.acModel, method, customBindings, analysis.activeInteractions || [], analysis.outputConfig);
             return `
           <div style="margin-bottom:12px;">
             <div style="font-weight:600; font-size:11px; margin-bottom:4px; color:var(--cdisc-text-secondary);">Outputs</div>
             <div style="display:flex; flex-wrap:wrap; gap:6px;">
               ${outputSlots.map(slot => {
                 const isSummary = analysis.estimandSummaryPattern === slot.patternName;
+                // Flatten all resolved concepts across roles for concept-level checkboxes
+                const allConcepts = slot.availableDimensions.flatMap(dim =>
+                  dim.resolved.map(c => ({ concept: c, role: dim.role }))
+                );
+                const hasMultipleConcepts = allConcepts.length > 1;
+                const classConfig = analysis.outputConfig?.[slot.outputClassName];
+                const selectedConcepts = classConfig?.selectedDimensions
+                  ? new Set(classConfig.selectedDimensions)
+                  : null; // null = all selected (default)
                 return `
                 <div class="ep-output-pattern-card" data-ep-id="${ep.id}" data-analysis-idx="${aIdx}" data-pattern-name="${slot.patternName}"
-                  style="padding:6px 10px; border:2px solid ${isSummary ? 'var(--cdisc-accent2)' : 'var(--cdisc-border)'}; border-radius:var(--radius); cursor:pointer; background:${isSummary ? 'rgba(0,133,124,0.06)' : 'white'}; min-width:120px; max-width:200px;">
+                  style="padding:6px 10px; border:2px solid ${isSummary ? 'var(--cdisc-accent2)' : 'var(--cdisc-border)'}; border-radius:var(--radius); cursor:pointer; background:${isSummary ? 'rgba(0,133,124,0.06)' : 'white'}; min-width:140px; max-width:240px;">
                   <div style="display:flex; align-items:center; gap:4px; margin-bottom:2px;">
                     ${isSummary ? '<span style="font-size:11px;">&#9733;</span>' : ''}
                     <strong style="font-size:11px;">${slot.patternName}</strong>
@@ -289,6 +298,27 @@ export async function renderEndpointHow(container) {
                       }
                       return `<code>${displayConcept(id)}</code>`;
                     }).join(', ')}
+                  </div>` : ''}
+                  ${hasMultipleConcepts ? `
+                  <div style="margin-top:4px; border-top:1px solid var(--cdisc-border); padding-top:4px;">
+                    <div style="font-size:8px; font-weight:600; color:var(--cdisc-text-secondary); margin-bottom:3px; text-transform:uppercase;">Dimension Selection</div>
+                    ${allConcepts.map(({ concept, role }) => {
+                      const isChecked = selectedConcepts === null || selectedConcepts.has(concept);
+                      const roleLabel = role.includes(':') ? 'interaction' : role.replace(/_/g, ' ');
+                      const conceptDisplay = concept.includes(':')
+                        ? concept.split(':').map(p => displayConcept(p)).join(':')
+                        : displayConcept(concept);
+                      return `
+                      <label style="display:flex; align-items:center; gap:4px; font-size:9px; cursor:pointer; padding:1px 0;" title="${role}">
+                        <input type="checkbox" class="ep-output-dim-toggle"
+                          data-ep-id="${ep.id}" data-analysis-idx="${aIdx}"
+                          data-output-class="${slot.outputClassName}" data-dim-concept="${concept}"
+                          ${isChecked ? 'checked' : ''}
+                          style="margin:0; width:12px; height:12px;">
+                        <span style="color:var(--cdisc-text-primary);">${conceptDisplay}</span>
+                        <span style="color:var(--cdisc-text-secondary); font-style:italic;">(${roleLabel})</span>
+                      </label>`;
+                    }).join('')}
                   </div>` : ''}
                 </div>`;
               }).join('')}
@@ -684,6 +714,50 @@ function wireEndpointHowEvents(container, study, configuredEps) {
       }
 
       updateSyntaxPreview(container, epId, study);
+    });
+  });
+
+  // --- Output dimension checkboxes — per-analysis, per-output-class (concept-level) ---
+  container.querySelectorAll('.ep-output-dim-toggle').forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      e.stopPropagation(); // Don't trigger the pattern card click (summary measure toggle)
+      const epId = cb.dataset.epId;
+      const aIdx = parseInt(cb.dataset.analysisIdx, 10);
+      const outputClass = cb.dataset.outputClass;
+      const dimConcept = cb.dataset.dimConcept;
+      if (!epId || !outputClass || !dimConcept) return;
+
+      ensureSpec(epId);
+      const spec = appState.endpointSpecs[epId];
+      const analysis = spec.selectedAnalyses?.[aIdx];
+      if (!analysis) return;
+
+      // Lazy-init outputConfig for this class with all currently resolved concepts
+      if (!analysis.outputConfig) analysis.outputConfig = {};
+      if (!analysis.outputConfig[outputClass]) {
+        // Resolve all current concepts for this output class to seed the selection
+        const transform = getTransformationByOid(analysis.transformationOid);
+        const method = transform ? appState.methodsCache?.[transform.usesMethod] : null;
+        const oc = method?.output_specification?.output_classes?.find(c => c.class === outputClass);
+        if (oc?.dimensions) {
+          const rolePairs = resolveIndexedByWithRoles(oc.dimensions, analysis.resolvedBindings || [], analysis.activeInteractions || []);
+          const allConcepts = rolePairs.flatMap(d => d.resolved);
+          analysis.outputConfig[outputClass] = { selectedDimensions: allConcepts };
+        } else {
+          analysis.outputConfig[outputClass] = { selectedDimensions: [] };
+        }
+      }
+
+      const dims = analysis.outputConfig[outputClass].selectedDimensions;
+      if (cb.checked) {
+        if (!dims.includes(dimConcept)) dims.push(dimConcept);
+      } else {
+        const idx = dims.indexOf(dimConcept);
+        if (idx >= 0) dims.splice(idx, 1);
+      }
+
+      rebuildSpec();
+      renderEndpointHow(container);
     });
   });
 

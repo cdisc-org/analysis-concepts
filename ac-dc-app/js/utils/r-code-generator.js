@@ -61,6 +61,127 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
   return { specJson, mappingJson, methodJson, rImplJson, overridesJson, bootstrapCode };
 }
 
+/**
+ * Resolve <role> and <config> placeholders in a callTemplate, producing standalone code.
+ * This mirrors the R engine's resolve_call_template() but runs client-side,
+ * enabling resolved code display for languages without a browser engine (e.g. SAS).
+ *
+ * @param {Object} impl              - Implementation entry (with callTemplate)
+ * @param {Array}  bindings          - resolvedBindings from the analysis
+ * @param {Object} overrides         - User variable overrides { concept: adamVar }
+ * @param {Object} adam              - The adam section of concept-variable-mappings.json
+ * @param {Object} configs           - Method configurations (e.g. { alpha: 0.05, ss_type: 'III' })
+ * @param {string} [datasetName]     - Target dataset name (default: 'analysis_data')
+ * @param {Array}  [outputConfiguration] - StudyOutputClassConfig[] for dimension narrowing
+ * @returns {string} Resolved code with all placeholders substituted
+ */
+export function resolveCallTemplate(impl, bindings, overrides, adam, configs, datasetName, outputConfiguration) {
+  if (!impl?.callTemplate) return '';
+  let code = narrowTemplateForOutputConfig(impl.callTemplate, outputConfiguration, bindings, overrides, adam);
+
+  // Build role → ADaM variable(s) map from bindings.
+  // A role can have multiple bindings (e.g. multiple fixed_effects), so we
+  // accumulate arrays — mirroring the R engine's build_concept_var_map().
+  const roleMap = {};
+  for (const b of (bindings || [])) {
+    if (b.direction === 'output') continue;
+    const concept = (b.concept || '').replace(/@.*/, '');
+    const role = b.methodRole;
+    if (!role) continue;
+    const userOverride = overrides?.[concept];
+    const entry = adam?.concepts?.[concept] || adam?.dimensions?.[concept];
+    const bt = entry?.byDataType || {};
+    const defaultVar = b.dataStructureRole === 'measure'
+      ? (bt.decimal || bt.code || bt.string || Object.values(bt)[0] || concept.toUpperCase())
+      : (bt.code || bt.string || bt.decimal || Object.values(bt)[0] || concept.toUpperCase());
+    const varName = userOverride || defaultVar;
+    if (roleMap[role]) {
+      roleMap[role].push(varName);
+    } else {
+      roleMap[role] = [varName];
+    }
+  }
+
+  // Expand <role> placeholders using roleSeparator from implementation metadata.
+  // R formula syntax: " + " (default), SAS statement syntax: " " (space).
+  const separator = impl.roleSeparator || ' + ';
+  const roles = Object.keys(roleMap).sort((a, b) => b.length - a.length);
+  for (const role of roles) {
+    code = code.replaceAll(`<${role}>`, roleMap[role].join(separator));
+  }
+
+  // Substitute <config> placeholders, applying language-specific mappings if available.
+  // E.g., SAS needs alternative "two.sided" → "2", ss_type "III" → "3"
+  const implConfigs = impl.configurations || {};
+  for (const [key, val] of Object.entries(configs || {})) {
+    const mapping = implConfigs[`${key}_mapping`];
+    const mapped = (mapping && mapping[String(val)] != null) ? mapping[String(val)] : val;
+    code = code.replaceAll(`<${key}>`, String(mapped));
+  }
+
+  // Substitute <dataset>
+  code = code.replaceAll('<dataset>', datasetName || 'analysis_data');
+
+  return code;
+}
+
+/**
+ * Narrow <fixed_effect> in post-hoc lines of a callTemplate based on
+ * outputConfiguration.  The model formula keeps ALL fixed effects, but
+ * post-hoc lines (emmeans, LSMEANS, etc.) use only the selected ones.
+ *
+ * Identification is metadata-driven: the model formula line is the one
+ * containing <response>.  All other lines with <fixed_effect> are post-hoc
+ * and get the narrowed set.  This works for both R and SAS templates.
+ *
+ * @param {string} template - The raw callTemplate string
+ * @param {Array}  outputConfiguration - StudyOutputClassConfig[] from the resolved spec
+ * @param {Array}  bindings - resolvedBindings for concept → ADaM resolution
+ * @param {Object} overrides - User variable overrides
+ * @param {Object} adam - Concept-variable mappings (adam section)
+ * @returns {string} Template with narrowed <fixed_effect> in post-hoc lines
+ */
+function narrowTemplateForOutputConfig(template, outputConfiguration, bindings, overrides, adam) {
+  if (!outputConfiguration?.length || !template.includes('<fixed_effect>')) return template;
+
+  // Find the first output class with a dimension selection
+  const oc = outputConfiguration.find(c => c.selectedDimensions?.length > 0);
+  if (!oc) return template;
+
+  // Resolve selected concept names → ADaM variable names
+  const selectedVars = [];
+  for (const concept of oc.selectedDimensions) {
+    if (concept.includes(':')) continue; // Skip interactions for formula factors
+    // Find the binding for this concept to determine its dataStructureRole
+    const binding = bindings?.find(b => (b.concept || '').replace(/@.*/, '') === concept);
+    const override = overrides?.[concept];
+    if (override) { selectedVars.push(override); continue; }
+    const entry = adam?.concepts?.[concept] || adam?.dimensions?.[concept];
+    const bt = entry?.byDataType || {};
+    const dsr = binding?.dataStructureRole || 'dimension';
+    const varName = dsr === 'measure'
+      ? (bt.decimal || bt.code || bt.string || Object.values(bt)[0] || concept.toUpperCase())
+      : (bt.code || bt.string || bt.decimal || Object.values(bt)[0] || concept.toUpperCase());
+    if (varName) selectedVars.push(varName);
+  }
+  if (selectedVars.length === 0) return template;
+
+  const narrowed = selectedVars.join(' + ');
+
+  // Narrow <fixed_effect> only in POST-HOC lines (after the model formula).
+  // The model formula line contains <response> — everything before and including
+  // it is model-related (e.g., SAS CLASS, R lm(), MODEL statements).
+  // Everything after is post-hoc (emmeans, LSMEANS, pairs, ESTIMATE, etc.).
+  const lines = template.split('\n');
+  const modelLineIdx = lines.findIndex(l => l.includes('<response>'));
+  return lines.map((line, i) => {
+    if (i > modelLineIdx && line.includes('<fixed_effect>')) {
+      return line.replaceAll('<fixed_effect>', narrowed);
+    }
+    return line;
+  }).join('\n');
+}
+
 /** Data type keys that are numeric (compatible with Quantity/NumericValue) */
 const NUMERIC_TYPES = new Set(['decimal', 'integer', 'baseline']);
 /** Data type keys that are categorical (compatible with CodeableConcept) */

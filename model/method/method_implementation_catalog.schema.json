@@ -66,7 +66,12 @@
         },
         "callTemplate": {
           "type": "string",
-          "description": "Template call using <role> placeholders from the method's input_roles. The transformation resolves roles to concepts, the study resolves concepts to variables, and the code engine substitutes."
+          "description": "Template call using <role> placeholders from the method's input_roles. The transformation resolves roles to concepts, the study resolves concepts to variables, and the code engine substitutes. When a role has multiple bindings (e.g. multiple fixed_effects), they are expanded using roleSeparator."
+        },
+        "roleSeparator": {
+          "type": "string",
+          "default": " + ",
+          "description": "Separator used when expanding a <role> placeholder that resolves to multiple variables. R formula syntax uses ' + ' (default), SAS statement syntax uses ' ' (space)."
         },
         "outputMapping": {
           "type": ["array", "null"],

@@ -268,6 +268,27 @@
       "required": ["notation", "resolved"]
     },
 
+    "StudyOutputClassConfig": {
+      "x-provenance": {
+        "source": "esap",
+        "conformance": "owned"
+      },
+      "description": "Study-level output dimension selection for a specific output class — specifies which method-declared dimensions to include in the reported output. When absent for an output class, all dimensions are included.",
+      "type": "object",
+      "properties": {
+        "outputClass": {
+          "type": "string",
+          "description": "Name of the output class (e.g., 'type3_tests', 'ls_means') — matches a method output_specification.output_classes[].class"
+        },
+        "selectedDimensions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Subset of the resolved dimension concepts to include in the output. Uses concept names (e.g., 'Treatment', 'Treatment:Site') resolved from method role bindings."
+        }
+      },
+      "required": ["outputClass", "selectedDimensions"]
+    },
+
     "StudyStep": {
       "x-provenance": {
         "source": "esap",
@@ -308,6 +329,11 @@
         "resolvedExpression": {
           "$ref": "#/$defs/ResolvedExpression",
           "description": "The method formula resolved with study-level concept bindings and active interactions"
+        },
+        "outputConfiguration": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StudyOutputClassConfig" },
+          "description": "Optional per-output-class dimension selection. When absent, all method-declared dimensions are included in each output class."
         }
       },
       "required": ["sequence", "basedOn", "resolvedBindings"]

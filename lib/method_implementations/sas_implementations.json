@@ -1,0 +1,202 @@
+{
+  "$schema": "../../model/method/method_implementation_catalog.schema.json",
+  "model": "MethodImplementationCatalog",
+  "version": "0.1.0",
+  "description": "SAS implementations for analysis methods. Uses ODS output table and column references for output mapping.",
+  "implementations": {
+    "M.PairedTTest": [
+      {
+        "methodOid": "M.PairedTTest",
+        "language": "SAS",
+        "package": "SAS/STAT",
+        "procedure": "PROC TTEST",
+        "function": null,
+        "roleSeparator": " ",
+        "callTemplate": "proc ttest data=<dataset> alpha=<alpha>;\n  paired <response>*<fixed_effect>;\nrun;",
+        "outputMapping": [
+          {
+            "outputClass": "test_result",
+            "resultColumns": {
+              "estimate": "Statistics.Mean",
+              "t_statistic": "TTests.tValue",
+              "df": "TTests.DF",
+              "p_value": "TTests.Probt",
+              "CI_lower": "ConfLimits.LowerCLMean",
+              "CI_upper": "ConfLimits.UpperCLMean"
+            }
+          }
+        ],
+        "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_ttest_overview.htm",
+        "notes": "PROC TTEST with PAIRED statement. The PAIRED statement expects var1*var2 syntax where var1 and var2 are the two measurement variables. ODS tables: Statistics, TTests, ConfLimits."
+      }
+    ],
+    "M.OneSampleTTest": [
+      {
+        "methodOid": "M.OneSampleTTest",
+        "language": "SAS",
+        "package": "SAS/STAT",
+        "procedure": "PROC TTEST",
+        "function": null,
+        "roleSeparator": " ",
+        "callTemplate": "proc ttest data=<dataset> h0=<mu> alpha=<alpha> sides=<alternative>;\n  var <response>;\nrun;",
+        "outputMapping": [
+          {
+            "outputClass": "test_result",
+            "resultColumns": {
+              "estimate": "Statistics.Mean",
+              "t_statistic": "TTests.tValue",
+              "df": "TTests.DF",
+              "p_value": "TTests.Probt",
+              "CI_lower": "ConfLimits.LowerCLMean",
+              "CI_upper": "ConfLimits.UpperCLMean"
+            }
+          }
+        ],
+        "configurations": {
+          "alternative_mapping": {
+            "two.sided": "2",
+            "less": "L",
+            "greater": "U"
+          }
+        },
+        "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_ttest_overview.htm",
+        "notes": "One-sample PROC TTEST with H0= option. The SIDES= option maps: two.sided→2, less→L, greater→U. ODS tables: Statistics, TTests, ConfLimits."
+      }
+    ],
+    "M.TwoSampleTTest": [
+      {
+        "methodOid": "M.TwoSampleTTest",
+        "language": "SAS",
+        "package": "SAS/STAT",
+        "procedure": "PROC TTEST",
+        "function": null,
+        "roleSeparator": " ",
+        "callTemplate": "proc ttest data=<dataset> alpha=<alpha> sides=<alternative>;\n  class <fixed_effect>;\n  var <response>;\nrun;",
+        "outputMapping": [
+          {
+            "outputClass": "test_result",
+            "extractionCode": "where Method='Satterthwaite'",
+            "resultColumns": {
+              "estimate": "Statistics.Mean",
+              "t_statistic": "TTests.tValue",
+              "df": "TTests.DF",
+              "p_value": "TTests.Probt",
+              "CI_lower": "ConfLimits.LowerCLMean",
+              "CI_upper": "ConfLimits.UpperCLMean"
+            }
+          }
+        ],
+        "configurations": {
+          "alternative_mapping": {
+            "two.sided": "2",
+            "less": "L",
+            "greater": "U"
+          }
+        },
+        "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_ttest_overview.htm",
+        "notes": "Two-sample PROC TTEST with CLASS statement. Defaults to Satterthwaite (Welch) DF matching the R var.equal=FALSE default. For equal-variance assumption, filter ODS output where Method='Pooled'. ODS tables: Statistics, TTests, ConfLimits, Equality."
+      }
+    ],
+    "M.FisherExactTest": [
+      {
+        "methodOid": "M.FisherExactTest",
+        "language": "SAS",
+        "package": "SAS/STAT",
+        "procedure": "PROC FREQ",
+        "function": null,
+        "roleSeparator": " ",
+        "callTemplate": "proc freq data=<dataset>;\n  tables <response> * <fixed_effect> / fisher;\nrun;",
+        "outputMapping": [
+          {
+            "outputClass": "test_result",
+            "resultColumns": {
+              "p_value": "FishersExact.cValue1",
+              "estimate": "CommonRelRisks.RelativeRisk"
+            }
+          }
+        ],
+        "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_freq_overview.htm",
+        "notes": "PROC FREQ with FISHER option on the TABLES statement. For 2x2 tables, ODS table FishersExact contains the two-sided exact p-value. For odds ratio, add the OR option to the TABLES statement."
+      }
+    ],
+    "M.ANCOVA": [
+      {
+        "methodOid": "M.ANCOVA",
+        "language": "SAS",
+        "package": "SAS/STAT",
+        "procedure": "PROC GLM",
+        "function": null,
+        "roleSeparator": " ",
+        "callTemplate": "proc glm data=<dataset>;\n  class <fixed_effect>;\n  model <response> = <covariate> <fixed_effect> / ss<ss_type> solution;\n  lsmeans <fixed_effect> / pdiff cl alpha=<alpha> adjust=<multiplicity_adjustment>;\nrun;\nquit;",
+        "outputMapping": [
+          {
+            "outputClass": "fit_statistics",
+            "resultColumns": {
+              "R_squared": "FitStatistics.RSquare",
+              "Adj_R_squared": "FitStatistics.AdjRSq",
+              "AIC": "FitStatistics.AIC",
+              "BIC": "FitStatistics.BIC"
+            }
+          },
+          {
+            "outputClass": "type3_tests",
+            "resultColumns": {
+              "Term": "ModelANOVA.Source",
+              "SS": "ModelANOVA.SS",
+              "df": "ModelANOVA.DF",
+              "F_statistic": "ModelANOVA.FValue",
+              "p_value": "ModelANOVA.ProbF"
+            }
+          },
+          {
+            "outputClass": "ls_means",
+            "resultColumns": {
+              "Group": "LSMeans.<fixed_effect>",
+              "estimate": "LSMeans.LSMean",
+              "SE": "LSMeans.StdErr",
+              "df": "LSMeans.DF",
+              "CI_lower": "LSMeans.LowerCL",
+              "CI_upper": "LSMeans.UpperCL"
+            }
+          },
+          {
+            "outputClass": "contrasts",
+            "resultColumns": {
+              "Contrast": "LSMeanDiffCL.Effect",
+              "estimate": "LSMeanDiffCL.Difference",
+              "SE": "LSMeanDiffCL.StdErr",
+              "df": "LSMeanDiffCL.DF",
+              "CI_lower": "LSMeanDiffCL.LowerCL",
+              "CI_upper": "LSMeanDiffCL.UpperCL",
+              "t_statistic": "LSMeanDiffCL.tValue",
+              "p_value": "LSMeanDiffCL.Probt"
+            }
+          },
+          {
+            "outputClass": "covariance_parameters",
+            "resultColumns": {
+              "residual_variance": "FitStatistics.RootMSE"
+            }
+          }
+        ],
+        "configurations": {
+          "multiplicity_adjustment_mapping": {
+            "none": "none",
+            "tukey": "tukey",
+            "bonferroni": "bon",
+            "holm": "simulate",
+            "dunnett": "dunnett",
+            "sidak": "sidak"
+          },
+          "ss_type_mapping": {
+            "I": "1",
+            "II": "2",
+            "III": "3"
+          }
+        },
+        "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_glm_overview.htm",
+        "notes": "PROC GLM with CLASS, MODEL (SSn + SOLUTION), and LSMEANS/PDIFF/CL. The SS type maps to SS1/SS2/SS3. Multiplicity adjustments map to SAS keywords (bonferroni→BON, holm→SIMULATE). ODS tables: FitStatistics, ModelANOVA, LSMeans, LSMeanDiffCL. Note: covariance_parameters maps to Root MSE — square it for residual variance."
+      }
+    ]
+  }
+}

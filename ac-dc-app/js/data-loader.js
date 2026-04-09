@@ -35,7 +35,8 @@ export async function loadAllData(state) {
     ocModel,
     ocBcMapping,
     bcOcInstanceMapping,
-    methodImplementationCatalog,
+    rImplementationCatalog,
+    sasImplementationCatalog,
     esapSchema
   ] = await Promise.all([
     fetchJSON('ac-dc-app/data/usdm/studies.json'),
@@ -51,6 +52,7 @@ export async function loadAllData(state) {
     fetchJSON('model/shared/oc_bc_property_mapping.json'),
     fetchJSON('model/shared/bc_to_oc_instance_mapping.json'),
     fetchJSON('lib/method_implementations/r_implementations.json'),
+    fetchJSON('lib/method_implementations/sas_implementations.json'),
     fetchJSON('model/study/study_esap.schema.json')
   ]);
 
@@ -81,7 +83,12 @@ export async function loadAllData(state) {
   state.ocModel = ocModel;
   state.ocBcMapping = ocBcMapping;
   state.bcOcInstanceMapping = bcOcInstanceMapping;
-  state.methodImplementationCatalog = methodImplementationCatalog;
+  // Merge R + SAS implementation catalogs into a single lookup
+  const mergedImpls = { ...rImplementationCatalog.implementations };
+  for (const [oid, sasImpls] of Object.entries(sasImplementationCatalog.implementations)) {
+    mergedImpls[oid] = [...(mergedImpls[oid] || []), ...sasImpls];
+  }
+  state.methodImplementationCatalog = { ...rImplementationCatalog, implementations: mergedImpls };
   state.esapSchema = esapSchema;
 }
 

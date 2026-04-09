@@ -4,7 +4,7 @@ import {
   initWebR, loadXptFile, executeR, isInitialized,
   getLoadedDatasets, loadEngine, setJsonVariable
 } from '../utils/webr-engine.js';
-import { generateExecutionPayload, getVariableOptions, getDefaultVariable } from '../utils/r-code-generator.js';
+import { generateExecutionPayload, getVariableOptions, getDefaultVariable, resolveCallTemplate } from '../utils/r-code-generator.js';
 
 
 export function renderExecuteAnalysis(container) {
@@ -114,9 +114,13 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
   const methodDef = appState.methodsCache?.[methodOid] || null;
   const methodName = methodDef?.name || methodOid;
 
-  // Look up R implementation from the catalog
+  // Look up implementations from the catalog
   const implCatalog = appState.methodImplementationCatalog?.implementations || {};
-  const rImpl = implCatalog[methodOid]?.[0] || null;
+  const implList = implCatalog[methodOid] || [];
+  const rImpl = implList.find(i => i.language === 'R') || null;
+  const selectedLang = result.selectedLang || 'R';
+  const selectedImpl = implList.find(i => i.language === selectedLang) || rImpl;
+  const availableLangs = [...new Set(implList.map(i => i.language))];
 
   // Generate execution payload from the resolved spec (with any user overrides)
   const specWithDataset = resolvedEp ? { ...resolvedEp, targetDataset: selectedDataset || resolvedEp.targetDataset } : null;
@@ -155,6 +159,12 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
       <div class="exec-card-meta">
         <span>${spec.conceptCategory || ''}</span>
         <span>Method: ${methodName}</span>
+        <span style="display:flex; align-items:center; gap:4px;">Language:
+          ${availableLangs.length > 1 ? `
+          <select class="exec-lang-select" data-ep-id="${ep.id}" style="font-size:11px; padding:2px 6px;">
+            ${availableLangs.map(lang => `<option value="${lang}" ${lang === selectedLang ? 'selected' : ''}>${lang}</option>`).join('')}
+          </select>` : `<code>${selectedLang}</code>`}
+        </span>
         <span style="display:flex; align-items:center; gap:4px;">Dataset:
           ${datasets.length > 0 ? `
           <select class="exec-dataset-select" data-ep-id="${ep.id}" style="font-size:11px; padding:2px 6px;">
@@ -281,23 +291,28 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
       </div>` : ''}
 
       <!-- Results -->
-      ${result.results ? _renderARDResults(result.results) : ''}
+      ${result.results ? _renderARDResults(result.results, analysis, adam, result.varOverrides) : ''}
 
-      <!-- Generated R Program (shown after results) -->
-      ${result.results ? `
+      <!-- Generated Program — language-agnostic, driven by implementation catalog -->
+      ${selectedImpl ? (() => {
+        const configs = _buildConfigs(analysis, methodDef);
+        const resolvedCode = resolveCallTemplate(selectedImpl, bindings, result.varOverrides, adam, configs, selectedDataset || 'analysis_data', analysis?.outputConfiguration);
+        return `
       <div class="exec-bindings-section" style="margin-top:16px;">
-        <div class="exec-bindings-title">GENERATED R PROGRAM</div>
+        <div class="exec-bindings-title">GENERATED ${selectedLang} PROGRAM</div>
         <div style="display:flex; gap:0; flex-wrap:wrap;">
+          ${payload ? `
           <details class="exec-code-details" open>
             <summary>Metadata-Driven (via engine)</summary>
-            <pre class="exec-code-pre">${payload ? _escapeHtml(payload.bootstrapCode) : ''}</pre>
-          </details>
+            <pre class="exec-code-pre">${_escapeHtml(payload.bootstrapCode)}</pre>
+          </details>` : ''}
           <details class="exec-code-details" open>
             <summary>Resolved (standalone)</summary>
-            <pre class="exec-code-pre">${result.results.resolved_code ? _escapeHtml(result.results.resolved_code) : 'Not available'}</pre>
+            <pre class="exec-code-pre">${resolvedCode ? _escapeHtml(resolvedCode) : 'No implementation available'}</pre>
           </details>
         </div>
-      </div>` : ''}
+      </div>`;
+      })() : ''}
     </div>
   `;
 }
@@ -306,8 +321,93 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
 // ARD results rendering
 // ---------------------------------------------------------------------------
 
-function _renderARDResults(results) {
+/**
+ * Build a reverse lookup: ADaM variable name → { role, roleLabel, concept }.
+ * Used to annotate term-level result rows with their dimension type
+ * and to map between ADaM vars and concept names for filtering.
+ */
+function _buildTermRoleMap(analysisBindings, adam, varOverrides) {
+  const map = {};
+  if (!analysisBindings) return map;
+  for (const b of analysisBindings) {
+    if (b.direction === 'output') continue;
+    const concept = (b.concept || '').replace(/@.*/, '');
+    const role = b.methodRole || '';
+
+    // Resolve concept → ADaM variable
+    let adamVar;
+    if (varOverrides?.[concept]) {
+      adamVar = varOverrides[concept];
+    } else {
+      const entry = adam?.concepts?.[concept] || adam?.dimensions?.[concept];
+      if (entry?.byDataType) {
+        const bt = entry.byDataType;
+        adamVar = b.dataStructureRole === 'measure'
+          ? (bt.decimal || bt.baseline || bt.code || bt.string)
+          : (bt.code || bt.string || bt.decimal);
+        if (!adamVar) adamVar = entry.variable?.split('/')[0];
+      } else {
+        adamVar = concept.toUpperCase();
+      }
+    }
+    if (!adamVar) continue;
+
+    // Humanise role name
+    const roleLabel = role.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    map[adamVar] = { role, roleLabel, concept };
+  }
+  return map;
+}
+
+/**
+ * Classify a term from R output (e.g. "BASE", "TRTA:SITEID") using the role map.
+ * Returns { roleLabel, role, concept } where concept is the AC/DC concept name.
+ */
+function _classifyTerm(term, roleMap) {
+  if (!term) return { roleLabel: '', role: '', concept: '' };
+  const t = String(term).trim();
+  if (t.includes(':')) {
+    // Interaction — build concept pair from constituent ADaM vars
+    const parts = t.split(':');
+    const entries = parts.map(p => roleMap[p]);
+    const roles = entries.map(e => e?.role || '').filter(Boolean);
+    const concepts = entries.map(e => e?.concept || '').filter(Boolean);
+    const concept = concepts.length === 2 ? `${concepts[0]}:${concepts[1]}` : '';
+    const role = roles.length === 2 ? `${roles[0]}:${roles[1]}` : '';
+    return { roleLabel: 'Interaction', role, concept };
+  }
+  const entry = roleMap[t];
+  if (!entry) return { roleLabel: '', role: '', concept: '' };
+  return { roleLabel: entry.roleLabel, role: entry.role, concept: entry.concept };
+}
+
+/**
+ * Filter result rows by outputConfiguration selectedDimensions.
+ * selectedDimensions stores concept names (e.g., "Treatment", "Treatment:Site").
+ * Maps each result row's ADaM term → concept name, then checks if selected.
+ */
+function _filterRowsByOutputConfig(rows, termKey, roleMap, selectedDimensions) {
+  if (!selectedDimensions || !termKey) return rows;
+  const selected = new Set(selectedDimensions);
+  return rows.filter(row => {
+    const term = row[termKey];
+    const { concept } = _classifyTerm(term, roleMap);
+    // If we can't classify (e.g. Residuals row), keep it
+    if (!concept) return true;
+    return selected.has(concept);
+  });
+}
+
+function _renderARDResults(results, analysis, adam, varOverrides) {
   const sections = [];
+  const roleMap = _buildTermRoleMap(analysis?.resolvedBindings, adam, varOverrides);
+
+  // Get outputConfiguration for filtering (from resolved spec)
+  const outputConfigArr = analysis?.outputConfiguration || [];
+  const outputConfigMap = {};
+  for (const cfg of outputConfigArr) {
+    outputConfigMap[cfg.outputClass] = cfg.selectedDimensions;
+  }
 
   if (results.ls_means) {
     sections.push({ id: 'lsmeans', label: 'LS Means',
@@ -318,8 +418,11 @@ function _renderARDResults(results) {
       html: _renderTable(_toRows(results.contrasts), ['Contrast', 'estimate', 'SE', 'df', 'CI_lower', 'CI_upper', 't_statistic', 'p_value']) });
   }
   if (results.type3_tests) {
+    let rows = _toRows(results.type3_tests);
+    const selectedDims = outputConfigMap['type3_tests'];
+    rows = _filterRowsByOutputConfig(rows, 'Term', roleMap, selectedDims);
     sections.push({ id: 'type3', label: 'Type III Tests',
-      html: _renderTable(_toRows(results.type3_tests), ['Term', 'SS', 'df', 'F_statistic', 'p_value']) });
+      html: _renderAnnotatedTable(rows, ['Term', 'Type', 'SS', 'df', 'F_statistic', 'p_value'], 'Term', roleMap) });
   }
   if (results.fit_statistics) {
     sections.push({ id: 'fit', label: 'Fit Statistics',
@@ -337,6 +440,28 @@ function _renderARDResults(results) {
       `<div class="exec-ard-section ${i === 0 ? 'active' : ''}" data-tab-panel="${s.id}">${s.html}</div>`
     ).join('')}
   `;
+}
+
+/**
+ * Render a table with an injected "Type" column derived from a term field and the role map.
+ */
+function _renderAnnotatedTable(rows, columns, termKey, roleMap) {
+  if (!rows?.length) return '<div style="font-size:12px; color:var(--cdisc-text-secondary);">No data</div>';
+  return `<table class="exec-ard-table">
+    <thead><tr>${columns.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(row => {
+      const { roleLabel } = _classifyTerm(row[termKey], roleMap);
+      return `<tr>${columns.map(c => {
+        if (c === 'Type') {
+          const color = roleLabel === 'Interaction' ? 'var(--cdisc-accent2)'
+            : roleLabel === 'Covariate' ? 'var(--cdisc-text-secondary)'
+            : 'var(--cdisc-primary)';
+          return `<td style="font-size:10px; font-style:italic; color:${color};">${roleLabel}</td>`;
+        }
+        return `<td>${_fmt(row[c])}</td>`;
+      }).join('')}</tr>`;
+    }).join('')}</tbody>
+  </table>`;
 }
 
 function _renderTable(rows, columns) {
@@ -438,6 +563,16 @@ function _wireEvents(container, configuredEps, study) {
     });
   });
 
+  // Language selection
+  container.querySelectorAll('.exec-lang-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const epId = sel.dataset.epId;
+      if (!appState.endpointResults[epId]) appState.endpointResults[epId] = {};
+      appState.endpointResults[epId].selectedLang = sel.value;
+      renderExecuteAnalysis(container);
+    });
+  });
+
   // Dataset selection
   container.querySelectorAll('.exec-dataset-select').forEach(sel => {
     sel.addEventListener('change', () => {
@@ -454,7 +589,8 @@ function _wireEvents(container, configuredEps, study) {
       const epId = btn.dataset.epId;
       const varOverrides = appState.endpointResults[epId]?.varOverrides;
       const datasetOverride = appState.endpointResults[epId]?.datasetOverride;
-      appState.endpointResults[epId] = { varOverrides, datasetOverride };
+      const selectedLang = appState.endpointResults[epId]?.selectedLang;
+      appState.endpointResults[epId] = { varOverrides, datasetOverride, selectedLang };
       renderExecuteAnalysis(container);
     });
   });
@@ -512,7 +648,7 @@ async function _executeEndpoint(container, epId) {
   const methodOid = resolvedEp.analyses?.[0]?.method?.oid || '';
   const methodDef = appState.methodsCache?.[methodOid] || null;
   const implCatalog = appState.methodImplementationCatalog?.implementations || {};
-  const rImpl = implCatalog[methodOid]?.[0] || null;
+  const rImpl = implCatalog[methodOid]?.find(i => i.language === 'R') || null;
 
   const payload = generateExecutionPayload(patchedSpec, appState.conceptMappings, overrides, methodDef, rImpl);
 
@@ -555,6 +691,28 @@ async function _executeEndpoint(container, epId) {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Build config map from method definition defaults + analysis overrides.
+ * Mirrors the R engine's parse_configs() logic.
+ */
+function _buildConfigs(analysis, methodDef) {
+  const configs = {};
+  // 1. Load defaults from method definition
+  if (methodDef?.configurations) {
+    for (const cfg of methodDef.configurations) {
+      if (cfg.defaultValue != null) configs[cfg.name] = cfg.defaultValue;
+    }
+  }
+  // 2. Override with user-specified values from analysis spec
+  if (analysis?.configurationValues) {
+    for (const cv of analysis.configurationValues) {
+      const num = Number(cv.value);
+      configs[cv.name] = isNaN(num) ? cv.value : num;
+    }
+  }
+  return configs;
+}
 
 function _fmt(val) {
   if (val === null || val === undefined) return '--';
