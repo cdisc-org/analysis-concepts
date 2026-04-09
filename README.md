@@ -96,7 +96,7 @@ Method output slots map to AC concepts, connecting computed results to their sta
 
 ### Methods
 
-**Directory:** `lib/methods/` · **Schema:** `model/method/acdc_methods.schema.json` (v0.6.0)
+**Directory:** `lib/methods/` · **Schema:** `model/method/acdc_methods.schema.json` (v0.7.0)
 
 Methods describe *how* an analysis or derivation should be performed. A method has:
 
