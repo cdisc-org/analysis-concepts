@@ -45,6 +45,10 @@
       "additionalProperties": {
         "$ref": "#/$defs/DerivationCategory"
       }
+    },
+    "conceptProxies": {
+      "$ref": "#/$defs/ConceptProxies",
+      "description": "Optional: maps app-level pseudo-categories (e.g. 'Observation') to a DC concept that should stand in for them during transformation-matching lookups."
     }
   },
   "required": ["model", "version", "sharedDimensions", "categories"],
@@ -73,6 +77,28 @@
       "title": "ResultValueType",
       "type": "string"
     },
+    "ConceptProxies": {
+      "type": "object",
+      "description": "Registry mapping pseudo-category names (e.g. 'Observation') to a DC concept that stands in for them during transformation-matching lookups. Proxy selection is governed by result.valueType compatibility.",
+      "properties": {
+        "description": { "type": "string" }
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "proxyConcept": {
+            "type": "string",
+            "description": "Name of the DC concept (from categories[*].concepts) that should be used as a proxy."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "Human-readable explanation of why this proxy mapping exists."
+          }
+        },
+        "required": ["proxyConcept"],
+        "additionalProperties": false
+      }
+    },
     "SharedDimension": {
       "additionalProperties": false,
       "description": "A dimensional concept that defines context for derivations (e.g. Subject, Timing, Treatment). Selected by the Transformation, mapped to physical columns by the Implementation.",
@@ -81,6 +107,11 @@
         "cardinality": {
           "$ref": "#/$defs/Cardinality",
           "description": "How many instances of this dimension apply to a derivation"
+        },
+        "autoConfirm": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, terminal derivation pipeline slots whose concept matches this dimension name are automatically marked as confirmed source-data dimensions, without user interaction."
         }
       },
       "required": ["cardinality"]

@@ -110,6 +110,44 @@ export function parseUSDM(usdm) {
       text: nc.text
     })),
 
+    // Activities — passed through so BC pickers can group BCs by the
+    // protocol activity that collects them. Each activity lists its
+    // biomedicalConceptIds directly AND/OR bcCategoryIds that resolve
+    // through bcCategories[*].memberIds.
+    activities: (design?.activities || []).map(a => ({
+      id: a.id,
+      name: a.name,
+      label: a.label,
+      biomedicalConceptIds: a.biomedicalConceptIds || [],
+      bcCategoryIds: a.bcCategoryIds || [],
+      bcSurrogateIds: a.bcSurrogateIds || []
+    })),
+
+    // BC categories — lookup table for the indirect
+    // activity.bcCategoryIds → bcCategory.memberIds path used by v4 USDM
+    // to group BCs by clinical domain (Vital Signs, Chemistry, Urinalysis).
+    bcCategories: (version?.bcCategories || design?.bcCategories || []).map(c => ({
+      id: c.id,
+      name: c.name,
+      label: c.label,
+      description: c.description,
+      memberIds: c.memberIds || []
+    })),
+
+    // Schedule timelines — already consumed by getBCScheduledTimings via
+    // the nested USDM path; passed through here so callers can read them
+    // from the flat parsed shape too.
+    scheduleTimelines: (design?.scheduleTimelines || []).map(t => ({
+      id: t.id,
+      name: t.name,
+      mainTimeline: !!t.mainTimeline,
+      instances: (t.instances || []).map(inst => ({
+        id: inst.id,
+        name: inst.name,
+        activityIds: inst.activityIds || []
+      }))
+    })),
+
     // Biomedical Concepts (including properties for OC facet classification)
     biomedicalConcepts: (design?.biomedicalConcepts || version?.biomedicalConcepts || []).map(bc => ({
       id: bc.id,
@@ -257,11 +295,15 @@ export function getBiomedicalConcepts(parsedStudy, endpointId) {
  * Returns array of { timeline, timelineName, instance, instanceName }.
  */
 export function getBCScheduledTimings(bcId, parsedStudy) {
-  const design = parsedStudy?.versions?.[0]?.studyDesigns?.[0]
-    || parsedStudy?.studyDesigns?.[0]
-    || {};
-  const activities = design.activities || [];
-  const timelines = design.scheduleTimelines || [];
+  // Prefer the flat parsed shape; fall back to nested USDM for raw inputs.
+  const activities = parsedStudy?.activities
+    || parsedStudy?.versions?.[0]?.studyDesigns?.[0]?.activities
+    || parsedStudy?.studyDesigns?.[0]?.activities
+    || [];
+  const timelines = parsedStudy?.scheduleTimelines
+    || parsedStudy?.versions?.[0]?.studyDesigns?.[0]?.scheduleTimelines
+    || parsedStudy?.studyDesigns?.[0]?.scheduleTimelines
+    || [];
 
   // Find activity IDs that include this BC
   const actIdsWithBC = new Set(

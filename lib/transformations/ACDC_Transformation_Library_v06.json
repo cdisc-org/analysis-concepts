@@ -44,6 +44,70 @@
       "default": "95"
     }
   },
+  "roleDefinitions": {
+    "description": "Registry of SmartPhrase roles. contextSource is 'endpoint' if the role is satisfied by the Step 3 endpoint spec (hidden from the Step 5 palette and matched implicitly by deriveImplicitPhraseOids). 'manual' roles are user-chosen in Step 5. The trigger field describes when a phrase in that role is implicitly satisfied by the endpoint spec.",
+    "order": [
+      "endpoint",
+      "parameter",
+      "timepoint",
+      "population",
+      "grouping",
+      "method",
+      "method_qualifier",
+      "covariate"
+    ],
+    "roles": {
+      "endpoint": {
+        "label": "Endpoint Type",
+        "contextSource": "endpoint",
+        "trigger": { "kind": "conceptCategoryInReferences" }
+      },
+      "parameter": {
+        "label": "Parameter",
+        "contextSource": "endpoint",
+        "trigger": {
+          "kind": "anyOf",
+          "checks": [
+            { "kind": "hasLinkedBCs" },
+            { "kind": "hasParameterName" }
+          ]
+        }
+      },
+      "timepoint": {
+        "label": "Timepoint",
+        "contextSource": "endpoint",
+        "trigger": { "kind": "dimensionHasValue", "dimension": "AnalysisVisit" }
+      },
+      "population": {
+        "label": "Population",
+        "contextSource": "endpoint",
+        "trigger": { "kind": "dimensionHasValue", "dimension": "Population" }
+      },
+      "grouping": {
+        "label": "Grouping",
+        "contextSource": "endpoint",
+        "trigger": {
+          "kind": "all",
+          "checks": [
+            { "kind": "referencesInclude", "value": "Treatment" },
+            { "kind": "dimensionHasValue", "dimension": "Treatment" }
+          ]
+        }
+      },
+      "method": {
+        "label": "Statistical Method",
+        "contextSource": "manual"
+      },
+      "method_qualifier": {
+        "label": "Method Qualifier",
+        "contextSource": "manual"
+      },
+      "covariate": {
+        "label": "Covariates",
+        "contextSource": "manual"
+      }
+    }
+  },
   "smartPhrases": [
     {
       "oid": "SP_CFB_ENDPOINT",

@@ -35,6 +35,10 @@
         "required": ["values"]
       }
     },
+    "roleDefinitions": {
+      "$ref": "#/$defs/RoleDefinitions",
+      "description": "Registry of SmartPhrase roles with context source (endpoint-driven vs manual) and declarative triggers for implicit phrase matching."
+    },
     "smartPhrases": {
       "type": "array",
       "description": "Reusable phrase templates that compose into human-readable analysis descriptions.",
@@ -212,6 +216,70 @@
           "description": "Why this configuration is set to this value for this transformation."
         }
       }
+    },
+    "RoleDefinitions": {
+      "type": "object",
+      "description": "Registry of SmartPhrase roles. Declares each role's label, contextSource (endpoint-driven or user-selected), and an optional declarative trigger describing when a phrase in that role is implicitly satisfied by the endpoint spec.",
+      "properties": {
+        "description": { "type": "string" },
+        "order": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Display order for roles in the SmartPhrase palette."
+        },
+        "roles": {
+          "type": "object",
+          "description": "Keyed by role name. Each entry describes one role.",
+          "additionalProperties": { "$ref": "#/$defs/RoleDefinition" }
+        }
+      },
+      "required": ["roles"]
+    },
+    "RoleDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "Human-readable label shown in the SmartPhrase palette."
+        },
+        "contextSource": {
+          "type": "string",
+          "enum": ["endpoint", "manual"],
+          "description": "Who supplies the value for this role: 'endpoint' means it is derived from the Step 3 endpoint spec; 'manual' means the user picks it."
+        },
+        "trigger": {
+          "$ref": "#/$defs/PhraseTrigger",
+          "description": "Declarative predicate that fires when the endpoint spec implicitly satisfies a phrase in this role (contextSource='endpoint' only)."
+        }
+      },
+      "required": ["label", "contextSource"]
+    },
+    "PhraseTrigger": {
+      "type": "object",
+      "description": "Declarative predicate evaluated by phrase-engine.js. Primitive kinds: conceptCategoryInReferences, referencesInclude, hasLinkedBCs, hasParameterName, dimensionHasValue. Combinators: anyOf, all.",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "conceptCategoryInReferences",
+            "referencesInclude",
+            "hasLinkedBCs",
+            "hasParameterName",
+            "dimensionHasValue",
+            "anyOf",
+            "all"
+          ]
+        },
+        "value": { "type": "string", "description": "Used by referencesInclude." },
+        "dimension": { "type": "string", "description": "Used by dimensionHasValue." },
+        "checks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/PhraseTrigger" },
+          "description": "Used by anyOf and all combinators."
+        }
+      },
+      "required": ["kind"]
     },
     "SmartPhrase": {
       "type": "object",

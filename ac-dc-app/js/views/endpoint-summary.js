@@ -45,11 +45,8 @@ export function renderEndpointSummary(container) {
 
   const cards = configuredReps.map(rep => {
     const ui = rep.$ui;
-    const bindings = ui.resolvedBindings || [];
-    const resolvedSlices = ui.resolvedSlices || [];
-    const methodConfigs = ui.methodConfigs || [];
+    const uiAnalyses = ui.analyses || [];
     const derivChain = ui.derivationChain || [];
-    const resolvedExpr = ui.resolvedExpression;
     const syntax = ui.syntax;
 
     return `
@@ -99,31 +96,37 @@ export function renderEndpointSummary(container) {
             </div>
           </div>
           <div class="ep-summary-detail">
-            <div class="ep-summary-detail-label">Analysis (How)</div>
+            <div class="ep-summary-detail-label">Analysis (How) ${uiAnalyses.length > 1 ? `<span style="color:var(--cdisc-text-secondary); font-weight:400;">· ${uiAnalyses.length} analyses</span>` : ''}</div>
             <div style="font-size:13px;">
-              ${ui.transformName ? `
-                <strong>${ui.transformName}</strong>
-                ${ui.transformMethod ? `<br><span style="color:var(--cdisc-text-secondary);">Method: ${ui.transformMethod}</span>` : ''}
-                ${ui.transformCategory ? `<br><span class="badge badge-secondary" style="font-size:10px;">${ui.transformCategory}</span>` : ''}
-              ` : '<span style="color:var(--cdisc-text-secondary); font-style:italic;">No analysis selected</span>'}
+              ${uiAnalyses.length === 0 ? '<span style="color:var(--cdisc-text-secondary); font-style:italic;">No analysis selected</span>' : uiAnalyses.map(a => `
+                <div style="padding:6px 0; ${uiAnalyses.length > 1 ? 'border-bottom:1px dashed var(--cdisc-border);' : ''}">
+                  <strong>${a.transformName || '(unnamed)'}</strong>
+                  ${a.transformMethod ? `<span style="color:var(--cdisc-text-secondary); margin-left:6px;">${a.transformMethod}</span>` : ''}
+                  ${a.transformCategory ? `<br><span class="badge badge-secondary" style="font-size:10px;">${a.transformCategory}</span>` : ''}
+                </div>
+              `).join('')}
             </div>
           </div>
         </div>
 
-        ${resolvedExpr ? `
+        ${uiAnalyses.filter(a => a.resolvedExpression).length > 0 ? `
         <div style="margin-top:12px;">
           <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">
-            Method Expression
-            <span style="font-size:9px; font-weight:400; text-transform:none; letter-spacing:0; margin-left:6px; color:var(--cdisc-text-secondary);">(${resolvedExpr.notation})</span>
+            Method Expression${uiAnalyses.length > 1 ? 's' : ''}
           </div>
-          <div style="font-family:'SF Mono','Fira Code','Consolas',monospace; font-size:13px; background:var(--cdisc-background); padding:10px 14px; border-radius:var(--radius); border-left:3px solid var(--cdisc-primary); line-height:1.6;">
-            ${resolvedExpr.resolved}
-          </div>
-          ${resolvedExpr.interactions?.length ? `
-          <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:4px;">
-            Interactions: ${resolvedExpr.interactions.join(', ')}
-          </div>
-          ` : ''}
+          ${uiAnalyses.filter(a => a.resolvedExpression).map(a => `
+            <div style="margin-bottom:8px;">
+              ${uiAnalyses.length > 1 ? `<div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:2px;">${a.transformName} <span style="font-size:9px;">(${a.resolvedExpression.notation})</span></div>` : `<div style="font-size:9px; font-weight:400; margin-bottom:2px; color:var(--cdisc-text-secondary);">(${a.resolvedExpression.notation})</div>`}
+              <div style="font-family:'SF Mono','Fira Code','Consolas',monospace; font-size:13px; background:var(--cdisc-background); padding:10px 14px; border-radius:var(--radius); border-left:3px solid var(--cdisc-primary); line-height:1.6;">
+                ${a.resolvedExpression.resolved}
+              </div>
+              ${a.resolvedExpression.interactions?.length ? `
+              <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:4px;">
+                Interactions: ${a.resolvedExpression.interactions.join(', ')}
+              </div>
+              ` : ''}
+            </div>
+          `).join('')}
         </div>
         ` : ''}
 
@@ -139,64 +142,81 @@ export function renderEndpointSummary(container) {
         <!-- Expanded Detail Panel (hidden by default) -->
         <div class="ep-detail-panel" data-ep-id="${rep.id}" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--cdisc-border);">
 
-          ${bindings.length > 0 ? `
-          <div style="margin-bottom:14px;">
-            <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Resolved Bindings</div>
-            <table class="data-table" style="font-size:12px;">
-              <thead><tr><th>Role</th><th>Concept</th><th>Value Type</th><th>Structure</th><th>Slice</th><th>Note</th></tr></thead>
-              <tbody>
-                ${bindings.map(b => `
-                  <tr>
-                    <td style="font-weight:600;">${b.methodRole || ''}</td>
-                    <td>
-                      <code>${displayConcept(b.concept, { dataType: ui.dataType, qualifierType: b.qualifierType, qualifierValue: b.qualifierValue })}</code>
-                      ${b.qualifierType && b.qualifierValue ? `<br><span style="font-size:10px; color:var(--cdisc-text-secondary);">${b.qualifierType}: ${b.qualifierValue}</span>` : ''}
-                    </td>
-                    <td>${b.requiredValueType ? `<span style="font-size:11px;">${b.requiredValueType}</span>` : ''}</td>
-                    <td><span class="badge ${b.dataStructureRole === 'dimension' ? 'badge-teal' : 'badge-blue'}" style="font-size:10px;">${b.dataStructureRole || 'measure'}</span></td>
-                    <td>${b.slice || ''}</td>
-                    <td style="font-size:11px; color:var(--cdisc-text-secondary);">${b.note || b.description || ''}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-          ` : ''}
-
-          ${methodConfigs.length > 0 ? `
-          <div style="margin-bottom:14px;">
-            <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Method Configuration</div>
-            <div style="display:flex; flex-wrap:wrap; gap:8px;">
-              ${methodConfigs.map(cfg => {
-                const sourceColor = cfg.source === 'user' ? 'var(--cdisc-accent2)' : cfg.source === 'transformation' ? 'var(--cdisc-primary)' : 'var(--cdisc-text-secondary)';
-                return `
-                <div style="font-size:12px; padding:4px 10px; background:var(--cdisc-background); border-radius:var(--radius); border-left:3px solid ${sourceColor};">
-                  <span style="color:var(--cdisc-text-secondary);">${cfg.label}:</span> <strong>${cfg.value}</strong>
-                </div>`;
-              }).join('')}
+          ${uiAnalyses.map((a, idx) => `
+            ${uiAnalyses.length > 1 ? `
+            <div style="font-size:12px; font-weight:700; color:var(--cdisc-primary); margin:${idx === 0 ? '0' : '18px'} 0 8px 0; padding-bottom:4px; border-bottom:2px solid var(--cdisc-primary-light);">
+              Analysis ${idx + 1}: ${a.transformName || '(unnamed)'} <span style="font-weight:400; color:var(--cdisc-text-secondary);">${a.transformMethod || ''}</span>
             </div>
-          </div>
-          ` : ''}
+            ` : ''}
 
-          ${resolvedSlices.length > 0 ? `
-          <div style="margin-bottom:14px;">
-            <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Resolved Slices</div>
-            ${resolvedSlices.map(s => `
-              <div style="padding:6px 12px; border:1px solid var(--cdisc-border); border-radius:var(--radius); margin-bottom:6px;">
-                <span style="font-weight:600; font-size:12px;">"${s.name}"</span>
-                <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;">
-                  ${Object.entries(s.resolvedValues).map(([dim, val]) => `
-                    <div style="font-size:12px; display:flex; gap:6px; align-items:center;">
-                      <span class="badge badge-teal" style="font-size:10px; padding:1px 6px;">${dim}</span>
-                      <span>=</span>
-                      <strong>${val}</strong>
-                    </div>
+            ${a.resolvedBindings?.length > 0 ? `
+            <div style="margin-bottom:14px;">
+              <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Resolved Bindings</div>
+              <table class="data-table" style="font-size:12px;">
+                <thead><tr><th>Role</th><th>Concept</th><th>Value Type</th><th>Structure</th><th>Slice</th><th>Note</th></tr></thead>
+                <tbody>
+                  ${a.resolvedBindings.map(b => `
+                    <tr>
+                      <td style="font-weight:600;">${b.methodRole || ''}</td>
+                      <td>
+                        <code>${displayConcept(b.concept, { dataType: ui.dataType, qualifierType: b.qualifierType, qualifierValue: b.qualifierValue })}</code>
+                        ${b.qualifierType && b.qualifierValue ? `<br><span style="font-size:10px; color:var(--cdisc-text-secondary);">${b.qualifierType}: ${b.qualifierValue}</span>` : ''}
+                      </td>
+                      <td>${b.requiredValueType ? `<span style="font-size:11px;">${b.requiredValueType}</span>` : ''}</td>
+                      <td><span class="badge ${b.dataStructureRole === 'dimension' ? 'badge-teal' : 'badge-blue'}" style="font-size:10px;">${b.dataStructureRole || 'measure'}</span></td>
+                      <td>${b.slice || ''}</td>
+                      <td style="font-size:11px; color:var(--cdisc-text-secondary);">${b.note || b.description || ''}</td>
+                    </tr>
                   `).join('')}
-                </div>
+                </tbody>
+              </table>
+            </div>
+            ` : ''}
+
+            ${a.methodConfigs?.length > 0 ? `
+            <div style="margin-bottom:14px;">
+              <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Method Configuration</div>
+              <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                ${a.methodConfigs.map(cfg => {
+                  const sourceColor = cfg.source === 'user' ? 'var(--cdisc-accent2)' : cfg.source === 'transformation' ? 'var(--cdisc-primary)' : 'var(--cdisc-text-secondary)';
+                  return `
+                  <div style="font-size:12px; padding:4px 10px; background:var(--cdisc-background); border-radius:var(--radius); border-left:3px solid ${sourceColor};">
+                    <span style="color:var(--cdisc-text-secondary);">${cfg.label}:</span> <strong>${cfg.value}</strong>
+                  </div>`;
+                }).join('')}
               </div>
-            `).join('')}
-          </div>
-          ` : ''}
+            </div>
+            ` : ''}
+
+            ${a.resolvedSlices?.length > 0 ? `
+            <div style="margin-bottom:14px;">
+              <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Resolved Slices</div>
+              ${a.resolvedSlices.map(s => `
+                <div style="padding:6px 12px; border:1px solid var(--cdisc-border); border-radius:var(--radius); margin-bottom:6px;">
+                  <span style="font-weight:600; font-size:12px;">"${s.name}"</span>
+                  <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;">
+                    ${Object.entries(s.resolvedValues).map(([dim, val]) => `
+                      <div style="font-size:12px; display:flex; gap:6px; align-items:center;">
+                        <span class="badge badge-teal" style="font-size:10px; padding:1px 6px;">${dim}</span>
+                        <span>=</span>
+                        <strong>${val}</strong>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            ` : ''}
+
+            ${a.activeInteractions?.length > 0 ? `
+            <div style="margin-bottom:14px;">
+              <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Interactions</div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                ${a.activeInteractions.map(i => `<code style="font-size:11px; padding:2px 6px; background:var(--cdisc-background); border-radius:var(--radius);">${i}</code>`).join('')}
+              </div>
+            </div>
+            ` : ''}
+          `).join('')}
 
           ${derivChain.length > 0 ? `
           <div style="margin-bottom:14px;">
@@ -212,19 +232,17 @@ export function renderEndpointSummary(container) {
                   </div>`;
               }).join('')}
               <span style="padding:0 6px; color:var(--cdisc-text-secondary);">→</span>
+              ${uiAnalyses.length === 1 ? `
               <div style="padding:6px 10px; border:1px solid var(--cdisc-primary); border-radius:var(--radius); background:var(--cdisc-primary-light); font-size:11px; white-space:nowrap;">
-                <strong>${ui.transformName || 'Analysis'}</strong>
-                <div style="font-size:10px; color:var(--cdisc-text-secondary);">${ui.transformMethod || ''}</div>
+                <strong>${uiAnalyses[0].transformName || 'Analysis'}</strong>
+                <div style="font-size:10px; color:var(--cdisc-text-secondary);">${uiAnalyses[0].transformMethod || ''}</div>
               </div>
-            </div>
-          </div>
-          ` : ''}
-
-          ${ui.activeInteractions?.length > 0 ? `
-          <div style="margin-bottom:14px;">
-            <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Interactions</div>
-            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              ${ui.activeInteractions.map(i => `<code style="font-size:11px; padding:2px 6px; background:var(--cdisc-background); border-radius:var(--radius);">${i}</code>`).join('')}
+              ` : `
+              <div style="padding:6px 10px; border:1px solid var(--cdisc-primary); border-radius:var(--radius); background:var(--cdisc-primary-light); font-size:11px; white-space:nowrap;">
+                <strong>${uiAnalyses.length} analyses</strong>
+                <div style="font-size:10px; color:var(--cdisc-text-secondary);">${uiAnalyses.map(a => a.transformName).join(', ')}</div>
+              </div>
+              `}
             </div>
           </div>
           ` : ''}
@@ -238,7 +256,8 @@ export function renderEndpointSummary(container) {
       </div>`;
   }).join('');
 
-  const hasAnyAnalysis = configuredReps.some(rep => rep.$ui.selectedTransformationOid);
+  const hasAnyAnalysis = configuredReps.some(rep => (rep.$ui.analyses?.length || 0) > 0);
+  const totalAnalyses = configuredReps.reduce((n, rep) => n + (rep.$ui.analyses?.length || 0), 0);
 
   container.innerHTML = `
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
@@ -263,8 +282,8 @@ export function renderEndpointSummary(container) {
         <div style="font-size:11px; color:var(--cdisc-text-secondary);">Endpoints Configured</div>
       </div>
       <div class="card" style="padding:12px 20px; flex:1; text-align:center;">
-        <div style="font-size:24px; font-weight:700; color:var(--cdisc-accent2);">${configuredReps.filter(rep => rep.$ui.selectedTransformationOid).length}</div>
-        <div style="font-size:11px; color:var(--cdisc-text-secondary);">With Analysis</div>
+        <div style="font-size:24px; font-weight:700; color:var(--cdisc-accent2);">${totalAnalyses}</div>
+        <div style="font-size:11px; color:var(--cdisc-text-secondary);">Analyses Defined</div>
       </div>
       <div class="card" style="padding:12px 20px; flex:1; text-align:center;">
         <div style="font-size:24px; font-weight:700; color:var(--cdisc-success);">${configuredReps.filter(rep => rep.$ui.estimandSummaryPattern).length}</div>

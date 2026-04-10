@@ -425,16 +425,17 @@ Variable Mappings ──→ Concept → ADaM variable resolution
 2. An R implementation entry in `lib/method_implementations/r_implementations.json` (callTemplate + outputMapping)
 3. Zero changes to `acdc_engine.R` or any JavaScript code
 
-### Known Hardcoding
+### Metadata-Driven Vocabulary
 
-While the framework is designed to be fully metadata-driven, the app currently contains a few instances where domain values are hardcoded in JavaScript rather than derived from model metadata:
+The following domain vocabularies — which used to be hardcoded in JavaScript — now live in metadata and are read at runtime by thin helper modules. Adding a new BC domain group, SmartPhrase role, or auto-confirm dimension requires editing JSON only.
 
-| Issue | Location | Description |
+| Concern | Metadata location | Helper module |
 | --- | --- | --- |
-| BC domain grouping | `endpoint-spec.js`, `derivation-pipeline.js` | Biomedical Concept grouping uses hardcoded string matches (e.g., "Blood Pressure" → "Vital Signs", "ADAS-Cog" → "ADAS-Cog Items"). Should be externalized to a metadata configuration file. |
-| Concept type checks | `endpoint-spec.js`, `derivation-pipeline.js` | Checks like `slot.concept === 'Measure'` and `conceptCat !== 'Observation'` use string literals instead of model-driven lookups. |
-| SmartPhrase role filtering | `phrase-engine.js`, `smartphrase-builder.js` | A fixed set of role names (`endpoint`, `parameter`, `timepoint`, `population`, `grouping`) is hardcoded. Adding new roles requires code changes. |
-| Auto-confirm dimensions | `derivation-pipeline.js` | A hardcoded set (`Subject`, `Parameter`, `AnalysisVisit`, etc.) determines which dimensions are auto-confirmed. Should be derived from the DC or OC model. |
+| BC grouping for pickers | USDM `studyDesigns[*].activities[*].biomedicalConceptIds` (study author curates Activities like "ECG", "Hematology", "Chemistry", "ADAS-Cog", "Demographics") | `ac-dc-app/js/utils/bc-domain-grouper.js` (`groupBCsByActivity`) |
+| Observation pseudo-category and proxy mapping | `model/concept/Option_B_Clinical.json` — new `conceptProxies` section | `ac-dc-app/js/utils/concept-classifier.js` |
+| Numeric-output concept detection | `model/concept/Option_B_Clinical.json` — existing `categories[*].concepts[*].result.valueType` | `ac-dc-app/js/utils/concept-classifier.js` |
+| SmartPhrase role registry (endpoint vs manual) and implicit-match triggers | `lib/transformations/ACDC_Transformation_Library_v06.json` — new `roleDefinitions` section with declarative trigger DSL | `ac-dc-app/js/utils/phrase-engine.js` |
+| Auto-confirmed derivation dimensions | `model/concept/Option_B_Clinical.json` — `sharedDimensions[*].autoConfirm` boolean | `ac-dc-app/js/views/derivation-pipeline.js` (inline helper) |
 
 ---
 

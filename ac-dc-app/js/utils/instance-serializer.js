@@ -1,4 +1,4 @@
-import { composeFullSentence, findMatchingTransformations, ENDPOINT_CONTEXT_ROLES } from './phrase-engine.js';
+import { composeFullSentence, findMatchingTransformations, getEndpointContextRoles } from './phrase-engine.js';
 import { getOutputMapping, getMethodConfigurations } from './transformation-linker.js';
 import { buildResolvedExpressionObject } from '../views/transformation-config.js';
 import {
@@ -453,22 +453,37 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
     }
 
     // --- UI-enrichment fields (for JSON-driven rendering) ---
-    const primaryTransform = primaryAnalysis
-      ? (lib?.analysisTransformations || []).find(t => t.oid === primaryAnalysis.transformationOid)
-      : null;
-    const primaryMethod = primaryTransform?.usesMethod ? appState.methodsCache?.[primaryTransform.usesMethod] : null;
-    const primaryBindings = primaryAnalysis?.resolvedBindings || primaryTransform?.bindings?.filter(b => b.direction !== 'output') || [];
-    const primaryResolvedExpr = primaryMethod
-      ? buildResolvedExpressionObject(primaryBindings, primaryMethod, primaryAnalysis?.activeInteractions || [])
-      : null;
-    const primaryMergedDSD = primaryTransform ? buildMergedDataStructure(spec, primaryTransform) : { slices: [] };
-    const primarySlices = (primaryMergedDSD.slices || []).map(s => ({
-      name: s.name,
-      resolvedValues: s.fixedDimensions || {}
-    }));
-    const primaryMethodConfigs = primaryMethod && primaryTransform
-      ? getMethodConfigurations(primaryMethod, primaryTransform, spec.methodConfigOverrides || {})
-      : [];
+    // Build one denormalized entry per analysis so the summary view can
+    // iterate rather than reading a single "primary" analysis.
+    const uiAnalyses = analyses.map(analysis => {
+      const transform = (lib?.analysisTransformations || []).find(t => t.oid === analysis.transformationOid);
+      if (!transform) return null;
+      const method = transform.usesMethod ? appState.methodsCache?.[transform.usesMethod] : null;
+      const bindings = analysis.resolvedBindings || transform.bindings?.filter(b => b.direction !== 'output') || [];
+      const resolvedExpression = method
+        ? buildResolvedExpressionObject(bindings, method, analysis.activeInteractions || [])
+        : null;
+      const mergedDSD = buildMergedDataStructure(spec, transform);
+      const resolvedSlices = (mergedDSD.slices || []).map(s => ({
+        name: s.name,
+        resolvedValues: s.fixedDimensions || {}
+      }));
+      const methodConfigs = method
+        ? getMethodConfigurations(method, transform, analysis.methodConfigOverrides || {})
+        : [];
+      return {
+        transformationOid: transform.oid,
+        transformName: transform.name || null,
+        transformMethod: transform.usesMethod || null,
+        transformCategory: transform.acCategory || null,
+        resolvedBindings: bindings,
+        resolvedExpression,
+        resolvedSlices,
+        methodConfigs,
+        activeInteractions: analysis.activeInteractions || []
+      };
+    }).filter(Boolean);
+
     const derivTransform = spec.selectedDerivationOid
       ? getDerivationTransformationByOid(spec.selectedDerivationOid)
       : null;
@@ -490,18 +505,10 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
         formalized: buildFormalizedDescription(ep, spec, study) || null,
         estimandDescription: buildEstimandDescription(ep, spec, study) || null,
         syntax: buildSyntaxTemplate(ep, spec, study) || null,
-        selectedTransformationOid: spec.selectedTransformationOid || null,
         selectedDerivationOid: spec.selectedDerivationOid || null,
         derivationName: derivTransform?.name || null,
-        transformName: primaryTransform?.name || null,
-        transformMethod: primaryTransform?.usesMethod || null,
-        transformCategory: primaryTransform?.acCategory || null,
-        resolvedBindings: primaryBindings,
-        resolvedExpression: primaryResolvedExpr,
-        resolvedSlices: primarySlices,
-        methodConfigs: primaryMethodConfigs,
+        analyses: uiAnalyses,
         derivationChain: spec.derivationChain || [],
-        activeInteractions: primaryAnalysis?.activeInteractions || [],
         useInEsap: spec.useInEsap !== false,
         estimandSummaryPattern: spec.estimandSummaryPattern || null
       }
@@ -1067,9 +1074,10 @@ export function deserializeStudyInstance(json, appState) {
 
     // Filter out endpoint-context-role phrases from old saves (backward compatibility)
     // These are now implicitly derived from the endpoint spec rather than stored.
+    const endpointContextRoles = getEndpointContextRoles(lib);
     const cleanedPhrases = (saved.composedPhrases || []).filter(p => {
       const sp = lib?.smartPhrases?.find(s => s.oid === p.oid);
-      return !sp || !ENDPOINT_CONTEXT_ROLES.has(sp.role);
+      return !sp || !endpointContextRoles.has(sp.role);
     });
 
     // Re-find matching transformations from phrase OIDs

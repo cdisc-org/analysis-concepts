@@ -214,6 +214,24 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
   const slices = analysis?.resolvedSlices || [];
   const expression = analysis?.resolvedExpression;
 
+  // Split bindings into "active" (methodRole is an input role of the method —
+  // these are what the formula actually consumes) and "inactive template
+  // defaults" (bindings whose role isn't in the method's input_roles, like
+  // partition/constraint rows carried over from the transformation template).
+  // Without this split, the user sees AnalysisVisit / Subject / Parameter as
+  // partitions even when the method ignores them — matching engine behaviour,
+  // but confusing.
+  const methodInputRoleNames = new Set(
+    (methodDef?.input_roles || []).map(r => r.name)
+  );
+  const inputBindings = bindings.filter(b => b.direction !== 'output');
+  const activeBindings = methodInputRoleNames.size > 0
+    ? inputBindings.filter(b => methodInputRoleNames.has(b.methodRole))
+    : inputBindings;
+  const inactiveBindings = methodInputRoleNames.size > 0
+    ? inputBindings.filter(b => !methodInputRoleNames.has(b.methodRole))
+    : [];
+
   const canRun = webRReady && hasDatasets && !!payload && !!selectedDataset;
 
   return `
@@ -236,12 +254,12 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
       </div>
 
       <!-- Resolved Bindings — with ADaM variable selection -->
-      ${bindings.length > 0 ? `
+      ${activeBindings.length > 0 ? `
       <div class="exec-bindings-section">
         <div class="exec-bindings-title">RESOLVED BINDINGS (from specification)</div>
         <table class="exec-bindings-table">
           <thead><tr><th>Role</th><th>Concept</th><th>ADaM Variable</th><th>Type</th><th>Slice</th></tr></thead>
-          <tbody>${bindings.filter(b => b.direction !== 'output').map(b => {
+          <tbody>${activeBindings.map(b => {
             const concept = b.concept?.replace(/@.*/, '') || '';
             const options = getVariableOptions(concept, adam, b.requiredValueType, b.dataStructureRole);
             const overrides = resultState.varOverrides || {};
@@ -262,6 +280,25 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
           }).join('')}
           </tbody>
         </table>
+        ${inactiveBindings.length > 0 ? `
+          <details style="margin-top:6px;">
+            <summary style="font-size:10px; color:var(--cdisc-text-secondary); cursor:pointer;">
+              Template defaults not consumed by ${methodOid} (${inactiveBindings.length})
+            </summary>
+            <table class="exec-bindings-table" style="opacity:0.6; margin-top:4px;">
+              <thead><tr><th>Role</th><th>Concept</th><th>Type</th><th>Slice</th></tr></thead>
+              <tbody>${inactiveBindings.map(b => `
+                <tr>
+                  <td>${b.methodRole}</td>
+                  <td><code>${b.concept?.replace(/@.*/, '') || ''}</code></td>
+                  <td>${b.dataStructureRole}</td>
+                  <td>${b.slice || '--'}</td>
+                </tr>
+              `).join('')}
+              </tbody>
+            </table>
+          </details>
+        ` : ''}
       </div>` : ''}
 
       <!-- Resolved Slices -->

@@ -5,6 +5,13 @@ import {
   getEndpointParameterOptions
 } from '../utils/usdm-parser.js';
 import { buildSliceLookup } from '../utils/concept-display.js';
+import { groupBCsByActivity } from '../utils/bc-domain-grouper.js';
+import {
+  isObservationCategory, derivationProxyFor, isNumericOutputConcept
+} from '../utils/concept-classifier.js';
+import {
+  findEndpointContextPhraseForConcept, getEndpointContextRoles
+} from '../utils/phrase-engine.js';
 
 export const DATA_TYPES = ['Quantity', 'CodeableConcept', 'Ordinal', 'Boolean', 'DateTime', 'Duration'];
 
@@ -220,7 +227,7 @@ export function buildSyntaxTemplate(ep, spec, study) {
   const selectedEpOid = spec.selectedEndpointPhrase;
   const endpointPhrase = selectedEpOid
     ? smartPhrases.find(sp => sp.oid === selectedEpOid)
-    : smartPhrases.find(sp => sp.role === 'endpoint' && sp.references?.includes(conceptCategory));
+    : findEndpointContextPhraseForConcept(smartPhrases, lib, conceptCategory);
 
   // Build base template from endpoint phrase
   let templateBase = endpointPhrase?.phrase_template || `${conceptCategory}`;
@@ -292,8 +299,9 @@ function buildTransformationSyntaxTemplate(ep, spec, study, analysisTransform, d
   // Find the endpoint-context SmartPhrase — prefer derivation, fall back to analysis
   let endpointPhrase = getDerivationEndpointPhrase(derivTransform);
   if (!endpointPhrase && analysisTransform) {
+    const endpointRoles = getEndpointContextRoles(lib);
     endpointPhrase = (lib?.smartPhrases || []).find(sp =>
-      sp.role === 'endpoint' && (analysisTransform.validSmartPhrases || []).includes(sp.oid)
+      endpointRoles.has(sp.role) && (analysisTransform.validSmartPhrases || []).includes(sp.oid)
     );
   }
 
@@ -542,6 +550,9 @@ function wireEventHandlers(container, study) {
       const epId = select.dataset.epId;
       ensureSpec(epId);
       appState.endpointSpecs[epId].dataType = select.value;
+      // The BC picker filter (`isTypeCompatible`) reads from spec.dataType,
+      // so the visible list must be re-rendered.
+      renderEndpointSpec(container);
     });
   });
 
@@ -813,7 +824,9 @@ export function buildEstimandFrameworkHtml(ep, spec, study, estimandDesc) {
   // Treatment — check dimValues first, then fall back to analysis bindings
   let treatmentVal = dimValues.Treatment || null;
   if (!treatmentVal) {
-    // Look for treatment in per-analysis bindings (it's a fixed_effect, not a sliceKey)
+    // Look for the binding that targets the Treatment sharedDimension
+    // (declared in dcModel.sharedDimensions.Treatment). This is a reference
+    // to a named model dimension, not a magic domain value.
     const analyses = spec?.selectedAnalyses || [];
     for (const analysis of analyses) {
       const bindings = analysis.resolvedBindings || [];
@@ -1031,9 +1044,8 @@ export function syncLegacyTransformationOid(epId) {
 export function getMatchingAnalysisTransformations(conceptCategory) {
   const transforms = appState.transformationLibrary?.analysisTransformations || [];
   if (!conceptCategory) return [];
-  // Observation maps to C.Measure as proxy — observation results and C.Measure
-  // outputs are the same type (Quantity), so the same analysis methods apply.
-  const matchConcept = conceptCategory === 'Observation' ? 'Measure' : conceptCategory;
+  // Proxy mapping (e.g. Observation → Measure) comes from dcModel.conceptProxies.
+  const matchConcept = derivationProxyFor(conceptCategory, appState.dcModel);
   return transforms.filter(t =>
     (t.bindings || []).some(b =>
       b.direction !== 'output' && b.dataStructureRole !== 'dimension' && b.concept === matchConcept
@@ -1052,8 +1064,8 @@ export function getTransformationByOid(oid) {
 /**
  * Find endpoint-level derivation transformations matching a concept category.
  * Filters derivations where outputConcept matches AND at least one validSmartPhrase
- * has role === 'endpoint' in the SmartPhrases library. This excludes utility
- * derivations (imputation, population flags) that have no endpoint SmartPhrase.
+ * has an endpoint-context role (per library.roleDefinitions). This excludes
+ * utility derivations (imputation, population flags) that have no endpoint phrase.
  */
 export function getMatchingDerivationTransformations(conceptCategory) {
   const lib = appState.transformationLibrary;
@@ -1061,9 +1073,10 @@ export function getMatchingDerivationTransformations(conceptCategory) {
   const smartPhrases = lib?.smartPhrases || [];
   if (!conceptCategory) return [];
 
-  // Build set of endpoint-role SmartPhrase OIDs
+  // Build set of endpoint-context SmartPhrase OIDs (metadata-driven)
+  const endpointRoles = getEndpointContextRoles(lib);
   const endpointPhraseOids = new Set(
-    smartPhrases.filter(sp => sp.role === 'endpoint').map(sp => sp.oid)
+    smartPhrases.filter(sp => endpointRoles.has(sp.role)).map(sp => sp.oid)
   );
 
   return derivations.filter(d => {
@@ -1088,8 +1101,9 @@ export function getDerivationTransformationByOid(oid) {
 export function getDerivationEndpointPhrase(derivation) {
   if (!derivation) return null;
   const lib = appState.transformationLibrary;
+  const endpointRoles = getEndpointContextRoles(lib);
   return (lib?.smartPhrases || []).find(sp =>
-    sp.role === 'endpoint' && (derivation.validSmartPhrases || []).includes(sp.oid)
+    endpointRoles.has(sp.role) && (derivation.validSmartPhrases || []).includes(sp.oid)
   ) || null;
 }
 
@@ -1114,7 +1128,7 @@ export function buildFormalizedDescription(ep, spec, study) {
   // Find the endpoint phrase
   const epPhrase = spec.selectedEndpointPhrase
     ? smartPhrases.find(sp => sp.oid === spec.selectedEndpointPhrase)
-    : smartPhrases.find(sp => sp.role === 'endpoint' && sp.references?.includes(spec.conceptCategory));
+    : findEndpointContextPhraseForConcept(smartPhrases, lib, spec.conceptCategory);
 
   if (!epPhrase) {
     if (paramValue) {
@@ -1208,7 +1222,7 @@ export function buildEstimandDescription(ep, spec, study) {
         whatPart = whatPart.replace(ph, val || ph);
       }
     }
-  } else if (spec.conceptCategory === 'Observation' && paramValue) {
+  } else if (isObservationCategory(spec.conceptCategory, appState.dcModel) && paramValue) {
     whatPart = paramValue;
   } else if (paramValue) {
     whatPart = `${spec.conceptCategory} of ${paramValue}`;
@@ -1309,7 +1323,10 @@ export function renderDataCube(ep, spec, study) {
     const studyBCs = studyVersion?.biomedicalConcepts || [];
     if (studyBCs.length === 0) return [];
 
-    const isNumeric = conceptCat !== 'Observation'; // Derived concepts need Quantity
+    // Derived NumericValue concepts need Quantity BCs; non-numeric concepts
+    // (CodedResponse, CharacterValue, or the Observation pseudo-category)
+    // accept any Result.Value type.
+    const isNumeric = isNumericOutputConcept(conceptCat, appState.dcModel);
     const compatibleBCs = [];
 
     for (const bcMap of (mapping.bcMappings || [])) {
@@ -1318,26 +1335,22 @@ export function renderDataCube(ep, spec, study) {
       );
       if (!hasValue) continue;
       const studyBC = studyBCs.find(bc => bc.id === bcMap.bcId || bc.name === bcMap.bcName);
-      if (studyBC) compatibleBCs.push({ id: studyBC.id, name: studyBC.name, code: bcMap.bcCode });
+      if (studyBC) compatibleBCs.push({
+        id: studyBC.id,
+        name: studyBC.name,
+        displayName: studyBC.label || studyBC.name,
+        code: bcMap.bcCode
+      });
     }
 
-    // Group by domain
-    const groups = {};
-    for (const bc of compatibleBCs) {
-      let group = 'Other';
-      const n = bc.name || '';
-      if (n.includes('ADAS-Cog')) group = 'ADAS-Cog Items';
-      else if (n.includes('Blood Pressure') || n.includes('Heart Rate') || n.includes('Temperature') || n.includes('Weight') || n.includes('Height') || n.includes('Pulse')) group = 'Vital Signs';
-      else if (n.includes('Concentration') || n.includes('Presence') || n.includes('Glucose') || n.includes('Aminotransferase') || n.includes('Phosphatase') || n.includes('Albumin') || n.includes('Creatinine') || n.includes('Sodium') || n.includes('Potassium') || n.includes('HbA1c')) group = 'Laboratory';
-      else if (n.includes('ECG') || n.includes('Electrocardiogram')) group = 'ECG';
-      else if (n.includes('MMSE') || n.includes('CDR') || n.includes('NPI') || n.includes('DAD')) group = 'Efficacy Scales';
-      if (!groups[group]) groups[group] = [];
-      groups[group].push(bc);
-    }
-
-    return Object.entries(groups)
-      .sort(([a], [b]) => a === 'Other' ? 1 : b === 'Other' ? -1 : a.localeCompare(b))
-      .map(([group, bcs]) => ({ group, bcs }));
+    // Derived concepts (Change, Measure, …) aren't tied to collection
+    // Activities — show a flat alphabetical list. Keep the [{group, bcs}]
+    // return shape so the consumer's render loop is unchanged; an empty
+    // group name suppresses the header row.
+    const sorted = [...compatibleBCs].sort(
+      (a, b) => (a.displayName || a.name || '').localeCompare(b.displayName || b.name || '')
+    );
+    return sorted.length > 0 ? [{ group: '', bcs: sorted }] : [];
   }
 
   // Available dimensions from DC model (filter non-dimension entries)
@@ -1357,7 +1370,7 @@ export function renderDataCube(ep, spec, study) {
 
   // From endpoint phrase
   const epPhraseOid = spec.selectedEndpointPhrase
-    || allSmartPhrases.find(sp => sp.role === 'endpoint' && sp.references?.includes(concept))?.oid
+    || findEndpointContextPhraseForConcept(allSmartPhrases, lib, concept)?.oid
     || null;
   if (epPhraseOid && !spec.selectedEndpointPhrase) {
     spec.selectedEndpointPhrase = epPhraseOid;
@@ -1407,7 +1420,7 @@ export function renderDataCube(ep, spec, study) {
 
   // Build BC options for Parameter dimension (grouped by domain)
   // Is this an observation concept?
-  const isObservation = concept === 'Observation';
+  const isObservation = isObservationCategory(concept, appState.dcModel);
 
   // No BC picker for Parameter slice — for Observation, BCs are selected via OC facet section above
   // For DC concepts, parameter is a plain text input
@@ -1450,8 +1463,9 @@ export function renderDataCube(ep, spec, study) {
   }).join('');
 
   // Smart phrase for this concept (reuse lib and allSmartPhrases from above)
+  const endpointRoles = getEndpointContextRoles(lib);
   const conceptPhrases = allSmartPhrases.filter(sp =>
-    sp.role === 'endpoint' && sp.references?.includes(concept)
+    endpointRoles.has(sp.role) && sp.references?.includes(concept)
   );
   const selectedPhrase = spec.selectedEndpointPhrase
     ? allSmartPhrases.find(sp => sp.oid === spec.selectedEndpointPhrase)
@@ -1509,7 +1523,12 @@ export function renderDataCube(ep, spec, study) {
         seenBCNames.add(bcMap.bcName);
 
         const studyBC = studyBCs.find(bc => bc.id === bcMap.bcId || bc.name === bcMap.bcName);
-        if (studyBC) matchingBCs.push({ id: studyBC.id, name: studyBC.name, code: bcMap.bcCode });
+        if (studyBC) matchingBCs.push({
+          id: studyBC.id,
+          name: studyBC.name,
+          displayName: studyBC.label || studyBC.name,
+          code: bcMap.bcCode
+        });
       }
     }
 
@@ -1527,34 +1546,40 @@ export function renderDataCube(ep, spec, study) {
         </div>
       </div>
 
-      <!-- BC Selection for this facet -->
+      <!-- BC Selection for this facet (grouped by USDM Activity) -->
       <div style="margin-bottom:14px;">
         <div style="font-weight:600; font-size:12px; margin-bottom:6px; color:var(--cdisc-text-secondary);">
           Biomedical Concepts with ${selectedFacet} <span class="badge badge-secondary" style="font-size:10px;">${matchingBCs.length}</span>
         </div>
         <div style="max-height:280px; overflow-y:auto; border:1px solid var(--cdisc-border); border-radius:var(--radius); padding:4px;">
-          ${matchingBCs.length > 0 ? matchingBCs.map(bc => {
-            const timings = getBCScheduledTimings(bc.id, study);
-            const mainVisits = timings.filter(t => t.isMainTimeline).map(t => t.instanceName);
-            const subTimings = timings.filter(t => !t.isMainTimeline);
-            const subByTimeline = {};
-            for (const st of subTimings) {
-              if (!subByTimeline[st.timelineName]) subByTimeline[st.timelineName] = [];
-              subByTimeline[st.timelineName].push(st.instanceName);
-            }
-            return `
-              <div style="padding:4px 8px; ${linkedBCIds.has(bc.id) ? 'background:var(--cdisc-primary-light);' : ''} border-bottom:1px solid var(--cdisc-border);">
-                <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
-                  <input type="checkbox" class="ep-obs-bc-checkbox" data-ep-id="${ep.id}" data-bc-id="${bc.id}" ${linkedBCIds.has(bc.id) ? 'checked' : ''}>
-                  <strong>${bc.name}</strong>
-                  <span style="font-size:10px; color:var(--cdisc-text-secondary); margin-left:auto;">${bc.code || ''}</span>
-                </label>
-                ${mainVisits.length > 0 ? `<div style="font-size:10px; color:var(--cdisc-text-secondary); margin:2px 0 0 22px;">Visits: ${mainVisits.join(', ')}</div>` : ''}
-                ${Object.entries(subByTimeline).map(([tlName, insts]) =>
-                  `<div style="font-size:10px; color:var(--cdisc-accent2); margin:1px 0 0 22px;">${tlName}: ${insts.join(', ')}</div>`
-                ).join('')}
-              </div>`;
-          }).join('') : '<div style="padding:8px; font-size:11px; color:var(--cdisc-text-secondary); font-style:italic; text-align:center;">No BCs found with this facet and data type.</div>'}
+          ${matchingBCs.length > 0 ? groupBCsByActivity(matchingBCs, study).map(({ group: groupName, bcs }) => `
+            <div class="obs-bc-group-header" style="font-size:11px; font-weight:600; color:var(--cdisc-primary); padding:6px 8px 3px; text-transform:uppercase; letter-spacing:0.5px;">
+              ${groupName} <span style="font-weight:400; color:var(--cdisc-text-secondary);">(${bcs.length})</span>
+            </div>
+            ${bcs.map(bc => {
+              const timings = getBCScheduledTimings(bc.id, study);
+              const mainVisits = timings.filter(t => t.isMainTimeline).map(t => t.instanceName);
+              const subTimings = timings.filter(t => !t.isMainTimeline);
+              const subByTimeline = {};
+              for (const st of subTimings) {
+                if (!subByTimeline[st.timelineName]) subByTimeline[st.timelineName] = [];
+                subByTimeline[st.timelineName].push(st.instanceName);
+              }
+              return `
+                <div style="padding:4px 8px; ${linkedBCIds.has(bc.id) ? 'background:var(--cdisc-primary-light);' : ''} border-bottom:1px solid var(--cdisc-border);">
+                  <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
+                    <input type="checkbox" class="ep-obs-bc-checkbox" data-ep-id="${ep.id}" data-bc-id="${bc.id}" ${linkedBCIds.has(bc.id) ? 'checked' : ''}>
+                    <strong>${bc.displayName || bc.name}</strong>
+                    ${bc.name && bc.name !== bc.displayName ? `<span style="font-size:10px; color:var(--cdisc-text-secondary); font-family:monospace;">${bc.name}</span>` : ''}
+                    <span style="font-size:10px; color:var(--cdisc-text-secondary); margin-left:auto;">${bc.code || ''}</span>
+                  </label>
+                  ${mainVisits.length > 0 ? `<div style="font-size:10px; color:var(--cdisc-text-secondary); margin:2px 0 0 22px;">Visits: ${mainVisits.join(', ')}</div>` : ''}
+                  ${Object.entries(subByTimeline).map(([tlName, insts]) =>
+                    `<div style="font-size:10px; color:var(--cdisc-accent2); margin:1px 0 0 22px;">${tlName}: ${insts.join(', ')}</div>`
+                  ).join('')}
+                </div>`;
+            }).join('')}
+          `).join('') : '<div style="padding:8px; font-size:11px; color:var(--cdisc-text-secondary); font-style:italic; text-align:center;">No BCs found with this facet and data type.</div>'}
         </div>
       </div>`;
 
@@ -1734,12 +1759,17 @@ export function renderParameterPicker(ep, spec, bcs, allBCs, hasBCs, paramSource
             <button class="btn btn-sm btn-secondary ep-bc-select-all" data-ep-id="${ep.id}" style="font-size:11px; padding:2px 8px;">Toggle All</button>
           </div>
           <div style="max-height:200px; overflow-y:auto; border:1px solid var(--cdisc-border); border-radius:var(--radius); padding:8px;">
-            ${(bcs.length > 0 ? bcs : allBCs).map(bc => {
+            ${(bcs.length > 0 ? bcs : allBCs)
+              .slice()
+              .sort((a, b) => (a.label || a.name || '').localeCompare(b.label || b.name || ''))
+              .map(bc => {
               const isLinked = (spec.linkedBCIds || []).includes(bc.id);
+              const showMnemonic = bc.name && bc.label && bc.name !== bc.label;
               return `
                 <label style="display:flex; align-items:center; gap:6px; padding:4px 0; font-size:12px; cursor:pointer;">
                   <input type="checkbox" class="ep-bc-checkbox" data-ep-id="${ep.id}" data-bc-id="${bc.id}" ${isLinked ? 'checked' : ''}>
-                  ${bc.name}
+                  ${bc.label || bc.name}
+                  ${showMnemonic ? `<span style="font-size:10px; color:var(--cdisc-text-secondary); font-family:monospace;">${bc.name}</span>` : ''}
                 </label>`;
             }).join('')}
           </div>
@@ -2117,7 +2147,7 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
   const estimandDesc = buildEstimandDescription(ep, spec, study);
   const originalText = ep.text || ep.description || ep.name;
 
-  const isObservation = spec.conceptCategory === 'Observation';
+  const isObservation = isObservationCategory(spec.conceptCategory, appState.dcModel);
 
   // Get matching derivation transformations and auto-select if only one
   const matchingDerivations = isObservation ? [] : getMatchingDerivationTransformations(spec.conceptCategory);

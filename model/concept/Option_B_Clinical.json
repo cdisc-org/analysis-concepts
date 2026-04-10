@@ -12,27 +12,49 @@
     "Is it a different ingredient type, not a different brand of the same ingredient?"
   ],
   "sharedDimensions": {
-    "note": "Dimensional concepts — also part of the concept model, but not derivation concepts. They define the context in which a derivation is performed. The Transformation selects which ones apply. The Implementation maps them to physical columns (e.g. USUBJID → Subject, PARAMCD → Parameter, AVISIT → Visit).",
+    "note": "Dimensional concepts — also part of the concept model, but not derivation concepts. They define the context in which a derivation is performed. The Transformation selects which ones apply. The Implementation maps them to physical columns (e.g. USUBJID → Subject, PARAMCD → Parameter, AVISIT → Visit). The autoConfirm flag marks dimensions whose terminal pipeline slots are taken as source data automatically, without user confirmation.",
     "Subject": {
-      "cardinality": "1"
+      "cardinality": "1",
+      "autoConfirm": true
     },
     "Timing": {
-      "cardinality": "1"
+      "cardinality": "1",
+      "autoConfirm": false
     },
     "Parameter": {
-      "cardinality": "0..1"
+      "cardinality": "0..1",
+      "autoConfirm": true
     },
     "AnalysisVisit": {
-      "cardinality": "0..1"
+      "cardinality": "0..1",
+      "autoConfirm": true
     },
     "Treatment": {
-      "cardinality": "0..1"
+      "cardinality": "0..1",
+      "autoConfirm": false
     },
     "Population": {
-      "cardinality": "0..1"
+      "cardinality": "0..1",
+      "autoConfirm": true
     },
     "Period": {
-      "cardinality": "0..1"
+      "cardinality": "0..1",
+      "autoConfirm": false
+    },
+    "Study": {
+      "cardinality": "1",
+      "autoConfirm": true
+    },
+    "Site": {
+      "cardinality": "0..1",
+      "autoConfirm": true
+    }
+  },
+  "conceptProxies": {
+    "description": "Maps app-level pseudo-categories (like 'Observation') to a DC concept that should stand in for them during transformation-matching lookups. The proxy is chosen so that its result.valueType matches the pseudo-category's expected output shape.",
+    "Observation": {
+      "proxyConcept": "Measure",
+      "rationale": "Observation results and Measure outputs share NumericValue; analyses that accept Measure inputs accept observation results."
     }
   },
   "categories": {

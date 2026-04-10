@@ -3,7 +3,7 @@ import { getAllEndpoints, getPopulationNames, getEndpointParameterOptions } from
 import {
   groupPhrasesByRole, getRoleLabel,
   findMatchingTransformations,
-  deriveImplicitPhraseOids, ENDPOINT_CONTEXT_ROLES
+  deriveImplicitPhraseOids, getEndpointContextRoles
 } from '../utils/phrase-engine.js';
 import { buildSyntaxTemplate, buildSyntaxTemplatePlainText } from './endpoint-spec.js';
 
@@ -50,20 +50,21 @@ export function renderSmartPhraseBuilder(container) {
   }
 
   // Compute implicit OIDs from endpoint spec
-  const implicitOids = specActive ? deriveImplicitPhraseOids(epSpec, lib.smartPhrases) : [];
+  const implicitOids = specActive ? deriveImplicitPhraseOids(epSpec, lib.smartPhrases, lib) : [];
 
   // Build syntax template text for preview
   const syntaxTemplate = specActive ? buildSyntaxTemplate(currentEp, epSpec, study) : null;
   const syntaxPlainText = specActive ? buildSyntaxTemplatePlainText(currentEp, epSpec, study) : '';
 
   // Filter palette: when endpoint spec is active, hide endpoint-context roles
-  const groupedPhrases = groupPhrasesByRole(lib.smartPhrases);
+  const groupedPhrases = groupPhrasesByRole(lib.smartPhrases, lib);
+  const endpointContextRoles = getEndpointContextRoles(lib);
   const selectedOids = new Set(appState.composedPhrases.map(e => e.oid));
 
   // Determine which palette groups to show
   const filteredGroups = {};
   for (const [role, phrases] of Object.entries(groupedPhrases)) {
-    if (specActive && ENDPOINT_CONTEXT_ROLES.has(role)) {
+    if (specActive && endpointContextRoles.has(role)) {
       // Skip endpoint-context roles when spec is active
       // Exception: SP_STRATIFICATION has role 'grouping' but empty references — keep it
       const kept = phrases.filter(sp => sp.oid === 'SP_STRATIFICATION');
@@ -107,7 +108,7 @@ export function renderSmartPhraseBuilder(container) {
         `}
         ${Object.entries(filteredGroups).map(([role, phrases]) => `
           <div class="sp-palette-group">
-            <div class="sp-palette-group-title">${getRoleLabel(role)}</div>
+            <div class="sp-palette-group-title">${getRoleLabel(role, lib)}</div>
             <div style="display:flex; flex-wrap:wrap;">
               ${phrases.map(sp => `
                 <div class="phrase-chip ${selectedOids.has(sp.oid) ? 'selected' : ''}" data-role="${sp.role}" data-oid="${sp.oid}">
@@ -435,7 +436,7 @@ function findMatches() {
   const specActive = hasEndpointSpec();
 
   const oids = appState.composedPhrases.map(e => e.oid);
-  const implicitOids = specActive ? deriveImplicitPhraseOids(epSpec, lib.smartPhrases) : [];
+  const implicitOids = specActive ? deriveImplicitPhraseOids(epSpec, lib.smartPhrases, lib) : [];
   const matches = findMatchingTransformations(oids, lib, implicitOids);
   appState.matchedTransformations = matches;
 

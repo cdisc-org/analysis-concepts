@@ -5,6 +5,7 @@ import {
 } from '../utils/transformation-linker.js';
 import { displayConcept, normalizeConcept, buildSliceLookup } from '../utils/concept-display.js';
 import { getSpecParameterValue } from './endpoint-spec.js';
+import { isNumericOutputConcept } from '../utils/concept-classifier.js';
 
 /* ─── Module-level UI state (not persisted) ─── */
 let activeNodeKey = null;
@@ -95,18 +96,27 @@ function getReferenceInfo(slotKey, activeSpec) {
 }
 
 /**
- * Standard dimension concepts that are auto-confirmed as source data.
+ * Build the set of auto-confirmed dimension names from the DC model.
+ * A dimension is auto-confirmed when its sharedDimensions entry has
+ * `autoConfirm: true` (see model/concept/Option_B_Clinical.json).
  */
-const AUTO_CONFIRM_DIMENSIONS = new Set([
-  'Subject', 'Parameter', 'AnalysisVisit', 'Study', 'Site', 'Population'
-]);
+function getAutoConfirmDimensions(dcModel) {
+  const shared = dcModel?.sharedDimensions || {};
+  const set = new Set();
+  for (const [name, def] of Object.entries(shared)) {
+    if (def && typeof def === 'object' && def.autoConfirm === true) set.add(name);
+  }
+  return set;
+}
 
 /**
  * Auto-confirm standard dimension terminals that always come from source data.
+ * The auto-confirm vocabulary is declared by dcModel.sharedDimensions[*].autoConfirm.
  */
 function autoConfirmStandardDimensions(slots, activeSpec) {
+  const autoConfirm = getAutoConfirmDimensions(appState.dcModel);
   for (const slot of slots) {
-    if (slot.dataStructureRole === 'dimension' && AUTO_CONFIRM_DIMENSIONS.has(slot.concept)) {
+    if (slot.dataStructureRole === 'dimension' && autoConfirm.has(slot.concept)) {
       const already = (activeSpec.confirmedTerminals || []).some(t => t.slotKey === slot.key);
       if (!already) {
         activeSpec.confirmedTerminals.push({
@@ -134,7 +144,9 @@ function renderTerminalBCPicker(slot, activeSpec) {
   if (studyBCs.length === 0) return '';
 
   // Filter BCs that have Result.Value with compatible type
-  const isNumericConcept = slot.concept === 'Measure';
+  // Any DC concept whose result.valueType includes 'NumericValue' needs
+  // Quantity-typed BCs; others accept any Result.Value type.
+  const isNumericConcept = isNumericOutputConcept(slot.concept, appState.dcModel);
   const compatibleBCs = [];
 
   for (const bcMapping of mapping.bcMappings || []) {
@@ -147,6 +159,7 @@ function renderTerminalBCPicker(slot, activeSpec) {
         compatibleBCs.push({
           id: studyBC.id,
           name: studyBC.name,
+          displayName: studyBC.label || studyBC.name,
           code: bcMapping.bcCode
         });
       }
@@ -155,17 +168,11 @@ function renderTerminalBCPicker(slot, activeSpec) {
 
   if (compatibleBCs.length === 0) return '';
 
-  // Group by name prefix (first word or common patterns)
-  const groups = {};
-  for (const bc of compatibleBCs) {
-    let group = 'Other';
-    if (bc.name.includes('ADAS-Cog')) group = 'ADAS-Cog Items';
-    else if (bc.name.includes('Blood Pressure') || bc.name.includes('Heart Rate') || bc.name.includes('Temperature') || bc.name.includes('Weight') || bc.name.includes('Height')) group = 'Vital Signs';
-    else if (bc.name.includes('Concentration') || bc.name.includes('Presence') || bc.name.includes('Glucose') || bc.name.includes('Aminotransferase') || bc.name.includes('Phosphatase') || bc.name.includes('Albumin') || bc.name.includes('Creatinine') || bc.name.includes('Sodium') || bc.name.includes('Potassium') || bc.name.includes('HbA1c')) group = 'Laboratory';
-    else if (bc.name.includes('ECG') || bc.name.includes('Electrocardiogram')) group = 'ECG';
-    if (!groups[group]) groups[group] = [];
-    groups[group].push(bc);
-  }
+  // Derivation terminals aren't tied to collection Activities — show a
+  // flat, alphabetically-sorted list by clinical label.
+  const sortedBCs = [...compatibleBCs].sort(
+    (a, b) => (a.displayName || a.name || '').localeCompare(b.displayName || b.name || '')
+  );
 
   // Get currently linked BCs for this terminal
   const termEntry = (activeSpec.confirmedTerminals || []).find(t => t.slotKey === slot.key);
@@ -179,17 +186,16 @@ function renderTerminalBCPicker(slot, activeSpec) {
       </div>
       <div class="terminal-bc-list">`;
 
-  for (const [groupName, bcs] of Object.entries(groups).sort(([a], [b]) => a === 'ADAS-Cog Items' ? -1 : b === 'ADAS-Cog Items' ? 1 : a.localeCompare(b))) {
-    html += `<div class="terminal-bc-group-header">${groupName} (${bcs.length})</div>`;
-    for (const bc of bcs) {
-      const checked = linkedIds.has(bc.id) ? 'checked' : '';
-      html += `
-        <label class="terminal-bc-item">
-          <input type="checkbox" class="terminal-bc-checkbox" data-slot-key="${slot.key}" data-bc-id="${bc.id}" ${checked}>
-          ${bc.name}
-          <span style="font-size:10px; color:var(--cdisc-text-secondary); margin-left:auto;">${bc.code || ''}</span>
-        </label>`;
-    }
+  for (const bc of sortedBCs) {
+    const checked = linkedIds.has(bc.id) ? 'checked' : '';
+    const showMnemonic = bc.name && bc.name !== bc.displayName;
+    html += `
+      <label class="terminal-bc-item">
+        <input type="checkbox" class="terminal-bc-checkbox" data-slot-key="${slot.key}" data-bc-id="${bc.id}" ${checked}>
+        ${bc.displayName || bc.name}
+        ${showMnemonic ? `<span style="font-size:10px; color:var(--cdisc-text-secondary); font-family:monospace; margin-left:6px;">${bc.name}</span>` : ''}
+        <span style="font-size:10px; color:var(--cdisc-text-secondary); margin-left:auto;">${bc.code || ''}</span>
+      </label>`;
   }
 
   html += `</div></div>`;
@@ -603,8 +609,10 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
         }
       }
     }
-    // Add common dimension concepts
-    const dimOptions = ['Subject', 'Treatment', 'Parameter', 'AnalysisVisit', 'Site', 'Population'];
+    // Dimension concepts come from dcModel.sharedDimensions
+    // (skip the 'note' metadata key)
+    const dimOptions = Object.keys(appState.dcModel?.sharedDimensions || {})
+      .filter(k => k !== 'note');
 
     return `
       <div class="card">
