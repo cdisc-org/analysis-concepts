@@ -119,6 +119,138 @@
         "notes": "PROC FREQ with FISHER option on the TABLES statement. For 2x2 tables, ODS table FishersExact contains the two-sided exact p-value. For odds ratio, add the OR option to the TABLES statement."
       }
     ],
+    "M.Count": [
+      {
+        "methodOid": "M.Count",
+        "language": "SAS",
+        "package": "Base SAS",
+        "procedure": "PROC MEANS",
+        "function": null,
+        "roleSeparator": " ",
+        "callTemplate": "proc means data=<dataset> n noprint;\n  class <group>;\n  var <response>;\n  output out=result(where=(_type_>0)) n=value;\nrun;",
+        "outputMapping": [
+          {
+            "outputClass": "computed_value",
+            "resultColumns": {
+              "dim_1": "result.<group>",
+              "value": "result.value"
+            }
+          }
+        ],
+        "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_means_overview.htm",
+        "notes": "PROC MEANS N with CLASS for grouping; the where=(_type_>0) filter drops the grand-total row produced by the class hierarchy. Uses <group> because the M.Count method declares its grouping input_role as name='group'."
+      }
+    ],
+    "M.Mean": [
+      {
+        "methodOid": "M.Mean",
+        "language": "SAS",
+        "package": "Base SAS",
+        "procedure": "PROC MEANS",
+        "function": null,
+        "roleSeparator": " ",
+        "callTemplate": "proc means data=<dataset> mean noprint;\n  class <group>;\n  var <response>;\n  output out=result(where=(_type_>0)) mean=value;\nrun;",
+        "outputMapping": [
+          {
+            "outputClass": "computed_value",
+            "resultColumns": {
+              "dim_1": "result.<group>",
+              "value": "result.value"
+            }
+          }
+        ],
+        "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_means_overview.htm",
+        "notes": "PROC MEANS MEAN with CLASS for grouping."
+      }
+    ],
+    "M.StandardDeviation": [
+      {
+        "methodOid": "M.StandardDeviation",
+        "language": "SAS",
+        "package": "Base SAS",
+        "procedure": "PROC MEANS",
+        "function": null,
+        "roleSeparator": " ",
+        "callTemplate": "proc means data=<dataset> std noprint;\n  class <group>;\n  var <response>;\n  output out=result(where=(_type_>0)) std=value;\nrun;",
+        "outputMapping": [
+          {
+            "outputClass": "computed_value",
+            "resultColumns": {
+              "dim_1": "result.<group>",
+              "value": "result.value"
+            }
+          }
+        ],
+        "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_means_overview.htm",
+        "notes": "PROC MEANS STD with CLASS for grouping (sample standard deviation)."
+      }
+    ],
+    "M.Median": [
+      {
+        "methodOid": "M.Median",
+        "language": "SAS",
+        "package": "Base SAS",
+        "procedure": "PROC MEANS",
+        "function": null,
+        "roleSeparator": " ",
+        "callTemplate": "proc means data=<dataset> median noprint;\n  class <group>;\n  var <response>;\n  output out=result(where=(_type_>0)) median=value;\nrun;",
+        "outputMapping": [
+          {
+            "outputClass": "computed_value",
+            "resultColumns": {
+              "dim_1": "result.<group>",
+              "value": "result.value"
+            }
+          }
+        ],
+        "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_means_overview.htm",
+        "notes": "PROC MEANS MEDIAN with CLASS for grouping."
+      }
+    ],
+    "M.Minimum": [
+      {
+        "methodOid": "M.Minimum",
+        "language": "SAS",
+        "package": "Base SAS",
+        "procedure": "PROC MEANS",
+        "function": null,
+        "roleSeparator": " ",
+        "callTemplate": "proc means data=<dataset> min noprint;\n  class <group>;\n  var <response>;\n  output out=result(where=(_type_>0)) min=value;\nrun;",
+        "outputMapping": [
+          {
+            "outputClass": "computed_value",
+            "resultColumns": {
+              "dim_1": "result.<group>",
+              "value": "result.value"
+            }
+          }
+        ],
+        "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_means_overview.htm",
+        "notes": "PROC MEANS MIN with CLASS for grouping."
+      }
+    ],
+    "M.Maximum": [
+      {
+        "methodOid": "M.Maximum",
+        "language": "SAS",
+        "package": "Base SAS",
+        "procedure": "PROC MEANS",
+        "function": null,
+        "roleSeparator": " ",
+        "callTemplate": "proc means data=<dataset> max noprint;\n  class <group>;\n  var <response>;\n  output out=result(where=(_type_>0)) max=value;\nrun;",
+        "outputMapping": [
+          {
+            "outputClass": "computed_value",
+            "resultColumns": {
+              "dim_1": "result.<group>",
+              "value": "result.value"
+            }
+          }
+        ],
+        "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_means_overview.htm",
+        "notes": "PROC MEANS MAX with CLASS for grouping."
+      }
+    ],
     "M.ANCOVA": [
       {
         "methodOid": "M.ANCOVA",

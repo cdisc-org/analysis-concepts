@@ -71,7 +71,7 @@ export const appState = {
   resolvedSpec: null,
   // WebR execution state
   loadedDatasets: [],    // array of { name, nrow, ncol, columns }
-  endpointResults: {}    // keyed by endpoint ID: { status, code, results, error }
+  endpointResults: {}    // keyed by endpoint ID: { analysisResults: { [aIdx]: { status, results, error } }, varOverrides, sliceOverrides, datasetOverride, selectedLang }
 };
 
 /**

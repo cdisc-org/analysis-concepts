@@ -96,6 +96,138 @@
         "notes": "Fisher's exact test for 2x2 contingency tables. Both response and fixed_effect must be categorical/binary."
       }
     ],
+    "M.Count": [
+      {
+        "methodOid": "M.Count",
+        "language": "R",
+        "package": "stats",
+        "function": "aggregate",
+        "callTemplate": "result <- aggregate(<response> ~ <group>, data = <dataset>, FUN = function(x) sum(!is.na(x)))",
+        "outputMapping": [
+          {
+            "outputClass": "computed_value",
+            "resultColumns": {
+              "dim_1": "if (ncol(result) >= 2) as.character(result[[1]]) else rep('Overall', nrow(result))",
+              "dim_2": "if (ncol(result) >= 3) as.character(result[[2]]) else rep(NA_character_, nrow(result))",
+              "dim_3": "if (ncol(result) >= 4) as.character(result[[3]]) else rep(NA_character_, nrow(result))",
+              "value": "as.numeric(result[[ncol(result)]])"
+            }
+          }
+        ],
+        "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/aggregate.html",
+        "notes": "Count of non-missing values via aggregate() with formula interface. <fixed_effect> expands to Treatment + Visit (etc.) via the engine's ' + ' role separator."
+      }
+    ],
+    "M.Mean": [
+      {
+        "methodOid": "M.Mean",
+        "language": "R",
+        "package": "stats",
+        "function": "aggregate",
+        "callTemplate": "result <- aggregate(<response> ~ <group>, data = <dataset>, FUN = function(x) mean(x, na.rm = TRUE))",
+        "outputMapping": [
+          {
+            "outputClass": "computed_value",
+            "resultColumns": {
+              "dim_1": "if (ncol(result) >= 2) as.character(result[[1]]) else rep('Overall', nrow(result))",
+              "dim_2": "if (ncol(result) >= 3) as.character(result[[2]]) else rep(NA_character_, nrow(result))",
+              "dim_3": "if (ncol(result) >= 4) as.character(result[[3]]) else rep(NA_character_, nrow(result))",
+              "value": "as.numeric(result[[ncol(result)]])"
+            }
+          }
+        ],
+        "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/aggregate.html",
+        "notes": "Grouped arithmetic mean via aggregate() with formula interface."
+      }
+    ],
+    "M.StandardDeviation": [
+      {
+        "methodOid": "M.StandardDeviation",
+        "language": "R",
+        "package": "stats",
+        "function": "aggregate",
+        "callTemplate": "result <- aggregate(<response> ~ <group>, data = <dataset>, FUN = function(x) sd(x, na.rm = TRUE))",
+        "outputMapping": [
+          {
+            "outputClass": "computed_value",
+            "resultColumns": {
+              "dim_1": "if (ncol(result) >= 2) as.character(result[[1]]) else rep('Overall', nrow(result))",
+              "dim_2": "if (ncol(result) >= 3) as.character(result[[2]]) else rep(NA_character_, nrow(result))",
+              "dim_3": "if (ncol(result) >= 4) as.character(result[[3]]) else rep(NA_character_, nrow(result))",
+              "value": "as.numeric(result[[ncol(result)]])"
+            }
+          }
+        ],
+        "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/sd.html",
+        "notes": "Grouped sample standard deviation via aggregate() with formula interface."
+      }
+    ],
+    "M.Median": [
+      {
+        "methodOid": "M.Median",
+        "language": "R",
+        "package": "stats",
+        "function": "aggregate",
+        "callTemplate": "result <- aggregate(<response> ~ <group>, data = <dataset>, FUN = function(x) median(x, na.rm = TRUE))",
+        "outputMapping": [
+          {
+            "outputClass": "computed_value",
+            "resultColumns": {
+              "dim_1": "if (ncol(result) >= 2) as.character(result[[1]]) else rep('Overall', nrow(result))",
+              "dim_2": "if (ncol(result) >= 3) as.character(result[[2]]) else rep(NA_character_, nrow(result))",
+              "dim_3": "if (ncol(result) >= 4) as.character(result[[3]]) else rep(NA_character_, nrow(result))",
+              "value": "as.numeric(result[[ncol(result)]])"
+            }
+          }
+        ],
+        "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/median.html",
+        "notes": "Grouped median via aggregate() with formula interface."
+      }
+    ],
+    "M.Minimum": [
+      {
+        "methodOid": "M.Minimum",
+        "language": "R",
+        "package": "base",
+        "function": "aggregate",
+        "callTemplate": "result <- aggregate(<response> ~ <group>, data = <dataset>, FUN = function(x) { v <- x[!is.na(x)]; if (length(v) == 0) NA_real_ else min(v) })",
+        "outputMapping": [
+          {
+            "outputClass": "computed_value",
+            "resultColumns": {
+              "dim_1": "if (ncol(result) >= 2) as.character(result[[1]]) else rep('Overall', nrow(result))",
+              "dim_2": "if (ncol(result) >= 3) as.character(result[[2]]) else rep(NA_character_, nrow(result))",
+              "dim_3": "if (ncol(result) >= 4) as.character(result[[3]]) else rep(NA_character_, nrow(result))",
+              "value": "as.numeric(result[[ncol(result)]])"
+            }
+          }
+        ],
+        "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/base/html/Extremes.html",
+        "notes": "Grouped minimum via aggregate() with formula interface. The wrapper guards against empty all-NA groups (min(numeric(0)) warns with Inf)."
+      }
+    ],
+    "M.Maximum": [
+      {
+        "methodOid": "M.Maximum",
+        "language": "R",
+        "package": "base",
+        "function": "aggregate",
+        "callTemplate": "result <- aggregate(<response> ~ <group>, data = <dataset>, FUN = function(x) { v <- x[!is.na(x)]; if (length(v) == 0) NA_real_ else max(v) })",
+        "outputMapping": [
+          {
+            "outputClass": "computed_value",
+            "resultColumns": {
+              "dim_1": "if (ncol(result) >= 2) as.character(result[[1]]) else rep('Overall', nrow(result))",
+              "dim_2": "if (ncol(result) >= 3) as.character(result[[2]]) else rep(NA_character_, nrow(result))",
+              "dim_3": "if (ncol(result) >= 4) as.character(result[[3]]) else rep(NA_character_, nrow(result))",
+              "value": "as.numeric(result[[ncol(result)]])"
+            }
+          }
+        ],
+        "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/base/html/Extremes.html",
+        "notes": "Grouped maximum via aggregate() with formula interface. The wrapper guards against empty all-NA groups."
+      }
+    ],
     "M.ANCOVA": [
       {
         "methodOid": "M.ANCOVA",

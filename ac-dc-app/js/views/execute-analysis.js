@@ -99,43 +99,35 @@ function _renderDatasetTable(datasets) {
 }
 
 // ---------------------------------------------------------------------------
-// Endpoint card
+// Endpoint card — header + per-analysis sub-cards + combined ARD view
 // ---------------------------------------------------------------------------
 
 function _renderEndpointCard(ep, study, datasets, webRReady) {
   const spec = appState.endpointSpecs[ep.id];
   const resolvedEp = appState.resolvedSpec?.endpoints?.find(r => r.id === ep.id);
-  const result = appState.endpointResults[ep.id] || {};
+  const result = _ensureEndpointResult(ep.id);
   const adam = appState.conceptMappings?.adam || {};
   const selectedDataset = (result.datasetOverride || resolvedEp?.targetDataset || '').toLowerCase();
+  const analyses = resolvedEp?.analyses || [];
 
-  const analysis = resolvedEp?.analyses?.[0];
-  const methodOid = analysis?.method?.oid || '';
-  const methodDef = appState.methodsCache?.[methodOid] || null;
-  const methodName = methodDef?.name || methodOid;
-
-  // Look up implementations from the catalog
+  // Union of languages across all analyses' implementations
   const implCatalog = appState.methodImplementationCatalog?.implementations || {};
-  const implList = implCatalog[methodOid] || [];
-  const rImpl = implList.find(i => i.language === 'R') || null;
-  const selectedLang = result.selectedLang || 'R';
-  const selectedImpl = implList.find(i => i.language === selectedLang) || rImpl;
-  const availableLangs = [...new Set(implList.map(i => i.language))];
+  const langSet = new Set();
+  for (const a of analyses) {
+    const oid = a?.method?.oid;
+    if (!oid) continue;
+    for (const impl of (implCatalog[oid] || [])) {
+      if (impl.language) langSet.add(impl.language);
+    }
+  }
+  const availableLangs = [...langSet];
+  const selectedLang = result.selectedLang || (availableLangs.includes('R') ? 'R' : availableLangs[0] || 'R');
 
-  // Generate execution payload from the resolved spec (with any user overrides)
-  const specWithDataset = resolvedEp ? { ...resolvedEp, targetDataset: selectedDataset || resolvedEp.targetDataset } : null;
-  const payload = specWithDataset
-    ? generateExecutionPayload(specWithDataset, appState.conceptMappings, result.varOverrides, methodDef, rImpl)
-    : null;
+  const anyRunning = analyses.some((_, i) => result.analysisResults?.[i]?.status === 'running');
+  const anyComplete = analyses.some((_, i) => result.analysisResults?.[i]?.status === 'complete');
+  const canRunAll = webRReady && datasets.length > 0 && analyses.length > 0 && !!selectedDataset;
 
-  const statusClass = result.status === 'complete' ? 'exec-card-complete'
-    : result.status === 'running' ? 'exec-card-running'
-    : result.status === 'error' ? 'exec-card-error' : '';
-
-  // Binding summary from the resolved spec
-  const bindings = analysis?.resolvedBindings || [];
-  const slices = analysis?.resolvedSlices || [];
-  const expression = analysis?.resolvedExpression;
+  const statusClass = anyRunning ? 'exec-card-running' : (anyComplete ? 'exec-card-complete' : '');
 
   return `
     <div class="exec-endpoint-card ${statusClass}" data-ep-id="${ep.id}">
@@ -144,21 +136,22 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
         <div>
           <strong>${ep.name}</strong>
           <span class="badge ${ep.level.includes('Primary') ? 'badge-primary' : 'badge-secondary'}" style="margin-left:6px;">${ep.level}</span>
+          <span style="font-size:11px; color:var(--cdisc-text-secondary); margin-left:8px;">
+            ${analyses.length} ${analyses.length === 1 ? 'analysis' : 'analyses'}
+          </span>
         </div>
         <div style="display:flex; gap:8px; align-items:center;">
-          ${result.status === 'complete' ? '<span class="badge badge-teal">Complete</span>' : ''}
-          ${result.status === 'error' ? '<span class="badge" style="background:var(--cdisc-error); color:white;">Error</span>' : ''}
-          ${result.status === 'running' ? '<span class="badge badge-blue">Running...</span>' : ''}
-          <button class="btn btn-primary btn-sm exec-run-btn" data-ep-id="${ep.id}"
-            ${!webRReady || datasets.length === 0 || !payload ? 'disabled style="opacity:0.5;"' : ''}>
-            ${result.status === 'complete' ? 'Re-run' : 'Execute'}
+          ${anyRunning ? '<span class="badge badge-blue">Running...</span>' : ''}
+          <button class="btn btn-primary btn-sm exec-run-all-btn" data-ep-id="${ep.id}"
+            ${!canRunAll ? 'disabled style="opacity:0.5;"' : ''}>
+            ${anyComplete ? 'Re-run all' : 'Run all'}
           </button>
         </div>
       </div>
 
+      <!-- Endpoint-level meta (shared across analyses) -->
       <div class="exec-card-meta">
         <span>${spec.conceptCategory || ''}</span>
-        <span>Method: ${methodName}</span>
         <span style="display:flex; align-items:center; gap:4px;">Language:
           ${availableLangs.length > 1 ? `
           <select class="exec-lang-select" data-ep-id="${ep.id}" style="font-size:11px; padding:2px 6px;">
@@ -172,10 +165,77 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
             ${datasets.map(ds => `<option value="${ds.name}" ${ds.name === selectedDataset ? 'selected' : ''}>${ds.name} (${ds.nrow.toLocaleString()})</option>`).join('')}
           </select>` : `<code>${selectedDataset || 'not set'}</code>`}
         </span>
-        ${result.status ? `<button class="btn-reset-exec" data-ep-id="${ep.id}" style="margin-left:auto; font-size:10px; padding:2px 8px; cursor:pointer; background:none; border:1px solid var(--cdisc-border); border-radius:3px; color:var(--cdisc-text-secondary);">Reset</button>` : ''}
+        ${anyComplete || anyRunning ? `<button class="btn-reset-exec" data-ep-id="${ep.id}" style="margin-left:auto; font-size:10px; padding:2px 8px; cursor:pointer; background:none; border:1px solid var(--cdisc-border); border-radius:3px; color:var(--cdisc-text-secondary);">Reset</button>` : ''}
       </div>
 
-      <!-- Resolved Bindings from spec — with ADaM variable selection -->
+      <!-- Analysis sub-cards -->
+      ${analyses.length === 0
+        ? '<div style="font-size:12px; color:var(--cdisc-text-secondary); padding:10px;">No analyses configured for this endpoint.</div>'
+        : analyses.map((analysis, aIdx) =>
+            _renderAnalysisSubcard(ep, analysis, aIdx, result, adam, selectedLang, selectedDataset, webRReady, datasets.length > 0)
+          ).join('')}
+
+      <!-- Combined ARD / cube view (long format across all completed analyses) -->
+      ${anyComplete ? _renderCombinedARD(ep, analyses, result) : ''}
+    </div>
+  `;
+}
+
+// ---------------------------------------------------------------------------
+// Analysis sub-card — bindings, slices, formula, generated program, results
+// ---------------------------------------------------------------------------
+
+function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedLang, selectedDataset, webRReady, hasDatasets) {
+  const methodOid = analysis?.method?.oid || '';
+  const methodDef = appState.methodsCache?.[methodOid] || null;
+  const methodName = methodDef?.name || methodOid;
+
+  const implCatalog = appState.methodImplementationCatalog?.implementations || {};
+  const implList = implCatalog[methodOid] || [];
+  const rImpl = implList.find(i => i.language === 'R') || null;
+  const selectedImpl = implList.find(i => i.language === selectedLang) || rImpl;
+
+  // Build a per-analysis spec for payload generation (so the R engine, which
+  // reads spec$analyses[[1]], gets the correct analysis)
+  const resolvedEp = appState.resolvedSpec?.endpoints?.find(r => r.id === ep.id);
+  const singleAnalysisSpec = resolvedEp
+    ? { ...resolvedEp, analyses: [analysis], targetDataset: selectedDataset || resolvedEp.targetDataset }
+    : null;
+  const payload = singleAnalysisSpec
+    ? generateExecutionPayload(singleAnalysisSpec, appState.conceptMappings, resultState.varOverrides, methodDef, rImpl)
+    : null;
+
+  const aResult = resultState.analysisResults?.[aIdx] || {};
+  const aStatusClass = aResult.status === 'complete' ? 'exec-sub-complete'
+    : aResult.status === 'running' ? 'exec-sub-running'
+    : aResult.status === 'error' ? 'exec-sub-error' : '';
+
+  const bindings = analysis?.resolvedBindings || [];
+  const slices = analysis?.resolvedSlices || [];
+  const expression = analysis?.resolvedExpression;
+
+  const canRun = webRReady && hasDatasets && !!payload && !!selectedDataset;
+
+  return `
+    <div class="exec-analysis-sub ${aStatusClass}" data-ep-id="${ep.id}" data-a-idx="${aIdx}">
+      <div class="exec-sub-header">
+        <div>
+          <span class="exec-sub-seq">#${aIdx + 1}</span>
+          <strong>${methodName}</strong>
+          <span style="font-size:10px; color:var(--cdisc-text-secondary); margin-left:6px;">${methodOid}</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          ${aResult.status === 'complete' ? '<span class="badge badge-teal">Complete</span>' : ''}
+          ${aResult.status === 'error' ? '<span class="badge" style="background:var(--cdisc-error); color:white;">Error</span>' : ''}
+          ${aResult.status === 'running' ? '<span class="badge badge-blue">Running...</span>' : ''}
+          <button class="btn btn-primary btn-sm exec-run-btn" data-ep-id="${ep.id}" data-a-idx="${aIdx}"
+            ${!canRun ? 'disabled style="opacity:0.5;"' : ''}>
+            ${aResult.status === 'complete' ? 'Re-run' : 'Execute'}
+          </button>
+        </div>
+      </div>
+
+      <!-- Resolved Bindings — with ADaM variable selection -->
       ${bindings.length > 0 ? `
       <div class="exec-bindings-section">
         <div class="exec-bindings-title">RESOLVED BINDINGS (from specification)</div>
@@ -184,19 +244,16 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
           <tbody>${bindings.filter(b => b.direction !== 'output').map(b => {
             const concept = b.concept?.replace(/@.*/, '') || '';
             const options = getVariableOptions(concept, adam, b.requiredValueType, b.dataStructureRole);
-            const overrides = result.varOverrides || {};
-            const defaultVar = overrides[concept]
+            const overrides = resultState.varOverrides || {};
+            const displayVar = overrides[concept]
               || getDefaultVariable(concept, b.dataStructureRole, adam);
-            // Special case: baseline covariate
-            const displayVar = defaultVar;
-            const allOptions = options;
             return `<tr>
               <td>${b.methodRole}</td>
               <td><code>${concept}</code></td>
-              <td>${allOptions.length > 1
+              <td>${options.length > 1
                 ? `<select class="exec-var-override" data-ep-id="${ep.id}" data-concept="${concept}"
                     style="font-size:11px; padding:2px 4px; font-family:monospace;">
-                    ${allOptions.map(v => `<option value="${v}" ${v === displayVar ? 'selected' : ''}>${v}</option>`).join('')}
+                    ${options.map(v => `<option value="${v}" ${v === displayVar ? 'selected' : ''}>${v}</option>`).join('')}
                   </select>`
                 : `<code>${displayVar}</code>`}</td>
               <td>${b.dataStructureRole}</td>
@@ -207,7 +264,7 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
         </table>
       </div>` : ''}
 
-      <!-- Resolved Slices from spec -->
+      <!-- Resolved Slices -->
       ${slices.length > 0 ? `
       <div class="exec-bindings-section">
         <div class="exec-bindings-title">RESOLVED SLICES (cube constraints)</div>
@@ -217,7 +274,7 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
             const dims = s.resolvedValues || {};
             return Object.entries(dims).map(([dim, val]) => {
               const dimOptions = getVariableOptions(dim, adam, null, 'dimension');
-              const sliceOverrides = result.sliceOverrides || {};
+              const sliceOverrides = resultState.sliceOverrides || {};
               const overrideKey = `${s.name}|${dim}`;
               const currentVal = sliceOverrides[overrideKey]?.value ?? val;
               const currentVar = sliceOverrides[overrideKey]?.variable;
@@ -241,18 +298,16 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
         </table>
       </div>` : ''}
 
-      <!-- Expression: concept-level + resolved with ADaM variables -->
+      <!-- Expression / formula -->
       ${expression ? (() => {
-        // Build concept → ADaM variable map from bindings + overrides
         const varMap = {};
         for (const b of bindings) {
           if (b.direction === 'output') continue;
           const concept = (b.concept || '').replace(/@.*/, '');
-          const userOverride = result.varOverrides?.[concept];
+          const userOverride = resultState.varOverrides?.[concept];
           const defaultVar = getDefaultVariable(concept, b.dataStructureRole, adam);
           varMap[concept] = userOverride || defaultVar;
         }
-        // Substitute concept names in formula (longest first), strip @slice suffixes
         let resolved = expression.resolved || '';
         const keys = Object.keys(varMap).sort((a, b) => b.length - a.length);
         for (const key of keys) {
@@ -285,23 +340,23 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
       </div>
 
       <!-- Error -->
-      ${result.error ? `
+      ${aResult.error ? `
       <div style="margin-top:8px; padding:10px 14px; background:rgba(220,53,69,0.08); border:1px solid var(--cdisc-error); border-radius:var(--radius); font-size:12px; color:var(--cdisc-error);">
-        <strong>Error:</strong> ${_escapeHtml(result.error)}
+        <strong>Error:</strong> ${_escapeHtml(aResult.error)}
       </div>` : ''}
 
-      <!-- Results -->
-      ${result.results ? _renderARDResults(result.results, analysis, adam, result.varOverrides) : ''}
+      <!-- Results (per-analysis) -->
+      ${aResult.results ? _renderARDResults(aResult.results, analysis, adam, resultState.varOverrides) : ''}
 
-      <!-- Generated Program — language-agnostic, driven by implementation catalog -->
+      <!-- Generated Program -->
       ${selectedImpl ? (() => {
         const configs = _buildConfigs(analysis, methodDef);
-        const resolvedCode = resolveCallTemplate(selectedImpl, bindings, result.varOverrides, adam, configs, selectedDataset || 'analysis_data', analysis?.outputConfiguration);
+        const resolvedCode = resolveCallTemplate(selectedImpl, bindings, resultState.varOverrides, adam, configs, selectedDataset || 'analysis_data', analysis?.outputConfiguration);
         return `
       <div class="exec-bindings-section" style="margin-top:16px;">
         <div class="exec-bindings-title">GENERATED ${selectedLang} PROGRAM</div>
         <div style="display:flex; gap:0; flex-wrap:wrap;">
-          ${payload ? `
+          ${payload && selectedLang === 'R' ? `
           <details class="exec-code-details" open>
             <summary>Metadata-Driven (via engine)</summary>
             <pre class="exec-code-pre">${_escapeHtml(payload.bootstrapCode)}</pre>
@@ -312,7 +367,11 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
           </details>
         </div>
       </div>`;
-      })() : ''}
+      })() : `
+      <div class="exec-bindings-section" style="margin-top:16px;">
+        <div class="exec-bindings-title">GENERATED ${selectedLang} PROGRAM</div>
+        <div style="font-size:11px; color:var(--cdisc-text-secondary); padding:6px 0;">No ${selectedLang} implementation available for ${methodOid}.</div>
+      </div>`}
     </div>
   `;
 }
@@ -323,8 +382,7 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
 
 /**
  * Build a reverse lookup: ADaM variable name → { role, roleLabel, concept }.
- * Used to annotate term-level result rows with their dimension type
- * and to map between ADaM vars and concept names for filtering.
+ * Used to annotate term-level result rows with their dimension type.
  */
 function _buildTermRoleMap(analysisBindings, adam, varOverrides) {
   const map = {};
@@ -334,7 +392,6 @@ function _buildTermRoleMap(analysisBindings, adam, varOverrides) {
     const concept = (b.concept || '').replace(/@.*/, '');
     const role = b.methodRole || '';
 
-    // Resolve concept → ADaM variable
     let adamVar;
     if (varOverrides?.[concept]) {
       adamVar = varOverrides[concept];
@@ -352,22 +409,16 @@ function _buildTermRoleMap(analysisBindings, adam, varOverrides) {
     }
     if (!adamVar) continue;
 
-    // Humanise role name
     const roleLabel = role.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     map[adamVar] = { role, roleLabel, concept };
   }
   return map;
 }
 
-/**
- * Classify a term from R output (e.g. "BASE", "TRTA:SITEID") using the role map.
- * Returns { roleLabel, role, concept } where concept is the AC/DC concept name.
- */
 function _classifyTerm(term, roleMap) {
   if (!term) return { roleLabel: '', role: '', concept: '' };
   const t = String(term).trim();
   if (t.includes(':')) {
-    // Interaction — build concept pair from constituent ADaM vars
     const parts = t.split(':');
     const entries = parts.map(p => roleMap[p]);
     const roles = entries.map(e => e?.role || '').filter(Boolean);
@@ -381,18 +432,12 @@ function _classifyTerm(term, roleMap) {
   return { roleLabel: entry.roleLabel, role: entry.role, concept: entry.concept };
 }
 
-/**
- * Filter result rows by outputConfiguration selectedDimensions.
- * selectedDimensions stores concept names (e.g., "Treatment", "Treatment:Site").
- * Maps each result row's ADaM term → concept name, then checks if selected.
- */
 function _filterRowsByOutputConfig(rows, termKey, roleMap, selectedDimensions) {
   if (!selectedDimensions || !termKey) return rows;
   const selected = new Set(selectedDimensions);
   return rows.filter(row => {
     const term = row[termKey];
     const { concept } = _classifyTerm(term, roleMap);
-    // If we can't classify (e.g. Residuals row), keep it
     if (!concept) return true;
     return selected.has(concept);
   });
@@ -402,13 +447,16 @@ function _renderARDResults(results, analysis, adam, varOverrides) {
   const sections = [];
   const roleMap = _buildTermRoleMap(analysis?.resolvedBindings, adam, varOverrides);
 
-  // Get outputConfiguration for filtering (from resolved spec)
   const outputConfigArr = analysis?.outputConfiguration || [];
   const outputConfigMap = {};
   for (const cfg of outputConfigArr) {
     outputConfigMap[cfg.outputClass] = cfg.selectedDimensions;
   }
 
+  if (results.computed_value) {
+    sections.push({ id: 'computed', label: 'Result',
+      html: _renderComputedValueTable(results.computed_value, analysis) });
+  }
   if (results.ls_means) {
     sections.push({ id: 'lsmeans', label: 'LS Means',
       html: _renderTable(_toRows(results.ls_means), ['Group', 'estimate', 'SE', 'df', 'CI_lower', 'CI_upper']) });
@@ -443,8 +491,141 @@ function _renderARDResults(results, analysis, adam, varOverrides) {
 }
 
 /**
- * Render a table with an injected "Type" column derived from a term field and the role map.
+ * Render a computed_value result (from descriptive stats: Count, Mean, SD,
+ * Median, Min, Max). The R outputMapping returns positional dim_1/dim_2/dim_3
+ * columns plus a `value` column. We rename the dim columns to the concept names
+ * of the fixed_effect bindings (in order) for display.
  */
+function _renderComputedValueTable(computed, analysis) {
+  const rows = _toRows(computed);
+  if (!rows?.length) return '<div style="font-size:12px; color:var(--cdisc-text-secondary);">No data</div>';
+
+  const dimConcepts = _getFixedEffectConcepts(analysis);
+  const statName = _getStatisticName(analysis);
+
+  // Figure out which dim columns have content (drop empty trailing dims)
+  const dimCols = ['dim_1', 'dim_2', 'dim_3'].filter((c, i) => {
+    if (i >= dimConcepts.length) return false;
+    return rows.some(r => r[c] != null && r[c] !== '');
+  });
+  const headers = [
+    ...dimCols.map((_, i) => dimConcepts[i] || `Dim ${i + 1}`),
+    statName || 'Value'
+  ];
+
+  return `<table class="exec-ard-table">
+    <thead><tr>${headers.map(h => `<th>${_escapeHtml(h)}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(row => {
+      const cells = [
+        ...dimCols.map(c => `<td>${_escapeHtml(row[c] ?? '')}</td>`),
+        `<td>${_fmt(row.value)}</td>`
+      ];
+      return `<tr>${cells.join('')}</tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+/**
+ * Combined ARD / cube view — long format table spanning all completed
+ * analyses on an endpoint. Columns: dim concepts... + Statistic + Value.
+ * Rows: one per (group × statistic) tuple.
+ */
+function _renderCombinedARD(ep, analyses, resultState) {
+  // Gather completed analyses with computed_value results
+  const completed = [];
+  for (let i = 0; i < analyses.length; i++) {
+    const aRes = resultState.analysisResults?.[i];
+    if (aRes?.status !== 'complete' || !aRes.results?.computed_value) continue;
+    completed.push({ analysis: analyses[i], results: aRes.results });
+  }
+  if (completed.length === 0) return '';
+
+  // Union of fixed-effect dimensions across analyses (preserving per-analysis order)
+  const dimConceptUnion = [];
+  for (const { analysis } of completed) {
+    for (const c of _getFixedEffectConcepts(analysis)) {
+      if (!dimConceptUnion.includes(c)) dimConceptUnion.push(c);
+    }
+  }
+
+  // Build long-format rows
+  const rows = [];
+  for (const { analysis, results } of completed) {
+    const concepts = _getFixedEffectConcepts(analysis);
+    const statName = _getStatisticName(analysis) || analysis?.method?.oid || 'value';
+    const cvRows = _toRows(results.computed_value);
+    for (const cv of cvRows) {
+      const row = { Statistic: statName, Value: cv.value };
+      // Map this analysis' dim_1..dim_N onto concept names
+      for (let i = 0; i < concepts.length; i++) {
+        row[concepts[i]] = cv[`dim_${i + 1}`] ?? '';
+      }
+      rows.push(row);
+    }
+  }
+
+  if (rows.length === 0) return '';
+
+  const headers = [...dimConceptUnion, 'Statistic', 'Value'];
+
+  return `
+    <div class="exec-combined-ard">
+      <div class="exec-bindings-title" style="margin-top:16px; margin-bottom:6px;">COMBINED ARD (long format)</div>
+      <table class="exec-ard-table">
+        <thead><tr>${headers.map(h => `<th>${_escapeHtml(h)}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map(row => `<tr>${headers.map(h => {
+          const val = row[h];
+          if (val == null || val === '') return '<td style="color:var(--cdisc-text-secondary);">--</td>';
+          if (h === 'Value') return `<td>${_fmt(val)}</td>`;
+          return `<td>${_escapeHtml(String(val))}</td>`;
+        }).join('')}</tr>`).join('')}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+/**
+ * Extract the ordered list of concept names bound to any input role whose
+ * statistical role is 'fixed_effect'. The binding stores `methodRole` (the
+ * method input_role `name`, e.g. "group" or "fixed_effect"), which may differ
+ * from the statistical role — M.Mean declares its grouping input as
+ * name="group", statisticalRole="fixed_effect". We look up the method
+ * definition to map roles correctly.
+ */
+function _getFixedEffectConcepts(analysis) {
+  const methodOid = analysis?.method?.oid;
+  const methodDef = methodOid ? appState.methodsCache?.[methodOid] : null;
+  // Find input_role names whose statisticalRole is 'fixed_effect'
+  const fixedEffectRoleNames = new Set();
+  for (const ir of (methodDef?.input_roles || [])) {
+    if (ir.statisticalRole === 'fixed_effect') fixedEffectRoleNames.add(ir.name);
+  }
+  // Fallback: if method def is unavailable or declares none, accept the
+  // common literal role names used across the library.
+  if (fixedEffectRoleNames.size === 0) {
+    fixedEffectRoleNames.add('fixed_effect');
+    fixedEffectRoleNames.add('group');
+  }
+
+  const out = [];
+  for (const b of (analysis?.resolvedBindings || [])) {
+    if (b.direction === 'output') continue;
+    if (!fixedEffectRoleNames.has(b.methodRole)) continue;
+    const concept = (b.concept || '').replace(/@.*/, '');
+    if (concept && !out.includes(concept)) out.push(concept);
+  }
+  return out;
+}
+
+/** Look up the statistic name (e.g. 'n', 'mean', 'sd') for a method. */
+function _getStatisticName(analysis) {
+  const methodOid = analysis?.method?.oid;
+  if (!methodOid) return null;
+  const methodDef = appState.methodsCache?.[methodOid];
+  const cls = methodDef?.output_specification?.output_classes?.[0];
+  return cls?.statistics?.[0] || null;
+}
+
 function _renderAnnotatedTable(rows, columns, termKey, roleMap) {
   if (!rows?.length) return '<div style="font-size:12px; color:var(--cdisc-text-secondary);">No data</div>';
   return `<table class="exec-ard-table">
@@ -504,7 +685,6 @@ function _wireEvents(container, configuredEps, study) {
     btn.textContent = 'Initializing...';
     try {
       await initWebR(msg => { if (progress) progress.textContent = msg; });
-      // Load the AC/DC engine into the R environment
       progress.textContent = 'Loading AC/DC engine...';
       await loadEngine();
       renderExecuteAnalysis(container);
@@ -535,18 +715,18 @@ function _wireEvents(container, configuredEps, study) {
     renderExecuteAnalysis(container);
   });
 
-  // Slice value/variable overrides (editable in resolved slices table)
+  // Slice value/variable overrides
   container.querySelectorAll('.exec-slice-var-override, .exec-slice-val-override').forEach(el => {
     el.addEventListener('change', () => {
       const epId = el.dataset.epId;
       const key = `${el.dataset.slice}|${el.dataset.dim}`;
-      if (!appState.endpointResults[epId]) appState.endpointResults[epId] = {};
-      if (!appState.endpointResults[epId].sliceOverrides) appState.endpointResults[epId].sliceOverrides = {};
-      if (!appState.endpointResults[epId].sliceOverrides[key]) appState.endpointResults[epId].sliceOverrides[key] = {};
+      const res = _ensureEndpointResult(epId);
+      if (!res.sliceOverrides) res.sliceOverrides = {};
+      if (!res.sliceOverrides[key]) res.sliceOverrides[key] = {};
       if (el.classList.contains('exec-slice-var-override')) {
-        appState.endpointResults[epId].sliceOverrides[key].variable = el.value;
+        res.sliceOverrides[key].variable = el.value;
       } else {
-        appState.endpointResults[epId].sliceOverrides[key].value = el.value;
+        res.sliceOverrides[key].value = el.value;
       }
     });
   });
@@ -556,9 +736,9 @@ function _wireEvents(container, configuredEps, study) {
     sel.addEventListener('change', () => {
       const epId = sel.dataset.epId;
       const concept = sel.dataset.concept;
-      if (!appState.endpointResults[epId]) appState.endpointResults[epId] = {};
-      if (!appState.endpointResults[epId].varOverrides) appState.endpointResults[epId].varOverrides = {};
-      appState.endpointResults[epId].varOverrides[concept] = sel.value;
+      const res = _ensureEndpointResult(epId);
+      if (!res.varOverrides) res.varOverrides = {};
+      res.varOverrides[concept] = sel.value;
       renderExecuteAnalysis(container);
     });
   });
@@ -567,8 +747,8 @@ function _wireEvents(container, configuredEps, study) {
   container.querySelectorAll('.exec-lang-select').forEach(sel => {
     sel.addEventListener('change', () => {
       const epId = sel.dataset.epId;
-      if (!appState.endpointResults[epId]) appState.endpointResults[epId] = {};
-      appState.endpointResults[epId].selectedLang = sel.value;
+      const res = _ensureEndpointResult(epId);
+      res.selectedLang = sel.value;
       renderExecuteAnalysis(container);
     });
   });
@@ -577,63 +757,90 @@ function _wireEvents(container, configuredEps, study) {
   container.querySelectorAll('.exec-dataset-select').forEach(sel => {
     sel.addEventListener('change', () => {
       const epId = sel.dataset.epId;
-      if (!appState.endpointResults[epId]) appState.endpointResults[epId] = {};
-      appState.endpointResults[epId].datasetOverride = sel.value;
+      const res = _ensureEndpointResult(epId);
+      res.datasetOverride = sel.value;
       renderExecuteAnalysis(container);
     });
   });
 
-  // Reset execution
+  // Reset execution (clears per-analysis results but preserves selections)
   container.querySelectorAll('.btn-reset-exec').forEach(btn => {
     btn.addEventListener('click', () => {
       const epId = btn.dataset.epId;
-      const varOverrides = appState.endpointResults[epId]?.varOverrides;
-      const datasetOverride = appState.endpointResults[epId]?.datasetOverride;
-      const selectedLang = appState.endpointResults[epId]?.selectedLang;
-      appState.endpointResults[epId] = { varOverrides, datasetOverride, selectedLang };
+      const prev = appState.endpointResults[epId] || {};
+      appState.endpointResults[epId] = {
+        varOverrides: prev.varOverrides,
+        datasetOverride: prev.datasetOverride,
+        selectedLang: prev.selectedLang,
+        sliceOverrides: prev.sliceOverrides,
+        analysisResults: {}
+      };
       renderExecuteAnalysis(container);
     });
   });
 
-  // Execute buttons
+  // Per-analysis execute buttons
   container.querySelectorAll('.exec-run-btn').forEach(btn => {
-    btn.addEventListener('click', () => _executeEndpoint(container, btn.dataset.epId));
+    btn.addEventListener('click', () => _executeAnalysis(container, btn.dataset.epId, Number(btn.dataset.aIdx)));
+  });
+
+  // Run-all (batch) button
+  container.querySelectorAll('.exec-run-all-btn').forEach(btn => {
+    btn.addEventListener('click', () => _executeAllAnalyses(container, btn.dataset.epId));
   });
 
   // ARD tabs
   container.querySelectorAll('.exec-ard-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      const card = tab.closest('.exec-endpoint-card');
-      card.querySelectorAll('.exec-ard-tab').forEach(t => t.classList.remove('active'));
-      card.querySelectorAll('.exec-ard-section').forEach(s => s.classList.remove('active'));
+      const sub = tab.closest('.exec-analysis-sub') || tab.closest('.exec-endpoint-card');
+      if (!sub) return;
+      // Only toggle tabs within the same tab group (sub-card)
+      const tabGroup = tab.parentElement;
+      const panels = tabGroup.nextElementSibling
+        ? Array.from(tabGroup.parentElement.querySelectorAll(':scope > .exec-ard-section'))
+        : [];
+      tabGroup.querySelectorAll('.exec-ard-tab').forEach(t => t.classList.remove('active'));
+      panels.forEach(s => s.classList.remove('active'));
       tab.classList.add('active');
-      card.querySelector(`[data-tab-panel="${tab.dataset.tab}"]`)?.classList.add('active');
+      const target = tabGroup.parentElement.querySelector(`:scope > [data-tab-panel="${tab.dataset.tab}"]`);
+      if (target) target.classList.add('active');
     });
   });
 }
 
-async function _executeEndpoint(container, epId) {
+// ---------------------------------------------------------------------------
+// Execution
+// ---------------------------------------------------------------------------
+
+/**
+ * Execute a single analysis for an endpoint. Builds a per-analysis patched
+ * spec (with analyses: [selected]) so the single-analysis R engine receives
+ * the correct one via spec$analyses[[1]].
+ */
+async function _executeAnalysis(container, epId, aIdx) {
   const resolvedEp = appState.resolvedSpec?.endpoints?.find(r => r.id === epId);
   if (!resolvedEp) return;
+  const analysis = resolvedEp.analyses?.[aIdx];
+  if (!analysis) return;
 
   // Always reload the engine to pick up latest changes
   try {
     await loadEngine();
   } catch (err) {
-    appState.endpointResults[epId] = { status: 'error', error: `Failed to load engine: ${err.message}` };
+    _setAnalysisResult(epId, aIdx, { status: 'error', error: `Failed to load engine: ${err.message}` });
     renderExecuteAnalysis(container);
     return;
   }
 
-  const resultState = appState.endpointResults[epId] || {};
+  const resultState = _ensureEndpointResult(epId);
   const overrides = resultState.varOverrides || null;
   const selectedDataset = (resultState.datasetOverride || resolvedEp.targetDataset || '').toLowerCase();
 
-  // Apply slice value overrides to the spec before passing to R
-  const patchedSpec = JSON.parse(JSON.stringify({ ...resolvedEp, targetDataset: selectedDataset }));
+  // Build a patched single-analysis spec, apply slice overrides to its slices
+  const singleAnalysis = JSON.parse(JSON.stringify(analysis));
   const sliceOverrides = resultState.sliceOverrides || {};
-  if (patchedSpec.analyses?.[0]?.resolvedSlices) {
-    for (const s of patchedSpec.analyses[0].resolvedSlices) {
+  if (singleAnalysis?.resolvedSlices) {
+    for (const s of singleAnalysis.resolvedSlices) {
       const vals = s.resolvedValues || {};
       for (const dim of Object.keys(vals)) {
         const key = `${s.name}|${dim}`;
@@ -643,23 +850,29 @@ async function _executeEndpoint(container, epId) {
       }
     }
   }
+  const patchedSpec = {
+    ...resolvedEp,
+    analyses: [singleAnalysis],
+    targetDataset: selectedDataset
+  };
 
-  // Look up method definition and R implementation
-  const methodOid = resolvedEp.analyses?.[0]?.method?.oid || '';
+  const methodOid = analysis?.method?.oid || '';
   const methodDef = appState.methodsCache?.[methodOid] || null;
   const implCatalog = appState.methodImplementationCatalog?.implementations || {};
   const rImpl = implCatalog[methodOid]?.find(i => i.language === 'R') || null;
 
+  if (!rImpl) {
+    _setAnalysisResult(epId, aIdx, { status: 'error', error: `No R implementation available for ${methodOid}` });
+    renderExecuteAnalysis(container);
+    return;
+  }
+
   const payload = generateExecutionPayload(patchedSpec, appState.conceptMappings, overrides, methodDef, rImpl);
 
-  appState.endpointResults[epId] = {
-    ...appState.endpointResults[epId],
-    status: 'running', results: null, error: null
-  };
+  _setAnalysisResult(epId, aIdx, { status: 'running', results: null, error: null });
   renderExecuteAnalysis(container);
 
   try {
-    // Pass all metadata JSONs to R as string variables
     await setJsonVariable('spec_json', payload.specJson);
     await setJsonVariable('mapping_json', payload.mappingJson);
     await setJsonVariable('method_json', payload.methodJson);
@@ -668,7 +881,6 @@ async function _executeEndpoint(container, epId) {
       await setJsonVariable('overrides_json', payload.overridesJson);
     }
 
-    // Execute the bootstrap code (which calls acdc_execute)
     const result = await executeR(payload.bootstrapCode);
 
     if (result.success) {
@@ -677,15 +889,61 @@ async function _executeEndpoint(container, epId) {
         if (typeof parsed === 'string') parsed = JSON.parse(parsed);
         else if (parsed?.values) parsed = JSON.parse(parsed.values[0]);
       } catch (e) { /* keep as-is */ }
-      appState.endpointResults[epId] = { ...appState.endpointResults[epId], status: 'complete', results: parsed, error: null };
+      _setAnalysisResult(epId, aIdx, { status: 'complete', results: parsed, error: null });
     } else {
-      appState.endpointResults[epId] = { ...appState.endpointResults[epId], status: 'error', results: null, error: result.error };
+      _setAnalysisResult(epId, aIdx, { status: 'error', results: null, error: result.error });
     }
   } catch (err) {
-    appState.endpointResults[epId] = { ...appState.endpointResults[epId], status: 'error', results: null, error: err.message };
+    _setAnalysisResult(epId, aIdx, { status: 'error', results: null, error: err.message });
   }
 
   renderExecuteAnalysis(container);
+}
+
+/**
+ * Batch execute — run every analysis on an endpoint sequentially. Sequential
+ * rather than parallel because the WebR engine has shared global state
+ * (spec_json, mapping_json, etc.) between calls.
+ */
+async function _executeAllAnalyses(container, epId) {
+  const resolvedEp = appState.resolvedSpec?.endpoints?.find(r => r.id === epId);
+  if (!resolvedEp) return;
+  const analyses = resolvedEp.analyses || [];
+  for (let i = 0; i < analyses.length; i++) {
+    // eslint-disable-next-line no-await-in-loop
+    await _executeAnalysis(container, epId, i);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// State helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Ensure the endpointResults slot exists and has the new shape. Silently
+ * migrates the old single-analysis shape ({status, results, error}) into
+ * analysisResults[0] so a user mid-session doesn't lose state.
+ */
+function _ensureEndpointResult(epId) {
+  if (!appState.endpointResults[epId]) {
+    appState.endpointResults[epId] = { analysisResults: {} };
+  }
+  const r = appState.endpointResults[epId];
+  if (!r.analysisResults) {
+    // Migrate legacy flat shape if present
+    if (r.status || r.results || r.error) {
+      r.analysisResults = { 0: { status: r.status, results: r.results, error: r.error } };
+      delete r.status; delete r.results; delete r.error;
+    } else {
+      r.analysisResults = {};
+    }
+  }
+  return r;
+}
+
+function _setAnalysisResult(epId, aIdx, patch) {
+  const r = _ensureEndpointResult(epId);
+  r.analysisResults[aIdx] = { ...(r.analysisResults[aIdx] || {}), ...patch };
 }
 
 // ---------------------------------------------------------------------------
@@ -698,13 +956,11 @@ async function _executeEndpoint(container, epId) {
  */
 function _buildConfigs(analysis, methodDef) {
   const configs = {};
-  // 1. Load defaults from method definition
   if (methodDef?.configurations) {
     for (const cfg of methodDef.configurations) {
       if (cfg.defaultValue != null) configs[cfg.name] = cfg.defaultValue;
     }
   }
-  // 2. Override with user-specified values from analysis spec
   if (analysis?.configurationValues) {
     for (const cv of analysis.configurationValues) {
       const num = Number(cv.value);
@@ -744,8 +1000,17 @@ function _styles() {
     .exec-card-running { border-left:3px solid var(--cdisc-primary); }
     .exec-card-error { border-left:3px solid var(--cdisc-error); }
     .exec-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
-    .exec-card-meta { font-size:12px; color:var(--cdisc-text-secondary); display:flex; gap:16px; }
+    .exec-card-meta { font-size:12px; color:var(--cdisc-text-secondary); display:flex; gap:16px; margin-bottom:12px; }
     .btn-sm { padding:4px 12px; font-size:12px; }
+
+    /* Per-analysis sub-card */
+    .exec-analysis-sub { border:1px solid var(--cdisc-border); border-radius:var(--radius); padding:12px; margin-top:10px; background:var(--cdisc-surface, #fff); }
+    .exec-sub-complete { border-left:3px solid #28a745; }
+    .exec-sub-running { border-left:3px solid var(--cdisc-primary); }
+    .exec-sub-error { border-left:3px solid var(--cdisc-error); }
+    .exec-sub-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .exec-sub-seq { display:inline-block; min-width:22px; padding:1px 6px; margin-right:6px; font-size:10px; font-weight:700; color:var(--cdisc-text-secondary); background:var(--cdisc-background); border-radius:10px; }
+
     .exec-bindings-section { margin:10px 0; }
     .exec-bindings-title { font-size:10px; font-weight:700; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
     .exec-bindings-table { width:100%; font-size:11px; border-collapse:collapse; }
@@ -765,5 +1030,7 @@ function _styles() {
     .exec-ard-table th { text-align:left; padding:4px 8px; border-bottom:2px solid var(--cdisc-border); font-weight:600; color:var(--cdisc-text-secondary); font-size:10px; text-transform:uppercase; }
     .exec-ard-table td { padding:4px 8px; border-bottom:1px solid var(--cdisc-border); }
     .exec-ard-table tr:hover td { background:var(--cdisc-primary-light); }
+
+    .exec-combined-ard { margin-top:16px; padding:12px; border:1px dashed var(--cdisc-border); border-radius:var(--radius); background:var(--cdisc-background); }
   </style>`;
 }
