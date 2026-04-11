@@ -49,8 +49,11 @@ export function renderSmartPhraseBuilder(container) {
     }
   }
 
-  // Compute implicit OIDs from endpoint spec
-  const implicitOids = specActive ? deriveImplicitPhraseOids(epSpec, lib.smartPhrases, lib) : [];
+  // Compute implicit OIDs from endpoint spec — triggers come from app-local
+  // phrase-role-config.json (not library metadata)
+  const implicitOids = specActive
+    ? deriveImplicitPhraseOids(epSpec, lib.smartPhrases, lib, appState.phraseRoleAppConfig)
+    : [];
 
   // Build syntax template text for preview
   const syntaxTemplate = specActive ? buildSyntaxTemplate(currentEp, epSpec, study) : null;
@@ -436,7 +439,9 @@ function findMatches() {
   const specActive = hasEndpointSpec();
 
   const oids = appState.composedPhrases.map(e => e.oid);
-  const implicitOids = specActive ? deriveImplicitPhraseOids(epSpec, lib.smartPhrases, lib) : [];
+  const implicitOids = specActive
+    ? deriveImplicitPhraseOids(epSpec, lib.smartPhrases, lib, appState.phraseRoleAppConfig)
+    : [];
   const matches = findMatchingTransformations(oids, lib, implicitOids);
   appState.matchedTransformations = matches;
 

@@ -115,6 +115,13 @@
       "path": "derivations/M.Rounding.json"
     },
     {
+      "oid": "M.UnitConversion",
+      "name": "Unit Conversion",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M.UnitConversion.json"
+    },
+    {
       "oid": "M.OneSampleTTest",
       "name": "One-sample t-test",
       "type": "analysis",

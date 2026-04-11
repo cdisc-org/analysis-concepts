@@ -232,7 +232,11 @@
       {
         "methodOid": "M.ANCOVA",
         "language": "R",
-        "packages": ["stats", "car", "emmeans"],
+        "packages": [
+          "stats",
+          "car",
+          "emmeans"
+        ],
         "function": "lm",
         "callTemplate": "model <- lm(<response> ~ <covariate> + <fixed_effect>, data = <dataset>)\nmodel_summary <- summary(model)\nanova_result <- car::Anova(model, type = \"<ss_type>\")\nlsm <- emmeans::emmeans(model, ~ <fixed_effect>)\nlsm_df <- as.data.frame(summary(lsm, infer = TRUE, level = 1 - <alpha>))\ncontr <- pairs(lsm, adjust = \"<multiplicity_adjustment>\")\ncontr_df <- as.data.frame(summary(contr, infer = TRUE, level = 1 - <alpha>))",
         "outputMapping": [
@@ -288,6 +292,17 @@
         ],
         "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/lm.html",
         "notes": "ANCOVA via lm() with Type III SS from car::Anova() and LS means from emmeans. Covariate adjusts the group comparison."
+      }
+    ],
+    "M.UnitConversion": [
+      {
+        "methodOid": "M.UnitConversion",
+        "language": "R",
+        "package": "base",
+        "derivationKind": "rowwise_mutate",
+        "callTemplate": "# Row-wise unit conversion operating on concept-keyed columns.\n# Placeholders <value>, <source_unit>, <result_value>, <result_unit>\n# are substituted with concept names (e.g. 'Observation.Result.Value')\n# which ARE the internal dataframe column names after the load phase.\nuc <- unit_conversions$conversions\ntarget <- \"<target_unit>\"\nprecision <- <precision>\nrounding_method <- \"<rounding_method>\"\non_missing <- \"<on_missing_factor>\"\nfactor_for <- function(src) {\n  for (row in uc) {\n    if ((row$from_code == src || row$from_name == src) &&\n        (row$to_code == target || row$to_name == target)) return(row$factor)\n  }\n  return(NA_real_)\n}\nsrc <- as.character(concept_data[[\"<source_unit>\"]])\nval <- as.numeric(concept_data[[\"<value>\"]])\nf <- vapply(src, factor_for, numeric(1))\nmissing_idx <- which(is.na(f) & !is.na(val))\nif (length(missing_idx) > 0) {\n  msg <- sprintf(\"Missing unit conversion factor for source values: %s (target=%s)\",\n                 paste(unique(src[missing_idx]), collapse = \", \"), target)\n  if (on_missing == \"fail\") stop(msg)\n  if (on_missing == \"na\") val[missing_idx] <- NA_real_\n  if (on_missing == \"passthrough\") f[missing_idx] <- 1\n}\nresult_value <- val * f\nif (!is.null(precision) && !is.na(precision)) {\n  result_value <- switch(rounding_method,\n    half_up   = round(result_value, precision),\n    half_even = round(result_value, precision),\n    half_down = sign(result_value) * floor(abs(result_value) * 10^precision + 0.5 - 1e-9) / 10^precision,\n    floor     = floor(result_value * 10^precision) / 10^precision,\n    ceiling   = ceiling(result_value * 10^precision) / 10^precision,\n    round(result_value, precision)\n  )\n}\nconcept_data[[\"<result_value>\"]] <- result_value\nconcept_data[[\"<result_unit>\"]]  <- target",
+        "outputMapping": [],
+        "notes": "Generic row-wise unit conversion. Reads from concept-keyed columns <value> and <source_unit>, writes concept-keyed columns <result_value> and <result_unit>. Substitution of placeholders with concept names (e.g. Observation.Result.Value, Measure.Result.Value) is done by the engine's execute phase based on the transformation's bindings. Config placeholders (<target_unit>, <precision>, <rounding_method>, <on_missing_factor>) are substituted from the endpoint's resolved configurationValues. Requires `unit_conversions` (loaded from model/vocabularies/unit_conversions.json) and `concept_data` (the concept-keyed internal representation after the load phase) to be present in the R eval env. derivationKind='rowwise_mutate' tells the engine this is a pre-analysis dataframe mutation, not an analysis aggregation."
       }
     ]
   }

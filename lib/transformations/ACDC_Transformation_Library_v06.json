@@ -45,7 +45,7 @@
     }
   },
   "roleDefinitions": {
-    "description": "Registry of SmartPhrase roles. contextSource is 'endpoint' if the role is satisfied by the Step 3 endpoint spec (hidden from the Step 5 palette and matched implicitly by deriveImplicitPhraseOids). 'manual' roles are user-chosen in Step 5. The trigger field describes when a phrase in that role is implicitly satisfied by the endpoint spec.",
+    "description": "Registry of SmartPhrase roles. Each role has a human-readable label, a display order, and a contextSource that classifies whether the role is typically supplied by an endpoint spec ('endpoint') or chosen directly by the user ('manual'). Runtime predicates that decide when a role is implicitly satisfied by a specific endpoint spec are app dynamics and live in ac-dc-app/data/phrase-role-config.json, not here.",
     "order": [
       "endpoint",
       "parameter",
@@ -59,40 +59,23 @@
     "roles": {
       "endpoint": {
         "label": "Endpoint Type",
-        "contextSource": "endpoint",
-        "trigger": { "kind": "conceptCategoryInReferences" }
+        "contextSource": "endpoint"
       },
       "parameter": {
         "label": "Parameter",
-        "contextSource": "endpoint",
-        "trigger": {
-          "kind": "anyOf",
-          "checks": [
-            { "kind": "hasLinkedBCs" },
-            { "kind": "hasParameterName" }
-          ]
-        }
+        "contextSource": "endpoint"
       },
       "timepoint": {
         "label": "Timepoint",
-        "contextSource": "endpoint",
-        "trigger": { "kind": "dimensionHasValue", "dimension": "AnalysisVisit" }
+        "contextSource": "endpoint"
       },
       "population": {
         "label": "Population",
-        "contextSource": "endpoint",
-        "trigger": { "kind": "dimensionHasValue", "dimension": "Population" }
+        "contextSource": "endpoint"
       },
       "grouping": {
         "label": "Grouping",
-        "contextSource": "endpoint",
-        "trigger": {
-          "kind": "all",
-          "checks": [
-            { "kind": "referencesInclude", "value": "Treatment" },
-            { "kind": "dimensionHasValue", "dimension": "Treatment" }
-          ]
-        }
+        "contextSource": "endpoint"
       },
       "method": {
         "label": "Statistical Method",
@@ -1214,6 +1197,76 @@
         }
       ],
       "methodConfigurations": []
+    },
+    {
+      "oid": "T.UnitConversion",
+      "name": "Unit Conversion",
+      "transformationType": "derivation",
+      "description": "Convert a numeric Observation from its per-row source unit to a standardised target unit using the unit_conversions vocabulary. Generic — works for any numeric Observation whose BC carries a Result.Value + Result.Unit facet pair. Produces a derived Measure with both value and unit facets populated.",
+      "instanceOf": "Measure",
+      "usesMethod": "M.UnitConversion",
+      "validSmartPhrases": ["SP_PARAMETER"],
+      "composedPhrase": "{parameter} standardised to {target_unit}",
+      "bindings": [
+        {
+          "concept": "Observation",
+          "qualifierType": "facet",
+          "qualifierValue": "Result.Value",
+          "requiredValueType": "Quantity",
+          "note": "Source numeric value. Resolves via BC-to-OC instance mapping to the SDTM --ORRES variable (VSORRES for Height).",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "value"
+        },
+        {
+          "concept": "Observation",
+          "qualifierType": "facet",
+          "qualifierValue": "Result.Unit",
+          "requiredValueType": "CodeableConcept",
+          "note": "Source unit code varying per row. Resolves via BC-to-OC instance mapping to the SDTM --ORRESU variable (VSORRESU for Height).",
+          "direction": "input",
+          "dataStructureRole": "attribute",
+          "methodRole": "source_unit"
+        },
+        {
+          "concept": "Measure",
+          "qualifierType": "facet",
+          "qualifierValue": "result.value",
+          "note": "Converted numeric value of the derived Measure.",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result_value"
+        },
+        {
+          "concept": "Measure",
+          "qualifierType": "facet",
+          "qualifierValue": "result.unit",
+          "note": "Unit of the derived Measure — equals the target_unit configuration. Propagated so downstream derivations/analyses can read the Measure's unit without re-reading config.",
+          "direction": "output",
+          "dataStructureRole": "attribute",
+          "methodRole": "result_unit"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": [],
+      "methodConfigurations": [
+        {
+          "configurationName": "on_missing_factor",
+          "value": "fail",
+          "description": "Fail loudly if a factor is missing — CDISC convention prefers errors over silent NAs."
+        }
+      ]
     }
   ],
   "analysisTransformations": [

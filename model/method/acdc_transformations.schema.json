@@ -219,7 +219,7 @@
     },
     "RoleDefinitions": {
       "type": "object",
-      "description": "Registry of SmartPhrase roles. Declares each role's label, contextSource (endpoint-driven or user-selected), and an optional declarative trigger describing when a phrase in that role is implicitly satisfied by the endpoint spec.",
+      "description": "Registry of SmartPhrase roles. Declares each role's label, its display order within SmartPhrase composition, and a contextSource classifying whether the role is typically supplied by an endpoint spec ('endpoint') or directly by the user ('manual').",
       "properties": {
         "description": { "type": "string" },
         "order": {
@@ -238,48 +238,19 @@
     "RoleDefinition": {
       "type": "object",
       "additionalProperties": false,
+      "description": "Describes a single SmartPhrase role: what it means (label) and how it is typically supplied (contextSource). App-specific predicates for implicit role satisfaction are not part of this metadata — they live in app-local config outside the transformation library.",
       "properties": {
         "label": {
           "type": "string",
-          "description": "Human-readable label shown in the SmartPhrase palette."
+          "description": "Human-readable label for the role."
         },
         "contextSource": {
           "type": "string",
           "enum": ["endpoint", "manual"],
-          "description": "Who supplies the value for this role: 'endpoint' means it is derived from the Step 3 endpoint spec; 'manual' means the user picks it."
-        },
-        "trigger": {
-          "$ref": "#/$defs/PhraseTrigger",
-          "description": "Declarative predicate that fires when the endpoint spec implicitly satisfies a phrase in this role (contextSource='endpoint' only)."
+          "description": "Who typically supplies the value for this role: 'endpoint' means it is derived from an endpoint spec; 'manual' means the user picks it directly."
         }
       },
       "required": ["label", "contextSource"]
-    },
-    "PhraseTrigger": {
-      "type": "object",
-      "description": "Declarative predicate evaluated by phrase-engine.js. Primitive kinds: conceptCategoryInReferences, referencesInclude, hasLinkedBCs, hasParameterName, dimensionHasValue. Combinators: anyOf, all.",
-      "properties": {
-        "kind": {
-          "type": "string",
-          "enum": [
-            "conceptCategoryInReferences",
-            "referencesInclude",
-            "hasLinkedBCs",
-            "hasParameterName",
-            "dimensionHasValue",
-            "anyOf",
-            "all"
-          ]
-        },
-        "value": { "type": "string", "description": "Used by referencesInclude." },
-        "dimension": { "type": "string", "description": "Used by dimensionHasValue." },
-        "checks": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/PhraseTrigger" },
-          "description": "Used by anyOf and all combinators."
-        }
-      },
-      "required": ["kind"]
     },
     "SmartPhrase": {
       "type": "object",

@@ -1,10 +1,15 @@
 /**
  * SmartPhrase resolution engine.
  *
- * Role metadata (labels, ordering, endpoint/manual contextSource, and the
- * declarative triggers that fire implicit-phrase matching) lives in the
- * transformation library at `roleDefinitions` — there is no hardcoded
- * role vocabulary in this module.
+ * Role metadata (labels, ordering, endpoint/manual contextSource) lives in
+ * the transformation library at `roleDefinitions` — those describe the role
+ * itself and are transformation metadata.
+ *
+ * Trigger predicates that decide when a role is implicitly satisfied by the
+ * Step 3 endpoint spec are app runtime dynamics (they reference epSpec state)
+ * and live in a separate app-local config file at
+ * `ac-dc-app/data/phrase-role-config.json` under the top-level `triggers` key.
+ * That file is loaded by data-loader.js as `state.phraseRoleAppConfig`.
  *
  * A `trigger` is a tiny declarative predicate with seven primitive kinds:
  *   - conceptCategoryInReferences       sp.references includes epSpec.conceptCategory
@@ -14,8 +19,6 @@
  *   - dimensionHasValue {dimension}     epSpec.dimensionValues[dimension] is truthy
  *   - anyOf {checks}                    any subcheck fires
  *   - all {checks}                      every subcheck fires
- *
- * See model/method/acdc_transformations.schema.json $defs/PhraseTrigger.
  */
 
 // ---------------- Role registry accessors ----------------
@@ -96,18 +99,31 @@ function evaluateTrigger(trigger, sp, epSpec) {
  * spec. These OIDs feed into findMatchingTransformations alongside
  * explicit method selections.
  *
- * Driven by `library.roleDefinitions.roles[role].trigger` — no hardcoded
- * per-role logic.
+ * Driven by:
+ *  - `library.roleDefinitions.roles[role].contextSource === 'endpoint'` to
+ *    identify which roles are eligible for implicit satisfaction, AND
+ *  - `phraseRoleAppConfig.triggers[role]` to supply the declarative
+ *    predicate that decides whether each eligible role is actually satisfied
+ *    by the current epSpec. Triggers live outside the transformation library
+ *    because they reference runtime app state.
+ *
+ * No hardcoded per-role logic in this module.
+ *
+ * @param {object} epSpec              the Step 3 endpoint spec
+ * @param {Array}  smartPhrases        library.smartPhrases
+ * @param {object} library             transformationLibrary (for role metadata)
+ * @param {object} phraseRoleAppConfig state.phraseRoleAppConfig (for trigger predicates)
+ * @returns {string[]} array of implicitly-satisfied SmartPhrase OIDs
  */
-export function deriveImplicitPhraseOids(epSpec, smartPhrases, library) {
+export function deriveImplicitPhraseOids(epSpec, smartPhrases, library, phraseRoleAppConfig) {
   if (!epSpec?.conceptCategory) return [];
   const implicit = [];
   const endpointRoles = getEndpointContextRoles(library);
-  const roleDefs = library?.roleDefinitions?.roles || {};
+  const triggers = phraseRoleAppConfig?.triggers || {};
 
   for (const sp of smartPhrases || []) {
     if (!endpointRoles.has(sp.role)) continue;
-    const trigger = roleDefs[sp.role]?.trigger;
+    const trigger = triggers[sp.role];
     if (!trigger) continue;
     if (evaluateTrigger(trigger, sp, epSpec)) implicit.push(sp.oid);
   }

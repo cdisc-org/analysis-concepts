@@ -27,6 +27,7 @@ export async function loadAllData(state) {
     acModel,
     dcModel,
     transformationLibrary,
+    phraseRoleAppConfig,
     methodsIndex,
     statisticsVocabulary,
     outputClassTemplates,
@@ -43,6 +44,7 @@ export async function loadAllData(state) {
     fetchJSON('model/concept/AC_Concept_Model_v016.json'),
     fetchJSON('model/concept/Option_B_Clinical.json'),
     fetchJSON('lib/transformations/ACDC_Transformation_Library_v06.json'),
+    fetchJSON('ac-dc-app/data/phrase-role-config.json'),
     fetchJSON('lib/methods/_index.json'),
     fetchJSON('model/method/statistics_vocabulary.json'),
     fetchJSON('model/method/output_class_templates.json'),
@@ -74,6 +76,7 @@ export async function loadAllData(state) {
   state.acModel = acModel;
   state.dcModel = dcModel;
   state.transformationLibrary = transformationLibrary;
+  state.phraseRoleAppConfig = phraseRoleAppConfig;
   state.methodsIndex = methodsIndex;
   state.statisticsVocabulary = statisticsVocabulary;
   state.outputClassTemplates = outputClassTemplates;

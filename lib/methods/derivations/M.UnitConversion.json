@@ -1,0 +1,105 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.8.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json",
+    "unit_conversions": "../../model/vocabularies/unit_conversions.json"
+  },
+  "oid": "M.UnitConversion",
+  "name": "Unit Conversion",
+  "type": "derivation",
+  "class": "Arithmetic",
+  "intent": [
+    "PrecisionAdjustment"
+  ],
+  "description": "Convert a numeric value from its per-row source unit to a fixed target unit, using a scalar factor looked up in the unit_conversions vocabulary keyed by (source_unit, target_unit). Linear conversions only — non-linear conversions (e.g. temperature) require a different method.",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result_value := round(value * factor(source_unit, target_unit), precision, rounding_method); result_unit := target_unit",
+    "generic_expression": "result_value := round(<value> * factor(<source_unit>, <target_unit>), <precision>, <rounding_method>); result_unit := <target_unit>"
+  },
+  "configurations": [
+    {
+      "name": "target_unit",
+      "dataType": "code",
+      "description": "Target unit code. Valid values are resolved at runtime from the distinct to_code / to_name entries in model/vocabularies/unit_conversions.json, filtered by the physical dimension of the source measure (length/mass/etc.). No default — must be chosen per transformation."
+    },
+    {
+      "name": "precision",
+      "dataType": "integer",
+      "defaultValue": null,
+      "description": "Number of decimal places to round result_value to after multiplication. If null/unset, no rounding is applied and the raw multiplied value is returned. For complex rounding rules (e.g. banker's rounding for lab values with parameter-specific precision), leave null and chain M.Rounding downstream."
+    },
+    {
+      "name": "rounding_method",
+      "dataType": "enum",
+      "defaultValue": "half_up",
+      "enumValues": [
+        "half_up",
+        "half_even",
+        "half_down",
+        "floor",
+        "ceiling"
+      ],
+      "description": "Rounding convention when precision is set. Same enum as M.Rounding. Ignored when precision is null."
+    },
+    {
+      "name": "on_missing_factor",
+      "dataType": "enum",
+      "defaultValue": "fail",
+      "enumValues": [
+        "fail",
+        "na",
+        "passthrough"
+      ],
+      "description": "Behaviour when no (source_unit, target_unit) entry is found in the vocabulary. fail: raise an error. na: set result_value to NA. passthrough: keep the original value unchanged. (This is a closed set of engine control-flow modes, not a domain vocabulary — enum is intentional here.)"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "result_value",
+        "dataType": "decimal",
+        "description": "The numeric value expressed in target_unit.",
+        "statistics": [
+          "value"
+        ],
+        "dimensions": null
+      },
+      {
+        "class": "computed_value",
+        "role_name": "result_unit",
+        "dataType": "code",
+        "description": "The unit code of the converted value — equal to the target_unit configuration, propagated to the output so downstream derivations/analyses can read the Measure's unit without re-reading the config.",
+        "statistics": [
+          "value"
+        ],
+        "dimensions": null
+      }
+    ]
+  },
+  "assumptions": [
+    "The (source_unit, target_unit) pair exists in the unit_conversions vocabulary for every row.",
+    "Conversion is linear: target_value = source_value * scalar_factor.",
+    "Non-linear conversions (e.g. Fahrenheit↔Celsius, affine transforms) are out of scope — use a separate method."
+  ],
+  "input_roles": [
+    {
+      "name": "value",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The numeric value to convert. Resolves via Observation.Result.Value facet → SDTM --ORRES (e.g. VSORRES for Height)."
+    },
+    {
+      "name": "source_unit",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single",
+      "description": "The unit of the source value, varying per row. Resolves via Observation.Result.Unit facet → SDTM --ORRESU (e.g. VSORRESU for Height)."
+    }
+  ]
+}
