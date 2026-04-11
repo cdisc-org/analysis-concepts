@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.6.0",
+  "schema_version": "0.8.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -38,7 +38,6 @@
       {
         "class": "fit_statistics",
         "description": "Model fit and global tests",
-        "cardinality": "singleton",
         "dimensions": null,
         "statistics": [
           "minus2LogL",
@@ -50,18 +49,21 @@
       {
         "class": "global_tests",
         "description": "Overall model significance tests (likelihood ratio, Wald, score)",
-        "cardinality": "per_test_type",
         "dimensions": null,
         "statistics": [
           "chi_squared",
           "p_value",
           "df"
+        ],
+        "test_types": [
+          "likelihood_ratio",
+          "wald",
+          "score"
         ]
       },
       {
         "class": "type3_tests",
         "description": "Type III Wald tests per model term",
-        "cardinality": "per_term",
         "dimensions": [
           "covariate",
           "fixed_effect",
@@ -71,12 +73,20 @@
           "chi_squared",
           "p_value",
           "df"
+        ],
+        "configurations": [
+          {
+            "name": "multiplicity_adjustment",
+            "conforms_to": "multiplicity_adjustment",
+            "applicable_scopes": [
+              "universal"
+            ]
+          }
         ]
       },
       {
         "class": "parameter_estimates",
         "description": "Regression coefficients on log-hazard scale with hazard ratios",
-        "cardinality": "per_coefficient",
         "dimensions": [
           "covariate",
           "fixed_effect",
@@ -90,12 +100,20 @@
           "hazard_ratio",
           "CI_lower",
           "CI_upper"
+        ],
+        "configurations": [
+          {
+            "name": "multiplicity_adjustment",
+            "conforms_to": "multiplicity_adjustment",
+            "applicable_scopes": [
+              "universal"
+            ]
+          }
         ]
       },
       {
         "class": "hazard_ratio_estimates",
         "description": "Hazard ratios with confidence intervals (exponentiated coefficients)",
-        "cardinality": "per_coefficient",
         "dimensions": [
           "covariate",
           "fixed_effect",

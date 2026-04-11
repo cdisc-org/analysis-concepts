@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.6.0",
+  "schema_version": "0.8.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -44,7 +44,6 @@
       {
         "class": "test_result",
         "description": "CMH test of conditional independence",
-        "cardinality": "singleton",
         "dimensions": null,
         "statistics": [
           "chi_squared",
@@ -55,7 +54,6 @@
       {
         "class": "association_measures",
         "description": "Common (Mantel-Haenszel) odds ratio across strata",
-        "cardinality": "singleton",
         "dimensions": null,
         "statistics": [
           "odds_ratio",
@@ -90,7 +88,6 @@
       {
         "class": "homogeneity_test",
         "description": "Breslow-Day test for homogeneity of odds ratios across strata",
-        "cardinality": "singleton",
         "dimensions": null,
         "statistics": [
           "chi_squared",

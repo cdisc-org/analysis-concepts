@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.6.0",
+  "schema_version": "0.8.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -20,7 +20,6 @@
       "display": "Fisher's exact test"
     }
   ],
-  "stato_r_implementation": "fisher.test(x) function, where x is a matrix",
   "description": "Exact test of independence for 2x2 contingency tables. Preferred over chi-squared when expected cell counts are small.",
   "formula": {
     "notation": "wilkinson_rogers",
@@ -46,7 +45,6 @@
       {
         "class": "test_result",
         "description": "Fisher's exact test result",
-        "cardinality": "singleton",
         "dimensions": null,
         "statistics": [
           "p_value"
@@ -55,7 +53,6 @@
       {
         "class": "association_measures",
         "description": "Conditional maximum likelihood odds ratio",
-        "cardinality": "singleton",
         "dimensions": null,
         "statistics": [
           "odds_ratio",

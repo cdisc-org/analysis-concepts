@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.6.0",
+  "schema_version": "0.8.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -44,7 +44,6 @@
       {
         "class": "test_result",
         "description": "Chi-squared test of independence",
-        "cardinality": "singleton",
         "dimensions": null,
         "statistics": [
           "chi_squared",

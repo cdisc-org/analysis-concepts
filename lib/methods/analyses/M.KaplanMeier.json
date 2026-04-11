@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.6.0",
+  "schema_version": "0.8.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -39,7 +39,6 @@
       {
         "class": "event_summary",
         "description": "Summary of events and censoring per group",
-        "cardinality": "per_group",
         "dimensions": [
           "fixed_effect"
         ],
@@ -52,7 +51,6 @@
       {
         "class": "survival_table",
         "description": "Life table with survival estimates at each event time",
-        "cardinality": "per_event_time",
         "dimensions": [
           "fixed_effect",
           "time"
@@ -70,7 +68,6 @@
       {
         "class": "median_survival",
         "description": "Median survival time per group with confidence interval",
-        "cardinality": "per_group",
         "dimensions": [
           "fixed_effect"
         ],
@@ -83,7 +80,6 @@
       {
         "class": "landmark_estimates",
         "description": "Survival probability at specific landmark times",
-        "cardinality": "per_group_per_landmark",
         "dimensions": [
           "fixed_effect",
           "time"

@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.7.0",
+  "schema_version": "0.8.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -39,19 +39,6 @@
         "IV"
       ],
       "description": "Sum of squares type"
-    },
-    {
-      "name": "multiplicity_adjustment",
-      "dataType": "enum",
-      "defaultValue": "None",
-      "enumValues": ["None", "Tukey", "Bonferroni", "Holm", "Dunnett", "Sidak"],
-      "description": "Multiplicity adjustment method for pairwise comparisons",
-      "codings": [
-        { "system": "http://purl.obolibrary.org/obo/stato", "code": "STATO_0000182", "display": "Tukey" },
-        { "system": "http://purl.obolibrary.org/obo/stato", "code": "STATO_0000067", "display": "Bonferroni" },
-        { "system": "http://purl.obolibrary.org/obo/stato", "code": "STATO_0000068", "display": "Holm" },
-        { "system": "http://purl.obolibrary.org/obo/stato", "code": "STATO_0000183", "display": "Dunnett" }
-      ]
     }
   ],
   "output_specification": {
@@ -68,7 +55,6 @@
       {
         "class": "type3_tests",
         "description": "ANOVA table: one row per model term",
-        "cardinality": "per_term",
         "dimensions": [
           "fixed_effect",
           "fixed_effect:fixed_effect"
@@ -79,12 +65,20 @@
           "MS",
           "F_statistic",
           "p_value"
+        ],
+        "configurations": [
+          {
+            "name": "multiplicity_adjustment",
+            "conforms_to": "multiplicity_adjustment",
+            "applicable_scopes": [
+              "universal"
+            ]
+          }
         ]
       },
       {
         "class": "ls_means",
         "description": "Marginal means per factor level",
-        "cardinality": "per_level",
         "dimensions": [
           "fixed_effect"
         ],
@@ -99,7 +93,6 @@
       {
         "class": "contrasts",
         "description": "Pairwise differences between group means",
-        "cardinality": "per_contrast",
         "dimensions": [
           "fixed_effect"
         ],
@@ -111,6 +104,18 @@
           "t_statistic",
           "p_value",
           "df"
+        ],
+        "configurations": [
+          {
+            "name": "multiplicity_adjustment",
+            "conforms_to": "multiplicity_adjustment",
+            "applicable_scopes": [
+              "universal",
+              "anova_pairwise_means",
+              "anova_many_to_one",
+              "linear_contrasts"
+            ]
+          }
         ]
       }
     ]

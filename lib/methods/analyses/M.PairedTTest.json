@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.6.0",
+  "schema_version": "0.8.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -20,7 +20,6 @@
       "display": "paired t-test"
     }
   ],
-  "stato_r_implementation": "http://stat.ethz.ch/R-manual/R-patched/library/stats/html/t.test.html\n\nt.test(dependent variable ~ independant variable, data = dataset, var.equal = FALSE, paired= TRUE)",
   "description": "Tests whether the mean difference between paired observations differs from zero",
   "formula": {
     "notation": "wilkinson_rogers",
@@ -37,9 +36,7 @@
     },
     {
       "name": "conf_level",
-      "dataType": "decimal",
-      "defaultValue": 0.95,
-      "description": "Confidence level"
+      "conforms_to": "conf_level"
     }
   ],
   "output_specification": {
@@ -47,7 +44,6 @@
       {
         "class": "test_result",
         "description": "Paired t-test result",
-        "cardinality": "singleton",
         "dimensions": null,
         "statistics": [
           "t_statistic",
@@ -58,7 +54,6 @@
       {
         "class": "point_estimate",
         "description": "Mean of paired differences with inference",
-        "cardinality": "singleton",
         "dimensions": null,
         "statistics": [
           "estimate",

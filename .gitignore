@@ -5,3 +5,18 @@ documents/presentations/phuse/.DS_Store
 .claude
 .claude_cache
 .claude_cache_*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc.*
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/

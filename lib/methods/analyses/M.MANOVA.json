@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.6.0",
+  "schema_version": "0.8.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -57,7 +57,6 @@
       {
         "class": "multivariate_tests",
         "description": "Multivariate omnibus test statistics",
-        "cardinality": "per_test_type",
         "dimensions": null,
         "statistics": [
           "estimate",
@@ -76,7 +75,6 @@
       {
         "class": "type3_tests",
         "description": "Univariate Type III tests per response variable (follow-up to multivariate test)",
-        "cardinality": "per_response_per_term",
         "dimensions": [
           "response",
           "fixed_effect"
@@ -86,12 +84,20 @@
           "p_value",
           "df_num",
           "df_den"
+        ],
+        "configurations": [
+          {
+            "name": "multiplicity_adjustment",
+            "conforms_to": "multiplicity_adjustment",
+            "applicable_scopes": [
+              "universal"
+            ]
+          }
         ]
       },
       {
         "class": "parameter_estimates",
         "description": "Regression coefficients per response variable",
-        "cardinality": "per_response_per_coefficient",
         "dimensions": [
           "response",
           "fixed_effect"

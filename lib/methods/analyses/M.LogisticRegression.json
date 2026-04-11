@@ -1,6 +1,6 @@
 {
   "$schema": "../../model/method/acdc_methods.schema.json",
-  "schema_version": "0.6.0",
+  "schema_version": "0.8.0",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
@@ -45,7 +45,6 @@
       {
         "class": "fit_statistics",
         "description": "Model fit measures",
-        "cardinality": "singleton",
         "dimensions": null,
         "statistics": [
           "AIC",
@@ -57,7 +56,6 @@
       {
         "class": "type3_tests",
         "description": "Type III likelihood ratio or Wald tests per term",
-        "cardinality": "per_term",
         "dimensions": [
           "covariate",
           "fixed_effect",
@@ -68,12 +66,20 @@
           "chi_squared",
           "p_value",
           "df"
+        ],
+        "configurations": [
+          {
+            "name": "multiplicity_adjustment",
+            "conforms_to": "multiplicity_adjustment",
+            "applicable_scopes": [
+              "universal"
+            ]
+          }
         ]
       },
       {
         "class": "parameter_estimates",
         "description": "Maximum likelihood estimates on log-odds scale",
-        "cardinality": "per_coefficient",
         "dimensions": [
           "covariate",
           "fixed_effect",
@@ -88,12 +94,20 @@
           "CI_lower",
           "CI_upper",
           "odds_ratio"
+        ],
+        "configurations": [
+          {
+            "name": "multiplicity_adjustment",
+            "conforms_to": "multiplicity_adjustment",
+            "applicable_scopes": [
+              "universal"
+            ]
+          }
         ]
       },
       {
         "class": "odds_ratio_estimates",
         "description": "Odds ratios with confidence intervals (exponentiated coefficients)",
-        "cardinality": "per_coefficient",
         "dimensions": [
           "covariate",
           "fixed_effect",

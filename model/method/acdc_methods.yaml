@@ -1,6 +1,6 @@
 id: https://cdisc.org/acdc/method
 name: acdc_methods
-version: "0.7.0"
+version: "0.8.0"
 title: ACDC Method Model
 description: >-
   Schema for ACDC (Analysis Concepts / Derivation Concepts) method definitions.
@@ -27,6 +27,7 @@ settings:
   statistics: "./statistics_vocabulary.json"
   output_classes: "./output_class_templates.json"
   formula_grammar: "./formula_grammar.json"
+  configuration_concepts: "./configuration_concepts.json"
 
 # ──────────────────────────────────────────────
 # Classes
@@ -91,6 +92,8 @@ classes:
         multivalued: true
         range: Coding
         inlined_as_list: true
+      notes:
+        description: Free-text design notes, rationale for architectural choices, or authoring comments. Not used by the engine; purely documentation.
       stato_r_implementation:
         description: "DEPRECATED (v0.7.0): Use method_implementation_catalog instead. R command or function reference from STATO ontology."
         deprecated: "Use method_implementation_catalog instead"
@@ -183,28 +186,80 @@ classes:
         description: Additional context or clarification for this binding
 
   Configuration:
-    description: A configurable parameter for a method
+    description: >-
+      A configurable parameter for a method. A Configuration has two legitimate
+      shapes: (1) LONG FORM — declares name + dataType locally, plus any of
+      description, defaultValue, enumValues, codings; used when the Configuration
+      is method-specific and owns its definition directly. (2) SHORT FORM —
+      declares conforms_to pointing at a concept id in
+      model/method/configuration_concepts.json (e.g., multiplicity_adjustment,
+      alpha, conf_level); used when the Configuration inherits its definition
+      from a shared registry concept. The choice is a per-Configuration design
+      decision made in the method file. A load-time expander resolves conforms_to
+      references to populate missing fields from the registry; local fields
+      always override inherited ones.
+    any_of:
+      - description: Short form — references a registry concept.
+        slot_conditions:
+          conforms_to:
+            required: true
+      - description: Long form — self-contained name and dataType.
+        slot_conditions:
+          name:
+            required: true
+          dataType:
+            required: true
     attributes:
       name:
         description: Configuration parameter name
-        identifier: true
-        required: true
       dataType:
         description: Data type of the configuration value
         range: DataType
-        required: true
       defaultValue:
-        description: Default value if not specified (can be string, number, or boolean)
+        description: Default value if not specified. May be string, number, boolean, or null (no default).
         any_of:
           - range: string
           - range: integer
           - range: float
           - range: boolean
+          - range: None
       enumValues:
         description: Allowed values when dataType is enum
         multivalued: true
       description:
         description: Explanation of this configuration parameter
+      codings:
+        description: >-
+          Mappings from configuration values (or from the configuration itself)
+          to external terminology or ontology codes, e.g., STATO codes for
+          statistical methods. When dataType is enum, each Coding.display is
+          expected to match one entry in enumValues.
+        multivalued: true
+        range: Coding
+        inlined_as_list: true
+      conforms_to:
+        description: >-
+          Reference to a configuration concept id in
+          model/method/configuration_concepts.json (e.g., multiplicity_adjustment,
+          alpha, conf_level). When set, the load-time expander fills in missing
+          Configuration fields (name, dataType, description, defaultValue,
+          enumValues, codings) from the registry. Local fields override inherited
+          ones. For enum concepts with a values catalog, applicable_scopes MUST
+          also be set to filter the catalog by scope. Expansion runs BEFORE schema
+          validation, so library files can be minimal.
+      applicable_scopes:
+        description: >-
+          List of scope ids (from concept.scopes) that filter the enum catalog
+          when conforms_to references a concept with per-value scope metadata.
+          Each scope declares which classes of methods it is statistically valid
+          for. The expander computes enumValues = values whose scope is in this
+          list, preserving catalog order. Required for enum concepts with a
+          scopes dictionary; ignored for simple decimal concepts like alpha or
+          conf_level. Example: a Cox model's multiplicity_adjustment configuration
+          declares applicable_scopes [universal], which filters out Tukey,
+          Dunnett, and other linear-model-specific procedures.
+        multivalued: true
+        range: string
 
   OutputSpecification:
     description: Container for the output classes a method produces
@@ -223,6 +278,17 @@ classes:
       class:
         description: Name of the output class template, e.g., fit_statistics, computed_value
         required: true
+      configurations:
+        description: >-
+          Configurations attached to this output class. Used when a
+          configuration is per-family rather than global to the method — e.g.,
+          multiplicity_adjustment attaches to the contrasts output_class
+          because adjustment is bound to the p-value family it produces, not
+          to the model fit. Expands via conforms_to the same way as
+          method-level Configuration entries.
+        multivalued: true
+        range: Configuration
+        inlined_as_list: true
       role_name:
         description: Output variable name (for derivation methods)
       dataType:
@@ -246,9 +312,8 @@ classes:
       template_ref:
         description: Explicit reference to output class template (alternative to class)
       examples:
-        description: Example values for the dimensions
+        description: Example values for the dimensions (may be of any scalar type — string, integer, decimal, boolean)
         multivalued: true
-        range: string
       test_types:
         description: Specific test types available (for multivariate_tests)
         multivalued: true
