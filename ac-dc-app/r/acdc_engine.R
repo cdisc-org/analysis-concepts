@@ -343,11 +343,24 @@ extract_from_mapping <- function(env, result_columns) {
 
 parse_configs <- function(config_values, method_def = NULL) {
   configs <- list()
-  # 1. Load defaults from method definition
+  # 1. Load defaults from method-level configurations
   if (!is.null(method_def) && !is.null(method_def$configurations)) {
     for (cfg in method_def$configurations) {
       if (!is.null(cfg$defaultValue)) {
         configs[[cfg$name]] <- cfg$defaultValue
+      }
+    }
+  }
+  # 1b. Load defaults from output_class-level configurations (e.g., multiplicity_adjustment)
+  if (!is.null(method_def$output_specification) &&
+      !is.null(method_def$output_specification$output_classes)) {
+    for (oc in method_def$output_specification$output_classes) {
+      if (!is.null(oc$configurations)) {
+        for (cfg in oc$configurations) {
+          if (!is.null(cfg$defaultValue) && is.null(configs[[cfg$name]])) {
+            configs[[cfg$name]] <- cfg$defaultValue
+          }
+        }
       }
     }
   }

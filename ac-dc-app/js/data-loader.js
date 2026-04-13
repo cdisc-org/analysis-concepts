@@ -38,7 +38,9 @@ export async function loadAllData(state) {
     bcOcInstanceMapping,
     rImplementationCatalog,
     sasImplementationCatalog,
-    esapSchema
+    esapSchema,
+    unitConversions,
+    configurationConcepts
   ] = await Promise.all([
     fetchJSON('ac-dc-app/data/usdm/studies.json'),
     fetchJSON('model/concept/AC_Concept_Model_v016.json'),
@@ -55,7 +57,9 @@ export async function loadAllData(state) {
     fetchJSON('model/shared/bc_to_oc_instance_mapping.json'),
     fetchJSON('lib/method_implementations/r_implementations.json'),
     fetchJSON('lib/method_implementations/sas_implementations.json'),
-    fetchJSON('model/study/study_esap.schema.json')
+    fetchJSON('model/study/study_esap.schema.json'),
+    fetchJSON('model/vocabularies/unit_conversions.json'),
+    fetchJSON('model/method/configuration_concepts.json')
   ]);
 
   // Load all USDM study files in parallel
@@ -93,6 +97,58 @@ export async function loadAllData(state) {
   }
   state.methodImplementationCatalog = { ...rImplementationCatalog, implementations: mergedImpls };
   state.esapSchema = esapSchema;
+  state.unitConversions = unitConversions;
+  state.configurationConcepts = configurationConcepts;
+}
+
+/**
+ * Expand short-form conforms_to configurations in-place on a method object.
+ * Follows the conformance rules in model/method/configuration_concepts.json:
+ * - Fill missing name, dataType, description, defaultValue (from typical_default)
+ * - For enum concepts with scopes: filter values by applicable_scopes,
+ *   compute enumValues + codings
+ * - Local fields always override inherited ones
+ */
+function expandMethodConfigs(method, concepts) {
+  if (!concepts?.concepts || !method) return;
+  const registry = concepts.concepts;
+
+  const expandList = (configs) => {
+    if (!Array.isArray(configs)) return;
+    for (const cfg of configs) {
+      if (!cfg.conforms_to) continue;
+      const concept = registry[cfg.conforms_to];
+      if (!concept) continue;
+
+      if (!cfg.name) cfg.name = cfg.conforms_to;
+      if (!cfg.dataType) cfg.dataType = concept.dataType;
+      if (!cfg.description) cfg.description = concept.description;
+      if (cfg.defaultValue == null && concept.typical_default != null) {
+        cfg.defaultValue = concept.typical_default;
+      }
+
+      // Enum concepts with a values catalog — filter by applicable_scopes
+      if (concept.values) {
+        const scopes = cfg.applicable_scopes || (concept.scopes?.universal ? ['universal'] : []);
+        const filtered = Object.entries(concept.values)
+          .filter(([, def]) => scopes.includes(def.scope));
+        if (!cfg.enumValues) {
+          cfg.enumValues = filtered.map(([name]) => name);
+        }
+        if (!cfg.codings) {
+          cfg.codings = filtered.flatMap(([, def]) => def.codings || []);
+        }
+      }
+    }
+  };
+
+  expandList(method.configurations);
+
+  if (method.output_specification?.output_classes) {
+    for (const oc of method.output_specification.output_classes) {
+      expandList(oc.configurations);
+    }
+  }
 }
 
 /**
@@ -113,6 +169,7 @@ export async function loadMethod(state, methodOid) {
   if (!entry) throw new Error(`Method not found: ${methodOid}`);
 
   const method = await fetchJSON(`lib/methods/${entry.path}`);
+  expandMethodConfigs(method, state.configurationConcepts);
   state.methodsCache[methodOid] = method;
   return method;
 }

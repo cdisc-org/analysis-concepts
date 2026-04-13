@@ -4,7 +4,8 @@
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
-    "formula_grammar": "../../model/method/formula_grammar.json"
+    "formula_grammar": "../../model/method/formula_grammar.json",
+    "configuration_concepts": "../../model/method/configuration_concepts.json"
   },
   "oid": "M.OneSampleTTest",
   "name": "One-sample t-test",

@@ -387,7 +387,8 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
 
       <!-- Generated Program -->
       ${selectedImpl ? (() => {
-        const configs = _buildConfigs(analysis, methodDef);
+        const liveOvr = appState.endpointSpecs?.[ep.id]?.methodConfigOverrides || appState.methodConfig || {};
+        const configs = _buildConfigs(analysis, methodDef, liveOvr);
         const resolvedCode = resolveCallTemplate(selectedImpl, bindings, resultState.varOverrides, adam, configs, selectedDataset || 'analysis_data', analysis?.outputConfiguration);
         return `
       <div class="exec-bindings-section" style="margin-top:16px;">
@@ -887,6 +888,21 @@ async function _executeAnalysis(container, epId, aIdx) {
       }
     }
   }
+  // Merge live UI config overrides into the analysis configurationValues
+  const liveOverrides = appState.endpointSpecs?.[epId]?.methodConfigOverrides
+    || appState.methodConfig || {};
+  if (Object.keys(liveOverrides).length > 0) {
+    const existing = singleAnalysis.configurationValues || [];
+    for (const [name, value] of Object.entries(liveOverrides)) {
+      const idx = existing.findIndex(cv => cv.name === name);
+      if (idx >= 0) {
+        existing[idx] = { name, value: String(value) };
+      } else {
+        existing.push({ name, value: String(value) });
+      }
+    }
+    singleAnalysis.configurationValues = existing;
+  }
   const patchedSpec = {
     ...resolvedEp,
     analyses: [singleAnalysis],
@@ -991,18 +1007,35 @@ function _setAnalysisResult(epId, aIdx, patch) {
  * Build config map from method definition defaults + analysis overrides.
  * Mirrors the R engine's parse_configs() logic.
  */
-function _buildConfigs(analysis, methodDef) {
+function _buildConfigs(analysis, methodDef, liveOverrides) {
   const configs = {};
+  // Method-level config defaults
   if (methodDef?.configurations) {
     for (const cfg of methodDef.configurations) {
       if (cfg.defaultValue != null) configs[cfg.name] = cfg.defaultValue;
     }
   }
+  // Output-class-level config defaults (e.g., multiplicity_adjustment on contrasts)
+  if (methodDef?.output_specification?.output_classes) {
+    for (const oc of methodDef.output_specification.output_classes) {
+      for (const cfg of oc.configurations || []) {
+        if (cfg.defaultValue != null && !(cfg.name in configs)) {
+          configs[cfg.name] = cfg.defaultValue;
+        }
+      }
+    }
+  }
+  // Analysis-level overrides from serialized spec
   if (analysis?.configurationValues) {
     for (const cv of analysis.configurationValues) {
       const num = Number(cv.value);
       configs[cv.name] = isNaN(num) ? cv.value : num;
     }
+  }
+  // Live UI overrides (highest priority)
+  for (const [name, value] of Object.entries(liveOverrides || {})) {
+    const num = Number(value);
+    configs[name] = isNaN(num) ? value : num;
   }
   return configs;
 }
