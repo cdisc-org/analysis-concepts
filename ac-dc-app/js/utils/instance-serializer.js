@@ -274,6 +274,7 @@ export function serializeStudyInstance(appState) {
         concept: entry.concept,
         derivationOid: entry.derivationOid
       })),
+      derivationConfigValues: analysis.derivationConfigValues || {},
       confirmedTerminals: (analysis.confirmedTerminals || []).map(t => ({
         slotKey: t.slotKey,
         concept: t.concept,
@@ -1092,6 +1093,7 @@ export function deserializeStudyInstance(json, appState) {
       resolvedSentence: null, // caller recomputes via composeFullSentence
       selectedDerivations: {},
       derivationChain: saved.derivationChain || [],
+      derivationConfigValues: saved.derivationConfigValues || {},
       confirmedTerminals: saved.confirmedTerminals || [],
       resolvedBindings: customBindings,
       activeInteractions: saved.activeInteractions || [],

@@ -6,6 +6,7 @@ import {
 import { displayConcept, normalizeConcept, buildSliceLookup } from '../utils/concept-display.js';
 import { getSpecParameterValue } from './endpoint-spec.js';
 import { isNumericOutputConcept } from '../utils/concept-classifier.js';
+import { loadMethod } from '../data-loader.js';
 
 /* ─── Module-level UI state (not persisted) ─── */
 let activeNodeKey = null;
@@ -344,6 +345,120 @@ function renderTreeNode(slot, activeKey, confirmedKeys, refKeys, activeSpec) {
 }
 
 /**
+ * Render derivation method configuration panel (target_unit, precision, etc.)
+ * Reads configs from the cached method definition, stores values in derivationConfigValues.
+ */
+function renderDerivationConfigPanel(derivation, slot, activeSpec) {
+  const methodOid = derivation.usesMethod;
+  if (!methodOid) return '';
+
+  const methodDef = appState.methodsCache?.[methodOid];
+  if (!methodDef) {
+    // Trigger async load; re-render will pick it up once cached
+    loadMethod(appState, methodOid).then(() => {
+      const pipelineEl = document.querySelector('.pipeline-3zone');
+      if (pipelineEl?.parentElement) renderDerivationPipeline(pipelineEl.parentElement);
+    });
+    return `<div class="config-panel-section">
+      <div class="config-panel-section-title">Method Configuration</div>
+      <p style="font-size:12px; color:var(--cdisc-text-secondary);">Loading ${methodOid}...</p>
+    </div>`;
+  }
+
+  const configs = methodDef.configurations || [];
+
+  // Get saved values for this slot
+  if (!activeSpec.derivationConfigValues) activeSpec.derivationConfigValues = {};
+  const savedValues = activeSpec.derivationConfigValues[slot.key] || {};
+
+  // Source Store + Domain — user specifies which store/domain this derivation resolves against
+  const storeKeys = Object.keys(appState.conceptMappings || {});
+  const savedStore = savedValues.sourceStore || '';
+  const savedDomain = savedValues.sourceDomain || '';
+  const storeHtml = `
+    <div class="config-panel-section" style="margin-bottom:12px;">
+      <div class="config-panel-section-title">Source Data Resolution</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="config-field">
+          <label class="config-label">Source Store</label>
+          <select class="config-select deriv-config-input" data-slot-key="${slot.key}" data-config-key="sourceStore">
+            <option value="">Select store...</option>
+            ${storeKeys.map(k => `<option value="${k}" ${k === savedStore ? 'selected' : ''}>${k}</option>`).join('')}
+          </select>
+          <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:4px;">Which concept-variable store to resolve bindings against (e.g., sdtm for raw observations)</div>
+        </div>
+        <div class="config-field">
+          <label class="config-label">Source Domain</label>
+          <input class="config-input deriv-config-input" data-slot-key="${slot.key}" data-config-key="sourceDomain"
+            value="${savedDomain}" placeholder="e.g., VS, LB, EG">
+          <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:4px;">Domain code for SDTM -- prefix substitution (e.g., VS for Vital Signs)</div>
+        </div>
+      </div>
+    </div>`;
+
+  if (configs.length === 0) return storeHtml;
+  // Also check transformation-level defaults
+  const txDefaults = {};
+  for (const mc of derivation.methodConfigurations || []) {
+    txDefaults[mc.configurationName] = mc.value;
+  }
+
+  // Build unit options from unit_conversions vocabulary (for target_unit)
+  const unitOptions = (appState.unitConversions?.units || [])
+    .map(u => ({ code: u.code, name: u.name, display: u.display, dimension: u.dimension }));
+
+  const configHtml = configs.map(cfg => {
+    const saved = savedValues[cfg.name];
+    const txDefault = txDefaults[cfg.name];
+    const value = saved != null ? saved : (txDefault != null ? txDefault : cfg.defaultValue);
+
+    if (cfg.name === 'target_unit') {
+      // Group units by dimension
+      const dims = [...new Set(unitOptions.map(u => u.dimension))];
+      return `<div class="config-field">
+        <label class="config-label">${cfg.name.replace(/_/g, ' ')}</label>
+        <select class="config-select deriv-config-input" data-slot-key="${slot.key}" data-config-key="${cfg.name}">
+          <option value="">Select target unit...</option>
+          ${dims.map(dim => `
+            <optgroup label="${dim}">
+              ${unitOptions.filter(u => u.dimension === dim).map(u =>
+                `<option value="${u.name}" ${u.name === value ? 'selected' : ''}>${u.display} (${u.name})</option>`
+              ).join('')}
+            </optgroup>
+          `).join('')}
+        </select>
+        ${cfg.description ? `<div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:4px;">${cfg.description}</div>` : ''}
+      </div>`;
+    }
+
+    if (cfg.enumValues?.length > 0) {
+      return `<div class="config-field">
+        <label class="config-label">${cfg.name.replace(/_/g, ' ')}</label>
+        <select class="config-select deriv-config-input" data-slot-key="${slot.key}" data-config-key="${cfg.name}">
+          ${cfg.enumValues.map(v => `<option value="${v}" ${String(v) === String(value) ? 'selected' : ''}>${v}</option>`).join('')}
+        </select>
+        ${cfg.description ? `<div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:4px;">${cfg.description}</div>` : ''}
+      </div>`;
+    }
+
+    return `<div class="config-field">
+      <label class="config-label">${cfg.name.replace(/_/g, ' ')}</label>
+      <input class="config-input deriv-config-input" data-slot-key="${slot.key}" data-config-key="${cfg.name}"
+        value="${value != null ? value : ''}" placeholder="${cfg.description || ''}">
+      ${cfg.description ? `<div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:4px;">${cfg.description}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  return `${storeHtml}
+  <div class="config-panel-section" style="margin-top:12px;">
+    <div class="config-panel-section-title">Method Configuration (${methodOid})</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:12px;">
+      ${configHtml}
+    </div>
+  </div>`;
+}
+
+/**
  * Render the full dependency tree with the analysis transformation as root.
  */
 function renderTree(transformation, slots, activeKey, confirmedTerminals, activeSpec) {
@@ -649,6 +764,8 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
               </select>
             </div>
           </div>
+
+          ${renderDerivationConfigPanel(d, slot, activeSpec)}
         </div>
       </div>`;
   }
@@ -959,6 +1076,24 @@ function wireConfigEvents(container, slots, transformation, lib, activeSpec) {
         } else {
           termEntry.linkedBCIds = termEntry.linkedBCIds.filter(id => id !== bcId);
         }
+      }
+    });
+  });
+
+  // Derivation method config inputs (target_unit, precision, etc.)
+  container.querySelectorAll('.deriv-config-input').forEach(el => {
+    const eventType = el.tagName === 'SELECT' ? 'change' : 'change';
+    el.addEventListener(eventType, () => {
+      const slotKey = el.dataset.slotKey;
+      const configKey = el.dataset.configKey;
+      let value = el.value;
+      if (!isNaN(value) && value !== '') value = Number(value);
+      if (!activeSpec.derivationConfigValues) activeSpec.derivationConfigValues = {};
+      if (!activeSpec.derivationConfigValues[slotKey]) activeSpec.derivationConfigValues[slotKey] = {};
+      if (value === '' || value == null) {
+        delete activeSpec.derivationConfigValues[slotKey][configKey];
+      } else {
+        activeSpec.derivationConfigValues[slotKey][configKey] = value;
       }
     });
   });

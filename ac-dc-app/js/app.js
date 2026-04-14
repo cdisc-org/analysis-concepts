@@ -13,7 +13,8 @@ import { buildResolvedSpecification } from './utils/instance-serializer.js';
 import { getAllEndpoints } from './utils/usdm-parser.js';
 
 // ===== Application State =====
-export const appState = {
+// Expose on window for console debugging
+export const appState = window.appState = {
   currentStep: 1,
   studies: [],
   selectedStudyIndex: null,

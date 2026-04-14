@@ -168,6 +168,9 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
         ${anyComplete || anyRunning ? `<button class="btn-reset-exec" data-ep-id="${ep.id}" style="margin-left:auto; font-size:10px; padding:2px 8px; cursor:pointer; background:none; border:1px solid var(--cdisc-border); border-radius:3px; color:var(--cdisc-text-secondary);">Reset</button>` : ''}
       </div>
 
+      <!-- Derivation Pipeline (if any) -->
+      ${_renderDerivationSummary(ep)}
+
       <!-- Analysis sub-cards -->
       ${analyses.length === 0
         ? '<div style="font-size:12px; color:var(--cdisc-text-secondary); padding:10px;">No analyses configured for this endpoint.</div>'
@@ -202,7 +205,7 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
     ? { ...resolvedEp, analyses: [analysis], targetDataset: selectedDataset || resolvedEp.targetDataset }
     : null;
   const payload = singleAnalysisSpec
-    ? generateExecutionPayload(singleAnalysisSpec, appState.conceptMappings, resultState.varOverrides, methodDef, rImpl)
+    ? generateExecutionPayload(singleAnalysisSpec, appState.conceptMappings, resultState.varOverrides, methodDef, rImpl, null, null, null)
     : null;
 
   const aResult = resultState.analysisResults?.[aIdx] || {};
@@ -920,7 +923,53 @@ async function _executeAnalysis(container, epId, aIdx) {
     return;
   }
 
-  const payload = generateExecutionPayload(patchedSpec, appState.conceptMappings, overrides, methodDef, rImpl);
+  // Build engine-ready derivation chain from raw chain + transformation library
+  const rawChain = appState.endpointSpecs?.[epId]?.derivationChain || [];
+  console.log('[AC/DC] epId:', epId, 'rawChain:', JSON.stringify(rawChain));
+  const derivConfigValues = appState.endpointSpecs?.[epId]?.derivationConfigValues || {};
+  const txLib = [
+    ...(appState.transformationLibrary?.derivationTransformations || []),
+    ...(appState.transformationLibrary?.analysisTransformations || [])
+  ];
+  const derivationChain = rawChain
+    .filter(entry => entry.derivationOid)
+    .map(entry => {
+      const transform = txLib.find(t => t.oid === entry.derivationOid);
+      if (!transform) return null;
+      // Merge library method configs + user overrides
+      const configValues = [
+        ...(transform.methodConfigurations || []).map(mc =>
+          ({ name: mc.configurationName, value: String(mc.value) }))
+      ];
+      const userConfigs = derivConfigValues[entry.slotKey] || {};
+      for (const [name, value] of Object.entries(userConfigs)) {
+        const idx = configValues.findIndex(cv => cv.name === name);
+        if (idx >= 0) configValues[idx] = { name, value: String(value) };
+        else configValues.push({ name, value: String(value) });
+      }
+      return {
+        method: { oid: transform.usesMethod },
+        resolvedBindings: transform.bindings || [],
+        configurationValues: configValues,
+        sourceStore: userConfigs.sourceStore || null,
+        sourceDomain: userConfigs.sourceDomain || null
+      };
+    })
+    .filter(Boolean);
+  console.log('%c[AC/DC] derivationChain: ' + derivationChain.length + ' entries', 'color:blue;font-weight:bold', derivationChain);
+  if (derivationChain.length > 0) {
+    console.log('%c[AC/DC] First derivation configs:', 'color:blue', derivationChain[0].configurationValues);
+    console.log('%c[AC/DC] First derivation bindings:', 'color:blue', derivationChain[0].resolvedBindings?.length, 'bindings');
+  }
+  const unitConversions = appState.unitConversions || null;
+  const rImplCatalog = derivationChain.length > 0
+    ? Object.values(appState.methodImplementationCatalog?.implementations || {}).flat().filter(i => i.language === 'R')
+    : null;
+
+  const payload = generateExecutionPayload(
+    patchedSpec, appState.conceptMappings, overrides, methodDef, rImpl,
+    derivationChain, unitConversions, rImplCatalog
+  );
 
   _setAnalysisResult(epId, aIdx, { status: 'running', results: null, error: null });
   renderExecuteAnalysis(container);
@@ -932,6 +981,15 @@ async function _executeAnalysis(container, epId, aIdx) {
     await setJsonVariable('r_impl_json', payload.rImplJson);
     if (payload.overridesJson !== 'NULL') {
       await setJsonVariable('overrides_json', payload.overridesJson);
+    }
+    if (payload.derivationsJson !== 'null') {
+      await setJsonVariable('derivations_json', payload.derivationsJson);
+    }
+    if (payload.unitConversionsJson !== 'null') {
+      await setJsonVariable('unit_conversions_json', payload.unitConversionsJson);
+    }
+    if (payload.rImplsJson !== 'null') {
+      await setJsonVariable('r_impls_json', payload.rImplsJson);
     }
 
     const result = await executeR(payload.bootstrapCode);
@@ -966,6 +1024,49 @@ async function _executeAllAnalyses(container, epId) {
     // eslint-disable-next-line no-await-in-loop
     await _executeAnalysis(container, epId, i);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Derivation pipeline summary for Execute panel
+// ---------------------------------------------------------------------------
+
+function _renderDerivationSummary(ep) {
+  const rawChain = appState.endpointSpecs?.[ep.id]?.derivationChain || [];
+  const derivConfigValues = appState.endpointSpecs?.[ep.id]?.derivationConfigValues || {};
+  const txLib = [
+    ...(appState.transformationLibrary?.derivationTransformations || []),
+    ...(appState.transformationLibrary?.analysisTransformations || [])
+  ];
+
+  const derivations = rawChain
+    .filter(entry => entry.derivationOid)
+    .map(entry => {
+      const transform = txLib.find(t => t.oid === entry.derivationOid);
+      const configs = derivConfigValues[entry.slotKey] || {};
+      return { entry, transform, configs };
+    })
+    .filter(d => d.transform);
+
+  if (derivations.length === 0) return '';
+
+  return `
+    <div class="exec-bindings-section" style="margin:8px 0; padding:10px 14px; background:rgba(13,110,253,0.04); border:1px solid var(--cdisc-primary); border-radius:var(--radius);">
+      <div style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-primary); margin-bottom:8px;">
+        Derivation Pipeline (runs before analysis)
+      </div>
+      ${derivations.map((d, i) => {
+        const t = d.transform;
+        const configSummary = Object.entries(d.configs)
+          .map(([k, v]) => `<code>${k}=${v}</code>`).join(', ');
+        return `
+        <div style="display:flex; align-items:center; gap:8px; padding:4px 0; font-size:12px;">
+          <span class="badge badge-secondary">#${i + 1}</span>
+          <strong>${t.name || t.oid}</strong>
+          <span style="color:var(--cdisc-text-secondary);">${t.usesMethod || ''}</span>
+          ${configSummary ? `<span style="margin-left:auto;">${configSummary}</span>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 
 // ---------------------------------------------------------------------------

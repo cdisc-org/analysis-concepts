@@ -1253,10 +1253,13 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "concept": "Observation",
+          "qualifierType": "facet",
+          "qualifierValue": "Identification.Topic",
           "methodRole": "constraint",
           "direction": "input",
-          "dataStructureRole": "dimension"
+          "dataStructureRole": "dimension",
+          "note": "BC identifier — resolves to --TESTCD in SDTM (e.g., VSTESTCD). The constraint value comes from the endpoint's linked BC specialization."
         }
       ],
       "slices": [],

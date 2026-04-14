@@ -15,18 +15,25 @@
  * @returns {{ specJson: string, mappingJson: string, bootstrapCode: string }}
  */
 export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, overrides,
-                                          methodDef, rImplementation) {
+                                          methodDef, rImplementation,
+                                          derivations, unitConversions, rImplCatalog) {
   const adam = conceptMappings?.adam || {};
 
   // Strip $ui fields for clean spec
   const { $ui, ...cleanSpec } = endpointResolvedSpec || {};
 
   const specJson = JSON.stringify(cleanSpec, null, 2);
-  const mappingJson = JSON.stringify(adam, null, 2);
+  const mappingJson = JSON.stringify(conceptMappings, null, 2);
   const methodJson = methodDef ? JSON.stringify(methodDef, null, 2) : 'null';
   const rImplJson = rImplementation ? JSON.stringify(rImplementation) : 'null';
   const overridesJson = overrides && Object.keys(overrides).length > 0
     ? JSON.stringify(overrides) : 'NULL';
+  const derivationsJson = derivations && derivations.length > 0
+    ? JSON.stringify(derivations, null, 2) : 'null';
+  const unitConversionsJson = unitConversions
+    ? JSON.stringify(unitConversions) : 'null';
+  const rImplsJson = rImplCatalog
+    ? JSON.stringify(rImplCatalog) : 'null';
 
   const datasetName = (cleanSpec.targetDataset || 'addata').toLowerCase();
 
@@ -38,9 +45,20 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
     ``,
     `# Parse metadata from JSON`,
     `spec <- jsonlite::fromJSON(spec_json, simplifyVector = FALSE)`,
-    `mappings <- jsonlite::fromJSON(mapping_json, simplifyVector = FALSE)`,
+    `all_mappings <- jsonlite::fromJSON(mapping_json, simplifyVector = FALSE)`,
     `method_def <- jsonlite::fromJSON(method_json, simplifyVector = FALSE)`,
     `r_impl <- jsonlite::fromJSON(r_impl_json, simplifyVector = FALSE)`,
+    ``,
+    `# Extract target store mappings (default: adam for backward compatibility)`,
+    `target_store <- spec$targetStore`,
+    `if (is.null(target_store)) target_store <- "adam"`,
+    `mappings <- all_mappings[[target_store]]`,
+    `if (is.null(mappings)) mappings <- all_mappings$adam`,
+    ``,
+    `# Parse derivation chain and unit conversions (if present)`,
+    `derivations <- if (exists("derivations_json")) jsonlite::fromJSON(derivations_json, simplifyVector = FALSE) else NULL`,
+    `unit_conversions <- if (exists("unit_conversions_json")) jsonlite::fromJSON(unit_conversions_json, simplifyVector = FALSE) else NULL`,
+    `r_impls <- if (exists("r_impls_json")) jsonlite::fromJSON(r_impls_json, simplifyVector = FALSE) else NULL`,
     ``,
     `# User variable overrides (selected in UI)`,
     overridesJson === 'NULL'
@@ -52,13 +70,15 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
     `cat("Dataset: ${datasetName},", nrow(dataset), "rows\\n")`,
     ``,
     `# Execute using the generic AC/DC engine`,
-    `result <- acdc_execute(spec, mappings, dataset, overrides, method_def, r_impl)`,
+    `result <- acdc_execute(spec, mappings, dataset, overrides, method_def, r_impl,`,
+    `                       derivations, unit_conversions, r_impls, all_mappings)`,
     ``,
     `# Return results as JSON`,
     `jsonlite::toJSON(result, auto_unbox = TRUE, pretty = TRUE)`,
   ].join('\n');
 
-  return { specJson, mappingJson, methodJson, rImplJson, overridesJson, bootstrapCode };
+  return { specJson, mappingJson, methodJson, rImplJson, overridesJson,
+           derivationsJson, unitConversionsJson, rImplsJson, bootstrapCode };
 }
 
 /**

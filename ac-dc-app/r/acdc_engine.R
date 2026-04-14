@@ -18,7 +18,9 @@
 # ---------------------------------------------------------------------------
 
 acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
-                         method_def = NULL, r_impl = NULL) {
+                         method_def = NULL, r_impl = NULL,
+                         derivations = NULL, unit_conversions = NULL, r_impls = NULL,
+                         all_mappings = NULL) {
   analysis <- spec$analyses[[1]]
   if (is.null(analysis)) stop("No analysis found in specification")
   if (is.null(r_impl)) stop("No R implementation provided for this method")
@@ -31,10 +33,19 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
 
   cat("AC/DC Engine: Executing analysis\n")
   cat("  Method:", analysis$method$oid, "\n")
+  deriv_count <- if (is.null(derivations)) 0L else length(derivations)
+  cat("  Derivations:", deriv_count, "\n")
 
   # 1. Resolve concept → ADaM variable names via the binding chain:
   #    method role → transformation binding → concept → ADaM mapping
-  concept_vars <- build_concept_var_map(analysis$resolvedBindings, mappings, overrides)
+  # Derive domain code from dataset name for SDTM -- prefix substitution
+  domain_code <- NULL
+  target_store <- spec$targetStore
+  if (!is.null(target_store) && target_store == "sdtm") {
+    ds_name <- toupper(spec$targetDataset %||% "")
+    if (nchar(ds_name) >= 2) domain_code <- ds_name
+  }
+  concept_vars <- build_concept_var_map(analysis$resolvedBindings, mappings, overrides, domain_code)
   cat("  Concept → ADaM:\n")
   for (nm in names(concept_vars$by_concept)) {
     cat("    ", nm, "→", concept_vars$by_concept[[nm]], "\n")
@@ -49,6 +60,24 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
 
   # 3. Coerce column types based on dataStructureRole (measure → numeric, dimension → factor)
   analysis_data <- coerce_types(analysis_data, analysis$resolvedBindings, concept_vars$by_concept)
+
+  # 3b. Apply derivation chain (if any) — mutates dataset before analysis
+  #      Derivations use SDTM mappings (Observation lives in sdtm, not adam)
+  if (!is.null(derivations) && length(derivations) > 0) {
+    cat("  Applying", length(derivations), "derivation(s)...\n")
+    analysis_data <- apply_derivations(
+      analysis_data, derivations, r_impls, unit_conversions, all_mappings
+    )
+    cat("  Post-derivation:", nrow(analysis_data), "rows x", ncol(analysis_data), "cols\n")
+
+    # 3c. Present derivation outputs: map source store columns to ADaM aliases
+    #      Uses per-derivation sourceStore/sourceDomain to resolve source columns
+    if (!is.null(all_mappings$adam)) {
+      analysis_data <- present_derivation_outputs(
+        analysis_data, derivations, all_mappings, all_mappings$adam
+      )
+    }
+  }
 
   # 4. Parse method configurations (defaults from method_def, overridden by user values)
   configs <- parse_configs(analysis$configurationValues, method_def)
@@ -80,36 +109,53 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
 # Variable resolution: method role → binding concept → ADaM variable
 # ---------------------------------------------------------------------------
 
-build_concept_var_map <- function(bindings, mappings, overrides = NULL) {
+build_concept_var_map <- function(bindings, mappings, overrides = NULL,
+                                  domain_code = NULL, include_outputs = FALSE) {
   by_concept <- list()
   by_role <- list()
   concepts_map <- mappings$concepts
   dims_map <- mappings$dimensions
 
   for (b in bindings) {
-    if (identical(b$direction, "output")) next
+    if (identical(b$direction, "output") && !include_outputs) next
     role <- b$methodRole
     concept <- b$concept
     if (is.null(concept) || concept == "") next
 
+    var_name <- NULL
+
     # User override takes precedence
     if (!is.null(overrides) && !is.null(overrides[[concept]])) {
       var_name <- overrides[[concept]]
-    } else {
+    } else if (identical(b$qualifierType, "facet") && !is.null(b$qualifierValue)) {
+      # Facet-qualified binding: look up concept.facets[qualifierValue]
       entry <- concepts_map[[concept]]
       if (is.null(entry)) entry <- dims_map[[concept]]
-
-      if (!is.null(entry) && !is.null(entry$byDataType)) {
-        by_type <- entry$byDataType
-        if (identical(b$dataStructureRole, "measure")) {
-          var_name <- by_type$decimal %||% by_type$baseline %||% by_type$code %||% by_type$string
-        } else {
-          var_name <- by_type$code %||% by_type$string %||% by_type$decimal
+      if (!is.null(entry$facets)) {
+        # Try exact match first, then case-insensitive fallback
+        fval <- entry$facets[[b$qualifierValue]]
+        if (is.null(fval)) {
+          facet_names <- names(entry$facets)
+          match_idx <- match(tolower(b$qualifierValue), tolower(facet_names))
+          if (!is.na(match_idx)) fval <- entry$facets[[facet_names[match_idx]]]
         }
-        if (is.null(var_name)) var_name <- strsplit(entry$variable, "/")[[1]][1]
-      } else {
-        var_name <- toupper(concept)
+        if (!is.null(fval)) var_name <- fval
       }
+      if (is.null(var_name)) {
+        var_name <- resolve_by_data_type(entry, b$dataStructureRole)
+      }
+    } else {
+      # Standard resolution via byDataType
+      entry <- concepts_map[[concept]]
+      if (is.null(entry)) entry <- dims_map[[concept]]
+      var_name <- resolve_by_data_type(entry, b$dataStructureRole)
+    }
+
+    if (is.null(var_name)) var_name <- toupper(concept)
+
+    # Domain prefix substitution: --ORRES → VSORRES
+    if (!is.null(domain_code) && grepl("^--", var_name)) {
+      var_name <- sub("^--", domain_code, var_name)
     }
 
     concept_key <- sub("@.*", "", concept)
@@ -125,6 +171,139 @@ build_concept_var_map <- function(bindings, mappings, overrides = NULL) {
   }
 
   return(list(by_concept = by_concept, by_role = by_role))
+}
+
+# Extract variable name from a mapping entry using byDataType priority chain
+resolve_by_data_type <- function(entry, data_structure_role) {
+  if (is.null(entry) || is.null(entry$byDataType)) return(NULL)
+  by_type <- entry$byDataType
+  if (identical(data_structure_role, "measure")) {
+    by_type$decimal %||% by_type$baseline %||% by_type$code %||% by_type$string
+  } else {
+    by_type$code %||% by_type$string %||% by_type$decimal
+  }
+}
+
+# ---------------------------------------------------------------------------
+# Derivation chain execution (pre-analysis dataset mutation)
+# ---------------------------------------------------------------------------
+
+#' Apply a chain of derivation transformations to the dataset.
+#' Each derivation mutates the dataset in place (adds/modifies columns).
+#' Derivations run BEFORE the analysis method, in the order specified.
+apply_derivations <- function(dataset, derivations, r_impls, unit_conversions,
+                              all_mappings) {
+  if (is.null(derivations) || length(derivations) == 0) return(dataset)
+
+  for (deriv in derivations) {
+    method_oid <- deriv$method$oid %||% deriv$usesMethod
+    cat("  Derivation:", method_oid, "\n")
+
+    # Per-derivation store and domain — user-specified in Step 6
+    deriv_store <- deriv$sourceStore
+    deriv_domain <- deriv$sourceDomain
+    if (is.null(deriv_store)) stop("Derivation missing sourceStore - configure in Step 6")
+    deriv_mappings <- all_mappings[[deriv_store]]
+    if (is.null(deriv_mappings)) stop(paste0("No mappings found for store '", deriv_store, "'"))
+    cat("    Store:", deriv_store, " Domain:", deriv_domain %||% "(none)", "\n")
+
+    # Find R implementation for this derivation method
+    impl <- NULL
+    for (ri in r_impls) {
+      if (identical(ri$methodOid, method_oid) && identical(ri$language, "R")) {
+        impl <- ri; break
+      }
+    }
+    if (is.null(impl)) {
+      avail <- paste(sapply(r_impls, function(ri) paste0(ri$methodOid, "/", ri$language)), collapse = ", ")
+      stop(paste0("No R implementation found for '", method_oid, "'. Available: [", avail, "]"))
+    }
+
+    # Resolve ALL bindings (including outputs) for column name mapping
+    var_map <- build_concept_var_map(
+      deriv$resolvedBindings, deriv_mappings, NULL, deriv_domain, include_outputs = TRUE
+    )
+    cat("    Bindings:\n")
+    for (nm in names(var_map$by_role)) {
+      cat("      ", nm, "->", var_map$by_role[[nm]], "\n")
+    }
+
+    # Parse derivation configs (target_unit, precision, etc.)
+    configs <- list()
+    if (!is.null(deriv$configurationValues)) {
+      for (cv in deriv$configurationValues) {
+        val <- cv$value
+        num_val <- suppressWarnings(as.numeric(val))
+        if (!is.na(num_val)) val <- num_val
+        configs[[cv$name]] <- val
+      }
+    }
+
+    # Resolve placeholders in callTemplate
+    resolved_code <- resolve_call_template(impl$callTemplate, var_map$by_role, configs)
+    cat("    Resolved derivation code:\n")
+    cat(paste0("      ", strsplit(resolved_code, "\n")[[1]]), sep = "\n")
+
+    # Execute in sandbox with concept_data + unit_conversions bound
+    env <- new.env(parent = globalenv())
+    env$concept_data <- dataset
+    env$unit_conversions <- unit_conversions
+    eval(parse(text = resolved_code), envir = env)
+    dataset <- env$concept_data
+  }
+
+  return(dataset)
+}
+
+#' Map derivation output columns from source store to ADaM aliases.
+#' For each output binding (direction=output, qualifierType=facet), resolves
+#' the source column name (using per-derivation sourceStore/sourceDomain)
+#' and the ADaM column name (where the analysis expects to read), then creates the alias.
+present_derivation_outputs <- function(dataset, derivations, all_mappings, adam_mappings) {
+  if (is.null(adam_mappings)) return(dataset)
+
+  for (deriv in derivations) {
+    deriv_store <- deriv$sourceStore
+    deriv_domain <- deriv$sourceDomain
+    source_mappings <- if (!is.null(deriv_store)) all_mappings[[deriv_store]] else adam_mappings
+
+    for (b in deriv$resolvedBindings) {
+      if (!identical(b$direction, "output")) next
+      if (!identical(b$qualifierType, "facet") || is.null(b$qualifierValue)) next
+
+      concept <- b$concept
+      facet <- b$qualifierValue
+
+      # Resolve source column name (where derivation wrote)
+      src_entry <- source_mappings$concepts[[concept]]
+      if (is.null(src_entry) || is.null(src_entry$facets)) next
+      src_col <- NULL
+      for (fn in names(src_entry$facets)) {
+        if (tolower(fn) == tolower(facet)) { src_col <- src_entry$facets[[fn]]; break }
+      }
+      if (is.null(src_col)) next
+      if (!is.null(deriv_domain) && grepl("^--", src_col)) {
+        src_col <- sub("^--", deriv_domain, src_col)
+      }
+
+      # Resolve ADaM column name (where analysis expects to read)
+      adam_entry <- adam_mappings$concepts[[concept]]
+      if (is.null(adam_entry) || is.null(adam_entry$facets)) next
+      adam_col <- NULL
+      for (fn in names(adam_entry$facets)) {
+        if (tolower(fn) == tolower(facet)) { adam_col <- adam_entry$facets[[fn]]; break }
+      }
+      if (is.null(adam_col)) next
+
+      # Create ADaM alias if source column exists
+      if (src_col %in% colnames(dataset) && !(adam_col %in% colnames(dataset))) {
+        dataset[[adam_col]] <- dataset[[src_col]]
+        cat("    Present:", src_col, "->", adam_col, "\n")
+      }
+    }
+  }
+
+  return(dataset)
 }
 
 # ---------------------------------------------------------------------------
