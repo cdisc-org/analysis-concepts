@@ -1,0 +1,125 @@
+{
+  "identifier": "AC_ADAS_COG_001",
+  "label": "ADAS-Cog (11) Week 24 Primary Analysis",
+  "description": "Primary analysis of ADAS-Cog (11) at Week 24 using ANCOVA with dose response testing",
+  "analysisDefinition": {
+    "statisticalMethod": {
+      "statoId": "STATO_0000219",
+      "label": "analysis of covariance",
+      "acronym": "ANCOVA"
+    },
+    "dependentVariable": {
+      "id": "ADAS_COG_11_WEEK24",
+      "label": "ADAS-Cog (11) at Week 24",
+      "referencedBiomedicalConcepts": [
+    {
+      "id": "BC_ADAS_COG_11",
+      "label": "ADAS-Cog (11)",
+      "description": "Alzheimer's Disease Assessment Scale-Cognitive Subscale (11-item version)",
+      "result": {
+        "value": "",
+        "unit": "score"
+      }
+    }
+  ]
+    },
+    "independentVariables": [
+      {
+        "id": "VAR_BASELINE",
+        "label": "Baseline ADAS-Cog (11) score",
+        "role": "covariate",
+        "type": "continuous",
+        "statoId": "STATO_0000054",
+        "statoLabel": "continuous variable"
+      },
+      {
+        "id": "VAR_SITE",
+        "label": "Trial site",
+        "role": "fixed effect",
+        "type": "categorical",
+        "statoId": "STATO_0000252",
+        "statoLabel": "categorical variable",
+        "usdmReference": {
+          "studyDesignElementType": "StudySite",
+          "studySites": []
+        }
+      },
+      {
+        "id": "VAR_TREATMENT",
+        "label": "Treatment dose",
+        "role": "fixed effect",
+        "type": "continuous",
+        "statoId": "STATO_0000054",
+        "statoLabel": "continuous variable",
+        "description": "Included as a continuous variable for dose-response testing",
+        "usdmReference": {
+          "studyDesignElementType": "StudyArm",
+          "studyArms": []
+        }
+      }
+    ],
+    "modelSpecification": {
+      "formula": "ADAS_COG_11_WEEK24 ~ BASELINE_SCORE + SITE + TREATMENT_DOSE",
+      "constraints": [
+        {
+          "id": "CONSTRAINT_NO_INTERACTIONS",
+          "description": "No interaction terms will be investigated"
+        }
+      ],
+      "inferentialTargets": [
+        {
+          "id": "TARGET_DOSE_RESPONSE",
+          "label": "Dose response test",
+          "description": "Test of linear response across treatment dose levels",
+          "statoId": "STATO_0000304",
+          "statoLabel": "linear trend test"
+        }
+      ]
+    },
+    "missingDataHandling": {
+      "method": "LOCF",
+      "description": "Last observation carried forward imputation for any missing values at Week 24",
+      "statoId": "STATO_0000171",
+      "statoLabel": "last observation carried forward"
+    }
+  },
+  "analysisContext": {
+    "analysisPopulation": {
+      "id": "POP_EFFICACY",
+      "label": "Efficacy Population",
+      "definition": "All randomized subjects who receive at least one dose of study medication and have at least one post-baseline assessment",
+        "studyDesignElementType": "Population",
+        "populations": [
+          {
+            "id": "POP_EFFICACY_USDM",
+            "name": "Efficacy Population",
+            "description": "All randomized subjects who receive at least one dose of study medication and have at least one post-baseline assessment"
+          }
+        ]
+    },
+    "timingReference": {
+      "usdmTimelineElements": [
+        {
+          "id": "VISIT_BASELINE",
+          "label": "Baseline Visit",
+          "role": "baseline assessment",
+          "usdmReference": {
+            "studyDesignElementType": "StudyEpoch",
+            "epoch": "BASELINE_EPOCH",
+            "studyVisit": "VISIT_BASELINE"
+          }
+        },
+        {
+          "id": "VISIT_WEEK24",
+          "label": "Week 24 Visit",
+          "role": "primary endpoint assessment",
+          "usdmReference": {
+            "studyDesignElementType": "StudyEpoch",
+            "epoch": "TREATMENT_EPOCH",
+            "studyVisit": "VISIT_WEEK24"
+          }
+        }
+      ]
+    }
+  }
+}
