@@ -371,32 +371,7 @@ function renderDerivationConfigPanel(derivation, slot, activeSpec) {
   if (!activeSpec.derivationConfigValues) activeSpec.derivationConfigValues = {};
   const savedValues = activeSpec.derivationConfigValues[slot.key] || {};
 
-  // Source Store + Domain — user specifies which store/domain this derivation resolves against
-  const storeKeys = Object.keys(appState.conceptMappings || {});
-  const savedStore = savedValues.sourceStore || '';
-  const savedDomain = savedValues.sourceDomain || '';
-  const storeHtml = `
-    <div class="config-panel-section" style="margin-bottom:12px;">
-      <div class="config-panel-section-title">Source Data Resolution</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div class="config-field">
-          <label class="config-label">Source Store</label>
-          <select class="config-select deriv-config-input" data-slot-key="${slot.key}" data-config-key="sourceStore">
-            <option value="">Select store...</option>
-            ${storeKeys.map(k => `<option value="${k}" ${k === savedStore ? 'selected' : ''}>${k}</option>`).join('')}
-          </select>
-          <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:4px;">Which concept-variable store to resolve bindings against (e.g., sdtm for raw observations)</div>
-        </div>
-        <div class="config-field">
-          <label class="config-label">Source Domain</label>
-          <input class="config-input deriv-config-input" data-slot-key="${slot.key}" data-config-key="sourceDomain"
-            value="${savedDomain}" placeholder="e.g., VS, LB, EG">
-          <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:4px;">Domain code for SDTM -- prefix substitution (e.g., VS for Vital Signs)</div>
-        </div>
-      </div>
-    </div>`;
-
-  if (configs.length === 0) return storeHtml;
+  if (configs.length === 0) return '';
   // Also check transformation-level defaults
   const txDefaults = {};
   for (const mc of derivation.methodConfigurations || []) {
@@ -472,7 +447,7 @@ function renderDerivationConfigPanel(derivation, slot, activeSpec) {
     </div>`;
   }).join('');
 
-  return `${storeHtml}
+  return `
   <div class="config-panel-section" style="margin-top:12px;">
     <div class="config-panel-section-title">Method Configuration (${methodOid})</div>
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:12px;">

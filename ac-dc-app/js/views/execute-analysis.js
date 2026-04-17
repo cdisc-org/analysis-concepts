@@ -1,11 +1,59 @@
 import { appState, navigateTo, rebuildSpec } from '../app.js';
-import { getAllEndpoints, getDerivationBCTopicDecode } from '../utils/usdm-parser.js';
+import { getAllEndpoints, getDerivationBCTopicDecode, getEndpointParameterOptions, getArmNames, getPopulationNames, getVisitLabels } from '../utils/usdm-parser.js';
 import {
   initWebR, loadXptFile, executeR, isInitialized,
   getLoadedDatasets, loadEngine, setJsonVariable
 } from '../utils/webr-engine.js';
 import { generateExecutionPayload, getVariableOptions, getDefaultVariable, resolveCallTemplate } from '../utils/r-code-generator.js';
 
+/**
+ * Determine expected datasets for configured endpoints based on their dimensions
+ * and derivation chains. Returns an array of { domain, reason } objects.
+ */
+function _getExpectedDatasets(configuredEps) {
+  const expected = new Map(); // domain → Set<reason>
+
+  for (const ep of configuredEps) {
+    const spec = appState.endpointSpecs?.[ep.id];
+    if (!spec) continue;
+
+    // Check if there's a derivation chain (SDTM → needs observation domain + enrichment domains)
+    const hasDerivations = (spec.derivationChain || []).some(e => e.derivationOid);
+    if (hasDerivations) {
+      // Primary observation domain from BC reference
+      const bcRef = (appState.selectedStudy?.biomedicalConcepts || [])
+        .find(bc => spec.linkedBCIds?.includes(bc.id));
+      // Derive domain code from BC TESTCD property name prefix (e.g., VSTESTCD → VS)
+      const domainProp = (bcRef?.properties || []).find(p => /TESTCD/i.test(p.name));
+      const domainCode = domainProp?.name?.replace(/TESTCD$/i, '') || '';
+      if (domainCode) {
+        const addReason = (d, r) => {
+          if (!expected.has(d)) expected.set(d, new Set());
+          expected.get(d).add(r);
+        };
+        addReason(domainCode, 'observation data');
+      }
+    }
+
+    // Check dimensions that require auxiliary domains
+    const analyses = spec.selectedAnalyses || [];
+    for (const analysis of analyses) {
+      const bindings = analysis.resolvedBindings || [];
+      for (const b of bindings) {
+        const concept = (b.concept || '').replace(/@.*/, '');
+        if (concept === 'Treatment' || concept === 'Site') {
+          if (!expected.has('DM')) expected.set('DM', new Set());
+          expected.get('DM').add(`${concept} dimension`);
+        }
+      }
+    }
+  }
+
+  return Array.from(expected.entries()).map(([domain, reasons]) => ({
+    domain,
+    reason: Array.from(reasons).join(', ')
+  }));
+}
 
 export function renderExecuteAnalysis(container) {
   const study = appState.selectedStudy;
@@ -64,6 +112,18 @@ export function renderExecuteAnalysis(container) {
       </div>
       ${datasets.length > 0 ? _renderDatasetTable(datasets) : `
       <div style="font-size:12px; color:var(--cdisc-text-secondary);">No datasets loaded. Upload SDTM or ADaM .xpt files to begin.</div>`}
+      ${(() => {
+        const expectedDs = _getExpectedDatasets(configuredEps);
+        if (expectedDs.length === 0) return '';
+        const loadedNames = new Set(datasets.map(d => d.name.toUpperCase()));
+        return `<div style="margin-top:8px; font-size:11px; color:var(--cdisc-text-secondary); display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span style="font-weight:600;">Expected:</span>
+          ${expectedDs.map(d => {
+            const loaded = loadedNames.has(d.domain.toUpperCase());
+            return `<span style="padding:1px 6px; border-radius:3px; border:1px solid ${loaded ? 'var(--cdisc-primary)' : 'var(--cdisc-border)'}; background:${loaded ? 'var(--cdisc-primary-light)' : 'transparent'};" title="${d.reason}">${d.domain}.xpt ${loaded ? '\u2713' : ''}</span>`;
+          }).join('')}
+        </div>`;
+      })()}
     </div>
 
     <!-- Endpoint Analyses -->
@@ -220,22 +280,21 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
   const slices = analysis?.resolvedSlices || [];
   const expression = analysis?.resolvedExpression;
 
-  // Split bindings into "active" (methodRole is an input role of the method —
-  // these are what the formula actually consumes) and "inactive template
-  // defaults" (bindings whose role isn't in the method's input_roles, like
-  // partition/constraint rows carried over from the transformation template).
-  // Without this split, the user sees AnalysisVisit / Subject / Parameter as
-  // partitions even when the method ignores them — matching engine behaviour,
-  // but confusing.
+  // Split bindings into "active" (consumed by the method or structurally
+  // functional) and "inactive template defaults" (bindings that aren't used).
+  // Method input_roles (response, group) plus structural roles (constraint,
+  // partition) are always active — the engine uses them even if the method
+  // definition doesn't explicitly list them as input roles.
+  const STRUCTURAL_ROLES = new Set(['constraint', 'partition']);
   const methodInputRoleNames = new Set(
     (methodDef?.input_roles || []).map(r => r.name)
   );
   const inputBindings = bindings.filter(b => b.direction !== 'output');
   const activeBindings = methodInputRoleNames.size > 0
-    ? inputBindings.filter(b => methodInputRoleNames.has(b.methodRole))
+    ? inputBindings.filter(b => methodInputRoleNames.has(b.methodRole) || STRUCTURAL_ROLES.has(b.methodRole))
     : inputBindings;
   const inactiveBindings = methodInputRoleNames.size > 0
-    ? inputBindings.filter(b => !methodInputRoleNames.has(b.methodRole))
+    ? inputBindings.filter(b => !methodInputRoleNames.has(b.methodRole) && !STRUCTURAL_ROLES.has(b.methodRole))
     : [];
 
   const canRun = webRReady && hasDatasets && !!payload && !!selectedDataset;
@@ -328,11 +387,26 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
       })() : ''}
 
       <!-- Resolved Slices -->
-      ${slices.length > 0 ? `
+      ${slices.length > 0 ? (() => {
+        const isConceptMode = (appState.modelViewMode || 'concepts') === 'concepts';
+        // Build USDM value suggestions per dimension concept
+        const usdmValues = {};
+        const parsedStudy = appState.selectedStudy;
+        if (parsedStudy) {
+          const paramOpts = getEndpointParameterOptions(parsedStudy, ep.id, appState.endpointSpecs);
+          if (paramOpts?.length) usdmValues['Parameter'] = paramOpts;
+          const armOpts = getArmNames(parsedStudy);
+          if (armOpts?.length) usdmValues['Treatment'] = armOpts;
+          const popOpts = getPopulationNames(parsedStudy);
+          if (popOpts?.length) usdmValues['Population'] = popOpts.map(p => typeof p === 'string' ? p : p.value);
+          const visitOpts = getVisitLabels(parsedStudy);
+          if (visitOpts?.length) usdmValues['AnalysisVisit'] = visitOpts;
+        }
+        return `
       <div class="exec-bindings-section">
         <div class="exec-bindings-title">RESOLVED SLICES (cube constraints)</div>
         <table class="exec-bindings-table">
-          <thead><tr><th>Slice</th><th>Dimension</th><th>${(appState.modelViewMode || 'concepts') === 'concepts' ? 'Concept Key' : 'Implementation Variable'}</th><th>Value</th></tr></thead>
+          <thead><tr><th>Slice</th><th>Dimension</th><th>${isConceptMode ? 'Concept Key' : 'Implementation Variable'}</th><th>Value</th></tr></thead>
           <tbody>${slices.map(s => {
             const dims = s.resolvedValues || {};
             return Object.entries(dims).map(([dim, val]) => {
@@ -343,23 +417,41 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
               const currentVar = sliceOverrides[overrideKey]?.variable;
               const defaultVar = getDefaultVariable(dim, 'dimension', adam);
               const displayVar = currentVar || defaultVar;
+              // USDM-derived value suggestions for this dimension
+              const usdmOpts = usdmValues[dim] || [];
               return `<tr>
                 <td>${s.name}</td>
                 <td>${dim}</td>
-                <td>${dimOptions.length > 1 ? `
+                <td>${isConceptMode
+                  ? `<code>${dim}</code>`
+                  : (dimOptions.length > 1 ? `
                   <select class="exec-slice-var-override" data-ep-id="${ep.id}" data-slice="${s.name}" data-dim="${dim}"
                     style="font-size:11px; padding:2px 4px; font-family:monospace;">
                     ${dimOptions.map(v => `<option value="${v}" ${v === displayVar ? 'selected' : ''}>${v}</option>`).join('')}
-                  </select>` : `<code>${displayVar}</code>`}</td>
-                <td><input class="exec-slice-val-override" data-ep-id="${ep.id}" data-slice="${s.name}" data-dim="${dim}"
+                  </select>` : `<code>${displayVar}</code>`)}</td>
+                <td>${usdmOpts.length > 0 ? `
+                  <select class="exec-slice-val-override" data-ep-id="${ep.id}" data-slice="${s.name}" data-dim="${dim}"
+                    style="font-size:11px; padding:2px 6px; width:200px;">
+                    <optgroup label="USDM">
+                      ${usdmOpts.map(v => `<option value="${v}" ${v === currentVal ? 'selected' : ''}>${v}</option>`).join('')}
+                    </optgroup>
+                    ${dimOptions.length > 0 ? `<optgroup label="ADaM">
+                      ${dimOptions.map(v => `<option value="${v}" ${v === currentVal ? 'selected' : ''}>${v}</option>`).join('')}
+                    </optgroup>` : ''}
+                    <optgroup label="Template">
+                      <option value="${_escapeAttr(val)}" ${val === currentVal && !usdmOpts.includes(val) && !dimOptions.includes(val) ? 'selected' : ''}>${val}</option>
+                    </optgroup>
+                  </select>`
+                  : `<input class="exec-slice-val-override" data-ep-id="${ep.id}" data-slice="${s.name}" data-dim="${dim}"
                   value="${_escapeAttr(currentVal)}" style="font-size:11px; padding:2px 6px; width:180px;
-                  border:1px solid var(--cdisc-border); border-radius:3px;"></td>
+                  border:1px solid var(--cdisc-border); border-radius:3px;">`}</td>
               </tr>`;
             }).join('');
           }).join('')}
           </tbody>
         </table>
-      </div>` : ''}
+      </div>`;
+      })() : ''}
 
       <!-- Expression / formula -->
       ${expression ? (() => {
@@ -571,6 +663,7 @@ function _renderComputedValueTable(computed, analysis) {
   const rows = _toRows(computed);
   if (!rows?.length) return '<div style="font-size:12px; color:var(--cdisc-text-secondary);">No data</div>';
 
+  const constraintDims = _getConstraintDimensions(analysis);
   const dimConcepts = _getFixedEffectConcepts(analysis);
   const statName = _getStatisticName(analysis);
 
@@ -580,6 +673,7 @@ function _renderComputedValueTable(computed, analysis) {
     return rows.some(r => r[c] != null && r[c] !== '');
   });
   const headers = [
+    ...constraintDims.map(c => c.concept),
     ...dimCols.map((_, i) => dimConcepts[i] || `Dim ${i + 1}`),
     statName || 'Value'
   ];
@@ -588,6 +682,7 @@ function _renderComputedValueTable(computed, analysis) {
     <thead><tr>${headers.map(h => `<th>${_escapeHtml(h)}</th>`).join('')}</tr></thead>
     <tbody>${rows.map(row => {
       const cells = [
+        ...constraintDims.map(c => `<td>${_escapeHtml(c.value)}</td>`),
         ...dimCols.map(c => `<td>${_escapeHtml(row[c] ?? '')}</td>`),
         `<td>${_fmt(row.value)}</td>`
       ];
@@ -611,9 +706,13 @@ function _renderCombinedARD(ep, analyses, resultState) {
   }
   if (completed.length === 0) return '';
 
-  // Union of fixed-effect dimensions across analyses (preserving per-analysis order)
+  // Union of constraint + fixed-effect dimensions across analyses
+  const constraintConceptUnion = [];
   const dimConceptUnion = [];
   for (const { analysis } of completed) {
+    for (const c of _getConstraintDimensions(analysis)) {
+      if (!constraintConceptUnion.find(x => x.concept === c.concept)) constraintConceptUnion.push(c);
+    }
     for (const c of _getFixedEffectConcepts(analysis)) {
       if (!dimConceptUnion.includes(c)) dimConceptUnion.push(c);
     }
@@ -622,11 +721,16 @@ function _renderCombinedARD(ep, analyses, resultState) {
   // Build long-format rows
   const rows = [];
   for (const { analysis, results } of completed) {
+    const analysisConstraints = _getConstraintDimensions(analysis);
     const concepts = _getFixedEffectConcepts(analysis);
     const statName = _getStatisticName(analysis) || analysis?.method?.oid || 'value';
     const cvRows = _toRows(results.computed_value);
     for (const cv of cvRows) {
       const row = { Statistic: statName, Value: cv.value };
+      // Add constraint dimension values (constant per analysis)
+      for (const c of analysisConstraints) {
+        row[c.concept] = c.value;
+      }
       // Map this analysis' dim_1..dim_N onto concept names
       for (let i = 0; i < concepts.length; i++) {
         row[concepts[i]] = cv[`dim_${i + 1}`] ?? '';
@@ -637,7 +741,7 @@ function _renderCombinedARD(ep, analyses, resultState) {
 
   if (rows.length === 0) return '';
 
-  const headers = [...dimConceptUnion, 'Statistic', 'Value'];
+  const headers = [...constraintConceptUnion.map(c => c.concept), ...dimConceptUnion, 'Statistic', 'Value'];
 
   return `
     <div class="exec-combined-ard">
@@ -686,6 +790,30 @@ function _getFixedEffectConcepts(analysis) {
     if (concept && !out.includes(concept)) out.push(concept);
   }
   return out;
+}
+
+/**
+ * Get constraint dimensions and their resolved values from the analysis slices.
+ * These are dimensions that filter the data (e.g., Parameter = "Weight (kg)")
+ * but don't appear in the R result because the method only groups by fixed_effects.
+ * Returns array of { concept, value } objects.
+ */
+function _getConstraintDimensions(analysis) {
+  const constraints = [];
+  const sliceValues = {};
+  for (const s of (analysis?.resolvedSlices || [])) {
+    for (const [dim, val] of Object.entries(s.resolvedValues || {})) {
+      sliceValues[dim] = val;
+    }
+  }
+  for (const b of (analysis?.resolvedBindings || [])) {
+    if (b.methodRole !== 'constraint') continue;
+    const concept = (b.concept || '').replace(/@.*/, '');
+    if (concept && sliceValues[concept]) {
+      constraints.push({ concept, value: sliceValues[concept] });
+    }
+  }
+  return constraints;
 }
 
 /** Look up the statistic name (e.g. 'n', 'mean', 'sd') for a method. */
@@ -832,6 +960,26 @@ function _wireEvents(container, configuredEps, study) {
       const res = _ensureEndpointResult(epId);
       res.datasetOverride = sel.value;
       renderExecuteAnalysis(container);
+    });
+  });
+
+  // Derivation source store/domain overrides (execution-layer config)
+  container.querySelectorAll('.exec-deriv-config-input').forEach(el => {
+    el.addEventListener('change', () => {
+      const epId = el.dataset.epId;
+      const slotKey = el.dataset.slotKey;
+      const configKey = el.dataset.configKey;
+      let value = el.value;
+      if (!isNaN(value) && value !== '') value = Number(value);
+      const spec = appState.endpointSpecs?.[epId];
+      if (!spec) return;
+      if (!spec.derivationConfigValues) spec.derivationConfigValues = {};
+      if (!spec.derivationConfigValues[slotKey]) spec.derivationConfigValues[slotKey] = {};
+      if (value === '' || value == null) {
+        delete spec.derivationConfigValues[slotKey][configKey];
+      } else {
+        spec.derivationConfigValues[slotKey][configKey] = value;
+      }
     });
   });
 
@@ -1380,11 +1528,24 @@ function _renderDerivationSummary(ep) {
                   <td><code>${bcInfo.decode}</code></td>
                   <td><span class="badge" style="background:var(--cdisc-primary-light);color:var(--cdisc-primary);font-size:9px;">BC: ${bcInfo.bcName}</span></td>
                 </tr>` : `<tr><td colspan="3" style="color:var(--cdisc-text-secondary);">No BC linked — derivation runs on all rows</td></tr>`}
-                ${sourceStore ? `<tr>
+                <tr>
                   <td>Source Store</td>
-                  <td><code>${sourceStore}${sourceDomain ? ':' + sourceDomain : ''}</code></td>
-                  <td>config</td>
-                </tr>` : ''}
+                  <td>
+                    <select class="exec-deriv-config-input config-select" data-ep-id="${ep.id}" data-slot-key="${d.entry.slotKey}" data-config-key="sourceStore" style="font-size:11px; padding:2px 6px;">
+                      <option value="">auto-detect</option>
+                      ${Object.keys(appState.conceptMappings || {}).map(k => `<option value="${k}" ${k === sourceStore ? 'selected' : ''}>${k}</option>`).join('')}
+                    </select>
+                  </td>
+                  <td style="font-size:10px; color:var(--cdisc-text-secondary);">auto-detected from uploaded data</td>
+                </tr>
+                <tr>
+                  <td>Source Domain</td>
+                  <td>
+                    <input class="exec-deriv-config-input config-input" data-ep-id="${ep.id}" data-slot-key="${d.entry.slotKey}" data-config-key="sourceDomain"
+                      value="${sourceDomain}" placeholder="auto" style="font-size:11px; padding:2px 6px; width:60px;">
+                  </td>
+                  <td style="font-size:10px; color:var(--cdisc-text-secondary);">domain code for -- prefix (e.g., VS, LB)</td>
+                </tr>
               </tbody>
             </table>
           </div>

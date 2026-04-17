@@ -47,7 +47,7 @@ function groupNarrativesForPicker(narratives, nciToSection, esapSectionKey) {
       continue;
     }
 
-    const sNum = sec.sectionNumber.replace(/\.\s*$/, '');
+    const sNum = (sec.sectionNumber || '').replace(/\.\s*$/, '');
     const item = { ...nc, sectionNumber: sNum, sectionTitle: sec.sectionTitle };
 
     if (prefixes.some(p => sNum === p || sNum.startsWith(p + '.') || sNum.startsWith(p + ' '))) {
