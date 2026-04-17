@@ -16,7 +16,8 @@
  */
 export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, overrides,
                                           methodDef, rImplementation,
-                                          derivations, unitConversions, rImplCatalog) {
+                                          derivations, unitConversions, rImplCatalog,
+                                          availableDatasets) {
   const adam = conceptMappings?.adam || {};
 
   // Strip $ui fields for clean spec
@@ -69,9 +70,18 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
     `dataset <- get("${datasetName}")`,
     `cat("Dataset: ${datasetName},", nrow(dataset), "rows\\n")`,
     ``,
-    `# Execute using the generic AC/DC engine`,
-    `result <- acdc_execute(spec, mappings, dataset, overrides, method_def, r_impl,`,
-    `                       derivations, unit_conversions, r_impls, all_mappings)`,
+    `# Available datasets for dimension enrichment (all uploaded XPTs)`,
+    `available_datasets <- c(${(availableDatasets || []).map(d => `"${d}"`).join(', ')})`,
+    ``,
+    `# Execute using the generic AC/DC engine (capture console output for diagnostics)`,
+    `console_log <- capture.output({`,
+    `  result <- tryCatch(`,
+    `    acdc_execute(spec, mappings, dataset, overrides, method_def, r_impl,`,
+    `                 derivations, unit_conversions, r_impls, all_mappings, available_datasets),`,
+    `    error = function(e) list(engine_error = e$message)`,
+    `  )`,
+    `})`,
+    `result$console <- paste(console_log, collapse = "\\n")`,
     ``,
     `# Return results as JSON`,
     `jsonlite::toJSON(result, auto_unbox = TRUE, pretty = TRUE)`,
@@ -82,14 +92,25 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
 }
 
 /**
+ * Title-case normalize a facet value: "result.value" → "Result.Value"
+ * Matches the canonical form used by ingest_to_concepts in the R engine.
+ */
+function normalizeFacetCase(facetValue) {
+  return facetValue.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('.');
+}
+
+/**
  * Resolve <role> and <config> placeholders in a callTemplate, producing standalone code.
  * This mirrors the R engine's resolve_call_template() but runs client-side,
  * enabling resolved code display for languages without a browser engine (e.g. SAS).
  *
+ * In concept-keyed mode, role placeholders resolve to concept keys (e.g.,
+ * Measure.Result.Value, Treatment) which are the internal column names.
+ *
  * @param {Object} impl              - Implementation entry (with callTemplate)
  * @param {Array}  bindings          - resolvedBindings from the analysis
- * @param {Object} overrides         - User variable overrides { concept: adamVar }
- * @param {Object} adam              - The adam section of concept-variable-mappings.json
+ * @param {Object} overrides         - User variable overrides { conceptKey: varName }
+ * @param {Object} adam              - The adam section of concept-variable-mappings.json (kept for compat)
  * @param {Object} configs           - Method configurations (e.g. { alpha: 0.05, ss_type: 'III' })
  * @param {string} [datasetName]     - Target dataset name (default: 'analysis_data')
  * @param {Array}  [outputConfiguration] - StudyOutputClassConfig[] for dimension narrowing
@@ -99,7 +120,7 @@ export function resolveCallTemplate(impl, bindings, overrides, adam, configs, da
   if (!impl?.callTemplate) return '';
   let code = narrowTemplateForOutputConfig(impl.callTemplate, outputConfiguration, bindings, overrides, adam);
 
-  // Build role → ADaM variable(s) map from bindings.
+  // Build role → concept key(s) map from bindings.
   // A role can have multiple bindings (e.g. multiple fixed_effects), so we
   // accumulate arrays — mirroring the R engine's build_concept_var_map().
   const roleMap = {};
@@ -108,13 +129,27 @@ export function resolveCallTemplate(impl, bindings, overrides, adam, configs, da
     const concept = (b.concept || '').replace(/@.*/, '');
     const role = b.methodRole;
     if (!role) continue;
-    const userOverride = overrides?.[concept];
-    const entry = adam?.concepts?.[concept] || adam?.dimensions?.[concept];
-    const bt = entry?.byDataType || {};
-    const defaultVar = b.dataStructureRole === 'measure'
-      ? (bt.decimal || bt.code || bt.string || Object.values(bt)[0] || concept.toUpperCase())
-      : (bt.code || bt.string || bt.decimal || Object.values(bt)[0] || concept.toUpperCase());
-    const varName = userOverride || defaultVar;
+
+    // Build concept key from concept + qualifier (matching R engine logic)
+    let conceptKey;
+    if (b.qualifierType === 'facet' && b.qualifierValue) {
+      conceptKey = `${concept}.${normalizeFacetCase(b.qualifierValue)}`;
+    } else {
+      // No facet qualifier — check if concept has facets in mappings
+      // and resolve based on dataStructureRole (measure → Result.Value, attribute → Result.Unit)
+      const entry = adam?.concepts?.[concept];
+      if (entry?.facets) {
+        const targetFacet = b.dataStructureRole === 'measure' ? 'Result.Value'
+          : b.dataStructureRole === 'attribute' ? 'Result.Unit' : null;
+        conceptKey = (targetFacet && entry.facets[targetFacet])
+          ? `${concept}.${targetFacet}` : concept;
+      } else {
+        conceptKey = concept;
+      }
+    }
+
+    // User override takes precedence over concept key
+    const varName = overrides?.[conceptKey] || overrides?.[concept] || conceptKey;
     if (roleMap[role]) {
       roleMap[role].push(varName);
     } else {
@@ -150,15 +185,14 @@ export function resolveCallTemplate(impl, bindings, overrides, adam, configs, da
  * outputConfiguration.  The model formula keeps ALL fixed effects, but
  * post-hoc lines (emmeans, LSMEANS, etc.) use only the selected ones.
  *
- * Identification is metadata-driven: the model formula line is the one
- * containing <response>.  All other lines with <fixed_effect> are post-hoc
- * and get the narrowed set.  This works for both R and SAS templates.
+ * In concept-keyed mode, selected dimensions are already concept keys
+ * (e.g., "Treatment", "AnalysisVisit") which are the column names.
  *
  * @param {string} template - The raw callTemplate string
  * @param {Array}  outputConfiguration - StudyOutputClassConfig[] from the resolved spec
- * @param {Array}  bindings - resolvedBindings for concept → ADaM resolution
+ * @param {Array}  bindings - resolvedBindings (kept for compat)
  * @param {Object} overrides - User variable overrides
- * @param {Object} adam - Concept-variable mappings (adam section)
+ * @param {Object} adam - Concept-variable mappings (kept for compat)
  * @returns {string} Template with narrowed <fixed_effect> in post-hoc lines
  */
 function narrowTemplateForOutputConfig(template, outputConfiguration, bindings, overrides, adam) {
@@ -168,30 +202,18 @@ function narrowTemplateForOutputConfig(template, outputConfiguration, bindings, 
   const oc = outputConfiguration.find(c => c.selectedDimensions?.length > 0);
   if (!oc) return template;
 
-  // Resolve selected concept names → ADaM variable names
+  // In concept-keyed mode, selected dimensions ARE the column names (concept keys)
   const selectedVars = [];
   for (const concept of oc.selectedDimensions) {
     if (concept.includes(':')) continue; // Skip interactions for formula factors
-    // Find the binding for this concept to determine its dataStructureRole
-    const binding = bindings?.find(b => (b.concept || '').replace(/@.*/, '') === concept);
     const override = overrides?.[concept];
-    if (override) { selectedVars.push(override); continue; }
-    const entry = adam?.concepts?.[concept] || adam?.dimensions?.[concept];
-    const bt = entry?.byDataType || {};
-    const dsr = binding?.dataStructureRole || 'dimension';
-    const varName = dsr === 'measure'
-      ? (bt.decimal || bt.code || bt.string || Object.values(bt)[0] || concept.toUpperCase())
-      : (bt.code || bt.string || bt.decimal || Object.values(bt)[0] || concept.toUpperCase());
-    if (varName) selectedVars.push(varName);
+    selectedVars.push(override || concept);
   }
   if (selectedVars.length === 0) return template;
 
   const narrowed = selectedVars.join(' + ');
 
   // Narrow <fixed_effect> only in POST-HOC lines (after the model formula).
-  // The model formula line contains <response> — everything before and including
-  // it is model-related (e.g., SAS CLASS, R lm(), MODEL statements).
-  // Everything after is post-hoc (emmeans, LSMEANS, pairs, ESTIMATE, etc.).
   const lines = template.split('\n');
   const modelLineIdx = lines.findIndex(l => l.includes('<response>'));
   return lines.map((line, i) => {

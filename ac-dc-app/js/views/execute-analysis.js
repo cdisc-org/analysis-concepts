@@ -1,5 +1,5 @@
 import { appState, navigateTo, rebuildSpec } from '../app.js';
-import { getAllEndpoints } from '../utils/usdm-parser.js';
+import { getAllEndpoints, getDerivationBCTopicDecode } from '../utils/usdm-parser.js';
 import {
   initWebR, loadXptFile, executeR, isInitialized,
   getLoadedDatasets, loadEngine, setJsonVariable
@@ -381,9 +381,16 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
 
       <!-- Error -->
       ${aResult.error ? `
-      <div style="margin-top:8px; padding:10px 14px; background:rgba(220,53,69,0.08); border:1px solid var(--cdisc-error); border-radius:var(--radius); font-size:12px; color:var(--cdisc-error);">
+      <div style="margin-top:8px; padding:10px 14px; background:rgba(220,53,69,0.08); border:1px solid var(--cdisc-error); border-radius:var(--radius); font-size:12px; color:var(--cdisc-error); white-space:pre-wrap;">
         <strong>Error:</strong> ${_escapeHtml(aResult.error)}
       </div>` : ''}
+
+      <!-- Console output (diagnostics) -->
+      ${aResult.console ? `
+      <details style="margin-top:6px; font-size:11px;">
+        <summary style="cursor:pointer; color:var(--cdisc-text-secondary);">Engine console output</summary>
+        <pre style="margin:4px 0; padding:8px; background:rgba(0,0,0,0.04); border-radius:var(--radius); font-size:10px; max-height:300px; overflow:auto;">${_escapeHtml(aResult.console)}</pre>
+      </details>` : ''}
 
       <!-- Results (per-analysis) -->
       ${aResult.results ? _renderARDResults(aResult.results, analysis, adam, resultState.varOverrides) : ''}
@@ -830,6 +837,11 @@ function _wireEvents(container, configuredEps, study) {
     btn.addEventListener('click', () => _executeAllAnalyses(container, btn.dataset.epId));
   });
 
+  // Derivation-only buttons
+  container.querySelectorAll('.exec-derive-only-btn').forEach(btn => {
+    btn.addEventListener('click', () => _executeDerivationOnly(container, btn.dataset.epId));
+  });
+
   // ARD tabs
   container.querySelectorAll('.exec-ard-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -931,6 +943,12 @@ async function _executeAnalysis(container, epId, aIdx) {
     ...(appState.transformationLibrary?.derivationTransformations || []),
     ...(appState.transformationLibrary?.analysisTransformations || [])
   ];
+  // Per-derivation BC Topic constraint resolution via shared helper.
+  // Each derivation's terminal slotKey identifies the BC (Step 6 choice),
+  // with endpoint-level BC (Step 5) as fallback inside the helper.
+  const endpointSpec = appState.endpointSpecs?.[epId];
+  const study = appState.selectedStudy;
+
   const derivationChain = rawChain
     .filter(entry => entry.derivationOid)
     .map(entry => {
@@ -947,10 +965,28 @@ async function _executeAnalysis(container, epId, aIdx) {
         if (idx >= 0) configValues[idx] = { name, value: String(value) };
         else configValues.push({ name, value: String(value) });
       }
+      // Constraint value: only if the transform declares a constraint binding
+      // on a facet-qualified concept (Observation.Identification.Topic)
+      const constraintValues = [];
+      const hasTopicConstraint = (transform.bindings || []).some(b =>
+        b.methodRole === 'constraint' &&
+        b.qualifierType === 'facet' &&
+        /Topic/i.test(b.qualifierValue || '')
+      );
+      if (hasTopicConstraint) {
+        const bcInfo = getDerivationBCTopicDecode(endpointSpec, entry.slotKey, study);
+        if (bcInfo) {
+          constraintValues.push({
+            dimension: 'Observation.Identification.Topic',
+            value: bcInfo.decode
+          });
+        }
+      }
       return {
         method: { oid: transform.usesMethod },
         resolvedBindings: transform.bindings || [],
         configurationValues: configValues,
+        constraintValues,
         sourceStore: userConfigs.sourceStore || null,
         sourceDomain: userConfigs.sourceDomain || null
       };
@@ -966,9 +1002,10 @@ async function _executeAnalysis(container, epId, aIdx) {
     ? Object.values(appState.methodImplementationCatalog?.implementations || {}).flat().filter(i => i.language === 'R')
     : null;
 
+  const availableDatasets = getLoadedDatasets().map(d => d.name);
   const payload = generateExecutionPayload(
     patchedSpec, appState.conceptMappings, overrides, methodDef, rImpl,
-    derivationChain, unitConversions, rImplCatalog
+    derivationChain, unitConversions, rImplCatalog, availableDatasets
   );
 
   _setAnalysisResult(epId, aIdx, { status: 'running', results: null, error: null });
@@ -1000,7 +1037,17 @@ async function _executeAnalysis(container, epId, aIdx) {
         if (typeof parsed === 'string') parsed = JSON.parse(parsed);
         else if (parsed?.values) parsed = JSON.parse(parsed.values[0]);
       } catch (e) { /* keep as-is */ }
-      _setAnalysisResult(epId, aIdx, { status: 'complete', results: parsed, error: null });
+
+      // Check for engine-level errors caught by the bootstrap tryCatch
+      if (parsed?.engine_error) {
+        const errMsg = parsed.engine_error + (parsed.console ? '\n\nConsole:\n' + parsed.console : '');
+        _setAnalysisResult(epId, aIdx, { status: 'error', results: null, error: errMsg });
+      } else {
+        // Attach console output to results for diagnostics
+        const console = parsed?.console;
+        if (console) delete parsed.console;
+        _setAnalysisResult(epId, aIdx, { status: 'complete', results: parsed, error: null, console });
+      }
     } else {
       _setAnalysisResult(epId, aIdx, { status: 'error', results: null, error: result.error });
     }
@@ -1030,6 +1077,121 @@ async function _executeAllAnalyses(container, epId) {
 // Derivation pipeline summary for Execute panel
 // ---------------------------------------------------------------------------
 
+/**
+ * Run only the derivation pipeline (no analysis) for diagnostic purposes.
+ * Calls acdc_derive_only in the R engine and displays column diagnostics.
+ */
+async function _executeDerivationOnly(container, epId) {
+  const resolvedEp = appState.resolvedSpec?.endpoints?.find(r => r.id === epId);
+  if (!resolvedEp) return;
+
+  try { await loadEngine(); } catch (err) {
+    console.error('Failed to load engine:', err);
+    return;
+  }
+
+  // Reuse the same derivation chain building logic from _executeAnalysis
+  const rawChain = appState.endpointSpecs?.[epId]?.derivationChain || [];
+  const derivConfigValues = appState.endpointSpecs?.[epId]?.derivationConfigValues || {};
+  const txLib = [
+    ...(appState.transformationLibrary?.derivationTransformations || []),
+    ...(appState.transformationLibrary?.analysisTransformations || [])
+  ];
+  // Per-derivation BC Topic constraint resolution via shared helper
+  const endpointSpec = appState.endpointSpecs?.[epId];
+  const study = appState.selectedStudy;
+
+  const derivationChain = rawChain.filter(e => e.derivationOid).map(entry => {
+    const transform = txLib.find(t => t.oid === entry.derivationOid);
+    if (!transform) return null;
+    const configValues = [...(transform.methodConfigurations || []).map(mc =>
+      ({ name: mc.configurationName, value: String(mc.value) }))];
+    const userConfigs = derivConfigValues[entry.slotKey] || {};
+    for (const [name, value] of Object.entries(userConfigs)) {
+      const idx = configValues.findIndex(cv => cv.name === name);
+      if (idx >= 0) configValues[idx] = { name, value: String(value) };
+      else configValues.push({ name, value: String(value) });
+    }
+    const constraintValues = [];
+    const hasTopicConstraint = (transform.bindings || []).some(b =>
+      b.methodRole === 'constraint' &&
+      b.qualifierType === 'facet' &&
+      /Topic/i.test(b.qualifierValue || '')
+    );
+    if (hasTopicConstraint) {
+      const bcInfo = getDerivationBCTopicDecode(endpointSpec, entry.slotKey, study);
+      if (bcInfo) {
+        constraintValues.push({
+          dimension: 'Observation.Identification.Topic',
+          value: bcInfo.decode
+        });
+      }
+    }
+    return {
+      method: { oid: transform.usesMethod },
+      resolvedBindings: transform.bindings || [],
+      configurationValues: configValues,
+      constraintValues
+    };
+  }).filter(Boolean);
+
+  if (derivationChain.length === 0) return;
+
+  const resultState = _ensureEndpointResult(epId);
+  const datasets = getLoadedDatasets();
+  const selectedDataset = resultState.datasetOverride || datasets[0]?.name;
+  const datasetName = (selectedDataset || 'addata').toLowerCase();
+
+  const specJson = JSON.stringify({
+    targetStore: resolvedEp.targetStore || 'adam',
+    targetDataset: selectedDataset
+  });
+  const mappingJson = JSON.stringify(appState.conceptMappings);
+  const derivationsJson = JSON.stringify(derivationChain);
+  const unitConversionsJson = JSON.stringify(appState.unitConversions || null);
+  const rImplCatalog = Object.values(appState.methodImplementationCatalog?.implementations || {}).flat().filter(i => i.language === 'R');
+  const rImplsJson = JSON.stringify(rImplCatalog);
+
+  try {
+    await setJsonVariable('spec_json', specJson);
+    await setJsonVariable('mapping_json', mappingJson);
+    await setJsonVariable('derivations_json', derivationsJson);
+    await setJsonVariable('unit_conversions_json', unitConversionsJson);
+    await setJsonVariable('r_impls_json', rImplsJson);
+
+    const allDatasetNames = datasets.map(d => d.name);
+    const code = [
+      `spec <- jsonlite::fromJSON(spec_json, simplifyVector = FALSE)`,
+      `all_mappings <- jsonlite::fromJSON(mapping_json, simplifyVector = FALSE)`,
+      `target_store <- spec$targetStore; if (is.null(target_store)) target_store <- "adam"`,
+      `mappings <- all_mappings[[target_store]]; if (is.null(mappings)) mappings <- all_mappings$adam`,
+      `derivations <- jsonlite::fromJSON(derivations_json, simplifyVector = FALSE)`,
+      `unit_conversions <- jsonlite::fromJSON(unit_conversions_json, simplifyVector = FALSE)`,
+      `r_impls <- jsonlite::fromJSON(r_impls_json, simplifyVector = FALSE)`,
+      `dataset <- get("${datasetName}")`,
+      `available_datasets <- c(${allDatasetNames.map(d => `"${d}"`).join(', ')})`,
+      `result <- acdc_derive_only(spec, mappings, dataset, derivations, unit_conversions, r_impls, all_mappings, available_datasets)`,
+      `jsonlite::toJSON(result, auto_unbox = TRUE, pretty = TRUE)`
+    ].join('\n');
+
+    const result = await executeR(code);
+    if (result.success) {
+      let parsed = result.result;
+      try {
+        if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+        else if (parsed?.values) parsed = JSON.parse(parsed.values[0]);
+      } catch (e) { /* keep */ }
+      resultState.derivationOnly = parsed;
+    } else {
+      resultState.derivationOnly = { error: result.error };
+    }
+  } catch (err) {
+    resultState.derivationOnly = { error: err.message };
+  }
+
+  renderExecuteAnalysis(container);
+}
+
 function _renderDerivationSummary(ep) {
   const rawChain = appState.endpointSpecs?.[ep.id]?.derivationChain || [];
   const derivConfigValues = appState.endpointSpecs?.[ep.id]?.derivationConfigValues || {};
@@ -1049,11 +1211,49 @@ function _renderDerivationSummary(ep) {
 
   if (derivations.length === 0) return '';
 
+  // Check if there's a derivation-only result stored
+  const derivResult = appState.endpointResults[ep.id]?.derivationOnly;
+
   return `
     <div class="exec-bindings-section" style="margin:8px 0; padding:10px 14px; background:rgba(13,110,253,0.04); border:1px solid var(--cdisc-primary); border-radius:var(--radius);">
-      <div style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-primary); margin-bottom:8px;">
+      <div style="display:flex; align-items:center; font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-primary); margin-bottom:8px;">
         Derivation Pipeline (runs before analysis)
+        <button class="btn btn-sm exec-derive-only-btn" data-ep-id="${ep.id}" style="margin-left:auto; font-size:11px; padding:2px 8px;">Run Derivation Only</button>
       </div>
+      ${derivResult ? `
+      <div style="margin-top:6px; padding:8px 10px; background:rgba(0,0,0,0.03); border-radius:var(--radius); font-size:11px; font-family:var(--font-mono);">
+        ${derivResult.error ? `<div style="color:var(--cdisc-error);"><strong>Error:</strong> ${_escapeHtml(derivResult.error)}</div>` : ''}
+        <div><strong>Store:</strong> ${derivResult.detected_store || '?'} (${derivResult.match_count || 0} column matches${derivResult.domain_code ? `, domain=${derivResult.domain_code}` : ''})</div>
+        <div><strong>Ingest:</strong> ${(derivResult.original_columns||[]).join(', ')} → ${(derivResult.ingested_columns||[]).join(', ')}</div>
+        <div><strong>Final columns:</strong> ${(derivResult.final_columns||[]).join(', ')}</div>
+        <div><strong>Rows:</strong> ${derivResult.nrow || '?'}</div>
+        ${(derivResult.derivation_log || []).map((d, i) => `
+          <div style="margin-top:4px;">
+            <strong>#${i + 1} ${d.method || '?'}:</strong> ${d.status}
+            ${d.new_columns?.length ? `<br>New columns: <code>${d.new_columns.join(', ')}</code>` : ''}
+            ${d.columns_at_failure ? `<br>Columns at failure: <code>${d.columns_at_failure.join(', ')}</code>` : ''}
+          </div>
+        `).join('')}
+        ${derivResult.enriched_dimensions?.length ? `
+          <div style="margin-top:4px;"><strong>Enriched dimensions:</strong> <code>${derivResult.enriched_dimensions.join(', ')}</code> (merged from other datasets by Subject)</div>
+        ` : ''}
+        ${derivResult.data_preview ? (() => {
+          const preview = derivResult.data_preview;
+          // jsonlite serializes data.frames as arrays of row objects
+          const rowArr = Array.isArray(preview) ? preview : [preview];
+          if (rowArr.length === 0) return '';
+          const cols = Object.keys(rowArr[0] || {});
+          if (cols.length === 0) return '';
+          return '<div style="margin-top:8px; overflow-x:auto;"><strong>Data preview (first ' + rowArr.length + ' rows):</strong>' +
+            '<table class="exec-bindings-table" style="margin-top:4px; font-size:10px;"><thead><tr>' +
+            cols.map(c => '<th>' + _escapeHtml(c) + '</th>').join('') +
+            '</tr></thead><tbody>' +
+            rowArr.map(row => '<tr>' + cols.map(c => {
+              const v = row[c]; return '<td>' + _escapeHtml(v == null ? '' : String(v)) + '</td>';
+            }).join('') + '</tr>').join('') +
+            '</tbody></table></div>';
+        })() : ''}
+      </div>` : ''}
       ${derivations.map((d, i) => {
         const t = d.transform;
         const configSummary = Object.entries(d.configs)

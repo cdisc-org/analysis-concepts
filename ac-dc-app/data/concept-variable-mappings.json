@@ -79,6 +79,18 @@
           "id": "SITEID",
           "string": "SITEID"
         }
+      },
+      "Treatment": {
+        "variable": "ARM/ACTARM",
+        "byDataType": {
+          "code": "ARMCD",
+          "string": "ARM"
+        },
+        "intentType": {
+          "Planned": { "code": "ARMCD", "string": "ARM" },
+          "Actual": { "code": "ACTARMCD", "string": "ACTARM" }
+        },
+        "notes": "Treatment arm from DM domain. Not domain-prefixed. IntentType qualifier selects Planned (ARM) vs Actual (ACTARM)."
       }
     }
   },

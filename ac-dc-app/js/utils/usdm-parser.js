@@ -290,6 +290,45 @@ export function getBiomedicalConcepts(parsedStudy, endpointId) {
 }
 
 /**
+ * Resolve a derivation terminal's BC Topic identifier (e.g., "WEIGHT").
+ *
+ * Looks up the BC selected at the derivation terminal level (Step 6) first,
+ * falling back to the endpoint-level BC (Step 5). Then finds the Topic
+ * property of the BC (typically VSTESTCD/LBTESTCD) and returns its standard
+ * code decode — this is the value used to filter SDTM observation rows
+ * (e.g., VSTESTCD == "WEIGHT").
+ *
+ * @param {Object} endpointSpec - appState.endpointSpecs[epId]
+ * @param {string} slotKey - derivation terminal slot key (from confirmedTerminals)
+ * @param {Object} parsedStudy - appState.selectedStudy
+ * @returns {{bcName: string, decode: string} | null}
+ */
+export function getDerivationBCTopicDecode(endpointSpec, slotKey, parsedStudy) {
+  if (!endpointSpec || !parsedStudy) return null;
+
+  // Terminal-level BC (Step 6) takes precedence; fall back to endpoint-level (Step 5)
+  let bcId = null;
+  if (slotKey && Array.isArray(endpointSpec.confirmedTerminals)) {
+    const term = endpointSpec.confirmedTerminals.find(t => t.slotKey === slotKey);
+    if (term?.linkedBCIds?.length) bcId = term.linkedBCIds[0];
+  }
+  if (!bcId && endpointSpec.linkedBCIds?.length) bcId = endpointSpec.linkedBCIds[0];
+  if (!bcId) return null;
+
+  const bc = (parsedStudy.biomedicalConcepts || []).find(b => b.id === bcId);
+  if (!bc) return null;
+
+  // Topic property: matches TESTCD (the SDTM code variable for the observation topic)
+  const topicProp = (bc.properties || []).find(p =>
+    /TESTCD/i.test(p.name || '') || /TESTCD/i.test(p.label || '')
+  );
+  const decode = topicProp?.code?.standardCode?.decode;
+  if (!decode) return null;
+
+  return { bcName: bc.label || bc.name || bcId, decode };
+}
+
+/**
  * Get the scheduled visits/timepoints where a BC is collected.
  * Searches ALL timelines (main + sub-timelines like VS blood pressure timeline).
  * Returns array of { timeline, timelineName, instance, instanceName }.

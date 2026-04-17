@@ -278,7 +278,8 @@ export function serializeStudyInstance(appState) {
       confirmedTerminals: (analysis.confirmedTerminals || []).map(t => ({
         slotKey: t.slotKey,
         concept: t.concept,
-        roleLabel: t.roleLabel || ''
+        roleLabel: t.roleLabel || '',
+        linkedBCIds: t.linkedBCIds || []
       }))
     };
   }

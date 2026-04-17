@@ -1,5 +1,5 @@
 import { appState, navigateTo, rebuildSpec } from '../app.js';
-import { getAllEndpoints } from '../utils/usdm-parser.js';
+import { getAllEndpoints, getDerivationBCTopicDecode } from '../utils/usdm-parser.js';
 import {
   buildPipelineGraph, getUnresolvedConcepts
 } from '../utils/transformation-linker.js';
@@ -535,9 +535,19 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
     // SliceKey constraint annotation (e.g., Parameter = Adas-Cog)
     let constraintAnnotation = '';
     if (b.dataStructureRole === 'dimension' && b.methodRole === 'constraint') {
-      const resolved = resolveSliceKeyValue(b.concept);
-      if (resolved) {
-        constraintAnnotation = `<div style="font-size:10px; color:var(--cdisc-primary); margin-top:2px;">&larr; from endpoint: "${resolved}"</div>`;
+      // Facet-qualified constraint (e.g., Observation.Identification.Topic) → BC Topic decode
+      if (b.qualifierType === 'facet' && b.qualifierValue) {
+        const bcInfo = getDerivationBCTopicDecode(activeSpec, slot?.key, study);
+        if (bcInfo) {
+          constraintAnnotation = `<div style="font-size:10px; color:var(--cdisc-primary); margin-top:2px;">&larr; BC "${bcInfo.bcName}" topic: "${bcInfo.decode}"</div>`;
+        }
+      }
+      // Fallback: sliceKey-based resolution (e.g., Parameter = BC name)
+      if (!constraintAnnotation) {
+        const resolved = resolveSliceKeyValue(b.concept);
+        if (resolved) {
+          constraintAnnotation = `<div style="font-size:10px; color:var(--cdisc-primary); margin-top:2px;">&larr; from endpoint: "${resolved}"</div>`;
+        }
       }
     }
 
