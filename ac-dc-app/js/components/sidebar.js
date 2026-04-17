@@ -15,13 +15,20 @@ function getStepState(step) {
 
 export function renderSidebar() {
   const sidebar = document.getElementById('app-sidebar');
-  sidebar.innerHTML = `
-    <div class="sidebar-title">Workflow Steps</div>
-    <ul class="step-list">
-      ${STEPS.map(step => {
-        const state = getStepState(step);
-        const checkmark = state === 'completed' ? '&#10003;' : step.icon;
-        return `
+  const currentLayer = STEPS.find(s => s.num === appState.currentStep)?.layer || 'specification';
+
+  let lastLayer = null;
+  const stepItems = STEPS.map(step => {
+    const state = getStepState(step);
+    const checkmark = state === 'completed' ? '&#10003;' : step.icon;
+    let header = '';
+    if (step.layer !== lastLayer) {
+      lastLayer = step.layer;
+      const layerLabel = step.layer === 'specification' ? 'Specification Layer' : 'Execution Layer';
+      const isActive = step.layer === currentLayer;
+      header = `<li class="sidebar-layer-header${isActive ? ' active' : ''}">${layerLabel}</li>`;
+    }
+    return `${header}
           <li class="step-item ${state}" data-step="${step.num}">
             <div class="step-number">${checkmark}</div>
             <div>
@@ -29,7 +36,12 @@ export function renderSidebar() {
               <div class="step-sublabel">${step.sublabel}</div>
             </div>
           </li>`;
-      }).join('')}
+  }).join('');
+
+  sidebar.innerHTML = `
+    <div class="sidebar-title">Workflow Steps</div>
+    <ul class="step-list">
+      ${stepItems}
     </ul>
     <div class="sidebar-divider"></div>
     <div class="sidebar-config-trigger ${appState.configPanelOpen ? 'active' : ''}" id="sidebar-config-trigger">

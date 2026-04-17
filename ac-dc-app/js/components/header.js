@@ -35,10 +35,18 @@ export function renderHeader() {
 
   const toggle = header.querySelector('#model-view-toggle');
   toggle.value = appState.modelViewMode || 'concepts';
-  toggle.addEventListener('change', () => {
-    appState.modelViewMode = toggle.value;
-    renderCurrentStep();
-  });
+
+  // Use event delegation on the header so the handler survives DOM re-renders
+  // triggered by renderCurrentStep(). Only attach once via a flag.
+  if (!header._viewToggleBound) {
+    header.addEventListener('change', (e) => {
+      if (e.target.id === 'model-view-toggle') {
+        appState.modelViewMode = e.target.value;
+        renderCurrentStep();
+      }
+    });
+    header._viewToggleBound = true;
+  }
 
   // Save button — serialize and download as JSON
   header.querySelector('#btn-save-instance').addEventListener('click', () => {

@@ -33,7 +33,10 @@ export function renderExecuteAnalysis(container) {
           Run analyses from the specification metadata via WebR
         </p>
       </div>
-      <button class="btn btn-secondary" id="btn-back-esap">&larr; Back to eSAP</button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary" id="btn-back-derivations">&larr; Derivations</button>
+        <button class="btn btn-secondary" id="btn-back-esap">&larr; eSAP</button>
+      </div>
     </div>
 
     <!-- WebR Engine -->
@@ -51,7 +54,7 @@ export function renderExecuteAnalysis(container) {
 
     <!-- Data Upload -->
     <div class="card" style="margin-bottom:16px;">
-      <h3 style="font-size:14px; font-weight:600; margin-bottom:12px;">ADaM Data</h3>
+      <h3 style="font-size:14px; font-weight:600; margin-bottom:12px;">Analysis / Source Datasets</h3>
       <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
         <label class="btn btn-secondary" style="cursor:pointer;">
           Upload .xpt files
@@ -60,7 +63,7 @@ export function renderExecuteAnalysis(container) {
         <span id="upload-status" style="font-size:12px; color:var(--cdisc-text-secondary);"></span>
       </div>
       ${datasets.length > 0 ? _renderDatasetTable(datasets) : `
-      <div style="font-size:12px; color:var(--cdisc-text-secondary);">No datasets loaded. Upload ADaM .xpt files to begin.</div>`}
+      <div style="font-size:12px; color:var(--cdisc-text-secondary);">No datasets loaded. Upload SDTM or ADaM .xpt files to begin.</div>`}
     </div>
 
     <!-- Endpoint Analyses -->
@@ -256,30 +259,49 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
         </div>
       </div>
 
-      <!-- Resolved Bindings — with ADaM variable selection -->
-      ${activeBindings.length > 0 ? `
+      <!-- Resolved Bindings — view-mode-aware variable display -->
+      ${activeBindings.length > 0 ? (() => {
+        const viewMode = appState.modelViewMode || 'concepts';
+        const isConceptMode = viewMode === 'concepts';
+        const varColLabel = isConceptMode ? 'Concept Key' : 'Implementation Variable';
+        return `
       <div class="exec-bindings-section">
         <div class="exec-bindings-title">RESOLVED BINDINGS (from specification)</div>
         <table class="exec-bindings-table">
-          <thead><tr><th>Role</th><th>Concept</th><th>ADaM Variable</th><th>Type</th><th>Slice</th></tr></thead>
+          <thead><tr><th>Role</th><th>Concept</th><th>${varColLabel}</th><th>Type</th><th>Slice</th></tr></thead>
           <tbody>${activeBindings.map(b => {
             const concept = b.concept?.replace(/@.*/, '') || '';
+            if (isConceptMode) {
+              // In concept mode, show the concept key the engine will use (no store-specific dropdown)
+              let conceptKey = concept;
+              if (b.qualifierType === 'facet' && b.qualifierValue) {
+                const facet = b.qualifierValue.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('.');
+                conceptKey = concept + '.' + facet;
+              }
+              return '<tr>' +
+                '<td>' + b.methodRole + '</td>' +
+                '<td><code>' + concept + '</code></td>' +
+                '<td><code>' + conceptKey + '</code></td>' +
+                '<td>' + b.dataStructureRole + '</td>' +
+                '<td>' + (b.slice || '--') + '</td>' +
+              '</tr>';
+            }
             const options = getVariableOptions(concept, adam, b.requiredValueType, b.dataStructureRole);
             const overrides = resultState.varOverrides || {};
             const displayVar = overrides[concept]
               || getDefaultVariable(concept, b.dataStructureRole, adam);
-            return `<tr>
-              <td>${b.methodRole}</td>
-              <td><code>${concept}</code></td>
-              <td>${options.length > 1
-                ? `<select class="exec-var-override" data-ep-id="${ep.id}" data-concept="${concept}"
-                    style="font-size:11px; padding:2px 4px; font-family:monospace;">
-                    ${options.map(v => `<option value="${v}" ${v === displayVar ? 'selected' : ''}>${v}</option>`).join('')}
-                  </select>`
-                : `<code>${displayVar}</code>`}</td>
-              <td>${b.dataStructureRole}</td>
-              <td>${b.slice || '--'}</td>
-            </tr>`;
+            return '<tr>' +
+              '<td>' + b.methodRole + '</td>' +
+              '<td><code>' + concept + '</code></td>' +
+              '<td>' + (options.length > 1
+                ? '<select class="exec-var-override" data-ep-id="' + ep.id + '" data-concept="' + concept + '"' +
+                  ' style="font-size:11px; padding:2px 4px; font-family:monospace;">' +
+                  options.map(v => '<option value="' + v + '"' + (v === displayVar ? ' selected' : '') + '>' + v + '</option>').join('') +
+                  '</select>'
+                : '<code>' + displayVar + '</code>') + '</td>' +
+              '<td>' + b.dataStructureRole + '</td>' +
+              '<td>' + (b.slice || '--') + '</td>' +
+            '</tr>';
           }).join('')}
           </tbody>
         </table>
@@ -302,14 +324,15 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
             </table>
           </details>
         ` : ''}
-      </div>` : ''}
+      </div>`;
+      })() : ''}
 
       <!-- Resolved Slices -->
       ${slices.length > 0 ? `
       <div class="exec-bindings-section">
         <div class="exec-bindings-title">RESOLVED SLICES (cube constraints)</div>
         <table class="exec-bindings-table">
-          <thead><tr><th>Slice</th><th>Dimension</th><th>ADaM Variable</th><th>Value</th></tr></thead>
+          <thead><tr><th>Slice</th><th>Dimension</th><th>${(appState.modelViewMode || 'concepts') === 'concepts' ? 'Concept Key' : 'Implementation Variable'}</th><th>Value</th></tr></thead>
           <tbody>${slices.map(s => {
             const dims = s.resolvedValues || {};
             return Object.entries(dims).map(([dim, val]) => {
@@ -723,6 +746,7 @@ function _toRows(df) {
 // ---------------------------------------------------------------------------
 
 function _wireEvents(container, configuredEps, study) {
+  container.querySelector('#btn-back-derivations')?.addEventListener('click', () => navigateTo(6));
   container.querySelector('#btn-back-esap')?.addEventListener('click', () => navigateTo(7));
 
   // WebR init
@@ -974,10 +998,28 @@ async function _executeAnalysis(container, epId, aIdx) {
         /Topic/i.test(b.qualifierValue || '')
       );
       if (hasTopicConstraint) {
-        const bcInfo = getDerivationBCTopicDecode(endpointSpec, entry.slotKey, study);
-        if (bcInfo) {
+        // Derive dimension from the constraint binding's concept + qualifier
+        const constraintBinding = (transform.bindings || []).find(b =>
+          b.methodRole === 'constraint' && b.qualifierType === 'facet' && /Topic/i.test(b.qualifierValue || '')
+        );
+        // The BC is linked on a terminal node (child of the derivation), not on the
+      // derivation chain entry itself. Try the entry's slotKey first, then scan all
+      // confirmedTerminals for any with a linked BC under this derivation.
+      let bcInfo = getDerivationBCTopicDecode(endpointSpec, entry.slotKey, study);
+      if (!bcInfo) {
+        const terminals = endpointSpec?.confirmedTerminals || [];
+        for (const term of terminals) {
+          if (term.linkedBCIds?.length) {
+            bcInfo = getDerivationBCTopicDecode(endpointSpec, term.slotKey, study);
+            if (bcInfo) break;
+          }
+        }
+      }
+        if (bcInfo && constraintBinding) {
+          const concept = (constraintBinding.concept || '').replace(/@.*/, '');
+          const facet = (constraintBinding.qualifierValue || '').split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('.');
           constraintValues.push({
-            dimension: 'Observation.Identification.Topic',
+            dimension: `${concept}.${facet}`,
             value: bcInfo.decode
           });
         }
@@ -1119,20 +1161,45 @@ async function _executeDerivationOnly(container, epId) {
       /Topic/i.test(b.qualifierValue || '')
     );
     if (hasTopicConstraint) {
-      const bcInfo = getDerivationBCTopicDecode(endpointSpec, entry.slotKey, study);
-      if (bcInfo) {
+      const constraintBinding = (transform.bindings || []).find(b =>
+        b.methodRole === 'constraint' && b.qualifierType === 'facet' && /Topic/i.test(b.qualifierValue || '')
+      );
+      // The BC is linked on a terminal node (child of the derivation), not on the
+      // derivation chain entry itself. Try the entry's slotKey first, then scan all
+      // confirmedTerminals for any with a linked BC under this derivation.
+      let bcInfo = getDerivationBCTopicDecode(endpointSpec, entry.slotKey, study);
+      console.log('[constraint] slotKey lookup:', entry.slotKey, '→', bcInfo);
+      if (!bcInfo) {
+        const terminals = endpointSpec?.confirmedTerminals || [];
+        console.log('[constraint] scanning', terminals.length, 'terminals:', terminals.map(t => `${t.slotKey}(bc:${t.linkedBCIds?.length||0})`));
+        for (const term of terminals) {
+          if (term.linkedBCIds?.length) {
+            bcInfo = getDerivationBCTopicDecode(endpointSpec, term.slotKey, study);
+            console.log('[constraint] terminal', term.slotKey, 'bcIds:', term.linkedBCIds, '→', bcInfo);
+            if (bcInfo) break;
+          }
+        }
+      }
+      if (bcInfo && constraintBinding) {
+        const concept = (constraintBinding.concept || '').replace(/@.*/, '');
+        const facet = (constraintBinding.qualifierValue || '').split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('.');
         constraintValues.push({
-          dimension: 'Observation.Identification.Topic',
+          dimension: `${concept}.${facet}`,
           value: bcInfo.decode
         });
+        console.log('[constraint] RESOLVED:', `${concept}.${facet}`, '=', bcInfo.decode);
+      } else {
+        console.log('[constraint] NOT resolved. bcInfo:', bcInfo, 'constraintBinding:', !!constraintBinding);
       }
     }
-    return {
+    const result = {
       method: { oid: transform.usesMethod },
       resolvedBindings: transform.bindings || [],
       configurationValues: configValues,
       constraintValues
     };
+    console.log('[derivation]', transform.oid, 'constraintValues:', JSON.stringify(constraintValues));
+    return result;
   }).filter(Boolean);
 
   if (derivationChain.length === 0) return;
@@ -1256,14 +1323,99 @@ function _renderDerivationSummary(ep) {
       </div>` : ''}
       ${derivations.map((d, i) => {
         const t = d.transform;
-        const configSummary = Object.entries(d.configs)
-          .map(([k, v]) => `<code>${k}=${v}</code>`).join(', ');
+        const bindings = t.bindings || [];
+        const inputBindings = bindings.filter(b => b.direction !== 'output');
+        const outputBindings = bindings.filter(b => b.direction === 'output');
+        // BC constraint resolution
+        let bcInfo = getDerivationBCTopicDecode(appState.endpointSpecs?.[ep.id], d.entry.slotKey, appState.selectedStudy);
+        if (!bcInfo) {
+          const epSpec = appState.endpointSpecs?.[ep.id];
+          for (const term of (epSpec?.confirmedTerminals || [])) {
+            if (term.linkedBCIds?.length) {
+              bcInfo = getDerivationBCTopicDecode(epSpec, term.slotKey, appState.selectedStudy);
+              if (bcInfo) break;
+            }
+          }
+        }
+        const sourceStore = d.configs.sourceStore || '';
+        const sourceDomain = d.configs.sourceDomain || '';
         return `
-        <div style="display:flex; align-items:center; gap:8px; padding:4px 0; font-size:12px;">
-          <span class="badge badge-secondary">#${i + 1}</span>
-          <strong>${t.name || t.oid}</strong>
-          <span style="color:var(--cdisc-text-secondary);">${t.usesMethod || ''}</span>
-          ${configSummary ? `<span style="margin-left:auto;">${configSummary}</span>` : ''}
+        <div style="padding:8px 0; font-size:12px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span class="badge badge-secondary">#${i + 1}</span>
+            <strong>${t.name || t.oid}</strong>
+            <span style="color:var(--cdisc-text-secondary);">${t.usesMethod || ''}</span>
+          </div>
+
+          <!-- Derivation bindings -->
+          <div class="exec-bindings-section" style="margin-bottom:8px;">
+            <div class="exec-bindings-title">BINDINGS</div>
+            <table class="exec-bindings-table">
+              <thead><tr><th>Role</th><th>Concept</th><th>Direction</th><th>Type</th></tr></thead>
+              <tbody>
+                ${inputBindings.map(b => `<tr>
+                  <td>${b.methodRole || ''}</td>
+                  <td><code>${(b.concept || '').replace(/@.*/, '')}${b.qualifierValue ? '.' + b.qualifierValue : ''}</code></td>
+                  <td>input</td>
+                  <td>${b.dataStructureRole || ''}</td>
+                </tr>`).join('')}
+                ${outputBindings.map(b => `<tr style="background:rgba(0,133,124,0.04);">
+                  <td>${b.methodRole || ''}</td>
+                  <td><code>${(b.concept || '').replace(/@.*/, '')}${b.qualifierValue ? '.' + b.qualifierValue : ''}</code></td>
+                  <td><span class="badge badge-teal" style="font-size:9px;">output</span></td>
+                  <td>${b.dataStructureRole || ''}</td>
+                </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Input cube / constraint -->
+          <div class="exec-bindings-section" style="margin-bottom:8px;">
+            <div class="exec-bindings-title">INPUT CUBE</div>
+            <table class="exec-bindings-table">
+              <thead><tr><th>Dimension</th><th>Value</th><th>Source</th></tr></thead>
+              <tbody>
+                ${bcInfo ? `<tr>
+                  <td>Observation.Identification.Topic</td>
+                  <td><code>${bcInfo.decode}</code></td>
+                  <td><span class="badge" style="background:var(--cdisc-primary-light);color:var(--cdisc-primary);font-size:9px;">BC: ${bcInfo.bcName}</span></td>
+                </tr>` : `<tr><td colspan="3" style="color:var(--cdisc-text-secondary);">No BC linked — derivation runs on all rows</td></tr>`}
+                ${sourceStore ? `<tr>
+                  <td>Source Store</td>
+                  <td><code>${sourceStore}${sourceDomain ? ':' + sourceDomain : ''}</code></td>
+                  <td>config</td>
+                </tr>` : ''}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Configuration -->
+          <div class="exec-bindings-section">
+            <div class="exec-bindings-title">CONFIGURATION</div>
+            <table class="exec-bindings-table">
+              <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+              <tbody>
+                ${Object.entries(d.configs).filter(([k]) => k !== 'sourceStore' && k !== 'sourceDomain').map(([k, v]) =>
+                  `<tr><td>${k}</td><td><code>${v}</code></td></tr>`
+                ).join('') || '<tr><td colspan="2" style="color:var(--cdisc-text-secondary);">No configuration</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Output cube -->
+          <div class="exec-bindings-section">
+            <div class="exec-bindings-title">OUTPUT CUBE</div>
+            <table class="exec-bindings-table">
+              <thead><tr><th>Concept</th><th>Role</th><th>Type</th></tr></thead>
+              <tbody>
+                ${outputBindings.map(b => `<tr>
+                  <td><code>${(b.concept || '').replace(/@.*/, '')}${b.qualifierValue ? '.' + b.qualifierValue : ''}</code></td>
+                  <td>${b.methodRole || ''}</td>
+                  <td>${b.dataStructureRole || ''}</td>
+                </tr>`).join('') || '<tr><td colspan="3" style="color:var(--cdisc-text-secondary);">No output bindings</td></tr>'}
+              </tbody>
+            </table>
+          </div>
         </div>`;
       }).join('')}
     </div>`;

@@ -1260,6 +1260,13 @@
           "direction": "input",
           "dataStructureRole": "dimension",
           "note": "BC identifier — resolves to --TESTCD in SDTM (e.g., VSTESTCD). The constraint value comes from the endpoint's linked BC specialization."
+        },
+        {
+          "concept": "Parameter",
+          "direction": "output",
+          "dataStructureRole": "dimension",
+          "methodRole": "parameter_label",
+          "note": "Output parameter label — value comes from the endpoint specification (Step 3), not from the source data. Replaces the SDTM Topic identifier with the clinically meaningful endpoint label (e.g., 'Weight (kg)')."
         }
       ],
       "slices": [],

@@ -329,6 +329,55 @@ export function getDerivationBCTopicDecode(endpointSpec, slotKey, parsedStudy) {
 }
 
 /**
+ * Get an arbitrary BC property value by matching property name/label against a regex.
+ * Generalizes getDerivationBCTopicDecode to work with any property (ORRESU, ORRES, etc.).
+ *
+ * @param {Object} endpointSpec - appState.endpointSpecs[epId]
+ * @param {string} slotKey - derivation terminal slot key
+ * @param {Object} parsedStudy - appState.selectedStudy
+ * @param {RegExp|string} attrPattern - regex or string to match against property name/label
+ * @returns {{bcName: string, bcId: string, propName: string, value: string, code: string|null, decode: string|null} | null}
+ */
+export function getDerivationBCAttribute(endpointSpec, slotKey, parsedStudy, attrPattern) {
+  if (!endpointSpec || !parsedStudy) return null;
+
+  let bcId = null;
+  if (slotKey && Array.isArray(endpointSpec.confirmedTerminals)) {
+    const term = endpointSpec.confirmedTerminals.find(t => t.slotKey === slotKey);
+    if (term?.linkedBCIds?.length) bcId = term.linkedBCIds[0];
+  }
+  if (!bcId && endpointSpec.linkedBCIds?.length) bcId = endpointSpec.linkedBCIds[0];
+  if (!bcId) return null;
+
+  const bc = (parsedStudy.biomedicalConcepts || []).find(b => b.id === bcId);
+  if (!bc) return null;
+
+  const pattern = attrPattern instanceof RegExp ? attrPattern : new RegExp(attrPattern, 'i');
+  const prop = (bc.properties || []).find(p =>
+    pattern.test(p.name || '') || pattern.test(p.label || '')
+  );
+  if (!prop) return null;
+
+  const sc = prop.code?.standardCode;
+  return {
+    bcName: bc.label || bc.name || bcId,
+    bcId,
+    propName: prop.label || prop.name,
+    value: sc?.decode || sc?.code || null,
+    code: sc?.code || null,
+    decode: sc?.decode || null
+  };
+}
+
+/**
+ * Get the unit-related BC property (ORRESU/STRESU).
+ * Returns the BC's unit decode and the BC label (used to determine unit dimension).
+ */
+export function getDerivationBCUnit(endpointSpec, slotKey, parsedStudy) {
+  return getDerivationBCAttribute(endpointSpec, slotKey, parsedStudy, /ORRESU|STRESU|UNIT/i);
+}
+
+/**
  * Get the scheduled visits/timepoints where a BC is collected.
  * Searches ALL timelines (main + sub-timelines like VS blood pressure timeline).
  * Returns array of { timeline, timelineName, instance, instanceName }.

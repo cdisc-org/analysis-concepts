@@ -114,14 +114,14 @@ export function rebuildSpec() {
 
 // ===== Step definitions =====
 export const STEPS = [
-  { num: 1, label: 'Select Study', sublabel: 'Choose a study from USDM', icon: '1' },
-  { num: 2, label: 'Study Overview', sublabel: 'Objectives, endpoints & design', icon: '2' },
-  { num: 3, label: 'Endpoint', sublabel: 'Variable of interest', icon: '3' },
-  { num: 4, label: 'Analysis', sublabel: 'Summary measure', icon: '4' },
-  { num: 5, label: 'Summary', sublabel: 'Review all endpoints', icon: '5' },
-  { num: 6, label: 'Derivations', sublabel: 'Dependent derivation pipeline', icon: '6' },
-  { num: 7, label: 'eSAP Builder', sublabel: 'Generate analysis plan', icon: '7' },
-  { num: 8, label: 'Execute', sublabel: 'Run analysis via WebR', icon: '8' }
+  { num: 1, label: 'Select Study', sublabel: 'Choose a study from USDM', icon: '1', layer: 'specification' },
+  { num: 2, label: 'Study Overview', sublabel: 'Objectives, endpoints & design', icon: '2', layer: 'specification' },
+  { num: 3, label: 'Endpoint', sublabel: 'Variable of interest', icon: '3', layer: 'specification' },
+  { num: 4, label: 'Analysis', sublabel: 'Summary measure', icon: '4', layer: 'specification' },
+  { num: 5, label: 'Summary', sublabel: 'Review all endpoints', icon: '5', layer: 'specification' },
+  { num: 6, label: 'Derivations', sublabel: 'Dependent derivation pipeline', icon: '6', layer: 'specification' },
+  { num: 7, label: 'eSAP Builder', sublabel: 'Generate analysis plan', icon: '7', layer: 'specification' },
+  { num: 8, label: 'Execute', sublabel: 'Run analysis via WebR', icon: '8', layer: 'execution' }
 ];
 
 // ===== Router =====

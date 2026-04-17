@@ -98,6 +98,26 @@
   list-style: none;
 }
 
+.sidebar-layer-header {
+  padding: 8px 20px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cdisc-text-secondary);
+  border-top: 1px solid var(--cdisc-border);
+  margin-top: 4px;
+}
+
+.sidebar-layer-header:first-child {
+  border-top: none;
+  margin-top: 0;
+}
+
+.sidebar-layer-header.active {
+  color: var(--cdisc-primary);
+}
+
 .step-item {
   display: flex;
   align-items: flex-start;

@@ -1,5 +1,5 @@
 import { appState, navigateTo, rebuildSpec } from '../app.js';
-import { getAllEndpoints, getDerivationBCTopicDecode } from '../utils/usdm-parser.js';
+import { getAllEndpoints, getDerivationBCTopicDecode, getDerivationBCUnit } from '../utils/usdm-parser.js';
 import {
   buildPipelineGraph, getUnresolvedConcepts
 } from '../utils/transformation-linker.js';
@@ -192,7 +192,7 @@ function renderTerminalBCPicker(slot, activeSpec) {
     const showMnemonic = bc.name && bc.name !== bc.displayName;
     html += `
       <label class="terminal-bc-item">
-        <input type="checkbox" class="terminal-bc-checkbox" data-slot-key="${slot.key}" data-bc-id="${bc.id}" ${checked}>
+        <input type="checkbox" class="terminal-bc-checkbox" data-slot-key="${slot.key}" data-bc-id="${bc.id}" data-concept="${slot.concept || ''}" ${checked}>
         ${bc.displayName || bc.name}
         ${showMnemonic ? `<span style="font-size:10px; color:var(--cdisc-text-secondary); font-family:monospace; margin-left:6px;">${bc.name}</span>` : ''}
         <span style="font-size:10px; color:var(--cdisc-text-secondary); margin-left:auto;">${bc.code || ''}</span>
@@ -358,7 +358,7 @@ function renderDerivationConfigPanel(derivation, slot, activeSpec) {
     loadMethod(appState, methodOid).then(() => {
       const pipelineEl = document.querySelector('.pipeline-3zone');
       if (pipelineEl?.parentElement) renderDerivationPipeline(pipelineEl.parentElement);
-    });
+    }).catch(err => console.error('loadMethod failed:', methodOid, err));
     return `<div class="config-panel-section">
       <div class="config-panel-section-title">Method Configuration</div>
       <p style="font-size:12px; color:var(--cdisc-text-secondary);">Loading ${methodOid}...</p>
@@ -403,20 +403,43 @@ function renderDerivationConfigPanel(derivation, slot, activeSpec) {
     txDefaults[mc.configurationName] = mc.value;
   }
 
-  // Build unit options from unit_conversions vocabulary (for target_unit)
-  const unitOptions = (appState.unitConversions?.units || [])
+  // Build unit options from unit_conversions vocabulary (for target_unit / source_unit)
+  const allUnitOptions = (appState.unitConversions?.units || [])
     .map(u => ({ code: u.code, name: u.name, display: u.display, dimension: u.dimension }));
+
+  // Filter units by BC dimension when a BC is linked
+  const bcUnitInfo = getDerivationBCUnit(activeSpec, slot.key, appState.selectedStudy);
+  let filteredUnitOptions = allUnitOptions;
+  let bcUnitBadge = '';
+  if (bcUnitInfo) {
+    // Match the BC label (e.g., "Weight") against unit vocabulary dimensions
+    // "Weight" → mass, "Height" → length. Use the BC's unit decode which contains the keyword.
+    const bcLabel = (bcUnitInfo.bcName || '').toLowerCase();
+    const unitDecode = (bcUnitInfo.decode || '').toLowerCase();
+    const matchDim = allUnitOptions.find(u => {
+      const dim = u.dimension.toLowerCase();
+      return unitDecode.includes(dim) || bcLabel.includes(dim)
+        || (dim === 'mass' && (bcLabel.includes('weight') || unitDecode.includes('weight')))
+        || (dim === 'length' && (bcLabel.includes('height') || unitDecode.includes('height')));
+    });
+    if (matchDim) {
+      filteredUnitOptions = allUnitOptions.filter(u => u.dimension === matchDim.dimension);
+      bcUnitBadge = `<span style="font-size:10px;color:var(--cdisc-primary);margin-left:6px;">filtered by BC: ${bcUnitInfo.bcName}</span>`;
+    }
+  }
+
+  const UNIT_LIKE_CONFIGS = ['target_unit', 'source_unit'];
 
   const configHtml = configs.map(cfg => {
     const saved = savedValues[cfg.name];
     const txDefault = txDefaults[cfg.name];
     const value = saved != null ? saved : (txDefault != null ? txDefault : cfg.defaultValue);
 
-    if (cfg.name === 'target_unit') {
-      // Group units by dimension
+    if (UNIT_LIKE_CONFIGS.includes(cfg.name)) {
+      const unitOptions = filteredUnitOptions;
       const dims = [...new Set(unitOptions.map(u => u.dimension))];
       return `<div class="config-field">
-        <label class="config-label">${cfg.name.replace(/_/g, ' ')}</label>
+        <label class="config-label">${cfg.name.replace(/_/g, ' ')}${bcUnitBadge}</label>
         <select class="config-select deriv-config-input" data-slot-key="${slot.key}" data-config-key="${cfg.name}">
           <option value="">Select target unit...</option>
           ${dims.map(dim => `
@@ -535,18 +558,36 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
     // SliceKey constraint annotation (e.g., Parameter = Adas-Cog)
     let constraintAnnotation = '';
     if (b.dataStructureRole === 'dimension' && b.methodRole === 'constraint') {
-      // Facet-qualified constraint (e.g., Observation.Identification.Topic) → BC Topic decode
-      if (b.qualifierType === 'facet' && b.qualifierValue) {
-        const bcInfo = getDerivationBCTopicDecode(activeSpec, slot?.key, study);
-        if (bcInfo) {
-          constraintAnnotation = `<div style="font-size:10px; color:var(--cdisc-primary); margin-top:2px;">&larr; BC "${bcInfo.bcName}" topic: "${bcInfo.decode}"</div>`;
+      // Try to resolve BC constraint — scan all terminals for linked BCs
+      const terminals = activeSpec?.confirmedTerminals || [];
+      console.log('[BC constraint] slot:', slot?.key, 'terminals:', terminals.map(t => `${t.slotKey}(bc:${(t.linkedBCIds||[]).join(',')})`));
+      let bcInfo = getDerivationBCTopicDecode(activeSpec, slot?.key, study);
+      console.log('[BC constraint] direct lookup:', bcInfo);
+      if (!bcInfo) {
+        for (const term of terminals) {
+          if (term.linkedBCIds?.length) {
+            bcInfo = getDerivationBCTopicDecode(activeSpec, term.slotKey, study);
+            console.log('[BC constraint] terminal', term.slotKey, '→', bcInfo);
+            if (bcInfo) break;
+          }
         }
+      }
+      if (bcInfo) {
+        constraintAnnotation = `<div style="margin-top:4px;">
+          <span class="badge" style="background:var(--cdisc-primary-light);color:var(--cdisc-primary);font-size:11px;padding:2px 8px;border-radius:10px;">
+            ${bcInfo.decode} &larr; BC: ${bcInfo.bcName}
+          </span>
+        </div>`;
       }
       // Fallback: sliceKey-based resolution (e.g., Parameter = BC name)
       if (!constraintAnnotation) {
         const resolved = resolveSliceKeyValue(b.concept);
         if (resolved) {
-          constraintAnnotation = `<div style="font-size:10px; color:var(--cdisc-primary); margin-top:2px;">&larr; from endpoint: "${resolved}"</div>`;
+          constraintAnnotation = `<div style="margin-top:4px;">
+            <span class="badge" style="background:var(--cdisc-primary-light);color:var(--cdisc-primary);font-size:11px;padding:2px 8px;border-radius:10px;">
+              ${resolved} &larr; endpoint
+            </span>
+          </div>`;
         }
       }
     }
@@ -1078,14 +1119,19 @@ function wireConfigEvents(container, slots, transformation, lib, activeSpec) {
     cb.addEventListener('change', () => {
       const slotKey = cb.dataset.slotKey;
       const bcId = cb.dataset.bcId;
-      const termEntry = (activeSpec.confirmedTerminals || []).find(t => t.slotKey === slotKey);
-      if (termEntry) {
-        if (!termEntry.linkedBCIds) termEntry.linkedBCIds = [];
-        if (cb.checked) {
-          if (!termEntry.linkedBCIds.includes(bcId)) termEntry.linkedBCIds.push(bcId);
-        } else {
-          termEntry.linkedBCIds = termEntry.linkedBCIds.filter(id => id !== bcId);
-        }
+      // Create the terminal entry if it doesn't exist yet — the user is linking
+      // a BC which implicitly confirms this terminal as a source data node.
+      if (!activeSpec.confirmedTerminals) activeSpec.confirmedTerminals = [];
+      let termEntry = activeSpec.confirmedTerminals.find(t => t.slotKey === slotKey);
+      if (!termEntry) {
+        termEntry = { slotKey, concept: cb.dataset.concept || '', roleLabel: '' };
+        activeSpec.confirmedTerminals.push(termEntry);
+      }
+      if (!termEntry.linkedBCIds) termEntry.linkedBCIds = [];
+      if (cb.checked) {
+        if (!termEntry.linkedBCIds.includes(bcId)) termEntry.linkedBCIds.push(bcId);
+      } else {
+        termEntry.linkedBCIds = termEntry.linkedBCIds.filter(id => id !== bcId);
       }
     });
   });

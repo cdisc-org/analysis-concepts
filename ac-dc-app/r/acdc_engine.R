@@ -544,9 +544,32 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
   cat("  Detected store:", source_store, "(", detected$match_count, "column matches)\n")
   dataset <- ingest_to_concepts(dataset, source_mappings, domain_code)
 
-  # 2. Resolve bindings to concept keys (concept keys ARE column names now)
-  concept_vars <- build_concept_var_map(analysis$resolvedBindings, source_mappings, overrides)
   cat("  Post-ingest columns:", paste(colnames(dataset), collapse = ", "), "\n")
+
+  # 2. Apply derivation chain FIRST (each derivation has its own concept-level
+  #    input cube via constraintValues). Derivations transform the full dataset
+  #    before the analysis cube filters it.
+  if (!is.null(derivations) && length(derivations) > 0) {
+    cat("  Applying", length(derivations), "derivation(s) before analysis cube...\n")
+    dataset <- tryCatch(
+      apply_derivations(dataset, derivations, r_impls, unit_conversions),
+      error = function(e) stop(paste0("[Step 2 apply_derivations] ", e$message,
+        "\n  Columns before: ", paste(colnames(dataset), collapse=", ")))
+    )
+    cat("  Post-derivation:", nrow(dataset), "rows x", ncol(dataset), "cols\n")
+  }
+
+  # 3. Enrich missing dimensions from other loaded datasets (e.g., Treatment from DM)
+  if (!is.null(available_datasets) && length(available_datasets) > 0) {
+    primary_name <- tolower(spec$targetDataset %||% "")
+    dataset <- enrich_dimensions(
+      dataset, analysis$resolvedBindings, all_mappings,
+      available_datasets, primary_name
+    )
+  }
+
+  # 4. Resolve analysis bindings to concept keys
+  concept_vars <- build_concept_var_map(analysis$resolvedBindings, source_mappings, overrides)
   cat("  Concept → Column:\n")
   for (nm in names(concept_vars$by_concept)) {
     cat("    ", nm, "→", concept_vars$by_concept[[nm]], "\n")
@@ -556,62 +579,42 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
     cat("    ", nm, "→", paste(concept_vars$by_role[[nm]], collapse = ", "), "\n")
   }
 
-  # 3. Execute cube: query each slice, join by common dimensions
+  # 5. Execute analysis cube: query each slice, join by common dimensions
   analysis_data <- tryCatch(
     execute_cube(dataset, analysis$resolvedBindings, analysis$resolvedSlices,
                  concept_vars, overrides),
-    error = function(e) stop(paste0("[Step 3 execute_cube] ", e$message,
+    error = function(e) stop(paste0("[Step 5 execute_cube] ", e$message,
       "\n  Columns: ", paste(colnames(dataset), collapse=", ")))
   )
   cat("  Analysis data:", nrow(analysis_data), "rows x", ncol(analysis_data), "cols\n")
 
-  # 4. Coerce column types based on dataStructureRole (measure → numeric, dimension → factor)
+  # 6. Coerce column types based on dataStructureRole (measure → numeric, dimension → factor)
   analysis_data <- tryCatch(
     coerce_types(analysis_data, analysis$resolvedBindings, concept_vars$by_concept),
-    error = function(e) stop(paste0("[Step 4 coerce_types] ", e$message,
+    error = function(e) stop(paste0("[Step 6 coerce_types] ", e$message,
       "\n  Columns: ", paste(colnames(analysis_data), collapse=", "),
       "\n  by_concept keys: ", paste(names(concept_vars$by_concept), collapse=", ")))
   )
 
-  # 5. Apply derivation chain (if any) — concept-keyed, no store resolution
-  if (!is.null(derivations) && length(derivations) > 0) {
-    cat("  Applying", length(derivations), "derivation(s)...\n")
-    analysis_data <- tryCatch(
-      apply_derivations(analysis_data, derivations, r_impls, unit_conversions),
-      error = function(e) stop(paste0("[Step 5 apply_derivations] ", e$message,
-        "\n  Columns before: ", paste(colnames(analysis_data), collapse=", ")))
-    )
-    cat("  Post-derivation:", nrow(analysis_data), "rows x", ncol(analysis_data), "cols\n")
-  }
-
-  # 5b. Enrich missing dimensions from other loaded datasets
-  if (!is.null(available_datasets) && length(available_datasets) > 0) {
-    primary_name <- tolower(spec$targetDataset %||% "")
-    analysis_data <- enrich_dimensions(
-      analysis_data, analysis$resolvedBindings, all_mappings,
-      available_datasets, primary_name
-    )
-  }
-
-  # 6. Parse method configurations (defaults from method_def, overridden by user values)
+  # 7. Parse method configurations (defaults from method_def, overridden by user values)
   configs <- parse_configs(analysis$configurationValues, method_def)
 
-  # 7. Pre-process callTemplate for output dimension selection
+  # 8. Pre-process callTemplate for output dimension selection
   narrowed_impl <- r_impl
   narrowed_impl$callTemplate <- narrow_template_for_output_config(
     r_impl$callTemplate, analysis$outputConfiguration, concept_vars
   )
 
-  # 8. Execute method using r_implementations.json metadata
+  # 9. Execute method using r_implementations.json metadata
   result <- tryCatch(
     execute_method(analysis_data, concept_vars$by_role, configs, narrowed_impl),
-    error = function(e) stop(paste0("[Step 8 execute_method] ", e$message,
+    error = function(e) stop(paste0("[Step 9 execute_method] ", e$message,
       "\n  Columns: ", paste(colnames(analysis_data), collapse=", "),
       "\n  Roles: ", paste(names(concept_vars$by_role), "→",
         sapply(concept_vars$by_role, paste, collapse="+"), collapse=", ")))
   )
 
-  # 9. Build resolved R code from what was actually executed
+  # 10. Build resolved R code from what was actually executed
   result$resolved_code <- build_resolved_code(
     narrowed_impl, concept_vars, configs,
     analysis$resolvedSlices, analysis$resolvedBindings
@@ -718,14 +721,34 @@ apply_derivations <- function(dataset, derivations, r_impls, unit_conversions) {
       stop(paste0("No R implementation found for '", method_oid, "'. Available: [", avail, "]"))
     }
 
-    # Apply derivation-specific constraints from JS (BC Topic decode)
+    # Apply derivation-specific constraints from JS (BC-derived)
+    # Uses tolerant matching: exact → case-insensitive → partial (startsWith)
     if (!is.null(deriv$constraintValues) && length(deriv$constraintValues) > 0) {
       for (cv in deriv$constraintValues) {
         col <- cv$dimension
         val <- cv$value
         if (!is.null(col) && !is.null(val) && col %in% colnames(dataset)) {
           pre_n <- nrow(dataset)
-          dataset <- dataset[dataset[[col]] == val, , drop = FALSE]
+          filtered <- dataset[dataset[[col]] == val, , drop = FALSE]
+          if (nrow(filtered) > 0) {
+            dataset <- filtered
+          } else {
+            # Case-insensitive fallback
+            filtered <- dataset[tolower(dataset[[col]]) == tolower(val), , drop = FALSE]
+            if (nrow(filtered) > 0) {
+              dataset <- filtered
+              cat("    Constraint:", col, "~=", val, "(case-insensitive)")
+            } else {
+              # Partial match: "Weight" matches "Weight (kg)" etc.
+              lv <- tolower(val)
+              lc <- tolower(dataset[[col]])
+              filtered <- dataset[startsWith(lc, lv) | startsWith(lv, lc), , drop = FALSE]
+              if (nrow(filtered) > 0) {
+                dataset <- filtered
+                cat("    Constraint:", col, "~", val, "(partial)")
+              }
+            }
+          }
           cat("    Constraint:", col, "==", val, "→", nrow(dataset), "of", pre_n, "rows\n")
         }
       }
@@ -868,12 +891,30 @@ filter_by_constraints <- function(dataset, constraints, overrides = NULL) {
     }
 
     if (col_name %in% colnames(dataset)) {
+      # Try exact match first
       filtered <- dataset[dataset[[col_name]] == value, , drop = FALSE]
       if (nrow(filtered) > 0) {
         cat("    Filter:", col_name, "==", value, "→", nrow(filtered), "rows\n")
         dataset <- filtered
       } else {
-        cat("    Warning:", col_name, '== "', value, '" matched 0 rows — skipping constraint\n')
+        # Fallback: case-insensitive match (handles SDTM/ADaM casing differences)
+        filtered <- dataset[tolower(dataset[[col_name]]) == tolower(value), , drop = FALSE]
+        if (nrow(filtered) > 0) {
+          cat("    Filter:", col_name, "~=", value, "(case-insensitive) →", nrow(filtered), "rows\n")
+          dataset <- filtered
+        } else {
+          # Fallback: partial match — value starts with constraint or vice versa
+          # Handles "Weight" matching "Weight (kg)" across SDTM/ADaM boundaries
+          lower_val <- tolower(value)
+          col_lower <- tolower(dataset[[col_name]])
+          filtered <- dataset[startsWith(col_lower, lower_val) | startsWith(lower_val, col_lower), , drop = FALSE]
+          if (nrow(filtered) > 0) {
+            cat("    Filter:", col_name, "~", value, "(partial match) →", nrow(filtered), "rows\n")
+            dataset <- filtered
+          } else {
+            cat("    Warning:", col_name, '== "', value, '" matched 0 rows — skipping constraint\n')
+          }
+        }
       }
     } else {
       cat("    Warning: column", col_name, "not found for constraint", dim_name, "\n")
