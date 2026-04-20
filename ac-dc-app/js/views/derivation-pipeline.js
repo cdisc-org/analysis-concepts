@@ -138,7 +138,7 @@ function renderTerminalBCPicker(slot, activeSpec) {
 
   const study = appState.selectedStudy;
   const mapping = appState.bcOcInstanceMapping;
-  if (!study || !mapping) return '';
+  if (!study) return '';
 
   const studyVersion = study.versions?.[0] || study;
   const studyBCs = studyVersion.biomedicalConcepts || [];
@@ -149,22 +149,38 @@ function renderTerminalBCPicker(slot, activeSpec) {
   // Quantity-typed BCs; others accept any Result.Value type.
   const isNumericConcept = isNumericOutputConcept(slot.concept, appState.dcModel);
   const compatibleBCs = [];
+  const matchedStudyBCIds = new Set();
 
-  for (const bcMapping of mapping.bcMappings || []) {
-    const hasCompatibleValue = bcMapping.propertyMappings.some(p =>
-      p.ocFacet === 'Result.Value' && (isNumericConcept ? p.ocValueType === 'Quantity' : true)
-    );
-    if (hasCompatibleValue) {
-      const studyBC = studyBCs.find(bc => bc.id === bcMapping.bcId || bc.name === bcMapping.bcName);
-      if (studyBC) {
-        compatibleBCs.push({
-          id: studyBC.id,
-          name: studyBC.name,
-          displayName: studyBC.label || studyBC.name,
-          code: bcMapping.bcCode
-        });
+  if (mapping) {
+    for (const bcMapping of mapping.bcMappings || []) {
+      const hasCompatibleValue = bcMapping.propertyMappings.some(p =>
+        p.ocFacet === 'Result.Value' && (isNumericConcept ? p.ocValueType === 'Quantity' : true)
+      );
+      if (hasCompatibleValue) {
+        const studyBC = studyBCs.find(bc => bc.id === bcMapping.bcId || bc.name === bcMapping.bcName);
+        if (studyBC) {
+          matchedStudyBCIds.add(studyBC.id);
+          compatibleBCs.push({
+            id: studyBC.id,
+            name: studyBC.name,
+            displayName: studyBC.label || studyBC.name,
+            code: bcMapping.bcCode
+          });
+        }
       }
     }
+  }
+
+  // Include study BCs that weren't matched by the external mapping —
+  // the study may define BCs at a different granularity or with different IDs
+  for (const bc of studyBCs) {
+    if (matchedStudyBCIds.has(bc.id)) continue;
+    compatibleBCs.push({
+      id: bc.id,
+      name: bc.name,
+      displayName: bc.label || bc.name,
+      code: ''
+    });
   }
 
   if (compatibleBCs.length === 0) return '';
@@ -521,13 +537,31 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
     const concept = displayConcept(normalizeConcept(b));
     const typeBadge = `<span class="badge ${b.dataStructureRole === 'dimension' ? 'badge-teal' : 'badge-blue'}">${b.dataStructureRole || 'measure'}</span>`;
 
-    // Slice annotation
+    // Slice annotation + optional editor
     let sliceAnnotation = '';
     if (b.slice && sliceLookup[b.slice]) {
       const sliceDef = sliceLookup[b.slice];
       const dims = sliceDef.fixedDimensions || sliceDef;
-      const dimStr = Object.entries(dims).map(([k, v]) => `${k} = ${v}`).join(', ');
-      sliceAnnotation = `<div style="font-size:10px; color:var(--cdisc-accent2); margin-top:2px;">slice: ${b.slice} &rarr; ${dimStr}</div>`;
+      if (isEditable) {
+        // Editable slice constraints at study level
+        const overrides = activeSpec?.derivationSliceOverrides?.[slot?.key]?.[b.slice] || {};
+        sliceAnnotation = `
+          <div style="margin-top:4px; padding:6px 8px; background:rgba(161,208,202,0.08); border-radius:4px;">
+            <div style="font-size:10px; font-weight:600; color:var(--cdisc-accent2); margin-bottom:4px;">Slice: ${b.slice}</div>
+            ${Object.entries(dims).map(([dim, defaultVal]) => {
+              const currentVal = overrides[dim] ?? defaultVal;
+              return `<div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <span style="font-size:10px; min-width:80px; color:var(--cdisc-text-secondary);">${dim}</span>
+                <input class="deriv-slice-override" data-slot-key="${slot?.key || ''}" data-slice="${b.slice}" data-dim="${dim}"
+                  value="${currentVal}" placeholder="${defaultVal}"
+                  style="font-size:11px; padding:2px 6px; flex:1; border:1px solid var(--cdisc-border); border-radius:3px;">
+              </div>`;
+            }).join('')}
+          </div>`;
+      } else {
+        const dimStr = Object.entries(dims).map(([k, v]) => `${k} = ${v}`).join(', ');
+        sliceAnnotation = `<div style="font-size:10px; color:var(--cdisc-accent2); margin-top:2px;">slice: ${b.slice} &rarr; ${dimStr}</div>`;
+      }
     }
 
     // SliceKey constraint annotation (e.g., Parameter = Adas-Cog)
@@ -623,9 +657,26 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
   const ref = getReferenceInfo(slot.key, activeSpec);
   if (ref) {
     const sliceLookup = getSliceLookup(transformation);
-    const sliceInfo = slot.slice && sliceLookup[slot.slice]
-      ? (() => { const dims = sliceLookup[slot.slice].fixedDimensions || sliceLookup[slot.slice]; return Object.entries(dims).map(([k, v]) => `${k} = ${v}`).join(', '); })()
-      : '';
+    // Editable slice constraints for reference nodes
+    let sliceEditor = '';
+    if (slot.slice && sliceLookup[slot.slice]) {
+      const sliceDef = sliceLookup[slot.slice];
+      const dims = sliceDef.fixedDimensions || sliceDef;
+      const overrides = activeSpec?.derivationSliceOverrides?.[slot.key]?.[slot.slice] || {};
+      sliceEditor = `
+        <div style="margin-top:8px; padding:6px 8px; background:rgba(161,208,202,0.08); border-radius:4px;">
+          <div style="font-size:10px; font-weight:600; color:var(--cdisc-accent2); margin-bottom:4px;">Slice: ${slot.slice}</div>
+          ${Object.entries(dims).map(([dim, defaultVal]) => {
+            const currentVal = overrides[dim] ?? defaultVal;
+            return `<div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+              <span style="font-size:10px; min-width:80px; color:var(--cdisc-text-secondary);">${dim}</span>
+              <input class="deriv-slice-override" data-slot-key="${slot.key}" data-slice="${slot.slice}" data-dim="${dim}"
+                value="${currentVal}" placeholder="${defaultVal}"
+                style="font-size:11px; padding:2px 6px; flex:1; border:1px solid var(--cdisc-border); border-radius:3px;">
+            </div>`;
+          }).join('')}
+        </div>`;
+    }
     return `
       <div class="card" style="border-color:var(--cdisc-primary);">
         <div style="display:flex; align-items:center; gap:12px;">
@@ -635,13 +686,13 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
             <div style="font-size:12px; color:var(--cdisc-text-secondary); margin-top:2px;">
               Uses output of <strong>${ref.referenceLabel}</strong>
             </div>
-            ${slot.slice ? `<div style="font-size:11px; color:var(--cdisc-accent2); margin-top:4px;">slice: ${slot.slice}${sliceInfo ? ' &rarr; ' + sliceInfo : ''}</div>` : ''}
           </div>
           <button class="btn btn-sm pipeline-remove-ref-btn" data-slot-key="${slot.key}"
             style="color:var(--cdisc-error); border-color:var(--cdisc-error); font-size:11px;">
             Remove
           </button>
         </div>
+        ${sliceEditor}
       </div>`;
   }
 
@@ -1111,6 +1162,21 @@ function wireConfigEvents(container, slots, transformation, lib, activeSpec) {
     });
   });
 
+  // Slice constraint overrides at study level
+  container.querySelectorAll('.deriv-slice-override').forEach(input => {
+    input.addEventListener('change', () => {
+      const slotKey = input.dataset.slotKey;
+      const sliceName = input.dataset.slice;
+      const dim = input.dataset.dim;
+      const value = input.value.trim();
+      if (!slotKey || !sliceName || !dim) return;
+      if (!activeSpec.derivationSliceOverrides) activeSpec.derivationSliceOverrides = {};
+      if (!activeSpec.derivationSliceOverrides[slotKey]) activeSpec.derivationSliceOverrides[slotKey] = {};
+      if (!activeSpec.derivationSliceOverrides[slotKey][sliceName]) activeSpec.derivationSliceOverrides[slotKey][sliceName] = {};
+      activeSpec.derivationSliceOverrides[slotKey][sliceName][dim] = value;
+    });
+  });
+
   // Derivation method config inputs (target_unit, precision, etc.)
   container.querySelectorAll('.deriv-config-input').forEach(el => {
     const eventType = el.tagName === 'SELECT' ? 'change' : 'change';
@@ -1218,11 +1284,12 @@ function wireLibraryEvents(container, slots, transformation, lib, activeSpec) {
  * Build pipeline graph and auto-select single candidates. Returns final slots.
  */
 function buildAndAutoSelect(transformation, lib, activeSpec) {
-  let slots = buildPipelineGraph(transformation, lib, activeSpec.selectedDerivations);
+  const confirmedKeys = new Set((activeSpec.confirmedTerminals || []).map(t => t.slotKey));
+  let slots = buildPipelineGraph(transformation, lib, activeSpec.selectedDerivations, confirmedKeys);
   // Iteratively auto-select single-candidate slots
   let maxIterations = 20;
   while (autoSelectSingleCandidates(slots, activeSpec) && maxIterations-- > 0) {
-    slots = buildPipelineGraph(transformation, lib, activeSpec.selectedDerivations);
+    slots = buildPipelineGraph(transformation, lib, activeSpec.selectedDerivations, confirmedKeys);
   }
   return slots;
 }

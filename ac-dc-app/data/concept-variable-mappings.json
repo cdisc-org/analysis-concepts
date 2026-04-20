@@ -1,5 +1,101 @@
 {
   "sdtm": {
+    "_meta": {
+      "standard": "SDTM",
+      "modelVersion": "v2.0",
+      "igVersion": "v3.4",
+      "sources": ["SDTM_v2.0.csv", "SDTMIG_v3.4.csv"]
+    },
+    "classVariables": {
+      "GeneralObservations": {
+        "identifiers": [
+          { "name": "STUDYID", "label": "Study Identifier", "type": "Char", "role": "Identifier" },
+          { "name": "DOMAIN", "label": "Domain Abbreviation", "type": "Char", "role": "Identifier" },
+          { "name": "USUBJID", "label": "Unique Subject Identifier", "type": "Char", "role": "Identifier" },
+          { "name": "--SEQ", "label": "Sequence Number", "type": "Num", "role": "Identifier" },
+          { "name": "--GRPID", "label": "Group ID", "type": "Char", "role": "Identifier" },
+          { "name": "--REFID", "label": "Reference ID", "type": "Char", "role": "Identifier" },
+          { "name": "--SPID", "label": "Sponsor-Defined Identifier", "type": "Char", "role": "Identifier" },
+          { "name": "--LNKID", "label": "Link ID", "type": "Char", "role": "Identifier" }
+        ],
+        "timing": [
+          { "name": "VISITNUM", "label": "Visit Number", "type": "Num", "role": "Timing" },
+          { "name": "VISIT", "label": "Visit Name", "type": "Char", "role": "Timing" },
+          { "name": "VISITDY", "label": "Planned Study Day of Visit", "type": "Num", "role": "Timing" },
+          { "name": "EPOCH", "label": "Epoch", "type": "Char", "role": "Timing" },
+          { "name": "--DTC", "label": "Date/Time of Collection", "type": "Char", "role": "Timing" },
+          { "name": "--STDTC", "label": "Start Date/Time of Observation", "type": "Char", "role": "Timing" },
+          { "name": "--ENDTC", "label": "End Date/Time of Observation", "type": "Char", "role": "Timing" },
+          { "name": "--DY", "label": "Study Day of Visit/Collection/Exam", "type": "Num", "role": "Timing" }
+        ]
+      },
+      "Findings": {
+        "topic": [
+          { "name": "--TESTCD", "label": "Short Name of Measurement, Test, or Exam", "type": "Char", "role": "Topic" },
+          { "name": "--TEST", "label": "Name of Measurement, Test, or Exam", "type": "Char", "role": "Synonym Qualifier" }
+        ],
+        "qualifiers": [
+          { "name": "--CAT", "label": "Category", "type": "Char", "role": "Grouping Qualifier" },
+          { "name": "--SCAT", "label": "Subcategory", "type": "Char", "role": "Grouping Qualifier" },
+          { "name": "--POS", "label": "Position of Subject", "type": "Char", "role": "Record Qualifier" },
+          { "name": "--LOC", "label": "Location", "type": "Char", "role": "Record Qualifier" },
+          { "name": "--LAT", "label": "Laterality", "type": "Char", "role": "Variable Qualifier" },
+          { "name": "--METHOD", "label": "Method", "type": "Char", "role": "Record Qualifier" },
+          { "name": "--SPEC", "label": "Specimen Type", "type": "Char", "role": "Record Qualifier" },
+          { "name": "--STAT", "label": "Completion Status", "type": "Char", "role": "Record Qualifier" }
+        ],
+        "results": [
+          { "name": "--ORRES", "label": "Result or Finding in Original Units", "type": "Char", "role": "Result Qualifier" },
+          { "name": "--ORRESU", "label": "Original Units", "type": "Char", "role": "Variable Qualifier" },
+          { "name": "--ORNRLO", "label": "Normal Range Lower Limit-Original Units", "type": "Char", "role": "Variable Qualifier" },
+          { "name": "--ORNRHI", "label": "Normal Range Upper Limit-Original Units", "type": "Char", "role": "Variable Qualifier" },
+          { "name": "--STRESC", "label": "Result or Finding in Std Format", "type": "Char", "role": "Result Qualifier" },
+          { "name": "--STRESN", "label": "Numeric Result/Finding in Std Units", "type": "Num", "role": "Result Qualifier" },
+          { "name": "--STRESU", "label": "Standard Units", "type": "Char", "role": "Variable Qualifier" },
+          { "name": "--STNRLO", "label": "Normal Range Lower Limit-Std Units", "type": "Num", "role": "Variable Qualifier" },
+          { "name": "--STNRHI", "label": "Normal Range Upper Limit-Std Units", "type": "Num", "role": "Variable Qualifier" },
+          { "name": "--NRIND", "label": "Normal/Abnormal/Reference Range Indicator", "type": "Char", "role": "Variable Qualifier" }
+        ]
+      },
+      "Events": {
+        "topic": [
+          { "name": "--TERM", "label": "Reported Term", "type": "Char", "role": "Topic" },
+          { "name": "--MODIFY", "label": "Modified Reported Term", "type": "Char", "role": "Synonym Qualifier" },
+          { "name": "--DECOD", "label": "Dictionary-Derived Term", "type": "Char", "role": "Synonym Qualifier" }
+        ],
+        "qualifiers": [
+          { "name": "--BODSYS", "label": "Body System or Organ Class", "type": "Char", "role": "Record Qualifier" },
+          { "name": "--SEV", "label": "Severity/Intensity", "type": "Char", "role": "Record Qualifier" },
+          { "name": "--SER", "label": "Serious Event", "type": "Char", "role": "Record Qualifier" },
+          { "name": "--ACN", "label": "Action Taken with Study Treatment", "type": "Char", "role": "Record Qualifier" },
+          { "name": "--REL", "label": "Causality", "type": "Char", "role": "Record Qualifier" },
+          { "name": "--OUT", "label": "Outcome of Adverse Event", "type": "Char", "role": "Record Qualifier" },
+          { "name": "--CAT", "label": "Category", "type": "Char", "role": "Grouping Qualifier" },
+          { "name": "--SCAT", "label": "Subcategory", "type": "Char", "role": "Grouping Qualifier" },
+          { "name": "--LOC", "label": "Location of Event", "type": "Char", "role": "Record Qualifier" },
+          { "name": "--LAT", "label": "Laterality", "type": "Char", "role": "Variable Qualifier" }
+        ]
+      },
+      "Interventions": {
+        "topic": [
+          { "name": "--TRT", "label": "Name of Treatment", "type": "Char", "role": "Topic" },
+          { "name": "--MODIFY", "label": "Modified Treatment Name", "type": "Char", "role": "Synonym Qualifier" },
+          { "name": "--DECOD", "label": "Standardized Treatment Name", "type": "Char", "role": "Synonym Qualifier" }
+        ],
+        "qualifiers": [
+          { "name": "--CAT", "label": "Category", "type": "Char", "role": "Grouping Qualifier" },
+          { "name": "--SCAT", "label": "Subcategory", "type": "Char", "role": "Grouping Qualifier" },
+          { "name": "--DOSE", "label": "Dose", "type": "Num", "role": "Record Qualifier" },
+          { "name": "--DOSU", "label": "Dose Units", "type": "Char", "role": "Variable Qualifier" },
+          { "name": "--DOSFRM", "label": "Dose Form", "type": "Char", "role": "Variable Qualifier" },
+          { "name": "--DOSFRQ", "label": "Dosing Frequency", "type": "Char", "role": "Record Qualifier" },
+          { "name": "--ROUTE", "label": "Route of Administration", "type": "Char", "role": "Record Qualifier" },
+          { "name": "--INDC", "label": "Indication", "type": "Char", "role": "Record Qualifier" },
+          { "name": "--CLAS", "label": "Class", "type": "Char", "role": "Variable Qualifier" },
+          { "name": "--LOC", "label": "Location of Administration", "type": "Char", "role": "Record Qualifier" }
+        ]
+      }
+    },
     "concepts": {
       "Observation": {
         "variable": "--ORRES",
@@ -14,7 +110,7 @@
           "code": "--ORRESU",
           "string": "--ORRES"
         },
-        "notes": "SDTM raw observation. --ORRES is the original result as collected (may have mixed units across rows); --ORRESU the original unit. Used as INPUT by T.UnitConversion. The -- prefix is a placeholder substituted with the domain code (VS/LB/EG/etc.) from the BC's dataset specialization at resolution time (matching the xxxFL pattern in adam.concepts.Flag)."
+        "notes": "SDTM raw observation (Findings class). --ORRES is the original result as collected (may have mixed units across rows); --ORRESU the original unit. Used as INPUT by T.UnitConversion. The -- prefix is a placeholder substituted with the domain code (VS/LB/EG/etc.)."
       },
       "Measure": {
         "variable": "--STRESN/--STRESC",
@@ -27,7 +123,49 @@
           "code": "--STRESC",
           "string": "--STRESC"
         },
-        "notes": "SDTM standardized result. --STRESN holds the unit-converted numeric value; --STRESU the standardized unit code. These are the natural OUTPUT destinations for T.UnitConversion and any other derivation that populates SDTM standardized variables. When the same derived Measure is also presented in an ADaM view, the adam.concepts.Measure facets map it to AVAL/AVALU."
+        "notes": "SDTM standardized result (Findings class). --STRESN holds the unit-converted numeric value; --STRESU the standardized unit code. Natural OUTPUT for T.UnitConversion."
+      },
+      "EventTerm": {
+        "variable": "--TERM/--DECOD",
+        "facets": {
+          "Identification.Topic": "--TERM",
+          "Coding.PreferredTerm": "--DECOD",
+          "Coding.BodySystem": "--BODSYS",
+          "Coding.HighLevelTerm": "--HLT",
+          "Coding.HighLevelGroupTerm": "--HLGT",
+          "Coding.LowLevelTerm": "--LLT",
+          "Severity": "--SEV",
+          "Seriousness": "--SER",
+          "ActionTaken": "--ACN",
+          "Causality": "--REL",
+          "Outcome": "--OUT"
+        },
+        "byDataType": {
+          "string": "--TERM",
+          "code": "--DECOD"
+        },
+        "notes": "SDTM event observation (Events class). --TERM is the reported/verbatim term (Topic); --DECOD is the dictionary-derived preferred term. MedDRA hierarchy facets provide multi-level coding. The -- prefix is substituted with domain code (AE/MH/CE/etc.)."
+      },
+      "Intervention": {
+        "variable": "--TRT/--DECOD",
+        "facets": {
+          "Identification.Topic": "--TRT",
+          "Coding.StandardizedName": "--DECOD",
+          "Coding.Class": "--CLAS",
+          "Coding.ClassCode": "--CLASCD",
+          "Dosing.Dose": "--DOSE",
+          "Dosing.Unit": "--DOSU",
+          "Dosing.Form": "--DOSFRM",
+          "Dosing.Frequency": "--DOSFRQ",
+          "Dosing.Route": "--ROUTE",
+          "Indication": "--INDC"
+        },
+        "byDataType": {
+          "string": "--TRT",
+          "code": "--DECOD",
+          "decimal": "--DOSE"
+        },
+        "notes": "SDTM intervention record (Interventions class). --TRT is the reported treatment name (Topic); --DECOD is the standardized/coded name. The -- prefix is substituted with domain code (CM/EX/EC/SU/etc.)."
       }
     },
     "dimensions": {
@@ -91,10 +229,181 @@
           "Actual": { "code": "ACTARMCD", "string": "ACTARM" }
         },
         "notes": "Treatment arm from DM domain. Not domain-prefixed. IntentType qualifier selects Planned (ARM) vs Actual (ACTARM)."
+      },
+      "Category": {
+        "variable": "--CAT/--SCAT",
+        "byDataType": {
+          "code": "--CAT",
+          "string": "--CAT"
+        },
+        "notes": "Category grouping variable. --CAT is the primary category. Present in Events, Findings, and Interventions classes. Domain-prefixed."
+      },
+      "Subcategory": {
+        "variable": "--SCAT",
+        "byDataType": {
+          "code": "--SCAT",
+          "string": "--SCAT"
+        },
+        "notes": "Subcategory within --CAT. Present in Events, Findings, and Interventions classes. Domain-prefixed."
+      },
+      "Epoch": {
+        "variable": "EPOCH",
+        "byDataType": {
+          "code": "EPOCH",
+          "string": "EPOCH"
+        },
+        "notes": "Trial epoch (e.g., SCREENING, TREATMENT, FOLLOW-UP). A Timing variable from General Observations, not domain-prefixed."
+      },
+      "Location": {
+        "variable": "--LOC",
+        "byDataType": {
+          "string": "--LOC",
+          "code": "--LOC"
+        },
+        "notes": "Anatomical location of finding/event/intervention. Domain-prefixed."
+      },
+      "Laterality": {
+        "variable": "--LAT",
+        "byDataType": {
+          "code": "--LAT",
+          "string": "--LAT"
+        },
+        "notes": "Laterality qualifier for anatomical location (RIGHT, LEFT, BILATERAL). Domain-prefixed."
+      },
+      "Specimen": {
+        "variable": "--SPEC",
+        "byDataType": {
+          "code": "--SPEC",
+          "string": "--SPEC"
+        },
+        "notes": "Specimen type for laboratory/findings observations. Domain-prefixed (e.g., LBSPEC)."
+      },
+      "Method": {
+        "variable": "--METHOD",
+        "byDataType": {
+          "code": "--METHOD",
+          "string": "--METHOD"
+        },
+        "notes": "Method of test or examination. Domain-prefixed (e.g., VSMETHOD, EGMETHOD)."
+      },
+      "Position": {
+        "variable": "--POS",
+        "byDataType": {
+          "code": "--POS",
+          "string": "--POS"
+        },
+        "notes": "Position of subject during observation (e.g., STANDING, SITTING, SUPINE). Domain-prefixed."
       }
     }
   },
   "adam": {
+    "_meta": {
+      "standard": "ADaM",
+      "igVersion": "v1.3",
+      "occdsVersion": "v1.1",
+      "sources": ["ADaMIG_v1.3.csv", "ADaM_OCCDS_v1.1.csv"]
+    },
+    "standardVariables": {
+      "SubjectLevel": {
+        "identifiers": [
+          { "name": "STUDYID", "label": "Study Identifier", "type": "Char", "core": "Req" },
+          { "name": "USUBJID", "label": "Unique Subject Identifier", "type": "Char", "core": "Req" },
+          { "name": "SUBJID", "label": "Subject Identifier for the Study", "type": "Char", "core": "Req" },
+          { "name": "SITEID", "label": "Study Site Identifier", "type": "Char", "core": "Req" },
+          { "name": "SITEGRy", "label": "Pooled Site Group y", "type": "Char", "core": "Perm" },
+          { "name": "REGIONy", "label": "Geographic Region y", "type": "Char", "core": "Perm" }
+        ],
+        "demographics": [
+          { "name": "AGE", "label": "Age", "type": "Num", "core": "Req" },
+          { "name": "AGEU", "label": "Age Units", "type": "Char", "core": "Req" },
+          { "name": "AGEGRy", "label": "Pooled Age Group y", "type": "Char", "core": "Perm" },
+          { "name": "AAGE", "label": "Analysis Age", "type": "Num", "core": "Cond" },
+          { "name": "SEX", "label": "Sex", "type": "Char", "core": "Req" },
+          { "name": "RACE", "label": "Race", "type": "Char", "core": "Req" },
+          { "name": "RACEGRy", "label": "Pooled Race Group y", "type": "Char", "core": "Perm" },
+          { "name": "ETHNIC", "label": "Ethnicity", "type": "Char", "core": "Perm" }
+        ],
+        "populationFlags": [
+          { "name": "FASFL", "label": "Full Analysis Set Population Flag", "type": "Char", "core": "Cond", "values": "Y;N" },
+          { "name": "SAFFL", "label": "Safety Population Flag", "type": "Char", "core": "Cond", "values": "Y;N" },
+          { "name": "ITTFL", "label": "Intent-To-Treat Population Flag", "type": "Char", "core": "Cond", "values": "Y;N" },
+          { "name": "PPROTFL", "label": "Per-Protocol Population Flag", "type": "Char", "core": "Cond", "values": "Y;N" },
+          { "name": "COMPLFL", "label": "Completers Population Flag", "type": "Char", "core": "Cond", "values": "Y;N" },
+          { "name": "RANDFL", "label": "Randomized Population Flag", "type": "Char", "core": "Cond", "values": "Y;N" },
+          { "name": "ENRLFL", "label": "Enrolled Population Flag", "type": "Char", "core": "Cond", "values": "Y;N" }
+        ],
+        "treatment": [
+          { "name": "ARM", "label": "Description of Planned Arm", "type": "Char", "core": "Req" },
+          { "name": "ACTARM", "label": "Description of Actual Arm", "type": "Char", "core": "Perm" },
+          { "name": "TRTxxP", "label": "Planned Treatment for Period xx", "type": "Char", "core": "Req" },
+          { "name": "TRTxxPN", "label": "Planned Treatment for Period xx (N)", "type": "Num", "core": "Perm" },
+          { "name": "TRTxxA", "label": "Actual Treatment for Period xx", "type": "Char", "core": "Cond" },
+          { "name": "TRTxxAN", "label": "Actual Treatment for Period xx (N)", "type": "Num", "core": "Perm" }
+        ]
+      },
+      "BasicDataStructure": {
+        "parameter": [
+          { "name": "PARAMCD", "label": "Parameter Code", "type": "Char", "core": "Req" },
+          { "name": "PARAM", "label": "Parameter", "type": "Char", "core": "Req" },
+          { "name": "PARAMN", "label": "Parameter (N)", "type": "Num", "core": "Perm" },
+          { "name": "PARCATy", "label": "Parameter Category y", "type": "Char", "core": "Perm" },
+          { "name": "PARCATyN", "label": "Parameter Category y (N)", "type": "Num", "core": "Perm" }
+        ],
+        "analysisValue": [
+          { "name": "AVAL", "label": "Analysis Value", "type": "Num", "core": "Cond" },
+          { "name": "AVALC", "label": "Analysis Value (C)", "type": "Char", "core": "Cond" },
+          { "name": "AVALU", "label": "Analysis Value Unit", "type": "Char", "core": "Perm" },
+          { "name": "BASE", "label": "Baseline Value", "type": "Num", "core": "Cond" },
+          { "name": "BASEC", "label": "Baseline Value (C)", "type": "Char", "core": "Perm" },
+          { "name": "CHG", "label": "Change from Baseline", "type": "Num", "core": "Cond" },
+          { "name": "PCHG", "label": "Percent Change from Baseline", "type": "Num", "core": "Cond" },
+          { "name": "BASETYPE", "label": "Baseline Type", "type": "Char", "core": "Cond" },
+          { "name": "ABLFL", "label": "Baseline Record Flag", "type": "Char", "core": "Cond", "values": "Y" },
+          { "name": "DTYPE", "label": "Derivation Type", "type": "Char", "core": "Cond" },
+          { "name": "R2BASE", "label": "Ratio to Baseline", "type": "Num", "core": "Perm" }
+        ],
+        "treatment": [
+          { "name": "TRTP", "label": "Planned Treatment", "type": "Char", "core": "Cond" },
+          { "name": "TRTPN", "label": "Planned Treatment (N)", "type": "Num", "core": "Perm" },
+          { "name": "TRTA", "label": "Actual Treatment", "type": "Char", "core": "Cond" },
+          { "name": "TRTAN", "label": "Actual Treatment (N)", "type": "Num", "core": "Perm" },
+          { "name": "TRTPGy", "label": "Planned Pooled Treatment y", "type": "Char", "core": "Perm" },
+          { "name": "TRTPGyN", "label": "Planned Pooled Treatment y (N)", "type": "Num", "core": "Perm" },
+          { "name": "TRTAGy", "label": "Actual Pooled Treatment y", "type": "Char", "core": "Cond" },
+          { "name": "TRTAGyN", "label": "Actual Pooled Treatment y (N)", "type": "Num", "core": "Perm" }
+        ],
+        "timing": [
+          { "name": "ADT", "label": "Analysis Date", "type": "Num", "core": "Cond" },
+          { "name": "ATM", "label": "Analysis Time", "type": "Num", "core": "Cond" },
+          { "name": "ADTM", "label": "Analysis Datetime", "type": "Num", "core": "Cond" },
+          { "name": "ADY", "label": "Analysis Relative Day", "type": "Num", "core": "Cond" },
+          { "name": "AVISIT", "label": "Analysis Visit", "type": "Char", "core": "Cond" },
+          { "name": "AVISITN", "label": "Analysis Visit (N)", "type": "Num", "core": "Perm" },
+          { "name": "ATPT", "label": "Analysis Timepoint", "type": "Char", "core": "Cond" },
+          { "name": "ATPTN", "label": "Analysis Timepoint (N)", "type": "Num", "core": "Perm" },
+          { "name": "ATPTREF", "label": "Analysis Timepoint Reference", "type": "Char", "core": "Perm" },
+          { "name": "APHASE", "label": "Phase", "type": "Char", "core": "Perm" },
+          { "name": "APHASEN", "label": "Phase (N)", "type": "Num", "core": "Perm" },
+          { "name": "APERIOD", "label": "Period", "type": "Num", "core": "Cond" },
+          { "name": "APERIODC", "label": "Period (C)", "type": "Char", "core": "Perm" }
+        ]
+      },
+      "OccurrenceDataStructure": {
+        "coding": [
+          { "name": "--TERM", "label": "Reported Term", "type": "Char", "core": "Req" },
+          { "name": "--DECOD", "label": "Dictionary-Derived Term", "type": "Char", "core": "Cond" },
+          { "name": "--BODSYS", "label": "Body System or Organ Class", "type": "Char", "core": "Cond" },
+          { "name": "--BDSYCD", "label": "Body System or Organ Class Code", "type": "Num", "core": "Perm" },
+          { "name": "--HLT", "label": "High Level Term", "type": "Char", "core": "Cond" },
+          { "name": "--HLTCD", "label": "High Level Term Code", "type": "Num", "core": "Perm" },
+          { "name": "--HLGT", "label": "High Level Group Term", "type": "Char", "core": "Cond" },
+          { "name": "--HLGTCD", "label": "High Level Group Term Code", "type": "Num", "core": "Perm" },
+          { "name": "--LLT", "label": "Lowest Level Term", "type": "Char", "core": "Cond" },
+          { "name": "--LLTCD", "label": "Lowest Level Term Code", "type": "Num", "core": "Perm" },
+          { "name": "--PTCD", "label": "Preferred Term Code", "type": "Num", "core": "Perm" }
+        ]
+      }
+    },
     "concepts": {
       "Measure": {
         "variable": "AVAL/AVALC/BASE",
@@ -108,7 +417,7 @@
           "Result.Value": "AVAL",
           "Result.Unit": "AVALU"
         },
-        "notes": "Analysis value (numeric or character). BASE is the baseline value. Facets map the Measure concept's structural parts (Result.Value, Result.Unit) to the corresponding ADaM variables — used by the load/present grammar when a binding declares qualifierType='facet' (e.g., T.UnitConversion outputs Measure.Result.Value → AVAL, Measure.Result.Unit → AVALU)."
+        "notes": "Analysis value (numeric or character). BASE is the baseline value. Facets map the Measure concept's structural parts (Result.Value, Result.Unit) to the corresponding ADaM variables."
       },
       "Change": {
         "variable": "CHG",
@@ -177,6 +486,22 @@
           "string": "AVALC"
         },
         "notes": "Categorized analysis value"
+      },
+      "OccurrenceTerm": {
+        "variable": "--TERM/--DECOD",
+        "facets": {
+          "Identification.ReportedTerm": "--TERM",
+          "Coding.PreferredTerm": "--DECOD",
+          "Coding.BodySystem": "--BODSYS",
+          "Coding.HighLevelTerm": "--HLT",
+          "Coding.HighLevelGroupTerm": "--HLGT",
+          "Coding.LowLevelTerm": "--LLT"
+        },
+        "byDataType": {
+          "string": "--TERM",
+          "code": "--DECOD"
+        },
+        "notes": "ADaM OCCDS occurrence term. --TERM is the reported term; --DECOD is the dictionary-derived preferred term. MedDRA hierarchy facets provide multi-level coding. Used in ADAE, ADCM, and similar occurrence datasets. The -- prefix is substituted with the dataset-specific prefix (AE, CM, etc.)."
       }
     },
     "dimensions": {
@@ -220,19 +545,28 @@
       "Treatment": {
         "variable": "TRTA/TRTP",
         "byDataType": {
-          "code": "TRTP",
-          "string": "TRTP"
+          "code": "TRTA",
+          "string": "TRTA"
         },
-        "notes": "Actual/planned treatment"
+        "intentType": {
+          "Planned": { "code": "TRTP", "string": "TRTP", "integer": "TRTPN" },
+          "Actual": { "code": "TRTA", "string": "TRTA", "integer": "TRTAN" }
+        },
+        "notes": "Record-level treatment for BDS. TRTP/TRTA are planned/actual treatment labels. IntentType qualifier selects Planned vs Actual. Subject-level treatment (ARM/TRTxxP/TRTxxA) is in ADSL."
       },
       "Population": {
-        "variable": "ITTFL/SAFFL/EFFFL",
+        "variable": "ITTFL/SAFFL/FASFL",
         "byDataType": {
           "intent_to_treat": "ITTFL",
           "safety": "SAFFL",
-          "efficacy": "EFFFL"
+          "efficacy": "EFFFL",
+          "full_analysis_set": "FASFL",
+          "per_protocol": "PPROTFL",
+          "completers": "COMPLFL",
+          "randomized": "RANDFL",
+          "enrolled": "ENRLFL"
         },
-        "notes": "Population flag variables (Y/N)"
+        "notes": "Population flag variables (Y/N) from ADSL. Standard flags: ITTFL (Intent-to-Treat), SAFFL (Safety), FASFL (Full Analysis Set), PPROTFL (Per-Protocol), COMPLFL (Completers), RANDFL (Randomized), ENRLFL (Enrolled)."
       },
       "Period": {
         "variable": "APERIOD/APERIODC",
@@ -243,6 +577,16 @@
           "string": "APERIODC"
         },
         "notes": "Analysis period (numeric/character)"
+      },
+      "Epoch": {
+        "variable": "APHASE/APHASEN",
+        "byDataType": {
+          "code": "APHASE",
+          "string": "APHASE",
+          "integer": "APHASEN",
+          "decimal": "APHASEN"
+        },
+        "notes": "Analysis phase/epoch. APHASE categorizes timing within a study (e.g., SCREENING, ON TREATMENT, FOLLOW-UP). Maps to SDTM EPOCH conceptually but is independently assigned in ADaM."
       },
       "Site": {
         "variable": "SITEID/SITEGR1",
@@ -280,10 +624,50 @@
           "decimal": "ATPTN"
         },
         "notes": "Analysis timepoint (character/numeric)"
+      },
+      "Age": {
+        "variable": "AGE/AGEGRy",
+        "byDataType": {
+          "decimal": "AGE",
+          "integer": "AGE",
+          "code": "AGEGRy",
+          "string": "AGEGRy"
+        },
+        "notes": "Subject age from ADSL demographics. AGE is continuous; AGEGRy is pooled age group. AGEU provides units."
+      },
+      "Sex": {
+        "variable": "SEX",
+        "byDataType": {
+          "code": "SEX",
+          "string": "SEX"
+        },
+        "notes": "Subject sex from ADSL demographics."
+      },
+      "Race": {
+        "variable": "RACE/RACEGRy",
+        "byDataType": {
+          "code": "RACE",
+          "string": "RACE"
+        },
+        "notes": "Subject race from ADSL demographics. RACE is the collected value; RACEGRy is a pooled race grouping."
+      },
+      "Region": {
+        "variable": "REGIONy/REGIONyN",
+        "byDataType": {
+          "code": "REGIONy",
+          "string": "REGIONy",
+          "integer": "REGIONyN",
+          "decimal": "REGIONyN"
+        },
+        "notes": "Geographic region from ADSL. REGIONy is the character label; REGIONyN is numeric. The 'y' suffix is a numeric index (REGION1, REGION2, etc.)."
       }
     }
   },
   "omop": {
+    "_meta": {
+      "standard": "OMOP CDM",
+      "version": "v5.4"
+    },
     "concepts": {
       "Measure": {
         "variable": "measurement.value_as_number",
@@ -371,6 +755,10 @@
     }
   },
   "fhir": {
+    "_meta": {
+      "standard": "HL7 FHIR",
+      "version": "R5"
+    },
     "concepts": {
       "Measure": {
         "variable": "Observation.valueQuantity.value",

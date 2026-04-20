@@ -150,7 +150,7 @@ export function findDerivationsForConcept(concept, library) {
  *   children: PipelineSlot[]  // recursive slots for selected derivation's input bindings
  * }
  */
-export function buildPipelineGraph(transformation, library, selectedDerivations = {}) {
+export function buildPipelineGraph(transformation, library, selectedDerivations = {}, confirmedTerminalKeys = new Set()) {
   const visited = new Set();
 
   function buildSlot(concept, parentKey, index) {
@@ -162,6 +162,10 @@ export function buildPipelineGraph(transformation, library, selectedDerivations 
     let status, selected = null;
 
     if (candidates.length === 0) {
+      status = 'terminal';
+    } else if (confirmedTerminalKeys.has(key)) {
+      // User explicitly chose "(raw)" on a slot that has derivation candidates —
+      // override auto/choice selection and treat as terminal source data
       status = 'terminal';
     } else if (candidates.length === 1) {
       status = 'auto';

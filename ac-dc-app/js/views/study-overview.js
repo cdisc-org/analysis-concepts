@@ -218,6 +218,9 @@ function renderConfiguration() {
     `;
   }
 
+  const MODEL_LABELS = { sdtm: 'SDTM', adam: 'ADaM', omop: 'OMOP', fhir: 'FHIR' };
+  const modelKeys = Object.keys(MODEL_LABELS).filter(k => mappings[k]);
+
   return `
     <div class="card">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
@@ -229,29 +232,36 @@ function renderConfiguration() {
         Changes take effect immediately when viewing other steps.
       </p>
       <div class="config-sub-tabs" id="config-sub-tabs">
-        <button class="active" data-model="adam">ADaM</button>
-        <button data-model="omop">OMOP</button>
-        <button data-model="fhir">FHIR</button>
+        ${modelKeys.map((k, i) => {
+          const meta = mappings[k]?._meta;
+          const version = meta?.igVersion || meta?.version || meta?.modelVersion || '';
+          const badge = version ? ` <span style="font-size:9px; color:inherit; opacity:0.7;">${version}</span>` : '';
+          return `<button ${i === 0 ? 'class="active"' : ''} data-model="${k}">${MODEL_LABELS[k]}${badge}</button>`;
+        }).join('')}
       </div>
-      <div id="config-model-adam">
-        ${renderMappingTable('adam', 'concepts', 'Derivation Concepts')}
-        ${renderMappingTable('adam', 'dimensions', 'Dimensional Concepts')}
-      </div>
-      <div id="config-model-omop" style="display:none;">
-        ${renderMappingTable('omop', 'concepts', 'Derivation Concepts')}
-        ${renderMappingTable('omop', 'dimensions', 'Dimensional Concepts')}
-      </div>
-      <div id="config-model-fhir" style="display:none;">
-        ${renderMappingTable('fhir', 'concepts', 'Derivation Concepts')}
-        ${renderMappingTable('fhir', 'dimensions', 'Dimensional Concepts')}
-      </div>
+      ${modelKeys.map((k, i) => {
+        const meta = mappings[k]?._meta;
+        const metaHtml = meta ? `<div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:12px; display:flex; gap:6px; flex-wrap:wrap;">
+          <span style="font-weight:600;">${meta.standard || MODEL_LABELS[k]}</span>
+          ${meta.modelVersion ? `<span style="padding:0 4px; border-radius:2px; background:var(--cdisc-primary-light); color:var(--cdisc-primary); font-size:10px;">Model ${meta.modelVersion}</span>` : ''}
+          ${meta.igVersion ? `<span style="padding:0 4px; border-radius:2px; background:var(--cdisc-primary-light); color:var(--cdisc-primary); font-size:10px;">IG ${meta.igVersion}</span>` : ''}
+          ${meta.occdsVersion ? `<span style="padding:0 4px; border-radius:2px; background:var(--cdisc-primary-light); color:var(--cdisc-primary); font-size:10px;">OCCDS ${meta.occdsVersion}</span>` : ''}
+          ${meta.version ? `<span style="padding:0 4px; border-radius:2px; background:var(--cdisc-primary-light); color:var(--cdisc-primary); font-size:10px;">${meta.version}</span>` : ''}
+        </div>` : '';
+        return `<div id="config-model-${k}" ${i > 0 ? 'style="display:none;"' : ''}>
+          ${metaHtml}
+          ${renderMappingTable(k, 'concepts', 'Derivation Concepts')}
+          ${renderMappingTable(k, 'dimensions', 'Dimensional Concepts')}
+        </div>`;
+      }).join('')}
     </div>
   `;
 }
 
 function wireConfigurationTab(container) {
-  // Sub-tab switching
-  const modelKeys = ['adam', 'omop', 'fhir'];
+  // Sub-tab switching — dynamic model keys from available mappings
+  const mappings = appState.conceptMappings || {};
+  const modelKeys = ['sdtm', 'adam', 'omop', 'fhir'].filter(k => mappings[k]);
   container.querySelectorAll('#config-sub-tabs button').forEach(btn => {
     btn.addEventListener('click', () => {
       container.querySelectorAll('#config-sub-tabs button').forEach(b => b.classList.remove('active'));
