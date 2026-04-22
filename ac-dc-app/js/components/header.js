@@ -99,8 +99,8 @@ export function renderHeader() {
           alert('Loaded with warnings:\n' + warnings.join('\n'));
         }
 
-        renderCurrentStep();
-        navigateTo(4);
+        const targetStep = json?.preferences?.currentStep;
+        navigateTo(typeof targetStep === 'number' && targetStep >= 1 && targetStep <= 8 ? targetStep : 4);
       } catch (err) {
         console.error('Failed to load study instance:', err);
         alert('Failed to load study instance: ' + err.message);

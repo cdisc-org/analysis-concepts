@@ -1,10 +1,22 @@
 {
   "version": "0.6",
   "description": "Transformation library using Option B (atomic clinical concepts) for DC concepts and AC Concept Model v0.16 for analysis concepts. Dimensions expressed through bindings with dataStructureRole. SmartPhrases compose into human-readable analysis descriptions.",
+  "_w3c_alignment": {
+    "vocabulary": "https://www.w3.org/TR/vocab-data-cube/",
+    "mapping": {
+      "bindings[]": "The DSD (qb:DataStructureDefinition) of the transformation's input/output cubes. direction='input|output' distinguishes. dataStructureRole maps to qb:dimension | qb:measure | qb:attribute.",
+      "slices[]": "qb:Slice (https://www.w3.org/TR/vocab-data-cube/#slice) \u2014 fixed-dimension views of an input cube.",
+      "sliceKeys[]": "qb:SliceKey (https://www.w3.org/TR/vocab-data-cube/#slice-key) \u2014 declares which dimensions are fixed in a slice.",
+      "bindings[].slice": "AC/DC extension: pre-filter this binding's cube to the named qb:Slice before the method sees it.",
+      "bindings[].methodRole": "AC/DC extension: maps a cube slot to the method's role (value, partition, minuend, subtrahend, result, \u2026).",
+      "bindings[].conceptCategory": "AC/DC extension: references a category (e.g. VisitDimension) rather than a concrete concept; the user picks a member at study-spec time."
+    }
+  },
   "$references": {
     "dcConcepts": "Option_B_Clinical.json",
     "acConcepts": "AC_Concept_Model_v016.json",
     "qualifierTypes": "CDDM_Shared_QualifierTypes.json",
+    "conceptCategories": "model/concept/concept_categories.json",
     "methods": "Method definitions (M.MMRM, M.LogRankTest, M.Subtraction, etc.)"
   },
   "configurationOptions": {
@@ -215,8 +227,8 @@
       "configurations": [
         "visit"
       ],
-      "references": [
-        "AnalysisVisit"
+      "referenceCategories": [
+        "VisitDimension"
       ]
     },
     {
@@ -373,7 +385,7 @@
         {
           "concept": "Measure",
           "requiredValueType": null,
-          "note": "RecordSelection operates on records, not values — no value type constraint",
+          "note": "RecordSelection operates on records, not values \u2014 no value type constraint",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "value"
@@ -397,7 +409,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -437,12 +449,6 @@
           "slice": "parameter_baseline"
         },
         {
-          "concept": "Change",
-          "direction": "output",
-          "dataStructureRole": "measure",
-          "methodRole": "difference"
-        },
-        {
           "concept": "Subject",
           "methodRole": "partition",
           "direction": "input",
@@ -455,9 +461,30 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "partition",
           "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Change",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "difference"
+        },
+        {
+          "concept": "Subject",
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptCategory": "VisitDimension",
+          "direction": "output",
           "dataStructureRole": "dimension"
         }
       ],
@@ -465,8 +492,14 @@
         {
           "name": "parameter_baseline",
           "constraints": [
-            { "dimension": "Parameter", "value": "{parameter}" },
-            { "dimension": "AnalysisVisit", "value": "Baseline" }
+            {
+              "dimension": "Parameter",
+              "value": "{parameter}"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "value": "Baseline"
+            }
           ]
         }
       ],
@@ -522,7 +555,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -532,8 +565,14 @@
         {
           "name": "parameter_baseline",
           "constraints": [
-            { "dimension": "Parameter", "value": "{parameter}" },
-            { "dimension": "AnalysisVisit", "value": "Baseline" }
+            {
+              "dimension": "Parameter",
+              "value": "{parameter}"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "value": "Baseline"
+            }
           ]
         }
       ],
@@ -588,7 +627,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -598,8 +637,14 @@
         {
           "name": "parameter_baseline",
           "constraints": [
-            { "dimension": "Parameter", "value": "{parameter}" },
-            { "dimension": "AnalysisVisit", "value": "Baseline" }
+            {
+              "dimension": "Parameter",
+              "value": "{parameter}"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "value": "Baseline"
+            }
           ]
         }
       ],
@@ -646,7 +691,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -668,7 +713,7 @@
         {
           "concept": "Measure",
           "requiredValueType": null,
-          "note": "LOCF operates on records — value type is pass-through",
+          "note": "LOCF operates on records \u2014 value type is pass-through",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "value"
@@ -692,7 +737,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "order",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -948,6 +993,12 @@
           "methodRole": "value"
         },
         {
+          "concept": "Parameter",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
           "concept": "Measure",
           "direction": "output",
           "dataStructureRole": "measure",
@@ -955,8 +1006,7 @@
         },
         {
           "concept": "Parameter",
-          "methodRole": "partition",
-          "direction": "input",
+          "direction": "output",
           "dataStructureRole": "dimension"
         }
       ]
@@ -984,6 +1034,18 @@
           "methodRole": "value"
         },
         {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptCategory": "VisitDimension",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
           "concept": "Measure",
           "direction": "output",
           "dataStructureRole": "measure",
@@ -991,14 +1053,12 @@
         },
         {
           "concept": "Subject",
-          "methodRole": "partition",
-          "direction": "input",
+          "direction": "output",
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
-          "methodRole": "partition",
-          "direction": "input",
+          "conceptCategory": "VisitDimension",
+          "direction": "output",
           "dataStructureRole": "dimension"
         }
       ]
@@ -1026,6 +1086,18 @@
           "methodRole": "value"
         },
         {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptCategory": "VisitDimension",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
           "concept": "Measure",
           "direction": "output",
           "dataStructureRole": "measure",
@@ -1033,14 +1105,12 @@
         },
         {
           "concept": "Subject",
-          "methodRole": "partition",
-          "direction": "input",
+          "direction": "output",
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
-          "methodRole": "partition",
-          "direction": "input",
+          "conceptCategory": "VisitDimension",
+          "direction": "output",
           "dataStructureRole": "dimension"
         }
       ]
@@ -1068,6 +1138,18 @@
           "methodRole": "value"
         },
         {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptCategory": "VisitDimension",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
           "concept": "Measure",
           "direction": "output",
           "dataStructureRole": "measure",
@@ -1075,14 +1157,12 @@
         },
         {
           "concept": "Subject",
-          "methodRole": "partition",
-          "direction": "input",
+          "direction": "output",
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
-          "methodRole": "partition",
-          "direction": "input",
+          "conceptCategory": "VisitDimension",
+          "direction": "output",
           "dataStructureRole": "dimension"
         }
       ]
@@ -1122,6 +1202,18 @@
           "methodRole": "value"
         },
         {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptCategory": "VisitDimension",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
           "concept": "Flag",
           "direction": "output",
           "dataStructureRole": "measure",
@@ -1129,14 +1221,12 @@
         },
         {
           "concept": "Subject",
-          "methodRole": "partition",
-          "direction": "input",
+          "direction": "output",
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
-          "methodRole": "partition",
-          "direction": "input",
+          "conceptCategory": "VisitDimension",
+          "direction": "output",
           "dataStructureRole": "dimension"
         }
       ]
@@ -1172,12 +1262,6 @@
           "methodRole": "filter"
         },
         {
-          "concept": "Measure",
-          "direction": "output",
-          "dataStructureRole": "measure",
-          "methodRole": "quotient"
-        },
-        {
           "concept": "Subject",
           "methodRole": "partition",
           "direction": "input",
@@ -1190,9 +1274,30 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "partition",
           "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Measure",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "quotient"
+        },
+        {
+          "concept": "Subject",
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptCategory": "VisitDimension",
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "direction": "output",
           "dataStructureRole": "dimension"
         }
       ],
@@ -1202,10 +1307,12 @@
       "oid": "T.UnitConversion",
       "name": "Unit Conversion",
       "transformationType": "derivation",
-      "description": "Convert a numeric Observation from its per-row source unit to a standardised target unit using the unit_conversions vocabulary. Generic — works for any numeric Observation whose BC carries a Result.Value + Result.Unit facet pair. Produces a derived Measure with both value and unit facets populated.",
+      "description": "Convert a numeric Observation from its per-row source unit to a standardised target unit using the unit_conversions vocabulary. Generic \u2014 works for any numeric Observation whose BC carries a Result.Value + Result.Unit facet pair. Produces a derived Measure with both value and unit facets populated.",
       "instanceOf": "Measure",
       "usesMethod": "M.UnitConversion",
-      "validSmartPhrases": ["SP_PARAMETER"],
+      "validSmartPhrases": [
+        "SP_PARAMETER"
+      ],
       "composedPhrase": "{parameter} standardised to {target_unit}",
       "bindings": [
         {
@@ -1241,7 +1348,7 @@
           "concept": "Measure",
           "qualifierType": "facet",
           "qualifierValue": "result.unit",
-          "note": "Unit of the derived Measure — equals the target_unit configuration. Propagated so downstream derivations/analyses can read the Measure's unit without re-reading config.",
+          "note": "Unit of the derived Measure \u2014 equals the target_unit configuration. Propagated so downstream derivations/analyses can read the Measure's unit without re-reading config.",
           "direction": "output",
           "dataStructureRole": "attribute",
           "methodRole": "result_unit"
@@ -1259,14 +1366,14 @@
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension",
-          "note": "BC identifier — resolves to --TESTCD in SDTM (e.g., VSTESTCD). The constraint value comes from the endpoint's linked BC specialization."
+          "note": "BC identifier \u2014 resolves to --TESTCD in SDTM (e.g., VSTESTCD). The constraint value comes from the endpoint's linked BC specialization."
         },
         {
           "concept": "Parameter",
           "direction": "output",
           "dataStructureRole": "dimension",
           "methodRole": "parameter_label",
-          "note": "Output parameter label — value comes from the endpoint specification (Step 3), not from the source data. Replaces the SDTM Topic identifier with the clinically meaningful endpoint label (e.g., 'Weight (kg)')."
+          "note": "Output parameter label \u2014 value comes from the endpoint specification (Step 3), not from the source data. Replaces the SDTM Topic identifier with the clinically meaningful endpoint label (e.g., 'Weight (kg)')."
         }
       ],
       "slices": [],
@@ -1274,7 +1381,96 @@
         {
           "configurationName": "on_missing_factor",
           "value": "fail",
-          "description": "Fail loudly if a factor is missing — CDISC convention prefers errors over silent NAs."
+          "description": "Fail loudly if a factor is missing \u2014 CDISC convention prefers errors over silent NAs."
+        }
+      ]
+    },
+    {
+      "oid": "T.DeriveAnalysisVisit",
+      "name": "Derive Analysis Visit",
+      "transformationType": "derivation",
+      "description": "Assign each observation to a scheduled analysis visit (AVISIT) via day-windows and a target-day tie-break. Default windows are for LZZT ADAS-Cog (\u22641 Baseline, 2-84 Week 8, 85-140 Week 16, >140 Week 24). Consumes a pre-computed study day (SDTM --DY) relative to the randomization anchor BC.",
+      "instanceOf": "AnalysisVisit",
+      "usesMethod": "M.WindowedVisitAssignment",
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "Timing",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "day",
+          "note": "Study day relative to the randomization anchor. In SDTM this is the --DY column (e.g. QSDY), computed by the load step as day-from-RFSTDTC."
+        },
+        {
+          "concept": "Subject",
+          "direction": "input",
+          "dataStructureRole": "dimension",
+          "methodRole": "partition"
+        },
+        {
+          "concept": "AnalysisVisit",
+          "direction": "output",
+          "dataStructureRole": "dimension",
+          "methodRole": "analysisVisit"
+        },
+        {
+          "concept": "AnalysisVisitNumber",
+          "direction": "output",
+          "dataStructureRole": "dimension",
+          "methodRole": "analysisVisitNumber"
+        },
+        {
+          "concept": "AnalysisStudyDay",
+          "direction": "output",
+          "dataStructureRole": "attribute",
+          "methodRole": "analysisDay"
+        }
+      ],
+      "slices": [],
+      "methodConfigurations": [
+        {
+          "configurationName": "referenceBC",
+          "value": "BiomedicalConcept_216",
+          "description": "BC providing the randomization anchor (Subject is Randomized, CDISC C114209). DSSTDTC is the per-subject anchor date; SDTM's --DY columns are already pre-computed relative to this. Override if your SAP uses a different anchor (e.g. First Dose BC)."
+        },
+        {
+          "configurationName": "windows",
+          "value": [
+            {
+              "label": "Baseline",
+              "visitNumber": 3,
+              "dayMin": null,
+              "dayMax": 1,
+              "targetDay": 1
+            },
+            {
+              "label": "Week 8",
+              "visitNumber": 8,
+              "dayMin": 2,
+              "dayMax": 84,
+              "targetDay": 56
+            },
+            {
+              "label": "Week 16",
+              "visitNumber": 10,
+              "dayMin": 85,
+              "dayMax": 140,
+              "targetDay": 112
+            },
+            {
+              "label": "Week 24",
+              "visitNumber": 12,
+              "dayMin": 141,
+              "dayMax": null,
+              "targetDay": 168
+            }
+          ],
+          "description": "Scheduled visit windows. Edit per SAP. dayMin/dayMax=null means unbounded on that side."
+        },
+        {
+          "configurationName": "tieBreak",
+          "value": "closest-to-target-then-earliest",
+          "description": "Tie-break: among windows matching a day, pick min |day\u2212targetDay|, then min visitNumber."
         }
       ]
     }
@@ -1350,7 +1546,7 @@
         },
         {
           "methodRole": "repeated_factor",
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "qualifierType": "DerivationStatus",
           "qualifierValue": "Analysis",
           "requiredValueType": "CodeableConcept",
@@ -1396,8 +1592,14 @@
         {
           "name": "parameter_baseline",
           "constraints": [
-            { "dimension": "Parameter", "value": "{parameter}" },
-            { "dimension": "AnalysisVisit", "value": "Baseline" }
+            {
+              "dimension": "Parameter",
+              "value": "{parameter}"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "value": "Baseline"
+            }
           ]
         }
       ]
@@ -1475,7 +1677,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -1499,8 +1701,14 @@
         {
           "name": "parameter_baseline",
           "constraints": [
-            { "dimension": "Parameter", "value": "{parameter}" },
-            { "dimension": "AnalysisVisit", "value": "Baseline" }
+            {
+              "dimension": "Parameter",
+              "value": "{parameter}"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "value": "Baseline"
+            }
           ]
         }
       ]
@@ -1627,7 +1835,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -1699,7 +1907,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -1771,7 +1979,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -1843,7 +2051,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -1915,7 +2123,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -1987,7 +2195,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -2059,7 +2267,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -2131,7 +2339,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -2204,7 +2412,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "AnalysisVisit",
+          "conceptCategory": "VisitDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"

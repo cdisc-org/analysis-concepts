@@ -9,10 +9,17 @@ export function buildSliceLookup(transformation) {
   if (slices.length > 0) {
     const lookup = {};
     for (const s of slices) {
-      if (!lookup[s.name]) lookup[s.name] = { fixedDimensions: {} };
+      if (!lookup[s.name]) lookup[s.name] = { fixedDimensions: {}, categoryConstraints: [] };
       // New format: constraints[] array (W3C QB multi-dimension)
       for (const c of (s.constraints || [])) {
-        lookup[s.name].fixedDimensions[c.dimension] = c.value;
+        if (c.conceptCategory) {
+          lookup[s.name].categoryConstraints.push({
+            conceptCategory: c.conceptCategory,
+            value: c.value
+          });
+        } else if (c.dimension) {
+          lookup[s.name].fixedDimensions[c.dimension] = c.value;
+        }
       }
       // Backward compat: old single-dimension format
       if (s.dimension && s.constraint) {
@@ -23,6 +30,71 @@ export function buildSliceLookup(transformation) {
   }
   // Legacy fallback
   return transformation?.namedSlices || {};
+}
+
+/**
+ * Resolve conceptCategory constraints in a slice definition into concrete
+ * dimension keys. Takes the slice entry from buildSliceLookup() and the
+ * caller's dimensionOverrides map (for a specific slot) plus the global
+ * conceptCategories map, and returns a new sliceDef with every category
+ * constraint materialised as a concrete fixedDimensions[<concreteDim>] = value
+ * entry. Also returns a `categoryBy` map of concrete dim → category name so
+ * downstream UI can recognise which dimensions came from a category.
+ *
+ * @param {Object} sliceDef - { fixedDimensions, categoryConstraints } from buildSliceLookup
+ * @param {Object} dimensionOverrides - activeSpec.dimensionOverrides[slotKey] || {}
+ *                                       keyed by binding index → { concept: <concrete> }
+ * @param {Array<Object>} bindings - Transformation bindings; used only to find the first
+ *                                    binding whose conceptCategory matches, so we can read
+ *                                    its dimensionOverride picker entry.
+ * @param {Object} categoriesMap - appState.conceptCategories?.categories || {}
+ */
+export function resolveSliceCategories(sliceDef, dimensionOverrides, bindings, categoriesMap) {
+  if (!sliceDef || !sliceDef.categoryConstraints || sliceDef.categoryConstraints.length === 0) {
+    return { ...sliceDef, categoryBy: {} };
+  }
+  const resolved = { fixedDimensions: { ...(sliceDef.fixedDimensions || {}) }, categoryBy: {} };
+  for (const cc of sliceDef.categoryConstraints) {
+    // Find the first binding referencing this category so we can reuse its
+    // user-pick override (stored by binding index under dimensionOverrides).
+    let concreteDim = null;
+    for (let i = 0; i < (bindings || []).length; i++) {
+      if (bindings[i].conceptCategory === cc.conceptCategory) {
+        concreteDim = dimensionOverrides?.[i]?.concept;
+        if (concreteDim) break;
+      }
+    }
+    // Fall back to the category's first member if no override exists.
+    if (!concreteDim) {
+      concreteDim = categoriesMap?.[cc.conceptCategory]?.members?.[0]?.concept;
+    }
+    if (concreteDim) {
+      resolved.fixedDimensions[concreteDim] = cc.value;
+      resolved.categoryBy[concreteDim] = cc.conceptCategory;
+    }
+  }
+  return resolved;
+}
+
+/**
+ * Resolve a smart-phrase's references to concrete concept names.
+ * A phrase may declare `references: ["Concept", ...]` (concrete) and/or
+ * `referenceCategories: ["Category", ...]`. For each category, pick the
+ * user's per-endpoint concrete choice from `spec.dimensionCategoryPicks`
+ * (falling back to the category's first member). Returns a flat array of
+ * concrete concept names.
+ */
+export function getPhraseResolvedRefs(sp, spec) {
+  const out = [];
+  for (const r of (sp?.references || [])) out.push(r);
+  const categoriesMap = appState.conceptCategories?.categories || {};
+  const picks = spec?.dimensionCategoryPicks || {};
+  for (const catName of (sp?.referenceCategories || [])) {
+    const concrete = picks[catName]
+      || categoriesMap[catName]?.members?.[0]?.concept;
+    if (concrete) out.push(concrete);
+  }
+  return out;
 }
 
 /**
@@ -58,6 +130,13 @@ export function normalizeConcept(ic) {
 export function displayConcept(conceptName, options) {
   // Normalize options: accept string (legacy dataType) or object
   const opts = typeof options === 'string' ? { dataType: options } : (options || {});
+
+  // Defensive: a binding with conceptCategory but no resolved concrete `concept`
+  // (e.g. when dimensionCategoryPicks haven't been applied yet) reaches here as
+  // undefined. Render the category label or a placeholder rather than crashing.
+  if (conceptName == null || conceptName === '') {
+    return opts.conceptCategory ? `«${opts.conceptCategory}»` : '?';
+  }
 
   // Build dimensional constraint suffix — prefer slice resolution, fall back to legacy
   // Skip if the concept name already contains an @suffix (formula renderer bakes it in)

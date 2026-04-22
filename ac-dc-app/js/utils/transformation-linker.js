@@ -150,7 +150,26 @@ export function findDerivationsForConcept(concept, library) {
  *   children: PipelineSlot[]  // recursive slots for selected derivation's input bindings
  * }
  */
-export function buildPipelineGraph(transformation, library, selectedDerivations = {}, confirmedTerminalKeys = new Set()) {
+export function buildPipelineGraph(transformation, library, selectedDerivations = {}, confirmedTerminalKeys = new Set(), endpointPicks = {}, categoriesMap = {}) {
+  // Resolve a binding's concept from its conceptCategory using endpoint-level
+  // picks (dimensionCategoryPicks) → category's first member fallback. Used so
+  // analysis bindings declared with conceptCategory (e.g. VisitDimension)
+  // produce a proper concept name on their pipeline slot instead of "?" or
+  // "undefined".
+  function resolveBindingConcept(b) {
+    if (b.concept) return b.concept;
+    if (b.conceptCategory) {
+      return endpointPicks[b.conceptCategory]
+        || categoriesMap[b.conceptCategory]?.members?.[0]?.concept
+        || b.conceptCategory;
+    }
+    return b.concept;
+  }
+  // Visited keys are path-unique (full ancestor chain), so sibling slots that
+  // select the same derivation get their own subtree. Without this, minuend
+  // and subtrahend of T.ChangeFromBaseline — both linked to T.ADAS_Cog_11_TotalScore —
+  // collapse to a single shared subtree and the baseline slice can't propagate
+  // into the subtrahend's aggregation chain.
   const visited = new Set();
 
   function buildSlot(concept, parentKey, index) {
@@ -185,7 +204,9 @@ export function buildPipelineGraph(transformation, library, selectedDerivations 
         const concept = normalizeConcept(b);
         const idx = seen.get(concept) || 0;
         seen.set(concept, idx + 1);
-        const child = buildSlot(concept, selected.oid, idx);
+        // Pass the current slot's key (not selected.oid) so children inherit
+        // the full path and sibling subtrees never alias.
+        const child = buildSlot(concept, key, idx);
         if (child) {
           child.methodRole = b.methodRole || '';
           child.slice = b.slice || '';
@@ -207,12 +228,14 @@ export function buildPipelineGraph(transformation, library, selectedDerivations 
 
     // Dimension slots are terminal by definition — they don't recurse into derivations
     if (isDimension) {
-      const key = `${transformation.oid}/${b.concept}/${i}`;
+      const concept = resolveBindingConcept(b);
+      const key = `${transformation.oid}/${concept}/${i}`;
       if (!visited.has(key)) {
         visited.add(key);
         slots.push({
           key,
-          concept: b.concept,
+          concept,
+          conceptCategory: b.conceptCategory || null,
           methodRole: b.methodRole || '',
           slice: b.slice || '',
           dataStructureRole: 'dimension',
@@ -225,7 +248,7 @@ export function buildPipelineGraph(transformation, library, selectedDerivations 
         });
       }
     } else {
-      const slot = buildSlot(b.concept, transformation.oid, i);
+      const slot = buildSlot(resolveBindingConcept(b), transformation.oid, i);
       if (slot) {
         slot.methodRole = b.methodRole || '';
         slot.slice = b.slice || '';
@@ -236,6 +259,263 @@ export function buildPipelineGraph(transformation, library, selectedDerivations 
   }
 
   return slots;
+}
+
+/**
+ * Walk the slot tree to find the slot whose `.key` matches `slotKey`.
+ * Used by computeColumnMap to relate a chain entry back to the graph.
+ */
+function findSlotByKeyDeep(slots, slotKey) {
+  for (const s of slots) {
+    if (s.key === slotKey) return s;
+    if (s.children?.length) {
+      const hit = findSlotByKeyDeep(s.children, slotKey);
+      if (hit) return hit;
+    }
+  }
+  return null;
+}
+
+/**
+ * Assign a unique dataframe column name to every derivation in the chain
+ * and, for each chain entry, resolve input column names by walking the
+ * slot tree. Chain entries that point at a child slot which is ALSO in
+ * the chain route through that child's unique output column; terminal
+ * children fall back to the raw concept name (the engine's existing
+ * concept-keyed column resolution still runs for those).
+ *
+ * **Pipeline references.** In the ADAS ANCOVA pipeline the subtrahend and
+ * covariate Total Score subtrees reuse the minuend's aggregations via
+ * `activeSpec.pipelineReferences`. A child slot in those subtrees has no
+ * selected derivation of its own; instead, `pipelineReferences` maps
+ * `childSlotKey → referenceSlotKey`. We follow that reference (with a
+ * cycle guard) so the referring derivation's input column points at the
+ * referenced derivation's output column.
+ *
+ * Returns a map { slotKey → { outputColumn, inputColumns: { role → col } } }.
+ *
+ * Column naming: `__col_<sanitized-slotKey>[_<sliceName>]`. A slice suffix is
+ * appended when the slot's parent binding carries a `slice` reference — this
+ * keeps baseline-sliced subtrees separable from non-sliced siblings.
+ */
+export function computeColumnMap(slots, chain, pipelineReferences = []) {
+  const sanitize = k => '__col_' + String(k).replace(/[^A-Za-z0-9]/g, '_');
+  const chainKeys = new Set((chain || []).map(e => e.slotKey));
+  const refMap = new Map();
+  for (const r of (pipelineReferences || [])) {
+    if (r?.slotKey && r?.referenceSlotKey) refMap.set(r.slotKey, r.referenceSlotKey);
+  }
+
+  // First pass: assign outputColumn per chain entry.
+  const outputCol = {};
+  for (const entry of (chain || [])) {
+    // Slice suffix comes from the owning slot — each slot carries the slice
+    // string its parent binding declared.
+    const slot = findSlotByKeyDeep(slots, entry.slotKey);
+    const sliceSuffix = slot?.slice ? `_${String(slot.slice).replace(/[^A-Za-z0-9]/g, '_')}` : '';
+    outputCol[entry.slotKey] = sanitize(entry.slotKey) + sliceSuffix;
+  }
+
+  // Follow the reference chain until we land on a slotKey that is itself in
+  // the derivation chain (so outputCol is populated), or exhaust the chain.
+  function resolveRef(key) {
+    const seen = new Set();
+    let cur = key;
+    while (cur && !chainKeys.has(cur)) {
+      if (seen.has(cur)) return null; // cycle
+      seen.add(cur);
+      const next = refMap.get(cur);
+      if (!next) return null;
+      cur = next;
+    }
+    return cur;
+  }
+
+  // Second pass: for each chain entry, map input role → source column.
+  const result = {};
+  for (const entry of (chain || [])) {
+    const slot = findSlotByKeyDeep(slots, entry.slotKey);
+    const selected = slot?.selected;
+    const inputColumns = {};
+    if (selected) {
+      // slot.children[i] corresponds to getMeasureBindings(selected)[i] (same order).
+      const measureBindings = getMeasureBindings(selected);
+      slot.children.forEach((child, i) => {
+        const binding = measureBindings[i];
+        if (!binding) return;
+        const role = binding.methodRole || '';
+        if (!role) return;
+        if (chainKeys.has(child.key)) {
+          inputColumns[role] = outputCol[child.key];
+          return;
+        }
+        // Follow pipelineReferences: child slot may be a reference into an
+        // already-computed subtree (subtrahend/covariate reusing minuend).
+        const referent = resolveRef(child.key);
+        if (referent && outputCol[referent]) {
+          inputColumns[role] = outputCol[referent];
+        }
+        // else: terminal — leave out so R falls back to concept-keyed name
+      });
+    }
+    result[entry.slotKey] = {
+      outputColumn: outputCol[entry.slotKey],
+      inputColumns
+    };
+  }
+  return result;
+}
+
+/**
+ * Compute role → column map for the analysis transform's own input bindings.
+ * For each MEASURE input binding of the analysis, match it to a root slot in
+ * the graph (root slots correspond to binding position), then resolve that
+ * slot's column: if it's in the chain, use its outputColumn; otherwise follow
+ * `pipelineReferences` and use the referent's outputColumn. Returns
+ * `{ role: column }` for roles that can be resolved — dimension bindings and
+ * unresolved slots are omitted so R's build_concept_var_map resolves them
+ * concept-keyed as before.
+ */
+export function computeAnalysisInputColumns(slots, chain, pipelineReferences = [], analysisTransform) {
+  if (!analysisTransform) return {};
+  const sanitize = k => '__col_' + String(k).replace(/[^A-Za-z0-9]/g, '_');
+  const chainKeys = new Set((chain || []).map(e => e.slotKey));
+  const outputCol = {};
+  for (const entry of (chain || [])) {
+    const slot = findSlotByKeyDeep(slots, entry.slotKey);
+    const sliceSuffix = slot?.slice ? `_${String(slot.slice).replace(/[^A-Za-z0-9]/g, '_')}` : '';
+    outputCol[entry.slotKey] = sanitize(entry.slotKey) + sliceSuffix;
+  }
+  const refMap = new Map();
+  for (const r of (pipelineReferences || [])) {
+    if (r?.slotKey && r?.referenceSlotKey) refMap.set(r.slotKey, r.referenceSlotKey);
+  }
+  const resolveRef = key => {
+    const seen = new Set();
+    let cur = key;
+    while (cur && !chainKeys.has(cur)) {
+      if (seen.has(cur)) return null;
+      seen.add(cur);
+      const next = refMap.get(cur);
+      if (!next) return null;
+      cur = next;
+    }
+    return cur;
+  };
+
+  const result = {};
+  const bindings = analysisTransform.bindings || analysisTransform.inputBindings || [];
+  // Root slots are the top-level entries in the slot tree. They line up with
+  // the bindings array by position (buildPipelineGraph iterates in order).
+  const rootByKey = new Map((slots || []).map(s => [s.key, s]));
+  bindings.forEach((b, i) => {
+    if (b.direction === 'output') return;
+    if (b.dataStructureRole === 'dimension') return;
+    const role = b.methodRole;
+    if (!role) return;
+    const concept = b.concept || b.conceptCategory;
+    if (!concept) return;
+    const rootKey = `${analysisTransform.oid}/${concept}/${i}`;
+    // Fall back to index-based lookup if the key didn't match (e.g. category
+    // resolution diverged between library concept and the slot's concept).
+    const rootSlot = rootByKey.get(rootKey) || (slots || [])[i];
+    if (!rootSlot) return;
+    if (chainKeys.has(rootSlot.key)) {
+      result[role] = outputCol[rootSlot.key];
+    } else {
+      const referent = resolveRef(rootSlot.key);
+      if (referent && outputCol[referent]) result[role] = outputCol[referent];
+    }
+  });
+  return result;
+}
+
+/**
+ * Return derivationChain entries sorted in post-order (leaves first,
+ * analysis root last) based on the pipeline slot tree. Needed because
+ * child derivations produce the columns consumed by their parents — the
+ * R engine executes in array order with no dependency sort.
+ *
+ * When a chain entry's subtree consumes *referenced* slots (via
+ * `pipelineReferences`), the referencing entry must run *after* the
+ * referenced chain entry produced its column. Post-order over the
+ * tree alone doesn't encode reference edges, so we do a topological
+ * adjustment: for every reference child under entry X that resolves to
+ * chain entry Y, ensure X.rank > Y.rank.
+ */
+export function orderChainPostOrder(slots, chain, pipelineReferences = []) {
+  const order = [];
+  (function walk(list) {
+    for (const s of list) {
+      if (s.children?.length) walk(s.children);
+      order.push(s.key);
+    }
+  })(slots);
+  const baseRank = new Map(order.map((k, i) => [k, i]));
+
+  // Reference adjustment. For each chain entry X whose slot has children in
+  // pipelineReferences pointing at chain entry Y, force rank(X) > rank(Y).
+  if ((pipelineReferences?.length || 0) > 0 && (chain?.length || 0) > 0) {
+    const chainKeys = new Set(chain.map(e => e.slotKey));
+    const refMap = new Map();
+    for (const r of pipelineReferences) {
+      if (r?.slotKey && r?.referenceSlotKey) refMap.set(r.slotKey, r.referenceSlotKey);
+    }
+    // Resolve a ref chain to a chain-entry slotKey (cycle-guarded).
+    const resolveToChainKey = key => {
+      const seen = new Set();
+      let cur = key;
+      while (cur && !chainKeys.has(cur)) {
+        if (seen.has(cur)) return null;
+        seen.add(cur);
+        const next = refMap.get(cur);
+        if (!next) return null;
+        cur = next;
+      }
+      return cur;
+    };
+    // Collect {from: referring chain entry, to: referenced chain entry}
+    // where `from` must be ordered after `to`.
+    const edges = [];
+    for (const entry of chain) {
+      const slot = findSlotByKeyDeep(slots, entry.slotKey);
+      if (!slot?.children?.length) continue;
+      (function collect(list) {
+        for (const c of list) {
+          if (refMap.has(c.key)) {
+            const to = resolveToChainKey(c.key);
+            if (to && to !== entry.slotKey) edges.push({ from: entry.slotKey, to });
+          }
+          if (c.children?.length) collect(c.children);
+        }
+      })(slot.children);
+    }
+    // Iteratively bump referrer ranks above their referents. Bounded by
+    // chain.length × edges.length; converges for a DAG (cycles are a user
+    // error and ignored gracefully).
+    const rank = new Map(baseRank);
+    const guard = chain.length * (edges.length + 1);
+    let changed = true, iter = 0;
+    while (changed && iter++ < guard) {
+      changed = false;
+      for (const { from, to } of edges) {
+        const rf = rank.has(from) ? rank.get(from) : Infinity;
+        const rt = rank.has(to)   ? rank.get(to)   : -Infinity;
+        if (rf <= rt) { rank.set(from, rt + 1); changed = true; }
+      }
+    }
+    return [...chain].sort((a, b) => {
+      const ai = rank.has(a.slotKey) ? rank.get(a.slotKey) : Infinity;
+      const bi = rank.has(b.slotKey) ? rank.get(b.slotKey) : Infinity;
+      return ai - bi;
+    });
+  }
+
+  return [...chain].sort((a, b) => {
+    const ai = baseRank.has(a.slotKey) ? baseRank.get(a.slotKey) : Infinity;
+    const bi = baseRank.has(b.slotKey) ? baseRank.get(b.slotKey) : Infinity;
+    return ai - bi;
+  });
 }
 
 /**

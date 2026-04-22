@@ -1,0 +1,2146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Three Models, One Flow — CDISC AC · DC · OC Concept Layer</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style>
+    :root {
+      --bg:        #1a1a2e;
+      --bg-soft:   #23233c;
+      --panel:     rgba(26,26,46,0.88);
+      --panel-bd:  #33334d;
+      --ink:       #e6e6ef;
+      --ink-soft:  #b8b8c8;
+      --muted:     #8a8aa0;
+
+      --ac:        #ff6b6b;   /* coral */
+      --ac-soft:   #8a3838;
+      --dc:        #ffb347;   /* amber */
+      --dc-soft:   #8a5e20;
+      --oc:        #4ecdc4;   /* teal */
+      --oc-soft:   #2a6f6b;
+      --cross:     #f0a030;   /* orange dashed */
+      --ghost:     #8a8aa0;
+
+      --f-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+      --f-body:    'Inter', 'Segoe UI', system-ui, sans-serif;
+      --f-mono:    'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: var(--bg); color: var(--ink);
+      font-family: var(--f-body);
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      height: 100%;
+    }
+
+    svg#graph {
+      width: 100vw; height: 100vh; display: block;
+      cursor: grab;
+    }
+    svg#graph:active { cursor: grabbing; }
+
+    /* ─── Masthead (compact top-left title block) ─── */
+    #masthead {
+      position: fixed; top: 18px; left: 20px;
+      max-width: 520px;
+      z-index: 4;
+      pointer-events: none;
+    }
+    #masthead .eyebrow {
+      font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--muted);
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 6px;
+    }
+    #masthead .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink); }
+    #masthead h1 {
+      font-family: var(--f-display); font-weight: 400;
+      font-size: 44px; line-height: 0.98; letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+    #masthead h1 em {
+      font-style: italic; font-weight: 300; color: var(--ac);
+    }
+    #masthead .subtitle {
+      margin-top: 8px;
+      font-size: 12.5px; line-height: 1.5; color: var(--ink-soft);
+      max-width: 460px;
+    }
+    #masthead .version {
+      margin-top: 10px;
+      display: flex; gap: 6px;
+      font-family: var(--f-mono); font-size: 10.5px; color: var(--muted);
+      pointer-events: auto;
+    }
+    .vbadge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 2px 8px 2px 5px;
+      border: 1px solid var(--panel-bd);
+      border-radius: 2px; background: var(--bg-soft);
+    }
+    .vbadge .sw { width: 7px; height: 7px; border-radius: 50%; }
+    .vbadge.ac .sw { background: var(--ac); }
+    .vbadge.dc .sw { background: var(--dc); }
+    .vbadge.oc .sw { background: var(--oc); }
+
+    /* ─── Legend (top-left, below masthead) ─── */
+    #legend {
+      position: fixed;
+      bottom: 16px; left: 20px;
+      background: var(--panel);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--panel-bd);
+      border-radius: 6px;
+      padding: 12px 16px;
+      color: var(--ink-soft);
+      font-size: 11.5px; line-height: 1.65;
+      z-index: 4; max-width: 320px;
+    }
+    #legend h4 {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--ink); margin: 8px 0 4px;
+    }
+    #legend h4:first-child { margin-top: 0; }
+    #legend .row { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+
+    .swatch {
+      display: inline-block; flex: 0 0 auto;
+      vertical-align: middle;
+    }
+    .swatch-dot { width: 11px; height: 11px; border-radius: 50%; }
+    .swatch-ring { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid; background: transparent; }
+    .swatch-rect { width: 14px; height: 9px; border-radius: 2px; }
+    .swatch-line { width: 22px; height: 0; border-top: 2px solid; }
+    .swatch-line.dashed { border-top-style: dashed; }
+    .swatch-line.dotted { border-top-style: dotted; border-top-width: 1.5px; }
+
+    /* ─── Controls (top-right) ─── */
+    #controls {
+      position: fixed; top: 18px; right: 20px;
+      z-index: 4;
+      display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+    }
+    .ctrl-group {
+      display: flex; gap: 6px;
+      background: var(--panel); backdrop-filter: blur(8px);
+      border: 1px solid var(--panel-bd); border-radius: 6px;
+      padding: 6px;
+    }
+    .pill {
+      font-family: var(--f-body);
+      font-size: 11.5px; font-weight: 500;
+      letter-spacing: 0.04em;
+      padding: 6px 12px 6px 9px;
+      border: 1px solid var(--panel-bd);
+      background: var(--bg-soft); color: var(--ink);
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 7px;
+      transition: all 0.15s ease;
+    }
+    .pill:hover { border-color: var(--ink-soft); }
+    .pill .sw { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+    .pill.ac .sw { background: var(--ac); }
+    .pill.dc .sw { background: var(--dc); }
+    .pill.oc .sw { background: var(--oc); }
+    .pill.dimmed { opacity: 0.35; }
+    .pill.dimmed .sw { background: var(--muted); }
+
+    .icon-btn {
+      width: 30px; height: 30px;
+      border-radius: 4px;
+      border: 1px solid var(--panel-bd);
+      background: var(--bg-soft); color: var(--ink);
+      font-family: var(--f-mono); font-size: 13px;
+      cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .icon-btn:hover { border-color: var(--ink-soft); background: #2a2a46; }
+    .icon-btn.wide { width: auto; padding: 0 10px; font-family: var(--f-body); font-size: 11px; letter-spacing: 0.05em; }
+
+    /* ─── Status line (bottom-right) ─── */
+    #status {
+      position: fixed; bottom: 12px; right: 20px;
+      font-family: var(--f-mono); font-size: 10.5px;
+      color: var(--muted);
+      z-index: 3;
+    }
+
+    /* ─── Side panel (slides from right on node click) ─── */
+    #panel {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: 420px;
+      background: var(--bg-soft);
+      border-left: 1px solid var(--panel-bd);
+      transform: translateX(100%);
+      transition: transform 0.25s ease;
+      overflow-y: auto;
+      z-index: 6;
+    }
+    #panel.open { transform: translateX(0); }
+    #panel .inner { padding: 32px 32px 60px; }
+    #panel .close-btn {
+      position: absolute; top: 16px; right: 16px;
+      width: 30px; height: 30px;
+      border-radius: 4px;
+      border: 1px solid var(--panel-bd);
+      background: transparent; color: var(--ink-soft);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    #panel .close-btn:hover { color: var(--ink); background: var(--bg); }
+
+    .panel-eyebrow {
+      font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--muted);
+      display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+    }
+    .panel-badge {
+      font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.12em;
+      padding: 3px 8px; border-radius: 2px;
+      color: var(--bg); text-transform: uppercase;
+      font-weight: 600;
+    }
+    .panel-badge.ac { background: var(--ac); }
+    .panel-badge.dc { background: var(--dc); }
+    .panel-badge.oc { background: var(--oc); }
+    .panel-badge.neutral { background: var(--muted); }
+
+    .panel-name {
+      font-family: var(--f-display); font-weight: 500;
+      font-size: 32px; line-height: 1.05; letter-spacing: -0.015em;
+      color: var(--ink); margin: 0 0 6px;
+    }
+    .panel-sub { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); margin-bottom: 20px; }
+    .panel-definition {
+      font-size: 14px; line-height: 1.6; color: var(--ink-soft);
+      margin: 0 0 24px;
+      border-left: 2px solid var(--panel-bd); padding: 2px 0 2px 14px;
+    }
+    .panel-section { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--panel-bd); }
+    .panel-section h3 {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted); margin: 0 0 10px;
+    }
+    .panel-section .row { display: flex; gap: 12px; padding: 5px 0; font-size: 12.5px; }
+    .panel-section .row .k { font-family: var(--f-mono); font-size: 11px; color: var(--muted); min-width: 108px; padding-top: 1px; }
+    .panel-section .row .v { color: var(--ink); flex: 1; }
+
+    .kbd {
+      font-family: var(--f-mono); font-size: 11.5px;
+      background: var(--bg); border: 1px solid var(--panel-bd);
+      padding: 1px 5px; border-radius: 2px; color: var(--ink-soft);
+    }
+    .math {
+      font-family: var(--f-display); font-style: italic; font-size: 22px;
+      color: var(--ink); background: var(--bg);
+      padding: 10px 14px; border-radius: 2px; display: inline-block;
+    }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 5px; }
+    .chip {
+      font-family: var(--f-mono); font-size: 11px;
+      padding: 3px 7px; border-radius: 2px;
+      background: var(--bg); color: var(--ink-soft);
+      border: 1px solid var(--panel-bd);
+    }
+    .chip.linked { cursor: pointer; transition: all 0.12s ease; }
+    .chip.linked:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+    .example-list { list-style: none; font-size: 12.5px; color: var(--ink-soft); }
+    .example-list li { padding: 3px 0 3px 14px; position: relative; line-height: 1.5; }
+    .example-list li::before { content: '·'; position: absolute; left: 2px; color: var(--muted); font-weight: 700; }
+
+    /* ─── SVG graph element styles ─── */
+    .link {
+      fill: none;
+      stroke-opacity: 0.7;
+    }
+    .link-label {
+      font-family: var(--f-body);
+      font-size: 9.5px;
+      font-style: italic;
+      pointer-events: none;
+      text-anchor: middle;
+      dominant-baseline: central;
+      fill: var(--ink-soft);
+      paint-order: stroke;
+      stroke: var(--bg);
+      stroke-width: 3px;
+    }
+    .node-label {
+      font-family: var(--f-body);
+      font-size: 10.5px;
+      font-weight: 500;
+      pointer-events: none;
+      text-anchor: middle;
+      dominant-baseline: central;
+      fill: var(--ink);
+      paint-order: stroke;
+      stroke: var(--bg);
+      stroke-width: 2.5px;
+    }
+    .node-label.kind-root {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 16px; font-weight: 500;
+      fill: #fff;
+      stroke-width: 0;
+      dominant-baseline: central;
+    }
+    .node-label.kind-category {
+      font-size: 11.5px; font-weight: 600;
+    }
+    .node-label.kind-atom,
+    .node-label.kind-facet {
+      font-size: 9.5px;
+      fill: var(--ink-soft);
+    }
+    .node-label.kind-dimension {
+      font-size: 10px; font-style: italic;
+      fill: var(--ink-soft);
+    }
+    .node.faded { opacity: 0.08; }
+    .link.faded { opacity: 0.05; }
+    .node circle, .node rect, .node ellipse {
+      transition: stroke-width 0.15s ease, opacity 0.15s ease;
+    }
+    .node.selected circle,
+    .node.selected rect { stroke: #fff; stroke-width: 3; }
+    .node.neighbor circle,
+    .node.neighbor rect { stroke: #fff; stroke-width: 2; }
+
+    /* ─── Splash (while loading) ─── */
+    .splash {
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 12px; z-index: 20;
+    }
+    .splash .spinner {
+      width: 30px; height: 30px;
+      border: 2px solid var(--panel-bd); border-top-color: var(--ink);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .splash .msg { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
+    .splash.error .spinner { display: none; }
+    .splash.error .msg { color: var(--ac); }
+  </style>
+</head>
+
+<body>
+  <div id="masthead">
+    <div class="eyebrow"><span class="dot"></span><span>CDISC AC/DC Framework — Concept Layer</span></div>
+    <h1>Three Models, <em>One Flow.</em></h1>
+    <p class="subtitle">
+      Force-directed knowledge graph of the three concept models.
+      Each dot is a concept, each line a relationship.
+      The three clusters are pulled together by the dashed edges — how observations become derivations, and derivations become analyses.
+    </p>
+    <div class="version">
+      <span class="vbadge ac"><span class="sw"></span>AC v0.16</span>
+      <span class="vbadge dc"><span class="sw"></span>DC v0.20 (Clinical)</span>
+      <span class="vbadge oc"><span class="sw"></span>OC v0.16</span>
+    </div>
+  </div>
+
+  <svg id="graph"></svg>
+
+  <div id="legend">
+    <h4>Nodes</h4>
+    <div class="row"><span class="swatch swatch-dot" style="background:var(--oc);width:16px;height:16px"></span>Model hub (AC · DC · OC)</div>
+    <div class="row"><span class="swatch swatch-dot" style="background:var(--ac)"></span>Category</div>
+    <div class="row"><span class="swatch swatch-dot" style="background:var(--dc);width:8px;height:8px"></span>Concept · pattern</div>
+    <div class="row"><span class="swatch swatch-ring" style="border-color:var(--oc)"></span>Facet · atom (leaf)</div>
+    <div class="row"><span class="swatch swatch-rect" style="background:transparent;border:1px dashed var(--ink-soft)"></span>Shared dimension</div>
+    <h4>Edges</h4>
+    <div class="row"><span class="swatch swatch-line" style="border-top-color:var(--ac)"></span>AC — category → pattern → atom</div>
+    <div class="row"><span class="swatch swatch-line" style="border-top-color:var(--dc)"></span>DC — category → concept</div>
+    <div class="row"><span class="swatch swatch-line" style="border-top-color:var(--oc)"></span>OC — hierarchy &amp; subtype</div>
+    <div class="row"><span class="swatch swatch-line dashed" style="border-top-color:var(--cross)"></span>Cross-model flow</div>
+    <div class="row"><span class="swatch swatch-line dotted" style="border-top-color:var(--ghost)"></span>Shared-dimension parallel</div>
+  </div>
+
+  <div id="controls">
+    <div class="ctrl-group">
+      <button class="pill ac" data-layer="ac"><span class="sw"></span>Analysis</button>
+      <button class="pill dc" data-layer="dc"><span class="sw"></span>Derivation</button>
+      <button class="pill oc" data-layer="oc"><span class="sw"></span>Observation</button>
+      <button class="pill" id="toggle-cross" title="Toggle cross-model edges">
+        <span style="font-family:var(--f-mono);font-size:11px;">↕ flow</span>
+      </button>
+    </div>
+    <div class="ctrl-group">
+      <button class="icon-btn" id="relayout" title="Re-run layout">↻</button>
+      <button class="icon-btn" id="zoom-in" title="Zoom in">+</button>
+      <button class="icon-btn" id="zoom-out" title="Zoom out">−</button>
+      <button class="icon-btn wide" id="reset-view">Fit</button>
+    </div>
+  </div>
+
+  <div id="status">ready</div>
+
+  <aside id="panel">
+    <button class="close-btn" id="panel-close" title="Close">×</button>
+    <div class="inner" id="panel-inner">
+      <!-- populated on node click -->
+    </div>
+  </aside>
+
+  <div class="splash" id="splash">
+    <div class="spinner"></div>
+    <div class="msg">Composing the network…</div>
+  </div>
+
+<!-- Three JSON blocks are injected here -->
+<script type="application/json" id="ac-data">{
+  "model": "AC",
+  "version": "0.16",
+  "description": "Analysis Concept model with three levels: Statistical Concepts (atoms), Result Patterns (molecules), and Categories (groupings). The shared statistics vocabulary is referenced by both methods and result patterns but owned by neither.",
+
+  "$vocabulary": {
+    "valueTypes": "../shared/fhir_value_types.json"
+  },
+
+  "designPrinciples": [
+    "Statistical concepts are individual data points — each has its own identity in the graph",
+    "Result patterns group statistical concepts that belong together and should be interpreted together",
+    "Categories group result patterns that typically appear together in the same kind of analysis",
+    "The shared statistics vocabulary is independent — methods reference it for output slots, result patterns reference it for grouping",
+    "Methods do not reference AC concepts — the Transformation maps method output slots to result patterns",
+    "The model is representation-neutral — it works in tabular, graph, or any other physical format"
+  ],
+
+  "qualifierTypes": {
+    "note": "Qualifier types are defined in the CDDM shared vocabulary (CDDM_Shared_QualifierTypes.json). They represent semantically different versions of a data definition. Statistical concepts and result patterns do not have qualifiers — qualifiers apply only to data definitions at the transformation/CDDM layer.",
+    "$ref": "CDDM_Shared_QualifierTypes.json"
+  },
+
+  "sharedStatisticsVocabulary": {
+    "note": "These are Level 1 Statistical Concepts. Both methods and result patterns reference them. Neither owns them.",
+    "concepts": {
+      "Estimate": {
+        "definition": "Point estimate of a quantity",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000599"
+      },
+      "SE": {
+        "definition": "Standard error of an estimate",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000562"
+      },
+      "CI_Lower": {
+        "definition": "Lower bound of a confidence interval",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000315"
+      },
+      "CI_Upper": {
+        "definition": "Upper bound of a confidence interval",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000314"
+      },
+      "DF": {
+        "definition": "Degrees of freedom",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000069"
+      },
+      "PValue": {
+        "definition": "P-value for a statistical test",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000193"
+      },
+      "TStatistic": {
+        "definition": "t test statistic",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000176"
+      },
+      "FStatistic": {
+        "definition": "F test statistic",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000282"
+      },
+      "ChiSquared": {
+        "definition": "Chi-squared test statistic",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000030"
+      },
+      "Coefficient": {
+        "definition": "Model coefficient (log scale for GLMs)",
+        "dataType": "decimal"
+      },
+      "HazardRatio": {
+        "definition": "Hazard ratio (exponentiated Cox coefficient)",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000224"
+      },
+      "OddsRatio": {
+        "definition": "Odds ratio (exponentiated log-odds coefficient)",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000182"
+      },
+      "SurvivalProb": {
+        "definition": "Estimated survival probability",
+        "dataType": "decimal"
+      },
+      "Median": {
+        "definition": "Median estimate",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000574"
+      },
+      "Mean": {
+        "definition": "Mean estimate",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000573"
+      },
+      "NRisk": {
+        "definition": "Number at risk",
+        "dataType": "decimal"
+      },
+      "NEvent": {
+        "definition": "Number of events",
+        "dataType": "decimal"
+      },
+      "NCensored": {
+        "definition": "Number censored",
+        "dataType": "decimal"
+      },
+      "AIC": {
+        "definition": "Akaike Information Criterion",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000328"
+      },
+      "BIC": {
+        "definition": "Bayesian Information Criterion",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000327"
+      },
+      "Minus2LogL": {
+        "definition": "-2 Log Likelihood",
+        "dataType": "decimal"
+      },
+      "DF_Num": {
+        "definition": "Numerator degrees of freedom",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000498"
+      },
+      "DF_Den": {
+        "definition": "Denominator degrees of freedom",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000527"
+      },
+      "Value": {
+        "definition": "A computed/derived value (generic)",
+        "dataType": "decimal"
+      }
+    }
+  },
+
+  "resultPatterns": {
+    "note": "Level 2 Result Patterns. Each groups a set of statistical concepts and defines the identifying relationships for each instance.",
+    "LSMeans": {
+      "definition": "Least-squares means (adjusted marginal means) per factor level or level combination",
+      "constituents": ["Estimate", "SE", "CI_Lower", "CI_Upper", "DF"],
+      "dimensions": ["group", "visit"]
+    },
+    "Contrasts": {
+      "definition": "Pairwise or custom contrasts between LS means",
+      "constituents": ["Estimate", "SE", "CI_Lower", "CI_Upper", "TStatistic", "PValue", "DF"],
+      "dimensions": ["contrast", "visit"]
+    },
+    "Type3Tests": {
+      "definition": "Type III omnibus tests, one per model term",
+      "constituents": ["FStatistic", "PValue", "DF_Num", "DF_Den"],
+      "dimensions": ["term"]
+    },
+    "ParameterEstimates": {
+      "definition": "Solution for fixed effects, one row per model coefficient",
+      "constituents": ["Coefficient", "SE", "TStatistic", "PValue", "CI_Lower", "CI_Upper", "DF"],
+      "dimensions": ["term", "level"]
+    },
+    "FitStatistics": {
+      "definition": "Overall model goodness-of-fit measures",
+      "constituents": ["AIC", "BIC", "Minus2LogL"],
+      "dimensions": []
+    },
+    "CovarianceParameters": {
+      "definition": "Estimated covariance/variance components",
+      "constituents": ["Estimate", "SE"],
+      "dimensions": ["cov_param"]
+    },
+    "TestResult": {
+      "definition": "Single overall test result",
+      "constituents": ["ChiSquared", "PValue", "DF"],
+      "dimensions": []
+    },
+    "SurvivalTable": {
+      "definition": "Life table with survival estimates at each event time",
+      "constituents": ["NRisk", "NEvent", "NCensored", "SurvivalProb", "SE", "CI_Lower", "CI_Upper"],
+      "dimensions": ["group", "time"]
+    },
+    "MedianSurvival": {
+      "definition": "Median survival time per group",
+      "constituents": ["Median", "CI_Lower", "CI_Upper"],
+      "dimensions": ["group"]
+    },
+    "EventSummary": {
+      "definition": "Summary counts of events and censoring per group",
+      "constituents": ["NRisk", "NEvent", "NCensored"],
+      "dimensions": ["group"]
+    },
+    "ComputedValue": {
+      "definition": "Single derived/computed output value",
+      "constituents": ["Value"],
+      "dimensions": ["group"]
+    },
+    "HazardRatioEstimates": {
+      "definition": "Hazard ratios with confidence intervals",
+      "constituents": ["HazardRatio", "CI_Lower", "CI_Upper"],
+      "dimensions": ["term", "level"]
+    },
+    "OddsRatioEstimates": {
+      "definition": "Odds ratios with confidence intervals",
+      "constituents": ["OddsRatio", "CI_Lower", "CI_Upper"],
+      "dimensions": ["term", "level"]
+    }
+  },
+
+  "categories": {
+    "note": "Level 3 AC Categories. Group result patterns that typically appear together.",
+    "TreatmentComparison": {
+      "definition": "A comparison of an outcome between treatment groups, producing estimated treatment effects with inference.",
+      "typicallyInvolves": ["Contrasts", "LSMeans", "Type3Tests", "ParameterEstimates", "FitStatistics"],
+      "typicalMethods": ["M.MMRM", "M.ANCOVA", "M.TTest", "M.WilcoxonRankSum"]
+    },
+    "SurvivalAnalysis": {
+      "definition": "An analysis of time-to-event outcomes, estimating survival patterns and comparing them between groups.",
+      "typicallyInvolves": ["TestResult", "SurvivalTable", "MedianSurvival", "EventSummary", "HazardRatioEstimates"],
+      "typicalMethods": ["M.LogRankTest", "M.KaplanMeier", "M.CoxPH"]
+    },
+    "DescriptiveSummary": {
+      "definition": "A statistical summary of a distribution within a group. No comparison between groups required.",
+      "typicallyInvolves": ["ComputedValue"],
+      "typicalMethods": ["M.Mean", "M.Quartile", "M.Skewness", "M.Sum", "M.WinsorizedMean"]
+    }
+  },
+
+  "methodOutputSlotMapping": {
+    "note": "This shows how method output slots map to result patterns. The method defines slots using the shared vocabulary. The Transformation maps slots to result patterns. Neither the method nor the result pattern references the other directly.",
+    "M.MMRM": {
+      "adjusted_means": "LSMeans",
+      "pairwise_diffs": "Contrasts",
+      "omnibus_tests": "Type3Tests",
+      "fixed_effects": "ParameterEstimates",
+      "model_fit": "FitStatistics",
+      "covariance": "CovarianceParameters"
+    },
+    "M.LogRankTest": {
+      "test": "TestResult"
+    },
+    "M.Quartile": {
+      "summary": "ComputedValue"
+    }
+  }
+}</script>
+<script type="application/json" id="oc-data">{
+  "model": "OC",
+  "version": "0.16",
+  "description": "Observation Data Definitions for the CDRM. Value types aligned with FHIR R5 data types.",
+  "fhirAlignment": {
+    "specVersion": "R5 (5.0.0)",
+    "reference": "https://www.hl7.org/fhir/datatypes.html"
+  },
+
+  "valueTypes": {
+    "_note": "FHIR-aligned value type vocabulary. Complex types are used for observation results and data definition valueType. Primitive types are used for method role constraints and statistical concepts.",
+
+    "primitiveTypes": {
+      "decimal": {
+        "fhirType": "decimal",
+        "definition": "Rational numbers — continuous measured values",
+        "usage": "Continuous measurements (AVAL, lab results, scores, durations)"
+      },
+      "integer": {
+        "fhirType": "integer",
+        "definition": "Signed 32-bit integers — discrete counts",
+        "usage": "Discrete counts (event counts, subject counts, ranks)"
+      },
+      "code": {
+        "fhirType": "code",
+        "definition": "String value from a defined value set",
+        "usage": "Categorical values (treatment arms, visit names, severity grades)"
+      },
+      "string": {
+        "fhirType": "string",
+        "definition": "Unicode text — free-text values",
+        "usage": "Free-text values, verbatim terms, comments"
+      },
+      "boolean": {
+        "fhirType": "boolean",
+        "definition": "true | false",
+        "usage": "Event indicators, population flags, completion flags"
+      },
+      "date": {
+        "fhirType": "date",
+        "definition": "Date (YYYY-MM-DD)",
+        "usage": "Analysis dates, event dates"
+      },
+      "dateTime": {
+        "fhirType": "dateTime",
+        "definition": "Date + time + timezone",
+        "usage": "Precise timestamps, collection times"
+      },
+      "id": {
+        "fhirType": "id",
+        "definition": "Resource identifier",
+        "usage": "Subject identifiers, record identifiers"
+      }
+    },
+
+    "complexTypes": {
+      "Quantity": {
+        "fhirType": "Quantity",
+        "definition": "Measured amount with unit of measurement",
+        "usage": "Numeric clinical values — measurements, scores, durations, concentrations",
+        "components": {
+          "value": { "type": "decimal or integer" },
+          "unit": { "type": "string" },
+          "system": { "type": "string", "note": "Unit coding system (e.g. UCUM)" },
+          "code": { "type": "code", "note": "Coded unit" }
+        },
+        "compatiblePrimitives": ["decimal", "integer"]
+      },
+      "CodeableConcept": {
+        "fhirType": "CodeableConcept",
+        "definition": "Concept defined by one or more code systems",
+        "usage": "Categorical clinical values — coded responses, treatment arms, severity grades",
+        "components": {
+          "coding": { "type": "array of {system, code, display}" },
+          "text": { "type": "string", "note": "Plain text representation" }
+        },
+        "compatiblePrimitives": ["code"]
+      },
+      "Identifier": {
+        "fhirType": "Identifier",
+        "definition": "Entity identifier with system context",
+        "usage": "Subject and record identifiers",
+        "components": {
+          "system": { "type": "string" },
+          "value": { "type": "id" }
+        },
+        "compatiblePrimitives": ["id"]
+      }
+    }
+  },
+
+  "Observation": {
+    "definition": "A single collected fact about a subject. The atomic unit of clinical data collection.",
+    "instanceStructure": {
+      "Identification": {
+        "definition": "The identity of what is being observed",
+        "cardinality": "1",
+        "relationship": "hasIdentification",
+        "dataDefinitions": {
+          "Topic": {
+            "definition": "Core subject matter: reported term, test code, or treatment name",
+            "valueType": "CodeableConcept",
+            "cardinality": "1",
+            "relationship": "hasTopic",
+            "dataDefinitions": {
+              "DictionaryCoding": {
+                "definition": "Hierarchical coded-term mapping (MedDRA, WHODrug)",
+                "valueType": "CodeableConcept",
+                "cardinality": "0..1",
+                "relationship": "codedBy",
+                "dataDefinitions": {
+                  "PreferredTerm": {
+                    "definition": "Standardised term from coding dictionary",
+                    "valueType": "CodeableConcept",
+                    "cardinality": "1",
+                    "relationship": "hasPreferredTerm"
+                  },
+                  "HierarchyLevel": {
+                    "definition": "Level in dictionary tree (SOC, HLT, PT, LLT)",
+                    "valueType": "CodeableConcept",
+                    "cardinality": "1..*",
+                    "relationship": "hasLevels"
+                  }
+                }
+              }
+            }
+          },
+          "ObservationCategory": {
+            "definition": "Grouping of related observations (e.g. lab category, AE category)",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasCategory"
+          },
+          "Sequence": {
+            "definition": "Ordinal position distinguishing multiple records of same topic",
+            "valueType": "integer",
+            "cardinality": "0..1",
+            "relationship": "hasSequence"
+          }
+        }
+      },
+      "Result": {
+        "definition": "The observed outcome: a value with optional unit, qualified by range or limit",
+        "cardinality": "0..1",
+        "relationship": "hasResult",
+        "dataDefinitions": {
+          "Value": {
+            "definition": "The actual data content. Type depends on what is being observed.",
+            "cardinality": "1",
+            "relationship": "hasValue",
+            "valueType": "Quantity | CodeableConcept | boolean | string",
+            "_note": "The valueType determines physical representation: Quantity → numeric (AVAL/--STRESN), CodeableConcept/string → character (AVALC/--STRESC). SDTM unit standardisation (--ORRES → --STRESN) is a data pipeline concern, not a concept qualifier. Quantity for numeric measurements (SBP = 120 mmHg), CodeableConcept for coded responses (severity = MODERATE), boolean for binary results (positive/negative), string for free text."
+          },
+          "Unit": {
+            "definition": "Unit of measurement for this result",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasUnit",
+            "_note": "Part of Quantity when using FHIR complex type. Separated here because collected unit and standardised unit may differ."
+          },
+          "NormalRange": {
+            "definition": "Expected range for healthy individuals",
+            "cardinality": "0..1",
+            "relationship": "hasNormalRange",
+            "dataDefinitions": {
+              "Low": { "valueType": "Quantity", "cardinality": "0..1" },
+              "High": { "valueType": "Quantity", "cardinality": "0..1" }
+            }
+          },
+          "QuantitationLimit": {
+            "definition": "Detection/quantitation limit boundary",
+            "valueType": "Quantity",
+            "cardinality": "0..1",
+            "relationship": "hasQuantitationLimit"
+          }
+        }
+      },
+      "CollectionMethod": {
+        "definition": "Instrument or technique used to collect data",
+        "valueType": "CodeableConcept",
+        "cardinality": "0..1",
+        "relationship": "collectedVia"
+      },
+      "Location": {
+        "definition": "Anatomical site of observation",
+        "valueType": "CodeableConcept",
+        "cardinality": "0..1",
+        "relationship": "atLocation",
+        "dataDefinitions": {
+          "Laterality": {
+            "definition": "Left, right, bilateral",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasLaterality"
+          }
+        }
+      },
+      "Specimen": {
+        "definition": "Biological material collected for testing",
+        "valueType": "CodeableConcept",
+        "cardinality": "0..1",
+        "relationship": "hasSpecimen"
+      },
+      "Evaluator": {
+        "definition": "Person who performed a subjective assessment",
+        "valueType": "CodeableConcept",
+        "cardinality": "0..1",
+        "relationship": "assessedBy"
+      },
+      "CompletionStatus": {
+        "definition": "Whether observation was completed",
+        "valueType": "CodeableConcept",
+        "cardinality": "0..1",
+        "relationship": "hasStatus"
+      },
+      "Comment": {
+        "definition": "Free-text annotation",
+        "valueType": "string",
+        "cardinality": "0..*",
+        "relationship": "hasComment"
+      },
+      "GenomicContext": {
+        "definition": "Chromosome, gene, variant, sequence IDs",
+        "cardinality": "0..1",
+        "relationship": "hasGenomicContext",
+        "dataDefinitions": {
+          "Gene": { "valueType": "CodeableConcept", "cardinality": "0..1" },
+          "Variant": { "valueType": "CodeableConcept", "cardinality": "0..1" },
+          "Chromosome": { "valueType": "CodeableConcept", "cardinality": "0..1" }
+        }
+      }
+    },
+
+    "sharedDimensions": {
+      "Subject": {
+        "valueType": "Identifier",
+        "relationship": "aboutSubject",
+        "cardinality": "1"
+      },
+      "Study": {
+        "valueType": "Identifier",
+        "relationship": "withinStudy",
+        "cardinality": "1"
+      },
+      "Visit": {
+        "valueType": "CodeableConcept",
+        "relationship": "atVisit",
+        "cardinality": "0..1",
+        "qualifiers": {
+          "type": "DerivationStatus",
+          "values": {
+            "Protocol": "Protocol-defined visit label",
+            "Analysis": "Derived analysis visit (from windowing)"
+          }
+        }
+      },
+      "Timepoint": {
+        "valueType": "CodeableConcept",
+        "relationship": "atTimepoint",
+        "cardinality": "0..1"
+      },
+      "Timing": {
+        "relationship": "hasTiming",
+        "cardinality": "1",
+        "dataDefinitions": {
+          "StartDate": { "valueType": "dateTime", "cardinality": "1" },
+          "EndDate": { "valueType": "dateTime", "cardinality": "0..1" },
+          "Duration": { "valueType": "Quantity", "cardinality": "0..1", "_note": "Derived from start/end" },
+          "StudyDay": {
+            "valueType": "integer",
+            "cardinality": "0..1",
+            "qualifiers": {
+              "type": "ReferenceFrame",
+              "values": {
+                "Relative": "Day relative to reference event (maps to --DY, ADY)",
+                "Absolute": "Calendar date (maps to --DTC, ADT)"
+              }
+            }
+          }
+        }
+      },
+      "Treatment": {
+        "valueType": "CodeableConcept",
+        "relationship": "receivedTreatment",
+        "cardinality": "0..1",
+        "qualifiers": {
+          "type": "IntentType",
+          "values": {
+            "Planned": "Treatment assigned at randomisation",
+            "Actual": "Treatment actually received"
+          }
+        }
+      },
+      "Population": {
+        "valueType": "CodeableConcept",
+        "relationship": "inPopulation",
+        "cardinality": "0..*"
+      },
+      "Site": {
+        "valueType": "Identifier",
+        "relationship": "atSite",
+        "cardinality": "0..1"
+      }
+    },
+
+    "observationCategories": {
+      "EventObservation": {
+        "definition": "Observation about a clinical event (adverse event, medical history)",
+        "isA": "Observation",
+        "additionalDefinitions": {
+          "Severity": {
+            "definition": "Intensity of adverse event (mild/moderate/severe)",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasSeverity",
+            "dataDefinitions": {
+              "ToxicityGrade": {
+                "definition": "Standardised grade (e.g. CTCAE 1-5)",
+                "valueType": "integer",
+                "cardinality": "0..1",
+                "relationship": "gradedAs"
+              }
+            }
+          },
+          "Causality": {
+            "definition": "Relationship of event to study treatment",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasCausality"
+          },
+          "Outcome": {
+            "definition": "How event resolved (recovered, ongoing, fatal)",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasOutcome"
+          },
+          "SeriousnessCriteria": {
+            "definition": "SAE criteria: death, hospitalisation, disability",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasSeriousness"
+          },
+          "ActionTaken": {
+            "definition": "Action with study treatment due to event",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasAction"
+          }
+        }
+      },
+      "InterventionObservation": {
+        "definition": "Observation about a treatment or medication",
+        "isA": "Observation",
+        "additionalDefinitions": {
+          "Dose": {
+            "definition": "Amount of treatment administered",
+            "valueType": "Quantity",
+            "cardinality": "0..1",
+            "relationship": "hasDose",
+            "dataDefinitions": {
+              "DoseForm": {
+                "definition": "Physical form (tablet, injection)",
+                "valueType": "CodeableConcept",
+                "cardinality": "0..1",
+                "relationship": "inForm"
+              },
+              "Frequency": {
+                "definition": "How often administered (QD, BID)",
+                "valueType": "CodeableConcept",
+                "cardinality": "0..1",
+                "relationship": "atFrequency"
+              }
+            }
+          },
+          "Route": {
+            "definition": "Route of administration (oral, IV)",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasRoute"
+          },
+          "Indication": {
+            "definition": "Reason for the treatment/medication",
+            "valueType": "CodeableConcept",
+            "cardinality": "0..1",
+            "relationship": "hasIndication"
+          }
+        }
+      },
+      "FindingObservation": {
+        "definition": "Observation about a clinical finding (lab result, vital sign, ECG)",
+        "isA": "Observation",
+        "_note": "Uses base observation structure — no additional definitions needed"
+      },
+      "FindingAboutObservation": {
+        "definition": "Observation describing an attribute of another observation",
+        "isA": "Observation",
+        "additionalDefinitions": {
+          "ObjectOfObservation": {
+            "definition": "The event or intervention being described",
+            "valueType": "Identifier",
+            "cardinality": "1",
+            "relationship": "about"
+          }
+        }
+      }
+    }
+  },
+
+  "valueTypeUsageByLayer": {
+    "_note": "How different layers of the CRAFT framework use the value type vocabulary",
+    "observationDataDefinitions": {
+      "level": "complexTypes",
+      "examples": {
+        "Result.Value": "Quantity (for numeric) or CodeableConcept (for coded)",
+        "Topic": "CodeableConcept",
+        "Subject": "Identifier",
+        "Dose": "Quantity",
+        "Severity": "CodeableConcept"
+      }
+    },
+    "derivationDataDefinitions": {
+      "level": "complexTypes",
+      "examples": {
+        "Change": "Quantity (numeric, unit inherited)",
+        "Flag": "boolean",
+        "Category": "CodeableConcept",
+        "Measure": "Quantity | CodeableConcept",
+        "TimeToEvent": "Quantity (time unit)"
+      }
+    },
+    "analysisDataDefinitions": {
+      "level": "primitiveTypes",
+      "examples": {
+        "Estimate": "decimal",
+        "PValue": "decimal",
+        "SE": "decimal",
+        "DF": "decimal",
+        "NRisk": "integer",
+        "NEvent": "integer"
+      }
+    },
+    "methodRoleConstraints": {
+      "level": "primitiveTypes or complexTypes",
+      "examples": {
+        "M.MMRM.response": "Quantity (requires numeric input)",
+        "M.ChiSquareTest.variable": "CodeableConcept (requires categorical input)",
+        "M.LogRankTest.event": "boolean (requires event indicator)"
+      }
+    }
+  }
+}</script>
+<script type="application/json" id="dc-data">{
+  "model": "DC",
+  "version": "0.20b",
+  "variant": "clinical",
+  "description": "Derivation Concepts with clinical naming. Each concept describes what kind of data the result is, using names a clinical programmer would naturally use. The concept carries only its result structure (value type and unit behaviour). Identification (MeasureIdentifier, MeasureCategory, Sequence) and shared dimensions (Subject, Timing, etc.) are external — selected by the Transformation.",
+  "namingPrinciples": [
+    "Would a clinical programmer call this data by this name without further context?",
+    "Does the name describe what the data IS, not how or why it was produced?",
+    "Can you say the name without referencing a parameter, visit, or standard?",
+    "Would you handle this data differently than any other concept?",
+    "Could you define it in one sentence without referencing another concept?",
+    "Is it a different ingredient type, not a different brand of the same ingredient?"
+  ],
+  "sharedDimensions": {
+    "note": "Dimensional concepts — also part of the concept model, but not derivation concepts. They define the context in which a derivation is performed. The Transformation selects which ones apply. The Implementation maps them to physical columns (e.g. USUBJID → Subject, PARAMCD → Parameter, AVISIT → Visit). The autoConfirm flag marks dimensions whose terminal pipeline slots are taken as source data automatically, without user confirmation.",
+    "Subject": {
+      "cardinality": "1",
+      "autoConfirm": true
+    },
+    "Timing": {
+      "cardinality": "1",
+      "autoConfirm": false
+    },
+    "Parameter": {
+      "cardinality": "0..1",
+      "autoConfirm": true
+    },
+    "AnalysisVisit": {
+      "cardinality": "0..1",
+      "autoConfirm": true
+    },
+    "Treatment": {
+      "cardinality": "0..1",
+      "autoConfirm": false
+    },
+    "Population": {
+      "cardinality": "0..1",
+      "autoConfirm": true
+    },
+    "Period": {
+      "cardinality": "0..1",
+      "autoConfirm": false
+    },
+    "Study": {
+      "cardinality": "1",
+      "autoConfirm": true
+    },
+    "Site": {
+      "cardinality": "0..1",
+      "autoConfirm": true
+    }
+  },
+  "conceptProxies": {
+    "description": "Maps app-level pseudo-categories (like 'Observation') to a DC concept that should stand in for them during transformation-matching lookups. The proxy is chosen so that its result.valueType matches the pseudo-category's expected output shape.",
+    "Observation": {
+      "proxyConcept": "Measure",
+      "rationale": "Observation results and Measure outputs share NumericValue; analyses that accept Measure inputs accept observation results."
+    }
+  },
+  "categories": {
+    "PointComputation": {
+      "definition": "A value computed at a specific point, without reference comparison, temporal aggregation, event aggregation, or classification.",
+      "inputPattern": "Method-driven. The concept defines output shape only; the method determines what inputs are needed.",
+      "concepts": {
+        "Measure": {
+          "mathematicalEquivalent": "DirectValue",
+          "definition": "A value produced by applying a computation to one or more source values.",
+          "math": "f(x₁, …, xₙ)",
+          "examples": [
+            "BMI",
+            "eGFR",
+            "QTcF",
+            "unit-converted lab",
+            "LOCF imputed value",
+            "questionnaire total score"
+          ],
+          "result": {
+            "valueType": [
+              "NumericValue",
+              "CharacterValue",
+              "CodedResponse"
+            ],
+            "unit": "inherited or specified"
+          }
+        }
+      }
+    },
+    "Comparison": {
+      "definition": "Data expressing the relationship between two values of the same parameter.",
+      "inputPattern": "Concept-driven. Requires 2× Measure inputs, intrinsic to the category.",
+      "concepts": {
+        "Change": {
+          "mathematicalEquivalent": "AbsoluteDifference",
+          "definition": "The arithmetic difference between two values of the same parameter.",
+          "math": "x − x_ref",
+          "examples": [
+            "change from baseline in SBP",
+            "inter-visit difference in weight",
+            "difference between duplicate measurements"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          }
+        },
+        "PercentChange": {
+          "mathematicalEquivalent": "RelativeDifference",
+          "definition": "The proportional difference between two values of the same parameter, expressed as a percentage.",
+          "math": "(x − x_ref) / x_ref",
+          "examples": [
+            "percent change from baseline in tumor size",
+            "relative change in eGFR"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "fixed: %"
+          }
+        },
+        "Ratio": {
+          "mathematicalEquivalent": "Ratio",
+          "definition": "The quotient of two values of the same parameter.",
+          "math": "x / x_ref",
+          "examples": [
+            "fold change in biomarker",
+            "post/pre treatment ratio"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "dimensionless"
+          }
+        },
+        "LogRatio": {
+          "mathematicalEquivalent": "LogRatio",
+          "definition": "The logarithm of the quotient of two values. Symmetric, additive scale.",
+          "math": "ln(x / x_ref)",
+          "examples": [
+            "log-fold change in gene expression",
+            "log-ratio of drug concentrations"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "dimensionless"
+          }
+        },
+        "Shift": {
+          "mathematicalEquivalent": "CategoricalTransition",
+          "definition": "The categorical movement between two values of the same parameter.",
+          "math": "class(x) vs class(x_ref)",
+          "examples": [
+            "normal-to-abnormal shift in lab",
+            "severity worsening from baseline"
+          ],
+          "result": {
+            "valueType": "CodedResponse",
+            "unit": "none"
+          }
+        }
+      }
+    },
+    "SequenceAggregate": {
+      "definition": "A summary of an ordered series of the same parameter over time.",
+      "inputPattern": "Concept-driven. Requires 1× Measure input; the ordered series emerges from dimensional scoping.",
+      "concepts": {
+        "PeakValue": {
+          "mathematicalEquivalent": "SequenceMaximum",
+          "definition": "The highest value in an ordered series.",
+          "math": "sup{yᵢ}",
+          "examples": [
+            "Cmax",
+            "maximum heart rate during exercise",
+            "highest recorded SBP"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          }
+        },
+        "TroughValue": {
+          "mathematicalEquivalent": "SequenceMinimum",
+          "definition": "The lowest value in an ordered series.",
+          "math": "inf{yᵢ}",
+          "examples": [
+            "Ctrough",
+            "nadir neutrophil count",
+            "minimum platelet count"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          }
+        },
+        "TimeToPeak": {
+          "mathematicalEquivalent": "SequenceArgMaximum",
+          "definition": "The time at which the highest value occurs.",
+          "math": "argmax_t{yᵢ}",
+          "examples": [
+            "Tmax"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          }
+        },
+        "TimeToTrough": {
+          "mathematicalEquivalent": "SequenceArgMinimum",
+          "definition": "The time at which the lowest value occurs.",
+          "math": "argmin_t{yᵢ}",
+          "examples": [
+            "time to nadir"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          }
+        },
+        "AreaUnderCurve": {
+          "mathematicalEquivalent": "SequenceIntegral",
+          "definition": "The integrated value over time.",
+          "math": "∫y dt",
+          "examples": [
+            "AUC₀₋₂₄",
+            "AUC₀₋∞",
+            "glucose AUC during OGTT"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "source_unit × time_unit"
+          }
+        },
+        "CumulativeTotal": {
+          "mathematicalEquivalent": "SequenceCumulativeSum",
+          "definition": "The running total accumulated over time.",
+          "math": "Σyᵢ for i ≤ k",
+          "examples": [
+            "cumulative dose",
+            "cumulative exposure"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          }
+        },
+        "RateOfChange": {
+          "mathematicalEquivalent": "SequenceRateOfChange",
+          "definition": "The rate at which a value changes over a time segment.",
+          "math": "Δy/Δt",
+          "examples": [
+            "eGFR slope",
+            "tumor growth rate",
+            "rate of decline in FEV1"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "source_unit / time_unit"
+          }
+        },
+        "HalfLife": {
+          "mathematicalEquivalent": "ExponentialDecayConstant",
+          "definition": "The time for a value to decline by half.",
+          "math": "ln(2) / λ",
+          "examples": [
+            "drug half-life",
+            "antibody half-life"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          }
+        },
+        "LastValue": {
+          "mathematicalEquivalent": "SequenceTerminalValue",
+          "definition": "The last observed value in an ordered series.",
+          "math": "yₙ",
+          "examples": [
+            "last observed concentration",
+            "end-of-study value"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          }
+        },
+        "FirstValue": {
+          "mathematicalEquivalent": "SequenceInitialValue",
+          "definition": "The first value in an ordered series.",
+          "math": "y₁",
+          "examples": [
+            "first post-dose concentration",
+            "initial measurement"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          }
+        },
+        "TimeInState": {
+          "mathematicalEquivalent": "SequenceThresholdDuration",
+          "definition": "The total time spent above or below a threshold.",
+          "math": "measure({t : y(t) > θ})",
+          "examples": [
+            "time in therapeutic range",
+            "time above MIC",
+            "time in hypoglycemia"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          }
+        },
+        "TimeToThreshold": {
+          "mathematicalEquivalent": "SequenceThresholdCrossing",
+          "definition": "The time at which a series first crosses a defined threshold.",
+          "math": "inf{t : y(t) = θ}",
+          "examples": [
+            "time to target concentration",
+            "time to normalization"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          }
+        },
+        "Range": {
+          "mathematicalEquivalent": "SequenceRange",
+          "definition": "The difference between the highest and lowest values in a series.",
+          "math": "sup{yᵢ} − inf{yᵢ}",
+          "examples": [
+            "blood pressure variability",
+            "PK concentration range"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          }
+        }
+      }
+    },
+    "EventAggregate": {
+      "definition": "A summary of discrete event occurrences on a timeline.",
+      "inputPattern": "Concept-driven. Requires 1× Observation (OC layer); the event set emerges from dimensional scoping.",
+      "concepts": {
+        "EventCount": {
+          "mathematicalEquivalent": "Count",
+          "definition": "The number of times an event or condition occurs.",
+          "math": "|{events}|",
+          "examples": [
+            "number of AEs",
+            "seizure count",
+            "number of exacerbations"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "none"
+          }
+        },
+        "EventRate": {
+          "mathematicalEquivalent": "Rate",
+          "definition": "The number of occurrences per unit of time or exposure.",
+          "math": "|{events}| / T",
+          "examples": [
+            "annualized relapse rate",
+            "AE rate per patient-year"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "events / time_unit"
+          }
+        },
+        "TimeToEvent": {
+          "mathematicalEquivalent": "TimeToEvent",
+          "definition": "The duration from a defined start to event occurrence or censoring.",
+          "math": "inf{tᵢ}",
+          "examples": [
+            "time to first AE",
+            "overall survival",
+            "progression-free survival"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          }
+        },
+        "TimeBetweenEvents": {
+          "mathematicalEquivalent": "InterEventInterval",
+          "definition": "The duration between consecutive recurrent events.",
+          "math": "t_{i+1} − tᵢ",
+          "examples": [
+            "time between seizures",
+            "inter-exacerbation interval"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          }
+        }
+      }
+    },
+    "Classification": {
+      "definition": "A derivation mapping value(s) to a categorical assignment.",
+      "inputPattern": "Concept-driven. Requires 1× any concept as input (the value being classified).",
+      "concepts": {
+        "Flag": {
+          "mathematicalEquivalent": "Indicator",
+          "definition": "A binary indicator evaluating a criterion (Y/N).",
+          "math": "I(criterion)",
+          "examples": [
+            "baseline flag (ABLFL)",
+            "population flag (SAFFL)",
+            "responder flag"
+          ],
+          "result": {
+            "valueType": "CodedResponse",
+            "unit": "none"
+          }
+        },
+        "Category": {
+          "mathematicalEquivalent": "Classification",
+          "definition": "A categorical grouping derived from rules.",
+          "math": "f(x) → {c₁, c₂, …}",
+          "examples": [
+            "severity grade",
+            "BMI category",
+            "renal impairment stage"
+          ],
+          "result": {
+            "valueType": "CodedResponse",
+            "unit": "none"
+          }
+        },
+        "Rank": {
+          "mathematicalEquivalent": "Rank",
+          "definition": "The ordinal position of a value within a defined scope.",
+          "math": "rank(x) within group",
+          "examples": [
+            "worst post-baseline rank",
+            "severity ranking"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "none"
+          }
+        },
+        "QuantileGroup": {
+          "mathematicalEquivalent": "Quantile",
+          "definition": "A distributional bin assignment (tertiles, quartiles, quintiles).",
+          "math": "Qₖ where F(x) in bin k",
+          "examples": [
+            "exposure quartile",
+            "baseline severity tertile"
+          ],
+          "result": {
+            "valueType": "CodedResponse",
+            "unit": "none"
+          }
+        }
+      }
+    }
+  }
+}</script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   Graph construction — nodes & links from the three JSON models
+   ═══════════════════════════════════════════════════════════════════════ */
+function buildGraph(ac, oc, dc) {
+  const nodes = [];
+  const links = [];
+  const byId = new Map();
+
+  function N(n) {
+    if (byId.has(n.id)) return;
+    byId.set(n.id, n);
+    nodes.push(n);
+  }
+  function L(source, target, edgeType, label = null) {
+    links.push({ source, target, edgeType, label });
+  }
+
+  /* Root hubs */
+  N({ id: 'root.ac', label: 'Analysis', model: 'ac', kind: 'root',
+    raw: { type: 'Model Hub', definition: 'Analysis Concepts (AC) — aggregated, non-subject-level results, organised in three levels: atoms (statistical concepts), molecules (result patterns), and categories.' } });
+  N({ id: 'root.dc', label: 'Derivation', model: 'dc', kind: 'root',
+    raw: { type: 'Model Hub', definition: 'Derivation Concepts (DC, Clinical variant) — subject-level transformations that create new data from collected or previously derived data.' } });
+  N({ id: 'root.oc', label: 'Observation', model: 'oc', kind: 'root',
+    raw: { type: 'Model Hub', definition: 'Observation Concepts (OC) — the atomic unit of clinical data collection: a single observed fact about a subject.' } });
+
+  /* AC */
+  Object.entries(ac.categories).forEach(([k, v]) => {
+    const id = 'ac.cat.' + k;
+    N({ id, label: k, model: 'ac', kind: 'category',
+        raw: { type: 'AC Category · L3', definition: v.definition,
+               typicallyInvolves: v.typicallyInvolves, typicalMethods: v.typicalMethods } });
+    L('root.ac', id, 'hub');
+    (v.typicallyInvolves || []).forEach(p => L(id, 'ac.pat.' + p, 'ac-cat-pat', 'involves'));
+  });
+  Object.entries(ac.resultPatterns).forEach(([k, v]) => {
+    if (k === 'note') return;
+    const id = 'ac.pat.' + k;
+    N({ id, label: k, model: 'ac', kind: 'pattern',
+        raw: { type: 'AC Result Pattern · L2', definition: v.definition,
+               constituents: v.constituents, dimensions: v.dimensions } });
+    (v.constituents || []).forEach(a => L(id, 'ac.atom.' + a, 'ac-pat-atom'));
+  });
+  Object.entries(ac.sharedStatisticsVocabulary.concepts).forEach(([k, v]) => {
+    N({ id: 'ac.atom.' + k, label: k, model: 'ac', kind: 'atom',
+        raw: { type: 'AC Statistical Concept · L1', definition: v.definition,
+               dataType: v.dataType, statoMapping: v.statoMapping } });
+  });
+
+  /* DC */
+  Object.entries(dc.categories).forEach(([catK, cat]) => {
+    const catId = 'dc.cat.' + catK;
+    N({ id: catId, label: catK, model: 'dc', kind: 'category',
+        raw: { type: 'DC Category', definition: cat.definition, inputPattern: cat.inputPattern } });
+    L('root.dc', catId, 'hub');
+    Object.entries(cat.concepts).forEach(([cK, cV]) => {
+      const id = 'dc.' + cK;
+      N({ id, label: cK, model: 'dc', kind: 'concept',
+          raw: { type: 'DC Concept', category: catK, categoryDefinition: cat.definition,
+                 inputPattern: cat.inputPattern, definition: cV.definition,
+                 math: cV.math, mathematicalEquivalent: cV.mathematicalEquivalent,
+                 examples: cV.examples, result: cV.result } });
+      L(catId, id, 'dc-cat-concept');
+    });
+  });
+  Object.entries(dc.sharedDimensions).forEach(([k, v]) => {
+    if (k === 'note') return;
+    const id = 'dc.dim.' + k;
+    N({ id, label: k, model: 'dc', kind: 'dimension',
+        raw: { type: 'DC Shared Dimension', cardinality: v.cardinality, autoConfirm: v.autoConfirm,
+               definition: `Dimensional concept defining the ${k} context of a derivation.` } });
+    L('root.dc', id, 'dc-hub-dim');
+  });
+
+  /* OC */
+  Object.entries(oc.Observation.observationCategories).forEach(([k, v]) => {
+    const id = 'oc.obscat.' + k;
+    N({ id, label: k, model: 'oc', kind: 'category',
+        raw: { type: 'OC Observation Subtype', definition: v.definition, isA: v.isA, note: v._note } });
+    L('root.oc', id, 'hub');
+  });
+  function walkOC(defs, parentId) {
+    Object.entries(defs).forEach(([k, v]) => {
+      if (k.startsWith('_') || k === 'note') return;
+      const id = 'oc.facet.' + k;
+      N({ id, label: k, model: 'oc', kind: 'facet',
+          raw: { type: 'OC Data Definition', definition: v.definition,
+                 valueType: v.valueType, cardinality: v.cardinality,
+                 relationship: v.relationship, qualifiers: v.qualifiers, note: v._note } });
+      if (parentId) L(parentId, id, 'oc-contains');
+      if (v.dataDefinitions) walkOC(v.dataDefinitions, id);
+    });
+  }
+  const obs = oc.Observation.instanceStructure;
+  walkOC(obs.Identification.dataDefinitions, 'root.oc');
+  walkOC(obs.Result.dataDefinitions, 'root.oc');
+  ['CollectionMethod','Location','Specimen','Evaluator','CompletionStatus','Comment','GenomicContext'].forEach(k => {
+    const v = obs[k]; if (!v) return;
+    const id = 'oc.facet.' + k;
+    N({ id, label: k, model: 'oc', kind: 'facet',
+        raw: { type: 'OC Data Definition', definition: v.definition,
+               valueType: v.valueType, cardinality: v.cardinality,
+               relationship: v.relationship, note: v._note } });
+    L('root.oc', id, 'oc-contains');
+    if (v.dataDefinitions) walkOC(v.dataDefinitions, id);
+  });
+  Object.entries(oc.Observation.sharedDimensions).forEach(([k, v]) => {
+    const id = 'oc.dim.' + k;
+    N({ id, label: k, model: 'oc', kind: 'dimension',
+        raw: { type: 'OC Shared Dimension', valueType: v.valueType,
+               cardinality: v.cardinality, relationship: v.relationship, qualifiers: v.qualifiers,
+               definition: v.definition || `Context of an observation: ${k}.` } });
+    L('root.oc', id, 'oc-hub-dim');
+  });
+  ['EventObservation','InterventionObservation','FindingObservation','FindingAboutObservation'].forEach(subt => {
+    L('oc.obscat.' + subt, 'oc.facet.Topic', 'oc-isa', 'is-a');
+  });
+
+  /* Cross-model flow edges — the narrative of the graph */
+  L('oc.facet.Value', 'dc.Measure', 'cross', 'feeds');
+  L('oc.facet.Value', 'dc.Change', 'cross', 'feeds');
+  ['EventCount','EventRate','TimeToEvent','TimeBetweenEvents'].forEach(c =>
+    L('oc.obscat.EventObservation', 'dc.' + c, 'cross', 'event-of'));
+  ['PeakValue','TroughValue','AreaUnderCurve','RateOfChange'].forEach(c =>
+    L('oc.obscat.FindingObservation', 'dc.' + c, 'cross', 'series'));
+  L('dc.Measure',     'ac.pat.LSMeans',            'cross', 'input-of');
+  L('dc.Measure',     'ac.pat.ComputedValue',      'cross', 'input-of');
+  L('dc.Change',      'ac.pat.Contrasts',          'cross', 'input-of');
+  L('dc.TimeToEvent', 'ac.pat.SurvivalTable',      'cross', 'input-of');
+  L('dc.TimeToEvent', 'ac.pat.MedianSurvival',     'cross', 'input-of');
+  L('dc.EventCount',  'ac.pat.EventSummary',       'cross', 'input-of');
+  L('dc.Flag',        'ac.pat.TestResult',         'cross', 'input-of');
+  L('dc.Category',    'ac.pat.OddsRatioEstimates', 'cross', 'input-of');
+
+  /* Shared-dimension ghosts (OC ↔ DC) */
+  [['Subject','Subject'], ['Study','Study'], ['Visit','AnalysisVisit'],
+   ['Treatment','Treatment'], ['Population','Population'], ['Site','Site'], ['Timing','Timing']
+  ].forEach(([o, d]) => {
+    const s = 'oc.dim.' + o, t = 'dc.dim.' + d;
+    if (byId.has(s) && byId.has(t)) L(s, t, 'ghost');
+  });
+
+  return { nodes, links };
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Visual constants — shape, size, color per kind
+   ═══════════════════════════════════════════════════════════════════════ */
+const MODEL_COLOR = { ac: '#ff6b6b', dc: '#ffb347', oc: '#4ecdc4' };
+const MODEL_SOFT  = { ac: '#8a3838', dc: '#8a5e20', oc: '#2a6f6b' };
+
+const EDGE_STYLE = {
+  'hub':            { color: '#55556a', width: 1.0, dash: null },
+  'ac-cat-pat':     { color: '#ff8a8a', width: 1.2, dash: null },
+  'ac-pat-atom':    { color: '#cd5c5c', width: 0.9, dash: null },
+  'dc-cat-concept': { color: '#ffb347', width: 1.1, dash: null },
+  'dc-hub-dim':     { color: '#b8813d', width: 0.8, dash: '3 3' },
+  'oc-contains':    { color: '#4ecdc4', width: 1.1, dash: null },
+  'oc-hub-dim':     { color: '#2a8780', width: 0.8, dash: '3 3' },
+  'oc-isa':         { color: '#3f9b94', width: 0.9, dash: '1 3' },
+  'cross':          { color: '#f0a030', width: 1.8, dash: '5 3' },
+  'ghost':          { color: '#8a8aa0', width: 0.9, dash: '1 3' }
+};
+
+function nodeRadius(d) {
+  if (d.kind === 'root') return 32;
+  if (d.kind === 'category') return 13;
+  if (d.kind === 'pattern') return 9;
+  if (d.kind === 'concept') return 9;
+  if (d.kind === 'atom') return 5.5;
+  if (d.kind === 'facet') return 6.5;
+  if (d.kind === 'dimension') return 8;
+  return 8;
+}
+
+function nodeFill(d) {
+  const c = MODEL_COLOR[d.model] || '#999';
+  const soft = MODEL_SOFT[d.model] || '#555';
+  if (d.kind === 'root') return c;
+  if (d.kind === 'category') return c;
+  if (d.kind === 'pattern') return c;
+  if (d.kind === 'concept') return c;
+  if (d.kind === 'atom') return 'transparent';
+  if (d.kind === 'facet') return 'transparent';
+  if (d.kind === 'dimension') return 'transparent';
+  return c;
+}
+
+function nodeStroke(d) {
+  return MODEL_COLOR[d.model] || '#999';
+}
+
+function truncate(s, n) {
+  return (s && s.length > n) ? s.slice(0, n - 1) + '…' : s;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Side-panel rendering
+   ═══════════════════════════════════════════════════════════════════════ */
+function renderPanel(d, neighbors) {
+  const raw = d.raw || {};
+  const model = (d.model || 'neutral').toUpperCase();
+  const mcls  = d.model || 'neutral';
+
+  let html = '';
+  html += `<div class="panel-eyebrow"><span class="panel-badge ${mcls}">${model}</span><span>${raw.type || 'Concept'}</span></div>`;
+  html += `<h2 class="panel-name">${escapeHTML(d.label)}</h2>`;
+  const subparts = [];
+  if (raw.category) subparts.push(raw.category);
+  if (raw.mathematicalEquivalent) subparts.push(raw.mathematicalEquivalent);
+  if (subparts.length) html += `<div class="panel-sub">${subparts.join(' · ')}</div>`;
+  if (raw.definition) html += `<p class="panel-definition">${escapeHTML(raw.definition)}</p>`;
+
+  if (d.model === 'dc' && raw.math) {
+    html += `<div class="panel-section"><h3>Math</h3><div class="math">${escapeHTML(raw.math)}</div></div>`;
+  }
+  if (d.model === 'dc' && raw.result) {
+    html += `<div class="panel-section"><h3>Result</h3>`;
+    const vt = Array.isArray(raw.result.valueType) ? raw.result.valueType.join(' | ') : raw.result.valueType;
+    if (vt) html += `<div class="row"><span class="k">Value type</span><span class="v"><span class="kbd">${vt}</span></span></div>`;
+    if (raw.result.unit) html += `<div class="row"><span class="k">Unit</span><span class="v">${escapeHTML(raw.result.unit)}</span></div>`;
+    html += `</div>`;
+  }
+  if (raw.examples && raw.examples.length) {
+    html += `<div class="panel-section"><h3>Examples</h3><ul class="example-list">${raw.examples.map(e => `<li>${escapeHTML(e)}</li>`).join('')}</ul></div>`;
+  }
+  if (d.model === 'ac' && d.kind === 'pattern') {
+    if (raw.constituents && raw.constituents.length) {
+      html += `<div class="panel-section"><h3>Constituents</h3><div class="chip-row">${raw.constituents.map(c => `<span class="chip linked" data-jump="ac.atom.${c}">${c}</span>`).join('')}</div></div>`;
+    }
+    if (raw.dimensions && raw.dimensions.length) {
+      html += `<div class="panel-section"><h3>Dimensions</h3><div class="chip-row">${raw.dimensions.map(c => `<span class="chip">${c}</span>`).join('')}</div></div>`;
+    }
+  }
+  if (d.model === 'ac' && d.kind === 'category') {
+    if (raw.typicallyInvolves && raw.typicallyInvolves.length) {
+      html += `<div class="panel-section"><h3>Typically involves</h3><div class="chip-row">${raw.typicallyInvolves.map(c => `<span class="chip linked" data-jump="ac.pat.${c}">${c}</span>`).join('')}</div></div>`;
+    }
+    if (raw.typicalMethods && raw.typicalMethods.length) {
+      html += `<div class="panel-section"><h3>Typical methods</h3><div class="chip-row">${raw.typicalMethods.map(c => `<span class="chip">${c}</span>`).join('')}</div></div>`;
+    }
+  }
+  if (d.model === 'ac' && d.kind === 'atom') {
+    html += `<div class="panel-section"><h3>Details</h3>`;
+    if (raw.dataType) html += `<div class="row"><span class="k">Data type</span><span class="v"><span class="kbd">${raw.dataType}</span></span></div>`;
+    if (raw.statoMapping) html += `<div class="row"><span class="k">STATO</span><span class="v"><span class="kbd">${raw.statoMapping}</span></span></div>`;
+    html += `</div>`;
+  }
+  if (d.model === 'oc' && d.kind === 'facet') {
+    html += `<div class="panel-section"><h3>Facet</h3>`;
+    if (raw.valueType)    html += `<div class="row"><span class="k">Value type</span><span class="v"><span class="kbd">${raw.valueType}</span></span></div>`;
+    if (raw.cardinality)  html += `<div class="row"><span class="k">Cardinality</span><span class="v"><span class="kbd">${raw.cardinality}</span></span></div>`;
+    if (raw.relationship) html += `<div class="row"><span class="k">Relationship</span><span class="v"><span class="kbd">${raw.relationship}</span></span></div>`;
+    html += `</div>`;
+    if (raw.qualifiers) {
+      html += `<div class="panel-section"><h3>Qualifiers</h3>`;
+      html += `<div class="row"><span class="k">Type</span><span class="v">${raw.qualifiers.type}</span></div>`;
+      Object.entries(raw.qualifiers.values || {}).forEach(([k, v]) => {
+        html += `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+      });
+      html += `</div>`;
+    }
+  }
+  if (d.model === 'oc' && d.kind === 'category') {
+    html += `<div class="panel-section"><h3>Subtype of</h3><div class="chip-row"><span class="chip">${raw.isA || 'Observation'}</span></div></div>`;
+    if (raw.note) html += `<div class="panel-section"><h3>Note</h3><p style="font-size:12.5px;color:var(--ink-soft);line-height:1.55">${escapeHTML(raw.note)}</p></div>`;
+  }
+  if (d.kind === 'dimension') {
+    html += `<div class="panel-section"><h3>Dimension</h3>`;
+    if (raw.valueType)    html += `<div class="row"><span class="k">Value type</span><span class="v"><span class="kbd">${raw.valueType}</span></span></div>`;
+    if (raw.cardinality)  html += `<div class="row"><span class="k">Cardinality</span><span class="v"><span class="kbd">${raw.cardinality}</span></span></div>`;
+    if (raw.relationship) html += `<div class="row"><span class="k">Relationship</span><span class="v"><span class="kbd">${raw.relationship}</span></span></div>`;
+    if (raw.autoConfirm !== undefined) html += `<div class="row"><span class="k">Auto-confirm</span><span class="v">${raw.autoConfirm ? 'yes' : 'no'}</span></div>`;
+    html += `</div>`;
+  }
+  if (d.kind === 'root') {
+    html += `<div class="panel-section"><h3>Model hub</h3><p style="font-size:12.5px;color:var(--ink-soft);line-height:1.6">Click any connected concept to explore the model.</p></div>`;
+  }
+
+  if (neighbors && neighbors.length) {
+    const groups = { oc: [], dc: [], ac: [] };
+    neighbors.forEach(n => { if (groups[n.model]) groups[n.model].push(n); });
+    html += `<div class="panel-section"><h3>Connects to</h3>`;
+    Object.entries(groups).forEach(([k, arr]) => {
+      if (!arr.length) return;
+      html += `<div class="row"><span class="k">${k.toUpperCase()}</span><span class="v"><div class="chip-row">${arr.slice(0, 40).map(a => `<span class="chip linked" data-jump="${a.id}">${escapeHTML(a.label)}</span>`).join('')}</div></span></div>`;
+    });
+    html += `</div>`;
+  }
+  return html;
+}
+
+function escapeHTML(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Main — parse, construct, render with D3 force simulation
+   ═══════════════════════════════════════════════════════════════════════ */
+(() => {
+  const splash = document.getElementById('splash');
+  let ac, oc, dc;
+  try {
+    ac = JSON.parse(document.getElementById('ac-data').textContent);
+    oc = JSON.parse(document.getElementById('oc-data').textContent);
+    dc = JSON.parse(document.getElementById('dc-data').textContent);
+  } catch (err) {
+    splash.classList.add('error');
+    splash.querySelector('.msg').textContent = 'Could not parse concept models: ' + err.message;
+    return;
+  }
+
+  const { nodes, links } = buildGraph(ac, oc, dc);
+  const byId = new Map(nodes.map(n => [n.id, n]));
+
+  const svg = d3.select('#graph');
+  const width  = window.innerWidth;
+  const height = window.innerHeight;
+  svg.attr('viewBox', [0, 0, width, height]);
+
+  // Defs — arrowhead markers (one per edge color)
+  const defs = svg.append('defs');
+  const arrowColors = Array.from(new Set(Object.values(EDGE_STYLE).map(s => s.color)));
+  arrowColors.forEach((color, i) => {
+    defs.append('marker')
+      .attr('id', 'arrow-' + i)
+      .attr('viewBox', '0 -5 10 10')
+      .attr('refX', 12).attr('refY', 0)
+      .attr('markerWidth', 5).attr('markerHeight', 5)
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,-5L10,0L0,5')
+      .attr('fill', color);
+  });
+  function arrowId(edgeType) {
+    const color = EDGE_STYLE[edgeType]?.color || '#999';
+    return 'arrow-' + arrowColors.indexOf(color);
+  }
+
+  const rootG = svg.append('g').attr('class', 'root');
+  const zoom = d3.zoom()
+    .scaleExtent([0.25, 4])
+    .on('zoom', (ev) => rootG.attr('transform', ev.transform));
+  svg.call(zoom);
+
+  const linkLayer      = rootG.append('g').attr('class', 'links');
+  const linkLabelLayer = rootG.append('g').attr('class', 'link-labels');
+  const nodeLayer      = rootG.append('g').attr('class', 'nodes');
+
+  /* Build selections */
+  const linkSel = linkLayer.selectAll('line').data(links).join('line')
+    .attr('class', 'link')
+    .attr('stroke', d => EDGE_STYLE[d.edgeType]?.color || '#888')
+    .attr('stroke-width', d => EDGE_STYLE[d.edgeType]?.width || 1)
+    .attr('stroke-dasharray', d => EDGE_STYLE[d.edgeType]?.dash)
+    .attr('marker-end', d => (d.edgeType === 'cross') ? `url(#${arrowId(d.edgeType)})` : null);
+
+  const linkLabelSel = linkLabelLayer.selectAll('text')
+    .data(links.filter(l => l.label && l.edgeType === 'cross'))
+    .join('text')
+    .attr('class', 'link-label')
+    .text(d => d.label);
+
+  const nodeSel = nodeLayer.selectAll('g.node').data(nodes).join('g')
+    .attr('class', 'node')
+    .style('cursor', 'grab')
+    .on('click', (ev, d) => {
+      ev.stopPropagation();
+      selectNode(d);
+    })
+    .call(d3.drag()
+      .on('start', (ev, d) => {
+        if (!ev.active) sim.alphaTarget(0.3).restart();
+        d.fx = d.x; d.fy = d.y;
+      })
+      .on('drag', (ev, d) => { d.fx = ev.x; d.fy = ev.y; })
+      .on('end', (ev, d) => {
+        if (!ev.active) sim.alphaTarget(0);
+        d.fx = null; d.fy = null;
+      }));
+
+  nodeSel.append('title').text(d => `${d.label}\n${(d.raw && d.raw.type) || ''}`);
+
+  nodeSel.each(function(d) {
+    const sel = d3.select(this);
+    if (d.kind === 'dimension') {
+      sel.append('rect')
+        .attr('x', -10).attr('y', -7)
+        .attr('width', 20).attr('height', 14)
+        .attr('rx', 3)
+        .attr('fill', 'transparent')
+        .attr('stroke', nodeStroke(d))
+        .attr('stroke-width', 1.3)
+        .attr('stroke-dasharray', '3 2');
+    } else {
+      sel.append('circle')
+        .attr('r', nodeRadius(d))
+        .attr('fill', nodeFill(d))
+        .attr('stroke', nodeStroke(d))
+        .attr('stroke-width', d.kind === 'root' ? 0 : 1.5);
+    }
+  });
+
+  nodeSel.append('text')
+    .attr('class', d => 'node-label kind-' + d.kind)
+    .attr('dy', d => {
+      if (d.kind === 'root') return 0;
+      return nodeRadius(d) + 10;
+    })
+    .text(d => {
+      if (d.kind === 'root') return d.label;
+      if (d.kind === 'atom' || d.kind === 'facet') return truncate(d.label, 16);
+      return truncate(d.label, 22);
+    });
+
+  /* Force simulation */
+  const sim = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links)
+      .id(d => d.id)
+      .distance(d => {
+        if (d.edgeType === 'cross') return 180;
+        if (d.edgeType === 'ghost') return 200;
+        if (d.edgeType === 'hub') return 90;
+        if (d.edgeType === 'ac-pat-atom') return 45;
+        return 60;
+      })
+      .strength(d => {
+        if (d.edgeType === 'cross') return 0.25;
+        if (d.edgeType === 'ghost') return 0.06;
+        if (d.edgeType === 'hub') return 0.7;
+        return 0.5;
+      }))
+    .force('charge', d3.forceManyBody().strength(d => d.kind === 'root' ? -1800 : -260))
+    .force('collision', d3.forceCollide().radius(d => nodeRadius(d) + 12))
+    .force('center', d3.forceCenter(width / 2, height / 2).strength(0.04))
+    // Three gentle anchors so each model's hub sits in its own zone:
+    // AC top, DC middle, OC bottom — but free to drift.
+    .force('y-anchor', d3.forceY(d => {
+      if (d.id === 'root.ac') return height * 0.22;
+      if (d.id === 'root.dc') return height * 0.50;
+      if (d.id === 'root.oc') return height * 0.78;
+      return height * 0.50;
+    }).strength(d => d.kind === 'root' ? 0.18 : 0.02))
+    .force('x-anchor', d3.forceX(width / 2).strength(0.02))
+    .alpha(1).alphaDecay(0.018).velocityDecay(0.45);
+
+  sim.on('tick', () => {
+    linkSel
+      .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+    linkLabelSel
+      .attr('x', d => (d.source.x + d.target.x) / 2)
+      .attr('y', d => (d.source.y + d.target.y) / 2);
+    nodeSel.attr('transform', d => `translate(${d.x || 0},${d.y || 0})`);
+  });
+
+  sim.on('end', () => {
+    document.getElementById('status').textContent =
+      `${nodes.length} nodes · ${links.length} edges · settled`;
+  });
+
+  /* Hide splash once first tick has laid things out */
+  setTimeout(() => { splash.style.display = 'none'; }, 300);
+  document.getElementById('status').textContent =
+    `${nodes.length} nodes · ${links.length} edges · laying out…`;
+
+  /* ── Selection / side panel ─────────────────────────────── */
+  const panel = document.getElementById('panel');
+  const panelInner = document.getElementById('panel-inner');
+
+  function selectNode(d) {
+    nodeSel.classed('selected', n => n.id === d.id);
+    // Compute neighbors
+    const nbrIds = new Set();
+    links.forEach(l => {
+      const s = (typeof l.source === 'object') ? l.source.id : l.source;
+      const t = (typeof l.target === 'object') ? l.target.id : l.target;
+      if (s === d.id) nbrIds.add(t);
+      if (t === d.id) nbrIds.add(s);
+    });
+    nodeSel.classed('neighbor', n => nbrIds.has(n.id) && n.id !== d.id);
+    linkSel.classed('highlighted', l => {
+      const s = (typeof l.source === 'object') ? l.source.id : l.source;
+      const t = (typeof l.target === 'object') ? l.target.id : l.target;
+      return s === d.id || t === d.id;
+    });
+    const neighbors = [...nbrIds].map(id => byId.get(id)).filter(Boolean);
+    panelInner.innerHTML = renderPanel(d, neighbors);
+    panel.classList.add('open');
+    // Wire up chip jumps
+    panelInner.querySelectorAll('.chip.linked').forEach(el => {
+      el.addEventListener('click', () => {
+        const target = byId.get(el.getAttribute('data-jump'));
+        if (!target) return;
+        selectNode(target);
+        if (target.x != null && target.y != null) {
+          const k = Math.max(d3.zoomTransform(svg.node()).k, 1.1);
+          svg.transition().duration(500).call(
+            zoom.transform,
+            d3.zoomIdentity.translate(width/2 - target.x*k, height/2 - target.y*k).scale(k)
+          );
+        }
+      });
+    });
+  }
+
+  svg.on('click', () => {
+    nodeSel.classed('selected', false).classed('neighbor', false);
+    linkSel.classed('highlighted', false);
+  });
+
+  document.getElementById('panel-close').addEventListener('click', () => {
+    panel.classList.remove('open');
+    nodeSel.classed('selected', false).classed('neighbor', false);
+    linkSel.classed('highlighted', false);
+  });
+
+  /* ── Layer filter pills ─────────────────────────────────── */
+  const dimmedLayers = new Set();
+  function applyDimming() {
+    nodeSel.classed('faded', d => dimmedLayers.has(d.model));
+    linkSel.classed('faded', l => {
+      const s = (typeof l.source === 'object') ? l.source : byId.get(l.source);
+      const t = (typeof l.target === 'object') ? l.target : byId.get(l.target);
+      return (s && dimmedLayers.has(s.model)) || (t && dimmedLayers.has(t.model));
+    });
+    linkLabelSel.classed('faded', l => {
+      const s = (typeof l.source === 'object') ? l.source : byId.get(l.source);
+      const t = (typeof l.target === 'object') ? l.target : byId.get(l.target);
+      return (s && dimmedLayers.has(s.model)) || (t && dimmedLayers.has(t.model));
+    });
+  }
+  document.querySelectorAll('.pill[data-layer]').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const layer = pill.getAttribute('data-layer');
+      if (dimmedLayers.has(layer)) { dimmedLayers.delete(layer); pill.classList.remove('dimmed'); }
+      else                         { dimmedLayers.add(layer);    pill.classList.add('dimmed'); }
+      applyDimming();
+    });
+  });
+
+  /* ── Toggle cross-model edges ───────────────────────────── */
+  let crossHidden = false;
+  document.getElementById('toggle-cross').addEventListener('click', () => {
+    crossHidden = !crossHidden;
+    linkSel.filter(l => l.edgeType === 'cross' || l.edgeType === 'ghost')
+      .style('display', crossHidden ? 'none' : null);
+    linkLabelSel.style('display', crossHidden ? 'none' : null);
+    document.getElementById('toggle-cross').classList.toggle('dimmed', crossHidden);
+  });
+
+  /* ── Zoom buttons & relayout ────────────────────────────── */
+  function zoomBy(k) {
+    svg.transition().duration(260).call(zoom.scaleBy, k);
+  }
+  document.getElementById('zoom-in').addEventListener('click',  () => zoomBy(1.3));
+  document.getElementById('zoom-out').addEventListener('click', () => zoomBy(1/1.3));
+  document.getElementById('reset-view').addEventListener('click', () => {
+    svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
+  });
+  document.getElementById('relayout').addEventListener('click', () => {
+    nodes.forEach(n => { n.fx = null; n.fy = null; });
+    sim.alpha(1).restart();
+  });
+
+  /* ── Resize ─────────────────────────────────────────────── */
+  window.addEventListener('resize', () => {
+    const w = window.innerWidth, h = window.innerHeight;
+    svg.attr('viewBox', [0, 0, w, h]);
+    sim.force('center', d3.forceCenter(w / 2, h / 2).strength(0.04));
+    sim.alpha(0.3).restart();
+  });
+})();
+</script>
+</body>
+</html>

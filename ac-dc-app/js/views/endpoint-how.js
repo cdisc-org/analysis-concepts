@@ -207,7 +207,12 @@ export async function renderEndpointHow(container) {
             <div style="font-weight:600; font-size:11px; margin-bottom:4px; color:var(--cdisc-accent2); text-transform:uppercase; letter-spacing:0.5px;">Named Slices</div>
             ${namedSliceEntries.map(([sliceName, sliceDef]) => {
               const dims = sliceDef.fixedDimensions || sliceDef;
-              const dimStr = Object.entries(dims).map(([k, v]) => `${k} = ${v}`).join(', ');
+              const catCons = sliceDef.categoryConstraints || [];
+              const parts = [
+                ...Object.entries(dims).map(([k, v]) => `${k} = ${v}`),
+                ...catCons.map(c => `${c.conceptCategory} (category) = ${c.value}`)
+              ];
+              const dimStr = parts.join(', ');
               const usedBy = sliceUsage[sliceName] || [];
               return `<div style="font-size:12px; line-height:1.6;">
                 <code>${sliceName}</code>: ${dimStr}

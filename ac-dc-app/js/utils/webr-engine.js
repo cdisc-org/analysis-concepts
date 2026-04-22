@@ -10,7 +10,7 @@ let webRInstance = null;
 /** @type {boolean} */
 let initialized = false;
 
-/** @type {Map<string, {name: string, nrow: number, ncol: number, columns: string[]}>} */
+/** @type {Map<string, {name: string, nrow: number, ncol: number, columns: string[], distinctValues: Object<string, string[]>}>} */
 const loadedDatasets = new Map();
 
 /**
@@ -59,9 +59,12 @@ export async function initWebR(onProgress) {
 /**
  * Load an XPT file into the R environment.
  *
+ * Captures distinct values for low-cardinality character/factor columns so the
+ * UI can populate slice-value dropdowns from real data (e.g. EFFFL → ["N","Y"]).
+ *
  * @param {ArrayBuffer} arrayBuffer - Raw bytes of the XPT file
  * @param {string} datasetName - Name for the dataset (e.g. "ADSL")
- * @returns {Promise<{name: string, nrow: number, ncol: number, columns: string[]}>}
+ * @returns {Promise<{name: string, nrow: number, ncol: number, columns: string[], distinctValues: Object<string, string[]>}>}
  */
 export async function loadXptFile(arrayBuffer, datasetName) {
   const webR = await ensureInitialized();
@@ -75,22 +78,39 @@ export async function loadXptFile(arrayBuffer, datasetName) {
   // Read XPT and assign to global environment
   await webR.evalR(`${rName} <- haven::read_xpt("${tmpPath}")`);
 
-  // Extract metadata
+  // Extract metadata + distinct values for categorical columns (≤50 unique values).
+  // auto_unbox=FALSE keeps single-element vectors as JSON arrays so the JS side
+  // doesn't have to second-guess scalar-vs-array shape per column.
   const metaResult = await webR.evalR(`
     jsonlite::toJSON(list(
       nrow = nrow(${rName}),
       ncol = ncol(${rName}),
-      columns = colnames(${rName})
-    ), auto_unbox = TRUE)
+      columns = colnames(${rName}),
+      distinctValues = lapply(${rName}, function(col) {
+        if (is.character(col) || is.factor(col)) {
+          vals <- sort(unique(as.character(col[!is.na(col)])))
+          if (length(vals) > 0 && length(vals) <= 50) vals else NULL
+        } else NULL
+      })
+    ), auto_unbox = FALSE, null = "null")
   `);
   const metaJSON = await metaResult.toString();
   const meta = JSON.parse(metaJSON);
 
+  const unwrapScalar = v => Array.isArray(v) && v.length === 1 ? v[0] : v;
+  const distinctValues = {};
+  if (meta.distinctValues && typeof meta.distinctValues === 'object') {
+    for (const [col, vals] of Object.entries(meta.distinctValues)) {
+      if (Array.isArray(vals) && vals.length > 0) distinctValues[col] = vals;
+    }
+  }
+
   const info = {
     name: rName,
-    nrow: meta.nrow,
-    ncol: meta.ncol,
-    columns: Array.isArray(meta.columns) ? meta.columns : [meta.columns]
+    nrow: unwrapScalar(meta.nrow),
+    ncol: unwrapScalar(meta.ncol),
+    columns: Array.isArray(meta.columns) ? meta.columns : [meta.columns],
+    distinctValues
   };
 
   loadedDatasets.set(rName, info);

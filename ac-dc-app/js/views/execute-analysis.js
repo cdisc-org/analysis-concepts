@@ -1,10 +1,51 @@
 import { appState, navigateTo, rebuildSpec } from '../app.js';
-import { getAllEndpoints, getDerivationBCTopicDecode, getEndpointParameterOptions, getArmNames, getPopulationNames, getVisitLabels } from '../utils/usdm-parser.js';
+import { getAllEndpoints, getDerivationBCTopicDecode, getEndpointParameterOptions, getArmNames, getVisitLabels } from '../utils/usdm-parser.js';
 import {
   initWebR, loadXptFile, executeR, isInitialized,
   getLoadedDatasets, loadEngine, setJsonVariable
 } from '../utils/webr-engine.js';
 import { generateExecutionPayload, getVariableOptions, getDefaultVariable, resolveCallTemplate } from '../utils/r-code-generator.js';
+import { buildPipelineGraph, orderChainPostOrder, computeColumnMap, computeAnalysisInputColumns } from '../utils/transformation-linker.js';
+import { loadMethod } from '../data-loader.js';
+import { getSpecParameterValue } from './endpoint-spec.js';
+
+/**
+ * Resolve a derivation's slices into concrete {dimension, value} constraints
+ * for the payload sent to R. Slice constraints referencing a conceptCategory
+ * are substituted with the user's concrete pick from dimensionOverrides;
+ * value-level overrides from derivationSliceOverrides are also applied.
+ * Returns [] when the derivation declares no slices.
+ */
+function resolveDerivationSlices(transform, slotKey, dimensionOverrides, categoriesMap, derivSliceOverrides, endpointPicks) {
+  const slices = transform?.slices || [];
+  if (slices.length === 0) return [];
+  const bindings = transform.bindings || [];
+  const perSlotOverrides = derivSliceOverrides?.[slotKey] || {};
+  const picks = endpointPicks || {};
+  return slices.map(s => {
+    const constraints = [];
+    for (const c of (s.constraints || [])) {
+      let dim = c.dimension;
+      if (!dim && c.conceptCategory) {
+        // Resolve the category with the same precedence as bindings:
+        //   per-slot override → endpoint pick → category first member.
+        for (let i = 0; i < bindings.length; i++) {
+          if (bindings[i].conceptCategory === c.conceptCategory) {
+            dim = dimensionOverrides?.[slotKey]?.[i]?.concept;
+            if (dim) break;
+          }
+        }
+        if (!dim) dim = picks[c.conceptCategory];
+        if (!dim) dim = categoriesMap?.[c.conceptCategory]?.members?.[0]?.concept;
+      }
+      if (!dim) continue;
+      // Apply per-slot value override (user typed a different baseline label, etc.)
+      const overrideVal = perSlotOverrides?.[s.name]?.[dim];
+      constraints.push({ dimension: dim, value: overrideVal ?? c.value });
+    }
+    return { name: s.name, constraints };
+  });
+}
 
 /**
  * Determine expected datasets for configured endpoints based on their dimensions
@@ -69,6 +110,23 @@ export function renderExecuteAnalysis(container) {
   const configuredEps = selectedEps.filter(ep =>
     appState.endpointSpecs[ep.id]?.selectedAnalyses?.length > 0
   );
+
+  // Ensure every analysis's methodDef is in cache before render — without it,
+  // method config defaults (e.g. alpha=0.05 for ANCOVA) never reach the R
+  // engine, leaving `<alpha>` unsubstituted in the callTemplate.
+  const missingMethodOids = new Set();
+  for (const ep of configuredEps) {
+    const analyses = appState.resolvedSpec?.endpoints?.find(r => r.id === ep.id)?.analyses || [];
+    for (const a of analyses) {
+      const oid = a?.method?.oid;
+      if (oid && !appState.methodsCache[oid]) missingMethodOids.add(oid);
+    }
+  }
+  if (missingMethodOids.size > 0) {
+    Promise.all([...missingMethodOids].map(oid =>
+      loadMethod(appState, oid).catch(err => console.error('loadMethod failed:', oid, err))
+    )).then(() => renderExecuteAnalysis(container));
+  }
 
   const webRReady = isInitialized();
   const datasets = appState.loadedDatasets || [];
@@ -238,7 +296,7 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
       ${analyses.length === 0
         ? '<div style="font-size:12px; color:var(--cdisc-text-secondary); padding:10px;">No analyses configured for this endpoint.</div>'
         : analyses.map((analysis, aIdx) =>
-            _renderAnalysisSubcard(ep, analysis, aIdx, result, adam, selectedLang, selectedDataset, webRReady, datasets.length > 0)
+            _renderAnalysisSubcard(ep, analysis, aIdx, result, adam, selectedLang, selectedDataset, webRReady, datasets.length > 0, datasets)
           ).join('')}
 
       <!-- Combined ARD / cube view (long format across all completed analyses) -->
@@ -251,10 +309,39 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
 // Analysis sub-card — bindings, slices, formula, generated program, results
 // ---------------------------------------------------------------------------
 
-function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedLang, selectedDataset, webRReady, hasDatasets) {
+function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedLang, selectedDataset, webRReady, hasDatasets, datasets) {
   const methodOid = analysis?.method?.oid || '';
   const methodDef = appState.methodsCache?.[methodOid] || null;
   const methodName = methodDef?.name || methodOid;
+
+  // Build column-presence and distinct-value lookups across loaded datasets.
+  // Used to (a) filter binding-variable candidates to columns that actually
+  // exist in loaded data, and (b) populate slice value dropdowns with real
+  // data values (e.g. EFFFL → ["N","Y"]) instead of variable names.
+  const loadedDatasets = Array.isArray(datasets) ? datasets : [];
+  const loadedColumnSet = new Set();
+  const dataValuesByVar = {}; // colName → string[] of distinct values (union across datasets)
+  for (const ds of loadedDatasets) {
+    for (const col of (ds.columns || [])) loadedColumnSet.add(col);
+    for (const [col, vals] of Object.entries(ds.distinctValues || {})) {
+      if (!Array.isArray(vals) || vals.length === 0) continue;
+      const merged = new Set(dataValuesByVar[col] || []);
+      vals.forEach(v => merged.add(v));
+      dataValuesByVar[col] = [...merged].sort();
+    }
+  }
+  const hasLoadedColumns = loadedColumnSet.size > 0;
+
+  // Detect ADaM-style population flag columns: any character column whose
+  // distinct values are a subset of {Y, N}. Used to surface study-specific
+  // flag columns (custom names like FLG_PP1, ADASEFFFL) for "domain-keyed"
+  // dimensions like Population — whose model byDataType enumerates only
+  // CDISC-standard names (ITTFL/SAFFL/EFFFL/...) and so misses non-standard
+  // flags entirely.
+  const detectedFlagColumns = Object.entries(dataValuesByVar)
+    .filter(([, vals]) => vals.length > 0 && vals.length <= 2 && vals.every(v => v === 'Y' || v === 'N'))
+    .map(([col]) => col)
+    .sort();
 
   const implCatalog = appState.methodImplementationCatalog?.implementations || {};
   const implList = implCatalog[methodOid] || [];
@@ -345,10 +432,15 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
                 '<td>' + (b.slice || '--') + '</td>' +
               '</tr>';
             }
-            const options = getVariableOptions(concept, adam, b.requiredValueType, b.dataStructureRole);
+            const allOptions = getVariableOptions(concept, adam, b.requiredValueType, b.dataStructureRole);
+            // When data is loaded, narrow candidates to columns that exist in some loaded
+            // dataset — but always include the current default so the row never goes blank.
             const overrides = resultState.varOverrides || {};
             const displayVar = overrides[concept]
               || getDefaultVariable(concept, b.dataStructureRole, adam);
+            const options = hasLoadedColumns
+              ? [...new Set([...allOptions.filter(v => loadedColumnSet.has(v)), displayVar].filter(Boolean))]
+              : allOptions;
             return '<tr>' +
               '<td>' + b.methodRole + '</td>' +
               '<td><code>' + concept + '</code></td>' +
@@ -389,7 +481,10 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
       <!-- Resolved Slices -->
       ${slices.length > 0 ? (() => {
         const isConceptMode = (appState.modelViewMode || 'concepts') === 'concepts';
-        // Build USDM value suggestions per dimension concept
+        // Build USDM value suggestions per dimension concept.
+        // Population is intentionally omitted: USDM populations[].name is an internal
+        // identifier (e.g. "AP_1") that never matches an ADaM Y/N flag value, and the
+        // slice value here must be a literal that filters the bound column.
         const usdmValues = {};
         const parsedStudy = appState.selectedStudy;
         if (parsedStudy) {
@@ -397,8 +492,6 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
           if (paramOpts?.length) usdmValues['Parameter'] = paramOpts;
           const armOpts = getArmNames(parsedStudy);
           if (armOpts?.length) usdmValues['Treatment'] = armOpts;
-          const popOpts = getPopulationNames(parsedStudy);
-          if (popOpts?.length) usdmValues['Population'] = popOpts.map(p => typeof p === 'string' ? p : p.value);
           const visitOpts = getVisitLabels(parsedStudy);
           if (visitOpts?.length) usdmValues['AnalysisVisit'] = visitOpts;
         }
@@ -410,15 +503,35 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
           <tbody>${slices.map(s => {
             const dims = s.resolvedValues || {};
             return Object.entries(dims).map(([dim, val]) => {
-              const dimOptions = getVariableOptions(dim, adam, null, 'dimension');
+              const allDimOptions = getVariableOptions(dim, adam, null, 'dimension');
+              // For domain-keyed dimensions like Population (whose byDataType uses
+              // clinical descriptors instead of standard data-type keys), the model's
+              // enumerated variables only cover CDISC-standard names. Augment with
+              // every Y/N flag column detected in the loaded data so study-specific
+              // flags appear in the dropdown.
+              const dimEntry = adam?.dimensions?.[dim] || adam?.concepts?.[dim];
+              const isDomainKeyed = dimEntry?.byDataType
+                && !Object.keys(dimEntry.byDataType).some(k => ['string', 'code', 'id', 'decimal', 'integer'].includes(k));
+              const augmentedDimOptions = isDomainKeyed
+                ? [...new Set([...allDimOptions, ...detectedFlagColumns])]
+                : allDimOptions;
               const sliceOverrides = resultState.sliceOverrides || {};
               const overrideKey = `${s.name}|${dim}`;
               const currentVal = sliceOverrides[overrideKey]?.value ?? val;
               const currentVar = sliceOverrides[overrideKey]?.variable;
               const defaultVar = getDefaultVariable(dim, 'dimension', adam);
-              const displayVar = currentVar || defaultVar;
-              // USDM-derived value suggestions for this dimension
+              // For domain-keyed dimensions, prefer a flag column that ACTUALLY
+              // exists in loaded data over the model's first-listed default
+              // (which may be a CDISC standard the study doesn't use).
+              const displayVar = currentVar
+                || (isDomainKeyed && !loadedColumnSet.has(defaultVar) && detectedFlagColumns[0])
+                || defaultVar;
+              const dimOptions = hasLoadedColumns
+                ? [...new Set([...augmentedDimOptions.filter(v => loadedColumnSet.has(v)), displayVar].filter(Boolean))]
+                : augmentedDimOptions;
               const usdmOpts = usdmValues[dim] || [];
+              const dataVals = dataValuesByVar[displayVar] || [];
+              const hasAnyValueOptions = usdmOpts.length > 0 || dataVals.length > 0;
               return `<tr>
                 <td>${s.name}</td>
                 <td>${dim}</td>
@@ -429,17 +542,17 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
                     style="font-size:11px; padding:2px 4px; font-family:monospace;">
                     ${dimOptions.map(v => `<option value="${v}" ${v === displayVar ? 'selected' : ''}>${v}</option>`).join('')}
                   </select>` : `<code>${displayVar}</code>`)}</td>
-                <td>${usdmOpts.length > 0 ? `
+                <td>${hasAnyValueOptions ? `
                   <select class="exec-slice-val-override" data-ep-id="${ep.id}" data-slice="${s.name}" data-dim="${dim}"
                     style="font-size:11px; padding:2px 6px; width:200px;">
-                    <optgroup label="USDM">
-                      ${usdmOpts.map(v => `<option value="${v}" ${v === currentVal ? 'selected' : ''}>${v}</option>`).join('')}
-                    </optgroup>
-                    ${dimOptions.length > 0 ? `<optgroup label="ADaM">
-                      ${dimOptions.map(v => `<option value="${v}" ${v === currentVal ? 'selected' : ''}>${v}</option>`).join('')}
+                    ${dataVals.length > 0 ? `<optgroup label="${displayVar} values">
+                      ${dataVals.map(v => `<option value="${_escapeAttr(v)}" ${v === currentVal ? 'selected' : ''}>${v}</option>`).join('')}
+                    </optgroup>` : ''}
+                    ${usdmOpts.length > 0 ? `<optgroup label="USDM">
+                      ${usdmOpts.map(v => `<option value="${_escapeAttr(v)}" ${v === currentVal ? 'selected' : ''}>${v}</option>`).join('')}
                     </optgroup>` : ''}
                     <optgroup label="Template">
-                      <option value="${_escapeAttr(val)}" ${val === currentVal && !usdmOpts.includes(val) && !dimOptions.includes(val) ? 'selected' : ''}>${val}</option>
+                      <option value="${_escapeAttr(val)}" ${val === currentVal && !usdmOpts.includes(val) && !dataVals.includes(val) ? 'selected' : ''}>${val}</option>
                     </optgroup>
                   </select>`
                   : `<input class="exec-slice-val-override" data-ep-id="${ep.id}" data-slice="${s.name}" data-dim="${dim}"
@@ -514,7 +627,32 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
       ${selectedImpl ? (() => {
         const liveOvr = appState.endpointSpecs?.[ep.id]?.methodConfigOverrides || appState.methodConfig || {};
         const configs = _buildConfigs(analysis, methodDef, liveOvr);
-        const resolvedCode = resolveCallTemplate(selectedImpl, bindings, resultState.varOverrides, adam, configs, selectedDataset || 'analysis_data', analysis?.outputConfiguration);
+        // Mirror _executeAnalysis's effectiveOverrides: promote each binding's
+        // visible default into the override map UNLESS that default is the
+        // canonical primary that ingest will rename away (in which case the
+        // engine should use the concept-key column directly). Keeps the
+        // preview formula in sync with what actually runs.
+        const previewOverrides = { ...(resultState.varOverrides || {}) };
+        for (const b of bindings) {
+          if (b.direction === 'output') continue;
+          const concept = (b.concept || '').replace(/@.*/, '');
+          if (!concept || previewOverrides[concept] !== undefined) continue;
+          const entry = adam?.dimensions?.[concept] || adam?.concepts?.[concept];
+          const bt = entry?.byDataType;
+          if (!bt) continue;
+          const def = getDefaultVariable(concept, b.dataStructureRole, adam);
+          if (!def || def === concept) continue;
+          if (hasLoadedColumns && !loadedColumnSet.has(def)) continue;
+          if (def === Object.values(bt)[0]) continue;
+          previewOverrides[concept] = def;
+        }
+        // The R engine filters `selectedDataset` through execute_cube → analysis_data
+        // BEFORE running the call template. Show the same name in the preview so it's
+        // clear the model fits filtered rows, not the raw upload.
+        const callCode = resolveCallTemplate(selectedImpl, bindings, previewOverrides, adam, configs, 'analysis_data', analysis?.outputConfiguration);
+        const sliceOverridesForPreview = resultState.sliceOverrides || {};
+        const cubeHeader = _renderCubePreviewHeader(selectedDataset, slices, sliceOverridesForPreview, previewOverrides);
+        const resolvedCode = (cubeHeader ? cubeHeader + '\n\n' : '') + callCode;
         return `
       <div class="exec-bindings-section" style="margin-top:16px;">
         <div class="exec-bindings-title">GENERATED ${selectedLang} PROGRAM</div>
@@ -1048,6 +1186,15 @@ async function _executeAnalysis(container, epId, aIdx) {
   const analysis = resolvedEp.analyses?.[aIdx];
   if (!analysis) return;
 
+  // Ensure methodDef is in cache before building the payload — without it,
+  // method config defaults (alpha, ss_type, …) never reach R and template
+  // placeholders like <alpha> survive into the executed code.
+  const oid = analysis?.method?.oid;
+  if (oid && !appState.methodsCache[oid]) {
+    try { await loadMethod(appState, oid); }
+    catch (err) { console.error('loadMethod failed:', oid, err); }
+  }
+
   // Always reload the engine to pick up latest changes
   try {
     await loadEngine();
@@ -1061,18 +1208,70 @@ async function _executeAnalysis(container, epId, aIdx) {
   const overrides = resultState.varOverrides || null;
   const selectedDataset = (resultState.datasetOverride || resolvedEp.targetDataset || '').toLowerCase();
 
+  // Snapshot loaded-data column-presence + Y/N flag detection — same logic as
+  // the render path uses, so the engine sees the same column choices the user
+  // saw in the dropdowns (whether or not they explicitly clicked).
+  const _adamForExec = appState.conceptMappings?.adam || {};
+  const _loadedDsForExec = getLoadedDatasets();
+  const _loadedColsForExec = new Set();
+  const _flagColsForExec = [];
+  for (const ds of _loadedDsForExec) {
+    for (const col of (ds.columns || [])) _loadedColsForExec.add(col);
+    for (const [col, vals] of Object.entries(ds.distinctValues || {})) {
+      if (Array.isArray(vals) && vals.length > 0 && vals.length <= 2 && vals.every(v => v === 'Y' || v === 'N')) {
+        _flagColsForExec.push(col);
+      }
+    }
+  }
+  _flagColsForExec.sort();
+  // Only auto-resolve a column for domain-keyed dimensions (e.g. Population).
+  // Type-keyed dims (Parameter, AnalysisVisit, …) are handled by the R engine's
+  // existing fallback: look up the dim_name itself, which after ingest is the
+  // canonical concept-keyed column (PARAM→Parameter, AVISIT→AnalysisVisit).
+  // Auto-defaulting those to PARAMCD/AVISITN would break label-based filters.
+  const _resolveDimColumn = (dim) => {
+    const entry = _adamForExec.dimensions?.[dim] || _adamForExec.concepts?.[dim];
+    if (!entry?.byDataType) return null;
+    const isDomainKeyed = !Object.keys(entry.byDataType).some(k =>
+      ['string', 'code', 'id', 'decimal', 'integer'].includes(k));
+    if (!isDomainKeyed) return null;
+    const bt = entry.byDataType;
+    const modelDefault = bt.code || bt.string || bt.decimal || Object.values(bt)[0];
+    if (modelDefault && _loadedColsForExec.has(modelDefault)) return modelDefault;
+    if (_flagColsForExec.length > 0) return _flagColsForExec[0];
+    return modelDefault;
+  };
+
   // Build a patched single-analysis spec, apply slice overrides to its slices
   const singleAnalysis = JSON.parse(JSON.stringify(analysis));
   const sliceOverrides = resultState.sliceOverrides || {};
   if (singleAnalysis?.resolvedSlices) {
     for (const s of singleAnalysis.resolvedSlices) {
       const vals = s.resolvedValues || {};
+      const vars = s.resolvedVariables || {};
       for (const dim of Object.keys(vals)) {
         const key = `${s.name}|${dim}`;
         if (sliceOverrides[key]?.value !== undefined) {
           vals[dim] = sliceOverrides[key].value;
         }
+        // Resolve the actual filter column for this slice/dimension. Priority:
+        //   1. Explicit user override from the slices table dropdown
+        //   2. The dropdown's effective default (model default, OR detected
+        //      Y/N flag column for domain-keyed dims like Population whose
+        //      model default isn't in the loaded data)
+        // This guarantees the engine receives a column choice even when the
+        // user accepts the default without clicking — without it, the engine
+        // would fall back to the dim_name itself (Population), find no such
+        // column, and silently skip the filter.
+        const explicit = sliceOverrides[key]?.variable;
+        if (explicit) {
+          vars[dim] = explicit;
+        } else {
+          const resolved = _resolveDimColumn(dim);
+          if (resolved && resolved !== dim) vars[dim] = resolved;
+        }
       }
+      if (Object.keys(vars).length > 0) s.resolvedVariables = vars;
     }
   }
   // Merge live UI config overrides into the analysis configurationValues
@@ -1095,6 +1294,35 @@ async function _executeAnalysis(container, epId, aIdx) {
     analyses: [singleAnalysis],
     targetDataset: selectedDataset
   };
+
+  // Auto-resolve binding variable defaults into the override map ONLY when
+  // the dropdown's displayed default differs from the canonical primary that
+  // ingest_to_concepts renames away. Without this guard:
+  //   - Site → default SITEGR1, primary SITEID-renamed-to-Site → DIFFERS, set override
+  //     (otherwise engine substitutes "Site" = SITEID, 30 levels instead of 3)
+  //   - Change → default CHG, primary CHG-renamed-to-Change → SAME, no override needed
+  //     (overriding to CHG would make engine reach for a column ingest just deleted)
+  // Heuristic: ingest's primary picker takes the first byDataType entry (string-
+  // first for dimensions); JS getDefaultVariable picks code-first for dimensions
+  // and decimal-first for measures. When those agree, ingest will rename the
+  // chosen column away — so leave the override empty and let the engine use the
+  // concept-key column directly.
+  const effectiveOverrides = { ...(overrides || {}) };
+  for (const b of (singleAnalysis?.resolvedBindings || [])) {
+    if (b.direction === 'output') continue;
+    const concept = (b.concept || '').replace(/@.*/, '');
+    if (!concept) continue;
+    if (effectiveOverrides[concept] !== undefined) continue;  // explicit pick wins
+    const entry = _adamForExec.dimensions?.[concept] || _adamForExec.concepts?.[concept];
+    const bt = entry?.byDataType;
+    if (!bt) continue;
+    const def = getDefaultVariable(concept, b.dataStructureRole, _adamForExec);
+    if (!def || def === concept || !_loadedColsForExec.has(def)) continue;
+    // canonical primary that ingest will rename: first byDataType value
+    const ingestPrimary = Object.values(bt)[0];
+    if (def === ingestPrimary) continue;  // would clash with rename
+    effectiveOverrides[concept] = def;
+  }
 
   const methodOid = analysis?.method?.oid || '';
   const methodDef = appState.methodsCache?.[methodOid] || null;
@@ -1121,21 +1349,111 @@ async function _executeAnalysis(container, epId, aIdx) {
   const endpointSpec = appState.endpointSpecs?.[epId];
   const study = appState.selectedStudy;
 
-  const derivationChain = rawChain
+  // R engine executes derivations in array order with no dependency sort —
+  // reorder post-order (leaves first) so child aggregations produce columns
+  // before parent derivations reference them.
+  const fullLib = appState.transformationLibrary;
+  const analysisTx = fullLib?.analysisTransformations?.find(
+    t => t.oid === endpointSpec?.selectedTransformationOid
+  );
+  const confirmedKeys = new Set(
+    (endpointSpec?.confirmedTerminals || []).map(t => t.slotKey)
+  );
+  const slotsForSort = analysisTx
+    ? buildPipelineGraph(analysisTx, fullLib,
+        endpointSpec?.selectedDerivations || {}, confirmedKeys,
+        endpointSpec?.dimensionCategoryPicks || {},
+        appState.conceptCategories?.categories || {})
+    : [];
+  // Collect every live slot key (path-unique post-§3) so we can drop stale
+  // chain entries whose keys reference an older graph shape. Without this,
+  // pre-§3 saved specs keep feeding entries with now-unknown slotKeys —
+  // computeColumnMap can't resolve them and the R engine falls back to the
+  // concept-keyed column names, triggering merge-induced .x/.y collisions.
+  const liveKeys = new Set();
+  (function collect(list) {
+    for (const s of (list || [])) { liveKeys.add(s.key); if (s.children?.length) collect(s.children); }
+  })(slotsForSort);
+  const cleanRawChain = (rawChain || []).filter(e => liveKeys.has(e.slotKey));
+  if (cleanRawChain.length !== (rawChain || []).length) {
+    console.warn('[AC/DC] Dropped', (rawChain?.length || 0) - cleanRawChain.length,
+      'stale derivationChain entries whose slotKey no longer matches the current graph. Re-pick affected slots in Step 6 if needed.');
+  }
+  const pipelineRefs = endpointSpec?.pipelineReferences || [];
+  const sortedRawChain = orderChainPostOrder(slotsForSort, cleanRawChain, pipelineRefs);
+  const columnMap = computeColumnMap(slotsForSort, sortedRawChain, pipelineRefs);
+
+  // Debug: surface chain→columnMap mapping so we can see if any entry is empty
+  console.log('[§3 columnMap]', {
+    chainLen: sortedRawChain.length,
+    liveKeys: Array.from(liveKeys).slice(0, 5),
+    mapKeys: Object.keys(columnMap),
+    firstMap: sortedRawChain[0] ? columnMap[sortedRawChain[0].slotKey] : null
+  });
+
+  // Analysis-level chain-lookup: build role→column for the analysis transform's
+  // own measure bindings so execute_cube doesn't fall back to concept-keyed
+  // names that don't match the derived __col_ columns.
+  const analysisInputColumns = computeAnalysisInputColumns(
+    slotsForSort, sortedRawChain, pipelineRefs, analysisTx
+  );
+  console.log('[§3.7 analysisInputColumns]', analysisInputColumns);
+  // Attach to the analysis object so R's execute_cube can apply the override.
+  // `singleAnalysis` is held by reference inside `patchedSpec.analyses`, so
+  // mutating it here propagates into the serialised spec_json.
+  singleAnalysis.analysisInputColumns = analysisInputColumns;
+
+  const dimensionOverrides = endpointSpec?.dimensionOverrides || {};
+  const conceptCategories = appState.conceptCategories?.categories || {};
+
+  const derivationChain = sortedRawChain
     .filter(entry => entry.derivationOid)
     .map(entry => {
       const transform = txLib.find(t => t.oid === entry.derivationOid);
       if (!transform) return null;
-      // Merge library method configs + user overrides
+      // Resolve conceptCategory bindings → concrete concepts using:
+      //   1. per-slot Step 6 override
+      //   2. per-endpoint Step 3 category pick (cascades across all slots)
+      //   3. category's first member
+      const endpointPicks = endpointSpec?.dimensionCategoryPicks || {};
+      const resolvedBindings = (transform.bindings || []).map((b, i) => {
+        if (!b.conceptCategory) return b;
+        const override = dimensionOverrides[entry.slotKey]?.[i]?.concept;
+        const endpointPick = endpointPicks[b.conceptCategory];
+        const fallback = conceptCategories[b.conceptCategory]?.members?.[0]?.concept;
+        const concrete = override || endpointPick || b.concept || fallback;
+        if (!concrete) return b;
+        // Drop the category and inject the concrete concept
+        const { conceptCategory: _drop, ...rest } = b;
+        return { ...rest, concept: concrete };
+      });
+      // Merge library method configs + user overrides. Preserve native JS
+      // types for array/object values (e.g. windowed-visit schedule) so R
+      // can consume them as lists via configs$<name>. Only stringify scalars
+      // so that existing numeric/string placeholders keep working.
+      const normConfig = v => (v !== null && typeof v === 'object') ? v : String(v);
       const configValues = [
         ...(transform.methodConfigurations || []).map(mc =>
-          ({ name: mc.configurationName, value: String(mc.value) }))
+          ({ name: mc.configurationName, value: normConfig(mc.value) }))
       ];
       const userConfigs = derivConfigValues[entry.slotKey] || {};
       for (const [name, value] of Object.entries(userConfigs)) {
         const idx = configValues.findIndex(cv => cv.name === name);
-        if (idx >= 0) configValues[idx] = { name, value: String(value) };
-        else configValues.push({ name, value: String(value) });
+        if (idx >= 0) configValues[idx] = { name, value: normConfig(value) };
+        else configValues.push({ name, value: normConfig(value) });
+      }
+
+      // Auto-inject `parameter_label` config when the derivation declares an
+      // output binding with methodRole="parameter_label" (e.g. T.UnitConversion).
+      // The R callTemplate uses <parameter_label> as a placeholder to stamp the
+      // endpoint's user-defined Parameter label (e.g. "Weight (kg)") onto every
+      // converted row, so the downstream analysis cube can filter on it.
+      const hasParamLabelOutput = (transform.bindings || []).some(b =>
+        b.direction === 'output' && b.methodRole === 'parameter_label'
+      );
+      if (hasParamLabelOutput && !configValues.some(cv => cv.name === 'parameter_label')) {
+        const paramLabel = getSpecParameterValue(epId, endpointSpec, study);
+        if (paramLabel) configValues.push({ name: 'parameter_label', value: String(paramLabel) });
       }
       // Constraint value: only if the transform declares a constraint binding
       // on a facet-qualified concept (Observation.Identification.Topic)
@@ -1172,11 +1490,20 @@ async function _executeAnalysis(container, epId, aIdx) {
           });
         }
       }
+      const resolvedSlices = resolveDerivationSlices(
+        transform, entry.slotKey, dimensionOverrides, conceptCategories,
+        endpointSpec?.derivationSliceOverrides, endpointPicks
+      );
+      const cols = columnMap[entry.slotKey] || {};
       return {
+        slotKey: entry.slotKey,
         method: { oid: transform.usesMethod },
-        resolvedBindings: transform.bindings || [],
+        resolvedBindings,
         configurationValues: configValues,
         constraintValues,
+        resolvedSlices,
+        outputColumn: cols.outputColumn || null,
+        inputColumns: cols.inputColumns || {},
         sourceStore: userConfigs.sourceStore || null,
         sourceDomain: userConfigs.sourceDomain || null
       };
@@ -1194,7 +1521,7 @@ async function _executeAnalysis(container, epId, aIdx) {
 
   const availableDatasets = getLoadedDatasets().map(d => d.name);
   const payload = generateExecutionPayload(
-    patchedSpec, appState.conceptMappings, overrides, methodDef, rImpl,
+    patchedSpec, appState.conceptMappings, effectiveOverrides, methodDef, rImpl,
     derivationChain, unitConversions, rImplCatalog, availableDatasets
   );
 
@@ -1291,17 +1618,78 @@ async function _executeDerivationOnly(container, epId) {
   const endpointSpec = appState.endpointSpecs?.[epId];
   const study = appState.selectedStudy;
 
-  const derivationChain = rawChain.filter(e => e.derivationOid).map(entry => {
+  // Reorder to post-order (leaves first) so child aggregations run before
+  // parent derivations consume their output columns.
+  const fullLib = appState.transformationLibrary;
+  const analysisTx = fullLib?.analysisTransformations?.find(
+    t => t.oid === endpointSpec?.selectedTransformationOid
+  );
+  const confirmedKeys = new Set(
+    (endpointSpec?.confirmedTerminals || []).map(t => t.slotKey)
+  );
+  const slotsForSort = analysisTx
+    ? buildPipelineGraph(analysisTx, fullLib,
+        endpointSpec?.selectedDerivations || {}, confirmedKeys,
+        endpointSpec?.dimensionCategoryPicks || {},
+        appState.conceptCategories?.categories || {})
+    : [];
+  const liveKeys = new Set();
+  (function collect(list) {
+    for (const s of (list || [])) { liveKeys.add(s.key); if (s.children?.length) collect(s.children); }
+  })(slotsForSort);
+  const cleanRawChain = (rawChain || []).filter(e => liveKeys.has(e.slotKey));
+  if (cleanRawChain.length !== (rawChain || []).length) {
+    console.warn('[AC/DC] Dropped', (rawChain?.length || 0) - cleanRawChain.length,
+      'stale derivationChain entries whose slotKey no longer matches the current graph.');
+  }
+  const pipelineRefs = endpointSpec?.pipelineReferences || [];
+  const sortedRawChain = orderChainPostOrder(slotsForSort, cleanRawChain, pipelineRefs);
+  const columnMap = computeColumnMap(slotsForSort, sortedRawChain, pipelineRefs);
+
+  console.log('[§3 columnMap DERIV-ONLY]', {
+    chainLen: sortedRawChain.length,
+    liveKeys: Array.from(liveKeys).slice(0, 5),
+    mapKeys: Object.keys(columnMap),
+    firstMap: sortedRawChain[0] ? columnMap[sortedRawChain[0].slotKey] : null
+  });
+
+  const dimensionOverrides = endpointSpec?.dimensionOverrides || {};
+  const endpointPicks = endpointSpec?.dimensionCategoryPicks || {};
+  const conceptCategoriesMap = appState.conceptCategories?.categories || {};
+
+  const derivationChain = sortedRawChain.filter(e => e.derivationOid).map(entry => {
     const transform = txLib.find(t => t.oid === entry.derivationOid);
     if (!transform) return null;
+    const resolvedBindings = (transform.bindings || []).map((b, i) => {
+      if (!b.conceptCategory) return b;
+      const override = dimensionOverrides[entry.slotKey]?.[i]?.concept;
+      const endpointPick = endpointPicks[b.conceptCategory];
+      const fallback = conceptCategoriesMap[b.conceptCategory]?.members?.[0]?.concept;
+      const concrete = override || endpointPick || b.concept || fallback;
+      if (!concrete) return b;
+      const { conceptCategory: _drop, ...rest } = b;
+      return { ...rest, concept: concrete };
+    });
+    const normConfig2 = v => (v !== null && typeof v === 'object') ? v : String(v);
     const configValues = [...(transform.methodConfigurations || []).map(mc =>
-      ({ name: mc.configurationName, value: String(mc.value) }))];
+      ({ name: mc.configurationName, value: normConfig2(mc.value) }))];
     const userConfigs = derivConfigValues[entry.slotKey] || {};
     for (const [name, value] of Object.entries(userConfigs)) {
       const idx = configValues.findIndex(cv => cv.name === name);
-      if (idx >= 0) configValues[idx] = { name, value: String(value) };
-      else configValues.push({ name, value: String(value) });
+      if (idx >= 0) configValues[idx] = { name, value: normConfig2(value) };
+      else configValues.push({ name, value: normConfig2(value) });
     }
+
+    // Mirror _executeAnalysis: auto-inject parameter_label for derivations
+    // declaring an output binding with methodRole="parameter_label" (T.UnitConversion).
+    const hasParamLabelOutput2 = (transform.bindings || []).some(b =>
+      b.direction === 'output' && b.methodRole === 'parameter_label'
+    );
+    if (hasParamLabelOutput2 && !configValues.some(cv => cv.name === 'parameter_label')) {
+      const paramLabel = getSpecParameterValue(epId, endpointSpec, study);
+      if (paramLabel) configValues.push({ name: 'parameter_label', value: String(paramLabel) });
+    }
+
     const constraintValues = [];
     const hasTopicConstraint = (transform.bindings || []).some(b =>
       b.methodRole === 'constraint' &&
@@ -1340,17 +1728,34 @@ async function _executeDerivationOnly(container, epId) {
         console.log('[constraint] NOT resolved. bcInfo:', bcInfo, 'constraintBinding:', !!constraintBinding);
       }
     }
+    const resolvedSlices = resolveDerivationSlices(
+      transform, entry.slotKey, dimensionOverrides, conceptCategoriesMap,
+      endpointSpec?.derivationSliceOverrides, endpointPicks
+    );
+    const cols = columnMap[entry.slotKey] || {};
     const result = {
+      slotKey: entry.slotKey,
       method: { oid: transform.usesMethod },
-      resolvedBindings: transform.bindings || [],
+      resolvedBindings,
       configurationValues: configValues,
-      constraintValues
+      constraintValues,
+      resolvedSlices,
+      outputColumn: cols.outputColumn || null,
+      inputColumns: cols.inputColumns || {}
     };
     console.log('[derivation]', transform.oid, 'constraintValues:', JSON.stringify(constraintValues));
     return result;
   }).filter(Boolean);
 
-  if (derivationChain.length === 0) return;
+  if (derivationChain.length === 0) {
+    // Surface this — silent no-op was confusing for users whose spec saved
+    // an empty derivationChain or had all entries pruned for stale slotKeys.
+    console.warn('[derivation-only]', epId, 'has no executable derivation chain. Check Step 6 selections and console above for stale-key pruning warnings.');
+    const resultStateW = _ensureEndpointResult(epId);
+    resultStateW.derivationOnlyMessage = 'No derivations to execute. Check Step 6 — pick a derivation for each chain slot, or upload data with the source columns this transformation expects.';
+    renderExecuteAnalysis(container);
+    return;
+  }
 
   const resultState = _ensureEndpointResult(epId);
   const datasets = getLoadedDatasets();
@@ -1428,6 +1833,7 @@ function _renderDerivationSummary(ep) {
 
   // Check if there's a derivation-only result stored
   const derivResult = appState.endpointResults[ep.id]?.derivationOnly;
+  const derivMessage = appState.endpointResults[ep.id]?.derivationOnlyMessage;
 
   return `
     <div class="exec-bindings-section" style="margin:8px 0; padding:10px 14px; background:rgba(13,110,253,0.04); border:1px solid var(--cdisc-primary); border-radius:var(--radius);">
@@ -1435,23 +1841,43 @@ function _renderDerivationSummary(ep) {
         Derivation Pipeline (runs before analysis)
         <button class="btn btn-sm exec-derive-only-btn" data-ep-id="${ep.id}" style="margin-left:auto; font-size:11px; padding:2px 8px;">Run Derivation Only</button>
       </div>
+      ${derivMessage && !derivResult ? `
+      <div style="margin-top:6px; padding:8px 10px; background:rgba(255,193,7,0.1); border:1px solid var(--cdisc-warning, #ffc107); border-radius:var(--radius); font-size:11px;">
+        ${_escapeHtml(derivMessage)}
+      </div>` : ''}
       ${derivResult ? `
       <div style="margin-top:6px; padding:8px 10px; background:rgba(0,0,0,0.03); border-radius:var(--radius); font-size:11px; font-family:var(--font-mono);">
+        ${(() => {
+          // jsonlite::toJSON(auto_unbox=TRUE) collapses single-element character
+          // vectors to JSON strings instead of single-element arrays. Normalise
+          // every "list-of-strings" field on derivResult so the renderer can
+          // treat them uniformly without TypeError on .join().
+          const arr = (v) => v == null ? [] : Array.isArray(v) ? v : [v];
+          const original_columns = arr(derivResult.original_columns);
+          const ingested_columns = arr(derivResult.ingested_columns);
+          const final_columns = arr(derivResult.final_columns);
+          const enriched_dimensions = arr(derivResult.enriched_dimensions);
+          const log = arr(derivResult.derivation_log);
+          return `
         ${derivResult.error ? `<div style="color:var(--cdisc-error);"><strong>Error:</strong> ${_escapeHtml(derivResult.error)}</div>` : ''}
         <div><strong>Store:</strong> ${derivResult.detected_store || '?'} (${derivResult.match_count || 0} column matches${derivResult.domain_code ? `, domain=${derivResult.domain_code}` : ''})</div>
-        <div><strong>Ingest:</strong> ${(derivResult.original_columns||[]).join(', ')} → ${(derivResult.ingested_columns||[]).join(', ')}</div>
-        <div><strong>Final columns:</strong> ${(derivResult.final_columns||[]).join(', ')}</div>
+        <div><strong>Ingest:</strong> ${original_columns.join(', ')} → ${ingested_columns.join(', ')}</div>
+        <div><strong>Final columns:</strong> ${final_columns.join(', ')}</div>
         <div><strong>Rows:</strong> ${derivResult.nrow || '?'}</div>
-        ${(derivResult.derivation_log || []).map((d, i) => `
+        ${log.map((d, i) => {
+          const newCols = arr(d.new_columns);
+          const colsAtFailure = arr(d.columns_at_failure);
+          return `
           <div style="margin-top:4px;">
             <strong>#${i + 1} ${d.method || '?'}:</strong> ${d.status}
-            ${d.new_columns?.length ? `<br>New columns: <code>${d.new_columns.join(', ')}</code>` : ''}
-            ${d.columns_at_failure ? `<br>Columns at failure: <code>${d.columns_at_failure.join(', ')}</code>` : ''}
-          </div>
-        `).join('')}
-        ${derivResult.enriched_dimensions?.length ? `
-          <div style="margin-top:4px;"><strong>Enriched dimensions:</strong> <code>${derivResult.enriched_dimensions.join(', ')}</code> (merged from other datasets by Subject)</div>
-        ` : ''}
+            ${newCols.length ? `<br>New columns: <code>${newCols.join(', ')}</code>` : ''}
+            ${colsAtFailure.length ? `<br>Columns at failure: <code>${colsAtFailure.join(', ')}</code>` : ''}
+          </div>`;
+        }).join('')}
+        ${enriched_dimensions.length ? `
+          <div style="margin-top:4px;"><strong>Enriched dimensions:</strong> <code>${enriched_dimensions.join(', ')}</code> (merged from other datasets by Subject)</div>
+        ` : ''}`;
+        })()}
         ${derivResult.data_preview ? (() => {
           const preview = derivResult.data_preview;
           // jsonlite serializes data.frames as arrays of row objects
@@ -1616,6 +2042,51 @@ function _setAnalysisResult(epId, aIdx, patch) {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Render a comment block describing the cube extraction that the R engine
+ * performs before the call template runs. Makes the standalone preview
+ * honest: the user can see the slice constraints that filter `analysis_data`.
+ *
+ * Non-default slices inherit constraints from the default slice (Population,
+ * etc.) — mirroring execute_cube's inheritance so baseline pulls don't leak
+ * across populations.
+ */
+function _renderCubePreviewHeader(selectedDataset, slices, sliceOverrides, varOverrides) {
+  if (!slices || slices.length === 0) return '';
+  // Default slice: heuristic mirrors the R engine — the slice whose name
+  // isn't claimed by a binding's b.slice attribute. We don't have bindings
+  // here, so use convention: "endpoint" or the first slice.
+  const defaultSlice = slices.find(s => s.name === 'endpoint') || slices[0];
+  const defaultDims = defaultSlice?.resolvedValues || {};
+  const renderConstraint = (sliceName, dim, val) => {
+    const ovr = sliceOverrides?.[`${sliceName}|${dim}`] || {};
+    const col = ovr.variable || varOverrides?.[dim] || dim;
+    const value = ovr.value ?? val;
+    return `${col} == ${JSON.stringify(value)}`;
+  };
+  const lines = [];
+  lines.push(`# analysis_data is the cube extracted from ${selectedDataset || 'dataset'} by execute_cube():`);
+  for (const s of slices) {
+    const dims = s.resolvedValues || {};
+    const isDefault = s === defaultSlice;
+    const inheritedDims = isDefault ? {} :
+      Object.fromEntries(Object.entries(defaultDims).filter(([d]) => !(d in dims)));
+    const parts = [];
+    for (const [dim, val] of Object.entries(dims)) {
+      parts.push(renderConstraint(s.name, dim, val));
+    }
+    for (const [dim, val] of Object.entries(inheritedDims)) {
+      // Inherited constraints come from the default slice — render with the
+      // default slice's overrides, not this slice's.
+      parts.push(renderConstraint(defaultSlice.name, dim, val) + '  # inherited from default');
+    }
+    if (parts.length > 0) {
+      lines.push(`#   slice "${s.name}": ${parts.join(' & ')}`);
+    }
+  }
+  return lines.join('\n');
+}
 
 /**
  * Build config map from method definition defaults + analysis overrides.

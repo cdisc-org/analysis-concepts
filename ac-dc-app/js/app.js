@@ -62,6 +62,7 @@ export const appState = window.appState = {
   // Cached data sources
   acModel: null,
   dcModel: null,
+  conceptCategories: null,
   transformationLibrary: null,
   methodsIndex: null,
   methodsCache: {},

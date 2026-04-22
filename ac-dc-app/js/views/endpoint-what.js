@@ -1,5 +1,6 @@
 import { appState, navigateTo, rebuildSpec } from '../app.js';
 import { getAllEndpoints } from '../utils/usdm-parser.js';
+import { getPhraseResolvedRefs } from '../utils/concept-display.js';
 import {
   ensureSpec, getConceptCategoryOptions,
   buildSyntaxTemplate, updateSyntaxPreview,
@@ -186,13 +187,16 @@ function renderSmartPhrasePanel(spec) {
     sp.role === 'endpoint' && sp.references?.includes(concept)
   );
 
-  // Dimension phrases
+  // Dimension phrases — concrete references OR a single category reference
   const dimPhrases = smartPhrases.filter(sp =>
-    sp.role && sp.role !== 'endpoint' && sp.references?.length === 1
+    sp.role && sp.role !== 'endpoint' &&
+    (sp.references?.length === 1 || sp.referenceCategories?.length === 1)
   );
 
   const selectedEpPhrase = spec.selectedEndpointPhrase || (endpointPhrases[0]?.oid || null);
   const selectedDimPhrases = new Set(spec.selectedDimPhrases || []);
+  const categoriesMap = appState.conceptCategories?.categories || {};
+  const picks = spec.dimensionCategoryPicks || {};
 
   return `
     <div class="ep-library-panel">
@@ -219,14 +223,36 @@ function renderSmartPhrasePanel(spec) {
       <div style="font-size:11px; font-weight:600; color:var(--cdisc-text-secondary); margin-top:12px; margin-bottom:6px; padding-top:8px; border-top:1px solid var(--cdisc-border);">Dimension Phrases</div>
       ${dimPhrases.map(sp => {
         const isChecked = selectedDimPhrases.has(sp.oid);
-        const dimRef = sp.references?.[0] || '';
+        const concreteRef = sp.references?.[0] || '';
+        const catName = sp.referenceCategories?.[0] || '';
+        const category = catName ? categoriesMap[catName] : null;
+        const pickedConcept = catName
+          ? (picks[catName] || category?.members?.[0]?.concept || '')
+          : concreteRef;
+        // The checkbox's data-dim-ref carries the resolved concrete concept so
+        // the handler doesn't need to re-resolve. For category-bound phrases,
+        // we also add data-category so the select handler can rewrite the pick
+        // and sync cubeDimensions when it changes.
+        const dataDim = pickedConcept;
+        const subtitle = category
+          ? `<div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
+               <span style="font-size:10px; color:var(--cdisc-text-secondary);">category: <code>${catName}</code></span>
+               <select class="ep-category-pick" data-oid="${sp.oid}" data-category="${catName}"
+                 style="font-size:11px; padding:1px 4px; border:1px solid var(--cdisc-border); border-radius:3px; background:var(--cdisc-surface);">
+                 ${(category.members || []).map(m => `
+                   <option value="${m.concept}" ${m.concept === pickedConcept ? 'selected' : ''}>
+                     ${m.label || `${m.model}: ${m.concept}`}
+                   </option>`).join('')}
+               </select>
+             </div>`
+          : `<div style="font-size:10px; color:var(--cdisc-text-secondary);">${concreteRef}</div>`;
         return `
           <label class="ep-library-card" style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; ${isChecked ? 'border-color:var(--cdisc-accent2); background:rgba(161,208,202,0.08);' : ''}">
-            <input type="checkbox" class="ep-dim-phrase-cb" data-oid="${sp.oid}" data-dim-ref="${dimRef}" ${isChecked ? 'checked' : ''} style="margin-top:3px;">
-            <div>
+            <input type="checkbox" class="ep-dim-phrase-cb" data-oid="${sp.oid}" data-dim-ref="${dataDim}" data-category="${catName}" ${isChecked ? 'checked' : ''} style="margin-top:3px;">
+            <div style="flex:1;">
               <div class="ep-library-card-name">${sp.name}</div>
               <div class="ep-library-card-desc" style="font-style:italic;">${sp.phrase_template}</div>
-              <div style="font-size:10px; color:var(--cdisc-text-secondary);">${dimRef}</div>
+              ${subtitle}
             </div>
           </label>`;
       }).join('')}
@@ -458,6 +484,41 @@ function wireEndpointWhatEvents(container, study, selectedEps) {
         // Remove the dimension from cube
         if (dimRef && spec.cubeDimensions) {
           spec.cubeDimensions = spec.cubeDimensions.filter(d => d.dimension !== dimRef);
+        }
+      }
+      renderEndpointWhat(container);
+    });
+  });
+
+  // Smart phrase: category pick (e.g. VisitDimension → Visit | AnalysisVisit)
+  container.querySelectorAll('.ep-category-pick').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const epId = appState.activeEndpointId;
+      if (!epId) return;
+      ensureSpec(epId);
+      const spec = appState.endpointSpecs[epId];
+      const catName = sel.dataset.category;
+      const newConcept = sel.value;
+      if (!catName || !newConcept) return;
+      if (!spec.dimensionCategoryPicks) spec.dimensionCategoryPicks = {};
+      const oldConcept = spec.dimensionCategoryPicks[catName] || null;
+      spec.dimensionCategoryPicks[catName] = newConcept;
+
+      // If the phrase is already checked, swap the stale concrete reference
+      // in cubeDimensions for the new one (preserve any sliceValue).
+      const phraseOid = sel.dataset.oid;
+      const isChecked = (spec.selectedDimPhrases || []).includes(phraseOid);
+      if (isChecked && oldConcept && oldConcept !== newConcept) {
+        if (!spec.cubeDimensions) spec.cubeDimensions = [];
+        const idx = spec.cubeDimensions.findIndex(d => d.dimension === oldConcept);
+        if (idx >= 0) {
+          spec.cubeDimensions[idx] = { ...spec.cubeDimensions[idx], dimension: newConcept };
+          if (spec.dimensionValues && spec.dimensionValues[oldConcept] !== undefined) {
+            spec.dimensionValues[newConcept] = spec.dimensionValues[oldConcept];
+            delete spec.dimensionValues[oldConcept];
+          }
+        } else if (!spec.cubeDimensions.some(d => d.dimension === newConcept)) {
+          spec.cubeDimensions.push({ dimension: newConcept, sliceValue: '' });
         }
       }
       renderEndpointWhat(container);

@@ -1,9 +1,9 @@
 import { appState, navigateTo, rebuildSpec } from '../app.js';
 import { getAllEndpoints, getDerivationBCTopicDecode, getDerivationBCUnit } from '../utils/usdm-parser.js';
 import {
-  buildPipelineGraph, getUnresolvedConcepts
+  buildPipelineGraph, getUnresolvedConcepts, orderChainPostOrder
 } from '../utils/transformation-linker.js';
-import { displayConcept, normalizeConcept, buildSliceLookup } from '../utils/concept-display.js';
+import { displayConcept, normalizeConcept, buildSliceLookup, resolveSliceCategories } from '../utils/concept-display.js';
 import { getSpecParameterValue } from './endpoint-spec.js';
 import { isNumericOutputConcept } from '../utils/concept-classifier.js';
 import { loadMethod } from '../data-loader.js';
@@ -505,6 +505,54 @@ function renderTree(transformation, slots, activeKey, confirmedTerminals, active
     </div>`;
 }
 
+/* ─── Execution Order Panel ─── */
+
+/**
+ * Render a numbered execution-order list of the derivations in post-order
+ * (leaves first, analysis root last) — the actual order the R engine runs.
+ */
+function renderExecutionOrderPanel(slots, activeSpec, lib, transformation) {
+  const chain = activeSpec?.derivationChain || [];
+  if (chain.length === 0) return '';
+
+  const sorted = orderChainPostOrder(slots, chain, activeSpec?.pipelineReferences || []);
+  const derivations = lib?.derivationTransformations || [];
+  const analysisTx = transformation;
+
+  const rowHtml = sorted.map((entry, i) => {
+    const d = derivations.find(x => x.oid === entry.derivationOid);
+    const name = d?.name || entry.derivationOid;
+    const method = d?.usesMethod || '';
+    const role = entry.slotKey.split('/').slice(-2, -1)[0] || '';
+    return `
+      <div style="display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:8px; padding:4px 0; border-bottom:1px solid var(--cdisc-border);">
+        <div style="font-size:11px; font-weight:700; color:var(--cdisc-text-secondary); text-align:right;">${i + 1}.</div>
+        <div>
+          <div style="font-size:12px; color:var(--cdisc-text);">${name}</div>
+          <div style="font-size:10px; color:var(--cdisc-text-secondary);">concept: <code>${entry.concept}</code></div>
+        </div>
+        <span class="badge badge-secondary" style="font-size:10px;">${method}</span>
+      </div>`;
+  }).join('');
+
+  const total = sorted.length + 1;
+  return `
+    <div style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--cdisc-border);">
+      <div style="font-size:11px; font-weight:600; color:var(--cdisc-text-secondary); margin-bottom:6px;">
+        Execution Order (${total} step${total === 1 ? '' : 's'})
+      </div>
+      ${rowHtml}
+      <div style="display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:8px; padding:4px 0;">
+        <div style="font-size:11px; font-weight:700; color:var(--cdisc-success); text-align:right;">${sorted.length + 1}.</div>
+        <div>
+          <div style="font-size:12px; font-weight:600; color:var(--cdisc-text);">${analysisTx?.name || 'Analysis'}</div>
+          <div style="font-size:10px; color:var(--cdisc-text-secondary);">analysis root</div>
+        </div>
+        <span class="badge badge-secondary" style="font-size:10px;">${analysisTx?.usesMethod || ''}</span>
+      </div>
+    </div>`;
+}
+
 /* ─── Config Panel (Middle Zone) ─── */
 
 function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
@@ -514,10 +562,21 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
   // Resolve slices from the context transformation (analysis or derivation)
   const namedSlices = buildSliceLookup(transformation);
 
+  // Ancestor slices: every derivation in the chain contributes its own slices
+  // to the lookup so that a slot inheriting a `slice: "..."` from a parent
+  // binding (e.g. subtrahend of ChangeFromBaseline) can resolve that slice's
+  // definition even when its own selected derivation (Total Score) doesn't
+  // declare it.
+  const ancestorSlices = {};
+  for (const entry of (activeSpec.derivationChain || [])) {
+    const d = lib?.derivationTransformations?.find(x => x.oid === entry.derivationOid);
+    if (d) Object.assign(ancestorSlices, buildSliceLookup(d));
+  }
+
   // Merge derivation slices into lookup when viewing a derivation node
   function getSliceLookup(derivTransform) {
     const derivSlices = buildSliceLookup(derivTransform);
-    return { ...namedSlices, ...derivSlices };
+    return { ...namedSlices, ...ancestorSlices, ...derivSlices };
   }
 
   // Resolve sliceKey constraints (e.g., Parameter from biomedicalConcept)
@@ -534,32 +593,101 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
    * Render a single binding row with annotations (slice, parameter constraint, endpoint link).
    */
   function renderBindingRow(b, sliceLookup, isEditable, index) {
-    const concept = displayConcept(normalizeConcept(b));
+    // If the binding references a conceptCategory, resolve to the user's pick
+    // (per-endpoint override); otherwise fall back to the first member. The
+    // concrete concept is what gets displayed and eventually sent to the engine.
+    const categoryName = b.conceptCategory;
+    const category = categoryName
+      ? appState.conceptCategories?.categories?.[categoryName] : null;
+    const override = categoryName && slot?.key
+      ? activeSpec?.dimensionOverrides?.[slot.key]?.[index]?.concept
+      : null;
+    // Endpoint-level pick (Step 3) is the default across the whole pipeline
+    // for this category; per-slot override (Step 6) trumps it when set.
+    const endpointPick = categoryName
+      ? activeSpec?.dimensionCategoryPicks?.[categoryName] : null;
+    const categoryDefault = category?.members?.[0]?.concept;
+    const effectiveConcept = override || endpointPick || b.concept || categoryDefault || categoryName || '';
+    const concept = displayConcept(effectiveConcept);
     const typeBadge = `<span class="badge ${b.dataStructureRole === 'dimension' ? 'badge-teal' : 'badge-blue'}">${b.dataStructureRole || 'measure'}</span>`;
 
-    // Slice annotation + optional editor
+    // Category picker — user selects a concrete concept from the category's members
+    let categoryPicker = '';
+    if (category && isEditable) {
+      categoryPicker = `
+        <div style="margin-top:4px; display:flex; align-items:center; gap:6px;">
+          <span style="font-size:10px; color:var(--cdisc-text-secondary); min-width:80px;">category: <code>${categoryName}</code></span>
+          <select class="deriv-category-picker" data-slot-key="${slot?.key || ''}" data-binding-idx="${index}"
+            style="font-size:11px; padding:2px 6px; flex:1; border:1px solid var(--cdisc-border); border-radius:3px;">
+            ${category.members.map(m => `
+              <option value="${m.concept}" ${m.concept === effectiveConcept ? 'selected' : ''}>
+                ${m.label || `${m.model}: ${m.concept}`}
+              </option>`).join('')}
+          </select>
+        </div>`;
+    } else if (category) {
+      categoryPicker = `<div style="font-size:10px; color:var(--cdisc-text-secondary); margin-top:2px;">category: <code>${categoryName}</code> → ${effectiveConcept}</div>`;
+    }
+
+    // Slice annotation + optional editor.
+    // Slice constraints may use `conceptCategory` instead of a concrete
+    // `dimension`; resolve those via the same dimensionOverrides picked on
+    // bindings (e.g. VisitDimension → Visit | AnalysisVisit).
     let sliceAnnotation = '';
     if (b.slice && sliceLookup[b.slice]) {
-      const sliceDef = sliceLookup[b.slice];
+      const rawSliceDef = sliceLookup[b.slice];
+      const categoriesMap = appState.conceptCategories?.categories || {};
+      const slotOverrides = slot?.key
+        ? (activeSpec?.dimensionOverrides?.[slot.key] || {})
+        : {};
+      const ownerBindings = slot?.selected?.bindings || transformation?.bindings || [];
+      const sliceDef = rawSliceDef.categoryConstraints
+        ? resolveSliceCategories(rawSliceDef, slotOverrides, ownerBindings, categoriesMap)
+        : { ...rawSliceDef, categoryBy: {} };
       const dims = sliceDef.fixedDimensions || sliceDef;
+      const categoryBy = sliceDef.categoryBy || {};
+
+      // USDM encounters (for the VisitDimension combobox datalist)
+      const encounters = (study?.encounters || [])
+        .map(e => ({ value: e.label || e.name || '', desc: e.description || e.type || '' }))
+        .filter(e => e.value);
+
       if (isEditable) {
-        // Editable slice constraints at study level
         const overrides = activeSpec?.derivationSliceOverrides?.[slot?.key]?.[b.slice] || {};
         sliceAnnotation = `
           <div style="margin-top:4px; padding:6px 8px; background:rgba(161,208,202,0.08); border-radius:4px;">
             <div style="font-size:10px; font-weight:600; color:var(--cdisc-accent2); margin-bottom:4px;">Slice: ${b.slice}</div>
             ${Object.entries(dims).map(([dim, defaultVal]) => {
               const currentVal = overrides[dim] ?? defaultVal;
+              const fromCategory = categoryBy[dim]; // e.g. "VisitDimension"
+              // Render a combobox (input + datalist of USDM encounters) when the
+              // dimension was resolved from a VisitDimension category. Users can
+              // still type any free-text value — encounter labels are only
+              // suggestions because USDM labels may diverge from dataset values.
+              const listId = fromCategory
+                ? `enc-${(slot?.key || '').replace(/[^\w-]/g, '_')}-${b.slice}-${dim}`
+                : null;
+              const listAttr = listId ? ` list="${listId}"` : '';
+              const datalistHtml = listId
+                ? `<datalist id="${listId}">
+                     ${encounters.map(e => `<option value="${e.value}"${e.desc ? ` label="USDM: ${e.desc.replace(/"/g, '&quot;')}"` : ''}>`).join('')}
+                   </datalist>`
+                : '';
+              const label = fromCategory ? `${dim} <span style="opacity:0.6">(${fromCategory})</span>` : dim;
               return `<div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                <span style="font-size:10px; min-width:80px; color:var(--cdisc-text-secondary);">${dim}</span>
+                <span style="font-size:10px; min-width:100px; color:var(--cdisc-text-secondary);">${label}</span>
                 <input class="deriv-slice-override" data-slot-key="${slot?.key || ''}" data-slice="${b.slice}" data-dim="${dim}"
-                  value="${currentVal}" placeholder="${defaultVal}"
+                  value="${currentVal}" placeholder="${defaultVal}"${listAttr}
                   style="font-size:11px; padding:2px 6px; flex:1; border:1px solid var(--cdisc-border); border-radius:3px;">
+                ${datalistHtml}
               </div>`;
             }).join('')}
           </div>`;
       } else {
-        const dimStr = Object.entries(dims).map(([k, v]) => `${k} = ${v}`).join(', ');
+        const dimStr = Object.entries(dims).map(([k, v]) => {
+          const cat = categoryBy[k] ? ` (${categoryBy[k]})` : '';
+          return `${k}${cat} = ${v}`;
+        }).join(', ');
         sliceAnnotation = `<div style="font-size:10px; color:var(--cdisc-accent2); margin-top:2px;">slice: ${b.slice} &rarr; ${dimStr}</div>`;
       }
     }
@@ -612,17 +740,43 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
           style="color:var(--cdisc-error); border-color:var(--cdisc-error); padding:1px 6px; font-size:10px; margin-left:auto;">&times;</button>`
       : '';
 
+    const isOutput = b.direction === 'output';
+    const rowStyle = isOutput
+      ? 'display:flex; flex-direction:column; padding:6px 10px; border:1px solid var(--cdisc-border); border-left:3px solid var(--cdisc-accent2); border-radius:4px; margin-bottom:4px; background:rgba(161,208,202,0.04);'
+      : 'display:flex; flex-direction:column; padding:6px 10px; border:1px solid var(--cdisc-border); border-radius:4px; margin-bottom:4px;';
     return `
-      <div class="binding-row" style="display:flex; flex-direction:column; padding:6px 10px; border:1px solid var(--cdisc-border); border-radius:4px; margin-bottom:4px;">
+      <div class="binding-row" style="${rowStyle}">
         <div style="display:flex; align-items:center; gap:6px;">
           <span style="font-weight:600; font-size:12px; min-width:80px; color:var(--cdisc-text);">${b.methodRole || ''}</span>
           <code style="font-size:12px;">${concept}</code>
           ${typeBadge}
-          ${b.direction === 'output' ? '<span class="badge" style="background:var(--cdisc-background); color:var(--cdisc-text-secondary);">output</span>' : ''}
           ${removeBtn}
         </div>
-        ${sliceAnnotation}${constraintAnnotation}${endpointLink}
+        ${categoryPicker}${sliceAnnotation}${constraintAnnotation}${endpointLink}
       </div>`;
+  }
+
+  /**
+   * Split bindings into Inputs and Outputs sections. Returns the full HTML
+   * including both section headers. Preserves each binding's original index
+   * in the unfiltered array so event handlers (remove, picker) wire correctly.
+   */
+  function renderBindingsSections(bindings, sliceLookup, isEditable) {
+    const inputRows = [];
+    const outputRows = [];
+    bindings.forEach((b, i) => {
+      const html = renderBindingRow(b, sliceLookup, isEditable, i);
+      if (b.direction === 'output') outputRows.push(html);
+      else inputRows.push(html);
+    });
+    const headerStyle = 'font-size:11px; font-weight:700; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin:0 0 6px 0; padding-bottom:3px; border-bottom:1px solid var(--cdisc-border);';
+    const inputsBlock = inputRows.length > 0
+      ? `<div style="margin-bottom:10px;"><div style="${headerStyle}">Inputs</div>${inputRows.join('')}</div>`
+      : '';
+    const outputsBlock = outputRows.length > 0
+      ? `<div><div style="${headerStyle}; color:var(--cdisc-accent2);">Outputs</div>${outputRows.join('')}</div>`
+      : '';
+    return inputsBlock + outputsBlock;
   }
 
   if (!slot) {
@@ -645,7 +799,7 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
 
           <div class="config-panel-section">
             <div class="config-panel-section-title">Bindings</div>
-            ${bindings.map((b, i) => renderBindingRow(b, sliceLookup, false, i)).join('')}
+            ${renderBindingsSections(bindings, sliceLookup, false)}
           </div>
         </div>
       </div>`;
@@ -660,19 +814,41 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
     // Editable slice constraints for reference nodes
     let sliceEditor = '';
     if (slot.slice && sliceLookup[slot.slice]) {
-      const sliceDef = sliceLookup[slot.slice];
+      const rawSliceDef = sliceLookup[slot.slice];
+      const categoriesMap = appState.conceptCategories?.categories || {};
+      const slotOverrides = activeSpec?.dimensionOverrides?.[slot.key] || {};
+      const ownerBindings = slot.selected?.bindings || transformation?.bindings || [];
+      const sliceDef = rawSliceDef.categoryConstraints
+        ? resolveSliceCategories(rawSliceDef, slotOverrides, ownerBindings, categoriesMap)
+        : { ...rawSliceDef, categoryBy: {} };
       const dims = sliceDef.fixedDimensions || sliceDef;
+      const categoryBy = sliceDef.categoryBy || {};
       const overrides = activeSpec?.derivationSliceOverrides?.[slot.key]?.[slot.slice] || {};
+      const encounters = (appState.selectedStudy?.encounters || [])
+        .map(e => ({ value: e.label || e.name || '', desc: e.description || e.type || '' }))
+        .filter(e => e.value);
       sliceEditor = `
         <div style="margin-top:8px; padding:6px 8px; background:rgba(161,208,202,0.08); border-radius:4px;">
           <div style="font-size:10px; font-weight:600; color:var(--cdisc-accent2); margin-bottom:4px;">Slice: ${slot.slice}</div>
           ${Object.entries(dims).map(([dim, defaultVal]) => {
             const currentVal = overrides[dim] ?? defaultVal;
+            const fromCategory = categoryBy[dim];
+            const listId = fromCategory
+              ? `enc-${(slot.key || '').replace(/[^\w-]/g, '_')}-${slot.slice}-${dim}`
+              : null;
+            const listAttr = listId ? ` list="${listId}"` : '';
+            const datalistHtml = listId
+              ? `<datalist id="${listId}">
+                   ${encounters.map(e => `<option value="${e.value}"${e.desc ? ` label="USDM: ${e.desc.replace(/"/g, '&quot;')}"` : ''}>`).join('')}
+                 </datalist>`
+              : '';
+            const label = fromCategory ? `${dim} <span style="opacity:0.6">(${fromCategory})</span>` : dim;
             return `<div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-              <span style="font-size:10px; min-width:80px; color:var(--cdisc-text-secondary);">${dim}</span>
+              <span style="font-size:10px; min-width:100px; color:var(--cdisc-text-secondary);">${label}</span>
               <input class="deriv-slice-override" data-slot-key="${slot.key}" data-slice="${slot.slice}" data-dim="${dim}"
-                value="${currentVal}" placeholder="${defaultVal}"
+                value="${currentVal}" placeholder="${defaultVal}"${listAttr}
                 style="font-size:11px; padding:2px 6px; flex:1; border:1px solid var(--cdisc-border); border-radius:3px;">
+              ${datalistHtml}
             </div>`;
           }).join('')}
         </div>`;
@@ -785,6 +961,57 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
     const outputBinding = (d.bindings || []).find(b => b.direction === 'output');
     const sliceLookup = getSliceLookup(d);
 
+    // Inherited slice block — visible when the parent binding that points at
+    // this slot declared a slice (e.g. subtrahend's parameter_baseline on
+    // T.ChangeFromBaseline). The slice definition lives on the parent
+    // derivation, which is included via ancestorSlices in getSliceLookup.
+    let inheritedSliceBlock = '';
+    if (slot.slice && sliceLookup[slot.slice]) {
+      const rawSliceDef = sliceLookup[slot.slice];
+      const categoriesMap = appState.conceptCategories?.categories || {};
+      const slotOverrides = activeSpec?.dimensionOverrides?.[slot.key] || {};
+      // ancestor binding list is unknown here, but the category resolver
+      // tolerates empty bindings — it falls through to endpointPicks then
+      // the first member.
+      const resolved = rawSliceDef.categoryConstraints
+        ? resolveSliceCategories(rawSliceDef, slotOverrides, [], categoriesMap)
+        : { ...rawSliceDef, categoryBy: {} };
+      const dims = resolved.fixedDimensions || resolved;
+      const categoryBy = resolved.categoryBy || {};
+      const overrides = activeSpec?.derivationSliceOverrides?.[slot.key]?.[slot.slice] || {};
+      const encounters = (appState.selectedStudy?.encounters || [])
+        .map(e => ({ value: e.label || e.name || '', desc: e.description || e.type || '' }))
+        .filter(e => e.value);
+      inheritedSliceBlock = `
+        <div style="margin-bottom:12px; padding:8px 10px; background:rgba(161,208,202,0.10); border:1px dashed var(--cdisc-accent2); border-radius:4px;">
+          <div style="font-size:11px; font-weight:600; color:var(--cdisc-accent2); margin-bottom:6px;">
+            Inherited slice: <code>${slot.slice}</code>
+            <span style="font-weight:400; color:var(--cdisc-text-secondary);"> — scopes this subtree's inputs</span>
+          </div>
+          ${Object.entries(dims).map(([dim, defaultVal]) => {
+            const currentVal = overrides[dim] ?? defaultVal;
+            const fromCategory = categoryBy[dim];
+            const listId = fromCategory
+              ? `enc-${(slot.key || '').replace(/[^\w-]/g, '_')}-${slot.slice}-${dim}`
+              : null;
+            const listAttr = listId ? ` list="${listId}"` : '';
+            const datalistHtml = listId
+              ? `<datalist id="${listId}">
+                   ${encounters.map(e => `<option value="${e.value}"${e.desc ? ` label="USDM: ${e.desc.replace(/"/g, '&quot;')}"` : ''}>`).join('')}
+                 </datalist>`
+              : '';
+            const label = fromCategory ? `${dim} <span style="opacity:0.6">(${fromCategory})</span>` : dim;
+            return `<div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+              <span style="font-size:10px; min-width:110px; color:var(--cdisc-text-secondary);">${label}</span>
+              <input class="deriv-slice-override" data-slot-key="${slot.key}" data-slice="${slot.slice}" data-dim="${dim}"
+                value="${currentVal}" placeholder="${defaultVal}"${listAttr}
+                style="font-size:11px; padding:2px 6px; flex:1; border:1px solid var(--cdisc-border); border-radius:3px;">
+              ${datalistHtml}
+            </div>`;
+          }).join('')}
+        </div>`;
+    }
+
     // Initialize custom bindings for this derivation if not yet done
     const chainEntry = (activeSpec.derivationChain || []).find(e => e.slotKey === slot.key);
     if (chainEntry && !chainEntry.customBindings) {
@@ -826,9 +1053,11 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
             </tbody>
           </table>
 
+          ${inheritedSliceBlock}
+
           <div class="config-panel-section">
             <div class="config-panel-section-title">Bindings</div>
-            ${bindings.map((b, i) => renderBindingRow(b, sliceLookup, true, i)).join('')}
+            ${renderBindingsSections(bindings, sliceLookup, true)}
             <div style="margin-top:8px; display:flex; gap:6px; align-items:center;">
               <select class="pipeline-binding-add-select" data-slot-key="${slot.key}" style="font-size:11px; padding:4px 8px; border:1px dashed var(--cdisc-border); border-radius:4px; background:var(--cdisc-surface); color:var(--cdisc-text-secondary);">
                 <option value="">+ Add binding...</option>
@@ -1140,6 +1369,20 @@ function wireConfigEvents(container, slots, transformation, lib, activeSpec) {
     });
   });
 
+  // Concept category picker — user selects a concrete concept from a category
+  container.querySelectorAll('.deriv-category-picker').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const slotKey = sel.dataset.slotKey;
+      const bindingIdx = sel.dataset.bindingIdx;
+      const concept = sel.value;
+      if (!slotKey || bindingIdx == null) return;
+      if (!activeSpec.dimensionOverrides) activeSpec.dimensionOverrides = {};
+      if (!activeSpec.dimensionOverrides[slotKey]) activeSpec.dimensionOverrides[slotKey] = {};
+      activeSpec.dimensionOverrides[slotKey][bindingIdx] = { concept };
+      updateZones(container, slots, transformation, lib, activeSpec);
+    });
+  });
+
   // BC property checkboxes in terminal config
   container.querySelectorAll('.terminal-bc-checkbox').forEach(cb => {
     cb.addEventListener('change', () => {
@@ -1282,14 +1525,37 @@ function wireLibraryEvents(container, slots, transformation, lib, activeSpec) {
 
 /**
  * Build pipeline graph and auto-select single candidates. Returns final slots.
+ * Also prunes stale derivationChain entries whose slotKey no longer appears
+ * in the live graph — happens after the §3 path-unique-slotKey change when
+ * loading a spec saved against the older shape.
  */
 function buildAndAutoSelect(transformation, lib, activeSpec) {
   const confirmedKeys = new Set((activeSpec.confirmedTerminals || []).map(t => t.slotKey));
-  let slots = buildPipelineGraph(transformation, lib, activeSpec.selectedDerivations, confirmedKeys);
+  // Pass endpoint-level dimensionCategoryPicks + categoriesMap so analysis
+  // bindings declared with conceptCategory (e.g. VisitDimension) resolve to
+  // the user's concrete pick (Timepoint) instead of producing "?" slots.
+  const endpointPicks = activeSpec?.dimensionCategoryPicks || {};
+  const categoriesMap = appState.conceptCategories?.categories || {};
+  // Prune stale chain entries before building
+  if (activeSpec.derivationChain?.length) {
+    // Build once to know current keys
+    const probeSlots = buildPipelineGraph(transformation, lib, activeSpec.selectedDerivations, confirmedKeys, endpointPicks, categoriesMap);
+    const liveKeys = new Set();
+    (function collect(list) {
+      for (const s of list) { liveKeys.add(s.key); if (s.children?.length) collect(s.children); }
+    })(probeSlots);
+    const before = activeSpec.derivationChain.length;
+    activeSpec.derivationChain = activeSpec.derivationChain.filter(e => liveKeys.has(e.slotKey));
+    if (activeSpec.derivationChain.length !== before) {
+      console.warn('[AC/DC] Pruned', before - activeSpec.derivationChain.length,
+        'stale derivationChain entries. You may need to re-pick derivations for affected slots.');
+    }
+  }
+  let slots = buildPipelineGraph(transformation, lib, activeSpec.selectedDerivations, confirmedKeys, endpointPicks, categoriesMap);
   // Iteratively auto-select single-candidate slots
   let maxIterations = 20;
   while (autoSelectSingleCandidates(slots, activeSpec) && maxIterations-- > 0) {
-    slots = buildPipelineGraph(transformation, lib, activeSpec.selectedDerivations, confirmedKeys);
+    slots = buildPipelineGraph(transformation, lib, activeSpec.selectedDerivations, confirmedKeys, endpointPicks, categoriesMap);
   }
   return slots;
 }
@@ -1383,16 +1649,17 @@ export function renderDerivationPipeline(container) {
         }).join('')}
       </div>
 
-      <!-- Completion Banner -->
+      <!-- Completion Banner + Execution Order -->
       ${isComplete ? `
       <div class="card" style="border-color:var(--cdisc-success); padding:12px 16px;">
         <div style="display:flex; align-items:center; gap:10px;">
           <div style="width:28px; height:28px; border-radius:50%; background:#D1FAE5; display:flex; align-items:center; justify-content:center; color:var(--cdisc-success); font-size:14px; font-weight:700;">&#10003;</div>
-          <div>
+          <div style="flex:1;">
             <span style="font-weight:600; color:var(--cdisc-text);">Pipeline Complete</span>
             <span style="font-size:12px; color:var(--cdisc-text-secondary); margin-left:8px;">All dependencies resolved for this endpoint.</span>
           </div>
         </div>
+        ${renderExecutionOrderPanel(slots, activeSpec, lib, transformation)}
       </div>` : ''}
 
       <!-- Top Zone: Dependency Tree -->

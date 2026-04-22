@@ -6,6 +6,9 @@ documents/presentations/phuse/.DS_Store
 .claude_cache
 .claude_cache_*
 
+# MCP / dev tools
+.playwright-mcp/
+
 # Python
 __pycache__/
 *.py[cod]

@@ -4,7 +4,7 @@ import {
   getVisitLabels, getPopulationNames, getArmNames,
   getEndpointParameterOptions
 } from '../utils/usdm-parser.js';
-import { buildSliceLookup } from '../utils/concept-display.js';
+import { buildSliceLookup, getPhraseResolvedRefs } from '../utils/concept-display.js';
 import { groupBCsByActivity } from '../utils/bc-domain-grouper.js';
 import {
   isObservationCategory, derivationProxyFor, isNumericOutputConcept
@@ -267,8 +267,11 @@ export function buildSyntaxTemplate(ep, spec, study) {
       const token = `{${cfg}}`;
       if (!resolvedPh.includes(token)) continue;
 
-      // Map config name to dimension name and get cube value
-      const dimRef = sp.references?.[0] || '';
+      // Map config name to dimension name and get cube value. For phrases
+      // that bind a conceptCategory (e.g. VisitDimension), resolve against
+      // the endpoint's dimensionCategoryPicks.
+      const refs = getPhraseResolvedRefs(sp, spec);
+      const dimRef = refs[0] || sp.references?.[0] || '';
       const val = getCubeSliceValue(dimRef) || '';
 
       resolvedPh = val
@@ -1142,15 +1145,21 @@ export function buildFormalizedDescription(ep, spec, study) {
   if (desc.includes('{parameter}')) desc = desc.replace('{parameter}', paramValue || '{parameter}');
   if (desc.includes('{event}')) desc = desc.replace('{event}', paramValue || '{event}');
 
-  // Append only variable-relevant dimension phrases (AnalysisVisit/Timing, NOT Population/Treatment)
-  const variableDimRefs = new Set(['AnalysisVisit', 'Timing']);
+  // Append only variable-relevant dimension phrases (visit-axis + Timing);
+  // Population/Treatment don't belong in a variable name.
+  // The VisitDimension category members are all variable-relevant, so whether
+  // the user picked Visit / Timepoint / AnalysisVisit, include the phrase.
+  const visitMembers = (appState.conceptCategories?.categories?.VisitDimension?.members || [])
+    .map(m => m.concept);
+  const variableDimRefs = new Set(['AnalysisVisit', 'Timing', ...visitMembers]);
   for (const oid of (spec.selectedDimPhrases || [])) {
     const sp = smartPhrases.find(s => s.oid === oid);
-    if (!sp?.references?.[0]) continue;
-    if (!variableDimRefs.has(sp.references[0])) continue; // skip non-variable dims
+    const resolvedRefs = getPhraseResolvedRefs(sp, spec);
+    const ref = resolvedRefs[0];
+    if (!ref || !variableDimRefs.has(ref)) continue;
     let phrase = sp.phrase_template;
-    const dimEntry = cubeDims.find(d => d.dimension === sp.references[0]);
-    const val = dimEntry?.sliceValue || spec.dimensionValues?.[sp.references[0]] || '';
+    const dimEntry = cubeDims.find(d => d.dimension === ref);
+    const val = dimEntry?.sliceValue || spec.dimensionValues?.[ref] || '';
     for (const cfg of (sp.configurations || [])) {
       phrase = phrase.replace(`{${cfg}}`, val || `{${cfg}}`);
     }
@@ -1397,8 +1406,10 @@ export function renderDataCube(ep, spec, study) {
   // From selected dimension phrases
   for (const oid of (spec.selectedDimPhrases || [])) {
     const sp = allSmartPhrases.find(s => s.oid === oid);
-    if (!sp?.references) continue;
-    for (const ref of sp.references) {
+    if (!sp) continue;
+    // Resolve both concrete references and conceptCategory picks.
+    const refs = getPhraseResolvedRefs(sp, spec);
+    for (const ref of refs) {
       if (knownConcepts.has(ref) || ref.startsWith('M.')) continue;
       if (!spec.cubeDimensions.some(d => d.dimension === ref)) {
         spec.cubeDimensions.push({ dimension: ref, sliceValue: '' });

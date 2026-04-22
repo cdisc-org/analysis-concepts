@@ -139,7 +139,12 @@ export function buildMergedDataStructure(spec, analysisTransform) {
  * Returns { added: [], removed: [] } where each entry is a binding object.
  */
 export function computeBindingEdits(templateBindings, customBindings) {
-  const key = (b) => `${b.methodRole}|${b.concept}|${b.dataStructureRole || (b.type === 'dimensional' ? 'dimension' : 'measure')}`;
+  // Falling back to conceptCategory keeps category-bound rows (e.g.
+  // VisitDimension partition introduced in the 2026-04-22 transformation
+  // library cleanup) keyed consistently between save and load. Without the
+  // fallback, both sides would key as "partition|undefined|dimension" and
+  // collide if more than one category binding shares a methodRole.
+  const key = (b) => `${b.methodRole}|${b.concept || b.conceptCategory || ''}|${b.dataStructureRole || (b.type === 'dimensional' ? 'dimension' : 'measure')}`;
   const templateKeys = new Set((templateBindings || []).map(key));
   const customKeys = new Set((customBindings || []).map(key));
 
@@ -225,11 +230,13 @@ export function serializeStudyInstance(appState) {
     },
 
     studyRef: {
-      usdmFile: 'ac-dc-app/data/CDISC_Pilot_Study_usdm.json',
+      selectedStudyIndex: appState.selectedStudyIndex,
       studyName
     },
 
-    selectedEndpointIds: appState.selectedEndpoints?.map(ep => ep.id) || [],
+    selectedEndpointIds: (appState.selectedEndpoints || [])
+      .map(ref => typeof ref === 'string' ? ref : ref?.id)
+      .filter(Boolean),
 
     esapLinkedNarratives: appState.esapLinkedNarratives || {},
 
@@ -237,8 +244,11 @@ export function serializeStudyInstance(appState) {
 
     endpointSpecs: appState.endpointSpecs || {},
 
+    unitConversions: appState.unitConversions || null,
+
     preferences: {
-      modelViewMode: appState.modelViewMode || 'concepts'
+      modelViewMode: appState.modelViewMode || 'concepts',
+      currentStep: appState.currentStep || 1
     }
   };
 
@@ -307,7 +317,8 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
       const d = derivations.find(x => x.oid === entry.derivationOid);
       if (!d) return null;
       const inputs = (d.bindings || []).filter(b => b.direction !== 'output').map(b => ({
-        concept: b.concept,
+        concept: b.concept || b.conceptCategory || '',
+        ...(b.conceptCategory ? { conceptCategory: b.conceptCategory } : {}),
         role: b.methodRole,
         dataStructureRole: b.dataStructureRole,
         ...(b.slice ? { slice: b.slice } : {})
@@ -329,18 +340,31 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
       const methodObj = appState.methodsCache?.[transform.usesMethod] || null;
       const studyBindings = analysis.resolvedBindings || [];
 
-      // Resolved bindings — study-level copies of template bindings (Binding shape)
-      const resolvedBindings = studyBindings.map(b => ({
-        concept: b.concept,
-        methodRole: b.methodRole,
-        direction: b.direction || 'input',
-        dataStructureRole: b.dataStructureRole,
-        ...(b.requiredValueType ? { requiredValueType: b.requiredValueType } : {}),
-        ...(b.slice ? { slice: b.slice } : {}),
-        ...(b.qualifierType ? { qualifierType: b.qualifierType, qualifierValue: b.qualifierValue } : {}),
-        ...(b.note ? { note: b.note } : {}),
-        ...(b.description ? { description: b.description } : {})
-      }));
+      // Resolved bindings — study-level copies of template bindings (Binding shape).
+      // For conceptCategory bindings (e.g. VisitDimension), resolve to the
+      // concrete concept using the same precedence the derivation pipeline uses:
+      // per-binding override → endpoint-level pick → category's first member.
+      const categoriesMap = appState.conceptCategories?.categories || {};
+      const epPicks = appState.endpointSpecs?.[ep.id]?.dimensionCategoryPicks || {};
+      const resolvedBindings = studyBindings.map(b => {
+        let concreteConcept = b.concept;
+        if (!concreteConcept && b.conceptCategory) {
+          concreteConcept = epPicks[b.conceptCategory]
+            || categoriesMap[b.conceptCategory]?.members?.[0]?.concept;
+        }
+        return {
+          concept: concreteConcept,
+          methodRole: b.methodRole,
+          direction: b.direction || 'input',
+          dataStructureRole: b.dataStructureRole,
+          ...(b.conceptCategory ? { conceptCategory: b.conceptCategory } : {}),
+          ...(b.requiredValueType ? { requiredValueType: b.requiredValueType } : {}),
+          ...(b.slice ? { slice: b.slice } : {}),
+          ...(b.qualifierType ? { qualifierType: b.qualifierType, qualifierValue: b.qualifierValue } : {}),
+          ...(b.note ? { note: b.note } : {}),
+          ...(b.description ? { description: b.description } : {})
+        };
+      });
 
       // Configuration values — StudyConfigurationValue shape
       const configValues = Object.entries(analysis.methodConfigOverrides || {})
@@ -461,7 +485,17 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
       const transform = (lib?.analysisTransformations || []).find(t => t.oid === analysis.transformationOid);
       if (!transform) return null;
       const method = transform.usesMethod ? appState.methodsCache?.[transform.usesMethod] : null;
-      const bindings = analysis.resolvedBindings || transform.bindings?.filter(b => b.direction !== 'output') || [];
+      const rawBindings = analysis.resolvedBindings || transform.bindings?.filter(b => b.direction !== 'output') || [];
+      // Resolve conceptCategory bindings into concrete concepts (per dimensionCategoryPicks)
+      // so downstream renderers and expression builders see a usable `concept`.
+      const categoriesMap = appState.conceptCategories?.categories || {};
+      const epPicks = spec.dimensionCategoryPicks || {};
+      const bindings = rawBindings.map(b => {
+        if (b.concept || !b.conceptCategory) return b;
+        const concrete = epPicks[b.conceptCategory]
+          || categoriesMap[b.conceptCategory]?.members?.[0]?.concept;
+        return concrete ? { ...b, concept: concrete } : b;
+      });
       const resolvedExpression = method
         ? buildResolvedExpressionObject(bindings, method, analysis.activeInteractions || [])
         : null;
@@ -884,18 +918,30 @@ function buildAnalysisSteps(appState, epId) {
     const configValues = Object.entries(analysis.methodConfigOverrides || {})
       .map(([name, value]) => ({ name, value: String(value) }));
 
-    // Resolved bindings — study-level copies of template bindings (Binding shape)
-    const resolvedBindings = studyBindings.map(b => ({
-      concept: b.concept,
-      methodRole: b.methodRole,
-      direction: b.direction || 'input',
-      dataStructureRole: b.dataStructureRole,
-      ...(b.requiredValueType ? { requiredValueType: b.requiredValueType } : {}),
-      ...(b.slice ? { slice: b.slice } : {}),
-      ...(b.qualifierType ? { qualifierType: b.qualifierType, qualifierValue: b.qualifierValue } : {}),
-      ...(b.note ? { note: b.note } : {}),
-      ...(b.description ? { description: b.description } : {})
-    }));
+    // Resolved bindings — study-level copies of template bindings (Binding shape).
+    // Resolve conceptCategory bindings to concrete concepts via dimensionCategoryPicks
+    // so downstream code sees a usable `concept` field even for category-bound rows.
+    const categoriesMap = appState.conceptCategories?.categories || {};
+    const epPicks = spec.dimensionCategoryPicks || {};
+    const resolvedBindings = studyBindings.map(b => {
+      let concreteConcept = b.concept;
+      if (!concreteConcept && b.conceptCategory) {
+        concreteConcept = epPicks[b.conceptCategory]
+          || categoriesMap[b.conceptCategory]?.members?.[0]?.concept;
+      }
+      return {
+        concept: concreteConcept,
+        methodRole: b.methodRole,
+        direction: b.direction || 'input',
+        dataStructureRole: b.dataStructureRole,
+        ...(b.conceptCategory ? { conceptCategory: b.conceptCategory } : {}),
+        ...(b.requiredValueType ? { requiredValueType: b.requiredValueType } : {}),
+        ...(b.slice ? { slice: b.slice } : {}),
+        ...(b.qualifierType ? { qualifierType: b.qualifierType, qualifierValue: b.qualifierValue } : {}),
+        ...(b.note ? { note: b.note } : {}),
+        ...(b.description ? { description: b.description } : {})
+      };
+    });
 
     // Resolved slices — StudySlice shape
     const mergedDSD = buildMergedDataStructure(spec, transform);
@@ -1029,14 +1075,45 @@ export function deserializeStudyInstance(json, appState) {
     appState.modelViewMode = json.preferences.modelViewMode;
   }
 
-  // Restore selected endpoints
-  if (json.selectedEndpointIds) {
-    appState.selectedEndpoints = json.selectedEndpointIds.map(id => ({ id }));
+  // Restore selected study — saved files carry selectedStudyIndex (new format)
+  // or the legacy hardcoded usdmFile (old format). Load-time behaviour:
+  //   - if the target index is available and differs from current selection,
+  //     switch to it so endpoint IDs in the spec resolve correctly
+  //   - if the index isn't valid, warn but continue (user may have stripped
+  //     the studies manifest)
+  const targetIdx = json.studyRef?.selectedStudyIndex;
+  if (typeof targetIdx === 'number' && appState.studies?.[targetIdx]) {
+    if (appState.selectedStudyIndex !== targetIdx) {
+      appState.selectedStudyIndex = targetIdx;
+      appState.selectedStudy = appState.studies[targetIdx];
+      warnings.push(`Switched to study "${appState.selectedStudy?.name || '(unnamed)'}" referenced by the saved file`);
+    }
+  } else if (json.studyRef?.studyName && appState.selectedStudy) {
+    const savedName = json.studyRef.studyName;
+    const currentName = appState.selectedStudy.name || appState.selectedStudy.studyTitle;
+    if (savedName !== currentName) {
+      warnings.push(`Saved file was for study "${savedName}" — current selection is "${currentName}". Endpoint references may not match.`);
+    }
+  }
+
+  // Restore selected endpoints — stored as plain string IDs in live appState
+  // (see study-overview.js line 55). Legacy saves may have {id} objects or
+  // [undefined] from the buggy pre-fix serializer — normalise to strings and
+  // drop any undefineds.
+  if (Array.isArray(json.selectedEndpointIds)) {
+    appState.selectedEndpoints = json.selectedEndpointIds
+      .map(ref => typeof ref === 'string' ? ref : ref?.id)
+      .filter(Boolean);
   }
 
   // Restore endpoint specs
   if (json.endpointSpecs) {
     appState.endpointSpecs = json.endpointSpecs;
+  }
+
+  // Restore user-edited unit conversions if saved
+  if (json.unitConversions) {
+    appState.unitConversions = json.unitConversions;
   }
 
   // Restore eSAP linked narratives
@@ -1064,13 +1141,12 @@ export function deserializeStudyInstance(json, appState) {
     let customBindings = templateBindings;
 
     if (saved.inputBindingEdits) {
-      const removedKeys = new Set(
-        (saved.inputBindingEdits.removed || [])
-          .map(b => `${b.methodRole}|${b.concept}|${b.dataStructureRole || (b.type === 'dimensional' ? 'dimension' : 'measure')}`)
-      );
-      customBindings = templateBindings.filter(
-        b => !removedKeys.has(`${b.methodRole}|${b.concept}|${b.dataStructureRole || (b.type === 'dimensional' ? 'dimension' : 'measure')}`)
-      );
+      // Key formula MUST match computeBindingEdits (line 142) — both sides
+      // fall back to conceptCategory when concept is absent so VisitDimension
+      // and similar category bindings round-trip correctly.
+      const bindingKey = (b) => `${b.methodRole}|${b.concept || b.conceptCategory || ''}|${b.dataStructureRole || (b.type === 'dimensional' ? 'dimension' : 'measure')}`;
+      const removedKeys = new Set((saved.inputBindingEdits.removed || []).map(bindingKey));
+      customBindings = templateBindings.filter(b => !removedKeys.has(bindingKey(b)));
       customBindings.push(...(saved.inputBindingEdits.added || []));
     }
 

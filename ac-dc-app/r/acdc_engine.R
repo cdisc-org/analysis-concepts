@@ -373,13 +373,46 @@ acdc_derive_only <- function(spec, mappings, dataset,
         }
       }
 
-      var_map <- build_concept_var_map(deriv$resolvedBindings, include_outputs = TRUE)
+      var_map <- build_concept_var_map(deriv$resolvedBindings, source_mappings, include_outputs = TRUE)
+
+      # Chain-lookup identity (§3) + reference resolution (§3.6): JS layer
+      # assigns each chain entry a unique outputColumn and a per-role
+      # inputColumns map. Override var_map$by_role so sibling derivations
+      # producing the same concept (e.g. multiple Measure outputs) don't
+      # collide on merge, and so derivations that consume another
+      # derivation's output via pipelineReferences resolve to the correct
+      # __col_ column.
+      # Chain-lookup outputColumn renames the derivation's PRIMARY (measure)
+      # output to a unique __col_* name that downstream chain steps consume.
+      # Companion outputs of dataStructureRole "attribute" (units) and
+      # "dimension" (parameter labels) keep their natural concept-keyed names
+      # so they don't all collide on the same destination column. Without this
+      # filter, T.UnitConversion's result_value (numeric) gets clobbered by
+      # result_unit ("kg") and parameter_label, leaving the chain column with
+      # a non-numeric value and aggregate(... , FUN=mean) → NA.
+      if (!is.null(deriv$outputColumn) && nzchar(deriv$outputColumn)) {
+        for (b in deriv$resolvedBindings) {
+          if (identical(b$direction, "output") && !is.null(b$methodRole) && nzchar(b$methodRole)
+              && identical(b$dataStructureRole, "measure")) {
+            var_map$by_role[[b$methodRole]] <- deriv$outputColumn
+          }
+        }
+      }
+      if (!is.null(deriv$inputColumns) && length(deriv$inputColumns) > 0) {
+        for (role in names(deriv$inputColumns)) {
+          col <- deriv$inputColumns[[role]]
+          if (!is.null(col) && nzchar(col)) var_map$by_role[[role]] <- col
+        }
+      }
+
       configs <- list()
       if (!is.null(deriv$configurationValues)) {
         for (cv in deriv$configurationValues) {
           val <- cv$value
-          num_val <- suppressWarnings(as.numeric(val))
-          if (!is.na(num_val)) val <- num_val
+          if (is.atomic(val) && length(val) == 1) {
+            num_val <- suppressWarnings(as.numeric(val))
+            if (!is.na(num_val)) val <- num_val
+          }
           configs[[cv$name]] <- val
         }
       }
@@ -398,6 +431,7 @@ acdc_derive_only <- function(spec, mappings, dataset,
       env <- new.env(parent = globalenv())
       env$concept_data <- dataset
       env$unit_conversions <- unit_conversions
+      env$configs <- configs
       tryCatch({
         eval(parse(text = resolved_code), envir = env)
         dataset <- env$concept_data
@@ -552,7 +586,7 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
   if (!is.null(derivations) && length(derivations) > 0) {
     cat("  Applying", length(derivations), "derivation(s) before analysis cube...\n")
     dataset <- tryCatch(
-      apply_derivations(dataset, derivations, r_impls, unit_conversions),
+      apply_derivations(dataset, derivations, r_impls, unit_conversions, source_mappings),
       error = function(e) stop(paste0("[Step 2 apply_derivations] ", e$message,
         "\n  Columns before: ", paste(colnames(dataset), collapse=", ")))
     )
@@ -570,6 +604,23 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
 
   # 4. Resolve analysis bindings to concept keys
   concept_vars <- build_concept_var_map(analysis$resolvedBindings, source_mappings, overrides)
+
+  # Analysis-level chain-lookup: JS computed a role → column map for the
+  # analysis transform's own input roles by walking the pipeline graph and
+  # resolving each root slot to either a chain entry's outputColumn or a
+  # pipelineReferences referent. Override concept_vars$by_role so roles like
+  # `response` point at `__col_T_CFB_ANCOVA_Change_0` instead of the bare
+  # concept name `Change` (which isn't a column after derivations run).
+  if (!is.null(analysis$analysisInputColumns) && length(analysis$analysisInputColumns) > 0) {
+    for (role in names(analysis$analysisInputColumns)) {
+      col <- analysis$analysisInputColumns[[role]]
+      if (!is.null(col) && nzchar(col)) {
+        concept_vars$by_role[[role]] <- col
+        cat("  [analysis chain-lookup] override role", role, "->", col, "\n")
+      }
+    }
+  }
+
   cat("  Concept → Column:\n")
   for (nm in names(concept_vars$by_concept)) {
     cat("    ", nm, "→", concept_vars$by_concept[[nm]], "\n")
@@ -702,7 +753,7 @@ build_concept_var_map <- function(bindings, mappings = NULL, overrides = NULL,
 #' Each derivation mutates the dataset in place (adds/modifies columns).
 #' Derivations run BEFORE the analysis method, in the order specified.
 #' Data is concept-keyed — no store-specific resolution needed.
-apply_derivations <- function(dataset, derivations, r_impls, unit_conversions) {
+apply_derivations <- function(dataset, derivations, r_impls, unit_conversions, mappings = NULL) {
   if (is.null(derivations) || length(derivations) == 0) return(dataset)
 
   for (deriv in derivations) {
@@ -754,20 +805,60 @@ apply_derivations <- function(dataset, derivations, r_impls, unit_conversions) {
       }
     }
 
-    # Resolve bindings to concept keys (including outputs)
-    var_map <- build_concept_var_map(deriv$resolvedBindings, include_outputs = TRUE)
+    # Resolve bindings to concept keys (including outputs). Pass mappings so
+    # bare concept names with facets (e.g. "Measure" + dataStructureRole="measure")
+    # resolve to the correct facet column ("Measure.Result.Value").
+    var_map <- build_concept_var_map(deriv$resolvedBindings, mappings, include_outputs = TRUE)
+
+    # Chain-lookup identity: when the JS layer has computed per-slot unique
+    # column names (outputColumn / inputColumns), override the concept-keyed
+    # resolution so sibling derivations producing the same concept (e.g. two
+    # aggregations emitting 'Measure') don't collide on merge. inputColumns
+    # entries that are missing fall through to concept-keyed names for
+    # terminal (raw-data) inputs.
+    cat("    [chain-lookup] slotKey:", deriv$slotKey %||% "(none)",
+        "outputColumn:", deriv$outputColumn %||% "(null)",
+        "inputColumns keys:", paste(names(deriv$inputColumns) %||% character(0), collapse=","), "\n")
+    if (!is.null(deriv$outputColumn) && nzchar(deriv$outputColumn)) {
+      # Find the PRIMARY output methodRole and remap it. Only the measure-typed
+      # output gets the chain's __col_* destination; companion outputs of
+      # dataStructureRole "attribute" (units) or "dimension" (parameter labels)
+      # keep their natural concept-keyed columns so they don't all clobber the
+      # same destination — see acdc_derive_only above for the same pattern.
+      for (b in deriv$resolvedBindings) {
+        if (identical(b$direction, "output") && !is.null(b$methodRole) && nzchar(b$methodRole)
+            && identical(b$dataStructureRole, "measure")) {
+          var_map$by_role[[b$methodRole]] <- deriv$outputColumn
+          cat("    [chain-lookup] override output role", b$methodRole, "->", deriv$outputColumn, "\n")
+        }
+      }
+    }
+    if (!is.null(deriv$inputColumns) && length(deriv$inputColumns) > 0) {
+      for (role in names(deriv$inputColumns)) {
+        col <- deriv$inputColumns[[role]]
+        if (!is.null(col) && nzchar(col)) {
+          var_map$by_role[[role]] <- col
+          cat("    [chain-lookup] override input role", role, "->", col, "\n")
+        }
+      }
+    }
+
     cat("    Bindings:\n")
     for (nm in names(var_map$by_role)) {
       cat("      ", nm, "->", var_map$by_role[[nm]], "\n")
     }
 
-    # Parse derivation configs (target_unit, precision, etc.)
+    # Parse derivation configs (target_unit, precision, etc.). Scalars
+    # auto-convert to numeric when possible; list/array values (e.g.
+    # a windowed-visit schedule) pass through as-is.
     configs <- list()
     if (!is.null(deriv$configurationValues)) {
       for (cv in deriv$configurationValues) {
         val <- cv$value
-        num_val <- suppressWarnings(as.numeric(val))
-        if (!is.na(num_val)) val <- num_val
+        if (is.atomic(val) && length(val) == 1) {
+          num_val <- suppressWarnings(as.numeric(val))
+          if (!is.na(num_val)) val <- num_val
+        }
         configs[[cv$name]] <- val
       }
     }
@@ -777,10 +868,14 @@ apply_derivations <- function(dataset, derivations, r_impls, unit_conversions) {
     cat("    Resolved derivation code:\n")
     cat(paste0("      ", strsplit(resolved_code, "\n")[[1]]), sep = "\n")
 
-    # Execute in sandbox with concept_data + unit_conversions bound
+    # Execute in sandbox with concept_data + unit_conversions + configs bound.
+    # Binding `configs` lets templates read non-scalar configuration (e.g.
+    # an array of objects like windowed-visit schedules) that can't be
+    # substituted via <placeholder> string replacement.
     env <- new.env(parent = globalenv())
     env$concept_data <- dataset
     env$unit_conversions <- unit_conversions
+    env$configs <- configs
     tryCatch(
       eval(parse(text = resolved_code), envir = env),
       error = function(e) {
@@ -802,11 +897,18 @@ apply_derivations <- function(dataset, derivations, r_impls, unit_conversions) {
 # ---------------------------------------------------------------------------
 
 execute_cube <- function(dataset, bindings, slices, concept_vars, overrides = NULL) {
-  # Build slice lookup
+  # Build slice lookup — values AND per-slice variable overrides.
+  # Per-slice variables (e.g. Population → EFFFL chosen in the slices table)
+  # let us point a constraint at a specific store column when the dimension
+  # name itself isn't a column (Population's byDataType uses domain-specific
+  # keys like "efficacy", so ingest_to_concepts doesn't rename any column to
+  # "Population" — without the override, the filter is silently skipped).
   slice_lookup <- list()
+  slice_var_lookup <- list()
   for (s in slices) {
     name <- s$name %||% "endpoint"
     slice_lookup[[name]] <- s$resolvedValues
+    slice_var_lookup[[name]] <- s$resolvedVariables  # may be NULL
   }
 
   # Identify binding-referenced slices
@@ -819,9 +921,19 @@ execute_cube <- function(dataset, bindings, slices, concept_vars, overrides = NU
   default_slice_name <- setdiff(names(slice_lookup), binding_slice_names)[1]
   if (is.na(default_slice_name)) default_slice_name <- names(slice_lookup)[1]
 
+  # Merge slice-level variable overrides into the global override map.
+  # Slice variables take precedence (most specific wins).
+  merge_overrides <- function(global, slice_vars) {
+    if (is.null(slice_vars) || length(slice_vars) == 0) return(global)
+    out <- if (is.null(global)) list() else as.list(global)
+    for (k in names(slice_vars)) out[[k]] <- slice_vars[[k]]
+    out
+  }
+
   # Query default slice — dimension names are column names in concept-keyed data
   default_constraints <- slice_lookup[[default_slice_name]]
-  main_data <- filter_by_constraints(dataset, default_constraints, overrides)
+  default_overrides <- merge_overrides(overrides, slice_var_lookup[[default_slice_name]])
+  main_data <- filter_by_constraints(dataset, default_constraints, default_overrides)
   cat("  Default slice '", default_slice_name, "':", nrow(main_data), "rows\n")
 
   # For each binding with a different slice, query and join
@@ -840,11 +952,56 @@ execute_cube <- function(dataset, bindings, slices, concept_vars, overrides = NU
     concept_col <- concept_vars$by_concept[[concept_key]]
     if (is.null(concept_col)) next
 
-    constraints <- slice_lookup[[slice_name]]
-    if (is.null(constraints)) next
+    # Direct-column shortcut: when the user's override resolves to a column
+    # that's already on each row of main_data (e.g. ADaM BDS BASE column,
+    # which carries the baseline value for every post-baseline record), the
+    # slice query + LEFT JOIN is redundant AND introduces NAs for subjects
+    # without a separate baseline visit row — making lm() drop them. Honor
+    # the explicit override and skip the join.
+    # Check both full concept key (Measure.Result.Value) and bare name
+    # (Measure) — JS varOverrides can be keyed by either, mirroring the
+    # lookup chain in build_concept_var_map.
+    user_override <- NULL
+    if (!is.null(overrides)) {
+      if (!is.null(overrides[[concept_key]])) user_override <- overrides[[concept_key]]
+      else if (!is.null(overrides[[raw_concept]])) user_override <- overrides[[raw_concept]]
+    }
+    if (!is.null(user_override) && user_override %in% colnames(main_data)) {
+      cat("  Slice '", slice_name, "' for role", b$methodRole, ": skipping join —",
+          user_override, "already on main_data rows\n")
+      role <- b$methodRole
+      if (!is.null(role)) concept_vars$by_role[[role]] <- user_override
+      next
+    }
 
-    slice_data <- filter_by_constraints(dataset, constraints, overrides)
-    cat("  Slice '", slice_name, "':", nrow(slice_data), "rows → column", concept_col, "\n")
+    raw_constraints <- slice_lookup[[slice_name]]
+    if (is.null(raw_constraints)) next
+
+    # Inherit Population (and any other non-overlapping dimension) from the
+    # default slice. Without this, baseline values get pulled from rows
+    # outside the analysis population (e.g. EFFFL=N), then LEFT-joined into
+    # an EFFFL=Y main_data — producing NAs that lm() drops, which understates
+    # the model DF vs. a manual standalone subset.
+    constraints <- as.list(raw_constraints)
+    if (!is.null(default_constraints)) {
+      for (dn in names(default_constraints)) {
+        if (is.null(constraints[[dn]])) constraints[[dn]] <- default_constraints[[dn]]
+      }
+    }
+
+    # Variable overrides also need to be inherited from the default slice,
+    # since the inherited Population constraint needs its EFFFL column choice.
+    inherited_vars <- slice_var_lookup[[slice_name]]
+    if (!is.null(slice_var_lookup[[default_slice_name]])) {
+      base_vars <- as.list(slice_var_lookup[[default_slice_name]])
+      if (!is.null(inherited_vars)) {
+        for (k in names(inherited_vars)) base_vars[[k]] <- inherited_vars[[k]]
+      }
+      inherited_vars <- base_vars
+    }
+    slice_overrides <- merge_overrides(overrides, inherited_vars)
+    slice_data <- filter_by_constraints(dataset, constraints, slice_overrides)
+    cat("  Slice '", slice_name, "' (with inherited constraints):", nrow(slice_data), "rows → column", concept_col, "\n")
 
     col_name <- paste0(concept_col, "_", slice_name)
     if (concept_col %in% colnames(slice_data)) {
@@ -883,11 +1040,23 @@ filter_by_constraints <- function(dataset, constraints, overrides = NULL) {
     value <- constraints[[dim_name]]
     if (is.null(value) || value == "") next
 
-    # User override takes precedence, otherwise dimension name is the column name
-    col_name <- if (!is.null(overrides) && !is.null(overrides[[dim_name]])) {
-      overrides[[dim_name]]
-    } else {
+    # Resolve the actual column to filter on:
+    #   1. User override (e.g. EFFFL for Population) IF the column still exists
+    #      post-ingest (some store columns survive ingest because they're not
+    #      the canonical primary for any concept).
+    #   2. The dimension/concept name itself (e.g. Parameter, Treatment) which
+    #      is what ingest_to_concepts renamed the canonical column to.
+    #   3. Skip with warning.
+    override_col <- if (!is.null(overrides) && !is.null(overrides[[dim_name]])) overrides[[dim_name]] else NULL
+    col_name <- if (!is.null(override_col) && override_col %in% colnames(dataset)) {
+      override_col
+    } else if (dim_name %in% colnames(dataset)) {
+      if (!is.null(override_col)) {
+        cat("    Note: override column", override_col, "not in dataset (renamed by ingest); using concept key", dim_name, "\n")
+      }
       dim_name
+    } else {
+      override_col %||% dim_name  # for the warning message below
     }
 
     if (col_name %in% colnames(dataset)) {

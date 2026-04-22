@@ -806,6 +806,83 @@ export function renderInteractiveBindingsByRole(customBindings, method, dcModel,
     html += `</div>`;
   }
 
+  // ─── Pass 2: structural bindings ─────────────────────────────────────
+  // Bindings whose methodRole isn't declared on the method (e.g. M.Mean has
+  // input_roles=[response, group] but T.Mean_Measure adds partition + constraint).
+  // These are structural template defaults the user couldn't see or edit before.
+  // Render them with a `structural` badge, no `+ Add` UI, but a working `×` so
+  // the user can remove them — the inputBindingEdits.removed pipeline handles
+  // the persistence end (instance-serializer.js).
+  const structuralRoleNames = Object.keys(grouped).filter(name => !roleMap[name]);
+  for (const roleName of structuralRoleNames) {
+    const bindings = grouped[roleName];
+    if (bindings.length === 0) continue;
+
+    html += `<div class="binding-role-group">`;
+    html += `<div class="binding-role-header">
+      <span class="binding-role-name">${roleName}</span>
+      <span class="binding-role-cardinality">(structural · template default)</span>
+    </div>`;
+
+    for (let i = 0; i < bindings.length; i++) {
+      const b = bindings[i];
+      const conceptKey = b.concept || b.conceptCategory || '';
+      const isTemplate = templateConcepts.has(`${b.methodRole}|${conceptKey}`);
+      const isCustom = !isTemplate;
+
+      const bindingDisplayOpts = {};
+      if (b.qualifierType) bindingDisplayOpts.qualifierType = b.qualifierType;
+      if (b.qualifierValue) bindingDisplayOpts.qualifierValue = b.qualifierValue;
+      if (b.conceptCategory) bindingDisplayOpts.conceptCategory = b.conceptCategory;
+      if (b.slice) {
+        bindingDisplayOpts.slice = b.slice;
+        bindingDisplayOpts.namedSlices = namedSlices;
+      } else if (b.dimensionConstraints) {
+        bindingDisplayOpts.dimensionConstraints = b.dimensionConstraints;
+      }
+
+      // Slice annotation — same inline editor as Pass 1
+      let sliceAnnotation = '';
+      if (b.slice && namedSlices[b.slice]) {
+        const sliceDef = namedSlices[b.slice];
+        const dims = sliceDef.fixedDimensions || sliceDef;
+        const dimInputs = Object.entries(dims).map(([k, v]) => {
+          const inputId = `slice-dim-${b.slice}-${k}-${roleName}-${i}`;
+          return `<span style="display:inline-flex; align-items:center; gap:2px;">
+            <span class="badge badge-teal" style="font-size:9px; padding:0 4px;">${k}</span>=<input
+              class="ep-slice-dim-input" data-slice-name="${b.slice}" data-dim="${k}" data-role="${roleName}" data-binding-idx="${i}"
+              id="${inputId}" value="${v}" placeholder="${k}"
+              style="font-size:10px; padding:1px 4px; border:1px solid var(--cdisc-border); border-radius:3px; width:${Math.max(60, String(v).length * 7)}px; color:var(--cdisc-accent2); background:transparent;">
+          </span>`;
+        }).join(' ');
+        sliceAnnotation = `<div style="font-size:10px; color:var(--cdisc-accent2); margin-top:4px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+          <span style="color:var(--cdisc-text-secondary);">slice: ${b.slice} →</span> ${dimInputs}
+        </div>`;
+      }
+
+      const valueType = b.requiredValueType || '';
+      const shape = b.concept ? resolveBindingShape(b.concept, b, appState.dcModel, appState.ocModel, namedSlices) : null;
+      const bindingId = `byrole-${roleName}-structural-${i}`;
+      const shapeValueType = shape?.valueType || valueType;
+      const shapeHtml = shape ? renderShapeAnnotation(shape, bindingId) : '';
+
+      html += `<div class="binding-row ${isCustom ? 'binding-row-custom' : ''}" style="flex-direction:column; align-items:flex-start;">
+        <div style="display:flex; align-items:center; gap:6px; width:100%;">
+          <span class="binding-concept"><code>${displayConcept(conceptKey, bindingDisplayOpts)}</code></span>
+          <span class="binding-badge badge ${roleFilter === 'dimension' ? 'badge-teal' : 'badge-blue'}">${roleFilter}</span>
+          ${shapeValueType ? `<span style="font-size:9px; color:var(--cdisc-text-secondary);">${shapeValueType}</span>` : ''}
+          <span class="binding-badge badge badge-secondary" title="Inherited from transformation template; not declared by the method">structural</span>
+          ${isCustom ? '<span class="binding-badge badge badge-secondary">custom</span>' : ''}
+          <button class="binding-remove" data-role="${roleName}" data-index="${i}" title="Remove (saved to inputBindingEdits.removed)" style="margin-left:auto;">&times;</button>
+        </div>
+        ${sliceAnnotation}
+        ${shapeHtml}
+      </div>`;
+    }
+
+    html += `</div>`;
+  }
+
   return html;
 }
 

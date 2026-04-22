@@ -1,0 +1,15 @@
+{
+  "model": "ConceptCategoryModel",
+  "version": "v001",
+  "description": "Categories grouping interchangeable dimension concepts across the OC (observation) and DC (derivation) layers. A transformation binding may reference a category instead of a concrete concept; the user selects a concrete member at study-specification time.",
+  "categories": {
+    "VisitDimension": {
+      "description": "Indexes observations by protocol or analysis visit. Use when a dimension can be satisfied by either the OC-level Visit (raw SDTM VISIT) or the DC-level AnalysisVisit (ADaM AVISIT), depending on the data store.",
+      "members": [
+        { "model": "OC", "concept": "Visit",         "label": "Visit (OC, raw protocol visit)" },
+        { "model": "OC", "concept": "Timepoint",     "label": "Timepoint (OC, collection timepoint)" },
+        { "model": "DC", "concept": "AnalysisVisit", "label": "AnalysisVisit (DC, analysis-derived visit)" }
+      ]
+    }
+  }
+}

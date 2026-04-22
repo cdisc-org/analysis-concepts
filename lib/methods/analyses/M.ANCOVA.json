@@ -43,7 +43,10 @@
     },
     {
       "name": "alpha",
-      "conforms_to": "alpha"
+      "conforms_to": "alpha",
+      "dataType": "decimal",
+      "defaultValue": 0.05,
+      "description": "Type I error rate for confidence intervals; 1-alpha is the confidence level."
     }
   ],
   "output_specification": {
@@ -80,6 +83,8 @@
           {
             "name": "multiplicity_adjustment",
             "conforms_to": "multiplicity_adjustment",
+            "dataType": "code",
+            "defaultValue": "none",
             "applicable_scopes": [
               "universal"
             ]
@@ -138,6 +143,8 @@
           {
             "name": "multiplicity_adjustment",
             "conforms_to": "multiplicity_adjustment",
+            "dataType": "code",
+            "defaultValue": "none",
             "applicable_scopes": [
               "universal",
               "anova_pairwise_means",

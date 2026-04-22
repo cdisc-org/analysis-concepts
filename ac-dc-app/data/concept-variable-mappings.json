@@ -552,7 +552,8 @@
           "Planned": { "code": "TRTP", "string": "TRTP", "integer": "TRTPN" },
           "Actual": { "code": "TRTA", "string": "TRTA", "integer": "TRTAN" }
         },
-        "notes": "Record-level treatment for BDS. TRTP/TRTA are planned/actual treatment labels. IntentType qualifier selects Planned vs Actual. Subject-level treatment (ARM/TRTxxP/TRTxxA) is in ADSL."
+        "alternativeVariables": ["TRT01A", "TRT01P", "TRT01AN", "TRT01PN", "ARM", "ACTARM", "ARMCD", "ACTARMCD"],
+        "notes": "Record-level treatment for BDS. TRTP/TRTA are planned/actual treatment labels. IntentType qualifier selects Planned vs Actual. Subject-level treatment (ARM/TRTxxP/TRTxxA) is in ADSL — listed under alternativeVariables for cross-dataset selection."
       },
       "Population": {
         "variable": "ITTFL/SAFFL/FASFL",

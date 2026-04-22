@@ -242,34 +242,67 @@ export function getVariableOptions(concept, adam, valueType, structRole) {
   const entry = adam?.concepts?.[concept] || adam?.dimensions?.[concept];
   if (!entry?.byDataType) return [];
 
-  const bt = entry.byDataType;
+  // Collect every (typeKey, varName) pair declared anywhere in the entry:
+  //   - byDataType (canonical default)
+  //   - intentType / other nested qualifier objects
+  //   - alternativeVariables (loose list — typeKey unknown, treated as compatible with any branch)
+  const typedPairs = []; // [{ type, varName }]
+  const looseVars = [];  // variables with no declared type
 
-  // If a numeric value type is required, only show numeric-compatible variables
-  if (valueType && /quantity|numeric/i.test(valueType)) {
-    const filtered = Object.entries(bt)
-      .filter(([type]) => NUMERIC_TYPES.has(type))
-      .map(([, varName]) => varName);
-    if (filtered.length > 0) return [...new Set(filtered)];
+  for (const [type, val] of Object.entries(entry.byDataType)) {
+    if (typeof val === 'string') typedPairs.push({ type, varName: val });
+  }
+  // Skip non-variable-list keys. `facets` is per-facet binding (e.g. Result.Unit→AVALU)
+  // and must NOT be flattened into the bare-concept dropdown — AVALU is for the
+  // Measure.Result.Unit binding only, never an alternative for Measure itself.
+  const NON_VARIABLE_KEYS = new Set(['byDataType', 'variable', 'notes', 'alternativeVariables', 'facets']);
+  for (const [key, val] of Object.entries(entry)) {
+    if (NON_VARIABLE_KEYS.has(key)) continue;
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+      for (const sub of Object.values(val)) {
+        if (typeof sub === 'string') {
+          looseVars.push(sub);
+        } else if (sub && typeof sub === 'object') {
+          for (const [innerType, innerVal] of Object.entries(sub)) {
+            if (typeof innerVal === 'string') typedPairs.push({ type: innerType, varName: innerVal });
+          }
+        }
+      }
+    }
+  }
+  if (Array.isArray(entry.alternativeVariables)) {
+    looseVars.push(...entry.alternativeVariables.filter(v => typeof v === 'string'));
   }
 
-  // If a categorical value type is required, only show categorical variables
+  const filterByTypes = (typeSet) => {
+    const matching = typedPairs.filter(p => typeSet.has(p.type)).map(p => p.varName);
+    return [...new Set([...matching, ...looseVars])];
+  };
+
+  // If a numeric value type is required, only show numeric-compatible variables (+ loose alternatives)
+  if (valueType && /quantity|numeric/i.test(valueType)) {
+    const filtered = filterByTypes(NUMERIC_TYPES);
+    if (filtered.length > 0) return filtered;
+  }
+
+  // If a categorical value type is required, only show categorical variables (+ loose alternatives)
   if (valueType && /code|categor/i.test(valueType)) {
-    const filtered = Object.entries(bt)
-      .filter(([type]) => CATEGORICAL_TYPES.has(type))
-      .map(([, varName]) => varName);
-    if (filtered.length > 0) return [...new Set(filtered)];
+    const filtered = filterByTypes(CATEGORICAL_TYPES);
+    if (filtered.length > 0) return filtered;
   }
 
   // If structRole is measure, prefer numeric; if dimension, prefer categorical
   if (structRole === 'measure') {
-    const numeric = Object.entries(bt)
-      .filter(([type]) => NUMERIC_TYPES.has(type))
-      .map(([, varName]) => varName);
-    if (numeric.length > 0) return [...new Set(numeric)];
+    const numeric = filterByTypes(NUMERIC_TYPES);
+    if (numeric.length > 0) return numeric;
+  }
+  if (structRole === 'dimension') {
+    const categorical = filterByTypes(CATEGORICAL_TYPES);
+    if (categorical.length > 0) return categorical;
   }
 
-  // Fallback: return all unique variables
-  return [...new Set(Object.values(bt))];
+  // Fallback: union of all known variables
+  return [...new Set([...typedPairs.map(p => p.varName), ...looseVars])];
 }
 
 /**

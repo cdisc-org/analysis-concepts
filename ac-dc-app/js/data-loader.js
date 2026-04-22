@@ -40,7 +40,8 @@ export async function loadAllData(state) {
     sasImplementationCatalog,
     esapSchema,
     unitConversions,
-    configurationConcepts
+    configurationConcepts,
+    conceptCategories
   ] = await Promise.all([
     fetchJSON('ac-dc-app/data/usdm/studies.json'),
     fetchJSON('model/concept/AC_Concept_Model_v016.json'),
@@ -59,7 +60,8 @@ export async function loadAllData(state) {
     fetchJSON('lib/method_implementations/sas_implementations.json'),
     fetchJSON('model/study/study_esap.schema.json'),
     fetchJSON('model/vocabularies/unit_conversions.json'),
-    fetchJSON('model/method/configuration_concepts.json')
+    fetchJSON('model/method/configuration_concepts.json'),
+    fetchJSON('model/concept/concept_categories.json')
   ]);
 
   // Load all USDM study files in parallel
@@ -99,6 +101,7 @@ export async function loadAllData(state) {
   state.esapSchema = esapSchema;
   state.unitConversions = unitConversions;
   state.configurationConcepts = configurationConcepts;
+  state.conceptCategories = conceptCategories;
 }
 
 /**

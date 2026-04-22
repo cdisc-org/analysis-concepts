@@ -52,6 +52,13 @@
       "path": "derivations/M.ThresholdCompare.json"
     },
     {
+      "oid": "M.WindowedVisitAssignment",
+      "name": "Windowed Visit Assignment",
+      "type": "derivation",
+      "class": "Classification",
+      "path": "derivations/M.WindowedVisitAssignment.json"
+    },
+    {
       "oid": "M.Imputation",
       "name": "Apply Imputation",
       "type": "derivation",
