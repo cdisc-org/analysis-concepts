@@ -1,0 +1,60 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.8.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.AffineTransform",
+  "name": "Affine Transform",
+  "type": "derivation",
+  "class": "Arithmetic",
+  "intent": [
+    "Rescaling"
+  ],
+  "description": "Per-row affine transform: result = scale * value + offset. Used for any linear rescaling on a single column (e.g. (70 - x)/70 with scale=-1/70, offset=1, percent-of-max conversions, unit shifts).",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := scale * value + offset",
+    "generic_expression": "result := <scale> * <value> + <offset>"
+  },
+  "configurations": [
+    {
+      "name": "scale",
+      "dataType": "decimal",
+      "defaultValue": 1,
+      "description": "Multiplier applied to the input value"
+    },
+    {
+      "name": "offset",
+      "dataType": "decimal",
+      "defaultValue": 0,
+      "description": "Constant added after the multiplication"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "result",
+        "dataType": "decimal",
+        "description": "scale * value + offset",
+        "statistics": [
+          "value"
+        ],
+        "dimensions": null
+      }
+    ]
+  },
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "value",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Per-row numeric input to be rescaled"
+    }
+  ]
+}

@@ -35,6 +35,12 @@
       "description": "Comparison operator"
     },
     {
+      "name": "threshold",
+      "dataType": "decimal",
+      "defaultValue": 0,
+      "description": "Threshold value compared against the input value"
+    },
+    {
       "name": "true_value",
       "dataType": "code",
       "defaultValue": "Y",
@@ -69,13 +75,6 @@
       "required": true,
       "cardinality": "single",
       "description": "Value to compare"
-    },
-    {
-      "name": "threshold",
-      "dataType": "decimal",
-      "required": true,
-      "cardinality": "single",
-      "description": "Threshold value"
     }
   ]
 }

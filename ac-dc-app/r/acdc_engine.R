@@ -363,12 +363,20 @@ acdc_derive_only <- function(spec, mappings, dataset,
       deriv <- derivations[[i]]
       method_oid <- deriv$method$oid %||% deriv$usesMethod
 
-      # Apply derivation-specific constraints (BC Topic decode from JS)
+      # Apply derivation-specific constraints (BC Topic decode from JS).
+      # When a derivation leaf links MULTIPLE BCs (e.g. ADaS-Cog 11 = 11 item BCs
+      # all feeding T.ADAS_SumAvailableScores), the JS emits cv$value as a
+      # character vector. Use %in% (R's IN-operator) to filter by the full set
+      # rather than == (which would silently degrade to single-value comparison).
       if (!is.null(deriv$constraintValues) && length(deriv$constraintValues) > 0) {
         for (cv in deriv$constraintValues) {
           col <- cv$dimension; val <- cv$value
           if (!is.null(col) && !is.null(val) && col %in% colnames(dataset)) {
-            dataset <- dataset[dataset[[col]] == val, , drop = FALSE]
+            if (length(val) > 1) {
+              dataset <- dataset[dataset[[col]] %in% val, , drop = FALSE]
+            } else {
+              dataset <- dataset[dataset[[col]] == val, , drop = FALSE]
+            }
           }
         }
       }
@@ -772,35 +780,44 @@ apply_derivations <- function(dataset, derivations, r_impls, unit_conversions, m
       stop(paste0("No R implementation found for '", method_oid, "'. Available: [", avail, "]"))
     }
 
-    # Apply derivation-specific constraints from JS (BC-derived)
-    # Uses tolerant matching: exact → case-insensitive → partial (startsWith)
+    # Apply derivation-specific constraints from JS (BC-derived).
+    # Single-value path uses tolerant matching (exact → case-insensitive → partial).
+    # Multi-value path (length(val) > 1) uses %in% for IN-clause filtering, exact
+    # match only — multi-BC linkages emit array values when a leaf binds multiple
+    # BCs (e.g. ADaS-Cog 11 items all feeding T.ADAS_SumAvailableScores).
     if (!is.null(deriv$constraintValues) && length(deriv$constraintValues) > 0) {
       for (cv in deriv$constraintValues) {
         col <- cv$dimension
         val <- cv$value
         if (!is.null(col) && !is.null(val) && col %in% colnames(dataset)) {
           pre_n <- nrow(dataset)
-          filtered <- dataset[dataset[[col]] == val, , drop = FALSE]
-          if (nrow(filtered) > 0) {
-            dataset <- filtered
+          if (length(val) > 1) {
+            # IN-clause: exact match only (case-insensitive fallback would mask CT errors).
+            dataset <- dataset[dataset[[col]] %in% val, , drop = FALSE]
+            cat("    Constraint:", col, "IN [", paste(val, collapse=","), "] →", nrow(dataset), "of", pre_n, "rows\n")
           } else {
-            # Case-insensitive fallback
-            filtered <- dataset[tolower(dataset[[col]]) == tolower(val), , drop = FALSE]
+            filtered <- dataset[dataset[[col]] == val, , drop = FALSE]
             if (nrow(filtered) > 0) {
               dataset <- filtered
-              cat("    Constraint:", col, "~=", val, "(case-insensitive)")
             } else {
-              # Partial match: "Weight" matches "Weight (kg)" etc.
-              lv <- tolower(val)
-              lc <- tolower(dataset[[col]])
-              filtered <- dataset[startsWith(lc, lv) | startsWith(lv, lc), , drop = FALSE]
+              # Case-insensitive fallback
+              filtered <- dataset[tolower(dataset[[col]]) == tolower(val), , drop = FALSE]
               if (nrow(filtered) > 0) {
                 dataset <- filtered
-                cat("    Constraint:", col, "~", val, "(partial)")
+                cat("    Constraint:", col, "~=", val, "(case-insensitive)")
+              } else {
+                # Partial match: "Weight" matches "Weight (kg)" etc.
+                lv <- tolower(val)
+                lc <- tolower(dataset[[col]])
+                filtered <- dataset[startsWith(lc, lv) | startsWith(lv, lc), , drop = FALSE]
+                if (nrow(filtered) > 0) {
+                  dataset <- filtered
+                  cat("    Constraint:", col, "~", val, "(partial)")
+                }
               }
             }
+            cat("    Constraint:", col, "==", val, "→", nrow(dataset), "of", pre_n, "rows\n")
           }
-          cat("    Constraint:", col, "==", val, "→", nrow(dataset), "of", pre_n, "rows\n")
         }
       }
     }
@@ -846,6 +863,101 @@ apply_derivations <- function(dataset, derivations, r_impls, unit_conversions, m
     cat("    Bindings:\n")
     for (nm in names(var_map$by_role)) {
       cat("      ", nm, "->", var_map$by_role[[nm]], "\n")
+    }
+
+    # Slice-based pre-join. When an input binding declares a slice
+    # (e.g. M.Subtraction's subtrahend has slice: parameter_baseline), the
+    # row-wise template needs the slice value broadcast onto every row. We
+    # filter the dataset by the slice's resolvedValues, project Subject +
+    # the source column, rename to a slice-suffixed name, and left-merge
+    # back to the unfiltered dataset. The role then points at the new
+    # joined column. Without this, M.Subtraction's minuend and subtrahend
+    # both resolve to the same column → Change = 0 → ANCOVA residual SS = 0.
+    if (!is.null(deriv$resolvedBindings) && length(deriv$resolvedBindings) > 0
+        && !is.null(deriv$resolvedSlices) && length(deriv$resolvedSlices) > 0) {
+      # Build a slice name → resolvedValues lookup
+      slice_lookup <- list()
+      for (s in deriv$resolvedSlices) {
+        nm <- s$name %||% ""
+        if (nzchar(nm)) slice_lookup[[nm]] <- s$resolvedValues
+      }
+      # Find a partition column that exists in the data (typically Subject)
+      partition_cols <- character(0)
+      for (b in deriv$resolvedBindings) {
+        if (identical(b$direction, "input") && identical(b$methodRole, "partition")) {
+          col <- var_map$by_role[["partition"]] %||% b$concept
+          if (!is.null(col)) {
+            ks <- if (length(col) > 1) col else strsplit(col, " \\+ ")[[1]]
+            partition_cols <- c(partition_cols, ks[ks %in% colnames(dataset)])
+          }
+        }
+      }
+      partition_cols <- unique(partition_cols)
+      for (b in deriv$resolvedBindings) {
+        if (!identical(b$direction, "input")) next
+        slice_name <- b$slice
+        if (is.null(slice_name) || !nzchar(slice_name)) next
+        constraints <- slice_lookup[[slice_name]]
+        if (is.null(constraints) || length(constraints) == 0) next
+        role <- b$methodRole
+        if (is.null(role) || !nzchar(role)) next
+        base_col <- var_map$by_role[[role]]
+        if (is.null(base_col) || !(base_col %in% colnames(dataset))) {
+          cat("    [slice] role", role, "base col", base_col, "not in data — skipping pre-join\n")
+          next
+        }
+        if (length(partition_cols) == 0) {
+          cat("    [slice] no partition columns to join on — skipping pre-join for", slice_name, "\n")
+          next
+        }
+        # Filter dataset by the slice constraints (case-insensitive fallback
+        # mirrors apply_derivations constraintValues handling). Each
+        # constraint is best-effort: a constraint that matches zero rows is
+        # skipped with a warning rather than aborting the whole pre-join.
+        # Why: after upstream aggregations roll many per-item rows up to one
+        # per Subject×Visit, the per-item Parameter label is still on each
+        # row — a slice constraint Parameter == "<endpoint label>" would
+        # match nothing even though the partition (Subject) and Visit
+        # constraints can still pick out the baseline row correctly.
+        slice_data <- dataset
+        skipped_any <- FALSE
+        for (dim_name in names(constraints)) {
+          val <- constraints[[dim_name]]
+          if (is.null(val) || (is.character(val) && nchar(val) == 0)) next
+          if (!(dim_name %in% colnames(slice_data))) {
+            cat("    [slice] dim", dim_name, "not in data — skipping constraint\n")
+            next
+          }
+          filtered <- slice_data[slice_data[[dim_name]] == val, , drop = FALSE]
+          if (nrow(filtered) == 0) {
+            filtered <- slice_data[tolower(slice_data[[dim_name]]) == tolower(val), , drop = FALSE]
+          }
+          if (nrow(filtered) == 0) {
+            cat("    [slice] no rows match", dim_name, "==", val, "— skipping THIS constraint (other constraints still apply)\n")
+            skipped_any <- TRUE
+            next
+          }
+          slice_data <- filtered
+        }
+        if (nrow(slice_data) == 0) {
+          cat("    [slice] all constraints together produce 0 rows — skipping pre-join for", slice_name, "\n")
+          next
+        }
+        if (skipped_any) {
+          cat("    [slice] WARN: pre-join used", nrow(slice_data), "rows with one or more constraints skipped\n")
+        }
+        # Project partition + value, rename, merge.
+        keep <- unique(c(partition_cols, base_col))
+        keep <- keep[keep %in% colnames(slice_data)]
+        slice_subset <- slice_data[, keep, drop = FALSE]
+        slice_subset <- slice_subset[!duplicated(slice_subset[, partition_cols, drop = FALSE]), , drop = FALSE]
+        joined_col <- paste0(base_col, "__", slice_name)
+        colnames(slice_subset)[colnames(slice_subset) == base_col] <- joined_col
+        dataset <- merge(dataset, slice_subset, by = partition_cols, all.x = TRUE)
+        var_map$by_role[[role]] <- joined_col
+        cat("    [slice] role", role, "→", joined_col, "(slice", slice_name, ", joined by",
+            paste(partition_cols, collapse=", "), ")\n")
+      }
     }
 
     # Parse derivation configs (target_unit, precision, etc.). Scalars
@@ -1171,13 +1283,31 @@ execute_method <- function(data, var_map, configs, r_impl) {
 resolve_call_template <- function(template, var_map, configs) {
   resolved <- template
 
-  # Substitute role placeholders (longest first to avoid partial matches)
+  # Substitute role placeholders (longest first to avoid partial matches).
+  # Backticking strategy: the template author marks identifier-position
+  # placeholders by wrapping them in backticks (e.g. `lm(\`<response>\` ~
+  # \`<covariate>\`, data = ...)`). String-position placeholders stay bare
+  # (e.g. `concept_data[["<x>"]]`).
+  # For multi-term roles we detect the wrapping backticks at substitution
+  # time and use the inner separator "\` + \`" so each term gets its own
+  # backticks (the template's outer backticks frame the first/last terms).
+  # Bare (string-position) placeholders use the plain separator " + ".
   roles <- names(var_map)
   roles <- roles[order(nchar(roles), decreasing = TRUE)]
   for (role in roles) {
     placeholder <- paste0("<", role, ">")
-    value <- paste(var_map[[role]], collapse = " + ")
-    resolved <- gsub(placeholder, value, resolved, fixed = TRUE)
+    terms <- var_map[[role]]
+    # Backticked-context substitution: each occurrence wrapped in `…`
+    backticked_ph <- paste0("`", placeholder, "`")
+    if (grepl(backticked_ph, resolved, fixed = TRUE)) {
+      backticked_value <- paste0("`", paste(terms, collapse = "` + `"), "`")
+      resolved <- gsub(backticked_ph, backticked_value, resolved, fixed = TRUE)
+    }
+    # Plain (string-position or single-name) substitution — no backticks added.
+    if (grepl(placeholder, resolved, fixed = TRUE)) {
+      plain_value <- paste(terms, collapse = " + ")
+      resolved <- gsub(placeholder, plain_value, resolved, fixed = TRUE)
+    }
   }
 
   # Substitute config placeholders

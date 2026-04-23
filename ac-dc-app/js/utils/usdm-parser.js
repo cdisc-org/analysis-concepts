@@ -306,26 +306,82 @@ export function getBiomedicalConcepts(parsedStudy, endpointId) {
 export function getDerivationBCTopicDecode(endpointSpec, slotKey, parsedStudy) {
   if (!endpointSpec || !parsedStudy) return null;
 
-  // Terminal-level BC (Step 6) takes precedence; fall back to endpoint-level (Step 5)
-  let bcId = null;
+  // Terminal-level BCs (Step 6) take precedence; fall back to endpoint-level (Step 5).
+  // A leaf may link MULTIPLE BCs (e.g. ADaS-Cog 11 has 11 item BCs that all feed
+  // T.ADAS_SumAvailableScores). We collect every BC's Topic decode so the engine
+  // can build an IN-clause filter (Topic %in% [decodes]) instead of dropping all
+  // but the first.
+  let bcIds = [];
   if (slotKey && Array.isArray(endpointSpec.confirmedTerminals)) {
     const term = endpointSpec.confirmedTerminals.find(t => t.slotKey === slotKey);
-    if (term?.linkedBCIds?.length) bcId = term.linkedBCIds[0];
+    if (term?.linkedBCIds?.length) bcIds = [...term.linkedBCIds];
   }
-  if (!bcId && endpointSpec.linkedBCIds?.length) bcId = endpointSpec.linkedBCIds[0];
-  if (!bcId) return null;
+  if (bcIds.length === 0 && endpointSpec.linkedBCIds?.length) bcIds = [...endpointSpec.linkedBCIds];
+  if (bcIds.length === 0) return null;
 
-  const bc = (parsedStudy.biomedicalConcepts || []).find(b => b.id === bcId);
-  if (!bc) return null;
+  // Topic CT value resolution. Per oc_bc_property_mapping.json the Topic facet
+  // *identifies* what's being observed — the BC's own identity. The canonical
+  // source is bc.synonyms[0] when it matches a CT-code pattern (uppercase code
+  // up to ~12 chars, possibly with digits). Same value appears in the
+  // bc.reference URL's last path segment. We try those first and fall back to
+  // the historical property-decode pathway for BCs that don't carry synonyms.
+  //
+  // Why not the property decode first? For some BCs (e.g. CDISC ADAS-Cog item
+  // BCs in this study's USDM) the property at index 0 has decode='FTTESTCD'
+  // (the SDTM variable name itself) or NULL, while synonyms[0] correctly holds
+  // the SDTM dataset specialization code (ADCCMD/ADCOF/...) that matches the
+  // dataset's QSTESTCD/FTTESTCD column values.
+  const isCtCode = (s) => typeof s === 'string' && /^[A-Z][A-Z0-9_]{1,15}$/.test(s);
+  const refSlug = (ref) => {
+    if (!ref) return null;
+    const m = String(ref).match(/\/([A-Z][A-Z0-9_]{1,15})\/?$/);
+    return m ? m[1] : null;
+  };
+  const bcIndex = new Map((parsedStudy.biomedicalConcepts || []).map(b => [b.id, b]));
+  const decodes = [];
+  const bcNames = [];
+  for (const id of bcIds) {
+    const bc = bcIndex.get(id);
+    if (!bc) continue;
 
-  // Topic property: matches TESTCD (the SDTM code variable for the observation topic)
-  const topicProp = (bc.properties || []).find(p =>
-    /TESTCD/i.test(p.name || '') || /TESTCD/i.test(p.label || '')
-  );
-  const decode = topicProp?.code?.standardCode?.decode;
-  if (!decode) return null;
+    let decode = null;
+    // (1) Synonyms[0] when it matches a CT-code shape.
+    const syn0 = (bc.synonyms || [])[0];
+    if (isCtCode(syn0)) decode = syn0;
+    // (2) Reference URL last segment.
+    if (!decode) {
+      const slug = refSlug(bc.reference);
+      if (isCtCode(slug)) decode = slug;
+    }
+    // (3) Historical property-decode path (kept for BCs that explicitly populated it).
+    if (!decode) {
+      const topicProp = (bc.properties || []).find(p =>
+        /TESTCD/i.test(p.name || '') || /TESTCD/i.test(p.label || '')
+      );
+      const propDecode = topicProp?.code?.standardCode?.decode;
+      // Skip if the prop decode is itself a variable name (FTTESTCD/QSTESTCD/etc.)
+      // — that's a USDM authoring artifact, not a real Topic value.
+      if (propDecode && !/TESTCD$|TEST$|ORRES|STRESC|STRESN|STRESU|ORRESU|CAT$|SCAT$|STAT$|REASND$|DTC$/.test(propDecode)) {
+        decode = propDecode;
+      }
+    }
 
-  return { bcName: bc.label || bc.name || bcId, decode };
+    if (decode) {
+      decodes.push(decode);
+      bcNames.push(bc.label || bc.name || id);
+    }
+  }
+  if (decodes.length === 0) return null;
+
+  // Backward-compatible shape: scalar `decode`/`bcName` for callers that only
+  // need the first; array fields for callers that want the full set (constraint
+  // builders use `decodes` to emit array-valued constraintValue → R %in% filter).
+  return {
+    bcName: bcNames[0],
+    decode: decodes[0],
+    bcNames,
+    decodes
+  };
 }
 
 /**

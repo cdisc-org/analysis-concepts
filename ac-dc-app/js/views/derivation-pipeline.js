@@ -695,28 +695,47 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
     // SliceKey constraint annotation (e.g., Parameter = Adas-Cog)
     let constraintAnnotation = '';
     if (b.dataStructureRole === 'dimension' && b.methodRole === 'constraint') {
-      // Try to resolve BC constraint — scan all terminals for linked BCs
-      const terminals = activeSpec?.confirmedTerminals || [];
-      console.log('[BC constraint] slot:', slot?.key, 'terminals:', terminals.map(t => `${t.slotKey}(bc:${(t.linkedBCIds||[]).join(',')})`));
-      let bcInfo = getDerivationBCTopicDecode(activeSpec, slot?.key, study);
-      console.log('[BC constraint] direct lookup:', bcInfo);
-      if (!bcInfo) {
-        for (const term of terminals) {
-          if (term.linkedBCIds?.length) {
-            bcInfo = getDerivationBCTopicDecode(activeSpec, term.slotKey, study);
-            console.log('[BC constraint] terminal', term.slotKey, '→', bcInfo);
-            if (bcInfo) break;
+      // BC Topic facet IS the Parameter identifier (e.g. TESTCD). Only the
+      // Parameter dimension reads its constraint value from linked BCs;
+      // other dimension constraints (Visit, Site, …) source from
+      // spec.dimensionValues or fall through to the sliceKey label.
+      const isParameterConstraint = effectiveConcept === 'Parameter';
+      if (isParameterConstraint) {
+        const terminals = activeSpec?.confirmedTerminals || [];
+        let bcInfo = getDerivationBCTopicDecode(activeSpec, slot?.key, study);
+        if (!bcInfo) {
+          for (const term of terminals) {
+            if (term.linkedBCIds?.length) {
+              bcInfo = getDerivationBCTopicDecode(activeSpec, term.slotKey, study);
+              if (bcInfo) break;
+            }
           }
         }
+        if (bcInfo) {
+          const decodes = (bcInfo.decodes && bcInfo.decodes.length > 0) ? bcInfo.decodes : [bcInfo.decode].filter(Boolean);
+          const names = (bcInfo.bcNames && bcInfo.bcNames.length > 0) ? bcInfo.bcNames : [bcInfo.bcName].filter(Boolean);
+          const valueText = decodes.length > 1 ? `IN [${decodes.join(', ')}]` : decodes[0];
+          const namesText = names.join(' + ');
+          constraintAnnotation = `<div style="margin-top:4px;">
+            <span class="badge" style="background:var(--cdisc-primary-light);color:var(--cdisc-primary);font-size:11px;padding:2px 8px;border-radius:10px;">
+              ${valueText} &larr; BC: ${namesText}
+            </span>
+          </div>`;
+        }
+      } else {
+        // Non-Parameter constraint: read from endpoint dimensionValues.
+        // Key by the resolved concrete concept (Visit/AnalysisVisit/etc.).
+        const dimVal = activeSpec?.dimensionValues?.[effectiveConcept];
+        if (dimVal) {
+          constraintAnnotation = `<div style="margin-top:4px;">
+            <span class="badge" style="background:var(--cdisc-primary-light);color:var(--cdisc-primary);font-size:11px;padding:2px 8px;border-radius:10px;">
+              ${dimVal} &larr; endpoint
+            </span>
+          </div>`;
+        }
       }
-      if (bcInfo) {
-        constraintAnnotation = `<div style="margin-top:4px;">
-          <span class="badge" style="background:var(--cdisc-primary-light);color:var(--cdisc-primary);font-size:11px;padding:2px 8px;border-radius:10px;">
-            ${bcInfo.decode} &larr; BC: ${bcInfo.bcName}
-          </span>
-        </div>`;
-      }
-      // Fallback: sliceKey-based resolution (e.g., Parameter = BC name)
+      // Fallback: sliceKey-based resolution (e.g., Parameter = BC name) when
+      // no BC topic and no dimensionValues entry was found.
       if (!constraintAnnotation) {
         const resolved = resolveSliceKeyValue(b.concept);
         if (resolved) {

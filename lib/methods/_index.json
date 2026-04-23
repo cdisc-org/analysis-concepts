@@ -129,6 +129,20 @@
       "path": "derivations/M.UnitConversion.json"
     },
     {
+      "oid": "M.ConditionalValue",
+      "name": "Conditional Value",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.ConditionalValue.json"
+    },
+    {
+      "oid": "M.AffineTransform",
+      "name": "Affine Transform",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M.AffineTransform.json"
+    },
+    {
       "oid": "M.OneSampleTTest",
       "name": "One-sample t-test",
       "type": "analysis",

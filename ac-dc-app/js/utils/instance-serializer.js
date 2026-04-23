@@ -1,3 +1,4 @@
+import { appState } from '../app.js';
 import { composeFullSentence, findMatchingTransformations, getEndpointContextRoles } from './phrase-engine.js';
 import { getOutputMapping, getMethodConfigurations } from './transformation-linker.js';
 import { buildResolvedExpressionObject } from '../views/transformation-config.js';
@@ -98,13 +99,25 @@ export function buildMergedDataStructure(spec, analysisTransform) {
     }
 
     // Analysis-defined slices (W3C QB multi-dimension)
+    const categoriesMap = appState?.conceptCategories?.categories || {};
+    const epPicks = spec?.dimensionCategoryPicks || {};
     for (const s of (analysisTransform.slices || [])) {
       const measureBinding = (analysisTransform.bindings || [])
         .find(b => b.slice === s.name && b.dataStructureRole === 'measure');
       const fixedDimensions = {};
-      // New format: constraints[] array
+      // New format: constraints[] array. A constraint may name a concrete
+      // dimension (c.dimension) OR a category (c.conceptCategory); the latter
+      // must be resolved via the endpoint's dimensionCategoryPicks, falling
+      // back to the category's first member — the same precedence used for
+      // bindings. Without this resolution the slice row renders
+      // fixedDimensions[undefined] = value in downstream consumers.
       for (const c of (s.constraints || [])) {
-        fixedDimensions[c.dimension] = c.value;
+        let dimName = c.dimension;
+        if (!dimName && c.conceptCategory) {
+          dimName = epPicks[c.conceptCategory]
+            || categoriesMap[c.conceptCategory]?.members?.[0]?.concept;
+        }
+        if (dimName) fixedDimensions[dimName] = c.value;
       }
       // Backward compat: old single-dimension format
       if (s.dimension && s.constraint) {

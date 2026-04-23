@@ -23,7 +23,13 @@ function resolveDerivationSlices(transform, slotKey, dimensionOverrides, categor
   const perSlotOverrides = derivSliceOverrides?.[slotKey] || {};
   const picks = endpointPicks || {};
   return slices.map(s => {
+    // Emit BOTH shapes so both consumers work without further plumbing:
+    //   constraints: [{dimension, value}, …]  — for UI/display callers
+    //   resolvedValues: {dim1: val1, …}        — for the R engine's
+    //                                            apply_derivations slice pre-join
+    //                                            (mirrors execute_cube convention)
     const constraints = [];
+    const resolvedValues = {};
     for (const c of (s.constraints || [])) {
       let dim = c.dimension;
       if (!dim && c.conceptCategory) {
@@ -41,9 +47,11 @@ function resolveDerivationSlices(transform, slotKey, dimensionOverrides, categor
       if (!dim) continue;
       // Apply per-slot value override (user typed a different baseline label, etc.)
       const overrideVal = perSlotOverrides?.[s.name]?.[dim];
-      constraints.push({ dimension: dim, value: overrideVal ?? c.value });
+      const finalVal = overrideVal ?? c.value;
+      constraints.push({ dimension: dim, value: finalVal });
+      resolvedValues[dim] = finalVal;
     }
-    return { name: s.name, constraints };
+    return { name: s.name, constraints, resolvedValues };
   });
 }
 
@@ -437,7 +445,7 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
             // dataset — but always include the current default so the row never goes blank.
             const overrides = resultState.varOverrides || {};
             const displayVar = overrides[concept]
-              || getDefaultVariable(concept, b.dataStructureRole, adam);
+              || getDefaultVariable(concept, b.dataStructureRole, adam, b);
             const options = hasLoadedColumns
               ? [...new Set([...allOptions.filter(v => loadedColumnSet.has(v)), displayVar].filter(Boolean))]
               : allOptions;
@@ -573,7 +581,7 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
           if (b.direction === 'output') continue;
           const concept = (b.concept || '').replace(/@.*/, '');
           const userOverride = resultState.varOverrides?.[concept];
-          const defaultVar = getDefaultVariable(concept, b.dataStructureRole, adam);
+          const defaultVar = getDefaultVariable(concept, b.dataStructureRole, adam, b);
           varMap[concept] = userOverride || defaultVar;
         }
         let resolved = expression.resolved || '';
@@ -640,7 +648,7 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
           const entry = adam?.dimensions?.[concept] || adam?.concepts?.[concept];
           const bt = entry?.byDataType;
           if (!bt) continue;
-          const def = getDefaultVariable(concept, b.dataStructureRole, adam);
+          const def = getDefaultVariable(concept, b.dataStructureRole, adam, b);
           if (!def || def === concept) continue;
           if (hasLoadedColumns && !loadedColumnSet.has(def)) continue;
           if (def === Object.values(bt)[0]) continue;
@@ -1316,7 +1324,7 @@ async function _executeAnalysis(container, epId, aIdx) {
     const entry = _adamForExec.dimensions?.[concept] || _adamForExec.concepts?.[concept];
     const bt = entry?.byDataType;
     if (!bt) continue;
-    const def = getDefaultVariable(concept, b.dataStructureRole, _adamForExec);
+    const def = getDefaultVariable(concept, b.dataStructureRole, _adamForExec, b);
     if (!def || def === concept || !_loadedColsForExec.has(def)) continue;
     // canonical primary that ingest will rename: first byDataType value
     const ingestPrimary = Object.values(bt)[0];
@@ -1455,22 +1463,14 @@ async function _executeAnalysis(container, epId, aIdx) {
         const paramLabel = getSpecParameterValue(epId, endpointSpec, study);
         if (paramLabel) configValues.push({ name: 'parameter_label', value: String(paramLabel) });
       }
-      // Constraint value: only if the transform declares a constraint binding
-      // on a facet-qualified concept (Observation.Identification.Topic)
+      // BC Topic IN-filter: when the user linked BCs to a leaf under this
+      // derivation, emit a constraint on Observation.Identification.Topic so
+      // the engine narrows raw rows to those BCs before aggregating. This
+      // applies to every derivation in the chain — once filtered, downstream
+      // derivations see the narrowed dataset (the IN-clause is a no-op on
+      // already-filtered rows). Without this gate, aggregations mix every
+      // questionnaire TESTCD (NPI, DAS, ADAS, …) into the same sums/counts.
       const constraintValues = [];
-      const hasTopicConstraint = (transform.bindings || []).some(b =>
-        b.methodRole === 'constraint' &&
-        b.qualifierType === 'facet' &&
-        /Topic/i.test(b.qualifierValue || '')
-      );
-      if (hasTopicConstraint) {
-        // Derive dimension from the constraint binding's concept + qualifier
-        const constraintBinding = (transform.bindings || []).find(b =>
-          b.methodRole === 'constraint' && b.qualifierType === 'facet' && /Topic/i.test(b.qualifierValue || '')
-        );
-        // The BC is linked on a terminal node (child of the derivation), not on the
-      // derivation chain entry itself. Try the entry's slotKey first, then scan all
-      // confirmedTerminals for any with a linked BC under this derivation.
       let bcInfo = getDerivationBCTopicDecode(endpointSpec, entry.slotKey, study);
       if (!bcInfo) {
         const terminals = endpointSpec?.confirmedTerminals || [];
@@ -1481,12 +1481,14 @@ async function _executeAnalysis(container, epId, aIdx) {
           }
         }
       }
-        if (bcInfo && constraintBinding) {
-          const concept = (constraintBinding.concept || '').replace(/@.*/, '');
-          const facet = (constraintBinding.qualifierValue || '').split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('.');
+      if (bcInfo) {
+        // Single-BC path keeps scalar (back-compat); multi-BC emits array
+        // which R's filter loop handles via %in%.
+        const value = (bcInfo.decodes && bcInfo.decodes.length > 1) ? bcInfo.decodes : bcInfo.decode;
+        if (value) {
           constraintValues.push({
-            dimension: `${concept}.${facet}`,
-            value: bcInfo.decode
+            dimension: 'Observation.Identification.Topic',
+            value
           });
         }
       }
@@ -1690,42 +1692,28 @@ async function _executeDerivationOnly(container, epId) {
       if (paramLabel) configValues.push({ name: 'parameter_label', value: String(paramLabel) });
     }
 
+    // BC Topic IN-filter: when the user linked BCs to a leaf under this
+    // derivation, emit a constraint on Observation.Identification.Topic so
+    // the engine narrows raw rows to those BCs before aggregating. Mirrors
+    // the analyse-path constraint construction.
     const constraintValues = [];
-    const hasTopicConstraint = (transform.bindings || []).some(b =>
-      b.methodRole === 'constraint' &&
-      b.qualifierType === 'facet' &&
-      /Topic/i.test(b.qualifierValue || '')
-    );
-    if (hasTopicConstraint) {
-      const constraintBinding = (transform.bindings || []).find(b =>
-        b.methodRole === 'constraint' && b.qualifierType === 'facet' && /Topic/i.test(b.qualifierValue || '')
-      );
-      // The BC is linked on a terminal node (child of the derivation), not on the
-      // derivation chain entry itself. Try the entry's slotKey first, then scan all
-      // confirmedTerminals for any with a linked BC under this derivation.
-      let bcInfo = getDerivationBCTopicDecode(endpointSpec, entry.slotKey, study);
-      console.log('[constraint] slotKey lookup:', entry.slotKey, '→', bcInfo);
-      if (!bcInfo) {
-        const terminals = endpointSpec?.confirmedTerminals || [];
-        console.log('[constraint] scanning', terminals.length, 'terminals:', terminals.map(t => `${t.slotKey}(bc:${t.linkedBCIds?.length||0})`));
-        for (const term of terminals) {
-          if (term.linkedBCIds?.length) {
-            bcInfo = getDerivationBCTopicDecode(endpointSpec, term.slotKey, study);
-            console.log('[constraint] terminal', term.slotKey, 'bcIds:', term.linkedBCIds, '→', bcInfo);
-            if (bcInfo) break;
-          }
+    let bcInfo = getDerivationBCTopicDecode(endpointSpec, entry.slotKey, study);
+    if (!bcInfo) {
+      const terminals = endpointSpec?.confirmedTerminals || [];
+      for (const term of terminals) {
+        if (term.linkedBCIds?.length) {
+          bcInfo = getDerivationBCTopicDecode(endpointSpec, term.slotKey, study);
+          if (bcInfo) break;
         }
       }
-      if (bcInfo && constraintBinding) {
-        const concept = (constraintBinding.concept || '').replace(/@.*/, '');
-        const facet = (constraintBinding.qualifierValue || '').split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('.');
+    }
+    if (bcInfo) {
+      const value = (bcInfo.decodes && bcInfo.decodes.length > 1) ? bcInfo.decodes : bcInfo.decode;
+      if (value) {
         constraintValues.push({
-          dimension: `${concept}.${facet}`,
-          value: bcInfo.decode
+          dimension: 'Observation.Identification.Topic',
+          value
         });
-        console.log('[constraint] RESOLVED:', `${concept}.${facet}`, '=', bcInfo.decode);
-      } else {
-        console.log('[constraint] NOT resolved. bcInfo:', bcInfo, 'constraintBinding:', !!constraintBinding);
       }
     }
     const resolvedSlices = resolveDerivationSlices(
@@ -1949,11 +1937,24 @@ function _renderDerivationSummary(ep) {
             <table class="exec-bindings-table">
               <thead><tr><th>Dimension</th><th>Value</th><th>Source</th></tr></thead>
               <tbody>
-                ${bcInfo ? `<tr>
-                  <td>Observation.Identification.Topic</td>
-                  <td><code>${bcInfo.decode}</code></td>
-                  <td><span class="badge" style="background:var(--cdisc-primary-light);color:var(--cdisc-primary);font-size:9px;">BC: ${bcInfo.bcName}</span></td>
-                </tr>` : `<tr><td colspan="3" style="color:var(--cdisc-text-secondary);">No BC linked — derivation runs on all rows</td></tr>`}
+                ${bcInfo ? (() => {
+                  // Render multi-BC as an IN-list and show every BC's name as a source chip.
+                  // bcInfo.decodes/bcNames are arrays (post Topic-from-synonyms fix); fall back to
+                  // singular fields for callers/BCs that still produce a single decode.
+                  const decodes = (bcInfo.decodes && bcInfo.decodes.length > 0) ? bcInfo.decodes : [bcInfo.decode].filter(Boolean);
+                  const names = (bcInfo.bcNames && bcInfo.bcNames.length > 0) ? bcInfo.bcNames : [bcInfo.bcName].filter(Boolean);
+                  const valueCell = decodes.length > 1
+                    ? `IN [ <code>${decodes.join('</code>, <code>')}</code> ]`
+                    : `<code>${decodes[0] || ''}</code>`;
+                  const sourceCell = names.map(n =>
+                    `<span class="badge" style="background:var(--cdisc-primary-light);color:var(--cdisc-primary);font-size:9px; margin-right:4px;">BC: ${n}</span>`
+                  ).join('');
+                  return `<tr>
+                    <td>Observation.Identification.Topic</td>
+                    <td>${valueCell}</td>
+                    <td>${sourceCell}</td>
+                  </tr>`;
+                })() : `<tr><td colspan="3" style="color:var(--cdisc-text-secondary);">No BC linked — derivation runs on all rows</td></tr>`}
                 <tr>
                   <td>Source Store</td>
                   <td>

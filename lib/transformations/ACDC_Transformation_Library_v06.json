@@ -1012,10 +1012,47 @@
       ]
     },
     {
+      "oid": "T.ADAS_MissingContribution",
+      "name": "ADAS-Cog Per-Item Missing-Capacity Contribution",
+      "transformationType": "derivation",
+      "description": "Per-row mask: if the item value is missing (NA), output the item's max possible score; else output 0. Used as the row-wise input to T.ADAS_MissingScaleCapacity, which sums these per Subject/Visit to obtain the total max-score capacity of missing items.",
+      "instanceOf": "Measure",
+      "usesMethod": "M.ConditionalValue",
+      "methodConfigurations": [
+        {
+          "configurationName": "base",
+          "value": 0
+        }
+      ],
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "Measure",
+          "note": "Per-row item score (raw observed value; NA when the item was not scored)",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "value"
+        },
+        {
+          "concept": "Measure",
+          "note": "Per-item max possible score from T.ADAS_ItemMaxScore (broadcast to every row of that Parameter)",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "alternate"
+        },
+        {
+          "concept": "Measure",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        }
+      ]
+    },
+    {
       "oid": "T.ADAS_MissingScaleCapacity",
       "name": "ADAS-Cog Missing Scale Capacity",
       "transformationType": "derivation",
-      "description": "Sum of max-score capacity of missing items per subject/visit. Scaling factor = 70 / (70 - this value).",
+      "description": "Sum of max-score capacity of missing items per Subject/Visit. Equals 0 when no items are missing; equals 70 when all 11 items are missing. Used as the input to T.ADAS_ScoreableFraction, which computes the imputation scaling factor (70 - this) / 70.",
       "instanceOf": "Measure",
       "usesMethod": "M.Aggregation",
       "methodConfigurations": [
@@ -1028,7 +1065,7 @@
       "bindings": [
         {
           "concept": "Measure",
-          "note": "Max scores from T.ADAS_ItemMaxScore, filtered to missing items",
+          "note": "Per-row missing-capacity contribution from T.ADAS_MissingContribution (item_max_score when item is missing, else 0)",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "value"
@@ -1060,6 +1097,40 @@
           "conceptCategory": "VisitDimension",
           "direction": "output",
           "dataStructureRole": "dimension"
+        }
+      ]
+    },
+    {
+      "oid": "T.ADAS_ScoreableFraction",
+      "name": "ADAS-Cog Scoreable Fraction",
+      "transformationType": "derivation",
+      "description": "Per-row scoring fraction = (70 - missing_capacity) / 70. Equals 1.0 when no items are missing (no scaling needed); decreases toward 0 as more items are missing. Computed as scale * missing_capacity + offset with scale = -1/70, offset = 1.",
+      "instanceOf": "Measure",
+      "usesMethod": "M.AffineTransform",
+      "methodConfigurations": [
+        {
+          "configurationName": "scale",
+          "value": -0.014285714285714285
+        },
+        {
+          "configurationName": "offset",
+          "value": 1
+        }
+      ],
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "Measure",
+          "note": "Total missing-item max-score capacity per Subject/Visit (output of T.ADAS_MissingScaleCapacity)",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "methodRole": "value"
+        },
+        {
+          "concept": "Measure",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
         }
       ]
     },
@@ -1235,21 +1306,21 @@
       "oid": "T.ADAS_Cog_11_TotalScore",
       "name": "ADAS-Cog (11) Total Score",
       "transformationType": "derivation",
-      "description": "total = sum_available / ((70 - missing_capacity) / 70). Missing if scoreable flag = N. Scale: 0-70.",
+      "description": "total = sum_available / scoreable_fraction, where scoreable_fraction = (70 - missing_capacity) / 70. With no missing items the fraction is 1.0 and total = sum_available. Missing if scoreable flag = N. Scale: 0-70.",
       "instanceOf": "Measure",
       "usesMethod": "M.Division",
       "validSmartPhrases": [],
       "bindings": [
         {
           "concept": "Measure",
-          "note": "Sum of available item scores (M.Aggregation sum)",
+          "note": "Sum of available item scores (T.ADAS_SumAvailableScores, M.Aggregation sum)",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "numerator"
         },
         {
           "concept": "Measure",
-          "note": "Scale proportion from T.ADAS_MissingScaleCapacity",
+          "note": "Scoreable fraction from T.ADAS_ScoreableFraction (1.0 when no items are missing; (70-x)/70 otherwise)",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "denominator"

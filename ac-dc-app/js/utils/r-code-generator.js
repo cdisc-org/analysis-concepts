@@ -157,12 +157,23 @@ export function resolveCallTemplate(impl, bindings, overrides, adam, configs, da
     }
   }
 
-  // Expand <role> placeholders using roleSeparator from implementation metadata.
-  // R formula syntax: " + " (default), SAS statement syntax: " " (space).
-  const separator = impl.roleSeparator || ' + ';
+  // Expand <role> placeholders. Templates mark identifier-position
+  // placeholders by wrapping with backticks (e.g. `lm(\`<response>\` ~ ...)`)
+  // and string-position placeholders without (`concept_data[["<x>"]]`).
+  // Backticked occurrences get per-term backticks via the inner separator;
+  // bare occurrences use the plain separator. SAS doesn't use backticks.
+  const isRSyntax = (impl.language || '').toUpperCase() === 'R';
+  const plainSep = impl.roleSeparator || (isRSyntax ? ' + ' : ' ');
   const roles = Object.keys(roleMap).sort((a, b) => b.length - a.length);
   for (const role of roles) {
-    code = code.replaceAll(`<${role}>`, roleMap[role].join(separator));
+    const ph = `<${role}>`;
+    const terms = roleMap[role];
+    if (isRSyntax) {
+      const backtickedPh = '`' + ph + '`';
+      const backtickedValue = '`' + terms.join('` + `') + '`';
+      code = code.replaceAll(backtickedPh, backtickedValue);
+    }
+    code = code.replaceAll(ph, terms.join(plainSep));
   }
 
   // Substitute <config> placeholders, applying language-specific mappings if available.
@@ -308,9 +319,29 @@ export function getVariableOptions(concept, adam, valueType, structRole) {
 /**
  * Get the default ADaM variable for a concept + dataStructureRole.
  */
-export function getDefaultVariable(concept, dataStructureRole, adam) {
+export function getDefaultVariable(concept, dataStructureRole, adam, binding) {
   const entry = adam?.concepts?.[concept] || adam?.dimensions?.[concept];
   if (!entry?.byDataType) return concept.toUpperCase();
+
+  // Honor binding qualifiers when present. The mapping declares qualifier-specific
+  // sub-tables (e.g. Treatment.intentType.Planned.code = "TRTP"); when a binding
+  // says qualifierType="IntentType", qualifierValue="Planned", the default must
+  // come from that sub-table, not the canonical byDataType (which represents the
+  // unqualified default — TRTA = Actual treatment for Treatment).
+  if (binding?.qualifierType && binding?.qualifierValue) {
+    // Convention: top-level qualifier sub-tables are keyed by lowercased qualifier
+    // type (intentType) with values keyed by qualifierValue (Planned / Actual).
+    const qualifierTypeKey = binding.qualifierType.charAt(0).toLowerCase() + binding.qualifierType.slice(1);
+    const qualifierTable = entry[qualifierTypeKey];
+    const subTable = qualifierTable?.[binding.qualifierValue];
+    if (subTable && typeof subTable === 'object') {
+      const pick = dataStructureRole === 'measure'
+        ? (subTable.decimal || subTable.code || subTable.string || Object.values(subTable)[0])
+        : (subTable.code || subTable.string || subTable.decimal || Object.values(subTable)[0]);
+      if (pick) return pick;
+    }
+  }
+
   const bt = entry.byDataType;
   if (dataStructureRole === 'measure') {
     return bt.decimal || bt.code || bt.string || Object.values(bt)[0];

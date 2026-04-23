@@ -10,7 +10,7 @@
         "language": "R",
         "package": "stats",
         "function": "t.test",
-        "callTemplate": "t.test(`<response>` ~ <fixed_effect>, data = <dataset>, paired = TRUE, var.equal = FALSE, conf.level = <conf_level>)",
+        "callTemplate": "t.test(`<response>` ~ `<fixed_effect>`, data = <dataset>, paired = TRUE, var.equal = FALSE, conf.level = <conf_level>)",
         "outputMapping": [
           {
             "outputClass": "test_result",
@@ -34,7 +34,7 @@
         "language": "R",
         "package": "stats",
         "function": "t.test",
-        "callTemplate": "t.test(x = <response>, mu = <mu>, alternative = <alternative>, conf.level = <conf_level>)",
+        "callTemplate": "t.test(x = `<response>`, mu = <mu>, alternative = <alternative>, conf.level = <conf_level>)",
         "outputMapping": [
           {
             "outputClass": "test_result",
@@ -58,7 +58,7 @@
         "language": "R",
         "package": "stats",
         "function": "t.test",
-        "callTemplate": "t.test(`<response>` ~ <fixed_effect>, data = <dataset>, paired = FALSE, var.equal = FALSE, alternative = <alternative>, conf.level = <conf_level>)",
+        "callTemplate": "t.test(`<response>` ~ `<fixed_effect>`, data = <dataset>, paired = FALSE, var.equal = FALSE, alternative = <alternative>, conf.level = <conf_level>)",
         "outputMapping": [
           {
             "outputClass": "test_result",
@@ -82,7 +82,7 @@
         "language": "R",
         "package": "stats",
         "function": "fisher.test",
-        "callTemplate": "fisher.test(table(<response>, <fixed_effect>))",
+        "callTemplate": "fisher.test(table(`<response>`, `<fixed_effect>`))",
         "outputMapping": [
           {
             "outputClass": "test_result",
@@ -102,7 +102,7 @@
         "language": "R",
         "package": "stats",
         "function": "aggregate",
-        "callTemplate": "result <- aggregate(`<response>` ~ <group>, data = <dataset>, FUN = function(x) sum(!is.na(x)))",
+        "callTemplate": "result <- aggregate(`<response>` ~ `<group>`, data = <dataset>, FUN = function(x) sum(!is.na(x)))",
         "outputMapping": [
           {
             "outputClass": "computed_value",
@@ -124,7 +124,7 @@
         "language": "R",
         "package": "stats",
         "function": "aggregate",
-        "callTemplate": "result <- aggregate(`<response>` ~ <group>, data = <dataset>, FUN = function(x) mean(x, na.rm = TRUE))",
+        "callTemplate": "result <- aggregate(`<response>` ~ `<group>`, data = <dataset>, FUN = function(x) mean(x, na.rm = TRUE))",
         "outputMapping": [
           {
             "outputClass": "computed_value",
@@ -146,7 +146,7 @@
         "language": "R",
         "package": "stats",
         "function": "aggregate",
-        "callTemplate": "result <- aggregate(`<response>` ~ <group>, data = <dataset>, FUN = function(x) sd(x, na.rm = TRUE))",
+        "callTemplate": "result <- aggregate(`<response>` ~ `<group>`, data = <dataset>, FUN = function(x) sd(x, na.rm = TRUE))",
         "outputMapping": [
           {
             "outputClass": "computed_value",
@@ -168,7 +168,7 @@
         "language": "R",
         "package": "stats",
         "function": "aggregate",
-        "callTemplate": "result <- aggregate(`<response>` ~ <group>, data = <dataset>, FUN = function(x) median(x, na.rm = TRUE))",
+        "callTemplate": "result <- aggregate(`<response>` ~ `<group>`, data = <dataset>, FUN = function(x) median(x, na.rm = TRUE))",
         "outputMapping": [
           {
             "outputClass": "computed_value",
@@ -190,7 +190,7 @@
         "language": "R",
         "package": "base",
         "function": "aggregate",
-        "callTemplate": "result <- aggregate(`<response>` ~ <group>, data = <dataset>, FUN = function(x) { v <- x[!is.na(x)]; if (length(v) == 0) NA_real_ else min(v) })",
+        "callTemplate": "result <- aggregate(`<response>` ~ `<group>`, data = <dataset>, FUN = function(x) { v <- x[!is.na(x)]; if (length(v) == 0) NA_real_ else min(v) })",
         "outputMapping": [
           {
             "outputClass": "computed_value",
@@ -212,7 +212,7 @@
         "language": "R",
         "package": "base",
         "function": "aggregate",
-        "callTemplate": "result <- aggregate(`<response>` ~ <group>, data = <dataset>, FUN = function(x) { v <- x[!is.na(x)]; if (length(v) == 0) NA_real_ else max(v) })",
+        "callTemplate": "result <- aggregate(`<response>` ~ `<group>`, data = <dataset>, FUN = function(x) { v <- x[!is.na(x)]; if (length(v) == 0) NA_real_ else max(v) })",
         "outputMapping": [
           {
             "outputClass": "computed_value",
@@ -238,7 +238,7 @@
           "emmeans"
         ],
         "function": "lm",
-        "callTemplate": "model <- lm(`<response>` ~ <covariate> + <fixed_effect>, data = <dataset>)\nmodel_summary <- summary(model)\nanova_result <- car::Anova(model, type = \"<ss_type>\")\nlsm <- emmeans::emmeans(model, ~ <fixed_effect>)\nlsm_df <- as.data.frame(summary(lsm, infer = TRUE, level = 1 - <alpha>))\ncontr <- pairs(lsm, adjust = \"<multiplicity_adjustment>\")\ncontr_df <- as.data.frame(summary(contr, infer = TRUE, level = 1 - <alpha>))",
+        "callTemplate": "model <- lm(`<response>` ~ `<covariate>` + `<fixed_effect>`, data = <dataset>)\nmodel_summary <- summary(model)\nanova_result <- car::Anova(model, type = \"<ss_type>\")\nlsm <- emmeans::emmeans(model, ~ `<fixed_effect>`)\nlsm_df <- as.data.frame(summary(lsm, infer = TRUE, level = 1 - <alpha>))\ncontr <- pairs(lsm, adjust = \"<multiplicity_adjustment>\")\ncontr_df <- as.data.frame(summary(contr, infer = TRUE, level = 1 - <alpha>))",
         "outputMapping": [
           {
             "outputClass": "fit_statistics",
@@ -322,7 +322,7 @@
         "language": "R",
         "package": "base",
         "derivationKind": "rowwise_mutate",
-        "callTemplate": "agg_fn <- switch(\"<agg_func>\",\n  sum = function(x) sum(x, na.rm = TRUE),\n  count = function(x) sum(!is.na(x)),\n  mean = function(x) mean(x, na.rm = TRUE),\n  max = function(x) max(x, na.rm = TRUE),\n  min = function(x) min(x, na.rm = TRUE),\n  function(x) sum(x, na.rm = TRUE)\n)\npartition_cols <- strsplit(\"<partition>\", \" \\\\+ \")[[1]]\npartition_cols <- partition_cols[partition_cols %in% colnames(concept_data)]\nval_col <- \"<value>\"\nif (length(partition_cols) > 0 && val_col %in% colnames(concept_data)) {\n  agg_result <- aggregate(\n    stats::as.formula(paste0(\"`\", val_col, \"` ~ \", paste0(\"`\", partition_cols, \"`\", collapse = \" + \"))),\n    data = concept_data, FUN = agg_fn\n  )\n  colnames(agg_result)[colnames(agg_result) == val_col] <- \"<result>\"\n  concept_data <- merge(concept_data, agg_result, by = partition_cols, all.x = TRUE)\n} else if (val_col %in% colnames(concept_data)) {\n  concept_data[[\"<result>\"]] <- agg_fn(as.numeric(concept_data[[val_col]]))\n}",
+        "callTemplate": "agg_fn <- switch(\"<agg_func>\",\n  sum = function(x) sum(x, na.rm = TRUE),\n  count = function(x) sum(!is.na(x)),\n  mean = function(x) mean(x, na.rm = TRUE),\n  max = function(x) max(x, na.rm = TRUE),\n  min = function(x) min(x, na.rm = TRUE),\n  function(x) sum(x, na.rm = TRUE)\n)\npartition_cols <- strsplit(\"<partition>\", \" \\\\+ \")[[1]]\npartition_cols <- partition_cols[partition_cols %in% colnames(concept_data)]\nval_col <- \"<value>\"\nif (!(val_col %in% colnames(concept_data))) {\n  stop(sprintf(\"M.Aggregation: value column '%s' not found in concept_data. Available: %s\", val_col, paste(colnames(concept_data), collapse=\", \")))\n}\nif (length(partition_cols) > 0) {\n  agg_result <- aggregate(\n    stats::as.formula(paste0(\"`\", val_col, \"` ~ \", paste0(\"`\", partition_cols, \"`\", collapse = \" + \"))),\n    data = concept_data, FUN = agg_fn\n  )\n  colnames(agg_result)[colnames(agg_result) == val_col] <- \"<result>\"\n  concept_data <- merge(concept_data, agg_result, by = partition_cols, all.x = TRUE)\n} else {\n  concept_data[[\"<result>\"]] <- agg_fn(as.numeric(concept_data[[val_col]]))\n}",
         "outputMapping": [],
         "notes": "Aggregation within partition groups. Config <agg_func> selects function (sum, count, mean, max, min). Result is merged back as a new column. Used by ADAS-Cog sub-derivations (sum of available scores, non-missing count, missing scale capacity, item max score)."
       }
@@ -347,6 +347,28 @@
         "callTemplate": "# Windowed visit assignment. Reads a pre-computed study day (SDTM --DY,\n# concept-keyed as <day>) and for each row finds the scheduled visit whose\n# window contains that day. Ties broken by |day - targetDay| then min visitNumber.\n# <day> \u2192 concept-keyed column name (e.g. 'Timing', materialised from QSDY).\n# <analysisVisit>, <analysisVisitNumber>, <analysisDay> \u2192 output columns.\n# configs$windows is a list of list(label, visitNumber, dayMin, dayMax, targetDay).\nwindows_def <- configs$windows\nif (is.null(windows_def) || length(windows_def) == 0) stop(\"M.WindowedVisitAssignment: configs$windows is empty.\")\nday_raw <- concept_data[[\"<day>\"]]\nif (is.null(day_raw)) stop(sprintf(\"M.WindowedVisitAssignment: missing column '<day>'. have=%s\", paste(colnames(concept_data), collapse=\", \")))\nday_num <- suppressWarnings(as.numeric(day_raw))\n# Normalise windows_def \u2192 vectors for faster lookups.\nw_label <- vapply(windows_def, function(w) as.character(w$label %||% \"\"), character(1))\nw_vnum  <- vapply(windows_def, function(w) { v <- w$visitNumber; if (is.null(v)) NA_real_ else as.numeric(v) }, numeric(1))\nw_min   <- vapply(windows_def, function(w) { v <- w$dayMin; if (is.null(v)) -Inf else as.numeric(v) }, numeric(1))\nw_max   <- vapply(windows_def, function(w) { v <- w$dayMax; if (is.null(v))  Inf else as.numeric(v) }, numeric(1))\nw_tgt   <- vapply(windows_def, function(w) { v <- w$targetDay; if (is.null(v)) NA_real_ else as.numeric(v) }, numeric(1))\nassign_one <- function(d) {\n  if (is.na(d)) return(c(NA_character_, NA_real_))\n  hits <- which(d >= w_min & d <= w_max)\n  if (length(hits) == 0) return(c(NA_character_, NA_real_))\n  if (length(hits) > 1) {\n    dist <- abs(d - w_tgt[hits])\n    hits <- hits[dist == min(dist, na.rm = TRUE)]\n    if (length(hits) > 1) {\n      hits <- hits[which.min(w_vnum[hits])]\n    }\n  }\n  c(w_label[hits], w_vnum[hits])\n}\nassigned <- vapply(day_num, assign_one, character(2))\nconcept_data[[\"<analysisVisit>\"]]       <- assigned[1, ]\nconcept_data[[\"<analysisVisitNumber>\"]] <- suppressWarnings(as.numeric(assigned[2, ]))\nconcept_data[[\"<analysisDay>\"]]         <- day_num\n",
         "outputMapping": [],
         "notes": "Row-wise visit assignment on a pre-computed study day (<day>, e.g. the Timing concept = SDTM QSDY). Reads configs$windows (not a template placeholder \u2014 arrays can't be stringified, so they're bound directly to the R env). Output columns are concept-keyed (<analysisVisit> substituted with e.g. 'AnalysisVisit'). `%||%` is defined in acdc_engine.R. The referenceBC method config is metadata only \u2014 the SAP anchor is already encoded in --DY at ingest time."
+      }
+    ],
+    "M.ConditionalValue": [
+      {
+        "methodOid": "M.ConditionalValue",
+        "language": "R",
+        "package": "base",
+        "derivationKind": "rowwise_mutate",
+        "callTemplate": "concept_data[[\"<result>\"]] <- ifelse(\n  is.na(concept_data[[\"<value>\"]]),\n  as.numeric(concept_data[[\"<alternate>\"]]),\n  <base>\n)",
+        "outputMapping": [],
+        "notes": "Row-wise conditional. If <value> is NA, output <alternate>; else output <base> (numeric, default 0). Used by T.ADAS_MissingContribution to mask each row's item-max-score by item presence: missing → max-score, present → 0. Then aggregating that sum per Subject×Visit gives the total scale capacity of missing items."
+      }
+    ],
+    "M.AffineTransform": [
+      {
+        "methodOid": "M.AffineTransform",
+        "language": "R",
+        "package": "base",
+        "derivationKind": "rowwise_mutate",
+        "callTemplate": "concept_data[[\"<result>\"]] <- <scale> * as.numeric(concept_data[[\"<value>\"]]) + <offset>",
+        "outputMapping": [],
+        "notes": "Row-wise affine transform: result = scale * value + offset. Used by T.ADAS_ScoreableFraction with scale = -1/70 and offset = 1 to compute (70 - missing_capacity) / 70. Generic enough to cover any linear rescaling on a single column (e.g. NPI-X, CIBIC+ scoring fractions, percent-of-max conversions)."
       }
     ],
     "M.UnitConversion": [

@@ -1,0 +1,62 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.8.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.ConditionalValue",
+  "name": "Conditional Value",
+  "type": "derivation",
+  "class": "Data Handling",
+  "intent": [
+    "Masking",
+    "MissingnessHandling"
+  ],
+  "description": "Per-row conditional. If the input value is NA (missing), output the alternate value; else output the configured base value (default 0).",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := IF(IS_NA(value), alternate, base)",
+    "generic_expression": "result := IF(IS_NA(<value>), <alternate>, <base>)"
+  },
+  "configurations": [
+    {
+      "name": "base",
+      "dataType": "decimal",
+      "defaultValue": 0,
+      "description": "Value emitted when the input is NOT missing"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "result",
+        "dataType": "decimal",
+        "description": "alternate when value is NA, else base",
+        "statistics": [
+          "value"
+        ],
+        "dimensions": null
+      }
+    ]
+  },
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "value",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Per-row value tested for missingness (NA)"
+    },
+    {
+      "name": "alternate",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Per-row replacement value used when value is NA"
+    }
+  ]
+}

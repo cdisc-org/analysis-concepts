@@ -14,8 +14,13 @@ function getBasePath() {
 }
 
 async function fetchJSON(path) {
-  const url = BASE + path;
-  const resp = await fetch(url);
+  // Cache-bust library/method JSON (config-author files that change often
+  // during demo iteration). Stable models stay cached. Without this a
+  // normal refresh keeps serving the previous JSON from browser disk cache,
+  // which silently hides edits to method configs / transformation library.
+  const isLibrary = /^lib\/(methods|transformations|method_implementations)\//.test(path);
+  const url = BASE + path + (isLibrary ? `?v=${Date.now()}` : '');
+  const resp = await fetch(url, isLibrary ? { cache: 'no-store' } : undefined);
   if (!resp.ok) throw new Error(`Failed to load ${path}: ${resp.status}`);
   return resp.json();
 }
