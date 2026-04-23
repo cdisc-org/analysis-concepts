@@ -1,0 +1,673 @@
+{
+  "$schema": "acdc-study-instance.schema.json",
+  "instanceId": "SI_CDISC-PILOT-LZZT-merged_2026-04-23",
+  "formatVersion": "1.0",
+  "createdAt": "2026-04-23T11:06:13.786Z",
+  "updatedAt": "2026-04-23T11:06:13.786Z",
+  "$references": {
+    "transformationLibrary": {
+      "file": "lib/transformations/ACDC_Transformation_Library_v06.json",
+      "version": "0.6"
+    },
+    "acConceptModel": {
+      "file": "model/concept/AC_Concept_Model_v016.json",
+      "version": "0.16"
+    },
+    "dcConceptModel": {
+      "file": "model/concept/Option_D_Clinical_with_Dimensions.json",
+      "version": "0.20b"
+    }
+  },
+  "studyRef": {
+    "selectedStudyIndex": 2,
+    "studyName": "CDISC PILOT - LZZT - merged"
+  },
+  "selectedEndpointIds": [
+    "Endpoint_1"
+  ],
+  "esapLinkedNarratives": {
+    "abbreviations": [],
+    "introduction": [],
+    "objectives": [],
+    "studyDesign": [],
+    "protocolChanges": [],
+    "estimands": [],
+    "endpoints": [],
+    "analysisSets": [],
+    "statMethods": [],
+    "statAnalysis": [],
+    "software": [],
+    "references": [],
+    "shells": [],
+    "appendices": []
+  },
+  "endpointAnalyses": {},
+  "endpointSpecs": {
+    "Endpoint_1": {
+      "conceptCategory": "Change",
+      "dataType": "Quantity",
+      "parameterSource": "bc",
+      "parameterName": "",
+      "linkedBCIds": [],
+      "dimensionValues": {
+        "Parameter": "Adas-Cog(11) Subscore",
+        "Visit": "WEEK 24",
+        "Population": "AP_1",
+        "AnalysisVisit": "Week 24"
+      },
+      "derivationNote": "",
+      "selectedTransformationOid": "T.CFB_ANCOVA",
+      "selectedDerivationOid": null,
+      "useInEsap": true,
+      "writeBackToUsdm": false,
+      "estimandSummaryPattern": "Contrasts",
+      "selectedOcFacet": null,
+      "derivationConfigValues": {},
+      "derivationDimensionValues": {},
+      "selectedAnalyses": [
+        {
+          "transformationOid": "T.CFB_ANCOVA",
+          "resolvedBindings": [
+            {
+              "methodRole": "response",
+              "concept": "Change",
+              "qualifierType": null,
+              "qualifierValue": null,
+              "requiredValueType": "Quantity",
+              "direction": "input",
+              "dataStructureRole": "measure"
+            },
+            {
+              "methodRole": "covariate",
+              "concept": "Measure",
+              "requiredValueType": "Quantity",
+              "description": "Baseline value of the endpoint parameter",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "slice": "parameter_baseline"
+            },
+            {
+              "methodRole": "fixed_effect",
+              "concept": "Treatment",
+              "qualifierType": "IntentType",
+              "qualifierValue": "Planned",
+              "requiredValueType": "CodeableConcept",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "concept": "Subject",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "concept": "Parameter",
+              "methodRole": "constraint",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "methodRole": "constraint",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "methodRole": "fixed_effect",
+              "concept": "Site",
+              "direction": "input",
+              "dataStructureRole": "dimension",
+              "description": "",
+              "_custom": true
+            }
+          ],
+          "activeInteractions": [],
+          "estimandSummaryPattern": "Contrasts",
+          "outputConfig": {
+            "ls_means": {
+              "selectedDimensions": [
+                "Treatment"
+              ]
+            },
+            "contrasts": {
+              "selectedDimensions": [
+                "Treatment"
+              ]
+            }
+          }
+        }
+      ],
+      "cubeDimensions": [
+        {
+          "dimension": "Parameter",
+          "sliceValue": "Adas-Cog(11) Subscore"
+        },
+        {
+          "dimension": "Visit",
+          "sliceValue": "WEEK 24"
+        }
+      ],
+      "cubeSlices": [],
+      "selectedEndpointPhrase": "SP_CFB_ENDPOINT",
+      "selectedDimPhrases": [
+        "SP_TIMEPOINT"
+      ],
+      "resolvedSlices": [
+        {
+          "name": "endpoint",
+          "fixedDimensions": {
+            "Parameter": "Adas-Cog(11) Subscore",
+            "Visit": "WEEK 24",
+            "Population": "AP_1",
+            "AnalysisVisit": "Week 24"
+          }
+        }
+      ],
+      "sliceKeyDimensions": [
+        "Parameter",
+        "Visit",
+        "Population",
+        "AnalysisVisit"
+      ],
+      "resolvedBindings": [
+        {
+          "methodRole": "response",
+          "concept": "Change",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "covariate",
+          "concept": "Measure",
+          "requiredValueType": "Quantity",
+          "description": "Baseline value of the endpoint parameter",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "slice": "parameter_baseline"
+        },
+        {
+          "methodRole": "fixed_effect",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptCategory": "VisitDimension",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodRole": "fixed_effect",
+          "concept": "Site",
+          "direction": "input",
+          "dataStructureRole": "dimension",
+          "description": "",
+          "_custom": true
+        }
+      ],
+      "activeInteractions": [],
+      "derivationChain": [
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0",
+          "concept": "Change",
+          "derivationOid": "T.ChangeFromBaseline"
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0",
+          "concept": "Measure",
+          "derivationOid": "T.ADAS_Cog_11_TotalScore"
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/0",
+          "concept": "Measure",
+          "derivationOid": "T.ADAS_SumAvailableScores"
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1",
+          "concept": "Measure",
+          "derivationOid": "T.ADAS_ScoreableFraction"
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0",
+          "concept": "Measure",
+          "derivationOid": "T.ADAS_MissingScaleCapacity"
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0",
+          "concept": "Measure",
+          "derivationOid": "T.ADAS_MissingContribution"
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0/Measure/1",
+          "concept": "Measure",
+          "derivationOid": "T.ADAS_ItemMaxScore"
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Flag/0",
+          "concept": "Flag",
+          "derivationOid": "T.ADAS_ScoreableCheck",
+          "customBindings": [
+            {
+              "concept": "Measure",
+              "note": "Count of non-missing items (M.Aggregation count)",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "methodRole": "value"
+            },
+            {
+              "concept": "Subject",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "concept": "Flag",
+              "direction": "output",
+              "dataStructureRole": "measure",
+              "methodRole": "result"
+            },
+            {
+              "concept": "Subject",
+              "direction": "output",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "direction": "output",
+              "dataStructureRole": "dimension"
+            }
+          ]
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Flag/0/Measure/0",
+          "concept": "Measure",
+          "derivationOid": "T.ADAS_NonMissingCount",
+          "customBindings": [
+            {
+              "concept": "Measure",
+              "note": "11 ADAS-Cog item scores (from BCs)",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "methodRole": "value"
+            },
+            {
+              "concept": "Subject",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "concept": "Measure",
+              "direction": "output",
+              "dataStructureRole": "measure",
+              "methodRole": "result"
+            },
+            {
+              "concept": "Subject",
+              "direction": "output",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "direction": "output",
+              "dataStructureRole": "dimension"
+            }
+          ]
+        }
+      ],
+      "selectedDerivations": {
+        "T.CFB_ANCOVA/Change/0": "T.ChangeFromBaseline",
+        "T.CFB_ANCOVA/Change/0/Measure/0": "T.ADAS_Cog_11_TotalScore",
+        "T.CFB_ANCOVA/Change/0/Measure/0/Measure/0": "T.ADAS_SumAvailableScores",
+        "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1": "T.ADAS_ScoreableFraction",
+        "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0": "T.ADAS_MissingScaleCapacity",
+        "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0": "T.ADAS_MissingContribution",
+        "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0/Measure/1": "T.ADAS_ItemMaxScore",
+        "T.CFB_ANCOVA/Change/0/Measure/0/Flag/0": "T.ADAS_ScoreableCheck",
+        "T.CFB_ANCOVA/Change/0/Measure/0/Flag/0/Measure/0": "T.ADAS_NonMissingCount"
+      },
+      "confirmedTerminals": [
+        {
+          "slotKey": "T.CFB_ANCOVA/Subject/3",
+          "concept": "Subject",
+          "roleLabel": "partition"
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Parameter/4",
+          "concept": "Parameter",
+          "roleLabel": "constraint"
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/0/Measure/0",
+          "concept": "Measure",
+          "roleLabel": "value",
+          "linkedBCIds": [
+            "BiomedicalConcept_315",
+            "BiomedicalConcept_316",
+            "BiomedicalConcept_318",
+            "BiomedicalConcept_320",
+            "BiomedicalConcept_324",
+            "BiomedicalConcept_325",
+            "BiomedicalConcept_326",
+            "BiomedicalConcept_327",
+            "BiomedicalConcept_328",
+            "BiomedicalConcept_329",
+            "BiomedicalConcept_330"
+          ]
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0/Measure/0",
+          "concept": "Measure",
+          "roleLabel": "value",
+          "linkedBCIds": [
+            "BiomedicalConcept_315",
+            "BiomedicalConcept_316",
+            "BiomedicalConcept_318",
+            "BiomedicalConcept_320",
+            "BiomedicalConcept_324",
+            "BiomedicalConcept_325",
+            "BiomedicalConcept_326",
+            "BiomedicalConcept_327",
+            "BiomedicalConcept_328",
+            "BiomedicalConcept_329",
+            "BiomedicalConcept_330"
+          ]
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0/Measure/1/Measure/0",
+          "concept": "Measure",
+          "roleLabel": "value",
+          "linkedBCIds": [
+            "BiomedicalConcept_315",
+            "BiomedicalConcept_316",
+            "BiomedicalConcept_320",
+            "BiomedicalConcept_318",
+            "BiomedicalConcept_324",
+            "BiomedicalConcept_325",
+            "BiomedicalConcept_326",
+            "BiomedicalConcept_327",
+            "BiomedicalConcept_328",
+            "BiomedicalConcept_329",
+            "BiomedicalConcept_330"
+          ]
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Flag/0/Measure/0/Measure/0",
+          "concept": "Measure",
+          "roleLabel": "value",
+          "linkedBCIds": [
+            "BiomedicalConcept_315",
+            "BiomedicalConcept_316",
+            "BiomedicalConcept_318",
+            "BiomedicalConcept_320",
+            "BiomedicalConcept_324",
+            "BiomedicalConcept_325",
+            "BiomedicalConcept_326",
+            "BiomedicalConcept_327",
+            "BiomedicalConcept_328",
+            "BiomedicalConcept_329",
+            "BiomedicalConcept_330"
+          ]
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Treatment/2",
+          "concept": "Treatment",
+          "roleLabel": "fixed_effect"
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Visit/5",
+          "concept": "Visit",
+          "roleLabel": "constraint"
+        }
+      ],
+      "pipelineReferences": [
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/1",
+          "concept": "Measure",
+          "referenceSlotKey": "T.CFB_ANCOVA/Change/0/Measure/0",
+          "referenceLabel": "minuend → ADAS-Cog (11) Total Score"
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Measure/1",
+          "concept": "Measure",
+          "referenceSlotKey": "T.CFB_ANCOVA/Change/0/Measure/0",
+          "referenceLabel": "minuend → ADAS-Cog (11) Total Score"
+        }
+      ]
+    }
+  },
+  "unitConversions": {
+    "model": "UnitConversionVocabulary",
+    "version": "0.1.0",
+    "description": "Linear conversion factors between units of the same physical dimension. Lookup is (from_code, to_code) first, then (from_name, to_name) as a fallback. target_value = source_value * factor. Non-linear (affine) conversions such as temperature are out of scope — they require a different method (e.g., M.AffineUnitConversion with offset + factor). Identity rows (cm → cm, factor 1.0) are included so the lookup is uniform and downstream code never needs to special-case 'source unit already matches target'.",
+    "units": [
+      {
+        "code": "C49668",
+        "name": "cm",
+        "display": "centimeter",
+        "dimension": "length"
+      },
+      {
+        "code": "C41139",
+        "name": "m",
+        "display": "meter",
+        "dimension": "length"
+      },
+      {
+        "code": "C48500",
+        "name": "inch",
+        "display": "inch",
+        "dimension": "length",
+        "synonyms": [
+          "in",
+          "IN",
+          "INCHES"
+        ]
+      },
+      {
+        "code": "C28252",
+        "name": "kg",
+        "display": "kilogram",
+        "dimension": "mass"
+      },
+      {
+        "code": "C48531",
+        "name": "lb",
+        "display": "pound",
+        "dimension": "mass",
+        "synonyms": [
+          "LB",
+          "LBS"
+        ]
+      },
+      {
+        "code": "C48155",
+        "name": "g",
+        "display": "gram",
+        "dimension": "mass"
+      }
+    ],
+    "conversions": [
+      {
+        "from_code": "C49668",
+        "to_code": "C41139",
+        "from_name": "cm",
+        "to_name": "m",
+        "factor": 0.01,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C41139",
+        "to_code": "C49668",
+        "from_name": "m",
+        "to_name": "cm",
+        "factor": 100,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C48500",
+        "to_code": "C49668",
+        "from_name": "inch",
+        "to_name": "cm",
+        "factor": 2.54,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C49668",
+        "to_code": "C48500",
+        "from_name": "cm",
+        "to_name": "inch",
+        "factor": 0.3937007874,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C48500",
+        "to_code": "C41139",
+        "from_name": "inch",
+        "to_name": "m",
+        "factor": 0.0254,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C41139",
+        "to_code": "C48500",
+        "from_name": "m",
+        "to_name": "inch",
+        "factor": 39.3700787402,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C49668",
+        "to_code": "C49668",
+        "from_name": "cm",
+        "to_name": "cm",
+        "factor": 1,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C41139",
+        "to_code": "C41139",
+        "from_name": "m",
+        "to_name": "m",
+        "factor": 1,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C48500",
+        "to_code": "C48500",
+        "from_name": "inch",
+        "to_name": "inch",
+        "factor": 1,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C28252",
+        "to_code": "C48531",
+        "from_name": "kg",
+        "to_name": "lb",
+        "factor": 2.2046226218,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C48531",
+        "to_code": "C28252",
+        "from_name": "lb",
+        "to_name": "kg",
+        "factor": 0.45359237,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C28252",
+        "to_code": "C48155",
+        "from_name": "kg",
+        "to_name": "g",
+        "factor": 1000,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C48155",
+        "to_code": "C28252",
+        "from_name": "g",
+        "to_name": "kg",
+        "factor": 0.001,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C48531",
+        "to_code": "C48155",
+        "from_name": "lb",
+        "to_name": "g",
+        "factor": 453.59237,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C48155",
+        "to_code": "C48531",
+        "from_name": "g",
+        "to_name": "lb",
+        "factor": 0.0022046226,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C28252",
+        "to_code": "C28252",
+        "from_name": "kg",
+        "to_name": "kg",
+        "factor": 1,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C48531",
+        "to_code": "C48531",
+        "from_name": "lb",
+        "to_name": "lb",
+        "factor": 1,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C48155",
+        "to_code": "C48155",
+        "from_name": "g",
+        "to_name": "g",
+        "factor": 1,
+        "dimension": "mass"
+      }
+    ]
+  },
+  "preferences": {
+    "modelViewMode": "concepts",
+    "currentStep": 8
+  }
+}

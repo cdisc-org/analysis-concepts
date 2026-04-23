@@ -1,0 +1,495 @@
+{
+  "$schema": "acdc-study-instance.schema.json",
+  "instanceId": "SI_CDISC-PILOT-LZZT-merged_2026-04-22",
+  "formatVersion": "1.0",
+  "createdAt": "2026-04-22T11:55:09.913Z",
+  "updatedAt": "2026-04-22T11:55:09.913Z",
+  "$references": {
+    "transformationLibrary": {
+      "file": "lib/transformations/ACDC_Transformation_Library_v06.json",
+      "version": "0.6"
+    },
+    "acConceptModel": {
+      "file": "model/concept/AC_Concept_Model_v016.json",
+      "version": "0.16"
+    },
+    "dcConceptModel": {
+      "file": "model/concept/Option_D_Clinical_with_Dimensions.json",
+      "version": "0.20b"
+    }
+  },
+  "studyRef": {
+    "selectedStudyIndex": 2,
+    "studyName": "CDISC PILOT - LZZT - merged"
+  },
+  "selectedEndpointIds": [
+    "Endpoint_4"
+  ],
+  "esapLinkedNarratives": {
+    "abbreviations": [],
+    "introduction": [],
+    "objectives": [],
+    "studyDesign": [],
+    "protocolChanges": [],
+    "estimands": [],
+    "endpoints": [],
+    "analysisSets": [],
+    "statMethods": [],
+    "statAnalysis": [],
+    "software": [],
+    "references": [],
+    "shells": [],
+    "appendices": []
+  },
+  "endpointAnalyses": {},
+  "endpointSpecs": {
+    "Endpoint_4": {
+      "conceptCategory": "Measure",
+      "dataType": "Quantity",
+      "parameterSource": "bc",
+      "parameterName": "",
+      "linkedBCIds": [],
+      "dimensionValues": {
+        "Parameter": "Weight (cm)"
+      },
+      "derivationNote": "",
+      "selectedTransformationOid": "T.Mean_Measure",
+      "selectedDerivationOid": null,
+      "useInEsap": true,
+      "writeBackToUsdm": false,
+      "estimandSummaryPattern": "ComputedValue",
+      "selectedOcFacet": null,
+      "derivationConfigValues": {
+        "T.Mean_Measure/Measure/0": {
+          "target_unit": "kg",
+          "precision": 2,
+          "on_missing_factor": "passthrough"
+        }
+      },
+      "derivationDimensionValues": {},
+      "selectedAnalyses": [
+        {
+          "transformationOid": "T.Mean_Measure",
+          "resolvedBindings": [
+            {
+              "methodRole": "response",
+              "concept": "Measure",
+              "qualifierType": null,
+              "qualifierValue": null,
+              "requiredValueType": "Quantity",
+              "direction": "input",
+              "dataStructureRole": "measure"
+            },
+            {
+              "methodRole": "group",
+              "concept": "Treatment",
+              "qualifierType": "IntentType",
+              "qualifierValue": "Planned",
+              "requiredValueType": "CodeableConcept",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "concept": "Parameter",
+              "methodRole": "constraint",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "methodRole": "group",
+              "concept": "Visit",
+              "direction": "input",
+              "dataStructureRole": "dimension",
+              "description": "",
+              "_custom": true
+            }
+          ],
+          "activeInteractions": [],
+          "estimandSummaryPattern": "ComputedValue"
+        }
+      ],
+      "cubeDimensions": [
+        {
+          "dimension": "Parameter",
+          "sliceValue": "Weight (cm)"
+        }
+      ],
+      "cubeSlices": [],
+      "selectedEndpointPhrase": "SP_VALUE_ENDPOINT",
+      "selectedDimPhrases": [],
+      "resolvedSlices": [
+        {
+          "name": "endpoint",
+          "fixedDimensions": {
+            "Parameter": "Weight (cm)"
+          }
+        }
+      ],
+      "sliceKeyDimensions": [
+        "Parameter"
+      ],
+      "resolvedBindings": [
+        {
+          "methodRole": "response",
+          "concept": "Measure",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "group",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Parameter",
+          "methodRole": "constraint",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptCategory": "VisitDimension",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodRole": "group",
+          "concept": "Visit",
+          "direction": "input",
+          "dataStructureRole": "dimension",
+          "description": "",
+          "_custom": true
+        }
+      ],
+      "activeInteractions": [],
+      "derivationChain": [
+        {
+          "slotKey": "T.Mean_Measure/Measure/0",
+          "concept": "Measure",
+          "derivationOid": "T.UnitConversion",
+          "customBindings": [
+            {
+              "concept": "Observation",
+              "qualifierType": "facet",
+              "qualifierValue": "Result.Value",
+              "requiredValueType": "Quantity",
+              "note": "Source numeric value. Resolves via BC-to-OC instance mapping to the SDTM --ORRES variable (VSORRES for Height).",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "methodRole": "value"
+            },
+            {
+              "concept": "Observation",
+              "qualifierType": "facet",
+              "qualifierValue": "Result.Unit",
+              "requiredValueType": "CodeableConcept",
+              "note": "Source unit code varying per row. Resolves via BC-to-OC instance mapping to the SDTM --ORRESU variable (VSORRESU for Height).",
+              "direction": "input",
+              "dataStructureRole": "attribute",
+              "methodRole": "source_unit"
+            },
+            {
+              "concept": "Measure",
+              "qualifierType": "facet",
+              "qualifierValue": "result.value",
+              "note": "Converted numeric value of the derived Measure.",
+              "direction": "output",
+              "dataStructureRole": "measure",
+              "methodRole": "result_value"
+            },
+            {
+              "concept": "Measure",
+              "qualifierType": "facet",
+              "qualifierValue": "result.unit",
+              "note": "Unit of the derived Measure — equals the target_unit configuration. Propagated so downstream derivations/analyses can read the Measure's unit without re-reading config.",
+              "direction": "output",
+              "dataStructureRole": "attribute",
+              "methodRole": "result_unit"
+            },
+            {
+              "concept": "Subject",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "concept": "Observation",
+              "qualifierType": "facet",
+              "qualifierValue": "Identification.Topic",
+              "methodRole": "constraint",
+              "direction": "input",
+              "dataStructureRole": "dimension",
+              "note": "BC identifier — resolves to --TESTCD in SDTM (e.g., VSTESTCD). The constraint value comes from the endpoint's linked BC specialization."
+            },
+            {
+              "concept": "Parameter",
+              "direction": "output",
+              "dataStructureRole": "dimension",
+              "methodRole": "parameter_label",
+              "note": "Output parameter label — value comes from the endpoint specification (Step 3), not from the source data. Replaces the SDTM Topic identifier with the clinically meaningful endpoint label (e.g., 'Weight (kg)')."
+            }
+          ]
+        }
+      ],
+      "selectedDerivations": {
+        "T.Mean_Measure/Measure/0": "T.UnitConversion"
+      },
+      "confirmedTerminals": [
+        {
+          "slotKey": "T.Mean_Measure/Subject/2",
+          "concept": "Subject",
+          "roleLabel": "partition"
+        },
+        {
+          "slotKey": "T.Mean_Measure/Parameter/3",
+          "concept": "Parameter",
+          "roleLabel": "constraint"
+        },
+        {
+          "slotKey": "T.Mean_Measure/Measure/0/Observation/0",
+          "concept": "Observation",
+          "roleLabel": "",
+          "linkedBCIds": [
+            "BiomedicalConcept_23",
+            "BiomedicalConcept_5"
+          ]
+        },
+        {
+          "slotKey": "T.Mean_Measure/Measure/0/Observation/1",
+          "concept": "Observation",
+          "roleLabel": "",
+          "linkedBCIds": [
+            "BiomedicalConcept_23",
+            "BiomedicalConcept_5"
+          ]
+        },
+        {
+          "slotKey": "T.Mean_Measure/Treatment/1",
+          "concept": "Treatment",
+          "roleLabel": "group"
+        },
+        {
+          "slotKey": "T.Mean_Measure/Visit/4",
+          "concept": "Visit",
+          "roleLabel": "partition"
+        }
+      ],
+      "pipelineReferences": []
+    }
+  },
+  "unitConversions": {
+    "model": "UnitConversionVocabulary",
+    "version": "0.1.0",
+    "description": "Linear conversion factors between units of the same physical dimension. Lookup is (from_code, to_code) first, then (from_name, to_name) as a fallback. target_value = source_value * factor. Non-linear (affine) conversions such as temperature are out of scope — they require a different method (e.g., M.AffineUnitConversion with offset + factor). Identity rows (cm → cm, factor 1.0) are included so the lookup is uniform and downstream code never needs to special-case 'source unit already matches target'.",
+    "units": [
+      {
+        "code": "C49668",
+        "name": "cm",
+        "display": "centimeter",
+        "dimension": "length"
+      },
+      {
+        "code": "C41139",
+        "name": "m",
+        "display": "meter",
+        "dimension": "length"
+      },
+      {
+        "code": "C48500",
+        "name": "inch",
+        "display": "inch",
+        "dimension": "length",
+        "synonyms": [
+          "in",
+          "IN",
+          "INCHES"
+        ]
+      },
+      {
+        "code": "C28252",
+        "name": "kg",
+        "display": "kilogram",
+        "dimension": "mass"
+      },
+      {
+        "code": "C48531",
+        "name": "lb",
+        "display": "pound",
+        "dimension": "mass",
+        "synonyms": [
+          "LB",
+          "LBS"
+        ]
+      },
+      {
+        "code": "C48155",
+        "name": "g",
+        "display": "gram",
+        "dimension": "mass"
+      }
+    ],
+    "conversions": [
+      {
+        "from_code": "C49668",
+        "to_code": "C41139",
+        "from_name": "cm",
+        "to_name": "m",
+        "factor": 0.01,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C41139",
+        "to_code": "C49668",
+        "from_name": "m",
+        "to_name": "cm",
+        "factor": 100,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C48500",
+        "to_code": "C49668",
+        "from_name": "inch",
+        "to_name": "cm",
+        "factor": 2.54,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C49668",
+        "to_code": "C48500",
+        "from_name": "cm",
+        "to_name": "inch",
+        "factor": 0.3937007874,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C48500",
+        "to_code": "C41139",
+        "from_name": "inch",
+        "to_name": "m",
+        "factor": 0.0254,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C41139",
+        "to_code": "C48500",
+        "from_name": "m",
+        "to_name": "inch",
+        "factor": 39.3700787402,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C49668",
+        "to_code": "C49668",
+        "from_name": "cm",
+        "to_name": "cm",
+        "factor": 1,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C41139",
+        "to_code": "C41139",
+        "from_name": "m",
+        "to_name": "m",
+        "factor": 1,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C48500",
+        "to_code": "C48500",
+        "from_name": "inch",
+        "to_name": "inch",
+        "factor": 1,
+        "dimension": "length"
+      },
+      {
+        "from_code": "C28252",
+        "to_code": "C48531",
+        "from_name": "kg",
+        "to_name": "lb",
+        "factor": 2.2046226218,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C48531",
+        "to_code": "C28252",
+        "from_name": "lb",
+        "to_name": "kg",
+        "factor": 0.45359237,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C28252",
+        "to_code": "C48155",
+        "from_name": "kg",
+        "to_name": "g",
+        "factor": 1000,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C48155",
+        "to_code": "C28252",
+        "from_name": "g",
+        "to_name": "kg",
+        "factor": 0.001,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C48531",
+        "to_code": "C48155",
+        "from_name": "lb",
+        "to_name": "g",
+        "factor": 453.59237,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C48155",
+        "to_code": "C48531",
+        "from_name": "g",
+        "to_name": "lb",
+        "factor": 0.0022046226,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C28252",
+        "to_code": "C28252",
+        "from_name": "kg",
+        "to_name": "kg",
+        "factor": 1,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C48531",
+        "to_code": "C48531",
+        "from_name": "lb",
+        "to_name": "lb",
+        "factor": 1,
+        "dimension": "mass"
+      },
+      {
+        "from_code": "C48155",
+        "to_code": "C48155",
+        "from_name": "g",
+        "to_name": "g",
+        "factor": 1,
+        "dimension": "mass"
+      }
+    ]
+  },
+  "preferences": {
+    "modelViewMode": "concepts",
+    "currentStep": 8
+  }
+}
