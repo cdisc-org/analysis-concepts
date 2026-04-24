@@ -1,0 +1,70 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C74786",
+      "title": "Free Thyroxine Measurement",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C170598",
+      "title": "Free Thyroxine Index",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C170598",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C170598",
+  "categories": [
+    "Laboratory Tests",
+    "Chemistry Tests",
+    "Endocrine Tests",
+    "Hormone Measurements"
+  ],
+  "shortName": "Free Thyroxine Index",
+  "synonyms": [
+    "T4FRIDX"
+  ],
+  "resultScales": [
+    "Quantitative"
+  ],
+  "definition": "A measurement of the thyroid status (function, disease diagnosis, or therapy effectiveness) in a biological specimen. This is calculated by a mathematical formula that takes into account the total thyroxine and unbound thyroxine binding globulins.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "decimal",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C93566",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C93566",
+      "shortName": "Fasting Status Indicator",
+      "dataType": "boolean",
+      "ncitCode": "C93566"
+    },
+    {
+      "conceptId": "C70713",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70713",
+      "shortName": "Biospecimen Type",
+      "dataType": "string",
+      "exampleSet": [
+        "Serum",
+        "Plasma"
+      ],
+      "ncitCode": "C70713"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C170598"
+}

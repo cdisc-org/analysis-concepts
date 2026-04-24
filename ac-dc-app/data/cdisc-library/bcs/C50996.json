@@ -1,0 +1,22 @@
+{
+  "_links": {
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2026-03-31/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2026-03-31",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C50996",
+      "title": "Protocol Deviation [RETIRED]",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C50996",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C50996",
+  "categories": [
+    "Subject Disposition"
+  ],
+  "shortName": "Protocol Deviation [RETIRED]",
+  "definition": "A variation from processes or procedures defined in a protocol. Deviations usually do not preclude the overall evaluability of subject data for either efficacy or safety, and are often acknowledged and accepted in advance by the sponsor. (CDISC Glossary) [RETIRED]",
+  "ncitCode": "C50996"
+}

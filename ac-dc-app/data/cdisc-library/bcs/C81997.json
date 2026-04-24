@@ -1,0 +1,84 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C51950",
+      "title": "Neutrophil Count",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C81997",
+      "title": "Segmented Neutrophil Count",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C81997",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C81997",
+  "categories": [
+    "Laboratory Tests",
+    "Hematology Tests",
+    "Blood Cell Counts",
+    "Leukocyte Counts",
+    "Neutrophil Counts"
+  ],
+  "shortName": "Segmented Neutrophil Count",
+  "synonyms": [
+    "Segmented Neutrophils",
+    "NEUTSG"
+  ],
+  "resultScales": [
+    "Quantitative"
+  ],
+  "definition": "The determination of the amount of segmented neutrophils present in a sample.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "decimal",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C93566",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C93566",
+      "shortName": "Fasting Status Indicator",
+      "dataType": "boolean",
+      "ncitCode": "C93566"
+    },
+    {
+      "conceptId": "C67391",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C67391",
+      "shortName": "Unit of Number Concentration",
+      "dataType": "string",
+      "exampleSet": [
+        "10^9/L",
+        "/uL"
+      ],
+      "ncitCode": "C67391"
+    },
+    {
+      "conceptId": "C70713",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70713",
+      "shortName": "Biospecimen Type",
+      "dataType": "string",
+      "exampleSet": [
+        "Blood",
+        "Body fluid",
+        "Bone Marrow"
+      ],
+      "ncitCode": "C70713"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C81997"
+}

@@ -1,4 +1,4 @@
-import { appState, STEPS, navigateTo } from '../app.js';
+import { appState, STEPS, SOA_MENU, navigateTo, navigateToSoa } from '../app.js';
 
 function canNavigateToStep(step) {
   // All steps are freely navigable
@@ -7,6 +7,8 @@ function canNavigateToStep(step) {
 
 function getStepState(step) {
   const current = appState.currentStep;
+  const onSoaRoute = (location.hash || '').startsWith('#/soa/');
+  if (onSoaRoute) return '';
   if (step.num === current) return 'active';
   if (step.num < current) return 'completed';
   if (!canNavigateToStep(step.num)) return 'disabled';
@@ -15,6 +17,7 @@ function getStepState(step) {
 
 export function renderSidebar() {
   const sidebar = document.getElementById('app-sidebar');
+  const onSoaRoute = (location.hash || '').startsWith('#/soa/');
   const currentLayer = STEPS.find(s => s.num === appState.currentStep)?.layer || 'specification';
 
   let lastLayer = null;
@@ -25,7 +28,7 @@ export function renderSidebar() {
     if (step.layer !== lastLayer) {
       lastLayer = step.layer;
       const layerLabel = step.layer === 'specification' ? 'Specification Layer' : 'Execution Layer';
-      const isActive = step.layer === currentLayer;
+      const isActive = !onSoaRoute && step.layer === currentLayer;
       header = `<li class="sidebar-layer-header${isActive ? ' active' : ''}">${layerLabel}</li>`;
     }
     return `${header}
@@ -38,10 +41,27 @@ export function renderSidebar() {
           </li>`;
   }).join('');
 
+  const soaItems = SOA_MENU.items.map(item => {
+    const active = onSoaRoute && appState.soaView === item.view;
+    return `
+          <li class="step-item ${active ? 'active' : ''}" data-soa="${item.view}">
+            <div class="step-number">${item.icon}</div>
+            <div>
+              <div class="step-label">${item.label}</div>
+              <div class="step-sublabel">${item.sublabel}</div>
+            </div>
+          </li>`;
+  }).join('');
+
   sidebar.innerHTML = `
     <div class="sidebar-title">Workflow Steps</div>
     <ul class="step-list">
       ${stepItems}
+    </ul>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-title">${SOA_MENU.label}</div>
+    <ul class="step-list">
+      ${soaItems}
     </ul>
     <div class="sidebar-divider"></div>
     <div class="sidebar-config-trigger ${appState.configPanelOpen ? 'active' : ''}" id="sidebar-config-trigger">
@@ -53,9 +73,15 @@ export function renderSidebar() {
     </div>
   `;
 
-  sidebar.querySelectorAll('.step-item').forEach(item => {
+  sidebar.querySelectorAll('[data-step]').forEach(item => {
     item.addEventListener('click', () => {
       navigateTo(parseInt(item.dataset.step, 10));
+    });
+  });
+
+  sidebar.querySelectorAll('[data-soa]').forEach(item => {
+    item.addEventListener('click', () => {
+      navigateToSoa(item.dataset.soa);
     });
   });
 

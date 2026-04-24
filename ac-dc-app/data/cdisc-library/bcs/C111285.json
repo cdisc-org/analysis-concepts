@@ -1,0 +1,116 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C83146",
+      "title": "Electrocardiogram Test",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2024-12-17/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2024-12-17",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C111285",
+      "title": "Pacemaker ECG Assessment",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C111285",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C111285",
+  "categories": [
+    "Electrocardiogram Findings",
+    "Electrocardiogram Abnormalities",
+    "ECG Findings",
+    "ECG Abnormalities"
+  ],
+  "shortName": "Pacemaker ECG Assessment",
+  "synonyms": [
+    "PACEMAKR",
+    "Pacemaker"
+  ],
+  "resultScales": [
+    "Nominal"
+  ],
+  "definition": "An electrocardiographic assessment of the rate of firing of a an artificial, mechanical pacemaker.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C25372",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C25372",
+      "shortName": "Category",
+      "dataType": "string",
+      "exampleSet": [
+        "Finding"
+      ],
+      "ncitCode": "C25372"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    },
+    {
+      "conceptId": "C50282",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C50282",
+      "shortName": "Lead Device",
+      "dataType": "string",
+      "exampleSet": [
+        "Lead 1",
+        "Lead 2"
+      ],
+      "ncitCode": "C50282"
+    },
+    {
+      "conceptId": "C51824",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C51824",
+      "shortName": "Evaluator",
+      "dataType": "string",
+      "exampleSet": [
+        "Investigator",
+        "Vendor",
+        "Adjudication Committee"
+      ],
+      "ncitCode": "C51824"
+    },
+    {
+      "conceptId": "C82535",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82535",
+      "shortName": "Test Method",
+      "dataType": "string",
+      "exampleSet": [
+        "12 Lead Standard",
+        "12 Lead Continuous ECG",
+        "10 Lead Standard",
+        "6 Lead Standard"
+      ],
+      "ncitCode": "C82535"
+    },
+    {
+      "conceptId": "C62164",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C62164",
+      "shortName": "Body Position",
+      "dataType": "string",
+      "exampleSet": [
+        "Supine",
+        "Sitting"
+      ],
+      "ncitCode": "C62164"
+    },
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "string",
+      "exampleSet": [
+        "Paced Atrial and Ventricular Rhythm",
+        "Paced Atrial Rhythm",
+        "Paced Rhythm",
+        "Paced Ventricular Rhythm"
+      ],
+      "ncitCode": "C70856"
+    }
+  ],
+  "ncitCode": "C111285"
+}

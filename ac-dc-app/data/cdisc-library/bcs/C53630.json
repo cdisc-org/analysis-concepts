@@ -1,0 +1,284 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C49236",
+      "title": "Therapeutic Procedure",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C53630",
+      "title": "Concomitant Therapy",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C53630",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C53630",
+  "categories": [
+    "Interventions",
+    "Substance Administration",
+    "Medication Administration",
+    "Concomitant Medication"
+  ],
+  "shortName": "Concomitant Therapy",
+  "synonyms": [
+    "Concomitant Medication"
+  ],
+  "resultScales": [
+    "Nominal"
+  ],
+  "definition": "Any pharmaceutical agent, other than the primary therapy, that is administered to or used by the subject prior to or during a specified time period.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C25372",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C25372",
+      "shortName": "Category",
+      "dataType": "string",
+      "ncitCode": "C25372"
+    },
+    {
+      "conceptId": "C25692",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C25692",
+      "shortName": "Subcategory",
+      "dataType": "string",
+      "ncitCode": "C25692"
+    },
+    {
+      "conceptId": "C171000",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C171000",
+      "shortName": "Prespecified Event or Intervention Indicator",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C171000"
+    },
+    {
+      "conceptId": "C127786",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C127786",
+      "shortName": "Occurrence Indicator",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C127786"
+    },
+    {
+      "conceptId": "C70902",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70902",
+      "shortName": "Concomitant Agent",
+      "dataType": "string",
+      "ncitCode": "C70902"
+    },
+    {
+      "conceptId": "C83345",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83345",
+      "shortName": "Concomitant Medication Dictionary Derived Term",
+      "dataType": "string",
+      "ncitCode": "C83345"
+    },
+    {
+      "conceptId": "C83085",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83085",
+      "shortName": "Concomitant Medication Use Indication",
+      "dataType": "string",
+      "ncitCode": "C83085"
+    },
+    {
+      "conceptId": "C83219",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83219",
+      "shortName": "Concomitant Medication Class",
+      "dataType": "string",
+      "ncitCode": "C83219"
+    },
+    {
+      "conceptId": "C83221",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83221",
+      "shortName": "Concomitant Medication Dose",
+      "dataType": "string",
+      "ncitCode": "C83221"
+    },
+    {
+      "conceptId": "C83034",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83034",
+      "shortName": "Concomitant Medication Dose Unit",
+      "dataType": "string",
+      "exampleSet": [
+        "ng",
+        "mg",
+        "mg/kg"
+      ],
+      "ncitCode": "C83034"
+    },
+    {
+      "conceptId": "C83042",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83042",
+      "shortName": "Concomitant Medication Dose Frequency",
+      "dataType": "string",
+      "exampleSet": [
+        "BID",
+        "PRN",
+        "QD",
+        "QID",
+        "TID"
+      ],
+      "ncitCode": "C83042"
+    },
+    {
+      "conceptId": "C83025",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83025",
+      "shortName": "Concomitant Medication Daily Dose",
+      "dataType": "string",
+      "ncitCode": "C83025"
+    },
+    {
+      "conceptId": "C83110",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83110",
+      "shortName": "Concomitant Medication Dose Form",
+      "dataType": "string",
+      "exampleSet": [
+        "Capsule",
+        "Injection",
+        "Patch",
+        "Solution",
+        "Suppository",
+        "Tablet"
+      ],
+      "ncitCode": "C83110"
+    },
+    {
+      "conceptId": "C83120",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83120",
+      "shortName": "Concomitant Medication Route of Administration",
+      "dataType": "string",
+      "exampleSet": [
+        "Intravenous",
+        "Oral",
+        "Nasogastric",
+        "Subcutaneous",
+        "Topical"
+      ],
+      "ncitCode": "C83120"
+    },
+    {
+      "conceptId": "C83235",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83235",
+      "shortName": "Concomitant Medication Use Start Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C83235"
+    },
+    {
+      "conceptId": "C83225",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83225",
+      "shortName": "Concomitant Medication Use End Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C83225"
+    },
+    {
+      "conceptId": "C83055",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83055",
+      "shortName": "Concomitant Medication Previous Occurrence",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C83055"
+    },
+    {
+      "conceptId": "C83054",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83054",
+      "shortName": "Concomitant Medication Ongoing",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C83054"
+    },
+    {
+      "conceptId": "C82559",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82559",
+      "shortName": "Start Relative to Reference Period",
+      "dataType": "string",
+      "exampleSet": [
+        "Before",
+        "During",
+        "During/After",
+        "After",
+        "Unknown"
+      ],
+      "ncitCode": "C82559"
+    },
+    {
+      "conceptId": "C82560",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82560",
+      "shortName": "Start Relative to Reference Time Point",
+      "dataType": "string",
+      "exampleSet": [
+        "Before",
+        "Coincident",
+        "After",
+        "Unknown"
+      ],
+      "ncitCode": "C82560"
+    },
+    {
+      "conceptId": "C82575",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82575",
+      "shortName": "Reference Start Time Point",
+      "dataType": "string",
+      "exampleSet": [
+        "2020-12-25",
+        "VISIT 2"
+      ],
+      "ncitCode": "C82575"
+    },
+    {
+      "conceptId": "C82557",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82557",
+      "shortName": "End Relative to Reference Period",
+      "dataType": "string",
+      "exampleSet": [
+        "Before",
+        "During",
+        "During/After",
+        "After",
+        "Unknown"
+      ],
+      "ncitCode": "C82557"
+    },
+    {
+      "conceptId": "C82558",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82558",
+      "shortName": "End Relative to Reference Time Point",
+      "dataType": "string",
+      "exampleSet": [
+        "Before",
+        "Coincident",
+        "After",
+        "Ongoing",
+        "Unknown"
+      ],
+      "ncitCode": "C82558"
+    },
+    {
+      "conceptId": "C82574",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82574",
+      "shortName": "Reference End Time Point End",
+      "dataType": "string",
+      "exampleSet": [
+        "2020-12-25",
+        "VISIT 2"
+      ],
+      "ncitCode": "C82574"
+    }
+  ],
+  "ncitCode": "C53630"
+}

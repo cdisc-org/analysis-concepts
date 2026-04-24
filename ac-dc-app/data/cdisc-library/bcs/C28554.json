@@ -1,0 +1,22 @@
+{
+  "_links": {
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2026-03-31/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2026-03-31",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C28554",
+      "title": "Dead [RETIRED]",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C28554",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C28554",
+  "categories": [
+    "Subject Disposition"
+  ],
+  "shortName": "Dead [RETIRED]",
+  "definition": "The cessation of life. [RETIRED]",
+  "ncitCode": "C28554"
+}

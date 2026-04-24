@@ -1,0 +1,76 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C51946",
+      "title": "Erythrocyte Count",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C64822",
+      "title": "Microcyte Count",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C64822",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C64822",
+  "categories": [
+    "Laboratory Tests",
+    "Hematology Tests",
+    "Blood Cell Counts",
+    "Erythrocyte Counts"
+  ],
+  "shortName": "Microcyte Count",
+  "synonyms": [
+    "Microcytes",
+    "MICROCY"
+  ],
+  "resultScales": [
+    "Ordinal"
+  ],
+  "definition": "The determination of the number of microcytes in a blood sample.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "string",
+      "exampleSet": [
+        "Absent",
+        "Present"
+      ],
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C93566",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C93566",
+      "shortName": "Fasting Status Indicator",
+      "dataType": "boolean",
+      "ncitCode": "C93566"
+    },
+    {
+      "conceptId": "C70713",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70713",
+      "shortName": "Biospecimen Type",
+      "dataType": "string",
+      "exampleSet": [
+        "Blood",
+        "Urine",
+        "Urine Sediment"
+      ],
+      "ncitCode": "C70713"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C64822"
+}

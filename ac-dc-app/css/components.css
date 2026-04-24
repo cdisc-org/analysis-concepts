@@ -75,6 +75,14 @@
   border-left-color: var(--cdisc-accent5);
 }
 
+.badge-soa {
+  background: #E4F4F1;
+  color: #1F7A4E;
+  border-left-color: var(--cdisc-accent2);
+  margin-left: auto;
+  align-self: flex-start;
+}
+
 /* ===== Tabs ===== */
 .tab-bar {
   display: flex;

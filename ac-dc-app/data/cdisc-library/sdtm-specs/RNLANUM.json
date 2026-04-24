@@ -1,0 +1,158 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C130195",
+      "title": "Number of Renal Arteries",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/specializations/sdtm/packages/2025-12-16/datasetspecializations",
+      "title": "SDTM Dataset Specialization Package Effective 2025-12-16",
+      "type": "SDTM Dataset Specialization Package"
+    },
+    "self": {
+      "href": "/mdr/specializations/sdtm/datasetspecializations/RNLANUM",
+      "title": "Number of Renal Arteries",
+      "type": "SDTM Dataset Specialization"
+    }
+  },
+  "datasetSpecializationId": "RNLANUM",
+  "domain": "UR",
+  "shortName": "Number of Renal Arteries",
+  "source": "UR.URTESTCD",
+  "sdtmigStartVersion": "3-2",
+  "sdtmigEndVersion": "",
+  "variables": [
+    {
+      "name": "URTESTCD",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C129942",
+        "submissionValue": "URNSTSCD",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C129942"
+      },
+      "assignedTerm": {
+        "conceptId": "C130195",
+        "value": "RNLANUM"
+      },
+      "role": "Topic",
+      "relationship": {
+        "subject": "URTESTCD",
+        "linkingPhrase": "is the code for the value in",
+        "predicateTerm": "IS_DECODED_BY",
+        "object": "URTEST"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": true,
+      "comparator": "EQ"
+    },
+    {
+      "name": "URTEST",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C129941",
+        "submissionValue": "URNSTS",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C129941"
+      },
+      "assignedTerm": {
+        "conceptId": "C130195",
+        "value": "Number of Renal Arteries"
+      },
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "URTEST",
+        "linkingPhrase": "decodes the value in",
+        "predicateTerm": "DECODES",
+        "object": "URTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": true
+    },
+    {
+      "name": "URCAT",
+      "isNonStandard": false,
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "URCAT",
+        "linkingPhrase": "groups values in",
+        "predicateTerm": "GROUPS",
+        "object": "URTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false
+    },
+    {
+      "name": "URORRES",
+      "dataElementConceptId": "C70856",
+      "isNonStandard": false,
+      "role": "Qualifier",
+      "dataType": "integer",
+      "length": 3,
+      "relationship": {
+        "subject": "URORRES",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "URTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator",
+      "vlmTarget": true
+    },
+    {
+      "name": "URSTRESC",
+      "dataElementConceptId": "C70856",
+      "isNonStandard": false,
+      "role": "Qualifier",
+      "dataType": "integer",
+      "length": 3,
+      "relationship": {
+        "subject": "URSTRESC",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "URTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator",
+      "vlmTarget": true
+    },
+    {
+      "name": "URSTRESN",
+      "dataElementConceptId": "C70856",
+      "isNonStandard": false,
+      "role": "Qualifier",
+      "dataType": "integer",
+      "length": 3,
+      "relationship": {
+        "subject": "URSTRESN",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "URTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator",
+      "vlmTarget": true
+    },
+    {
+      "name": "URDTC",
+      "dataElementConceptId": "C82515",
+      "isNonStandard": false,
+      "role": "Timing",
+      "relationship": {
+        "subject": "URDTC",
+        "linkingPhrase": "is the date of occurrence for",
+        "predicateTerm": "IS_TIMING_FOR",
+        "object": "URTESTCD"
+      },
+      "mandatoryVariable": false,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator"
+    }
+  ]
+}

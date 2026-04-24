@@ -1,0 +1,127 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C100106",
+      "title": "ADAS-Cog CDISC Version Functional Test Question",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-11-18/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-11-18",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C100232",
+      "title": "CDISC ADAS-Cog - Ideational Praxis Summary Score",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C100232",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C100232",
+  "categories": [
+    "QRS",
+    "Functional Assessment",
+    "Alzheimer's Disease Assessment Scale-Cognitive CDISC Version Functional Test",
+    "ADAS-Cog",
+    "ADC",
+    "ADAS-Cog CDISC Version Functional Test Question"
+  ],
+  "shortName": "CDISC ADAS-Cog - Ideational Praxis Summary Score",
+  "synonyms": [
+    "ADCIP",
+    "Ideational Praxis",
+    "CDISC ADAS-Cog - Ideational Praxis Summary Score"
+  ],
+  "resultScales": [
+    "Ordinal"
+  ],
+  "definition": "Alzheimer's Disease Assessment Scale-Cognitive CDISC Version (ADAS-Cog CDISC Version) Summary score for ideational praxis.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C25692",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C25692",
+      "shortName": "Subcategory",
+      "dataType": "string",
+      "exampleSet": [
+        "IDEATIONAL PRAXIS"
+      ],
+      "ncitCode": "C25692"
+    },
+    {
+      "conceptId": "C25372",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C25372",
+      "shortName": "Category",
+      "dataType": "string",
+      "exampleSet": [
+        "ADAS-COG"
+      ],
+      "ncitCode": "C25372"
+    },
+    {
+      "conceptId": "C82556",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82556",
+      "shortName": "Not-Done Reason",
+      "dataType": "string",
+      "ncitCode": "C82556"
+    },
+    {
+      "conceptId": "C51824",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C51824",
+      "shortName": "Evaluator",
+      "dataType": "string",
+      "exampleSet": [
+        "Investigator",
+        "Neurologist"
+      ],
+      "ncitCode": "C51824"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    },
+    {
+      "conceptId": "C41202",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C41202",
+      "shortName": "Completion Status",
+      "dataType": "string",
+      "exampleSet": [
+        "Not Done"
+      ],
+      "ncitCode": "C41202"
+    },
+    {
+      "conceptId": "C91106",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C91106",
+      "shortName": "Clinical or Research Assessment Answer",
+      "dataType": "string",
+      "exampleSet": [
+        "all components performed correctly (0)",
+        "failure to perform 1 component (1)",
+        "failure to perform 2 components (2)",
+        "failure to perform 3 components (3)",
+        "failure to perform 4 components (4)",
+        "failure to perform 5 components (5)"
+      ],
+      "ncitCode": "C91106"
+    },
+    {
+      "conceptId": "C46126",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C46126",
+      "shortName": "Ordinal Position",
+      "dataType": "integer",
+      "exampleSet": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "ncitCode": "C46126"
+    }
+  ],
+  "ncitCode": "C100232"
+}

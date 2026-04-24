@@ -1,0 +1,22 @@
+{
+  "_links": {
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2026-03-31/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2026-03-31",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C49634",
+      "title": "Withdrawal by Subject [RETIRED]",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C49634",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C49634",
+  "categories": [
+    "Subject Disposition"
+  ],
+  "shortName": "Withdrawal by Subject [RETIRED]",
+  "definition": "An indication that a study participant has removed themself from the study or from one or more segments of the study. [RETIRED]",
+  "ncitCode": "C49634"
+}

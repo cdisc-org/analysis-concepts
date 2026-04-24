@@ -1,0 +1,138 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C54706",
+      "title": "Blood Pressure",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-12-16/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-12-16",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C25298",
+      "title": "Systolic Blood Pressure",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C25298",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C25298",
+  "categories": [
+    "Vital Signs",
+    "Blood Pressure"
+  ],
+  "shortName": "Systolic Blood Pressure",
+  "synonyms": [
+    "SYSBP"
+  ],
+  "resultScales": [
+    "Quantitative"
+  ],
+  "definition": "The maximum pressure exerted into the systemic arterial circulation during the contraction of the left ventricle of the heart.",
+  "coding": [
+    {
+      "code": "8480-6",
+      "system": "http://loinc.org/",
+      "systemName": "LOINC"
+    }
+  ],
+  "dataElementConcepts": [
+    {
+      "conceptId": "C82535",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82535",
+      "shortName": "Test Method",
+      "dataType": "string",
+      "exampleSet": [
+        "Auscultation automatic",
+        "Auscultation manual",
+        "Cuff-manual palpated",
+        "Doppler",
+        "Oscillometry",
+        "Arterial line",
+        "Venous line",
+        "Continuous noninvasive arterial pressure (CNAP)"
+      ],
+      "ncitCode": "C82535"
+    },
+    {
+      "conceptId": "C62164",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C62164",
+      "shortName": "Body Position",
+      "dataType": "string",
+      "exampleSet": [
+        "Decubitus",
+        "Fowlers",
+        "Lateral Decubitus",
+        "Left Lateral Decubitus",
+        "Prone",
+        "Reverse Trendelenburg",
+        "Right Lateral Decubitus",
+        "Semi-Fowlers",
+        "Semi-Recumbent",
+        "Sitting",
+        "Sitting, Legs Dependent",
+        "Sling",
+        "Standing",
+        "Standing, Bent Forward",
+        "Supine",
+        "Trendelenburg",
+        "Unconstrained"
+      ],
+      "ncitCode": "C62164"
+    },
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "decimal",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C49669",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C49669",
+      "shortName": "Unit of Pressure",
+      "dataType": "string",
+      "exampleSet": [
+        "cmHg",
+        "mmHG",
+        "Pascal"
+      ],
+      "ncitCode": "C49669"
+    },
+    {
+      "conceptId": "C13717",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C13717",
+      "shortName": "Anatomic Site",
+      "dataType": "string",
+      "exampleSet": [
+        "Arm",
+        "Forearm",
+        "Thigh",
+        "Calf",
+        "Artery",
+        "Vein"
+      ],
+      "ncitCode": "C13717"
+    },
+    {
+      "conceptId": "C25185",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C25185",
+      "shortName": "Laterality",
+      "dataType": "string",
+      "exampleSet": [
+        "Left",
+        "Right"
+      ],
+      "ncitCode": "C25185"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C25298"
+}

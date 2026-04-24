@@ -1,5 +1,6 @@
 import { parseUSDM } from './utils/usdm-parser.js';
 import { buildUsdmIndex } from './utils/usdm-ref-resolver.js';
+import { buildSoaMatrix } from './utils/soa-matrix.js';
 
 const BASE = getBasePath();
 
@@ -69,20 +70,52 @@ export async function loadAllData(state) {
     fetchJSON('model/concept/concept_categories.json')
   ]);
 
-  // Load all USDM study files in parallel
-  const usdmFiles = await Promise.all(
+  // Load all USDM study files in parallel. Manifest entries marked `optional: true`
+  // (e.g. the SoA-enriched file before the enrichment script has been run) are
+  // fetched with a soft-fail so the rest of the app still boots.
+  const allFiles = await Promise.all(
     studyManifest.map(entry =>
-      fetchJSON(`ac-dc-app/data/usdm/${entry.file}`)
+      entry.optional
+        ? fetchJSON(`ac-dc-app/data/usdm/${entry.file}`).catch(() => null)
+        : fetchJSON(`ac-dc-app/data/usdm/${entry.file}`)
     )
   );
 
-  // Parse each USDM into a study object and store raw data
-  state.rawUsdmFiles = usdmFiles;
-  state.studies = usdmFiles.map(usdm => parseUSDM(usdm));
+  // All loaded studies appear in the Step-1 grid. Studies carrying the formal
+  // SDTM-specialization USDM extension (written by scripts/enrich_usdm_for_soa.py)
+  // are eligible to power the Study SoA views; any study selection that lacks
+  // the extension falls through to a clear "not enriched" placeholder in the SoA view.
+  const loaded = [];
+  for (let i = 0; i < studyManifest.length; i++) {
+    const file = allFiles[i];
+    if (!file) continue;
+    loaded.push({ entry: studyManifest[i], file });
+  }
 
-  // Set first study as default for backward compat (rawUsdm/usdmIndex)
-  state.rawUsdm = usdmFiles[0];
-  state.usdmIndex = buildUsdmIndex(usdmFiles[0]);
+  state.rawUsdmFiles = loaded.map(x => x.file);
+  state.studyManifest = loaded.map(x => x.entry);
+  state.studies = loaded.map(x => {
+    const parsed = parseUSDM(x.file);
+    // Surface the manifest's displayName (when set) so the Step-1 card can show it.
+    if (x.entry.displayName) parsed.displayName = x.entry.displayName;
+    // Flag whether this study is SoA-enriched — detected by scanning parsed BCs
+    // for the flattened sdtmSpec extension object.
+    parsed.isSoaEnriched = (parsed.biomedicalConcepts || []).some(bc => bc.sdtmSpec != null);
+    return parsed;
+  });
+
+  state.rawUsdm = state.rawUsdmFiles[0] || null;
+  state.usdmIndex = state.rawUsdmFiles[0] ? buildUsdmIndex(state.rawUsdmFiles[0]) : null;
+
+  // ---- Study SoA feature ----
+  // Fallback SoA study: the first enriched study on the manifest. SoA views prefer
+  // appState.selectedStudy if it is enriched; otherwise they fall back to this.
+  const soaIdx = state.studies.findIndex(s => s.isSoaEnriched);
+  state.soaRawUsdm = soaIdx >= 0 ? state.rawUsdmFiles[soaIdx] : null;
+  state.soaStudy = soaIdx >= 0 ? state.studies[soaIdx] : null;
+  state.soaMatrix = state.soaRawUsdm ? buildSoaMatrix(state.soaRawUsdm) : null;
+  // _index.json is optional — absent when the enrichment script hasn't been run.
+  state.cdiscLibraryIndex = await fetchJSON('ac-dc-app/data/cdisc-library/_index.json').catch(() => null);
 
   state.acModel = acModel;
   state.dcModel = dcModel;
@@ -167,6 +200,27 @@ export function setActiveStudy(state, index) {
   if (state.rawUsdmFiles && state.rawUsdmFiles[index]) {
     state.rawUsdm = state.rawUsdmFiles[index];
     state.usdmIndex = buildUsdmIndex(state.rawUsdmFiles[index]);
+  }
+}
+
+/**
+ * Lazy fetchers used by the Study SoA drill-in panels. Payloads are the raw
+ * CDISC Library JSON cached on disk by scripts/enrich_usdm_for_soa.py.
+ * Returns null if the file is absent (enrichment not run for that entity).
+ */
+export async function loadParentBc(cCode) {
+  try {
+    return await fetchJSON(`ac-dc-app/data/cdisc-library/bcs/${cCode}.json`);
+  } catch {
+    return null;
+  }
+}
+
+export async function loadSdtmSpec(specId) {
+  try {
+    return await fetchJSON(`ac-dc-app/data/cdisc-library/sdtm-specs/${specId}.json`);
+  } catch {
+    return null;
   }
 }
 

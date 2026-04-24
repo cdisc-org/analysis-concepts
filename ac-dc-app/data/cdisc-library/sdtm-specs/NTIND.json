@@ -1,0 +1,203 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C161483",
+      "title": "Non-Target Indicator",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/specializations/sdtm/packages/2024-06-27/datasetspecializations",
+      "title": "SDTM Dataset Specialization Package Effective 2024-06-27",
+      "type": "SDTM Dataset Specialization Package"
+    },
+    "self": {
+      "href": "/mdr/specializations/sdtm/datasetspecializations/NTIND",
+      "title": "Non-Target Indicator",
+      "type": "SDTM Dataset Specialization"
+    }
+  },
+  "datasetSpecializationId": "NTIND",
+  "domain": "TU",
+  "shortName": "Non-Target Indicator",
+  "source": "TU.TUTESTCD",
+  "sdtmigStartVersion": "3-2",
+  "sdtmigEndVersion": "",
+  "variables": [
+    {
+      "name": "TUTESTCD",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C96784",
+        "submissionValue": "TUTESTCD",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C96784"
+      },
+      "assignedTerm": {
+        "conceptId": "C161483",
+        "value": "NTIND"
+      },
+      "role": "Topic",
+      "relationship": {
+        "subject": "TUTESTCD",
+        "linkingPhrase": "is the code for the value in",
+        "predicateTerm": "IS_DECODED_BY",
+        "object": "TUTEST"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Assigned",
+      "originSource": "Sponsor",
+      "comparator": "EQ"
+    },
+    {
+      "name": "TUTEST",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C96783",
+        "submissionValue": "TUTEST",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C96783"
+      },
+      "assignedTerm": {
+        "conceptId": "C161483",
+        "value": "Non-Target Indicator"
+      },
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "TUTEST",
+        "linkingPhrase": "decodes the value in",
+        "predicateTerm": "DECODES",
+        "object": "TUTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Assigned",
+      "originSource": "Sponsor"
+    },
+    {
+      "name": "TUORRES",
+      "dataElementConceptId": "C70856",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C66742",
+        "submissionValue": "NY",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C66742"
+      },
+      "valueList": [
+        "Y",
+        "N",
+        "U"
+      ],
+      "role": "Qualifier",
+      "dataType": "text",
+      "length": 24,
+      "relationship": {
+        "subject": "TUORRES",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "TUTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator",
+      "vlmTarget": true
+    },
+    {
+      "name": "TUSTRESC",
+      "dataElementConceptId": "C70856",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C66742",
+        "submissionValue": "NY",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C66742"
+      },
+      "valueList": [
+        "Y",
+        "N",
+        "U"
+      ],
+      "role": "Qualifier",
+      "dataType": "text",
+      "length": 24,
+      "relationship": {
+        "subject": "TUSTRESC",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "TUTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Derived",
+      "originSource": "Sponsor",
+      "vlmTarget": true
+    },
+    {
+      "name": "TUEVAL",
+      "dataElementConceptId": "C51824",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C78735",
+        "submissionValue": "EVAL",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C78735"
+      },
+      "assignedTerm": {
+        "conceptId": "C25936",
+        "value": "INVESTIGATOR"
+      },
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "TUEVAL",
+        "linkingPhrase": "is the role of the assessor who performed the test in",
+        "predicateTerm": "PERFORMS",
+        "object": "TUTESTCD"
+      },
+      "mandatoryVariable": false,
+      "mandatoryValue": false,
+      "originType": "Assigned",
+      "originSource": "Sponsor",
+      "comparator": "EQ"
+    },
+    {
+      "name": "TUEVALID",
+      "dataElementConceptId": "C117043",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C96777",
+        "submissionValue": "MEDEVAL",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C96777"
+      },
+      "valueList": [
+        "RADIOLOGIST 1",
+        "RADIOLOGIST 2",
+        "RADIOLOGIST 3"
+      ],
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "TUEVALID",
+        "linkingPhrase": "is an identifier for the evaluator with the role in",
+        "predicateTerm": "IDENTIFIES",
+        "object": "TUEVAL"
+      },
+      "mandatoryVariable": false,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Vendor",
+      "comparator": "IN"
+    },
+    {
+      "name": "TUDTC",
+      "dataElementConceptId": "C82515",
+      "isNonStandard": false,
+      "role": "Timing",
+      "relationship": {
+        "subject": "TUDTC",
+        "linkingPhrase": "is the date of occurrence for",
+        "predicateTerm": "IS_TIMING_FOR",
+        "object": "TUTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Sponsor"
+    }
+  ]
+}

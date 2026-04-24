@@ -1,0 +1,83 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C49237",
+      "title": "Chemistry Test",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C64854",
+      "title": "Ketone Measurement",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C64854",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C64854",
+  "categories": [
+    "Laboratory Tests",
+    "Chemistry Tests"
+  ],
+  "shortName": "Ketone Measurement",
+  "synonyms": [
+    "Ketones"
+  ],
+  "resultScales": [
+    "Quantitative",
+    "Ordinal"
+  ],
+  "definition": "A quantitative measurement of the amount of ketones present in a sample.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "string",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C93566",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C93566",
+      "shortName": "Fasting Status Indicator",
+      "dataType": "boolean",
+      "ncitCode": "C93566"
+    },
+    {
+      "conceptId": "C48207",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C48207",
+      "shortName": "Unit of Concentration",
+      "dataType": "string",
+      "exampleSet": [
+        "mg/dL",
+        "mmol/L"
+      ],
+      "ncitCode": "C48207"
+    },
+    {
+      "conceptId": "C70713",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70713",
+      "shortName": "Biospecimen Type",
+      "dataType": "string",
+      "exampleSet": [
+        "Blood",
+        "Serum",
+        "Plasma",
+        "Urine",
+        "Vitreous Fluid"
+      ],
+      "ncitCode": "C70713"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C64854"
+}

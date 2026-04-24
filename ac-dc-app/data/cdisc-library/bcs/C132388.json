@@ -1,0 +1,93 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C210010",
+      "title": "Antibody Measurement",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-09-23/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-09-23",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C132388",
+      "title": "Treponema pallidum Antibody Measurement",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C132388",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C132388",
+  "categories": [
+    "Laboratory Tests",
+    "Microbiology Tests",
+    "Immunology Tests",
+    "Antibody Measurements"
+  ],
+  "shortName": "Treponema pallidum Antibody Measurement",
+  "synonyms": [
+    "TPLAB",
+    "Treponema pallidum Antibody",
+    "Syphilis Antibody"
+  ],
+  "resultScales": [
+    "Quantitative",
+    "Ordinal"
+  ],
+  "definition": "The determination of the amount of Treponema pallidum antibody in a biological sample.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70713",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70713",
+      "shortName": "Biospecimen Type",
+      "dataType": "string",
+      "exampleSet": [
+        "Serum",
+        "Blood",
+        "Cerebrospinal Fluid",
+        "Body Fluid"
+      ],
+      "ncitCode": "C70713"
+    },
+    {
+      "conceptId": "C82535",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82535",
+      "shortName": "Test Method",
+      "dataType": "string",
+      "exampleSet": [
+        "Immunofluorescence",
+        "Hemagglutination",
+        "Enzyme Immunoassay",
+        "Chemiluminescence Immunoassay",
+        "Immunoblots",
+        "Rapid Treponemal Assay"
+      ],
+      "ncitCode": "C82535"
+    },
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "string",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C117062",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C117062",
+      "shortName": "Measurement, Test or Examination Detail",
+      "dataType": "string",
+      "exampleSet": [
+        "Detection"
+      ],
+      "ncitCode": "C117062"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C132388"
+}

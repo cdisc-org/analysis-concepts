@@ -1,0 +1,22 @@
+{
+  "_links": {
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2026-03-31/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2026-03-31",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C48227",
+      "title": "Lost To Follow-Up [RETIRED]",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C48227",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C48227",
+  "categories": [
+    "Subject Disposition"
+  ],
+  "shortName": "Lost To Follow-Up [RETIRED]",
+  "definition": "The loss or lack of continuation of subject participation after a study has officially closed. [RETIRED]",
+  "ncitCode": "C48227"
+}

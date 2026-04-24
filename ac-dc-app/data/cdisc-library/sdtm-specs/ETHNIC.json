@@ -1,0 +1,59 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C16564",
+      "title": "Ethnic Group",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/specializations/sdtm/packages/2025-04-01/datasetspecializations",
+      "title": "SDTM Dataset Specialization Package Effective 2025-04-01",
+      "type": "SDTM Dataset Specialization Package"
+    },
+    "self": {
+      "href": "/mdr/specializations/sdtm/datasetspecializations/ETHNIC",
+      "title": "Ethnicity",
+      "type": "SDTM Dataset Specialization"
+    }
+  },
+  "datasetSpecializationId": "ETHNIC",
+  "domain": "DM",
+  "shortName": "Ethnicity",
+  "source": "DM.ETHNIC",
+  "sdtmigStartVersion": "3-2",
+  "sdtmigEndVersion": "",
+  "variables": [
+    {
+      "name": "ETHNIC",
+      "dataElementConceptId": "C16564",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C66790",
+        "submissionValue": "ETHNIC",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C66790"
+      },
+      "valueList": [
+        "HISPANIC OR LATINO",
+        "NOT HISPANIC OR LATINO",
+        "NOT REPORTED",
+        "UNKNOWN"
+      ],
+      "role": "Qualifier",
+      "dataType": "text",
+      "length": 100,
+      "mandatoryVariable": false,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator"
+    },
+    {
+      "name": "DMDTC",
+      "dataElementConceptId": "C82515",
+      "isNonStandard": false,
+      "role": "Timing",
+      "dataType": "datetime",
+      "mandatoryVariable": true,
+      "mandatoryValue": false
+    }
+  ]
+}

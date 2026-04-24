@@ -1,0 +1,362 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C41331",
+      "title": "Adverse Event [RETIRED]",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C179175",
+      "title": "Solicited Adverse Event",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C179175",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C179175",
+  "categories": [
+    "Events",
+    "Reported Events",
+    "Adverse Events"
+  ],
+  "shortName": "Solicited Adverse Event",
+  "synonyms": [
+    "Adverse Event"
+  ],
+  "resultScales": [
+    "Nominal"
+  ],
+  "definition": "An adverse event that is reported by a healthcare professional, consumer, or patient through an organized data collection system.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C78541",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C78541",
+      "shortName": "Adverse Event Verbatim Description",
+      "dataType": "string",
+      "ncitCode": "C78541"
+    },
+    {
+      "conceptId": "C83344",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83344",
+      "shortName": "Adverse Event Dictionary Derived Term",
+      "dataType": "string",
+      "ncitCode": "C83344"
+    },
+    {
+      "conceptId": "C83198",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83198",
+      "shortName": "Adverse Event Category",
+      "dataType": "string",
+      "ncitCode": "C83198"
+    },
+    {
+      "conceptId": "C83212",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83212",
+      "shortName": "Adverse Event Subcategory",
+      "dataType": "string",
+      "ncitCode": "C83212"
+    },
+    {
+      "conceptId": "C87840",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C87840",
+      "shortName": "Adverse Event Pre-specified",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C87840"
+    },
+    {
+      "conceptId": "C83205",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83205",
+      "shortName": "Adverse Event Location",
+      "dataType": "string",
+      "ncitCode": "C83205"
+    },
+    {
+      "conceptId": "C53253",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C53253",
+      "shortName": "Severity of Adverse Event",
+      "dataType": "string",
+      "exampleSet": [
+        "Mild",
+        "Moderate",
+        "Severe"
+      ],
+      "ncitCode": "C53253"
+    },
+    {
+      "conceptId": "C53252",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C53252",
+      "shortName": "Seriousness of Adverse Event",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C53252"
+    },
+    {
+      "conceptId": "C78605",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C78605",
+      "shortName": "Adverse Event Toxicity Grade",
+      "dataType": "string",
+      "exampleSet": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "ncitCode": "C78605"
+    },
+    {
+      "conceptId": "C83013",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83013",
+      "shortName": "Adverse Event Action Taken with Study Treatment",
+      "dataType": "string",
+      "exampleSet": [
+        "Drug Withdrawn",
+        "Dose Reduced",
+        "Dose Increased",
+        "Dose Not Changed",
+        "Unknown"
+      ],
+      "ncitCode": "C83013"
+    },
+    {
+      "conceptId": "C83109",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83109",
+      "shortName": "Other Actions taken in Response to Adverse Event",
+      "dataType": "string",
+      "exampleSet": [
+        "Treatment Unblinded",
+        "Ptrimary Care Physician Notified"
+      ],
+      "ncitCode": "C83109"
+    },
+    {
+      "conceptId": "C41358",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C41358",
+      "shortName": "Adverse Event Attribution to Product or Procedure",
+      "dataType": "string",
+      "exampleSet": [
+        "Not related",
+        "Unlikely Related",
+        "Possibly Related",
+        "Related"
+      ],
+      "ncitCode": "C41358"
+    },
+    {
+      "conceptId": "C83210",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83210",
+      "shortName": "Adverse Event Relationship to Non Study Treatment",
+      "dataType": "string",
+      "exampleSet": [
+        "Not related",
+        "Unlikely Related",
+        "Possibly Related",
+        "Related"
+      ],
+      "ncitCode": "C83210"
+    },
+    {
+      "conceptId": "C83208",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83208",
+      "shortName": "Adverse Event Pattern",
+      "dataType": "string",
+      "exampleSet": [
+        "Intermittent",
+        "Continuous",
+        "Single Event"
+      ],
+      "ncitCode": "C83208"
+    },
+    {
+      "conceptId": "C49489",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C49489",
+      "shortName": "Adverse Event Outcome",
+      "dataType": "string",
+      "exampleSet": [
+        "Fatal",
+        "Not Recovered/Not Resolved",
+        "Recovered/Resolved With Sequelae",
+        "Recovered/Resolved",
+        "Recovering/Resolving",
+        "Unknown"
+      ],
+      "ncitCode": "C49489"
+    },
+    {
+      "conceptId": "C83211",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83211",
+      "shortName": "Adverse Event Involves Cancer",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C83211"
+    },
+    {
+      "conceptId": "C83117",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83117",
+      "shortName": "Adverse Event Seriousness Due to Congenital Anomaly",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C83117"
+    },
+    {
+      "conceptId": "C113380",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C113380",
+      "shortName": "Disabling Adverse Event",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C113380"
+    },
+    {
+      "conceptId": "C48275",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C48275",
+      "shortName": "Death Related to Adverse Event",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C48275"
+    },
+    {
+      "conceptId": "C83052",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83052",
+      "shortName": "Adverse Event associated with Hospitalization",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C83052"
+    },
+    {
+      "conceptId": "C84266",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C84266",
+      "shortName": "Life Threatening Adverse Event",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C84266"
+    },
+    {
+      "conceptId": "C83214",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83214",
+      "shortName": "Adverse Event Occurred with Overdose",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C83214"
+    },
+    {
+      "conceptId": "C83053",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83053",
+      "shortName": "Adverse Event Associated with Serious Medical Event",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C83053"
+    },
+    {
+      "conceptId": "C83199",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83199",
+      "shortName": "Adverse Event Concomitant Treatment",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C83199"
+    },
+    {
+      "conceptId": "C83215",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83215",
+      "shortName": "Adverse Event Start Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C83215"
+    },
+    {
+      "conceptId": "C83201",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83201",
+      "shortName": "Adverse Event End Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C83201"
+    },
+    {
+      "conceptId": "C83051",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83051",
+      "shortName": "Adverse Event Ongoing",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C83051"
+    },
+    {
+      "conceptId": "C82557",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82557",
+      "shortName": "End Relative to Reference Period",
+      "dataType": "string",
+      "exampleSet": [
+        "Before",
+        "During",
+        "During/After",
+        "After",
+        "Unknown"
+      ],
+      "ncitCode": "C82557"
+    },
+    {
+      "conceptId": "C82558",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82558",
+      "shortName": "End Relative to Reference Time Point",
+      "dataType": "string",
+      "exampleSet": [
+        "Before",
+        "Coincident",
+        "After",
+        "Ongoing",
+        "Unknown"
+      ],
+      "ncitCode": "C82558"
+    },
+    {
+      "conceptId": "C82574",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82574",
+      "shortName": "Reference End Time Point End",
+      "dataType": "string",
+      "exampleSet": [
+        "2020-12-25",
+        "VISIT 2"
+      ],
+      "ncitCode": "C82574"
+    }
+  ],
+  "ncitCode": "C179175"
+}

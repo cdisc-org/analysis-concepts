@@ -1,0 +1,59 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C28421",
+      "title": "Sex",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/specializations/sdtm/packages/2025-04-01/datasetspecializations",
+      "title": "SDTM Dataset Specialization Package Effective 2025-04-01",
+      "type": "SDTM Dataset Specialization Package"
+    },
+    "self": {
+      "href": "/mdr/specializations/sdtm/datasetspecializations/SEX",
+      "title": "Sex",
+      "type": "SDTM Dataset Specialization"
+    }
+  },
+  "datasetSpecializationId": "SEX",
+  "domain": "DM",
+  "shortName": "Sex",
+  "source": "DM.SEX",
+  "sdtmigStartVersion": "3-2",
+  "sdtmigEndVersion": "",
+  "variables": [
+    {
+      "name": "SEX",
+      "dataElementConceptId": "C28421",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C66731",
+        "submissionValue": "SEX",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C66731"
+      },
+      "valueList": [
+        "F",
+        "INTERSEX",
+        "M",
+        "U"
+      ],
+      "role": "Qualifier",
+      "dataType": "text",
+      "length": 100,
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator"
+    },
+    {
+      "name": "DMDTC",
+      "dataElementConceptId": "C82515",
+      "isNonStandard": false,
+      "role": "Timing",
+      "dataType": "datetime",
+      "mandatoryVariable": true,
+      "mandatoryValue": false
+    }
+  ]
+}

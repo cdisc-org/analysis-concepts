@@ -1,0 +1,83 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C74742",
+      "title": "Hormone Measurement",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C74786",
+      "title": "Free Thyroxine Measurement",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C74786",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C74786",
+  "categories": [
+    "Laboratory Tests",
+    "Chemistry Tests",
+    "Endocrine Tests",
+    "Hormone Measurements"
+  ],
+  "shortName": "Free Thyroxine Measurement",
+  "synonyms": [
+    "Free T4",
+    "T4FR"
+  ],
+  "resultScales": [
+    "Quantitative"
+  ],
+  "definition": "The determination of the amount of free thyroxine present in a sample.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "decimal",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C93566",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C93566",
+      "shortName": "Fasting Status Indicator",
+      "dataType": "boolean",
+      "ncitCode": "C93566"
+    },
+    {
+      "conceptId": "C48207",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C48207",
+      "shortName": "Unit of Concentration",
+      "dataType": "string",
+      "exampleSet": [
+        "ng/dL",
+        "ng/L",
+        "pmol/L"
+      ],
+      "ncitCode": "C48207"
+    },
+    {
+      "conceptId": "C70713",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70713",
+      "shortName": "Biospecimen Type",
+      "dataType": "string",
+      "exampleSet": [
+        "Serum",
+        "Plasma"
+      ],
+      "ncitCode": "C70713"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C74786"
+}

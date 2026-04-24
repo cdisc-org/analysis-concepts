@@ -1,0 +1,22 @@
+{
+  "_links": {
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2026-03-31/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2026-03-31",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C191656",
+      "title": "Pregnant Subject [RETIRED]",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C191656",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C191656",
+  "categories": [
+    "Subject Disposition"
+  ],
+  "shortName": "Pregnant Subject [RETIRED]",
+  "definition": "An indication that the study subject is pregnant. [RETIRED]",
+  "ncitCode": "C191656"
+}

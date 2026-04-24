@@ -1,0 +1,77 @@
+{
+  "_links": {
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2024-12-16/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2024-12-16",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C174446",
+      "title": "Body Temperature",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C174446",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C174446",
+  "categories": [
+    "Vital Signs"
+  ],
+  "shortName": "Body Temperature",
+  "synonyms": [
+    "Temperature"
+  ],
+  "resultScales": [
+    "Quantitative"
+  ],
+  "definition": "A measurement of the temperature of the body.",
+  "coding": [
+    {
+      "code": "8310-5",
+      "system": "http://loinc.org/",
+      "systemName": "LOINC"
+    }
+  ],
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "decimal",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C44276",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C44276",
+      "shortName": "Unit of Temperature",
+      "dataType": "string",
+      "exampleSet": [
+        "Fahrenheit",
+        "Celsius",
+        "Kelvin"
+      ],
+      "ncitCode": "C44276"
+    },
+    {
+      "conceptId": "C13717",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C13717",
+      "shortName": "Anatomic Site",
+      "dataType": "string",
+      "exampleSet": [
+        "Axilla",
+        "Ear",
+        "Forehead",
+        "Oral Cavity",
+        "Rectum"
+      ],
+      "ncitCode": "C13717"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C174446"
+}

@@ -1,0 +1,22 @@
+{
+  "_links": {
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2026-03-31/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2026-03-31",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C25250",
+      "title": "Complete [RETIRED]",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C25250",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C25250",
+  "categories": [
+    "Subject Disposition"
+  ],
+  "shortName": "Complete [RETIRED]",
+  "definition": "To possess every necessary or normal part or component or step; having come or been brought to a conclusion. [RETIRED]",
+  "ncitCode": "C25250"
+}

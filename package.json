@@ -1,0 +1,13 @@
+{
+  "name": "analysis-concepts-demo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Demo tooling (Playwright walkthrough video) for the AC/DC Study SoA views. Not used by the app at runtime.",
+  "scripts": {
+    "demo": "node scripts/demo_soa.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.47.0"
+  }
+}

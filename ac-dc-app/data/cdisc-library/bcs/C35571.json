@@ -1,0 +1,22 @@
+{
+  "_links": {
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2026-03-31/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2026-03-31",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C35571",
+      "title": "Progressive Disease [RETIRED]",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C35571",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C35571",
+  "categories": [
+    "Subject Disposition"
+  ],
+  "shortName": "Progressive Disease [RETIRED]",
+  "definition": "A clinical, pathologic, and/or molecular finding indicating that the course of a disease is worsening in terms of extent or severity. [RETIRED]",
+  "ncitCode": "C35571"
+}

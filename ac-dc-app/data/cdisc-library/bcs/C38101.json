@@ -1,0 +1,138 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C16502",
+      "title": "Diagnostic Imaging Testing",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2023-12-12/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2023-12-12",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C38101",
+      "title": "X-Ray Imaging",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C38101",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C38101",
+  "categories": [
+    "Diagnostic Imaging",
+    "Medical Imaging"
+  ],
+  "shortName": "X-Ray Imaging",
+  "synonyms": [
+    "Conventional X-Ray",
+    "Medical Imaging",
+    "X-Ray",
+    "Static X-Ray"
+  ],
+  "resultScales": [
+    "Nominal"
+  ],
+  "definition": "A radiographic procedure using the emission of x-rays to form an image of the structure penetrated by the radiation.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C117511",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C117511",
+      "shortName": "Reported Name of Procedure",
+      "dataType": "string",
+      "ncitCode": "C117511"
+    },
+    {
+      "conceptId": "C117512",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C117512",
+      "shortName": "Standardized Name of Procedure",
+      "dataType": "string",
+      "ncitCode": "C117512"
+    },
+    {
+      "conceptId": "C25372",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C25372",
+      "shortName": "Category",
+      "dataType": "string",
+      "ncitCode": "C25372"
+    },
+    {
+      "conceptId": "C25692",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C25692",
+      "shortName": "Subcategory",
+      "dataType": "string",
+      "ncitCode": "C25692"
+    },
+    {
+      "conceptId": "C171000",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C171000",
+      "shortName": "Prespecified Event or Intervention Indicator",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C171000"
+    },
+    {
+      "conceptId": "C127786",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C127786",
+      "shortName": "Occurrence Indicator",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y",
+        "N"
+      ],
+      "ncitCode": "C127786"
+    },
+    {
+      "conceptId": "C13717",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C13717",
+      "shortName": "Anatomic Site",
+      "dataType": "string",
+      "exampleSet": [
+        "Chest"
+      ],
+      "ncitCode": "C13717"
+    },
+    {
+      "conceptId": "C25185",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C25185",
+      "shortName": "Laterality",
+      "dataType": "string",
+      "exampleSet": [
+        "Right",
+        "Left",
+        "Bilateral"
+      ],
+      "ncitCode": "C25185"
+    },
+    {
+      "conceptId": "C54215",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C54215",
+      "shortName": "Directionality",
+      "dataType": "string",
+      "exampleSet": [
+        "Inner",
+        "Outer",
+        "Anterior",
+        "Dorsal"
+      ],
+      "ncitCode": "C54215"
+    },
+    {
+      "conceptId": "C117529",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C117529",
+      "shortName": "Start Date and Time of Procedure",
+      "dataType": "datetime",
+      "ncitCode": "C117529"
+    },
+    {
+      "conceptId": "C117530",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C117530",
+      "shortName": "End Date and Time of Procedure",
+      "dataType": "datetime",
+      "ncitCode": "C117530"
+    }
+  ],
+  "ncitCode": "C38101"
+}

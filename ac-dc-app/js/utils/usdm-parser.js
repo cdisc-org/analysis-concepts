@@ -1,3 +1,31 @@
+const SDTM_SPEC_EXT_URL = 'https://cdisc.org/usdm/extensions/ac-dc/sdtmDatasetSpecialization';
+
+/**
+ * Flatten the formal USDM ExtensionAttribute written by enrich_usdm_for_soa.py.
+ * Returns null when the BC doesn't carry that extension.
+ */
+function extractSdtmSpecExtension(extensionAttributes) {
+  const ext = (extensionAttributes || []).find(ea => ea?.url === SDTM_SPEC_EXT_URL);
+  if (!ext) return null;
+  const members = ext.extensionAttributes || [];
+  const suffix = (m) => {
+    const u = m?.url || '';
+    const i = u.lastIndexOf('/');
+    return i >= 0 ? u.slice(i + 1) : u;
+  };
+  const first = (name) => members.find(m => suffix(m) === name)?.valueString ?? null;
+  const all   = (name) => members.filter(m => suffix(m) === name).map(m => m.valueString).filter(Boolean);
+  return {
+    selectedSpecId:    first('selectedSpecId'),
+    candidateSpecIds:  all('candidateSpecId'),
+    parentBcCode:      first('parentBcCode'),
+    package:           first('package'),
+    originalReference: first('originalReference'),
+    note:              first('note'),
+    enrichedAt:        first('enrichedAt')
+  };
+}
+
 /**
  * Parse a USDM JSON file into a simplified study object for the app.
  */
@@ -155,6 +183,10 @@ export function parseUSDM(usdm) {
       label: bc.label,
       synonyms: bc.synonyms || [],
       reference: bc.reference || null,
+      // Flattened SDTM-specialization linkage from the formal USDM extension written
+      // by scripts/enrich_usdm_for_soa.py. Null for BCs that carry no such extension
+      // (i.e. any USDM file other than the enriched SoA variant).
+      sdtmSpec: extractSdtmSpecExtension(bc.extensionAttributes),
       properties: (bc.properties || []).map(p => ({
         id: p.id,
         name: p.name,

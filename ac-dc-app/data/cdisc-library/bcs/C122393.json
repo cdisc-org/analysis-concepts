@@ -1,0 +1,63 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C17468",
+      "title": "Socioeconomic Factors",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-09-23/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-09-23",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C122393",
+      "title": "Number of Years of Education",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C122393",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C122393",
+  "categories": [
+    "Subject Characteristics",
+    "Socioeconomic Factors",
+    "Socioeconomic Status",
+    "Education"
+  ],
+  "shortName": "Number of Years of Education",
+  "synonyms": [
+    "EDUYRNUM",
+    "Education"
+  ],
+  "resultScales": [
+    "Quantitative"
+  ],
+  "definition": "The number of education years that a subject has competed.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "decimal",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C42574",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C42574",
+      "shortName": "Unit of Time",
+      "dataType": "string",
+      "exampleSet": [
+        "Years"
+      ],
+      "ncitCode": "C42574"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C122393"
+}

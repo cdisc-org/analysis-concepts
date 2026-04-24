@@ -1,0 +1,69 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C25208",
+      "title": "Weight",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-11-18/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-11-18",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C81328",
+      "title": "Body Weight",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C81328",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C81328",
+  "categories": [
+    "Vital Signs",
+    "Body Measurements"
+  ],
+  "shortName": "Body Weight",
+  "synonyms": [
+    "WEIGHT"
+  ],
+  "resultScales": [
+    "Quantitative"
+  ],
+  "definition": "The weight of a subject.",
+  "coding": [
+    {
+      "code": "29463-7",
+      "system": "http://loinc.org/",
+      "systemName": "LOINC"
+    }
+  ],
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "decimal",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C48208",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C48208",
+      "shortName": "Unit of Weight",
+      "dataType": "string",
+      "exampleSet": [
+        "Kilogram",
+        "Gram",
+        "Pound"
+      ],
+      "ncitCode": "C48208"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C81328"
+}

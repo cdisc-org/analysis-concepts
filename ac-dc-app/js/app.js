@@ -59,6 +59,13 @@ export const appState = window.appState = {
   conceptMappings: null,
   configPanelOpen: false,
   modelViewMode: 'concepts',  // concepts | adam | omop | fhir | concepts_adam | concepts_omop | concepts_fhir
+  // Study SoA feature
+  cdiscLibraryIndex: null,   // cdisc-library/_index.json payload (null if enrichment not run)
+  soaStudy: null,            // parsed USDM (the enriched SoA variant)
+  soaRawUsdm: null,          // raw USDM (needed for ScheduledActivityInstance details the parser strips)
+  soaMatrix: null,           // { encounters, activities, cells, offMainActivityIds, ... }
+  soaView: 'protocol',       // 'protocol' | 'detailed'
+  soaDrillIn: null,          // { kind: 'bc'|'spec', key, pinned } for the side panel
   // Cached data sources
   acModel: null,
   dcModel: null,
@@ -125,10 +132,25 @@ export const STEPS = [
   { num: 8, label: 'Execute', sublabel: 'Run analysis via WebR', icon: '8', layer: 'execution' }
 ];
 
+// ===== Study SoA menu (sibling to the 8-step wizard) =====
+export const SOA_MENU = {
+  id: 'soa',
+  label: 'Study SoA',
+  sublabel: 'Schedule of Activities',
+  items: [
+    { view: 'protocol', route: '#/soa/protocol', label: 'Protocol SoA',  sublabel: 'BCs × Encounters',       icon: 'P' },
+    { view: 'detailed', route: '#/soa/detailed', label: 'Detailed SoA',  sublabel: 'SDTM specs × Encounters', icon: 'D' }
+  ]
+};
+
 // ===== Router =====
-function getStepFromHash() {
-  const match = location.hash.match(/#\/step\/(\d+)/);
-  return match ? parseInt(match[1], 10) : 1;
+function getCurrentRoute() {
+  const h = location.hash || '#/step/1';
+  const step = h.match(/^#\/step\/(\d+)$/);
+  if (step) return { kind: 'step', step: parseInt(step[1], 10) };
+  if (h === '#/soa/protocol') return { kind: 'soa', view: 'protocol' };
+  if (h === '#/soa/detailed') return { kind: 'soa', view: 'detailed' };
+  return { kind: 'step', step: 1 };
 }
 
 export function navigateTo(step) {
@@ -139,19 +161,34 @@ export function navigateTo(step) {
   renderCurrentStep();
 }
 
+export function navigateToSoa(view) {
+  if (view !== 'protocol' && view !== 'detailed') return;
+  appState.soaView = view;
+  history.replaceState(null, '', `#/soa/${view}`);
+  renderCurrentStep();
+}
+
 export function renderCurrentStep() {
   const content = document.getElementById('app-content');
   if (!content) return;
 
-  // Sync from hash only if not already set by navigateTo
-  const hashStep = getStepFromHash();
-  if (hashStep !== appState.currentStep) {
-    appState.currentStep = hashStep;
+  // Sync state from hash
+  const route = getCurrentRoute();
+  if (route.kind === 'step') {
+    if (route.step !== appState.currentStep) appState.currentStep = route.step;
+  } else if (route.kind === 'soa') {
+    appState.soaView = route.view;
   }
   renderSidebar();
 
   if (!appState.loaded) {
     content.innerHTML = `<div class="loading"><div class="spinner"></div><span>Loading data...</span></div>`;
+    return;
+  }
+
+  if (route.kind === 'soa') {
+    // Dynamic import so Steps 1–8 don't pay the SoA code cost until visited.
+    import('./views/study-soa.js').then(m => m.renderStudySoa(content, route.view));
     return;
   }
 

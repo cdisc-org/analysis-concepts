@@ -1,0 +1,69 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C35553",
+      "title": "Abnormal Blood Chemistry and Hematology Test Result",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C64803",
+      "title": "Polychromasia",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C64803",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C64803",
+  "categories": [
+    "Laboratory Tests",
+    "Hematology Tests",
+    "Abnormal Blood Chemistry and Hematology Test Results"
+  ],
+  "shortName": "Polychromasia",
+  "synonyms": [
+    "POLYCHR"
+  ],
+  "resultScales": [
+    "Quantitative",
+    "Ordinal"
+  ],
+  "definition": "The reaction of red cells to stain as indicated by the appearance of bluish or grayish colored erythrocytes.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "string",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C93566",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C93566",
+      "shortName": "Fasting Status Indicator",
+      "dataType": "boolean",
+      "ncitCode": "C93566"
+    },
+    {
+      "conceptId": "C70713",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70713",
+      "shortName": "Biospecimen Type",
+      "dataType": "string",
+      "exampleSet": [
+        "Blood"
+      ],
+      "ncitCode": "C70713"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C64803"
+}

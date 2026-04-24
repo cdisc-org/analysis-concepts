@@ -1,0 +1,64 @@
+{
+  "_links": {
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-11-18/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-11-18",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C16358",
+      "title": "Body Mass Index",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C16358",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C16358",
+  "categories": [
+    "Vital Signs",
+    "Body Measurements"
+  ],
+  "shortName": "Body Mass Index",
+  "synonyms": [
+    "BMI",
+    "Quetelet Index"
+  ],
+  "resultScales": [
+    "Quantitative"
+  ],
+  "definition": "An individual's weight in kilograms divided by the square of the height in meters.",
+  "coding": [
+    {
+      "code": "39156-5",
+      "system": "http://loinc.org/",
+      "systemName": "LOINC"
+    }
+  ],
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "decimal",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C42575",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C42575",
+      "shortName": "Unit of Mass Density",
+      "dataType": "string",
+      "exampleSet": [
+        "Kilogram per Square Meter",
+        "Pounds per Square Inch"
+      ],
+      "ncitCode": "C42575"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C16358"
+}

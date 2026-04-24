@@ -1,0 +1,65 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C25150",
+      "title": "Age",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-04-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-04-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C69260",
+      "title": "Subject Age",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C69260",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C69260",
+  "categories": [
+    "Demographic Data",
+    "Demographics",
+    "Personal Attribute",
+    "Age"
+  ],
+  "shortName": "Subject Age",
+  "synonyms": [
+    "Age"
+  ],
+  "resultScales": [
+    "Quantitative"
+  ],
+  "definition": "The age of a person who is the subject in a study.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C170981",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C170981",
+      "shortName": "Numeric Age for Data Tabulation",
+      "dataType": "decimal",
+      "ncitCode": "C170981"
+    },
+    {
+      "conceptId": "C50400",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C50400",
+      "shortName": "Age Unit",
+      "dataType": "string",
+      "exampleSet": [
+        "Years",
+        "Months",
+        "Weeks",
+        "Days"
+      ],
+      "ncitCode": "C50400"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C69260"
+}

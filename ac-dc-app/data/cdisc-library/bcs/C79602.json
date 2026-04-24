@@ -1,0 +1,70 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C51946",
+      "title": "Erythrocyte Count",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C79602",
+      "title": "Poikilocyte Measurement",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C79602",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C79602",
+  "categories": [
+    "Laboratory Tests",
+    "Hematology Tests",
+    "Blood Cell Counts",
+    "Erythrocyte Counts"
+  ],
+  "shortName": "Poikilocyte Measurement",
+  "synonyms": [
+    "POIKILO",
+    "Poikilocytes"
+  ],
+  "resultScales": [
+    "Ordinal"
+  ],
+  "definition": "The determination of the number of poikilocytes present in a sample.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "string",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C93566",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C93566",
+      "shortName": "Fasting Status Indicator",
+      "dataType": "boolean",
+      "ncitCode": "C93566"
+    },
+    {
+      "conceptId": "C70713",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70713",
+      "shortName": "Biospecimen Type",
+      "dataType": "string",
+      "exampleSet": [
+        "Blood"
+      ],
+      "ncitCode": "C70713"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C79602"
+}

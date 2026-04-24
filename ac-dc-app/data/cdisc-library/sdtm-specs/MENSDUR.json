@@ -1,0 +1,189 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C119549",
+      "title": "Menstrual Cycle Duration",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/specializations/sdtm/packages/2025-12-16/datasetspecializations",
+      "title": "SDTM Dataset Specialization Package Effective 2025-12-16",
+      "type": "SDTM Dataset Specialization Package"
+    },
+    "self": {
+      "href": "/mdr/specializations/sdtm/datasetspecializations/MENSDUR",
+      "title": "Mentrual Cycle Duration",
+      "type": "SDTM Dataset Specialization"
+    }
+  },
+  "datasetSpecializationId": "MENSDUR",
+  "domain": "RP",
+  "shortName": "Mentrual Cycle Duration",
+  "source": "RP.RPTESTCD",
+  "sdtmigStartVersion": "3-2",
+  "sdtmigEndVersion": "",
+  "variables": [
+    {
+      "name": "RPTESTCD",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C106479",
+        "submissionValue": "RPTESTCD",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C106479"
+      },
+      "assignedTerm": {
+        "conceptId": "C119549",
+        "value": "MENSDUR"
+      },
+      "role": "Topic",
+      "relationship": {
+        "subject": "RPTESTCD",
+        "linkingPhrase": "is the code for the value in",
+        "predicateTerm": "IS_DECODED_BY",
+        "object": "RPTEST"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": true,
+      "comparator": "EQ"
+    },
+    {
+      "name": "RPTEST",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C106478",
+        "submissionValue": "RPTEST",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C106478"
+      },
+      "assignedTerm": {
+        "conceptId": "C119549",
+        "value": "Menstrual Cycle Duration"
+      },
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "RPTEST",
+        "linkingPhrase": "decodes the value in",
+        "predicateTerm": "DECODES",
+        "object": "RPTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": true
+    },
+    {
+      "name": "RPCAT",
+      "isNonStandard": false,
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "RPCAT",
+        "linkingPhrase": "groups values in",
+        "predicateTerm": "GROUPS",
+        "object": "RPTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false
+    },
+    {
+      "name": "RPORRES",
+      "dataElementConceptId": "C70856",
+      "isNonStandard": false,
+      "role": "Qualifier",
+      "dataType": "text",
+      "relationship": {
+        "subject": "RPORRES",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "RPTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator",
+      "vlmTarget": true
+    },
+    {
+      "name": "RPORRESU",
+      "dataElementConceptId": "C42574",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C71620",
+        "submissionValue": "UNIT",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C71620"
+      },
+      "assignedTerm": {
+        "conceptId": "C25301",
+        "value": "DAYS"
+      },
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "RPORRESU",
+        "linkingPhrase": "is the unit for the value in",
+        "predicateTerm": "IS_UNIT_FOR",
+        "object": "RPORRES"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator",
+      "vlmTarget": true
+    },
+    {
+      "name": "RPSTRESC",
+      "dataElementConceptId": "C70856",
+      "isNonStandard": false,
+      "role": "Qualifier",
+      "dataType": "text",
+      "relationship": {
+        "subject": "RPSTRESC",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "RPTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator",
+      "vlmTarget": true
+    },
+    {
+      "name": "RPSTRESU",
+      "dataElementConceptId": "C42574",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C71620",
+        "submissionValue": "UNIT",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C71620"
+      },
+      "assignedTerm": {
+        "conceptId": "C25301",
+        "value": "DAYS"
+      },
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "RPSTRESU",
+        "linkingPhrase": "is the unit for the value in",
+        "predicateTerm": "IS_UNIT_FOR",
+        "object": "RPSTRESN"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator",
+      "vlmTarget": true
+    },
+    {
+      "name": "RPDTC",
+      "dataElementConceptId": "C82515",
+      "isNonStandard": false,
+      "role": "Timing",
+      "relationship": {
+        "subject": "RPDTC",
+        "linkingPhrase": "is the date of occurrence for",
+        "predicateTerm": "IS_TIMING_FOR",
+        "object": "RPTESTCD"
+      },
+      "mandatoryVariable": false,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator"
+    }
+  ]
+}

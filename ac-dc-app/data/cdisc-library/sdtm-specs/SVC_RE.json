@@ -1,0 +1,193 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C111315",
+      "title": "Slow Vital Capacity",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/specializations/sdtm/packages/2026-03-31/datasetspecializations",
+      "title": "SDTM Dataset Specialization Package Effective 2026-03-31",
+      "type": "SDTM Dataset Specialization Package"
+    },
+    "self": {
+      "href": "/mdr/specializations/sdtm/datasetspecializations/SVC_RE",
+      "title": "Slow Vital Capacity (RE)",
+      "type": "SDTM Dataset Specialization"
+    }
+  },
+  "datasetSpecializationId": "SVC_RE",
+  "domain": "RE",
+  "shortName": "Slow Vital Capacity (RE)",
+  "source": "RE.RETESTCD",
+  "sdtmigStartVersion": "3-4",
+  "sdtmigEndVersion": "",
+  "variables": [
+    {
+      "name": "RETESTCD",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C111106",
+        "submissionValue": "RETESTCD",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C111106"
+      },
+      "assignedTerm": {
+        "conceptId": "C111315",
+        "value": "SVC"
+      },
+      "role": "Topic",
+      "relationship": {
+        "subject": "RETESTCD",
+        "linkingPhrase": "is the code for the value in",
+        "predicateTerm": "IS_DECODED_BY",
+        "object": "RETEST"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": true,
+      "comparator": "EQ"
+    },
+    {
+      "name": "RETEST",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C111107",
+        "submissionValue": "RETEST",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C111107"
+      },
+      "assignedTerm": {
+        "conceptId": "C111315",
+        "value": "Slow Vital Capacity"
+      },
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "RETEST",
+        "linkingPhrase": "decodes the value in",
+        "predicateTerm": "DECODES",
+        "object": "RETESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": true
+    },
+    {
+      "name": "REORRES",
+      "dataElementConceptId": "C70856",
+      "isNonStandard": false,
+      "role": "Qualifier",
+      "dataType": "float",
+      "length": 8,
+      "format": "8.3",
+      "significantDigits": 3,
+      "relationship": {
+        "subject": "REORRES",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "RETESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator",
+      "vlmTarget": true
+    },
+    {
+      "name": "REORRESU",
+      "dataElementConceptId": "C44279",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C71620",
+        "submissionValue": "UNIT",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C71620"
+      },
+      "valueList": [
+        "L",
+        "mL"
+      ],
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "REORRESU",
+        "linkingPhrase": "is the unit for the value in",
+        "predicateTerm": "IS_UNIT_FOR",
+        "object": "REORRES"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "vlmTarget": true
+    },
+    {
+      "name": "RESTRESC",
+      "dataElementConceptId": "C70856",
+      "isNonStandard": false,
+      "role": "Qualifier",
+      "dataType": "float",
+      "length": 8,
+      "format": "8.3",
+      "significantDigits": 3,
+      "relationship": {
+        "subject": "RESTRESC",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "RETESTCD"
+      },
+      "mandatoryVariable": false,
+      "mandatoryValue": false,
+      "vlmTarget": true
+    },
+    {
+      "name": "RESTRESN",
+      "dataElementConceptId": "C70856",
+      "isNonStandard": false,
+      "role": "Qualifier",
+      "dataType": "float",
+      "length": 8,
+      "format": "8.3",
+      "significantDigits": 3,
+      "relationship": {
+        "subject": "RESTRESN",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "RETESTCD"
+      },
+      "mandatoryVariable": false,
+      "mandatoryValue": false,
+      "vlmTarget": true
+    },
+    {
+      "name": "RESTRESU",
+      "dataElementConceptId": "C44279",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C71620",
+        "submissionValue": "UNIT",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C71620"
+      },
+      "valueList": [
+        "L",
+        "mL"
+      ],
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "RESTRESU",
+        "linkingPhrase": "is the unit for the value in",
+        "predicateTerm": "IS_UNIT_FOR",
+        "object": "RESTRESN"
+      },
+      "mandatoryVariable": false,
+      "mandatoryValue": false,
+      "vlmTarget": true
+    },
+    {
+      "name": "REDTC",
+      "dataElementConceptId": "C82515",
+      "isNonStandard": false,
+      "role": "Timing",
+      "relationship": {
+        "subject": "REDTC",
+        "linkingPhrase": "is the date of occurrence for",
+        "predicateTerm": "IS_TIMING_FOR",
+        "object": "RETESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false
+    }
+  ]
+}

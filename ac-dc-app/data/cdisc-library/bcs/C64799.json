@@ -1,0 +1,78 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C49286",
+      "title": "Hematology Test",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C64799",
+      "title": "Erythrocyte Mean Corpuscular Volume",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C64799",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C64799",
+  "categories": [
+    "Laboratory Tests",
+    "Hematology Tests"
+  ],
+  "shortName": "Erythrocyte Mean Corpuscular Volume",
+  "synonyms": [
+    "RBC Mean Corpuscular Volume",
+    "MCV"
+  ],
+  "resultScales": [
+    "Quantitative"
+  ],
+  "definition": "The mean cell volume is the average volume of a red blood cell. This is a calculated value derived from the hematocrit and the red cell count.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "decimal",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C93566",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C93566",
+      "shortName": "Fasting Status Indicator",
+      "dataType": "boolean",
+      "ncitCode": "C93566"
+    },
+    {
+      "conceptId": "C44279",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C44279",
+      "shortName": "Unit of Volume",
+      "dataType": "string",
+      "exampleSet": [
+        "fL"
+      ],
+      "ncitCode": "C44279"
+    },
+    {
+      "conceptId": "C70713",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70713",
+      "shortName": "Biospecimen Type",
+      "dataType": "string",
+      "exampleSet": [
+        "Red Blood Cells"
+      ],
+      "ncitCode": "C70713"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C64799"
+}

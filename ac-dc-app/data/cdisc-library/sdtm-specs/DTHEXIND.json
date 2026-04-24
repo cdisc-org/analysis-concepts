@@ -1,0 +1,144 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C184505",
+      "title": "Death Expected Indicator",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/specializations/sdtm/packages/2024-06-27/datasetspecializations",
+      "title": "SDTM Dataset Specialization Package Effective 2024-06-27",
+      "type": "SDTM Dataset Specialization Package"
+    },
+    "self": {
+      "href": "/mdr/specializations/sdtm/datasetspecializations/DTHEXIND",
+      "title": "Death Expected Indicator",
+      "type": "SDTM Dataset Specialization"
+    }
+  },
+  "datasetSpecializationId": "DTHEXIND",
+  "domain": "DD",
+  "shortName": "Death Expected Indicator",
+  "source": "DD.DDTESTCD",
+  "sdtmigStartVersion": "3-2",
+  "sdtmigEndVersion": "",
+  "variables": [
+    {
+      "name": "DDTESTCD",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C116108",
+        "submissionValue": "DTHDXCD",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C116108"
+      },
+      "assignedTerm": {
+        "conceptId": "C184505",
+        "value": "DTHEXIND"
+      },
+      "role": "Topic",
+      "relationship": {
+        "subject": "DDTESTCD",
+        "linkingPhrase": "is the code for the value in",
+        "predicateTerm": "IS_DECODED_BY",
+        "object": "DDTEST"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": true,
+      "comparator": "EQ"
+    },
+    {
+      "name": "DDTEST",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C116107",
+        "submissionValue": "DTHDX",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C116107"
+      },
+      "assignedTerm": {
+        "conceptId": "C184505",
+        "value": "Death Expected Indicator"
+      },
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "DDTEST",
+        "linkingPhrase": "decodes the value in",
+        "predicateTerm": "DECODES",
+        "object": "DDTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": true
+    },
+    {
+      "name": "DDORRES",
+      "dataElementConceptId": "C70856",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C66742",
+        "submissionValue": "NY",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C66742"
+      },
+      "valueList": [
+        "N",
+        "Y",
+        "U"
+      ],
+      "role": "Qualifier",
+      "dataType": "text",
+      "length": 1,
+      "relationship": {
+        "subject": "DDORRES",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "DDTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Vendor",
+      "vlmTarget": true
+    },
+    {
+      "name": "DDSTRESC",
+      "dataElementConceptId": "C70856",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C66742",
+        "submissionValue": "NY",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C66742"
+      },
+      "valueList": [
+        "N",
+        "Y",
+        "U"
+      ],
+      "role": "Qualifier",
+      "dataType": "text",
+      "length": 1,
+      "relationship": {
+        "subject": "DDSTRESC",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "DDTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Vendor",
+      "vlmTarget": true
+    },
+    {
+      "name": "DDDTC",
+      "dataElementConceptId": "C82515",
+      "isNonStandard": false,
+      "role": "Timing",
+      "relationship": {
+        "subject": "DDDTC",
+        "linkingPhrase": "is the date of occurrence for",
+        "predicateTerm": "IS_TIMING_FOR",
+        "object": "DDTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false
+    }
+  ]
+}

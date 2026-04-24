@@ -1,0 +1,22 @@
+{
+  "_links": {
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2026-03-31/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2026-03-31",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C48226",
+      "title": "Lack of Efficacy [RETIRED]",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C48226",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C48226",
+  "categories": [
+    "Subject Disposition"
+  ],
+  "shortName": "Lack of Efficacy [RETIRED]",
+  "definition": "The lack of expected or desired effect related to a therapy. [RETIRED]",
+  "ncitCode": "C48226"
+}

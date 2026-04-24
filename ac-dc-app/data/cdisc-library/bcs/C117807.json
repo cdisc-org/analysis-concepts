@@ -1,0 +1,92 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C62085",
+      "title": "ECG Measurement",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-11-18/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-11-18",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C117807",
+      "title": "ECG Technical Quality",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C117807",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C117807",
+  "categories": [
+    "Electrocardiogram Findings",
+    "ECG Technical Quality"
+  ],
+  "shortName": "ECG Technical Quality",
+  "synonyms": [
+    "TECHQUAL"
+  ],
+  "resultScales": [
+    "Nominal"
+  ],
+  "definition": "A statement about an electrocardiographic recording describing technical issues or interference during the recording, processing, or transmission of the data. This does not represent an electrocardiographic diagnosis. (CDISC)",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    },
+    {
+      "conceptId": "C82535",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82535",
+      "shortName": "Test Method",
+      "dataType": "string",
+      "exampleSet": [
+        "12 Lead Standard",
+        "12 Lead Continuous ECG",
+        "10 Lead Standard",
+        "6 Lead Standard"
+      ],
+      "ncitCode": "C82535"
+    },
+    {
+      "conceptId": "C114120",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C114120",
+      "shortName": "ECG Recording Quality",
+      "dataType": "string",
+      "exampleSet": [
+        "Incomplete ECG",
+        "Poor Quality ECG",
+        "Muscle Tremor Artifact",
+        "ECG Waveforms Not Present"
+      ],
+      "ncitCode": "C114120"
+    },
+    {
+      "conceptId": "C62164",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C62164",
+      "shortName": "Body Position",
+      "dataType": "string",
+      "exampleSet": [
+        "Supine",
+        "Sitting"
+      ],
+      "ncitCode": "C62164"
+    },
+    {
+      "conceptId": "C51824",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C51824",
+      "shortName": "Evaluator",
+      "dataType": "string",
+      "exampleSet": [
+        "Investigator",
+        "Vendor",
+        "Adjudication Committee"
+      ],
+      "ncitCode": "C51824"
+    }
+  ],
+  "ncitCode": "C117807"
+}

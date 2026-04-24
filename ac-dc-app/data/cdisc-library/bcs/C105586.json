@@ -1,0 +1,85 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C74949",
+      "title": "Lipid Measurement",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C105586",
+      "title": "Cholesterol Measurement",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C105586",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C105586",
+  "categories": [
+    "Laboratory Tests",
+    "Chemistry Tests",
+    "Lipid Measurements"
+  ],
+  "shortName": "Cholesterol Measurement",
+  "synonyms": [
+    "CHOL",
+    "Cholesterol",
+    "Total Cholesterol"
+  ],
+  "resultScales": [
+    "Quantitative"
+  ],
+  "definition": "The determination of the amount of total cholesterol present in a sample.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "decimal",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C93566",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C93566",
+      "shortName": "Fasting Status Indicator",
+      "dataType": "boolean",
+      "ncitCode": "C93566"
+    },
+    {
+      "conceptId": "C48207",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C48207",
+      "shortName": "Unit of Concentration",
+      "dataType": "string",
+      "exampleSet": [
+        "mmol/L",
+        "umol/L",
+        "mg/dL",
+        "ug/dL"
+      ],
+      "ncitCode": "C48207"
+    },
+    {
+      "conceptId": "C70713",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70713",
+      "shortName": "Biospecimen Type",
+      "dataType": "string",
+      "exampleSet": [
+        "Plasma",
+        "Serum",
+        "Urine"
+      ],
+      "ncitCode": "C70713"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C105586"
+}

@@ -36,14 +36,16 @@ function renderStudyCard(study, index) {
   const primaryTA = study.therapeuticAreas.find(t => t.system !== 'SPONSOR') || study.therapeuticAreas[0];
   const totalEndpoints = study.objectives.reduce((sum, o) => sum + o.endpoints.length, 0);
   const sponsorId = study.identifiers[0]?.text || '';
+  const title = study.displayName || study.name;
 
   return `
     <div class="card card-clickable study-card" data-index="${index}">
       <div class="card-header">
         <div>
-          <div class="card-title">${study.name}</div>
+          <div class="card-title">${title}</div>
           <div class="card-subtitle">${sponsorId}</div>
         </div>
+        ${study.isSoaEnriched ? `<span class="badge badge-soa" title="This study carries the SDTM-specialization USDM extension — ready for the Protocol SoA / Detailed SoA views.">SoA-ready</span>` : ''}
       </div>
 
       <div class="study-card-meta">

@@ -1,0 +1,85 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C16112",
+      "title": "Clinical Trial Eligibility Criteria",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2024-12-16/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2024-12-16",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C25370",
+      "title": "Exclusion Criteria",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C25370",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C25370",
+  "categories": [
+    "Eligibility Criteria",
+    "Inclusion Exclusion Criteria"
+  ],
+  "shortName": "Exclusion Criteria",
+  "synonyms": [
+    "Exclusion"
+  ],
+  "resultScales": [
+    "Ordinal"
+  ],
+  "definition": "Medical and/or social characteristics that prevent a subject from being allowed to participate in a clinical study, as outlined in the study protocol.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C25372",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C25372",
+      "shortName": "Category",
+      "dataType": "string",
+      "exampleSet": [
+        "Exclusion"
+      ],
+      "ncitCode": "C25372"
+    },
+    {
+      "conceptId": "C25692",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C25692",
+      "shortName": "Subcategory",
+      "dataType": "string",
+      "exampleSet": [
+        "Major",
+        "Minor"
+      ],
+      "ncitCode": "C25692"
+    },
+    {
+      "conceptId": "C83444",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83444",
+      "shortName": "Trial Inclusion Exclusion Criteria Version",
+      "dataType": "string",
+      "exampleSet": [
+        "1",
+        "2.2"
+      ],
+      "ncitCode": "C83444"
+    },
+    {
+      "conceptId": "C181043",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C181043",
+      "shortName": "Clinical Findings Indicator",
+      "dataType": "boolean",
+      "exampleSet": [
+        "Y"
+      ],
+      "ncitCode": "C181043"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C25370"
+}

@@ -1,0 +1,22 @@
+{
+  "_links": {
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2026-03-31/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2026-03-31",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C139236",
+      "title": "Failure To Meet Continuation Criteria [RETIRED]",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C139236",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C139236",
+  "categories": [
+    "Subject Disposition"
+  ],
+  "shortName": "Failure To Meet Continuation Criteria [RETIRED]",
+  "definition": "An indication that the subject has not been able to meet protocol-defined continuation criteria and will not continue to participate in the clinical trial. [RETIRED]",
+  "ncitCode": "C139236"
+}

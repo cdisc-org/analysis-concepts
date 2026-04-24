@@ -1,0 +1,87 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C49286",
+      "title": "Hematology Test",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C64848",
+      "title": "Hemoglobin Measurement",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C64848",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C64848",
+  "categories": [
+    "Laboratory Tests",
+    "Hematology Tests"
+  ],
+  "shortName": "Hemoglobin Measurement",
+  "synonyms": [
+    "Hemoglobin",
+    "HGB"
+  ],
+  "resultScales": [
+    "Quantitative"
+  ],
+  "definition": "A quantitative measurement of the amount of hemoglobin present in a biospecimen.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "decimal",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C93566",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C93566",
+      "shortName": "Fasting Status Indicator",
+      "dataType": "boolean",
+      "ncitCode": "C93566"
+    },
+    {
+      "conceptId": "C64571",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C64571",
+      "shortName": "Unit of Mass Concentration",
+      "dataType": "string",
+      "ncitCode": "C64571"
+    },
+    {
+      "conceptId": "C70713",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70713",
+      "shortName": "Biospecimen Type",
+      "dataType": "string",
+      "exampleSet": [
+        "Blood",
+        "Urine"
+      ],
+      "ncitCode": "C70713"
+    },
+    {
+      "conceptId": "C82535",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82535",
+      "shortName": "Test Method",
+      "dataType": "string",
+      "exampleSet": [
+        "Test Strip",
+        "Dipstick"
+      ],
+      "ncitCode": "C82535"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C64848"
+}

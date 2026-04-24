@@ -23,3 +23,8 @@ env/
 *.egg-info/
 dist/
 build/
+
+# Node (demo tooling — scripts/demo_soa.mjs)
+node_modules/
+package-lock.json
+demo-output/

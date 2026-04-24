@@ -1,0 +1,86 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C51950",
+      "title": "Neutrophil Count",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C63321",
+      "title": "Absolute Neutrophil Count",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C63321",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C63321",
+  "categories": [
+    "Laboratory Tests",
+    "Hematology Tests",
+    "Blood Cell Counts",
+    "Leukocyte Counts",
+    "Neutrophil Counts"
+  ],
+  "shortName": "Absolute Neutrophil Count",
+  "synonyms": [
+    "Neutrophils",
+    "Total Neutrophil Count",
+    "NEUT"
+  ],
+  "resultScales": [
+    "Quantitative",
+    "Ordinal"
+  ],
+  "definition": "The real number of white blood cells (WBC) that are neutrophils. It is derived by multiplying the WBC count by the percent of neutrophils in the differential WBC count. The normal range for ANC is 1.5 to 8.0 (1,500 to 8,000/mm3).",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "string",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C93566",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C93566",
+      "shortName": "Fasting Status Indicator",
+      "dataType": "boolean",
+      "ncitCode": "C93566"
+    },
+    {
+      "conceptId": "C67391",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C67391",
+      "shortName": "Unit of Number Concentration",
+      "dataType": "string",
+      "exampleSet": [
+        "10^9/L",
+        "/uL"
+      ],
+      "ncitCode": "C67391"
+    },
+    {
+      "conceptId": "C70713",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70713",
+      "shortName": "Biospecimen Type",
+      "dataType": "string",
+      "exampleSet": [
+        "Blood",
+        "Urine",
+        "Body fluid"
+      ],
+      "ncitCode": "C70713"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C63321"
+}

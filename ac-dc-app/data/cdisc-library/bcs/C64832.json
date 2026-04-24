@@ -1,0 +1,70 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C60819",
+      "title": "Assay",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C64832",
+      "title": "Specific Gravity",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C64832",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C64832",
+  "categories": [
+    "Laboratory Tests",
+    "Urinalysis",
+    "Assay"
+  ],
+  "shortName": "Specific Gravity",
+  "synonyms": [
+    "SPGRAV"
+  ],
+  "resultScales": [
+    "Quantitative"
+  ],
+  "definition": "The density (mass per unit volume) of any material divided by that of water at a standard temperature.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "decimal",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C93566",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C93566",
+      "shortName": "Fasting Status Indicator",
+      "dataType": "boolean",
+      "ncitCode": "C93566"
+    },
+    {
+      "conceptId": "C70713",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70713",
+      "shortName": "Biospecimen Type",
+      "dataType": "string",
+      "exampleSet": [
+        "Urine",
+        "Body Fluid",
+        "Red Blood Cells"
+      ],
+      "ncitCode": "C70713"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C64832"
+}

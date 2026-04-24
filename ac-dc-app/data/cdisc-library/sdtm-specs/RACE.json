@@ -1,0 +1,63 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C17049",
+      "title": "Race",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/specializations/sdtm/packages/2025-04-01/datasetspecializations",
+      "title": "SDTM Dataset Specialization Package Effective 2025-04-01",
+      "type": "SDTM Dataset Specialization Package"
+    },
+    "self": {
+      "href": "/mdr/specializations/sdtm/datasetspecializations/RACE",
+      "title": "Race",
+      "type": "SDTM Dataset Specialization"
+    }
+  },
+  "datasetSpecializationId": "RACE",
+  "domain": "DM",
+  "shortName": "Race",
+  "source": "DM.RACE",
+  "sdtmigStartVersion": "3-2",
+  "sdtmigEndVersion": "",
+  "variables": [
+    {
+      "name": "RACE",
+      "dataElementConceptId": "C17049",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C74457",
+        "submissionValue": "RACE",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C74457"
+      },
+      "valueList": [
+        "AMERICAN INDIAN OR ALASKA NATIVE",
+        "ASIAN",
+        "BLACK OR AFRICAN AMERICAN",
+        "NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER",
+        "NOT REPORTED",
+        "OTHER",
+        "UNKNOWN",
+        "WHITE"
+      ],
+      "role": "Qualifier",
+      "dataType": "text",
+      "length": 100,
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator"
+    },
+    {
+      "name": "DMDTC",
+      "dataElementConceptId": "C82515",
+      "isNonStandard": false,
+      "role": "Timing",
+      "dataType": "datetime",
+      "mandatoryVariable": true,
+      "mandatoryValue": false
+    }
+  ]
+}

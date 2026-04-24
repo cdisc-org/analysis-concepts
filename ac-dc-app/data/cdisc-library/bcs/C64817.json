@@ -1,0 +1,88 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C74803",
+      "title": "Vitamin Measurement",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C64817",
+      "title": "Vitamin B12 Measurement",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C64817",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C64817",
+  "categories": [
+    "Laboratory Tests",
+    "Chemistry Tests",
+    "Vitamin Measurements"
+  ],
+  "shortName": "Vitamin B12 Measurement",
+  "synonyms": [
+    "Cobalamin",
+    "Vitamin B12",
+    "VITB12"
+  ],
+  "resultScales": [
+    "Quantitative",
+    "Ordinal"
+  ],
+  "definition": "A quantitative measurement of the amount of vitamin B12 present in a sample.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "string",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C93566",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C93566",
+      "shortName": "Fasting Status Indicator",
+      "dataType": "boolean",
+      "ncitCode": "C93566"
+    },
+    {
+      "conceptId": "C48207",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C48207",
+      "shortName": "Unit of Concentration",
+      "dataType": "string",
+      "exampleSet": [
+        "pmol/L",
+        "nmol/L",
+        "ng/L",
+        "ug/L"
+      ],
+      "ncitCode": "C48207"
+    },
+    {
+      "conceptId": "C70713",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70713",
+      "shortName": "Biospecimen Type",
+      "dataType": "string",
+      "exampleSet": [
+        "Serum",
+        "Plasma",
+        "Blood",
+        "Urine",
+        "Body Fluid"
+      ],
+      "ncitCode": "C70713"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C64817"
+}

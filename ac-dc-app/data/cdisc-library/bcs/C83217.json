@@ -1,0 +1,52 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C37939",
+      "title": "Date and Time",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-07-01/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-07-01",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C83217",
+      "title": "Birth Date and Time",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C83217",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C83217",
+  "categories": [
+    "Demographic Data",
+    "Demographics",
+    "Birth Event"
+  ],
+  "shortName": "Birth Date and Time",
+  "synonyms": [
+    "BRTHDTC",
+    "Date/Time of Birth"
+  ],
+  "resultScales": [
+    "Temporal"
+  ],
+  "definition": "The date and time of a birth event.",
+  "dataElementConcepts": [
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "datetime",
+      "ncitCode": "C70856"
+    },
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    }
+  ],
+  "ncitCode": "C83217"
+}

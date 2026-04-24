@@ -1,0 +1,80 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C69260",
+      "title": "Subject Age",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/specializations/sdtm/packages/2025-07-01/datasetspecializations",
+      "title": "SDTM Dataset Specialization Package Effective 2025-07-01",
+      "type": "SDTM Dataset Specialization Package"
+    },
+    "self": {
+      "href": "/mdr/specializations/sdtm/datasetspecializations/AGE",
+      "title": "Age",
+      "type": "SDTM Dataset Specialization"
+    }
+  },
+  "datasetSpecializationId": "AGE",
+  "domain": "DM",
+  "shortName": "Age",
+  "source": "DM.AGE",
+  "sdtmigStartVersion": "3-2",
+  "sdtmigEndVersion": "",
+  "variables": [
+    {
+      "name": "AGE",
+      "dataElementConceptId": "C170981",
+      "isNonStandard": false,
+      "role": "Qualifier",
+      "dataType": "float",
+      "length": 6,
+      "format": "3.2",
+      "significantDigits": 2,
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator"
+    },
+    {
+      "name": "AGEU",
+      "dataElementConceptId": "C50400",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C66781",
+        "submissionValue": "AGEU",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C66781"
+      },
+      "valueList": [
+        "DAYS",
+        "HOURS",
+        "MONTHS",
+        "WEEKS",
+        "YEARS"
+      ],
+      "role": "Qualifier",
+      "dataType": "text",
+      "length": 20,
+      "relationship": {
+        "subject": "AGEU",
+        "linkingPhrase": "is the unit for",
+        "predicateTerm": "IS_UNIT_FOR",
+        "object": "AGE"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator"
+    },
+    {
+      "name": "DMDTC",
+      "dataElementConceptId": "C82515",
+      "isNonStandard": false,
+      "role": "Timing",
+      "dataType": "datetime",
+      "mandatoryVariable": true,
+      "mandatoryValue": false
+    }
+  ]
+}

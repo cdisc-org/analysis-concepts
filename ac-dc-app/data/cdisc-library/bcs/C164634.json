@@ -1,0 +1,70 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C25347",
+      "title": "Height",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/bc/packages/2025-11-18/biomedicalconcepts",
+      "title": "Biomedical Concept Package Effective 2025-11-18",
+      "type": "Biomedical Concept Package"
+    },
+    "self": {
+      "href": "/mdr/bc/biomedicalconcepts/C164634",
+      "title": "Body Height",
+      "type": "Biomedical Concept"
+    }
+  },
+  "conceptId": "C164634",
+  "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C164634",
+  "categories": [
+    "Vital Signs",
+    "Body Measurements"
+  ],
+  "shortName": "Body Height",
+  "synonyms": [
+    "HEIGHT"
+  ],
+  "resultScales": [
+    "Quantitative"
+  ],
+  "definition": "The vertical measurement or distance from the base to the top of a subject or participant.",
+  "coding": [
+    {
+      "code": "8302-2",
+      "system": "http://loinc.org/",
+      "systemName": "LOINC"
+    }
+  ],
+  "dataElementConcepts": [
+    {
+      "conceptId": "C82515",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C82515",
+      "shortName": "Collection Date Time",
+      "dataType": "datetime",
+      "ncitCode": "C82515"
+    },
+    {
+      "conceptId": "C168688",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C168688",
+      "shortName": "Unit of Height",
+      "dataType": "string",
+      "exampleSet": [
+        "Centimeter",
+        "Inch",
+        "Millimeter",
+        "Meter"
+      ],
+      "ncitCode": "C168688"
+    },
+    {
+      "conceptId": "C70856",
+      "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C70856",
+      "shortName": "Observation Result",
+      "dataType": "decimal",
+      "ncitCode": "C70856"
+    }
+  ],
+  "ncitCode": "C164634"
+}

@@ -1,0 +1,184 @@
+{
+  "_links": {
+    "parentBiomedicalConcept": {
+      "href": "/mdr/bc/biomedicalconcepts/C191062",
+      "title": "MVAI - Rectal Wall Involvement",
+      "type": "Biomedical Concept"
+    },
+    "parentPackage": {
+      "href": "/mdr/specializations/sdtm/packages/2025-12-16/datasetspecializations",
+      "title": "SDTM Dataset Specialization Package Effective 2025-12-16",
+      "type": "SDTM Dataset Specialization Package"
+    },
+    "self": {
+      "href": "/mdr/specializations/sdtm/datasetspecializations/MVAI103",
+      "title": "MVAI1-Rectal Wall Involvement",
+      "type": "SDTM Dataset Specialization"
+    }
+  },
+  "datasetSpecializationId": "MVAI103",
+  "domain": "RS",
+  "shortName": "MVAI1-Rectal Wall Involvement",
+  "source": "RS.RSTESTCD",
+  "sdtmigStartVersion": "3-2",
+  "sdtmigEndVersion": "",
+  "variables": [
+    {
+      "name": "RSTESTCD",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C190930",
+        "submissionValue": "MVAI1TC",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C190930"
+      },
+      "assignedTerm": {
+        "conceptId": "C191062",
+        "value": "MVAI103"
+      },
+      "role": "Topic",
+      "relationship": {
+        "subject": "RSTESTCD",
+        "linkingPhrase": "is the code for the value in",
+        "predicateTerm": "IS_DECODED_BY",
+        "object": "RSTEST"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": true,
+      "comparator": "EQ"
+    },
+    {
+      "name": "RSTEST",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C190929",
+        "submissionValue": "MVAI1TN",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C190929"
+      },
+      "assignedTerm": {
+        "conceptId": "C191062",
+        "value": "MVAI1-Rectal Wall Involvement"
+      },
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "RSTEST",
+        "linkingPhrase": "decodes the value in",
+        "predicateTerm": "DECODES",
+        "object": "RSTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": true
+    },
+    {
+      "name": "RSCAT",
+      "dataElementConceptId": "C25372",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C118971",
+        "submissionValue": "CCCAT",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C118971"
+      },
+      "assignedTerm": {
+        "conceptId": "C191038",
+        "value": "MVAI"
+      },
+      "role": "Qualifier",
+      "relationship": {
+        "subject": "RSCAT",
+        "linkingPhrase": "groups values in",
+        "predicateTerm": "GROUPS",
+        "object": "RSTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": true,
+      "comparator": "EQ"
+    },
+    {
+      "name": "RSORRES",
+      "dataElementConceptId": "C91106",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C190897",
+        "submissionValue": "MVAI103OR",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C190897"
+      },
+      "role": "Qualifier",
+      "dataType": "text",
+      "length": 20,
+      "relationship": {
+        "subject": "RSORRES",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "RSTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator",
+      "vlmTarget": true
+    },
+    {
+      "name": "RSSTRESC",
+      "dataElementConceptId": "C91106",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C190898",
+        "submissionValue": "MVAI103STR",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C190898"
+      },
+      "role": "Qualifier",
+      "dataType": "integer",
+      "length": 1,
+      "relationship": {
+        "subject": "RSSTRESC",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "RSTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Assigned",
+      "originSource": "Sponsor",
+      "vlmTarget": true
+    },
+    {
+      "name": "RSSTRESN",
+      "dataElementConceptId": "C46126",
+      "isNonStandard": false,
+      "codelist": {
+        "conceptId": "C190898",
+        "submissionValue": "MVAI103STR",
+        "href": "https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/C190898"
+      },
+      "role": "Qualifier",
+      "dataType": "integer",
+      "length": 1,
+      "relationship": {
+        "subject": "RSSTRESN",
+        "linkingPhrase": "is the result of the test in",
+        "predicateTerm": "IS_RESULT_OF",
+        "object": "RSTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Assigned",
+      "originSource": "Sponsor",
+      "vlmTarget": true
+    },
+    {
+      "name": "RSDTC",
+      "dataElementConceptId": "C82515",
+      "isNonStandard": false,
+      "role": "Timing",
+      "relationship": {
+        "subject": "RSDTC",
+        "linkingPhrase": "is the date of occurrence for",
+        "predicateTerm": "IS_TIMING_FOR",
+        "object": "RSTESTCD"
+      },
+      "mandatoryVariable": true,
+      "mandatoryValue": false,
+      "originType": "Collected",
+      "originSource": "Investigator"
+    }
+  ]
+}
