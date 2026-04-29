@@ -1,0 +1,3531 @@
+{
+  "methods": [
+    {
+      "conceptId": "M.ANCOVA",
+      "ncitCode": "C00001_NEW",
+      "name": "ANCOVA",
+      "type": "analysis",
+      "category": "General Linear Models",
+      "intent": [
+        "GroupComparison"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000179",
+          "display": "ANCOVA"
+        }
+      ],
+      "description": "Analysis of Covariance - ANOVA with continuous covariate adjustment",
+      "formula": {
+        "notation": "wilkinson_rogers",
+        "defaultExpression": "response ~ covariate + fixed_effect",
+        "genericExpression": "<response> ~ <covariate>* + <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)* + (<covariate>:<fixed_effect>)*",
+        "notes": "Covariates adjust the group comparison. Adding covariate:fixed_effect interaction tests homogeneity of regression slopes. Multiple covariates and factors are supported."
+      },
+      "configurations": [
+        {
+          "name": "ss_type",
+          "dataType": "enum",
+          "defaultValue": "III",
+          "enumValues": [
+            "I",
+            "II",
+            "III",
+            "IV"
+          ],
+          "description": "Sum of squares type"
+        },
+        {
+          "name": "alpha",
+          "dataType": "decimal",
+          "defaultValue": 0.05,
+          "description": "Significance level"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "fit_statistics",
+          "dimensions": null
+        },
+        {
+          "outputClass": "type3_tests",
+          "dimensions": [
+            "covariate",
+            "fixed_effect",
+            "fixed_effect:fixed_effect",
+            "covariate:fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "parameter_estimates",
+          "dimensions": [
+            "covariate",
+            "fixed_effect",
+            "fixed_effect:fixed_effect",
+            "covariate:fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "ls_means",
+          "dimensions": [
+            "fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "contrasts",
+          "dimensions": [
+            "fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "covariance_parameters",
+          "dimensions": null
+        }
+      ],
+      "assumptions": [
+        "Independence of observations",
+        "Normality of residuals",
+        "Homogeneity of regression slopes (if no covariate:fixed_effect interaction)",
+        "Linear relationship between covariate and response"
+      ],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The response/dependent variable"
+        },
+        {
+          "name": "covariate",
+          "statisticalRole": "covariate",
+          "dataType": "decimal",
+          "required": false,
+          "cardinality": "multiple",
+          "description": "Continuous covariate(s) for adjustment (e.g., baseline value, age)"
+        },
+        {
+          "name": "fixed_effect",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single_or_multiple",
+          "description": "Grouping/factor variable(s) (e.g., treatment arm, region)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.ANOVA",
+      "ncitCode": "C00002_NEW",
+      "name": "ANOVA",
+      "type": "analysis",
+      "category": "General Linear Models",
+      "intent": [
+        "GroupComparison"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000048",
+          "display": "ANOVA"
+        }
+      ],
+      "description": "Analysis of Variance - compares means across multiple groups",
+      "formula": {
+        "notation": "wilkinson_rogers",
+        "defaultExpression": "response ~ fixed_effect",
+        "genericExpression": "<response> ~ <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)*",
+        "notes": "One or more factors; interactions can be added with ':' or '*' operator"
+      },
+      "configurations": [
+        {
+          "name": "ss_type",
+          "dataType": "enum",
+          "defaultValue": "III",
+          "enumValues": [
+            "I",
+            "II",
+            "III",
+            "IV"
+          ],
+          "description": "Sum of squares type"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "fit_statistics",
+          "dimensions": null
+        },
+        {
+          "outputClass": "type3_tests",
+          "dimensions": [
+            "fixed_effect",
+            "fixed_effect:fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "ls_means",
+          "dimensions": [
+            "fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "contrasts",
+          "dimensions": [
+            "fixed_effect"
+          ]
+        }
+      ],
+      "assumptions": [
+        "Independence of observations",
+        "Normality within groups",
+        "Homogeneity of variance"
+      ],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The response variable"
+        },
+        {
+          "name": "fixed_effect",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single_or_multiple",
+          "description": "Grouping/factor variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.ChiSquaredTest",
+      "ncitCode": "C00003_NEW",
+      "name": "Chi-squared Test",
+      "type": "analysis",
+      "category": "Categorical Data Analysis",
+      "intent": [
+        "CategoricalAssociation"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000081",
+          "display": "Pearson's Chi square test of independence between categorical variables"
+        }
+      ],
+      "description": "Tests association between two categorical variables using Pearson's chi-squared statistic",
+      "formula": {
+        "notation": "wilkinson_rogers",
+        "defaultExpression": "response ~ fixed_effect",
+        "genericExpression": "<response> ~ <fixed_effect>",
+        "notes": "Both response and fixed_effect are categorical. For RxC tables (more than 2x2)."
+      },
+      "configurations": [
+        {
+          "name": "correction",
+          "dataType": "enum",
+          "defaultValue": "none",
+          "enumValues": [
+            "none",
+            "yates"
+          ],
+          "description": "Continuity correction (applicable for 2x2 tables)"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "test_result",
+          "dimensions": null
+        }
+      ],
+      "assumptions": [
+        "Independence of observations",
+        "Expected cell counts >= 5"
+      ],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "Response category variable"
+        },
+        {
+          "name": "fixed_effect",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "Grouping variable"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.CMH",
+      "ncitCode": "C00004_NEW",
+      "name": "Cochran-Mantel-Haenszel Test",
+      "type": "analysis",
+      "category": "Categorical Data Analysis",
+      "intent": [
+        "CategoricalAssociation"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000074",
+          "display": "Cochran-Mantel-Haenzel test for repeated tests of independence"
+        }
+      ],
+      "description": "Stratified analysis for 2x2xK tables controlling for strata. Tests the null hypothesis of no association between response and group after adjusting for strata.",
+      "formula": {
+        "notation": "wilkinson_rogers",
+        "defaultExpression": "response ~ fixed_effect | strata",
+        "genericExpression": "<response> ~ <fixed_effect> | <strata>+",
+        "notes": "The '|' denotes stratification. Multiple strata variables produce cross-classified strata."
+      },
+      "configurations": [
+        {
+          "name": "or_type",
+          "dataType": "enum",
+          "defaultValue": "common",
+          "enumValues": [
+            "common",
+            "stratum_specific"
+          ],
+          "description": "Odds ratio reporting type"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "test_result",
+          "dimensions": null
+        },
+        {
+          "outputClass": "association_measures",
+          "dimensions": null
+        },
+        {
+          "outputClass": "homogeneity_test",
+          "dimensions": null
+        },
+        {
+          "outputClass": "common_odds_ratio",
+          "dimensions": null
+        },
+        {
+          "outputClass": "stratum_specific_odds_ratios",
+          "dimensions": [
+            "strata"
+          ]
+        }
+      ],
+      "assumptions": [
+        "Independence within strata",
+        "Homogeneous odds ratios across strata (for common OR interpretation)"
+      ],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "Binary response variable"
+        },
+        {
+          "name": "fixed_effect",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "Treatment group (binary)"
+        },
+        {
+          "name": "strata",
+          "statisticalRole": "strata",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single_or_multiple",
+          "description": "Stratification variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.CoefficientOfVariation",
+      "ncitCode": "C00005_NEW",
+      "name": "Coefficient of Variation",
+      "type": "analysis",
+      "category": "Dispersion",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000236",
+          "display": "coefficient of variation"
+        }
+      ],
+      "description": "Computes the coefficient of variation (SD/mean × 100) of a numeric variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := CV(response) OVER (group)",
+        "genericExpression": "result := CV(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Count",
+      "ncitCode": "C00006_NEW",
+      "name": "Count",
+      "type": "analysis",
+      "category": "Counting",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000047",
+          "display": "count"
+        }
+      ],
+      "description": "Counts non-missing observations",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := COUNT(response) OVER (group)",
+        "genericExpression": "result := COUNT(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.CoxPH",
+      "ncitCode": "C00007_NEW",
+      "name": "Cox Proportional Hazards",
+      "type": "analysis",
+      "category": "Survival Models",
+      "intent": [
+        "TimeToEventEstimate"
+      ],
+      "description": "Semi-parametric regression for survival data modeling the hazard function",
+      "formula": {
+        "notation": "survival",
+        "defaultExpression": "Surv(time, event) ~ covariate + fixed_effect",
+        "genericExpression": "Surv(<time>, <event>) ~ <covariate>* + <fixed_effect>+ + (<covariate>:<fixed_effect>)* + strata(<strata>)*",
+        "notes": "Multiple covariates, factors, and interactions supported. The strata() function creates a stratified baseline hazard (one per stratum level) without estimating a coefficient for that variable."
+      },
+      "configurations": [
+        {
+          "name": "ties",
+          "dataType": "enum",
+          "defaultValue": "efron",
+          "enumValues": [
+            "efron",
+            "breslow",
+            "exact"
+          ],
+          "description": "Method for handling tied event times"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "fit_statistics",
+          "dimensions": null
+        },
+        {
+          "outputClass": "global_tests",
+          "dimensions": null
+        },
+        {
+          "outputClass": "type3_tests",
+          "dimensions": [
+            "covariate",
+            "fixed_effect",
+            "covariate:fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "parameter_estimates",
+          "dimensions": [
+            "covariate",
+            "fixed_effect",
+            "covariate:fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "hazard_ratio_estimates",
+          "dimensions": [
+            "covariate",
+            "fixed_effect",
+            "covariate:fixed_effect"
+          ]
+        }
+      ],
+      "assumptions": [
+        "Proportional hazards",
+        "Non-informative censoring",
+        "Independence of survival times"
+      ],
+      "inputRoles": [
+        {
+          "name": "time",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Time to event or censoring"
+        },
+        {
+          "name": "event",
+          "statisticalRole": "response",
+          "dataType": "boolean",
+          "required": true,
+          "cardinality": "single",
+          "description": "Event indicator"
+        },
+        {
+          "name": "covariate",
+          "statisticalRole": "covariate",
+          "dataType": "decimal",
+          "required": false,
+          "cardinality": "multiple",
+          "description": "Continuous covariate(s)"
+        },
+        {
+          "name": "fixed_effect",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single_or_multiple",
+          "description": "Treatment group and/or other categorical factors"
+        },
+        {
+          "name": "strata",
+          "statisticalRole": "strata",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "multiple",
+          "description": "Stratification variable(s) for stratified Cox model"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.CumulativeCount",
+      "ncitCode": "C00008_NEW",
+      "name": "Cumulative Count",
+      "type": "analysis",
+      "category": "Counting",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [],
+      "description": "Computes cumulative counts across ordered categories",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := CUMCOUNT(response) OVER (group)",
+        "genericExpression": "result := CUMCOUNT(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "The categorical variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.CumulativeFrequency",
+      "ncitCode": "C00009_NEW",
+      "name": "Cumulative Frequency",
+      "type": "analysis",
+      "category": "Counting",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [],
+      "description": "Computes cumulative frequency and percentage across ordered categories",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := CUMFREQ(response) OVER (group)",
+        "genericExpression": "result := CUMFREQ(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "The categorical variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.FisherExactTest",
+      "ncitCode": "C00010_NEW",
+      "name": "Fisher's Exact Test",
+      "type": "analysis",
+      "category": "Categorical Data Analysis",
+      "intent": [
+        "CategoricalAssociation"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000073",
+          "display": "Fisher's exact test"
+        }
+      ],
+      "stato_r_implementation": "fisher.test(x) function, where x is a matrix",
+      "description": "Exact test of independence for 2x2 contingency tables. Preferred over chi-squared when expected cell counts are small.",
+      "formula": {
+        "notation": "wilkinson_rogers",
+        "defaultExpression": "response ~ fixed_effect",
+        "genericExpression": "<response> ~ <fixed_effect>",
+        "notes": "Both variables must be binary for the standard 2x2 Fisher test."
+      },
+      "configurations": [
+        {
+          "name": "alternative",
+          "dataType": "enum",
+          "defaultValue": "two_sided",
+          "enumValues": [
+            "two_sided",
+            "less",
+            "greater"
+          ],
+          "description": "Direction of alternative hypothesis"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "test_result",
+          "dimensions": null
+        },
+        {
+          "outputClass": "association_measures",
+          "dimensions": null
+        }
+      ],
+      "assumptions": [
+        "Independence of observations",
+        "Fixed marginal totals"
+      ],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "Binary response variable (e.g., responder flag)"
+        },
+        {
+          "name": "fixed_effect",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "Treatment grouping variable"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Frequency",
+      "ncitCode": "C00011_NEW",
+      "name": "Frequency",
+      "type": "analysis",
+      "category": "Counting",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000674",
+          "display": "frequency"
+        }
+      ],
+      "description": "Computes frequency counts per category of a categorical variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := FREQ(response) OVER (group)",
+        "genericExpression": "result := FREQ(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "The categorical variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.GeometricCV",
+      "ncitCode": "C00012_NEW",
+      "name": "Geometric Coefficient of Variation",
+      "type": "analysis",
+      "category": "Dispersion",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [],
+      "description": "Computes the geometric coefficient of variation",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := GEOMCV(response) OVER (group)",
+        "genericExpression": "result := GEOMCV(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [
+        "All values must be positive"
+      ],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.GeometricMean",
+      "ncitCode": "C00013_NEW",
+      "name": "Geometric Mean",
+      "type": "analysis",
+      "category": "Central Tendency",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000396",
+          "display": "geometric mean"
+        }
+      ],
+      "description": "Computes the geometric mean (exp of mean of log values) of a numeric variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := GEOMEAN(response) OVER (group)",
+        "genericExpression": "result := GEOMEAN(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [
+        "All values must be positive"
+      ],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.HarmonicMean",
+      "ncitCode": "C00014_NEW",
+      "name": "Harmonic Mean",
+      "type": "analysis",
+      "category": "Central Tendency",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000397",
+          "display": "harmonic mean"
+        }
+      ],
+      "description": "Computes the harmonic mean (reciprocal of mean of reciprocals) of a numeric variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := HARMMEAN(response) OVER (group)",
+        "genericExpression": "result := HARMMEAN(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [
+        "All values must be non-zero"
+      ],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.InterquartileRange",
+      "ncitCode": "C00015_NEW",
+      "name": "Interquartile Range",
+      "type": "analysis",
+      "category": "Dispersion",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000164",
+          "display": "inter quartile range"
+        }
+      ],
+      "description": "Computes the interquartile range (Q3 − Q1) of a numeric variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := IQR(response) OVER (group)",
+        "genericExpression": "result := IQR(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.KaplanMeier",
+      "ncitCode": "C00016_NEW",
+      "name": "Kaplan-Meier Estimator",
+      "type": "analysis",
+      "category": "Survival Models",
+      "intent": [
+        "TimeToEventEstimate"
+      ],
+      "description": "Non-parametric survival function estimation with optional grouping",
+      "formula": {
+        "notation": "survival",
+        "defaultExpression": "Surv(time, event) ~ fixed_effect",
+        "genericExpression": "Surv(<time>, <event>) ~ <fixed_effect>?",
+        "notes": "If no group is specified, estimates a single survival curve. With a group variable, produces stratified curves."
+      },
+      "configurations": [
+        {
+          "name": "conf_type",
+          "dataType": "enum",
+          "defaultValue": "log-log",
+          "enumValues": [
+            "log-log",
+            "log",
+            "plain",
+            "arcsin"
+          ],
+          "description": "Confidence interval transformation type"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "event_summary",
+          "dimensions": [
+            "fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "survival_table",
+          "dimensions": [
+            "fixed_effect",
+            "time"
+          ]
+        },
+        {
+          "outputClass": "median_survival",
+          "dimensions": [
+            "fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "landmark_estimates",
+          "dimensions": [
+            "fixed_effect",
+            "time"
+          ]
+        }
+      ],
+      "assumptions": [
+        "Non-informative censoring",
+        "Independence of survival times"
+      ],
+      "inputRoles": [
+        {
+          "name": "time",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Time to event or censoring"
+        },
+        {
+          "name": "event",
+          "statisticalRole": "response",
+          "dataType": "boolean",
+          "required": true,
+          "cardinality": "single",
+          "description": "Event indicator (1=event, 0=censored)"
+        },
+        {
+          "name": "fixed_effect",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single",
+          "description": "Optional grouping variable for stratified curves"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Kurtosis",
+      "ncitCode": "C00017_NEW",
+      "name": "Kurtosis",
+      "type": "analysis",
+      "category": "Shape",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000178",
+          "display": "kurtosis"
+        }
+      ],
+      "description": "Computes the kurtosis (measure of tailedness) of the distribution of a numeric variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := KURTOSIS(response) OVER (group)",
+        "genericExpression": "result := KURTOSIS(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.LogisticRegression",
+      "ncitCode": "C00018_NEW",
+      "name": "Logistic Regression",
+      "type": "analysis",
+      "category": "Generalized Linear Models",
+      "intent": [
+        "OutcomeModeling"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000149",
+          "display": "binomial logistic regression for analysis of dichotomous dependent variable"
+        }
+      ],
+      "description": "Models binary outcome as function of predictors via a link function (logit by default)",
+      "formula": {
+        "notation": "wilkinson_rogers",
+        "defaultExpression": "response ~ covariate + fixed_effect",
+        "genericExpression": "<response> ~ <covariate>* + <fixed_effect>+ + (<covariate>:<fixed_effect>)* + (<fixed_effect>:<fixed_effect>)*",
+        "notes": "Generalized linear model with binomial family. Multiple covariates and factors supported. For stratified analyses, can include strata as a fixed effect."
+      },
+      "configurations": [
+        {
+          "name": "link",
+          "dataType": "enum",
+          "defaultValue": "logit",
+          "enumValues": [
+            "logit",
+            "probit",
+            "cloglog"
+          ],
+          "description": "Link function"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "fit_statistics",
+          "dimensions": null
+        },
+        {
+          "outputClass": "type3_tests",
+          "dimensions": [
+            "covariate",
+            "fixed_effect",
+            "covariate:fixed_effect",
+            "fixed_effect:fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "parameter_estimates",
+          "dimensions": [
+            "covariate",
+            "fixed_effect",
+            "covariate:fixed_effect",
+            "fixed_effect:fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "odds_ratio_estimates",
+          "dimensions": [
+            "covariate",
+            "fixed_effect",
+            "covariate:fixed_effect",
+            "fixed_effect:fixed_effect"
+          ]
+        }
+      ],
+      "assumptions": [
+        "Independence of observations",
+        "Linear relationship between log-odds and predictors",
+        "No multicollinearity"
+      ],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "Binary response variable (0/1 or event/no-event)"
+        },
+        {
+          "name": "covariate",
+          "statisticalRole": "covariate",
+          "dataType": "decimal",
+          "required": false,
+          "cardinality": "multiple",
+          "description": "Continuous covariate(s)"
+        },
+        {
+          "name": "fixed_effect",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single_or_multiple",
+          "description": "Treatment group and/or other categorical factors"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.LogRankTest",
+      "ncitCode": "C00019_NEW",
+      "name": "Log-rank Test",
+      "type": "analysis",
+      "category": "Survival Models",
+      "intent": [
+        "TimeToEventEstimate"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000640",
+          "display": "log-rank test"
+        }
+      ],
+      "description": "Compares survival distributions between groups using a rank-based test",
+      "formula": {
+        "notation": "survival",
+        "defaultExpression": "Surv(time, event) ~ fixed_effect",
+        "genericExpression": "Surv(<time>, <event>) ~ <fixed_effect>+ + <strata>*",
+        "notes": "Multiple group factors can be included. Strata variables (after adjusting) produce stratified log-rank tests."
+      },
+      "configurations": [
+        {
+          "name": "rho",
+          "dataType": "decimal",
+          "defaultValue": 0,
+          "description": "Weight parameter: 0 = log-rank (default), 1 = Wilcoxon/Peto"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "test_result",
+          "dimensions": null
+        }
+      ],
+      "assumptions": [
+        "Non-informative censoring",
+        "Proportional hazards (for optimal power)"
+      ],
+      "inputRoles": [
+        {
+          "name": "time",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Time to event or censoring"
+        },
+        {
+          "name": "event",
+          "statisticalRole": "response",
+          "dataType": "boolean",
+          "required": true,
+          "cardinality": "single",
+          "description": "Event indicator"
+        },
+        {
+          "name": "fixed_effect",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "Grouping variable"
+        },
+        {
+          "name": "strata",
+          "statisticalRole": "strata",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "multiple",
+          "description": "Optional stratification variables"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.MANOVA",
+      "ncitCode": "C00020_NEW",
+      "name": "Multivariate Analysis of Variance",
+      "type": "analysis",
+      "category": "General Linear Models",
+      "intent": [
+        "GroupComparison"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000454",
+          "display": "multivariate analysis of variance"
+        }
+      ],
+      "description": "Tests the hypothesis of no overall treatment effect across multiple correlated response variables simultaneously",
+      "formula": {
+        "notation": "wilkinson_rogers",
+        "defaultExpression": "cbind(response1, response2, ...) ~ fixed_effect",
+        "genericExpression": "cbind(<response>+) ~ <covariate>* + <fixed_effect>+",
+        "notes": "Left-hand side uses cbind() to specify the multivariate response. In long format with a parameter identifier, the model is fit as response ~ group with subject and parameter defining the multivariate structure."
+      },
+      "configurations": [
+        {
+          "name": "test_statistic",
+          "dataType": "enum",
+          "defaultValue": "wilks",
+          "enumValues": [
+            "wilks",
+            "pillai",
+            "hotelling_lawley",
+            "roy"
+          ],
+          "description": "Multivariate test statistic"
+        },
+        {
+          "name": "covariance_structure",
+          "dataType": "enum",
+          "defaultValue": "UN",
+          "enumValues": [
+            "UN",
+            "CS",
+            "AR1"
+          ],
+          "description": "Covariance structure among responses"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "multivariate_tests",
+          "dimensions": null
+        },
+        {
+          "outputClass": "type3_tests",
+          "dimensions": [
+            "response",
+            "fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "parameter_estimates",
+          "dimensions": [
+            "response",
+            "fixed_effect"
+          ]
+        }
+      ],
+      "assumptions": [
+        "Multivariate normality of residuals",
+        "Homogeneity of covariance matrices",
+        "Independence of observations"
+      ],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "multiple",
+          "description": "Multiple correlated response variables"
+        },
+        {
+          "name": "fixed_effect",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single_or_multiple",
+          "description": "Treatment/factor variable(s)"
+        },
+        {
+          "name": "repeated_subject",
+          "statisticalRole": "repeated_subject",
+          "dataType": "id",
+          "required": true,
+          "cardinality": "single",
+          "description": "Subject identifier"
+        },
+        {
+          "name": "repeated_factor",
+          "statisticalRole": "repeated_factor",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "Parameter/subscale identifier (defines which response variable)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Maximum",
+      "ncitCode": "C00021_NEW",
+      "name": "Maximum",
+      "type": "analysis",
+      "category": "Extremes",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000151",
+          "display": "maximum observed value"
+        }
+      ],
+      "description": "Determines the maximum observed value of a numeric variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := MAX(response) OVER (group)",
+        "genericExpression": "result := MAX(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Mean",
+      "ncitCode": "C00022_NEW",
+      "name": "Arithmetic Mean",
+      "type": "analysis",
+      "category": "Central Tendency",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000573",
+          "display": "average value"
+        }
+      ],
+      "description": "Computes the arithmetic mean of a numeric variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := MEAN(response) OVER (group)",
+        "genericExpression": "result := MEAN(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Median",
+      "ncitCode": "C00023_NEW",
+      "name": "Median",
+      "type": "analysis",
+      "category": "Central Tendency",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000574",
+          "display": "center value"
+        }
+      ],
+      "description": "Computes the median (50th percentile) of a numeric variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := MEDIAN(response) OVER (group)",
+        "genericExpression": "result := MEDIAN(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Minimum",
+      "ncitCode": "C00024_NEW",
+      "name": "Minimum",
+      "type": "analysis",
+      "category": "Extremes",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000150",
+          "display": "minimum observed value"
+        }
+      ],
+      "description": "Determines the minimum observed value of a numeric variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := MIN(response) OVER (group)",
+        "genericExpression": "result := MIN(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.MMRM",
+      "ncitCode": "C00025_NEW",
+      "name": "Mixed Model for Repeated Measures",
+      "type": "analysis",
+      "category": "Repeated Measures",
+      "intent": [
+        "LongitudinalEstimate"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000189",
+          "display": "MMRM"
+        }
+      ],
+      "description": "Linear mixed model for longitudinal data with structured R-side covariance. No random effects (G-side); within-subject correlation modeled through the residual covariance structure.",
+      "formula": {
+        "notation": "wilkinson_rogers",
+        "defaultExpression": "response ~ covariate + repeated_factor + fixed_effect + repeated_factor:fixed_effect | repeated_subject / repeated_factor",
+        "genericExpression": "<response> ~ <covariate>* + <repeated_factor> + <fixed_effect>+ + (<fixed_effect>:<repeated_factor>)* + (<covariate>:<fixed_effect>)* | <repeated_subject> / <repeated_factor>",
+        "notes": "The part after '|' specifies the repeated measures structure: subject is the clustering unit, time is the repeated factor within subject. Multiple covariates and fixed effects are supported. The time:group interaction is typically the term of primary interest for treatment comparison at each visit."
+      },
+      "configurations": [
+        {
+          "name": "covariance_structure",
+          "dataType": "enum",
+          "defaultValue": "UN",
+          "enumValues": [
+            "UN",
+            "CS",
+            "AR1",
+            "TOEP",
+            "CSH",
+            "ARH1"
+          ],
+          "description": "Within-subject (R-side) covariance structure"
+        },
+        {
+          "name": "estimation_method",
+          "dataType": "enum",
+          "defaultValue": "REML",
+          "enumValues": [
+            "REML",
+            "ML"
+          ],
+          "description": "Estimation method"
+        },
+        {
+          "name": "df_method",
+          "dataType": "enum",
+          "defaultValue": "KR",
+          "enumValues": [
+            "KR",
+            "Satterthwaite",
+            "Containment"
+          ],
+          "description": "Degrees of freedom method"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "fit_statistics",
+          "dimensions": null
+        },
+        {
+          "outputClass": "type3_tests",
+          "dimensions": [
+            "covariate",
+            "repeated_factor",
+            "fixed_effect",
+            "fixed_effect:repeated_factor",
+            "covariate:fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "parameter_estimates",
+          "dimensions": [
+            "covariate",
+            "repeated_factor",
+            "fixed_effect",
+            "fixed_effect:repeated_factor",
+            "covariate:fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "ls_means",
+          "dimensions": [
+            "fixed_effect",
+            "repeated_factor"
+          ]
+        },
+        {
+          "outputClass": "contrasts",
+          "dimensions": null
+        },
+        {
+          "outputClass": "covariance_parameters",
+          "dimensions": [
+            "repeated_factor"
+          ]
+        },
+        {
+          "outputClass": "ls_means_by_group_time",
+          "dimensions": [
+            "fixed_effect",
+            "repeated_factor"
+          ]
+        },
+        {
+          "outputClass": "ls_means_by_group",
+          "dimensions": [
+            "fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "ls_means_by_time",
+          "dimensions": [
+            "repeated_factor"
+          ]
+        },
+        {
+          "outputClass": "group_contrast_at_time",
+          "dimensions": [
+            "fixed_effect",
+            "repeated_factor"
+          ]
+        },
+        {
+          "outputClass": "time_contrast_within_group",
+          "dimensions": [
+            "repeated_factor",
+            "fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "overall_group_contrast",
+          "dimensions": [
+            "fixed_effect"
+          ]
+        }
+      ],
+      "assumptions": [
+        "Missing at Random (MAR)",
+        "Multivariate normality of residuals",
+        "Correct specification of covariance structure"
+      ],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The response variable at each timepoint (e.g., change from baseline)"
+        },
+        {
+          "name": "covariate",
+          "statisticalRole": "covariate",
+          "dataType": "decimal",
+          "required": false,
+          "cardinality": "multiple",
+          "description": "Continuous covariate(s) (e.g., baseline value, age, weight)"
+        },
+        {
+          "name": "repeated_factor",
+          "statisticalRole": "repeated_factor",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "Timepoint/visit variable defining the repeated dimension"
+        },
+        {
+          "name": "fixed_effect",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single_or_multiple",
+          "description": "Treatment group (and optionally additional factors like region, sex)"
+        },
+        {
+          "name": "repeated_subject",
+          "statisticalRole": "repeated_subject",
+          "dataType": "id",
+          "required": true,
+          "cardinality": "single",
+          "description": "Subject identifier for the repeated measures clustering"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Mode",
+      "ncitCode": "C00026_NEW",
+      "name": "Mode",
+      "type": "analysis",
+      "category": "Central Tendency",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000033",
+          "display": "mode"
+        }
+      ],
+      "description": "Determines the most frequently occurring value",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := MODE(response) OVER (group)",
+        "genericExpression": "result := MODE(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.OneSampleTTest",
+      "ncitCode": "C00027_NEW",
+      "name": "One-sample t-test",
+      "type": "analysis",
+      "category": "General Linear Models",
+      "intent": [
+        "GroupComparison"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000302",
+          "display": "one sample t-test"
+        }
+      ],
+      "stato_r_implementation": "t.test(x = NULL,\n       alternative = c(\"two.sided\", \"less\", \"greater\"),\n       mu = 0, paired = FALSE, var.equal = FALSE,\n       conf.level = 0.95, ...)\n\n\nhttp://stat.ethz.ch/R-manual/R-patched/library/stats/html/t.test.html",
+      "description": "Tests whether the mean of a single sample differs from a hypothesized value",
+      "formula": {
+        "notation": "wilkinson_rogers",
+        "defaultExpression": "response ~ 1",
+        "genericExpression": "<response> ~ 1",
+        "notes": "Intercept-only model; the test is against the hypothesized mu"
+      },
+      "configurations": [
+        {
+          "name": "mu",
+          "dataType": "decimal",
+          "defaultValue": 0,
+          "description": "Hypothesized population mean"
+        },
+        {
+          "name": "alternative",
+          "dataType": "enum",
+          "defaultValue": "two_sided",
+          "enumValues": [
+            "two_sided",
+            "less",
+            "greater"
+          ],
+          "description": "Direction of alternative hypothesis"
+        },
+        {
+          "name": "conf_level",
+          "dataType": "decimal",
+          "defaultValue": 0.95,
+          "description": "Confidence level for interval"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "test_result",
+          "dimensions": null
+        },
+        {
+          "outputClass": "point_estimate",
+          "dimensions": null
+        }
+      ],
+      "assumptions": [
+        "Normality of data (or large sample size)",
+        "Independence of observations"
+      ],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The sample data"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.PairedTTest",
+      "ncitCode": "C00028_NEW",
+      "name": "Paired t-test",
+      "type": "analysis",
+      "category": "General Linear Models",
+      "intent": [
+        "GroupComparison"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000095",
+          "display": "paired t-test"
+        }
+      ],
+      "stato_r_implementation": "http://stat.ethz.ch/R-manual/R-patched/library/stats/html/t.test.html\n\nt.test(dependent variable ~ independant variable, data = dataset, var.equal = FALSE, paired= TRUE)",
+      "description": "Tests whether the mean difference between paired observations differs from zero",
+      "formula": {
+        "notation": "wilkinson_rogers",
+        "defaultExpression": "response ~ 1 | repeated_subject",
+        "genericExpression": "<response> ~ 1 | <repeated_subject>",
+        "notes": "Intercept-only model on the within-subject differences"
+      },
+      "configurations": [
+        {
+          "name": "mu",
+          "dataType": "decimal",
+          "defaultValue": 0,
+          "description": "Hypothesized difference"
+        },
+        {
+          "name": "conf_level",
+          "dataType": "decimal",
+          "defaultValue": 0.95,
+          "description": "Confidence level"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "test_result",
+          "dimensions": null
+        },
+        {
+          "outputClass": "point_estimate",
+          "dimensions": null
+        }
+      ],
+      "assumptions": [
+        "Differences are normally distributed",
+        "Pairs are independent"
+      ],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The paired difference values (or the raw values at two timepoints)"
+        },
+        {
+          "name": "repeated_subject",
+          "statisticalRole": "repeated_subject",
+          "dataType": "id",
+          "required": true,
+          "cardinality": "single",
+          "description": "Subject identifier for pairing"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Percentile",
+      "ncitCode": "C00029_NEW",
+      "name": "Percentile",
+      "type": "analysis",
+      "category": "Quantile",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000293",
+          "display": "percentile"
+        }
+      ],
+      "description": "Computes the value at a specified percentile rank",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := PERCENTILE(response, percentile_value) OVER (group)",
+        "genericExpression": "result := PERCENTILE(<response>, <percentile_value>) OVER (<group>*)"
+      },
+      "configurations": [
+        {
+          "name": "percentile_value",
+          "dataType": "decimal",
+          "defaultValue": 50,
+          "description": "Percentile rank (0 to 100)"
+        },
+        {
+          "name": "percentile_method",
+          "dataType": "enum",
+          "defaultValue": "type_2",
+          "enumValues": [
+            "type_2",
+            "type_6",
+            "type_7"
+          ],
+          "description": "Interpolation method (type_2 = SAS default, type_7 = R default)"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Proportion",
+      "ncitCode": "C00030_NEW",
+      "name": "Proportion",
+      "type": "analysis",
+      "category": "Counting",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000607",
+          "display": "proportion"
+        }
+      ],
+      "description": "Computes the proportion and percentage per category of a categorical variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := PROP(response) OVER (group)",
+        "genericExpression": "result := PROP(<response>) OVER (<group>*)"
+      },
+      "configurations": [
+        {
+          "name": "ci_method",
+          "dataType": "enum",
+          "defaultValue": "exact_clopper_pearson",
+          "enumValues": [
+            "exact_clopper_pearson",
+            "wilson",
+            "wald",
+            "agresti_coull",
+            "jeffreys"
+          ],
+          "description": "Method for confidence interval calculation"
+        },
+        {
+          "name": "ci_level",
+          "dataType": "decimal",
+          "defaultValue": 0.95,
+          "description": "Confidence level"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "The categorical variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Quartile",
+      "ncitCode": "C00031_NEW",
+      "name": "Quartile",
+      "type": "analysis",
+      "category": "Quantile",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000152",
+          "display": "quartile"
+        }
+      ],
+      "description": "Computes the first quartile (Q1) and third quartile (Q3)",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := QUARTILE(response) OVER (group)",
+        "genericExpression": "result := QUARTILE(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Range",
+      "ncitCode": "C00032_NEW",
+      "name": "Range",
+      "type": "analysis",
+      "category": "Dispersion",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000035",
+          "display": "range"
+        }
+      ],
+      "description": "Computes the range (max − min) of a numeric variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := RANGE(response) OVER (group)",
+        "genericExpression": "result := RANGE(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Skewness",
+      "ncitCode": "C00033_NEW",
+      "name": "Skewness",
+      "type": "analysis",
+      "category": "Shape",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000068",
+          "display": "skewness"
+        }
+      ],
+      "description": "Computes the skewness (measure of asymmetry) of the distribution of a numeric variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := SKEWNESS(response) OVER (group)",
+        "genericExpression": "result := SKEWNESS(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.StandardDeviation",
+      "ncitCode": "C00034_NEW",
+      "name": "Standard Deviation",
+      "type": "analysis",
+      "category": "Dispersion",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000237",
+          "display": "standard deviation"
+        }
+      ],
+      "description": "Computes the standard deviation of a numeric variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := SD(response) OVER (group)",
+        "genericExpression": "result := SD(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Sum",
+      "ncitCode": "C00035_NEW",
+      "name": "Sum",
+      "type": "analysis",
+      "category": "Extremes",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [],
+      "description": "Computes the sum of all values of a numeric variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := SUM(response) OVER (group)",
+        "genericExpression": "result := SUM(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.TrimmedMean",
+      "ncitCode": "C00036_NEW",
+      "name": "Trimmed Mean",
+      "type": "analysis",
+      "category": "Central Tendency",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [],
+      "description": "Computes the trimmed mean after removing a fraction of extreme values from each tail",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := TRIMMEAN(response, trim_fraction) OVER (group)",
+        "genericExpression": "result := TRIMMEAN(<response>, <trim_fraction>) OVER (<group>*)"
+      },
+      "configurations": [
+        {
+          "name": "trim_fraction",
+          "dataType": "decimal",
+          "defaultValue": 0.05,
+          "description": "Fraction to trim from each tail (0 to 0.5)"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.TwoSampleTTest",
+      "ncitCode": "C00037_NEW",
+      "name": "Two-sample t-test",
+      "type": "analysis",
+      "category": "General Linear Models",
+      "intent": [
+        "GroupComparison"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000304",
+          "display": "two sample t-test"
+        }
+      ],
+      "stato_r_implementation": "t.test(x, y = NULL,\n       alternative = c(\"two.sided\", \"less\", \"greater\"),\n       mu = 0, paired = FALSE, var.equal = FALSE,\n       conf.level = 0.95, ...)\n\nhttp://stat.ethz.ch/R-manual/R-patched/library/stats/html/t.test.html",
+      "description": "Tests whether means of two independent samples differ significantly",
+      "formula": {
+        "notation": "wilkinson_rogers",
+        "defaultExpression": "response ~ fixed_effect",
+        "genericExpression": "<response> ~ <fixed_effect>",
+        "notes": "Single factor with exactly two levels"
+      },
+      "configurations": [
+        {
+          "name": "var_equal",
+          "dataType": "boolean",
+          "defaultValue": false,
+          "description": "Assume equal variances (true=pooled, false=Welch)"
+        },
+        {
+          "name": "alternative",
+          "dataType": "enum",
+          "defaultValue": "two_sided",
+          "enumValues": [
+            "two_sided",
+            "less",
+            "greater"
+          ],
+          "description": "Direction of alternative hypothesis"
+        },
+        {
+          "name": "conf_level",
+          "dataType": "decimal",
+          "defaultValue": 0.95,
+          "description": "Confidence level"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "test_result",
+          "dimensions": null
+        },
+        {
+          "outputClass": "ls_means",
+          "dimensions": [
+            "fixed_effect"
+          ]
+        },
+        {
+          "outputClass": "contrasts",
+          "dimensions": null
+        }
+      ],
+      "assumptions": [
+        "Normality within groups",
+        "Independence of observations",
+        "Equal variances (if var_equal=true)"
+      ],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The response variable"
+        },
+        {
+          "name": "fixed_effect",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "single",
+          "description": "Grouping variable (exactly two levels)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Variance",
+      "ncitCode": "C00038_NEW",
+      "name": "Variance",
+      "type": "analysis",
+      "category": "Dispersion",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000113",
+          "display": "variance"
+        }
+      ],
+      "description": "Computes the variance of a numeric variable",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := VAR(response) OVER (group)",
+        "genericExpression": "result := VAR(<response>) OVER (<group>*)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.WinsorizedMean",
+      "ncitCode": "C00039_NEW",
+      "name": "Winsorized Mean",
+      "type": "analysis",
+      "category": "Central Tendency",
+      "intent": [
+        "DescriptiveSummary"
+      ],
+      "codings": [],
+      "description": "Computes the Winsorized mean after replacing extreme values with boundary values",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := WINMEAN(response, winsor_fraction) OVER (group)",
+        "genericExpression": "result := WINMEAN(<response>, <winsor_fraction>) OVER (<group>*)"
+      },
+      "configurations": [
+        {
+          "name": "winsor_fraction",
+          "dataType": "decimal",
+          "defaultValue": 0.05,
+          "description": "Fraction to Winsorize from each tail (0 to 0.5)"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "outputClass": "computed_value",
+          "dimensions": [
+            "group"
+          ]
+        }
+      ],
+      "assumptions": [],
+      "inputRoles": [
+        {
+          "name": "response",
+          "statisticalRole": "response",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The variable to summarize"
+        },
+        {
+          "name": "group",
+          "statisticalRole": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single_or_multiple",
+          "description": "Optional grouping variable(s)"
+        }
+      ]
+    }
+  ],
+  "outputClassTemplates": [
+    {
+      "conceptId": "OC.fit_statistics",
+      "ncitCode": "C00040_NEW",
+      "name": "fit_statistics",
+      "description": "Overall model goodness-of-fit measures",
+      "statistics": [
+        "AIC",
+        "BIC",
+        "minus2LogL"
+      ]
+    },
+    {
+      "conceptId": "OC.type3_tests",
+      "ncitCode": "C00041_NEW",
+      "name": "type3_tests",
+      "description": "Type III (or other SS type) omnibus tests, one per model term",
+      "statistics": [
+        "F_statistic",
+        "p_value",
+        "df_num",
+        "df_den",
+        "SS",
+        "MS"
+      ]
+    },
+    {
+      "conceptId": "OC.parameter_estimates",
+      "ncitCode": "C00042_NEW",
+      "name": "parameter_estimates",
+      "description": "Solution for fixed effects, one row per model coefficient",
+      "statistics": [
+        "coefficient",
+        "SE",
+        "t_statistic",
+        "p_value",
+        "CI_lower",
+        "CI_upper",
+        "df"
+      ]
+    },
+    {
+      "conceptId": "OC.ls_means",
+      "ncitCode": "C00043_NEW",
+      "name": "ls_means",
+      "description": "Least-squares means (adjusted marginal means) per factor level or level combination",
+      "statistics": [
+        "estimate",
+        "SE",
+        "CI_lower",
+        "CI_upper",
+        "df"
+      ]
+    },
+    {
+      "conceptId": "OC.contrasts",
+      "ncitCode": "C00044_NEW",
+      "name": "contrasts",
+      "description": "Pairwise or custom contrasts between LS means",
+      "statistics": [
+        "estimate",
+        "SE",
+        "CI_lower",
+        "CI_upper",
+        "t_statistic",
+        "p_value",
+        "df"
+      ]
+    },
+    {
+      "conceptId": "OC.covariance_parameters",
+      "ncitCode": "C00045_NEW",
+      "name": "covariance_parameters",
+      "description": "Estimated covariance/variance components",
+      "statistics": [
+        "estimate",
+        "SE"
+      ]
+    },
+    {
+      "conceptId": "OC.test_result",
+      "ncitCode": "C00046_NEW",
+      "name": "test_result",
+      "description": "Single overall test result (for non-regression methods)",
+      "statistics": [
+        "chi_squared",
+        "p_value",
+        "df"
+      ]
+    },
+    {
+      "conceptId": "OC.association_measures",
+      "ncitCode": "C00047_NEW",
+      "name": "association_measures",
+      "description": "Effect size / association measures with inference",
+      "statistics": [
+        "estimate",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    {
+      "conceptId": "OC.homogeneity_test",
+      "ncitCode": "C00048_NEW",
+      "name": "homogeneity_test",
+      "description": "Breslow-Day test for homogeneity of odds ratios across strata",
+      "statistics": [
+        "chi_squared",
+        "p_value",
+        "df"
+      ]
+    },
+    {
+      "conceptId": "OC.computed_value",
+      "ncitCode": "C00049_NEW",
+      "name": "computed_value",
+      "description": "Single derived/computed output value (for derivation methods)",
+      "statistics": "value"
+    },
+    {
+      "conceptId": "OC.global_tests",
+      "ncitCode": "C00050_NEW",
+      "name": "global_tests",
+      "description": "Overall model significance tests (likelihood ratio, Wald, score)",
+      "statistics": [
+        "chi_squared",
+        "p_value",
+        "df"
+      ]
+    },
+    {
+      "conceptId": "OC.hazard_ratio_estimates",
+      "ncitCode": "C00051_NEW",
+      "name": "hazard_ratio_estimates",
+      "description": "Hazard ratios with confidence intervals (exponentiated coefficients)",
+      "statistics": [
+        "hazard_ratio",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    {
+      "conceptId": "OC.event_summary",
+      "ncitCode": "C00052_NEW",
+      "name": "event_summary",
+      "description": "Summary counts of events and censoring per group",
+      "statistics": [
+        "n_risk",
+        "n_event",
+        "n_censored"
+      ]
+    },
+    {
+      "conceptId": "OC.survival_table",
+      "ncitCode": "C00053_NEW",
+      "name": "survival_table",
+      "description": "Life table with survival estimates at each event time",
+      "statistics": [
+        "n_risk",
+        "n_event",
+        "n_censored",
+        "survival_prob",
+        "SE",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    {
+      "conceptId": "OC.median_survival",
+      "ncitCode": "C00054_NEW",
+      "name": "median_survival",
+      "description": "Median survival time per group",
+      "statistics": [
+        "median",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    {
+      "conceptId": "OC.landmark_estimates",
+      "ncitCode": "C00055_NEW",
+      "name": "landmark_estimates",
+      "description": "Survival probability at specific landmark times",
+      "statistics": [
+        "survival_prob",
+        "SE",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    {
+      "conceptId": "OC.odds_ratio_estimates",
+      "ncitCode": "C00056_NEW",
+      "name": "odds_ratio_estimates",
+      "description": "Odds ratios with confidence intervals (exponentiated coefficients)",
+      "statistics": [
+        "odds_ratio",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    {
+      "conceptId": "OC.multivariate_tests",
+      "ncitCode": "C00057_NEW",
+      "name": "multivariate_tests",
+      "description": "Multivariate test statistics for overall hypothesis",
+      "statistics": [
+        "estimate",
+        "F_statistic",
+        "p_value",
+        "df_num",
+        "df_den"
+      ]
+    },
+    {
+      "conceptId": "OC.point_estimate",
+      "ncitCode": "C00058_NEW",
+      "name": "point_estimate",
+      "description": "Estimated mean with inference",
+      "statistics": [
+        "mean",
+        "SE",
+        "CI_lower",
+        "CI_upper"
+      ]
+    }
+  ],
+  "statistics": [
+    {
+      "conceptId": "S.estimate",
+      "ncitCode": "C00059_NEW",
+      "name": "estimate",
+      "description": "Point estimate of the quantity",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000599",
+          "display": "point estimate"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.SE",
+      "ncitCode": "C00060_NEW",
+      "name": "SE",
+      "description": "Standard error of the estimate",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000562",
+          "display": "standard error of estimate"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.CI_lower",
+      "ncitCode": "C00061_NEW",
+      "name": "CI_lower",
+      "description": "Lower bound of confidence interval",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000315",
+          "display": "lower confidence limit"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.CI_upper",
+      "ncitCode": "C00062_NEW",
+      "name": "CI_upper",
+      "description": "Upper bound of confidence interval",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000314",
+          "display": "upper confidence limit"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.df",
+      "ncitCode": "C00063_NEW",
+      "name": "df",
+      "description": "Degrees of freedom",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000069",
+          "display": "number of degrees of freedom"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.df_num",
+      "ncitCode": "C00064_NEW",
+      "name": "df_num",
+      "description": "Numerator degrees of freedom",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000498",
+          "display": "numerator degrees of freedom"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.df_den",
+      "ncitCode": "C00065_NEW",
+      "name": "df_den",
+      "description": "Denominator degrees of freedom",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000527",
+          "display": "denominator degrees of freedom"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.t_statistic",
+      "ncitCode": "C00066_NEW",
+      "name": "t_statistic",
+      "description": "t test statistic",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000176",
+          "display": "t-statistic"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.F_statistic",
+      "ncitCode": "C00067_NEW",
+      "name": "F_statistic",
+      "description": "F test statistic",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000282",
+          "display": "F-statistic"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.z_statistic",
+      "ncitCode": "C00068_NEW",
+      "name": "z_statistic",
+      "description": "z test statistic",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000376",
+          "display": "Z-statistic"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.chi_squared",
+      "ncitCode": "C00069_NEW",
+      "name": "chi_squared",
+      "description": "Chi-squared test statistic",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000030",
+          "display": "Chi-Squared statistic"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.p_value",
+      "ncitCode": "C00070_NEW",
+      "name": "p_value",
+      "description": "P-value for the test",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000700",
+          "display": "p-value"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.SS",
+      "ncitCode": "C00071_NEW",
+      "name": "SS",
+      "description": "Sum of squares",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.MS",
+      "ncitCode": "C00072_NEW",
+      "name": "MS",
+      "description": "Mean square",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000375",
+          "display": "residual mean square"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.odds_ratio",
+      "ncitCode": "C00073_NEW",
+      "name": "odds_ratio",
+      "description": "Odds ratio (exp of log-odds coefficient)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000182",
+          "display": "odds ratio"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.hazard_ratio",
+      "ncitCode": "C00074_NEW",
+      "name": "hazard_ratio",
+      "description": "Hazard ratio (exp of Cox coefficient)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000677",
+          "display": "hazard ratio"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.coefficient",
+      "ncitCode": "C00075_NEW",
+      "name": "coefficient",
+      "description": "Model coefficient (log scale for GLMs)",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.n_risk",
+      "ncitCode": "C00076_NEW",
+      "name": "n_risk",
+      "description": "Number at risk",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.n_event",
+      "ncitCode": "C00077_NEW",
+      "name": "n_event",
+      "description": "Number of events",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.n_censored",
+      "ncitCode": "C00078_NEW",
+      "name": "n_censored",
+      "description": "Number censored",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.survival_prob",
+      "ncitCode": "C00079_NEW",
+      "name": "survival_prob",
+      "description": "Estimated survival probability",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.median",
+      "ncitCode": "C00080_NEW",
+      "name": "median",
+      "description": "Median estimate",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000574",
+          "display": "center value"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.mean",
+      "ncitCode": "C00081_NEW",
+      "name": "mean",
+      "description": "Mean estimate",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000573",
+          "display": "average value"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.AIC",
+      "ncitCode": "C00082_NEW",
+      "name": "AIC",
+      "description": "Akaike Information Criterion",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000325",
+          "display": "Akaike information criterion"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.BIC",
+      "ncitCode": "C00083_NEW",
+      "name": "BIC",
+      "description": "Bayesian Information Criterion",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000327",
+          "display": "Bayesian information criterion"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.minus2LogL",
+      "ncitCode": "C00084_NEW",
+      "name": "minus2LogL",
+      "description": "-2 Log Likelihood",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.R_squared",
+      "ncitCode": "C00085_NEW",
+      "name": "R_squared",
+      "description": "Coefficient of determination",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000564",
+          "display": "coefficient of determination"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.concordance",
+      "ncitCode": "C00086_NEW",
+      "name": "concordance",
+      "description": "Concordance statistic (C-index)",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.value",
+      "ncitCode": "C00087_NEW",
+      "name": "value",
+      "description": "The computed/derived value",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.n",
+      "ncitCode": "C00088_NEW",
+      "name": "n",
+      "description": "Count of non-missing observations",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000047",
+          "display": "count"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.n_obs",
+      "ncitCode": "C00089_NEW",
+      "name": "n_obs",
+      "description": "Total number of observations (non-missing + missing)",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.n_missing",
+      "ncitCode": "C00090_NEW",
+      "name": "n_missing",
+      "description": "Count of missing observations",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.pct_missing",
+      "ncitCode": "C00091_NEW",
+      "name": "pct_missing",
+      "description": "Percentage of missing observations",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.geometric_mean",
+      "ncitCode": "C00092_NEW",
+      "name": "geometric_mean",
+      "description": "Geometric mean (exp of mean of log values)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000396",
+          "display": "geometric mean"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.harmonic_mean",
+      "ncitCode": "C00093_NEW",
+      "name": "harmonic_mean",
+      "description": "Harmonic mean (reciprocal of mean of reciprocals)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000397",
+          "display": "harmonic mean"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.trimmed_mean",
+      "ncitCode": "C00094_NEW",
+      "name": "trimmed_mean",
+      "description": "Trimmed mean (mean after removing extreme values from each tail)",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.winsorized_mean",
+      "ncitCode": "C00095_NEW",
+      "name": "winsorized_mean",
+      "description": "Winsorized mean (mean after replacing extreme values with boundary values)",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.mode",
+      "ncitCode": "C00096_NEW",
+      "name": "mode",
+      "description": "Most frequently occurring value",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000033",
+          "display": "mode"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.sd",
+      "ncitCode": "C00097_NEW",
+      "name": "sd",
+      "description": "Standard deviation",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000237",
+          "display": "standard deviation"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.variance",
+      "ncitCode": "C00098_NEW",
+      "name": "variance",
+      "description": "Variance",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000113",
+          "display": "variance"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.cv",
+      "ncitCode": "C00099_NEW",
+      "name": "cv",
+      "description": "Coefficient of variation (SD/mean × 100)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000236",
+          "display": "coefficient of variation"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.geometric_cv",
+      "ncitCode": "C00100_NEW",
+      "name": "geometric_cv",
+      "description": "Geometric coefficient of variation",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.range",
+      "ncitCode": "C00101_NEW",
+      "name": "range",
+      "description": "Range (max − min)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000035",
+          "display": "range"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.min",
+      "ncitCode": "C00102_NEW",
+      "name": "min",
+      "description": "Minimum observed value",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000150",
+          "display": "minimum observed value"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.max",
+      "ncitCode": "C00103_NEW",
+      "name": "max",
+      "description": "Maximum observed value",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000151",
+          "display": "maximum observed value"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.iqr",
+      "ncitCode": "C00104_NEW",
+      "name": "iqr",
+      "description": "Interquartile range (Q3 − Q1)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000164",
+          "display": "inter quartile range"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.sum",
+      "ncitCode": "C00105_NEW",
+      "name": "sum",
+      "description": "Sum of all values",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.Q1",
+      "ncitCode": "C00106_NEW",
+      "name": "Q1",
+      "description": "First quartile (25th percentile)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000167",
+          "display": "first quartile"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.Q3",
+      "ncitCode": "C00107_NEW",
+      "name": "Q3",
+      "description": "Third quartile (75th percentile)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000170",
+          "display": "third quartile"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.percentile",
+      "ncitCode": "C00108_NEW",
+      "name": "percentile",
+      "description": "Percentile value at a specified rank",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000293",
+          "display": "percentile"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.skewness",
+      "ncitCode": "C00109_NEW",
+      "name": "skewness",
+      "description": "Skewness (measure of asymmetry of the distribution)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000068",
+          "display": "skewness"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.kurtosis",
+      "ncitCode": "C00110_NEW",
+      "name": "kurtosis",
+      "description": "Kurtosis (measure of tailedness of the distribution)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000178",
+          "display": "kurtosis"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.frequency",
+      "ncitCode": "C00111_NEW",
+      "name": "frequency",
+      "description": "Frequency count per category",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000674",
+          "display": "frequency"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.proportion",
+      "ncitCode": "C00112_NEW",
+      "name": "proportion",
+      "description": "Proportion (0–1 scale)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000607",
+          "display": "proportion"
+        }
+      ],
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.pct",
+      "ncitCode": "C00113_NEW",
+      "name": "pct",
+      "description": "Percentage (0–100 scale)",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.cumulative_n",
+      "ncitCode": "C00114_NEW",
+      "name": "cumulative_n",
+      "description": "Cumulative count",
+      "dataType": "numeric"
+    },
+    {
+      "conceptId": "S.cumulative_pct",
+      "ncitCode": "C00115_NEW",
+      "name": "cumulative_pct",
+      "description": "Cumulative percentage",
+      "dataType": "numeric"
+    }
+  ],
+  "schemaVersion": "0.6.0"
+}
