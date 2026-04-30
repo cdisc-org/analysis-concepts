@@ -45,12 +45,16 @@
       ],
       "outputSpecifications": [
         {
+          "name": "fit_statistics",
+          "description": "Model fit measures",
           "outputClass": "fit_statistics",
-          "dimensions": null
+          "indexedBy": null
         },
         {
+          "name": "type3_tests",
+          "description": "Type III tests for each model term (covariate, group, interactions)",
           "outputClass": "type3_tests",
-          "dimensions": [
+          "indexedBy": [
             "covariate",
             "fixed_effect",
             "fixed_effect:fixed_effect",
@@ -58,8 +62,10 @@
           ]
         },
         {
+          "name": "parameter_estimates",
+          "description": "Solution for fixed effects (intercept, covariate slopes, group effects)",
           "outputClass": "parameter_estimates",
-          "dimensions": [
+          "indexedBy": [
             "covariate",
             "fixed_effect",
             "fixed_effect:fixed_effect",
@@ -67,20 +73,26 @@
           ]
         },
         {
+          "name": "ls_means",
+          "description": "Least-squares means per group level, adjusted for covariates",
           "outputClass": "ls_means",
-          "dimensions": [
+          "indexedBy": [
             "fixed_effect"
           ]
         },
         {
+          "name": "contrasts",
+          "description": "Pairwise LS mean differences between group levels",
           "outputClass": "contrasts",
-          "dimensions": [
+          "indexedBy": [
             "fixed_effect"
           ]
         },
         {
+          "name": "covariance_parameters",
+          "description": "Residual variance estimate",
           "outputClass": "covariance_parameters",
-          "dimensions": null
+          "indexedBy": null
         }
       ],
       "assumptions": [
@@ -155,25 +167,32 @@
       ],
       "outputSpecifications": [
         {
+          "name": "fit_statistics",
           "outputClass": "fit_statistics",
-          "dimensions": null
+          "indexedBy": null
         },
         {
+          "name": "type3_tests",
+          "description": "ANOVA table: one row per model term",
           "outputClass": "type3_tests",
-          "dimensions": [
+          "indexedBy": [
             "fixed_effect",
             "fixed_effect:fixed_effect"
           ]
         },
         {
+          "name": "ls_means",
+          "description": "Marginal means per factor level",
           "outputClass": "ls_means",
-          "dimensions": [
+          "indexedBy": [
             "fixed_effect"
           ]
         },
         {
+          "name": "contrasts",
+          "description": "Pairwise differences between group means",
           "outputClass": "contrasts",
-          "dimensions": [
+          "indexedBy": [
             "fixed_effect"
           ]
         }
@@ -239,8 +258,10 @@
       ],
       "outputSpecifications": [
         {
+          "name": "test_result",
+          "description": "Chi-squared test of independence",
           "outputClass": "test_result",
-          "dimensions": null
+          "indexedBy": null
         }
       ],
       "assumptions": [
@@ -303,26 +324,30 @@
       ],
       "outputSpecifications": [
         {
+          "name": "test_result",
+          "description": "CMH test of conditional independence",
           "outputClass": "test_result",
-          "dimensions": null
+          "indexedBy": null
         },
         {
+          "name": "common_odds_ratio",
+          "description": "Pooled MH odds ratio",
           "outputClass": "association_measures",
-          "dimensions": null
+          "indexedBy": null
         },
         {
-          "outputClass": "homogeneity_test",
-          "dimensions": null
-        },
-        {
-          "outputClass": "common_odds_ratio",
-          "dimensions": null
-        },
-        {
-          "outputClass": "stratum_specific_odds_ratios",
-          "dimensions": [
+          "name": "stratum_specific_odds_ratios",
+          "description": "Odds ratio within each stratum",
+          "outputClass": "association_measures",
+          "indexedBy": [
             "strata"
           ]
+        },
+        {
+          "name": "homogeneity_test",
+          "description": "Breslow-Day test for homogeneity of odds ratios across strata",
+          "outputClass": "homogeneity_test",
+          "indexedBy": null
         }
       ],
       "assumptions": [
@@ -381,8 +406,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The computed statistic per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -432,8 +459,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The count of non-missing observations per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -489,32 +518,42 @@
       ],
       "outputSpecifications": [
         {
+          "name": "fit_statistics",
+          "description": "Model fit and global tests",
           "outputClass": "fit_statistics",
-          "dimensions": null
+          "indexedBy": null
         },
         {
+          "name": "global_tests",
+          "description": "Overall model significance tests (likelihood ratio, Wald, score)",
           "outputClass": "global_tests",
-          "dimensions": null
+          "indexedBy": null
         },
         {
+          "name": "type3_tests",
+          "description": "Type III Wald tests per model term",
           "outputClass": "type3_tests",
-          "dimensions": [
+          "indexedBy": [
             "covariate",
             "fixed_effect",
             "covariate:fixed_effect"
           ]
         },
         {
+          "name": "parameter_estimates",
+          "description": "Regression coefficients on log-hazard scale with hazard ratios",
           "outputClass": "parameter_estimates",
-          "dimensions": [
+          "indexedBy": [
             "covariate",
             "fixed_effect",
             "covariate:fixed_effect"
           ]
         },
         {
+          "name": "hazard_ratio_estimates",
+          "description": "Hazard ratios with confidence intervals (exponentiated coefficients)",
           "outputClass": "hazard_ratio_estimates",
-          "dimensions": [
+          "indexedBy": [
             "covariate",
             "fixed_effect",
             "covariate:fixed_effect"
@@ -588,8 +627,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The cumulative count and percentage per category per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -633,8 +674,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The cumulative frequency and percentage per category per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -698,12 +741,16 @@
       ],
       "outputSpecifications": [
         {
+          "name": "test_result",
+          "description": "Fisher's exact test result",
           "outputClass": "test_result",
-          "dimensions": null
+          "indexedBy": null
         },
         {
+          "name": "association_measures",
+          "description": "Conditional maximum likelihood odds ratio",
           "outputClass": "association_measures",
-          "dimensions": null
+          "indexedBy": null
         }
       ],
       "assumptions": [
@@ -754,8 +801,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The frequency count per category per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -799,8 +848,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The computed statistic per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -852,8 +903,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "Geometric mean of the variable",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -905,8 +958,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "Harmonic mean of the variable",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -958,8 +1013,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The computed statistic per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -1016,27 +1073,35 @@
       ],
       "outputSpecifications": [
         {
+          "name": "event_summary",
+          "description": "Summary of events and censoring per group",
           "outputClass": "event_summary",
-          "dimensions": [
+          "indexedBy": [
             "fixed_effect"
           ]
         },
         {
+          "name": "survival_table",
+          "description": "Life table with survival estimates at each event time",
           "outputClass": "survival_table",
-          "dimensions": [
+          "indexedBy": [
             "fixed_effect",
             "time"
           ]
         },
         {
+          "name": "median_survival",
+          "description": "Median survival time per group with confidence interval",
           "outputClass": "median_survival",
-          "dimensions": [
+          "indexedBy": [
             "fixed_effect"
           ]
         },
         {
+          "name": "landmark_estimates",
+          "description": "Survival probability at specific landmark times",
           "outputClass": "landmark_estimates",
-          "dimensions": [
+          "indexedBy": [
             "fixed_effect",
             "time"
           ]
@@ -1098,8 +1163,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The computed kurtosis per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -1162,12 +1229,16 @@
       ],
       "outputSpecifications": [
         {
+          "name": "fit_statistics",
+          "description": "Model fit measures",
           "outputClass": "fit_statistics",
-          "dimensions": null
+          "indexedBy": null
         },
         {
+          "name": "type3_tests",
+          "description": "Type III likelihood ratio or Wald tests per term",
           "outputClass": "type3_tests",
-          "dimensions": [
+          "indexedBy": [
             "covariate",
             "fixed_effect",
             "covariate:fixed_effect",
@@ -1175,8 +1246,10 @@
           ]
         },
         {
+          "name": "parameter_estimates",
+          "description": "Maximum likelihood estimates on log-odds scale",
           "outputClass": "parameter_estimates",
-          "dimensions": [
+          "indexedBy": [
             "covariate",
             "fixed_effect",
             "covariate:fixed_effect",
@@ -1184,8 +1257,10 @@
           ]
         },
         {
+          "name": "odds_ratio_estimates",
+          "description": "Odds ratios with confidence intervals (exponentiated coefficients)",
           "outputClass": "odds_ratio_estimates",
-          "dimensions": [
+          "indexedBy": [
             "covariate",
             "fixed_effect",
             "covariate:fixed_effect",
@@ -1258,8 +1333,10 @@
       ],
       "outputSpecifications": [
         {
+          "name": "test_result",
+          "description": "Log-rank (or weighted) test result",
           "outputClass": "test_result",
-          "dimensions": null
+          "indexedBy": null
         }
       ],
       "assumptions": [
@@ -1351,19 +1428,25 @@
       ],
       "outputSpecifications": [
         {
+          "name": "multivariate_tests",
+          "description": "Multivariate omnibus test statistics",
           "outputClass": "multivariate_tests",
-          "dimensions": null
+          "indexedBy": null
         },
         {
+          "name": "type3_tests",
+          "description": "Univariate Type III tests per response variable (follow-up to multivariate test)",
           "outputClass": "type3_tests",
-          "dimensions": [
+          "indexedBy": [
             "response",
             "fixed_effect"
           ]
         },
         {
+          "name": "parameter_estimates",
+          "description": "Regression coefficients per response variable",
           "outputClass": "parameter_estimates",
-          "dimensions": [
+          "indexedBy": [
             "response",
             "fixed_effect"
           ]
@@ -1434,8 +1517,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The computed statistic per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -1485,8 +1570,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "Arithmetic mean of the variable",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -1536,8 +1623,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "Median of the variable",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -1587,8 +1676,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The computed statistic per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -1675,12 +1766,16 @@
       ],
       "outputSpecifications": [
         {
+          "name": "fit_statistics",
+          "description": "Model fit measures for covariance structure selection",
           "outputClass": "fit_statistics",
-          "dimensions": null
+          "indexedBy": null
         },
         {
+          "name": "type3_tests",
+          "description": "Type III F-tests for each fixed effect term",
           "outputClass": "type3_tests",
-          "dimensions": [
+          "indexedBy": [
             "covariate",
             "repeated_factor",
             "fixed_effect",
@@ -1689,8 +1784,10 @@
           ]
         },
         {
+          "name": "parameter_estimates",
+          "description": "Solution for all fixed effect coefficients",
           "outputClass": "parameter_estimates",
-          "dimensions": [
+          "indexedBy": [
             "covariate",
             "repeated_factor",
             "fixed_effect",
@@ -1699,59 +1796,62 @@
           ]
         },
         {
+          "name": "ls_means_by_group_time",
+          "description": "LS means for each group at each timepoint",
           "outputClass": "ls_means",
-          "dimensions": [
+          "indexedBy": [
             "fixed_effect",
             "repeated_factor"
           ]
         },
         {
-          "outputClass": "contrasts",
-          "dimensions": null
-        },
-        {
-          "outputClass": "covariance_parameters",
-          "dimensions": [
-            "repeated_factor"
-          ]
-        },
-        {
-          "outputClass": "ls_means_by_group_time",
-          "dimensions": [
-            "fixed_effect",
-            "repeated_factor"
-          ]
-        },
-        {
-          "outputClass": "ls_means_by_group",
-          "dimensions": [
+          "name": "ls_means_by_group",
+          "description": "Marginal LS means averaged over time",
+          "outputClass": "ls_means",
+          "indexedBy": [
             "fixed_effect"
           ]
         },
         {
-          "outputClass": "ls_means_by_time",
-          "dimensions": [
+          "name": "ls_means_by_time",
+          "description": "Marginal LS means averaged over group",
+          "outputClass": "ls_means",
+          "indexedBy": [
             "repeated_factor"
           ]
         },
         {
-          "outputClass": "group_contrast_at_time",
-          "dimensions": [
+          "name": "group_contrast_at_time",
+          "description": "Group difference at a specific timepoint (e.g., Treatment vs Placebo at Week 24)",
+          "outputClass": "contrasts",
+          "indexedBy": [
             "fixed_effect",
             "repeated_factor"
           ]
         },
         {
-          "outputClass": "time_contrast_within_group",
-          "dimensions": [
+          "name": "time_contrast_within_group",
+          "description": "Change over time within a group (e.g., Week 24 vs Week 4 within Treatment)",
+          "outputClass": "contrasts",
+          "indexedBy": [
             "repeated_factor",
             "fixed_effect"
           ]
         },
         {
-          "outputClass": "overall_group_contrast",
-          "dimensions": [
+          "name": "overall_group_contrast",
+          "description": "Overall group difference marginalized over time",
+          "outputClass": "contrasts",
+          "indexedBy": [
             "fixed_effect"
+          ]
+        },
+        {
+          "name": "covariance_parameters",
+          "description": "Estimated R-side covariance matrix parameters",
+          "outputClass": "covariance_parameters",
+          "indexedBy": [
+            "repeated_factor"
           ]
         }
       ],
@@ -1828,8 +1928,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "Mode of the variable",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -1905,12 +2007,16 @@
       ],
       "outputSpecifications": [
         {
+          "name": "test_result",
+          "description": "Overall one-sample t-test result",
           "outputClass": "test_result",
-          "dimensions": null
+          "indexedBy": null
         },
         {
+          "name": "point_estimate",
+          "description": "Estimated mean with inference",
           "outputClass": "point_estimate",
-          "dimensions": null
+          "indexedBy": null
         }
       ],
       "assumptions": [
@@ -1968,12 +2074,16 @@
       ],
       "outputSpecifications": [
         {
+          "name": "test_result",
+          "description": "Paired t-test result",
           "outputClass": "test_result",
-          "dimensions": null
+          "indexedBy": null
         },
         {
+          "name": "point_estimate",
+          "description": "Mean of paired differences with inference",
           "outputClass": "point_estimate",
-          "dimensions": null
+          "indexedBy": null
         }
       ],
       "assumptions": [
@@ -2042,8 +2152,10 @@
       ],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The computed percentile value per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -2113,8 +2225,10 @@
       ],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The proportion, percentage, and confidence interval per category per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -2164,8 +2278,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The computed quartile values per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -2215,8 +2331,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The computed statistic per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -2266,8 +2384,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The computed skewness per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -2317,8 +2437,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The computed statistic per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -2362,8 +2484,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The computed statistic per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -2414,8 +2538,10 @@
       ],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "Trimmed mean of the variable",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -2491,18 +2617,24 @@
       ],
       "outputSpecifications": [
         {
+          "name": "test_result",
+          "description": "Two-sample t-test result",
           "outputClass": "test_result",
-          "dimensions": null
+          "indexedBy": null
         },
         {
+          "name": "ls_means",
+          "description": "Group means",
           "outputClass": "ls_means",
-          "dimensions": [
+          "indexedBy": [
             "fixed_effect"
           ]
         },
         {
+          "name": "contrasts",
+          "description": "Difference between group means",
           "outputClass": "contrasts",
-          "dimensions": null
+          "indexedBy": null
         }
       ],
       "assumptions": [
@@ -2554,8 +2686,10 @@
       "configurations": [],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "The computed statistic per group",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
@@ -2606,8 +2740,10 @@
       ],
       "outputSpecifications": [
         {
+          "name": "computed_value",
+          "description": "Winsorized mean of the variable",
           "outputClass": "computed_value",
-          "dimensions": [
+          "indexedBy": [
             "group"
           ]
         }
