@@ -1,0 +1,61 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.InterquartileRange",
+  "label": "Interquartile Range",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "analysis",
+  "class": "Dispersion",
+  "intent": [
+    "DescriptiveSummary"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000164",
+      "display": "inter quartile range"
+    }
+  ],
+  "description": "Computes the interquartile range (Q3 \u2212 Q1) of a numeric variable",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := IQR(response) OVER (group)",
+    "generic_expression": "result := IQR(<response>) OVER (<group>*)"
+  },
+  "unit_policy": "preserved",
+  "configurations": [],
+  "methodInput": [
+    {
+      "name": "response",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The variable to summarize"
+    },
+    {
+      "name": "group",
+      "dataType": "code",
+      "required": false,
+      "cardinality": "single_or_multiple",
+      "description": "Optional grouping variable(s)"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Quantity",
+      "name": "derived_value",
+      "indexed_by": [
+        "group"
+      ]
+    }
+  ],
+  "assumptions": []
+}

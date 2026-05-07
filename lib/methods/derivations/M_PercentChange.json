@@ -1,0 +1,53 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.PercentChange",
+  "label": "Percent Change",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "derivation",
+  "class": "Arithmetic",
+  "intent": [
+    "ChangeComputation"
+  ],
+  "description": "Computes proportional change as a percentage",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := 100 * (post - pre) / pre",
+    "generic_expression": "result := 100 * (<post> - <pre>) / <pre>"
+  },
+  "unit_policy": "dimensionless",
+  "configurations": [],
+  "methodInput": [
+    {
+      "name": "pre",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The baseline/reference value"
+    },
+    {
+      "name": "post",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The post-baseline value"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Quantity",
+      "name": "derived_value"
+    }
+  ],
+  "assumptions": [
+    "Pre value is non-zero"
+  ]
+}

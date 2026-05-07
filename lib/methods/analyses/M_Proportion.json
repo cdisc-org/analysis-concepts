@@ -1,0 +1,81 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.Proportion",
+  "label": "Proportion",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "analysis",
+  "class": "Counting",
+  "intent": [
+    "DescriptiveSummary"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000607",
+      "display": "proportion"
+    }
+  ],
+  "description": "Computes the proportion and percentage per category of a categorical variable",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := PROP(response) OVER (group)",
+    "generic_expression": "result := PROP(<response>) OVER (<group>*)"
+  },
+  "unit_policy": "dimensionless",
+  "configurations": [
+    {
+      "name": "ci_method",
+      "dataType": "enum",
+      "defaultValue": "exact_clopper_pearson",
+      "enumValues": [
+        "exact_clopper_pearson",
+        "wilson",
+        "wald",
+        "agresti_coull",
+        "jeffreys"
+      ],
+      "description": "Method for confidence interval calculation"
+    },
+    {
+      "name": "ci_level",
+      "dataType": "decimal",
+      "defaultValue": 0.95,
+      "description": "Confidence level"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "response",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single",
+      "description": "The categorical variable to summarize"
+    },
+    {
+      "name": "group",
+      "dataType": "code",
+      "required": false,
+      "cardinality": "single_or_multiple",
+      "description": "Optional grouping variable(s)"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Quantity",
+      "name": "derived_value",
+      "indexed_by": [
+        "group"
+      ]
+    }
+  ],
+  "assumptions": []
+}

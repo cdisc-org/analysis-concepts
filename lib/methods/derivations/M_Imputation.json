@@ -1,0 +1,51 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.Imputation",
+  "label": "Apply Imputation",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "derivation",
+  "class": "Data Handling",
+  "intent": [
+    "MissingDataHandling"
+  ],
+  "description": "Replaces missing values with a pre-computed imputed value. This is the application step only \u2014 the imputed_value must be computed upstream by one of the M.ImputedValue_* methods. Designed for use in transformation pipelines.",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := COALESCE(value, imputed_value)",
+    "generic_expression": "result := COALESCE(<value>, <imputed_value>)"
+  },
+  "unit_policy": "preserved",
+  "configurations": [],
+  "methodInput": [
+    {
+      "name": "value",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Original value (may be missing)"
+    },
+    {
+      "name": "imputed_value",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Pre-computed replacement value (from an M.ImputedValue_* method)"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Quantity",
+      "name": "derived_value"
+    }
+  ],
+  "assumptions": []
+}

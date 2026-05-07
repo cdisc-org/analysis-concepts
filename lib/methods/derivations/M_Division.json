@@ -1,0 +1,54 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.Division",
+  "label": "Division",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "derivation",
+  "class": "Arithmetic",
+  "intent": [
+    "RatioComputation"
+  ],
+  "description": "Computes the quotient of two numeric values",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := numerator / denominator",
+    "generic_expression": "result := <numerator> / <denominator>"
+  },
+  "unit_policy": "computed",
+  "unit_computation_rule": "numerator.unit / denominator.unit",
+  "configurations": [],
+  "methodInput": [
+    {
+      "name": "numerator",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The value to divide"
+    },
+    {
+      "name": "denominator",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The value to divide by"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Quantity",
+      "name": "derived_value"
+    }
+  ],
+  "assumptions": [
+    "Denominator is non-zero"
+  ]
+}

@@ -1,0 +1,293 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json",
+    "configuration_concepts": "../../model/method/configuration_concepts.json"
+  },
+  "name": "M.MMRM",
+  "label": "Mixed Model for Repeated Measures",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "analysis",
+  "class": "Repeated Measures",
+  "intent": [
+    "LongitudinalEstimate"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000189",
+      "display": "MMRM"
+    }
+  ],
+  "description": "Linear mixed model for longitudinal data with structured R-side covariance. No random effects (G-side); within-subject correlation modeled through the residual covariance structure.",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ covariate + repeated_factor + fixed_effect + repeated_factor:fixed_effect | repeated_subject / repeated_factor",
+    "generic_expression": "<response> ~ <covariate>* + <repeated_factor> + <fixed_effect>+ + (<fixed_effect>:<repeated_factor>)* + (<covariate>:<fixed_effect>)* | <repeated_subject> / <repeated_factor>",
+    "notes": "The part after '|' specifies the repeated measures structure: subject is the clustering unit, time is the repeated factor within subject. Multiple covariates and fixed effects are supported. The time:group interaction is typically the term of primary interest for treatment comparison at each visit."
+  },
+  "configurations": [
+    {
+      "name": "covariance_structure",
+      "dataType": "enum",
+      "defaultValue": "UN",
+      "enumValues": [
+        "UN",
+        "CS",
+        "AR1",
+        "TOEP",
+        "CSH",
+        "ARH1"
+      ],
+      "description": "Within-subject (R-side) covariance structure"
+    },
+    {
+      "name": "estimation_method",
+      "dataType": "enum",
+      "defaultValue": "REML",
+      "enumValues": [
+        "REML",
+        "ML"
+      ],
+      "description": "Estimation method"
+    },
+    {
+      "name": "df_method",
+      "dataType": "enum",
+      "defaultValue": "KR",
+      "enumValues": [
+        "KR",
+        "Satterthwaite",
+        "Containment"
+      ],
+      "description": "Degrees of freedom method"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "response",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The response variable at each timepoint (e.g., change from baseline)"
+    },
+    {
+      "name": "covariate",
+      "dataType": "decimal",
+      "required": false,
+      "cardinality": "multiple",
+      "description": "Continuous covariate(s) (e.g., baseline value, age, weight)"
+    },
+    {
+      "name": "repeated_factor",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single",
+      "description": "Timepoint/visit variable defining the repeated dimension"
+    },
+    {
+      "name": "fixed_effect",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single_or_multiple",
+      "description": "Treatment group (and optionally additional factors like region, sex)"
+    },
+    {
+      "name": "repeated_subject",
+      "dataType": "id",
+      "required": true,
+      "cardinality": "single",
+      "description": "Subject identifier for the repeated measures clustering"
+    }
+  ],
+  "methodOutput": [
+    {
+      "name": "fit_statistics_basic",
+      "output_type": "fit_statistics_basic"
+    },
+    {
+      "name": "type3_tests_mixed",
+      "output_type": "type3_tests_mixed",
+      "indexed_by": [
+        "covariate",
+        "repeated_factor",
+        "fixed_effect",
+        "fixed_effect:repeated_factor",
+        "covariate:fixed_effect"
+      ],
+      "configurations": [
+        {
+          "name": "multiplicity_adjustment",
+          "conforms_to": "multiplicity_adjustment",
+          "applicable_scopes": [
+            "universal"
+          ]
+        }
+      ],
+      "examples": [
+        {
+          "term": "covariate"
+        },
+        {
+          "term": "repeated_factor"
+        },
+        {
+          "term": "fixed_effect"
+        },
+        {
+          "term": "repeated_factor:fixed_effect"
+        }
+      ]
+    },
+    {
+      "name": "parameter_estimates_linear",
+      "output_type": "parameter_estimates_linear",
+      "indexed_by": [
+        "covariate",
+        "repeated_factor",
+        "fixed_effect",
+        "fixed_effect:repeated_factor",
+        "covariate:fixed_effect"
+      ]
+    },
+    {
+      "name": "ls_means",
+      "output_type": "ls_means",
+      "indexed_by": [
+        "fixed_effect",
+        "repeated_factor"
+      ],
+      "sub_types": [
+        {
+          "name": "ls_means_by_group_time",
+          "formula_term_kinds": [
+            "fixed_effect",
+            "repeated_factor"
+          ],
+          "description": "LS means for each group at each timepoint",
+          "statistics": [
+            "estimate",
+            "SE",
+            "CI_lower",
+            "CI_upper",
+            "df"
+          ]
+        },
+        {
+          "name": "ls_means_by_group",
+          "formula_term_kinds": [
+            "fixed_effect"
+          ],
+          "description": "Marginal LS means averaged over time",
+          "statistics": [
+            "estimate",
+            "SE",
+            "CI_lower",
+            "CI_upper",
+            "df"
+          ]
+        },
+        {
+          "name": "ls_means_by_time",
+          "formula_term_kinds": [
+            "repeated_factor"
+          ],
+          "description": "Marginal LS means averaged over group",
+          "statistics": [
+            "estimate",
+            "SE",
+            "CI_lower",
+            "CI_upper",
+            "df"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "contrasts_t",
+      "output_type": "contrasts_t",
+      "configurations": [
+        {
+          "name": "multiplicity_adjustment",
+          "conforms_to": "multiplicity_adjustment",
+          "applicable_scopes": [
+            "universal",
+            "anova_pairwise_means",
+            "anova_many_to_one",
+            "linear_contrasts"
+          ]
+        }
+      ],
+      "sub_types": [
+        {
+          "name": "group_contrast_at_time",
+          "formula_term_kinds": [
+            "fixed_effect",
+            "repeated_factor"
+          ],
+          "description": "Group difference at a specific timepoint (e.g., Treatment vs Placebo at Week 24)",
+          "statistics": [
+            "estimate",
+            "SE",
+            "CI_lower",
+            "CI_upper",
+            "t_statistic",
+            "p_value",
+            "df"
+          ]
+        },
+        {
+          "name": "time_contrast_within_group",
+          "formula_term_kinds": [
+            "repeated_factor",
+            "fixed_effect"
+          ],
+          "description": "Change over time within a group (e.g., Week 24 vs Week 4 within Treatment)",
+          "statistics": [
+            "estimate",
+            "SE",
+            "CI_lower",
+            "CI_upper",
+            "t_statistic",
+            "p_value",
+            "df"
+          ]
+        },
+        {
+          "name": "overall_group_contrast",
+          "formula_term_kinds": [
+            "fixed_effect"
+          ],
+          "description": "Overall group difference marginalized over time",
+          "statistics": [
+            "estimate",
+            "SE",
+            "CI_lower",
+            "CI_upper",
+            "t_statistic",
+            "p_value",
+            "df"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "covariance_parameters",
+      "output_type": "covariance_parameters",
+      "indexed_by": [
+        "repeated_factor"
+      ]
+    }
+  ],
+  "assumptions": [
+    "Missing at Random (MAR)",
+    "Multivariate normality of residuals",
+    "Correct specification of covariance structure"
+  ]
+}

@@ -1,0 +1,504 @@
+{
+  "version": "0.5.0",
+  "description": "Reusable statistic definitions referenced by output classes across ACDC methods",
+  "statistics": {
+    "estimate": {
+      "dataType": "numeric",
+      "description": "Point estimate of the quantity",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000599",
+          "display": "point estimate"
+        }
+      ]
+    },
+    "SE": {
+      "dataType": "numeric",
+      "description": "Standard error of the estimate",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000562",
+          "display": "standard error of estimate"
+        }
+      ]
+    },
+    "CI_lower": {
+      "dataType": "numeric",
+      "description": "Lower bound of confidence interval",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000315",
+          "display": "lower confidence limit"
+        }
+      ]
+    },
+    "CI_upper": {
+      "dataType": "numeric",
+      "description": "Upper bound of confidence interval",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000314",
+          "display": "upper confidence limit"
+        }
+      ]
+    },
+    "df": {
+      "dataType": "numeric",
+      "description": "Degrees of freedom",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000069",
+          "display": "number of degrees of freedom"
+        }
+      ]
+    },
+    "df_num": {
+      "dataType": "numeric",
+      "description": "Numerator degrees of freedom",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000498",
+          "display": "numerator degrees of freedom"
+        }
+      ]
+    },
+    "df_den": {
+      "dataType": "numeric",
+      "description": "Denominator degrees of freedom",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000527",
+          "display": "denominator degrees of freedom"
+        }
+      ]
+    },
+    "t_statistic": {
+      "dataType": "numeric",
+      "description": "t test statistic",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000176",
+          "display": "t-statistic"
+        }
+      ]
+    },
+    "F_statistic": {
+      "dataType": "numeric",
+      "description": "F test statistic",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000282",
+          "display": "F-statistic"
+        }
+      ]
+    },
+    "z_statistic": {
+      "dataType": "numeric",
+      "description": "z test statistic",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000376",
+          "display": "Z-statistic"
+        }
+      ]
+    },
+    "chi_squared": {
+      "dataType": "numeric",
+      "description": "Chi-squared test statistic",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000030",
+          "display": "Chi-Squared statistic"
+        }
+      ]
+    },
+    "p_value": {
+      "dataType": "numeric",
+      "description": "P-value for the test",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000700",
+          "display": "p-value"
+        }
+      ]
+    },
+    "p_value_adjusted": {
+      "dataType": "numeric",
+      "description": "P-value after multiplicity adjustment (Bonferroni, Tukey, Holm, BH, etc.). Reported alongside the unadjusted p-value when an adjustment procedure has been applied."
+    },
+    "SS": {
+      "dataType": "numeric",
+      "description": "Sum of squares"
+    },
+    "MS": {
+      "dataType": "numeric",
+      "description": "Mean square",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000375",
+          "display": "residual mean square"
+        }
+      ]
+    },
+    "odds_ratio": {
+      "dataType": "numeric",
+      "description": "Odds ratio (exp of log-odds coefficient)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000182",
+          "display": "odds ratio"
+        }
+      ]
+    },
+    "hazard_ratio": {
+      "dataType": "numeric",
+      "description": "Hazard ratio (exp of Cox coefficient)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000677",
+          "display": "hazard ratio"
+        }
+      ]
+    },
+    "coefficient": {
+      "dataType": "numeric",
+      "description": "Model coefficient (log scale for GLMs)"
+    },
+    "n_risk": {
+      "dataType": "numeric",
+      "description": "Number at risk"
+    },
+    "n_event": {
+      "dataType": "numeric",
+      "description": "Number of events"
+    },
+    "n_censored": {
+      "dataType": "numeric",
+      "description": "Number censored"
+    },
+    "survival_prob": {
+      "dataType": "numeric",
+      "description": "Estimated survival probability"
+    },
+    "median": {
+      "dataType": "numeric",
+      "description": "Median estimate",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000574",
+          "display": "center value"
+        }
+      ]
+    },
+    "mean": {
+      "dataType": "numeric",
+      "description": "Mean estimate",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000573",
+          "display": "average value"
+        }
+      ]
+    },
+    "AIC": {
+      "dataType": "numeric",
+      "description": "Akaike Information Criterion",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000325",
+          "display": "Akaike information criterion"
+        }
+      ]
+    },
+    "BIC": {
+      "dataType": "numeric",
+      "description": "Bayesian Information Criterion",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000327",
+          "display": "Bayesian information criterion"
+        }
+      ]
+    },
+    "minus2LogL": {
+      "dataType": "numeric",
+      "description": "-2 Log Likelihood"
+    },
+    "R_squared": {
+      "dataType": "numeric",
+      "description": "Coefficient of determination",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000564",
+          "display": "coefficient of determination"
+        }
+      ]
+    },
+    "concordance": {
+      "dataType": "numeric",
+      "description": "Concordance statistic (C-index)"
+    },
+    "value": {
+      "dataType": "numeric",
+      "description": "The computed/derived value"
+    },
+    "n": {
+      "dataType": "numeric",
+      "description": "Count of non-missing observations",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000047",
+          "display": "count"
+        }
+      ]
+    },
+    "n_obs": {
+      "dataType": "numeric",
+      "description": "Total number of observations (non-missing + missing)"
+    },
+    "n_missing": {
+      "dataType": "numeric",
+      "description": "Count of missing observations"
+    },
+    "pct_missing": {
+      "dataType": "numeric",
+      "description": "Percentage of missing observations"
+    },
+    "geometric_mean": {
+      "dataType": "numeric",
+      "description": "Geometric mean (exp of mean of log values)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000396",
+          "display": "geometric mean"
+        }
+      ]
+    },
+    "harmonic_mean": {
+      "dataType": "numeric",
+      "description": "Harmonic mean (reciprocal of mean of reciprocals)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000397",
+          "display": "harmonic mean"
+        }
+      ]
+    },
+    "trimmed_mean": {
+      "dataType": "numeric",
+      "description": "Trimmed mean (mean after removing extreme values from each tail)"
+    },
+    "winsorized_mean": {
+      "dataType": "numeric",
+      "description": "Winsorized mean (mean after replacing extreme values with boundary values)"
+    },
+    "mode": {
+      "dataType": "numeric",
+      "description": "Most frequently occurring value",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000033",
+          "display": "mode"
+        }
+      ]
+    },
+    "sd": {
+      "dataType": "numeric",
+      "description": "Standard deviation",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000237",
+          "display": "standard deviation"
+        }
+      ]
+    },
+    "variance": {
+      "dataType": "numeric",
+      "description": "Variance",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000113",
+          "display": "variance"
+        }
+      ]
+    },
+    "cv": {
+      "dataType": "numeric",
+      "description": "Coefficient of variation (SD/mean × 100)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000236",
+          "display": "coefficient of variation"
+        }
+      ]
+    },
+    "geometric_cv": {
+      "dataType": "numeric",
+      "description": "Geometric coefficient of variation"
+    },
+    "range": {
+      "dataType": "numeric",
+      "description": "Range (max − min)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000035",
+          "display": "range"
+        }
+      ]
+    },
+    "min": {
+      "dataType": "numeric",
+      "description": "Minimum observed value",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000150",
+          "display": "minimum observed value"
+        }
+      ]
+    },
+    "max": {
+      "dataType": "numeric",
+      "description": "Maximum observed value",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000151",
+          "display": "maximum observed value"
+        }
+      ]
+    },
+    "iqr": {
+      "dataType": "numeric",
+      "description": "Interquartile range (Q3 − Q1)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000164",
+          "display": "inter quartile range"
+        }
+      ]
+    },
+    "sum": {
+      "dataType": "numeric",
+      "description": "Sum of all values"
+    },
+    "Q1": {
+      "dataType": "numeric",
+      "description": "First quartile (25th percentile)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000167",
+          "display": "first quartile"
+        }
+      ]
+    },
+    "Q3": {
+      "dataType": "numeric",
+      "description": "Third quartile (75th percentile)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000170",
+          "display": "third quartile"
+        }
+      ]
+    },
+    "percentile": {
+      "dataType": "numeric",
+      "description": "Percentile value at a specified rank",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000293",
+          "display": "percentile"
+        }
+      ]
+    },
+    "skewness": {
+      "dataType": "numeric",
+      "description": "Skewness (measure of asymmetry of the distribution)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000068",
+          "display": "skewness"
+        }
+      ]
+    },
+    "kurtosis": {
+      "dataType": "numeric",
+      "description": "Kurtosis (measure of tailedness of the distribution)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000178",
+          "display": "kurtosis"
+        }
+      ]
+    },
+    "frequency": {
+      "dataType": "numeric",
+      "description": "Frequency count per category",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000674",
+          "display": "frequency"
+        }
+      ]
+    },
+    "proportion": {
+      "dataType": "numeric",
+      "description": "Proportion (0–1 scale)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000607",
+          "display": "proportion"
+        }
+      ]
+    },
+    "pct": {
+      "dataType": "numeric",
+      "description": "Percentage (0–100 scale)"
+    },
+    "cumulative_n": {
+      "dataType": "numeric",
+      "description": "Cumulative count"
+    },
+    "cumulative_pct": {
+      "dataType": "numeric",
+      "description": "Cumulative percentage"
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.ImputedValue_WOCF",
+  "label": "Worst Observation Carried Forward",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "derivation",
+  "class": "Data Handling",
+  "intent": [
+    "MissingDataHandling"
+  ],
+  "description": "Uses the worst (most extreme) observed value within a partition as the imputed value. Worst is defined by the direction configuration: 'high' takes the maximum, 'low' takes the minimum.",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "imputed_value := WORST(value) OVER (partition)",
+    "generic_expression": "imputed_value := WORST(<value>, <direction>) OVER (<partition>+)",
+    "notes": "WORST is an alias for MAX when direction='high' (e.g., adverse events, lab toxicity) or MIN when direction='low' (e.g., efficacy scores where lower is worse). Only non-missing observed values up to the current time are considered."
+  },
+  "unit_policy": "preserved",
+  "configurations": [
+    {
+      "name": "direction",
+      "dataType": "enum",
+      "defaultValue": "high",
+      "enumValues": [
+        "high",
+        "low"
+      ],
+      "description": "Which direction is 'worst': 'high' = MAX is worst (e.g., toxicity), 'low' = MIN is worst (e.g., efficacy where higher is better)"
+    },
+    {
+      "name": "scope",
+      "dataType": "enum",
+      "defaultValue": "cumulative",
+      "enumValues": [
+        "cumulative",
+        "all_observed"
+      ],
+      "description": "Whether to consider only values observed up to the current time point (cumulative) or all observed values in the partition (all_observed)"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "value",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Source values from which the worst is selected"
+    },
+    {
+      "name": "partition",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "multiple",
+      "description": "Grouping variables (typically subject, parameter)"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Quantity",
+      "name": "derived_value",
+      "indexed_by": [
+        "partition"
+      ]
+    }
+  ],
+  "assumptions": [
+    "At least one non-missing observed value exists in the partition",
+    "The direction of 'worst' is clinically defined for the endpoint"
+  ]
+}

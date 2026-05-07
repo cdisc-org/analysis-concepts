@@ -1,0 +1,88 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json",
+    "unit_conversions": "../../model/vocabularies/unit_conversions.json"
+  },
+  "name": "M.UnitConversion",
+  "label": "Unit Conversion",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "derivation",
+  "class": "Arithmetic",
+  "intent": [
+    "PrecisionAdjustment"
+  ],
+  "codings": [],
+  "description": "Convert a numeric value from its per-row source unit to a fixed target unit, using a scalar factor looked up in the unit_conversions vocabulary keyed by (source_unit, target_unit). Linear conversions only \u2014 non-linear conversions (e.g. temperature) require a different method.",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := round(value.value * factor(value.unit, target_unit), precision, rounding_method) [target_unit]",
+    "generic_expression": "result := round(<value>.value * factor(<value>.unit, <target_unit>), <precision>, <rounding_method>) [<target_unit>]",
+    "notes": "Algorithm reads the input Quantity's .value (decimal) and .unit (code) fields, applies the scalar factor from the unit_conversions vocabulary, and produces a Quantity with the target unit. Single Quantity output combines the converted value and target unit."
+  },
+  "unit_policy": "configured",
+  "configurations": [
+    {
+      "name": "target_unit",
+      "dataType": "code",
+      "description": "Target unit code. Valid values are resolved at runtime from the distinct to_code / to_name entries in unit_conversions.json, filtered by the physical dimension of the source measure. No default \u2014 must be chosen per transformation."
+    },
+    {
+      "name": "precision",
+      "dataType": "integer",
+      "defaultValue": null,
+      "description": "Number of decimal places to round result to after multiplication. If null/unset, no rounding is applied. For complex rounding rules, leave null and chain M.Rounding downstream."
+    },
+    {
+      "name": "rounding_method",
+      "dataType": "enum",
+      "defaultValue": "half_up",
+      "enumValues": [
+        "half_up",
+        "half_even",
+        "half_down",
+        "floor",
+        "ceiling"
+      ],
+      "description": "Rounding convention when precision is set. Same enum as M.Rounding. Ignored when precision is null."
+    },
+    {
+      "name": "on_missing_factor",
+      "dataType": "enum",
+      "defaultValue": "fail",
+      "enumValues": [
+        "fail",
+        "na",
+        "passthrough"
+      ],
+      "description": "Behaviour when no (source_unit, target_unit) entry is found in the vocabulary. fail: raise an error. na: set result to NA. passthrough: keep the original value unchanged."
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "value",
+      "dataType": "Quantity",
+      "required": true,
+      "cardinality": "single",
+      "description": "The Quantity to convert (value + unit). Algorithm reads both .value (decimal) and .unit (code) fields. Resolves via Observation.Result facet \u2192 SDTM --ORRES + --ORRESU."
+    }
+  ],
+  "methodOutput": [
+    {
+      "name": "result",
+      "output_type": "fhir:Quantity",
+      "label": "Converted Quantity in target_unit"
+    }
+  ],
+  "assumptions": [
+    "The (source_unit, target_unit) pair exists in the unit_conversions vocabulary for every row.",
+    "Conversion is linear: target_value = source_value * scalar_factor.",
+    "Non-linear conversions (e.g. Fahrenheit\u2194Celsius, affine transforms) are out of scope \u2014 use a separate method (M.AffineUnitConversion)."
+  ]
+}

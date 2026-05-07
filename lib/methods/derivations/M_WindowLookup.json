@@ -1,0 +1,78 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.WindowLookup",
+  "label": "Window Lookup",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "derivation",
+  "class": "Data Handling",
+  "intent": [
+    "ValueRetrieval"
+  ],
+  "description": "Retrieves value from another row within partition",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := LAG(value, 1) OVER (partition ORDER BY order_by)",
+    "generic_expression": "result := <window_func>(<value>, <offset>?) OVER (<partition>+ ORDER BY <order_by>)"
+  },
+  "unit_policy": "preserved",
+  "configurations": [
+    {
+      "name": "window_func",
+      "dataType": "enum",
+      "defaultValue": "lag",
+      "enumValues": [
+        "lag",
+        "lead",
+        "first",
+        "last"
+      ],
+      "description": "Window function type"
+    },
+    {
+      "name": "offset",
+      "dataType": "decimal",
+      "defaultValue": 1,
+      "description": "Row offset for lag/lead"
+    },
+    {
+      "name": "order_by",
+      "dataType": "code",
+      "description": "Variable defining row order within partition"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "value",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Value to look up"
+    },
+    {
+      "name": "partition",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "multiple",
+      "description": "Partitioning variables"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Quantity",
+      "name": "derived_value",
+      "indexed_by": [
+        "partition"
+      ]
+    }
+  ],
+  "assumptions": []
+}

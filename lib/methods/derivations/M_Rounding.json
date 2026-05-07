@@ -1,0 +1,64 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.Rounding",
+  "label": "Rounding",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "derivation",
+  "class": "Arithmetic",
+  "intent": [
+    "PrecisionAdjustment"
+  ],
+  "description": "Rounds numeric value to specified precision",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := ROUND(value, decimals)",
+    "generic_expression": "result := ROUND(<value>, <decimals>)"
+  },
+  "unit_policy": "preserved",
+  "configurations": [
+    {
+      "name": "decimals",
+      "dataType": "decimal",
+      "defaultValue": "",
+      "description": "Number of decimal places"
+    },
+    {
+      "name": "method",
+      "dataType": "enum",
+      "defaultValue": "half_up",
+      "enumValues": [
+        "half_up",
+        "half_even",
+        "half_down",
+        "floor",
+        "ceiling"
+      ],
+      "description": "Rounding method for tie-breaking"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "value",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Value to round"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Quantity",
+      "name": "derived_value"
+    }
+  ],
+  "assumptions": []
+}

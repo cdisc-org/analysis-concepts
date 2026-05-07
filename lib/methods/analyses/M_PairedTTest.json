@@ -1,0 +1,77 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json",
+    "configuration_concepts": "../../model/method/configuration_concepts.json"
+  },
+  "name": "M.PairedTTest",
+  "label": "Paired t-test",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "analysis",
+  "class": "General Linear Models",
+  "intent": [
+    "GroupComparison"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000095",
+      "display": "paired t-test"
+    }
+  ],
+  "description": "Tests whether the mean difference between paired observations differs from zero",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ 1 | repeated_subject",
+    "generic_expression": "<response> ~ 1 | <repeated_subject>",
+    "notes": "Intercept-only model on the within-subject differences"
+  },
+  "configurations": [
+    {
+      "name": "mu",
+      "dataType": "decimal",
+      "defaultValue": 0,
+      "description": "Hypothesized difference"
+    },
+    {
+      "name": "conf_level",
+      "conforms_to": "conf_level"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "response",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The paired difference values (or the raw values at two timepoints)"
+    },
+    {
+      "name": "repeated_subject",
+      "dataType": "id",
+      "required": true,
+      "cardinality": "single",
+      "description": "Subject identifier for pairing"
+    }
+  ],
+  "methodOutput": [
+    {
+      "name": "t_test_result",
+      "output_type": "t_test_result"
+    },
+    {
+      "name": "point_estimate",
+      "output_type": "point_estimate"
+    }
+  ],
+  "assumptions": [
+    "Differences are normally distributed",
+    "Pairs are independent"
+  ]
+}

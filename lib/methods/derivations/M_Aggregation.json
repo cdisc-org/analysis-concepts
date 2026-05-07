@@ -1,0 +1,71 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.Aggregation",
+  "label": "Aggregation",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "derivation",
+  "class": "Summary",
+  "intent": [
+    "DataAggregation"
+  ],
+  "description": "Aggregates values within a partition using specified function",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := AGG(value) OVER (partition)",
+    "generic_expression": "result := <agg_func>(<value>) OVER (<partition>+)"
+  },
+  "unit_policy": "preserved",
+  "configurations": [
+    {
+      "name": "agg_func",
+      "dataType": "enum",
+      "defaultValue": "mean",
+      "enumValues": [
+        "sum",
+        "mean",
+        "median",
+        "min",
+        "max",
+        "count",
+        "first",
+        "last"
+      ],
+      "description": "Aggregation function to apply"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "value",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Values to aggregate"
+    },
+    {
+      "name": "partition",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "multiple",
+      "description": "Grouping variables defining the partition"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Quantity",
+      "name": "derived_value",
+      "indexed_by": [
+        "partition"
+      ]
+    }
+  ],
+  "assumptions": []
+}

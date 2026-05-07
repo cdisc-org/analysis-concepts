@@ -1,0 +1,77 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.FisherExactTest",
+  "label": "Fisher's Exact Test",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "analysis",
+  "class": "Categorical Data Analysis",
+  "intent": [
+    "CategoricalAssociation"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000073",
+      "display": "Fisher's exact test"
+    }
+  ],
+  "description": "Exact test of independence for 2x2 contingency tables. Preferred over chi-squared when expected cell counts are small.",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ fixed_effect",
+    "generic_expression": "<response> ~ <fixed_effect>",
+    "notes": "Both variables must be binary for the standard 2x2 Fisher test."
+  },
+  "configurations": [
+    {
+      "name": "alternative",
+      "dataType": "enum",
+      "defaultValue": "two_sided",
+      "enumValues": [
+        "two_sided",
+        "less",
+        "greater"
+      ],
+      "description": "Direction of alternative hypothesis"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "response",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single",
+      "description": "Binary response variable (e.g., responder flag)"
+    },
+    {
+      "name": "fixed_effect",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single",
+      "description": "Treatment grouping variable"
+    }
+  ],
+  "methodOutput": [
+    {
+      "name": "exact_test_result",
+      "output_type": "exact_test_result"
+    },
+    {
+      "name": "odds_ratio_measures",
+      "output_type": "odds_ratio_measures"
+    }
+  ],
+  "assumptions": [
+    "Independence of observations",
+    "Fixed marginal totals"
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.LogRankTest",
+  "label": "Log-rank Test",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "analysis",
+  "class": "Survival Models",
+  "intent": [
+    "TimeToEventEstimate"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000640",
+      "display": "log-rank test"
+    }
+  ],
+  "description": "Compares survival distributions between groups using a rank-based test",
+  "formula": {
+    "notation": "survival",
+    "default_expression": "Surv(time, event) ~ fixed_effect",
+    "generic_expression": "Surv(<time>, <event>) ~ <fixed_effect>+ + <strata>*",
+    "notes": "Multiple group factors can be included. Strata variables (after adjusting) produce stratified log-rank tests."
+  },
+  "configurations": [
+    {
+      "name": "rho",
+      "dataType": "decimal",
+      "defaultValue": 0,
+      "description": "Weight parameter: 0 = log-rank (default), 1 = Wilcoxon/Peto"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "time",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Time to event or censoring"
+    },
+    {
+      "name": "event",
+      "dataType": "boolean",
+      "required": true,
+      "cardinality": "single",
+      "description": "Event indicator"
+    },
+    {
+      "name": "fixed_effect",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single",
+      "description": "Grouping variable"
+    },
+    {
+      "name": "strata",
+      "dataType": "code",
+      "required": false,
+      "cardinality": "multiple",
+      "description": "Optional stratification variables"
+    }
+  ],
+  "methodOutput": [
+    {
+      "name": "chi_squared_test_result",
+      "output_type": "chi_squared_test_result"
+    }
+  ],
+  "assumptions": [
+    "Non-informative censoring",
+    "Proportional hazards (for optimal power)"
+  ]
+}

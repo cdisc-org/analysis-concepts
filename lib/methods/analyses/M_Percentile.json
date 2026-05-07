@@ -1,0 +1,79 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.Percentile",
+  "label": "Percentile",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "analysis",
+  "class": "Quantile",
+  "intent": [
+    "DescriptiveSummary"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000293",
+      "display": "percentile"
+    }
+  ],
+  "description": "Computes the value at a specified percentile rank",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := PERCENTILE(response, percentile_value) OVER (group)",
+    "generic_expression": "result := PERCENTILE(<response>, <percentile_value>) OVER (<group>*)"
+  },
+  "unit_policy": "preserved",
+  "configurations": [
+    {
+      "name": "percentile_value",
+      "dataType": "decimal",
+      "defaultValue": 50,
+      "description": "Percentile rank (0 to 100)"
+    },
+    {
+      "name": "percentile_method",
+      "dataType": "enum",
+      "defaultValue": "type_2",
+      "enumValues": [
+        "type_2",
+        "type_6",
+        "type_7"
+      ],
+      "description": "Interpolation method (type_2 = SAS default, type_7 = R default)"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "response",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The variable to summarize"
+    },
+    {
+      "name": "group",
+      "dataType": "code",
+      "required": false,
+      "cardinality": "single_or_multiple",
+      "description": "Optional grouping variable(s)"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Quantity",
+      "name": "derived_value",
+      "indexed_by": [
+        "group"
+      ]
+    }
+  ],
+  "assumptions": []
+}

@@ -1,0 +1,119 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json",
+    "configuration_concepts": "../../model/method/configuration_concepts.json"
+  },
+  "name": "M.ANOVA",
+  "label": "ANOVA",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "analysis",
+  "class": "General Linear Models",
+  "intent": [
+    "GroupComparison"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000048",
+      "display": "ANOVA"
+    }
+  ],
+  "description": "Analysis of Variance - compares means across multiple groups",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ fixed_effect",
+    "generic_expression": "<response> ~ <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)*",
+    "notes": "One or more factors; interactions can be added with ':' or '*' operator"
+  },
+  "configurations": [
+    {
+      "name": "ss_type",
+      "dataType": "enum",
+      "defaultValue": "III",
+      "enumValues": [
+        "I",
+        "II",
+        "III",
+        "IV"
+      ],
+      "description": "Sum of squares type"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "response",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The response variable"
+    },
+    {
+      "name": "fixed_effect",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single_or_multiple",
+      "description": "Grouping/factor variable(s)"
+    }
+  ],
+  "methodOutput": [
+    {
+      "name": "fit_statistics_linear",
+      "output_type": "fit_statistics_linear"
+    },
+    {
+      "name": "type3_tests_f",
+      "output_type": "type3_tests_f",
+      "indexed_by": [
+        "fixed_effect",
+        "fixed_effect:fixed_effect"
+      ],
+      "configurations": [
+        {
+          "name": "multiplicity_adjustment",
+          "conforms_to": "multiplicity_adjustment",
+          "applicable_scopes": [
+            "universal"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ls_means",
+      "output_type": "ls_means",
+      "indexed_by": [
+        "fixed_effect"
+      ]
+    },
+    {
+      "name": "contrasts_t",
+      "output_type": "contrasts_t",
+      "indexed_by": [
+        "fixed_effect"
+      ],
+      "configurations": [
+        {
+          "name": "multiplicity_adjustment",
+          "conforms_to": "multiplicity_adjustment",
+          "applicable_scopes": [
+            "universal",
+            "anova_pairwise_means",
+            "anova_many_to_one",
+            "linear_contrasts"
+          ]
+        }
+      ]
+    }
+  ],
+  "assumptions": [
+    "Independence of observations",
+    "Normality within groups",
+    "Homogeneity of variance"
+  ]
+}

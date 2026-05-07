@@ -1,0 +1,72 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.ChiSquaredTest",
+  "label": "Chi-squared Test",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "analysis",
+  "class": "Categorical Data Analysis",
+  "intent": [
+    "CategoricalAssociation"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000081",
+      "display": "Pearson's Chi square test of independence between categorical variables"
+    }
+  ],
+  "description": "Tests association between two categorical variables using Pearson's chi-squared statistic",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ fixed_effect",
+    "generic_expression": "<response> ~ <fixed_effect>",
+    "notes": "Both response and fixed_effect are categorical. For RxC tables (more than 2x2)."
+  },
+  "configurations": [
+    {
+      "name": "correction",
+      "dataType": "enum",
+      "defaultValue": "none",
+      "enumValues": [
+        "none",
+        "yates"
+      ],
+      "description": "Continuity correction (applicable for 2x2 tables)"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "response",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single",
+      "description": "Response category variable"
+    },
+    {
+      "name": "fixed_effect",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single",
+      "description": "Grouping variable"
+    }
+  ],
+  "methodOutput": [
+    {
+      "name": "chi_squared_test_result",
+      "output_type": "chi_squared_test_result"
+    }
+  ],
+  "assumptions": [
+    "Independence of observations",
+    "Expected cell counts >= 5"
+  ]
+}

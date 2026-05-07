@@ -1,0 +1,3004 @@
+{
+  "version": "0.6.0",
+  "description": "Transformation library using Option B (atomic clinical concepts) for DC concepts and AC Concept Model v0.16 for analysis concepts. Dimensions expressed through bindings with dataStructureRole. SmartPhrases compose into human-readable analysis descriptions.",
+  "_w3c_alignment": {
+    "vocabulary": "https://www.w3.org/TR/vocab-data-cube/",
+    "mapping": {
+      "bindings[]": "The DSD (qb:DataStructureDefinition) of the transformation's input/output cubes. direction='input|output' distinguishes. dataStructureRole maps to qb:dimension | qb:measure | qb:attribute.",
+      "slices[]": "qb:Slice (https://www.w3.org/TR/vocab-data-cube/#slice) \u2014 fixed-dimension views of an input cube.",
+      "sliceKeys[]": "qb:SliceKey (https://www.w3.org/TR/vocab-data-cube/#slice-key) \u2014 declares which dimensions are fixed in a slice.",
+      "bindings[].slice": "AC/DC extension: pre-filter this binding's cube to the named qb:Slice before the method sees it.",
+      "bindings[].methodRole": "AC/DC extension: maps a cube slot to the method's role (value, partition, minuend, subtrahend, result, \u2026).",
+      "bindings[].conceptCategory": "AC/DC extension: references a category (e.g. VisitDimension) rather than a concrete concept; the user picks a member at study-spec time."
+    }
+  },
+  "$references": {
+    "dcConcepts": "Option_B_Clinical.json",
+    "acConcepts": "AC_Concept_Model_v016.json",
+    "qualifierTypes": "CDDM_Shared_QualifierTypes.json",
+    "conceptCategories": "model/concept/concept_categories.json",
+    "methods": "Method definitions (M.MMRM, M.LogRankTest, M.Subtraction, etc.)"
+  },
+  "configurationOptions": {
+    "imputation": {
+      "values": [
+        "LOCF",
+        "BOCF",
+        "WOCF",
+        "Mean",
+        "Median",
+        "MMRM (implicit)"
+      ],
+      "default": "LOCF"
+    },
+    "event": {
+      "values": [
+        "death",
+        "discontinuation",
+        "first AE",
+        "disease progression"
+      ]
+    },
+    "strata": {
+      "values": [
+        "site",
+        "region",
+        "baseline severity"
+      ]
+    },
+    "conf_level": {
+      "values": [
+        "90",
+        "95",
+        "97.5",
+        "99"
+      ],
+      "default": "95"
+    }
+  },
+  "roleDefinitions": {
+    "description": "Registry of SmartPhrase roles. Each role has a human-readable label, a display order, and a contextSource that classifies whether the role is typically supplied by an endpoint spec ('endpoint') or chosen directly by the user ('manual'). Runtime predicates that decide when a role is implicitly satisfied by a specific endpoint spec are app dynamics and live in ac-dc-app/data/phrase-role-config.json, not here.",
+    "order": [
+      "endpoint",
+      "parameter",
+      "timepoint",
+      "population",
+      "grouping",
+      "method",
+      "method_qualifier",
+      "covariate"
+    ],
+    "roles": {
+      "endpoint": {
+        "label": "Endpoint Type",
+        "contextSource": "endpoint"
+      },
+      "parameter": {
+        "label": "Parameter",
+        "contextSource": "endpoint"
+      },
+      "timepoint": {
+        "label": "Timepoint",
+        "contextSource": "endpoint"
+      },
+      "population": {
+        "label": "Population",
+        "contextSource": "endpoint"
+      },
+      "grouping": {
+        "label": "Grouping",
+        "contextSource": "endpoint"
+      },
+      "method": {
+        "label": "Statistical Method",
+        "contextSource": "manual"
+      },
+      "method_qualifier": {
+        "label": "Method Qualifier",
+        "contextSource": "manual"
+      },
+      "covariate": {
+        "label": "Covariates",
+        "contextSource": "manual"
+      }
+    }
+  },
+  "smartPhrases": [
+    {
+      "oid": "SP_CFB_ENDPOINT",
+      "name": "Change from baseline endpoint",
+      "role": "endpoint",
+      "phrase_template": "change from baseline in {parameter}",
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "Change",
+        "Parameter"
+      ]
+    },
+    {
+      "oid": "SP_PCTCFB_ENDPOINT",
+      "name": "Percent change from baseline endpoint",
+      "role": "endpoint",
+      "phrase_template": "percent change from baseline in {parameter}",
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "PercentChange",
+        "Parameter"
+      ]
+    },
+    {
+      "oid": "SP_TTE_ENDPOINT",
+      "name": "Time-to-event endpoint",
+      "role": "endpoint",
+      "phrase_template": "time to {event}",
+      "configurations": [
+        "event"
+      ],
+      "references": [
+        "TimeToEvent"
+      ]
+    },
+    {
+      "oid": "SP_RESPONDER_ENDPOINT",
+      "name": "Responder endpoint",
+      "role": "endpoint",
+      "phrase_template": "proportion of responders in {parameter}",
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "Flag",
+        "Parameter"
+      ]
+    },
+    {
+      "oid": "SP_VALUE_ENDPOINT",
+      "name": "Analysis value endpoint",
+      "role": "endpoint",
+      "phrase_template": "{parameter} value",
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "Measure",
+        "Parameter"
+      ]
+    },
+    {
+      "oid": "SP_SHIFT_ENDPOINT",
+      "name": "Shift endpoint",
+      "role": "endpoint",
+      "phrase_template": "shift from baseline in {parameter}",
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "Shift",
+        "Parameter"
+      ]
+    },
+    {
+      "oid": "SP_PEAK_ENDPOINT",
+      "name": "Peak value endpoint",
+      "role": "endpoint",
+      "phrase_template": "peak {parameter}",
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "PeakValue",
+        "Parameter"
+      ]
+    },
+    {
+      "oid": "SP_AUC_ENDPOINT",
+      "name": "Area under curve endpoint",
+      "role": "endpoint",
+      "phrase_template": "{parameter} AUC",
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "AreaUnderCurve",
+        "Parameter"
+      ]
+    },
+    {
+      "oid": "SP_PARAMETER",
+      "name": "Parameter",
+      "role": "parameter",
+      "phrase_template": "for {parameter}",
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "Parameter"
+      ]
+    },
+    {
+      "oid": "SP_TIMEPOINT",
+      "name": "Timepoint",
+      "role": "timepoint",
+      "phrase_template": "at {visit}",
+      "configurations": [
+        "visit"
+      ],
+      "referenceCategories": [
+        "VisitDimension"
+      ]
+    },
+    {
+      "oid": "SP_POPULATION",
+      "name": "Population",
+      "role": "population",
+      "phrase_template": "in the {population} population",
+      "configurations": [
+        "population"
+      ],
+      "references": [
+        "Population"
+      ]
+    },
+    {
+      "oid": "SP_GROUPING",
+      "name": "Treatment grouping",
+      "role": "grouping",
+      "phrase_template": "comparing {treatment} groups",
+      "configurations": [
+        "treatment"
+      ],
+      "references": [
+        "Treatment"
+      ]
+    },
+    {
+      "oid": "SP_STRATIFICATION",
+      "name": "Stratification",
+      "role": "grouping",
+      "phrase_template": "stratified by {strata}",
+      "configurations": [
+        "strata"
+      ],
+      "references": []
+    },
+    {
+      "oid": "SP_METHOD_MMRM",
+      "name": "MMRM method",
+      "role": "method",
+      "phrase_template": "using mixed model repeated measures",
+      "configurations": [],
+      "references": [
+        "M.MMRM"
+      ]
+    },
+    {
+      "oid": "SP_METHOD_ANCOVA",
+      "name": "ANCOVA method",
+      "role": "method",
+      "phrase_template": "using analysis of covariance",
+      "configurations": [],
+      "references": [
+        "M.ANCOVA"
+      ]
+    },
+    {
+      "oid": "SP_METHOD_LOGRANK",
+      "name": "Log-rank method",
+      "role": "method",
+      "phrase_template": "using the log-rank test",
+      "configurations": [],
+      "references": [
+        "M.LogRankTest"
+      ]
+    },
+    {
+      "oid": "SP_METHOD_KM",
+      "name": "Kaplan-Meier method",
+      "role": "method",
+      "phrase_template": "using Kaplan-Meier estimation",
+      "configurations": [],
+      "references": [
+        "M.KaplanMeier"
+      ]
+    },
+    {
+      "oid": "SP_METHOD_DESCSTATS",
+      "name": "Descriptive statistics method",
+      "role": "method",
+      "phrase_template": "summarised by descriptive statistics",
+      "configurations": [],
+      "references": []
+    },
+    {
+      "oid": "SP_IMPUTATION",
+      "name": "Imputation qualifier",
+      "role": "method_qualifier",
+      "phrase_template": "with {imputation} imputation for missing data",
+      "configurations": [
+        "imputation"
+      ],
+      "references": []
+    },
+    {
+      "oid": "SP_CONFIDENCE_LEVEL",
+      "name": "Confidence level qualifier",
+      "role": "method_qualifier",
+      "phrase_template": "with {conf_level}% confidence intervals",
+      "configurations": [
+        "conf_level"
+      ],
+      "references": []
+    },
+    {
+      "oid": "SP_COVARIATE_BASELINE",
+      "name": "Baseline covariate",
+      "role": "covariate",
+      "phrase_template": "adjusting for baseline {parameter}",
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "Measure"
+      ]
+    },
+    {
+      "oid": "SP_COVARIATE_SITE",
+      "name": "Site covariate",
+      "role": "covariate",
+      "phrase_template": "adjusting for site",
+      "configurations": [],
+      "references": []
+    }
+  ],
+  "derivationTransformations": [
+    {
+      "name": "T.BaselineSelection",
+      "label": "Baseline Selection",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Identify the baseline record per subject per parameter using M.RecordSelection configured for baseline.",
+      "usesMethod": "M.RecordSelection",
+      "methodConfigurations": [
+        {
+          "configurationName": "selection_rule",
+          "value": "last_non_missing"
+        },
+        {
+          "configurationName": "scope",
+          "value": "pre_treatment"
+        },
+        {
+          "configurationName": "cardinality",
+          "value": "single"
+        },
+        {
+          "configurationName": "reference_event",
+          "value": "first_dose"
+        }
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "RecordSelection operates on records, not values \u2014 no value type constraint"
+        },
+        {
+          "methodResult": "flag",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Classification",
+            "name": "Flag"
+          },
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.ChangeFromBaseline",
+      "label": "Change From Baseline",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Calculate the arithmetic change from baseline value.",
+      "usesMethod": "M.Subtraction",
+      "validSmartPhrases": [
+        "SP_CFB_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_IMPUTATION"
+      ],
+      "bindings": [
+        {
+          "methodInput": "minuend",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "Current visit value"
+        },
+        {
+          "methodInput": "subtrahend",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "slice": "parameter_baseline",
+          "_note": "Baseline-flagged record"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodResult": "derived_value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Comparison",
+            "name": "Change"
+          },
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": [
+        {
+          "name": "parameter_baseline",
+          "constraints": [
+            {
+              "dimension": "Parameter",
+              "value": "{parameter}"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "value": "Baseline"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "T.PercentChangeFromBaseline",
+      "label": "Percent Change From Baseline",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Calculate the percent change from baseline value.",
+      "usesMethod": "M.RelativeDifference",
+      "validSmartPhrases": [
+        "SP_PCTCFB_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_IMPUTATION"
+      ],
+      "bindings": [
+        {
+          "methodInput": "pre",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "Current visit value"
+        },
+        {
+          "methodInput": "post",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "slice": "parameter_baseline",
+          "_note": "Baseline-flagged record"
+        },
+        {
+          "methodResult": "result",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Comparison",
+            "name": "PercentChange"
+          },
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": [
+        {
+          "name": "parameter_baseline",
+          "constraints": [
+            {
+              "dimension": "Parameter",
+              "value": "{parameter}"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "value": "Baseline"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "T.ShiftFromBaseline",
+      "label": "Shift From Baseline",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Determine categorical shift between baseline and post-baseline values.",
+      "usesMethod": "M.CategoricalTransition",
+      "validSmartPhrases": [
+        "SP_SHIFT_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT"
+      ],
+      "bindings": [
+        {
+          "methodInput": "pre",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "Current visit categorical value"
+        },
+        {
+          "methodInput": "post",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "slice": "parameter_baseline",
+          "_note": "Baseline categorical value"
+        },
+        {
+          "methodResult": "result",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Comparison",
+            "name": "Shift"
+          },
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": [
+        {
+          "name": "parameter_baseline",
+          "constraints": [
+            {
+              "dimension": "Parameter",
+              "value": "{parameter}"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "value": "Baseline"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "T.ResponderClassification",
+      "label": "Responder Classification",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Classify subjects as responders based on threshold criterion applied to a derived value.",
+      "usesMethod": "M.ThresholdEvaluation",
+      "validSmartPhrases": [
+        "SP_RESPONDER_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT"
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Comparison",
+            "name": "Change"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodResult": "result",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Classification",
+            "name": "Flag"
+          },
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.LOCF_Imputation",
+      "label": "LOCF Imputation",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Impute missing values by carrying forward the last non-missing observation within each subject-parameter partition, ordered by analysis visit.",
+      "usesMethod": "M.ImputedValue_LOCF",
+      "validSmartPhrases": [
+        "SP_IMPUTATION"
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "LOCF operates on records \u2014 value type is pass-through"
+        },
+        {
+          "methodResult": "derived_value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "order",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.VisitWindowing",
+      "label": "Analysis Visit Assignment",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Assign records to analysis visit windows based on timing relative to protocol-defined encounters.",
+      "usesMethod": "M.WindowAssignment",
+      "methodConfigurations": [
+        {
+          "configurationName": "window_definitions",
+          "value": "(provided at study instantiation)"
+        }
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Timing"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "dimension",
+          "_note": "Window assignment uses study day (relative timing)"
+        },
+        {
+          "methodResult": "result",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Classification",
+            "name": "Category"
+          },
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.PopulationFlag",
+      "label": "Population Flag Assignment",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Assign subjects to analysis populations based on eligibility criteria.",
+      "usesMethod": "M.CriterionEvaluation",
+      "validSmartPhrases": [
+        "SP_POPULATION"
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "CriterionEvaluation is criteria-dependent; the concept's valueType determines representation"
+        },
+        {
+          "methodResult": "result",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Classification",
+            "name": "Flag"
+          },
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.PeakConcentration",
+      "label": "Peak Concentration",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Find the maximum concentration in an ordered PK profile.",
+      "usesMethod": "M.Maximum",
+      "validSmartPhrases": [
+        "SP_PEAK_ENDPOINT",
+        "SP_PARAMETER"
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodResult": "derived_value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SequenceAggregate",
+            "name": "PeakValue"
+          },
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "order",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Timing"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.AUCCalculation",
+      "label": "Area Under Curve",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Calculate the area under the concentration-time curve.",
+      "usesMethod": "M.TrapezoidalIntegration",
+      "validSmartPhrases": [
+        "SP_AUC_ENDPOINT",
+        "SP_PARAMETER"
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodResult": "result",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SequenceAggregate",
+            "name": "AreaUnderCurve"
+          },
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "order",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Timing"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.OverallSurvivalTime",
+      "label": "Overall Survival Time",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Calculate time from randomisation to death or censoring.",
+      "usesMethod": "M.DurationCalculation",
+      "validSmartPhrases": [
+        "SP_TTE_ENDPOINT"
+      ],
+      "bindings": [
+        {
+          "methodInput": "start_date",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Timing"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension",
+          "_note": "Duration calculation uses absolute dates"
+        },
+        {
+          "methodResult": "duration",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "EventAggregate",
+            "name": "TimeToEvent"
+          },
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.DeathEventFlag",
+      "label": "Death Event Flag",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Create censoring indicator for survival analysis (death = event, alive = censored).",
+      "usesMethod": "M.CriterionEvaluation",
+      "bindings": [
+        {
+          "methodResult": "result",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Classification",
+            "name": "Flag"
+          },
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.ADAS_ItemMaxScore",
+      "label": "ADAS-Cog Item Max Score",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Max possible score for each ADAS-Cog item, used as scaling denominator when items are missing.",
+      "usesMethod": "M.Aggregation",
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "max"
+        }
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "11 ADAS-Cog item scores"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodResult": "derived_value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.ADAS_MissingContribution",
+      "label": "ADAS-Cog Per-Item Missing-Capacity Contribution",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Per-row mask: if the item value is missing (NA), output the item's max possible score; else output 0. Used as the row-wise input to T.ADAS_MissingScaleCapacity, which sums these per Subject/Visit to obtain the total max-score capacity of missing items.",
+      "usesMethod": "M.ConditionalValue",
+      "methodConfigurations": [
+        {
+          "configurationName": "base",
+          "value": 0
+        }
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "Per-row item score (raw observed value; NA when the item was not scored)"
+        },
+        {
+          "methodInput": "alternate",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "Per-item max possible score from T.ADAS_ItemMaxScore (broadcast to every row of that Parameter)"
+        },
+        {
+          "methodResult": "derived_value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "output",
+          "dataStructureRole": "measure"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.ADAS_MissingScaleCapacity",
+      "label": "ADAS-Cog Missing Scale Capacity",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Sum of max-score capacity of missing items per Subject/Visit. Equals 0 when no items are missing; equals 70 when all 11 items are missing. Used as the input to T.ADAS_ScoreableFraction, which computes the imputation scaling factor (70 - this) / 70.",
+      "usesMethod": "M.Aggregation",
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "sum"
+        }
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "Per-row missing-capacity contribution from T.ADAS_MissingContribution (item_max_score when item is missing, else 0)"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodResult": "derived_value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.ADAS_ScoreableFraction",
+      "label": "ADAS-Cog Scoreable Fraction",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Per-row scoring fraction = (70 - missing_capacity) / 70. Equals 1.0 when no items are missing (no scaling needed); decreases toward 0 as more items are missing. Computed as scale * missing_capacity + offset with scale = -1/70, offset = 1.",
+      "usesMethod": "M.AffineTransform",
+      "methodConfigurations": [
+        {
+          "configurationName": "scale",
+          "value": -0.014285714285714285
+        },
+        {
+          "configurationName": "offset",
+          "value": 1
+        }
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "Total missing-item max-score capacity per Subject/Visit (output of T.ADAS_MissingScaleCapacity)"
+        },
+        {
+          "methodResult": "derived_value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "output",
+          "dataStructureRole": "measure"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.ADAS_SumAvailableScores",
+      "label": "ADAS-Cog Sum of Available Item Scores",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Sum of available (non-missing) ADAS-Cog item scores per subject/visit.",
+      "usesMethod": "M.Aggregation",
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "sum"
+        }
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "11 ADAS-Cog item scores (from BCs)"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodResult": "derived_value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.ADAS_NonMissingCount",
+      "label": "ADAS-Cog Non-Missing Item Count",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Count of non-missing ADAS-Cog item scores per subject/visit. Used to determine if enough items are present for scoring.",
+      "usesMethod": "M.Aggregation",
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "count"
+        }
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "11 ADAS-Cog item scores (from BCs)"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodResult": "derived_value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.ADAS_ScoreableCheck",
+      "label": "ADAS-Cog Scoreable Check",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Flag whether enough items are present to compute total. Requires >= 8 of 11 items.",
+      "usesMethod": "M.ThresholdCompare",
+      "methodConfigurations": [
+        {
+          "configurationName": "operator",
+          "value": ">="
+        },
+        {
+          "configurationName": "true_value",
+          "value": "Y"
+        },
+        {
+          "configurationName": "false_value",
+          "value": "N"
+        },
+        {
+          "configurationName": "threshold",
+          "value": 8
+        }
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "Count of non-missing items (M.Aggregation count)"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodResult": "derived_value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Classification",
+            "name": "Flag"
+          },
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.ADAS_Cog_11_TotalScore",
+      "label": "ADAS-Cog (11) Total Score",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "total = sum_available / scoreable_fraction, where scoreable_fraction = (70 - missing_capacity) / 70. With no missing items the fraction is 1.0 and total = sum_available. Missing if scoreable flag = N. Scale: 0-70.",
+      "usesMethod": "M.Division",
+      "bindings": [
+        {
+          "methodInput": "numerator",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "Sum of available item scores (T.ADAS_SumAvailableScores, M.Aggregation sum)"
+        },
+        {
+          "methodInput": "denominator",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "Scoreable fraction from T.ADAS_ScoreableFraction (1.0 when no items are missing; (70-x)/70 otherwise)"
+        },
+        {
+          "methodInput": "filter",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Classification",
+            "name": "Flag"
+          },
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "Scoreable flag from T.ADAS_ScoreableCheck"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodResult": "derived_value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.UnitConversion",
+      "label": "Unit Conversion",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Convert a numeric Observation from its per-row source unit to a standardised target unit using the unit_conversions vocabulary. Generic \u2014 works for any numeric Observation whose BC carries a Result.Value + Result.Unit facet pair. Produces a derived Measure with both value and unit facets populated.",
+      "usesMethod": "M.UnitConversion",
+      "validSmartPhrases": [
+        "SP_PARAMETER"
+      ],
+      "methodConfigurations": [
+        {
+          "configurationName": "on_missing_factor",
+          "value": "fail",
+          "description": "Fail loudly if a factor is missing \u2014 CDISC convention prefers errors over silent NAs."
+        }
+      ],
+      "bindings": [
+        {
+          "methodInput": "value",
+          "conceptRef": {
+            "model": "USDM",
+            "conceptClass": "BiomedicalConceptProperty",
+            "name": "Observation",
+            "propertyType": {
+              "code": "Cxxxx",
+              "label": "value"
+            }
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "Source numeric value. Resolves via BC-to-OC instance mapping to the SDTM --ORRES variable (VSORRES for Height)."
+        },
+        {
+          "methodInput": "source_unit",
+          "conceptRef": {
+            "model": "USDM",
+            "conceptClass": "BiomedicalConceptProperty",
+            "name": "Unit",
+            "propertyType": {
+              "code": "Cxxxx",
+              "label": "source_unit"
+            }
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "attribute",
+          "_note": "Source unit code varying per row. Resolves via BC-to-OC instance mapping to the SDTM --ORRESU variable (VSORRESU for Height)."
+        },
+        {
+          "methodResult": "derived_value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "_note": "Converted Measure (value + unit). Single Quantity output cell."
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "USDM",
+            "conceptClass": "BiomedicalConcept",
+            "name": "Observation"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension",
+          "_note": "BC identifier \u2014 resolves to --TESTCD in SDTM (e.g., VSTESTCD). The constraint value comes from the endpoint's linked BC specialization."
+        },
+        {
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension",
+          "_note": "Output parameter label \u2014 value comes from the endpoint specification (Step 3), not from the source data. Replaces the SDTM Topic identifier with the clinically meaningful endpoint label (e.g., 'Weight (kg)')."
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.DeriveAnalysisVisit",
+      "label": "Derive Analysis Visit",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "derivation",
+      "description": "Assign each observation to a scheduled analysis visit (AVISIT) via day-windows and a target-day tie-break. Default windows are for LZZT ADAS-Cog (\u22641 Baseline, 2-84 Week 8, 85-140 Week 16, >140 Week 24). Consumes a pre-computed study day (SDTM --DY) relative to the randomization anchor BC.",
+      "usesMethod": "M.WindowedVisitAssignment",
+      "methodConfigurations": [
+        {
+          "configurationName": "referenceBC",
+          "value": "BiomedicalConcept_216",
+          "description": "BC providing the randomization anchor (Subject is Randomized, CDISC C114209). DSSTDTC is the per-subject anchor date; SDTM's --DY columns are already pre-computed relative to this. Override if your SAP uses a different anchor (e.g. First Dose BC)."
+        },
+        {
+          "configurationName": "windows",
+          "value": [
+            {
+              "label": "Baseline",
+              "visitNumber": 3,
+              "dayMin": null,
+              "dayMax": 1,
+              "targetDay": 1
+            },
+            {
+              "label": "Week 8",
+              "visitNumber": 8,
+              "dayMin": 2,
+              "dayMax": 84,
+              "targetDay": 56
+            },
+            {
+              "label": "Week 16",
+              "visitNumber": 10,
+              "dayMin": 85,
+              "dayMax": 140,
+              "targetDay": 112
+            },
+            {
+              "label": "Week 24",
+              "visitNumber": 12,
+              "dayMin": 141,
+              "dayMax": null,
+              "targetDay": 168
+            }
+          ],
+          "description": "Scheduled visit windows. Edit per SAP. dayMin/dayMax=null means unbounded on that side."
+        },
+        {
+          "configurationName": "tieBreak",
+          "value": "closest-to-target-then-earliest",
+          "description": "Tie-break: among windows matching a day, pick min |day\u2212targetDay|, then min visitNumber."
+        }
+      ],
+      "bindings": [
+        {
+          "methodInput": "day",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Timing"
+          },
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "_note": "Study day relative to the randomization anchor. In SDTM this is the --DY column (e.g. QSDY), computed by the load step as day-from-RFSTDTC."
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodResult": "derived_value",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Classification",
+            "name": "AnalysisVisit"
+          },
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    }
+  ],
+  "analysisTransformations": [
+    {
+      "name": "T.CFB_MMRM_Primary",
+      "label": "Change From Baseline MMRM Primary Analysis",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "analysis",
+      "description": "Primary efficacy analysis: MMRM on change from baseline, comparing treatment groups at each visit with baseline as covariate.",
+      "acCategory": "TreatmentComparison",
+      "usesMethod": "M.MMRM",
+      "validSmartPhrases": [
+        "SP_CFB_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
+        "SP_METHOD_MMRM",
+        "SP_IMPUTATION",
+        "SP_CONFIDENCE_LEVEL",
+        "SP_COVARIATE_BASELINE"
+      ],
+      "methodConfigurations": [
+        {
+          "configurationName": "covariance_structure",
+          "value": "UN"
+        },
+        {
+          "configurationName": "estimation_method",
+          "value": "REML"
+        },
+        {
+          "configurationName": "df_method",
+          "value": "KR"
+        }
+      ],
+      "bindings": [
+        {
+          "methodInput": "response",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Comparison",
+            "name": "Change"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "covariate",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "slice": "parameter_baseline"
+        },
+        {
+          "methodInput": "repeated_factor",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "fixed_effect",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Treatment"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "repeated_subject",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "valueType": "fhir:Identifier",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": [
+        {
+          "name": "parameter_baseline",
+          "constraints": [
+            {
+              "dimension": "Parameter",
+              "value": "{parameter}"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "value": "Baseline"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "T.CFB_ANCOVA",
+      "label": "Change From Baseline ANCOVA",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "analysis",
+      "description": "ANCOVA on change from baseline at a specific visit, comparing treatment groups with baseline as covariate.",
+      "acCategory": "TreatmentComparison",
+      "usesMethod": "M.ANCOVA",
+      "validSmartPhrases": [
+        "SP_CFB_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
+        "SP_METHOD_ANCOVA",
+        "SP_CONFIDENCE_LEVEL",
+        "SP_COVARIATE_BASELINE",
+        "SP_COVARIATE_SITE"
+      ],
+      "methodConfigurations": [
+        {
+          "configurationName": "ss_type",
+          "value": "III"
+        }
+      ],
+      "bindings": [
+        {
+          "methodInput": "response",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Comparison",
+            "name": "Change"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "covariate",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "slice": "parameter_baseline"
+        },
+        {
+          "methodInput": "fixed_effect",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Treatment"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": [
+        {
+          "name": "parameter_baseline",
+          "constraints": [
+            {
+              "dimension": "Parameter",
+              "value": "{parameter}"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "value": "Baseline"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "T.OS_LogRank",
+      "label": "Overall Survival Log-Rank Test",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "analysis",
+      "description": "Compare overall survival between treatment groups using the log-rank test.",
+      "acCategory": "SurvivalAnalysis",
+      "usesMethod": "M.LogRankTest",
+      "validSmartPhrases": [
+        "SP_TTE_ENDPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
+        "SP_METHOD_LOGRANK",
+        "SP_STRATIFICATION"
+      ],
+      "methodConfigurations": [
+        {
+          "configurationName": "rho",
+          "value": 0
+        }
+      ],
+      "bindings": [
+        {
+          "methodInput": "time",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "EventAggregate",
+            "name": "TimeToEvent"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "event",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Classification",
+            "name": "Flag"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "fixed_effect",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Treatment"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.DescStats_CFB",
+      "label": "Descriptive Statistics of Change From Baseline",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "analysis",
+      "description": "Summary statistics (N, mean, SD, median, Q1, Q3, min, max) for change from baseline by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.DescriptiveStatistics",
+      "validSmartPhrases": [
+        "SP_CFB_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
+        "SP_METHOD_DESCSTATS"
+      ],
+      "bindings": [
+        {
+          "methodInput": "response",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Comparison",
+            "name": "Change"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "group",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Treatment"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.Count_Measure",
+      "label": "Count (n)",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "analysis",
+      "description": "Count of non-missing values for a measure by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.Count",
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "bindings": [
+        {
+          "methodInput": "response",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "group",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Treatment"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.Mean_Measure",
+      "label": "Mean",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "analysis",
+      "description": "Arithmetic mean of a measure by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.Mean",
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "bindings": [
+        {
+          "methodInput": "response",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "group",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Treatment"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.SD_Measure",
+      "label": "Standard Deviation",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "analysis",
+      "description": "Standard deviation of a measure by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.StandardDeviation",
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "bindings": [
+        {
+          "methodInput": "response",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "group",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Treatment"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.Median_Measure",
+      "label": "Median",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "analysis",
+      "description": "Median of a measure by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.Median",
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "bindings": [
+        {
+          "methodInput": "response",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "group",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Treatment"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.Quartile_Measure",
+      "label": "Quartiles (Q1, Q3)",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "analysis",
+      "description": "First and third quartiles of a measure by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.Quartile",
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "bindings": [
+        {
+          "methodInput": "response",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "group",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Treatment"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.Min_Measure",
+      "label": "Minimum",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "analysis",
+      "description": "Minimum value of a measure by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.Minimum",
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "bindings": [
+        {
+          "methodInput": "response",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "group",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Treatment"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.Max_Measure",
+      "label": "Maximum",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "analysis",
+      "description": "Maximum value of a measure by treatment group and visit.",
+      "acCategory": "DescriptiveSummary",
+      "usesMethod": "M.Maximum",
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "bindings": [
+        {
+          "methodInput": "response",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "PointComputation",
+            "name": "Measure"
+          },
+          "valueType": "fhir:Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "group",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Treatment"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    },
+    {
+      "name": "T.Responder_ChiSq",
+      "label": "Responder Analysis Chi-Square",
+      "code": {
+        "system": "NCI",
+        "value": null
+      },
+      "transformationType": "analysis",
+      "description": "Compare responder proportions between treatment groups using chi-square test.",
+      "acCategory": "TreatmentComparison",
+      "usesMethod": "M.ChiSquaredTest",
+      "validSmartPhrases": [
+        "SP_RESPONDER_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
+        "SP_METHOD_CHISQ"
+      ],
+      "bindings": [
+        {
+          "methodInput": "response",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "Classification",
+            "name": "Flag"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodInput": "fixed_effect",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Treatment"
+          },
+          "valueType": "fhir:CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "partition",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Subject"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "Parameter"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "methodInput": "constraint",
+          "conceptRef": {
+            "model": "AnalysisConceptModel",
+            "conceptClass": "SharedDimension",
+            "name": "VisitDimension"
+          },
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": []
+    }
+  ]
+}

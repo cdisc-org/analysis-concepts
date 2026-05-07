@@ -1,0 +1,65 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.DateDifference",
+  "label": "Date Difference",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "derivation",
+  "class": "Arithmetic",
+  "intent": [
+    "ChangeComputation"
+  ],
+  "description": "Computes the difference between two dates in specified units",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := date_diff(end_date, start_date, unit)",
+    "generic_expression": "result := date_diff(<end_date>, <start_date>, <unit>)"
+  },
+  "unit_policy": "computed",
+  "unit_computation_rule": "ISO 8601 duration unit derived from input dates (typically days)",
+  "configurations": [
+    {
+      "name": "unit",
+      "dataType": "enum",
+      "defaultValue": "days",
+      "enumValues": [
+        "days",
+        "weeks",
+        "months",
+        "years"
+      ],
+      "description": "Unit for the result"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "start_date",
+      "dataType": "date",
+      "required": true,
+      "cardinality": "single",
+      "description": "The starting date"
+    },
+    {
+      "name": "end_date",
+      "dataType": "date",
+      "required": true,
+      "cardinality": "single",
+      "description": "The ending date"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Duration",
+      "name": "derived_value"
+    }
+  ],
+  "assumptions": []
+}

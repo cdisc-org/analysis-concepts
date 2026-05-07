@@ -1,0 +1,54 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.CumulativeCount",
+  "label": "Cumulative Count",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "analysis",
+  "class": "Counting",
+  "intent": [
+    "DescriptiveSummary"
+  ],
+  "description": "Computes cumulative counts across ordered categories",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := CUMCOUNT(response) OVER (group)",
+    "generic_expression": "result := CUMCOUNT(<response>) OVER (<group>*)"
+  },
+  "unit_policy": "dimensionless",
+  "configurations": [],
+  "methodInput": [
+    {
+      "name": "response",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single",
+      "description": "The categorical variable to summarize"
+    },
+    {
+      "name": "group",
+      "dataType": "code",
+      "required": false,
+      "cardinality": "single_or_multiple",
+      "description": "Optional grouping variable(s)"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Count",
+      "name": "derived_value",
+      "indexed_by": [
+        "group"
+      ]
+    }
+  ],
+  "assumptions": []
+}

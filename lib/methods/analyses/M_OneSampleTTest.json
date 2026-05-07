@@ -1,0 +1,81 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json",
+    "configuration_concepts": "../../model/method/configuration_concepts.json"
+  },
+  "name": "M.OneSampleTTest",
+  "label": "One-sample t-test",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "analysis",
+  "class": "General Linear Models",
+  "intent": [
+    "GroupComparison"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000302",
+      "display": "one sample t-test"
+    }
+  ],
+  "description": "Tests whether the mean of a single sample differs from a hypothesized value",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ 1",
+    "generic_expression": "<response> ~ 1",
+    "notes": "Intercept-only model; the test is against the hypothesized mu"
+  },
+  "configurations": [
+    {
+      "name": "mu",
+      "dataType": "decimal",
+      "defaultValue": 0,
+      "description": "Hypothesized population mean"
+    },
+    {
+      "name": "alternative",
+      "dataType": "enum",
+      "defaultValue": "two_sided",
+      "enumValues": [
+        "two_sided",
+        "less",
+        "greater"
+      ],
+      "description": "Direction of alternative hypothesis"
+    },
+    {
+      "name": "conf_level",
+      "conforms_to": "conf_level"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "response",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The sample data"
+    }
+  ],
+  "methodOutput": [
+    {
+      "name": "t_test_result",
+      "output_type": "t_test_result"
+    },
+    {
+      "name": "point_estimate",
+      "output_type": "point_estimate"
+    }
+  ],
+  "assumptions": [
+    "Normality of data (or large sample size)",
+    "Independence of observations"
+  ]
+}

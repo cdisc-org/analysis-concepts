@@ -1,0 +1,59 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.Categorization",
+  "label": "Categorization",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "derivation",
+  "class": "Classification",
+  "intent": [
+    "ValueClassification"
+  ],
+  "description": "Maps continuous or discrete values to categories",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := CASE WHEN conditions THEN categories END",
+    "generic_expression": "result := CASE WHEN <conditions> THEN <categories> ELSE <default_category> END"
+  },
+  "configurations": [
+    {
+      "name": "conditions",
+      "dataType": "string",
+      "description": "Condition expressions (e.g., 'value < 30, value < 70, value >= 70')"
+    },
+    {
+      "name": "categories",
+      "dataType": "code",
+      "description": "Category labels (e.g., 'Low, Medium, High')"
+    },
+    {
+      "name": "default_category",
+      "dataType": "code",
+      "description": "Category when no condition matches"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "value",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Value to categorize"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:CodeableConcept",
+      "name": "derived_value"
+    }
+  ],
+  "assumptions": []
+}

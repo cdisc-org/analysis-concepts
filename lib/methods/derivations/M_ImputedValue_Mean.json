@@ -1,0 +1,59 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.ImputedValue_Mean",
+  "label": "Mean Imputation",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "derivation",
+  "class": "Data Handling",
+  "intent": [
+    "MissingDataHandling"
+  ],
+  "description": "Computes the arithmetic mean of all non-missing observed values within a group as the imputed value. Common for baseline covariates or when a group-level central tendency is an appropriate replacement.",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "imputed_value := MEAN(value) OVER (group_partition)",
+    "generic_expression": "imputed_value := MEAN(<value>) OVER (<group_partition>+)",
+    "notes": "The partition defines the scope of the mean computation. For subject-level mean imputation, partition by subject. For group-level, partition by treatment group. The mean excludes the missing values being imputed."
+  },
+  "unit_policy": "preserved",
+  "configurations": [],
+  "methodInput": [
+    {
+      "name": "value",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Source values from which the mean is computed"
+    },
+    {
+      "name": "group_partition",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "multiple",
+      "description": "Grouping variables defining the mean computation scope (e.g., treatment group, site, or subject)"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Quantity",
+      "name": "derived_value",
+      "indexed_by": [
+        "group_partition"
+      ]
+    }
+  ],
+  "assumptions": [
+    "At least one non-missing value exists in the group",
+    "Missing data are Missing Completely at Random (MCAR) or Missing at Random (MAR) for unbiased mean estimation",
+    "Mean imputation underestimates variance \u2014 not suitable when variance estimation is important"
+  ]
+}

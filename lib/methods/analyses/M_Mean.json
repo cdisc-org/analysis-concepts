@@ -1,0 +1,62 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.Mean",
+  "label": "Arithmetic Mean",
+  "code": {
+    "system": "NCI",
+    "value": null,
+    "_note": "NCI C-code to be assigned"
+  },
+  "type": "analysis",
+  "class": "Central Tendency",
+  "intent": [
+    "DescriptiveSummary"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000573",
+      "display": "average value"
+    }
+  ],
+  "description": "Computes the arithmetic mean of a numeric variable",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := MEAN(response) OVER (group)",
+    "generic_expression": "result := MEAN(<response>) OVER (<group>*)"
+  },
+  "unit_policy": "preserved",
+  "configurations": [],
+  "methodInput": [
+    {
+      "name": "response",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The variable to summarize"
+    },
+    {
+      "name": "group",
+      "dataType": "code",
+      "required": false,
+      "cardinality": "single_or_multiple",
+      "description": "Optional grouping variable(s)"
+    }
+  ],
+  "methodOutput": [
+    {
+      "name": "result",
+      "output_type": "fhir:Quantity",
+      "indexed_by": [
+        "group"
+      ]
+    }
+  ],
+  "assumptions": []
+}

@@ -1,0 +1,132 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json",
+    "configuration_concepts": "../../model/method/configuration_concepts.json"
+  },
+  "name": "M.MANOVA",
+  "label": "Multivariate Analysis of Variance",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "analysis",
+  "class": "General Linear Models",
+  "intent": [
+    "GroupComparison"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000454",
+      "display": "multivariate analysis of variance"
+    }
+  ],
+  "description": "Tests the hypothesis of no overall treatment effect across multiple correlated response variables simultaneously",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "cbind(response1, response2, ...) ~ fixed_effect",
+    "generic_expression": "cbind(<response>+) ~ <covariate>* + <fixed_effect>+",
+    "notes": "Left-hand side uses cbind() to specify the multivariate response. In long format with a parameter identifier, the model is fit as response ~ group with subject and parameter defining the multivariate structure."
+  },
+  "configurations": [
+    {
+      "name": "test_statistic",
+      "dataType": "enum",
+      "defaultValue": "wilks",
+      "enumValues": [
+        "wilks",
+        "pillai",
+        "hotelling_lawley",
+        "roy"
+      ],
+      "description": "Multivariate test statistic"
+    },
+    {
+      "name": "covariance_structure",
+      "dataType": "enum",
+      "defaultValue": "UN",
+      "enumValues": [
+        "UN",
+        "CS",
+        "AR1"
+      ],
+      "description": "Covariance structure among responses"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "response",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "multiple",
+      "description": "Multiple correlated response variables"
+    },
+    {
+      "name": "fixed_effect",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single_or_multiple",
+      "description": "Treatment/factor variable(s)"
+    },
+    {
+      "name": "repeated_subject",
+      "dataType": "id",
+      "required": true,
+      "cardinality": "single",
+      "description": "Subject identifier"
+    },
+    {
+      "name": "repeated_factor",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single",
+      "description": "Parameter/subscale identifier (defines which response variable)"
+    }
+  ],
+  "methodOutput": [
+    {
+      "name": "multivariate_tests",
+      "output_type": "multivariate_tests",
+      "test_types": [
+        "wilks_lambda",
+        "pillai_trace",
+        "hotelling_lawley_trace",
+        "roy_greatest_root"
+      ]
+    },
+    {
+      "name": "type3_tests_mixed",
+      "output_type": "type3_tests_mixed",
+      "indexed_by": [
+        "response",
+        "fixed_effect"
+      ],
+      "configurations": [
+        {
+          "name": "multiplicity_adjustment",
+          "conforms_to": "multiplicity_adjustment",
+          "applicable_scopes": [
+            "universal"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parameter_estimates_linear",
+      "output_type": "parameter_estimates_linear",
+      "indexed_by": [
+        "response",
+        "fixed_effect"
+      ]
+    }
+  ],
+  "assumptions": [
+    "Multivariate normality of residuals",
+    "Homogeneity of covariance matrices",
+    "Independence of observations"
+  ]
+}

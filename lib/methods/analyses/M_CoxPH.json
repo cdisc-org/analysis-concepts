@@ -1,0 +1,143 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json",
+    "configuration_concepts": "../../model/method/configuration_concepts.json"
+  },
+  "name": "M.CoxPH",
+  "label": "Cox Proportional Hazards",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "analysis",
+  "class": "Survival Models",
+  "intent": [
+    "TimeToEventEstimate"
+  ],
+  "description": "Semi-parametric regression for survival data modeling the hazard function",
+  "formula": {
+    "notation": "survival",
+    "default_expression": "Surv(time, event) ~ covariate + fixed_effect",
+    "generic_expression": "Surv(<time>, <event>) ~ <covariate>* + <fixed_effect>+ + (<covariate>:<fixed_effect>)* + strata(<strata>)*",
+    "notes": "Multiple covariates, factors, and interactions supported. The strata() function creates a stratified baseline hazard (one per stratum level) without estimating a coefficient for that variable."
+  },
+  "configurations": [
+    {
+      "name": "ties",
+      "dataType": "enum",
+      "defaultValue": "efron",
+      "enumValues": [
+        "efron",
+        "breslow",
+        "exact"
+      ],
+      "description": "Method for handling tied event times"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "time",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Time to event or censoring"
+    },
+    {
+      "name": "event",
+      "dataType": "boolean",
+      "required": true,
+      "cardinality": "single",
+      "description": "Event indicator"
+    },
+    {
+      "name": "covariate",
+      "dataType": "decimal",
+      "required": false,
+      "cardinality": "multiple",
+      "description": "Continuous covariate(s)"
+    },
+    {
+      "name": "fixed_effect",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single_or_multiple",
+      "description": "Treatment group and/or other categorical factors"
+    },
+    {
+      "name": "strata",
+      "dataType": "code",
+      "required": false,
+      "cardinality": "multiple",
+      "description": "Stratification variable(s) for stratified Cox model"
+    }
+  ],
+  "methodOutput": [
+    {
+      "name": "fit_statistics_concordance",
+      "output_type": "fit_statistics_concordance"
+    },
+    {
+      "name": "global_tests",
+      "output_type": "global_tests",
+      "test_types": [
+        "likelihood_ratio",
+        "wald",
+        "score"
+      ]
+    },
+    {
+      "name": "type3_tests_chi_squared",
+      "output_type": "type3_tests_chi_squared",
+      "indexed_by": [
+        "covariate",
+        "fixed_effect",
+        "covariate:fixed_effect"
+      ],
+      "configurations": [
+        {
+          "name": "multiplicity_adjustment",
+          "conforms_to": "multiplicity_adjustment",
+          "applicable_scopes": [
+            "universal"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parameter_estimates_cox",
+      "output_type": "parameter_estimates_cox",
+      "indexed_by": [
+        "covariate",
+        "fixed_effect",
+        "covariate:fixed_effect"
+      ],
+      "configurations": [
+        {
+          "name": "multiplicity_adjustment",
+          "conforms_to": "multiplicity_adjustment",
+          "applicable_scopes": [
+            "universal"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "hazard_ratio_estimates",
+      "output_type": "hazard_ratio_estimates",
+      "indexed_by": [
+        "covariate",
+        "fixed_effect",
+        "covariate:fixed_effect"
+      ]
+    }
+  ],
+  "assumptions": [
+    "Proportional hazards",
+    "Non-informative censoring",
+    "Independence of survival times"
+  ]
+}

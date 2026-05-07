@@ -1,0 +1,489 @@
+{
+  "version": "0.6.0",
+  "$vocabulary": {
+    "statistics": "./statistics_vocabulary.json",
+    "scheme": "./output_class_concept_scheme.json"
+  },
+  "description": "Reusable output class templates referenced by methods. Each concrete template is a named code-list of statistics: the canonical declaration of which constituents an output class produces. Templates are organised SKOS-style into abstract families that group templates sharing intent and partly sharing constituents; concrete templates belong to a family via 'broader'. Per D27/D32, the template is the single source of truth for what statistics appear in the output.",
+  "_authoring_notes": {
+    "method_side_references": "A method's output_specification.results entry references a concrete template by name (e.g. { \"output_type\": \"fit_statistics_linear\" }). Methods MUST NOT reference abstract templates. Method entries should NOT redeclare statistics \u2014 those are on the template. Method entries may add: name (only when disambiguating multiple slots of the same template type), label (method-specific override of the template's label), indexed_by (which input-slot values index the rows of this method's output table; combinations via ':' represent interactions), configurations (method-specific configuration overrides).",
+    "templates_are_code_lists": "Each concrete template is a named code-list of statistics. Templates declare what their members ARE (label, description, the statistics list). They do not declare shape metadata (cardinality, dimensions) about how outputs that use them are indexed \u2014 that is the method's responsibility via indexed_by, because the same template can be used in differently-shaped outputs across methods.",
+    "template_vs_method": "Templates declare what is structurally possible (the constituents that CAN appear). Instance data declares what was actually computed (which constituents are populated for a particular run).",
+    "skos_organization": "Concrete templates are organised under abstract family parents via 'broader'. Abstract families group templates that share intent and partly share constituents. Methods reference concrete children, never abstract parents. Current family structure:",
+    "_family_structure": {
+      "fit_statistics": [
+        "fit_statistics_basic",
+        "fit_statistics_linear",
+        "fit_statistics_concordance"
+      ],
+      "type3_tests": [
+        "type3_tests_f",
+        "type3_tests_mixed",
+        "type3_tests_chi_squared"
+      ],
+      "test_result": [
+        "chi_squared_test_result",
+        "t_test_result",
+        "exact_test_result",
+        "homogeneity_test"
+      ],
+      "parameter_estimates": [
+        "parameter_estimates_linear",
+        "parameter_estimates_glm",
+        "parameter_estimates_cox",
+        "covariance_parameters"
+      ],
+      "contrasts": [
+        "contrasts_t",
+        "contrasts_z"
+      ],
+      "association_measures": [
+        "odds_ratio_measures"
+      ],
+      "marginal_estimates": [
+        "ls_means",
+        "point_estimate"
+      ],
+      "exponentiated_estimates": [
+        "odds_ratio_estimates",
+        "hazard_ratio_estimates"
+      ],
+      "omnibus_tests": [
+        "multivariate_tests",
+        "global_tests"
+      ],
+      "survival_outputs": [
+        "survival_table",
+        "median_survival",
+        "event_summary",
+        "landmark_estimates"
+      ],
+      "group_summaries": [
+        "proportion_estimate",
+        "frequency_table",
+        "cumulative_frequency_table",
+        "quartile_estimates"
+      ]
+    }
+  },
+  "output_class_templates": {
+    "fit_statistics": {
+      "label": "Fit statistics",
+      "description": "Family of overall model goodness-of-fit summary tables.",
+      "abstract": true,
+      "broader": null
+    },
+    "fit_statistics_basic": {
+      "label": "Basic fit statistics",
+      "description": "Basic model fit indices common to most likelihood-based models.",
+      "broader": "fit_statistics",
+      "statistics": [
+        "AIC",
+        "BIC",
+        "minus2LogL"
+      ]
+    },
+    "fit_statistics_linear": {
+      "label": "Linear-model fit statistics",
+      "description": "Linear-model fit indices including R-squared.",
+      "broader": "fit_statistics",
+      "statistics": [
+        "AIC",
+        "BIC",
+        "minus2LogL",
+        "R_squared"
+      ]
+    },
+    "fit_statistics_concordance": {
+      "label": "Concordance-based fit statistics",
+      "description": "Fit indices including the concordance statistic (logistic regression, Cox PH).",
+      "broader": "fit_statistics",
+      "statistics": [
+        "AIC",
+        "BIC",
+        "minus2LogL",
+        "concordance"
+      ]
+    },
+    "type3_tests": {
+      "label": "Type III tests",
+      "description": "Family of per-term omnibus tests.",
+      "abstract": true,
+      "broader": null
+    },
+    "type3_tests_f": {
+      "label": "Type III F-tests",
+      "description": "Type III F-tests with sums-of-squares decomposition (linear models).",
+      "broader": "type3_tests",
+      "statistics": [
+        "F_statistic",
+        "p_value",
+        "df_num",
+        "df_den",
+        "SS",
+        "MS"
+      ]
+    },
+    "type3_tests_mixed": {
+      "label": "Type III F-tests (mixed/multivariate)",
+      "description": "Type III F-tests for mixed and multivariate models (no SS/MS exposure).",
+      "broader": "type3_tests",
+      "statistics": [
+        "F_statistic",
+        "p_value",
+        "df_num",
+        "df_den"
+      ]
+    },
+    "type3_tests_chi_squared": {
+      "label": "Type III chi-squared tests",
+      "description": "Type III Wald or LR chi-squared tests (logistic regression, Cox PH).",
+      "broader": "type3_tests",
+      "statistics": [
+        "chi_squared",
+        "p_value",
+        "df"
+      ]
+    },
+    "test_result": {
+      "label": "Test result",
+      "description": "Family of single-row test result tables.",
+      "abstract": true,
+      "broader": null
+    },
+    "chi_squared_test_result": {
+      "label": "Chi-squared test result",
+      "description": "Single chi-squared test result.",
+      "broader": "test_result",
+      "statistics": [
+        "chi_squared",
+        "p_value",
+        "df"
+      ]
+    },
+    "t_test_result": {
+      "label": "T-test result",
+      "description": "Single t-test result (one-sample, paired, or two-sample).",
+      "broader": "test_result",
+      "statistics": [
+        "t_statistic",
+        "p_value",
+        "df"
+      ]
+    },
+    "exact_test_result": {
+      "label": "Exact test result",
+      "description": "Exact test result (Fisher exact) \u2014 p-value only.",
+      "broader": "test_result",
+      "statistics": [
+        "p_value"
+      ]
+    },
+    "homogeneity_test": {
+      "label": "Homogeneity test",
+      "description": "Breslow-Day test for homogeneity of odds ratios across strata.",
+      "broader": "test_result",
+      "statistics": [
+        "chi_squared",
+        "p_value",
+        "df"
+      ]
+    },
+    "parameter_estimates": {
+      "label": "Parameter estimates",
+      "description": "Family of per-coefficient model parameter tables.",
+      "abstract": true,
+      "broader": null
+    },
+    "parameter_estimates_linear": {
+      "label": "Linear-model parameter estimates",
+      "description": "Linear-model coefficients with t-based inference.",
+      "broader": "parameter_estimates",
+      "statistics": [
+        "coefficient",
+        "SE",
+        "t_statistic",
+        "p_value",
+        "CI_lower",
+        "CI_upper",
+        "df"
+      ]
+    },
+    "parameter_estimates_glm": {
+      "label": "GLM parameter estimates",
+      "description": "GLM coefficients with z-based inference; includes odds_ratio for logistic.",
+      "broader": "parameter_estimates",
+      "statistics": [
+        "coefficient",
+        "SE",
+        "z_statistic",
+        "p_value",
+        "CI_lower",
+        "CI_upper",
+        "odds_ratio"
+      ]
+    },
+    "parameter_estimates_cox": {
+      "label": "Cox PH parameter estimates",
+      "description": "Cox PH coefficients with z-based inference; includes hazard_ratio.",
+      "broader": "parameter_estimates",
+      "statistics": [
+        "coefficient",
+        "SE",
+        "z_statistic",
+        "p_value",
+        "CI_lower",
+        "CI_upper",
+        "hazard_ratio"
+      ]
+    },
+    "covariance_parameters": {
+      "label": "Covariance parameters",
+      "description": "Estimated covariance/variance components of the random-effects structure.",
+      "broader": "parameter_estimates",
+      "statistics": [
+        "estimate",
+        "SE"
+      ]
+    },
+    "contrasts": {
+      "label": "Contrasts",
+      "description": "Family of contrast tables \u2014 linear combinations of model coefficients with inference.",
+      "abstract": true,
+      "broader": null
+    },
+    "contrasts_t": {
+      "label": "T-based contrasts",
+      "description": "Contrasts from linear models with t-based inference.",
+      "broader": "contrasts",
+      "statistics": [
+        "estimate",
+        "SE",
+        "CI_lower",
+        "CI_upper",
+        "t_statistic",
+        "p_value",
+        "p_value_adjusted",
+        "df"
+      ],
+      "optional_statistics": [
+        "p_value_adjusted"
+      ]
+    },
+    "contrasts_z": {
+      "label": "Z-based contrasts",
+      "description": "Contrasts from GLM or Cox PH with z-based inference.",
+      "broader": "contrasts",
+      "statistics": [
+        "estimate",
+        "SE",
+        "CI_lower",
+        "CI_upper",
+        "z_statistic",
+        "p_value",
+        "p_value_adjusted"
+      ],
+      "optional_statistics": [
+        "p_value_adjusted"
+      ]
+    },
+    "association_measures": {
+      "label": "Association measures",
+      "description": "Family of effect-size / association measure tables with inference.",
+      "abstract": true,
+      "broader": null
+    },
+    "odds_ratio_measures": {
+      "label": "Odds ratio measures",
+      "description": "Odds ratio with confidence interval (CMH common OR or per-stratum, Fisher OR).",
+      "broader": "association_measures",
+      "statistics": [
+        "odds_ratio",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "marginal_estimates": {
+      "label": "Marginal estimates",
+      "description": "Family of model-derived estimates at specific factor levels \u2014 adjusted means and predictions from a fitted model, distinct from raw coefficient estimates.",
+      "abstract": true,
+      "broader": null
+    },
+    "ls_means": {
+      "label": "Least-squares means",
+      "description": "Least-squares means (adjusted marginal means) per factor level or level combination.",
+      "broader": "marginal_estimates",
+      "statistics": [
+        "estimate",
+        "SE",
+        "CI_lower",
+        "CI_upper",
+        "df"
+      ]
+    },
+    "point_estimate": {
+      "label": "Point estimate",
+      "description": "Estimated mean (or paired-difference mean) with inference.",
+      "broader": "marginal_estimates",
+      "statistics": [
+        "estimate",
+        "SE",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "exponentiated_estimates": {
+      "label": "Exponentiated estimates",
+      "description": "Family of coefficients exponentiated from a transformed scale (log, logit) back to the natural scale of multiplicative effects.",
+      "abstract": true,
+      "broader": null
+    },
+    "odds_ratio_estimates": {
+      "label": "Odds ratio estimates",
+      "description": "Odds ratios with confidence intervals (exponentiated logistic coefficients).",
+      "broader": "exponentiated_estimates",
+      "statistics": [
+        "odds_ratio",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "hazard_ratio_estimates": {
+      "label": "Hazard ratio estimates",
+      "description": "Hazard ratios with confidence intervals (exponentiated Cox coefficients).",
+      "broader": "exponentiated_estimates",
+      "statistics": [
+        "hazard_ratio",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "omnibus_tests": {
+      "label": "Omnibus tests",
+      "description": "Family of overall-model significance tests indexed by test type (Wilks, Pillai, likelihood ratio, Wald, score, etc.), distinct from per-term tests.",
+      "abstract": true,
+      "broader": null
+    },
+    "multivariate_tests": {
+      "label": "Multivariate tests",
+      "description": "Multivariate test statistics for overall hypothesis (Wilks, Pillai, Hotelling-Lawley, Roy).",
+      "broader": "omnibus_tests",
+      "statistics": [
+        "estimate",
+        "F_statistic",
+        "p_value",
+        "df_num",
+        "df_den"
+      ]
+    },
+    "global_tests": {
+      "label": "Global tests",
+      "description": "Overall model significance tests (likelihood ratio, Wald, score).",
+      "broader": "omnibus_tests",
+      "statistics": [
+        "chi_squared",
+        "p_value",
+        "df"
+      ]
+    },
+    "survival_outputs": {
+      "label": "Survival outputs",
+      "description": "Family of outputs from time-to-event analyses \u2014 life tables, median survival, event counts, landmark estimates.",
+      "abstract": true,
+      "broader": null
+    },
+    "survival_table": {
+      "label": "Survival table",
+      "description": "Life table with survival estimates at each event time.",
+      "broader": "survival_outputs",
+      "statistics": [
+        "n_risk",
+        "n_event",
+        "n_censored",
+        "survival_prob",
+        "SE",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "median_survival": {
+      "label": "Median survival",
+      "description": "Median survival time per group.",
+      "broader": "survival_outputs",
+      "statistics": [
+        "median",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "event_summary": {
+      "label": "Event summary",
+      "description": "Summary counts of events and censoring per group.",
+      "broader": "survival_outputs",
+      "statistics": [
+        "n_risk",
+        "n_event",
+        "n_censored"
+      ]
+    },
+    "landmark_estimates": {
+      "label": "Landmark estimates",
+      "description": "Survival probability at specific landmark times.",
+      "broader": "survival_outputs",
+      "statistics": [
+        "survival_prob",
+        "SE",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "group_summaries": {
+      "label": "Group summaries",
+      "description": "Family of descriptive summaries broken down by group \u2014 proportions, frequency tables, quartile estimates. No model fit involved.",
+      "abstract": true,
+      "broader": null
+    },
+    "proportion_estimate": {
+      "label": "Proportion estimate",
+      "description": "Group-wise proportion with optional confidence interval.",
+      "broader": "group_summaries",
+      "statistics": [
+        "proportion",
+        "pct",
+        "CI_lower",
+        "CI_upper"
+      ],
+      "optional_statistics": [
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "frequency_table": {
+      "label": "Frequency table",
+      "description": "Counts of response categories per group.",
+      "broader": "group_summaries",
+      "statistics": [
+        "frequency",
+        "n"
+      ]
+    },
+    "cumulative_frequency_table": {
+      "label": "Cumulative frequency table",
+      "description": "Cumulative counts and percentages of response categories per group.",
+      "broader": "group_summaries",
+      "statistics": [
+        "cumulative_n",
+        "cumulative_pct"
+      ]
+    },
+    "quartile_estimates": {
+      "label": "Quartile estimates",
+      "description": "Q1 and Q3 quartile estimates per group.",
+      "broader": "group_summaries",
+      "statistics": [
+        "Q1",
+        "Q3"
+      ]
+    }
+  }
+}

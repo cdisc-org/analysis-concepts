@@ -1,0 +1,59 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.ImputedValue_Median",
+  "label": "Median Imputation",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "derivation",
+  "class": "Data Handling",
+  "intent": [
+    "MissingDataHandling"
+  ],
+  "description": "Computes the median of all non-missing observed values within a group as the imputed value. More robust to outliers than mean imputation.",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "imputed_value := MEDIAN(value) OVER (group_partition)",
+    "generic_expression": "imputed_value := MEDIAN(<value>) OVER (<group_partition>+)",
+    "notes": "Same partitioning logic as mean imputation. Preferred when the distribution is skewed or when outliers may distort the mean."
+  },
+  "unit_policy": "preserved",
+  "configurations": [],
+  "methodInput": [
+    {
+      "name": "value",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Source values from which the median is computed"
+    },
+    {
+      "name": "group_partition",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "multiple",
+      "description": "Grouping variables defining the median computation scope"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Quantity",
+      "name": "derived_value",
+      "indexed_by": [
+        "group_partition"
+      ]
+    }
+  ],
+  "assumptions": [
+    "At least one non-missing value exists in the group",
+    "Missing data are MCAR or MAR",
+    "Median imputation underestimates variance \u2014 not suitable when distributional shape must be preserved"
+  ]
+}

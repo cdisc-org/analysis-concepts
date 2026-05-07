@@ -1,0 +1,46 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.ImputedValue_Zero",
+  "label": "Zero Imputation",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "derivation",
+  "class": "Data Handling",
+  "intent": [
+    "MissingDataHandling"
+  ],
+  "description": "Uses a fixed constant (default 0) as the imputed value for all missing observations. Simplest strategy; appropriate when missingness can be interpreted as absence of the measured quantity (e.g., zero cost, zero count).",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "imputed_value := 0",
+    "generic_expression": "imputed_value := <constant>",
+    "notes": "No data-dependent computation. The constant is always used regardless of observed values."
+  },
+  "unit_policy": "preserved",
+  "configurations": [
+    {
+      "name": "constant",
+      "dataType": "decimal",
+      "defaultValue": 0,
+      "description": "The fixed value to use for imputation. Defaults to 0 but can be set to any value (e.g., 999 for sentinel, or a clinically meaningful default)."
+    }
+  ],
+  "methodInput": [],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Quantity",
+      "name": "derived_value"
+    }
+  ],
+  "assumptions": [
+    "Zero (or the specified constant) is a meaningful replacement for the missing value in the clinical context"
+  ]
+}

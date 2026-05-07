@@ -1,0 +1,77 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "name": "M.ThresholdCompare",
+  "label": "Threshold Comparison",
+  "code": {
+    "system": "NCI",
+    "value": null
+  },
+  "type": "derivation",
+  "class": "Classification",
+  "intent": [
+    "ValueClassification"
+  ],
+  "description": "Compares value against threshold and returns result",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := IF(value >= threshold, true_value, false_value)",
+    "generic_expression": "result := IF(<value> <operator> <threshold>, <true_value>, <false_value>)"
+  },
+  "unit_policy": "preserved",
+  "configurations": [
+    {
+      "name": "operator",
+      "dataType": "enum",
+      "defaultValue": ">=",
+      "enumValues": [
+        ">=",
+        ">",
+        "<=",
+        "<",
+        "==",
+        "!="
+      ],
+      "description": "Comparison operator"
+    },
+    {
+      "name": "threshold",
+      "dataType": "decimal",
+      "defaultValue": 0,
+      "description": "Threshold value compared against the input value"
+    },
+    {
+      "name": "true_value",
+      "dataType": "code",
+      "defaultValue": "Y",
+      "description": "Value when condition is true"
+    },
+    {
+      "name": "false_value",
+      "dataType": "code",
+      "defaultValue": "N",
+      "description": "Value when condition is false"
+    }
+  ],
+  "methodInput": [
+    {
+      "name": "value",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Value to compare"
+    }
+  ],
+  "methodOutput": [
+    {
+      "output_type": "fhir:Quantity",
+      "name": "derived_value"
+    }
+  ],
+  "assumptions": []
+}
