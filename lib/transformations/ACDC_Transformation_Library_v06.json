@@ -5,10 +5,10 @@
     "vocabulary": "https://www.w3.org/TR/vocab-data-cube/",
     "mapping": {
       "bindings[]": "The DSD (qb:DataStructureDefinition) of the transformation's input/output cubes. direction='input|output' distinguishes. dataStructureRole maps to qb:dimension | qb:measure | qb:attribute.",
-      "slices[]": "qb:Slice (https://www.w3.org/TR/vocab-data-cube/#slice) \u2014 fixed-dimension views of an input cube.",
-      "sliceKeys[]": "qb:SliceKey (https://www.w3.org/TR/vocab-data-cube/#slice-key) \u2014 declares which dimensions are fixed in a slice.",
+      "slices[]": "qb:Slice (https://www.w3.org/TR/vocab-data-cube/#slice) — fixed-dimension views of an input cube.",
+      "sliceKeys[]": "qb:SliceKey (https://www.w3.org/TR/vocab-data-cube/#slice-key) — declares which dimensions are fixed in a slice.",
       "bindings[].slice": "AC/DC extension: pre-filter this binding's cube to the named qb:Slice before the method sees it.",
-      "bindings[].methodRole": "AC/DC extension: maps a cube slot to the method's role (value, partition, minuend, subtrahend, result, \u2026).",
+      "bindings[].methodRole": "AC/DC extension: maps a cube slot to the method's role (value, partition, minuend, subtrahend, result, …).",
       "bindings[].conceptCategory": "AC/DC extension: references a category (e.g. VisitDimension) rather than a concrete concept; the user picks a member at study-spec time."
     }
   },
@@ -118,19 +118,6 @@
       ]
     },
     {
-      "oid": "SP_PCTCFB_ENDPOINT",
-      "name": "Percent change from baseline endpoint",
-      "role": "endpoint",
-      "phrase_template": "percent change from baseline in {parameter}",
-      "configurations": [
-        "parameter"
-      ],
-      "references": [
-        "PercentChange",
-        "Parameter"
-      ]
-    },
-    {
       "oid": "SP_TTE_ENDPOINT",
       "name": "Time-to-event endpoint",
       "role": "endpoint",
@@ -169,19 +156,6 @@
       ]
     },
     {
-      "oid": "SP_SHIFT_ENDPOINT",
-      "name": "Shift endpoint",
-      "role": "endpoint",
-      "phrase_template": "shift from baseline in {parameter}",
-      "configurations": [
-        "parameter"
-      ],
-      "references": [
-        "Shift",
-        "Parameter"
-      ]
-    },
-    {
       "oid": "SP_PEAK_ENDPOINT",
       "name": "Peak value endpoint",
       "role": "endpoint",
@@ -195,19 +169,6 @@
       ]
     },
     {
-      "oid": "SP_AUC_ENDPOINT",
-      "name": "Area under curve endpoint",
-      "role": "endpoint",
-      "phrase_template": "{parameter} AUC",
-      "configurations": [
-        "parameter"
-      ],
-      "references": [
-        "AreaUnderCurve",
-        "Parameter"
-      ]
-    },
-    {
       "oid": "SP_PARAMETER",
       "name": "Parameter",
       "role": "parameter",
@@ -215,8 +176,8 @@
       "configurations": [
         "parameter"
       ],
-      "references": [
-        "Parameter"
+      "referenceCategories": [
+        "ParameterDimension"
       ]
     },
     {
@@ -306,14 +267,6 @@
       ]
     },
     {
-      "oid": "SP_METHOD_DESCSTATS",
-      "name": "Descriptive statistics method",
-      "role": "method",
-      "phrase_template": "summarised by descriptive statistics",
-      "configurations": [],
-      "references": []
-    },
-    {
       "oid": "SP_IMPUTATION",
       "name": "Imputation qualifier",
       "role": "method_qualifier",
@@ -385,7 +338,7 @@
         {
           "concept": "Measure",
           "requiredValueType": null,
-          "note": "RecordSelection operates on records, not values \u2014 no value type constraint",
+          "note": "RecordSelection operates on records, not values — no value type constraint",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "value"
@@ -403,7 +356,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -455,7 +408,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -478,14 +431,16 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
           "direction": "output",
-          "dataStructureRole": "dimension"
+          "dataStructureRole": "dimension",
+          "_layerNote": "Output dimension cascades from the endpoint's dimensionCategoryPicks: the user's choice of which category-member to use (e.g. Visit OC vs AnalysisVisit DC) propagates here so the derivation output cube and the analysis input cube speak the same layer.",
+          "conceptCategory": "ParameterDimension"
         },
         {
-          "conceptCategory": "VisitDimension",
           "direction": "output",
-          "dataStructureRole": "dimension"
+          "dataStructureRole": "dimension",
+          "_layerNote": "Output dimension cascades from the endpoint's dimensionCategoryPicks: the user's choice of which category-member to use (e.g. Visit OC vs AnalysisVisit DC) propagates here so the derivation output cube and the analysis input cube speak the same layer.",
+          "conceptCategory": "VisitDimension"
         }
       ],
       "slices": [
@@ -493,208 +448,14 @@
           "name": "parameter_baseline",
           "constraints": [
             {
-              "dimension": "Parameter",
+              "concept": "Parameter",
               "value": "{parameter}"
             },
             {
-              "conceptCategory": "VisitDimension",
-              "value": "Baseline"
+              "concept": "AnalysisVisit",
+              "value": "{baseline_visit}"
             }
           ]
-        }
-      ],
-      "methodConfigurations": []
-    },
-    {
-      "oid": "T.PercentChangeFromBaseline",
-      "name": "Percent Change From Baseline",
-      "transformationType": "derivation",
-      "description": "Calculate the percent change from baseline value.",
-      "instanceOf": "PercentChange",
-      "usesMethod": "M.RelativeDifference",
-      "validSmartPhrases": [
-        "SP_PCTCFB_ENDPOINT",
-        "SP_PARAMETER",
-        "SP_TIMEPOINT",
-        "SP_IMPUTATION"
-      ],
-      "bindings": [
-        {
-          "concept": "Measure",
-          "requiredValueType": "Quantity",
-          "note": "Current visit value",
-          "direction": "input",
-          "dataStructureRole": "measure",
-          "methodRole": "pre"
-        },
-        {
-          "concept": "Measure",
-          "requiredValueType": "Quantity",
-          "note": "Baseline-flagged record",
-          "direction": "input",
-          "dataStructureRole": "measure",
-          "methodRole": "post",
-          "slice": "parameter_baseline"
-        },
-        {
-          "concept": "PercentChange",
-          "direction": "output",
-          "dataStructureRole": "measure",
-          "methodRole": "result"
-        },
-        {
-          "concept": "Subject",
-          "methodRole": "partition",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        },
-        {
-          "concept": "Parameter",
-          "methodRole": "constraint",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        },
-        {
-          "conceptCategory": "VisitDimension",
-          "methodRole": "partition",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        }
-      ],
-      "slices": [
-        {
-          "name": "parameter_baseline",
-          "constraints": [
-            {
-              "dimension": "Parameter",
-              "value": "{parameter}"
-            },
-            {
-              "conceptCategory": "VisitDimension",
-              "value": "Baseline"
-            }
-          ]
-        }
-      ],
-      "methodConfigurations": []
-    },
-    {
-      "oid": "T.ShiftFromBaseline",
-      "name": "Shift From Baseline",
-      "transformationType": "derivation",
-      "description": "Determine categorical shift between baseline and post-baseline values.",
-      "instanceOf": "Shift",
-      "usesMethod": "M.CategoricalTransition",
-      "validSmartPhrases": [
-        "SP_SHIFT_ENDPOINT",
-        "SP_PARAMETER",
-        "SP_TIMEPOINT"
-      ],
-      "bindings": [
-        {
-          "concept": "Measure",
-          "requiredValueType": "CodeableConcept",
-          "note": "Current visit categorical value",
-          "direction": "input",
-          "dataStructureRole": "measure",
-          "methodRole": "pre"
-        },
-        {
-          "concept": "Measure",
-          "requiredValueType": "CodeableConcept",
-          "note": "Baseline categorical value",
-          "direction": "input",
-          "dataStructureRole": "measure",
-          "methodRole": "post",
-          "slice": "parameter_baseline"
-        },
-        {
-          "concept": "Shift",
-          "direction": "output",
-          "dataStructureRole": "measure",
-          "methodRole": "result"
-        },
-        {
-          "concept": "Subject",
-          "methodRole": "partition",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        },
-        {
-          "concept": "Parameter",
-          "methodRole": "constraint",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        },
-        {
-          "conceptCategory": "VisitDimension",
-          "methodRole": "partition",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        }
-      ],
-      "slices": [
-        {
-          "name": "parameter_baseline",
-          "constraints": [
-            {
-              "dimension": "Parameter",
-              "value": "{parameter}"
-            },
-            {
-              "conceptCategory": "VisitDimension",
-              "value": "Baseline"
-            }
-          ]
-        }
-      ],
-      "methodConfigurations": []
-    },
-    {
-      "oid": "T.ResponderClassification",
-      "name": "Responder Classification",
-      "transformationType": "derivation",
-      "description": "Classify subjects as responders based on threshold criterion applied to a derived value.",
-      "instanceOf": "Flag",
-      "usesMethod": "M.ThresholdEvaluation",
-      "validSmartPhrases": [
-        "SP_RESPONDER_ENDPOINT",
-        "SP_PARAMETER",
-        "SP_TIMEPOINT"
-      ],
-      "bindings": [
-        {
-          "concept": "Change",
-          "qualifierType": null,
-          "qualifierValue": null,
-          "requiredValueType": "Quantity",
-          "direction": "input",
-          "dataStructureRole": "measure",
-          "methodRole": "value"
-        },
-        {
-          "concept": "Flag",
-          "direction": "output",
-          "dataStructureRole": "measure",
-          "methodRole": "result"
-        },
-        {
-          "concept": "Subject",
-          "methodRole": "partition",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        },
-        {
-          "concept": "Parameter",
-          "methodRole": "partition",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        },
-        {
-          "conceptCategory": "VisitDimension",
-          "methodRole": "partition",
-          "direction": "input",
-          "dataStructureRole": "dimension"
         }
       ],
       "methodConfigurations": []
@@ -713,7 +474,7 @@
         {
           "concept": "Measure",
           "requiredValueType": null,
-          "note": "LOCF operates on records \u2014 value type is pass-through",
+          "note": "LOCF operates on records — value type is pass-through",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "value"
@@ -731,7 +492,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -739,79 +500,6 @@
         {
           "conceptCategory": "VisitDimension",
           "methodRole": "order",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        }
-      ],
-      "methodConfigurations": []
-    },
-    {
-      "oid": "T.VisitWindowing",
-      "name": "Analysis Visit Assignment",
-      "transformationType": "derivation",
-      "description": "Assign records to analysis visit windows based on timing relative to protocol-defined encounters.",
-      "instanceOf": "Category",
-      "usesMethod": "M.WindowAssignment",
-      "methodConfigurations": [
-        {
-          "configurationName": "window_definitions",
-          "value": "(provided at study instantiation)"
-        }
-      ],
-      "validSmartPhrases": [],
-      "bindings": [
-        {
-          "concept": "Timing",
-          "qualifierType": "ReferenceFrame",
-          "qualifierValue": "Relative",
-          "requiredValueType": "Quantity",
-          "note": "Window assignment uses study day (relative timing)",
-          "direction": "input",
-          "dataStructureRole": "dimension",
-          "methodRole": "value"
-        },
-        {
-          "concept": "Category",
-          "direction": "output",
-          "dataStructureRole": "measure",
-          "methodRole": "result"
-        },
-        {
-          "concept": "Subject",
-          "methodRole": "partition",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        }
-      ]
-    },
-    {
-      "oid": "T.PopulationFlag",
-      "name": "Population Flag Assignment",
-      "transformationType": "derivation",
-      "description": "Assign subjects to analysis populations based on eligibility criteria.",
-      "instanceOf": "Flag",
-      "usesMethod": "M.CriterionEvaluation",
-      "validSmartPhrases": [
-        "SP_POPULATION"
-      ],
-      "bindings": [
-        {
-          "concept": "Measure",
-          "requiredValueType": null,
-          "note": "CriterionEvaluation is criteria-dependent; the concept's valueType determines representation",
-          "direction": "input",
-          "dataStructureRole": "measure",
-          "methodRole": "value"
-        },
-        {
-          "concept": "Flag",
-          "direction": "output",
-          "dataStructureRole": "measure",
-          "methodRole": "result"
-        },
-        {
-          "concept": "Subject",
-          "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
         }
@@ -850,7 +538,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -858,112 +546,6 @@
         {
           "concept": "Timing",
           "methodRole": "order",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        }
-      ],
-      "methodConfigurations": []
-    },
-    {
-      "oid": "T.AUCCalculation",
-      "name": "Area Under Curve",
-      "transformationType": "derivation",
-      "description": "Calculate the area under the concentration-time curve.",
-      "instanceOf": "AreaUnderCurve",
-      "usesMethod": "M.TrapezoidalIntegration",
-      "validSmartPhrases": [
-        "SP_AUC_ENDPOINT",
-        "SP_PARAMETER"
-      ],
-      "bindings": [
-        {
-          "concept": "Measure",
-          "requiredValueType": "Quantity",
-          "direction": "input",
-          "dataStructureRole": "measure",
-          "methodRole": "value"
-        },
-        {
-          "concept": "AreaUnderCurve",
-          "direction": "output",
-          "dataStructureRole": "measure",
-          "methodRole": "result"
-        },
-        {
-          "concept": "Subject",
-          "methodRole": "partition",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        },
-        {
-          "concept": "Parameter",
-          "methodRole": "partition",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        },
-        {
-          "concept": "Timing",
-          "methodRole": "order",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        }
-      ],
-      "methodConfigurations": []
-    },
-    {
-      "oid": "T.OverallSurvivalTime",
-      "name": "Overall Survival Time",
-      "transformationType": "derivation",
-      "description": "Calculate time from randomisation to death or censoring.",
-      "instanceOf": "TimeToEvent",
-      "usesMethod": "M.DurationCalculation",
-      "validSmartPhrases": [
-        "SP_TTE_ENDPOINT"
-      ],
-      "bindings": [
-        {
-          "concept": "Timing",
-          "qualifierType": "ReferenceFrame",
-          "qualifierValue": "Absolute",
-          "requiredValueType": null,
-          "note": "Duration calculation uses absolute dates",
-          "direction": "input",
-          "dataStructureRole": "dimension",
-          "methodRole": "start_date"
-        },
-        {
-          "concept": "TimeToEvent",
-          "direction": "output",
-          "dataStructureRole": "measure",
-          "methodRole": "duration"
-        },
-        {
-          "concept": "Subject",
-          "methodRole": "partition",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        }
-      ],
-      "methodConfigurations": []
-    },
-    {
-      "oid": "T.DeathEventFlag",
-      "name": "Death Event Flag",
-      "transformationType": "derivation",
-      "description": "Create censoring indicator for survival analysis (death = event, alive = censored).",
-      "instanceOf": "Flag",
-      "usesMethod": "M.CriterionEvaluation",
-      "validSmartPhrases": [],
-      "bindings": [
-        {
-          "concept": "Flag",
-          "direction": "output",
-          "dataStructureRole": "measure",
-          "methodRole": "result"
-        },
-        {
-          "concept": "Subject",
-          "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
         }
@@ -993,7 +575,7 @@
           "methodRole": "value"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "partition",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -1005,7 +587,7 @@
           "methodRole": "result"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "direction": "output",
           "dataStructureRole": "dimension"
         }
@@ -1097,6 +679,12 @@
           "conceptCategory": "VisitDimension",
           "direction": "output",
           "dataStructureRole": "dimension"
+        },
+        {
+          "conceptCategory": "ParameterDimension",
+          "direction": "output",
+          "dataStructureRole": "dimension",
+          "_layerNote": "Rolled-up Parameter identity. This aggregation collapses the per-item Topic dim across all rows of a (Subject, Visit) group; the output represents the scale-level Parameter (e.g. \"ADAS-Cog (11) Subscore\"). The engine stamps this column from the endpoint slice at execute time."
         }
       ]
     },
@@ -1131,6 +719,12 @@
           "direction": "output",
           "dataStructureRole": "measure",
           "methodRole": "result"
+        },
+        {
+          "conceptCategory": "ParameterDimension",
+          "direction": "output",
+          "dataStructureRole": "dimension",
+          "_layerNote": "Rolled-up Parameter identity. This aggregation collapses the per-item Topic dim across all rows of a (Subject, Visit) group; the output represents the scale-level Parameter (e.g. \"ADAS-Cog (11) Subscore\"). The engine stamps this column from the endpoint slice at execute time."
         }
       ]
     },
@@ -1183,6 +777,12 @@
           "conceptCategory": "VisitDimension",
           "direction": "output",
           "dataStructureRole": "dimension"
+        },
+        {
+          "conceptCategory": "ParameterDimension",
+          "direction": "output",
+          "dataStructureRole": "dimension",
+          "_layerNote": "Rolled-up Parameter identity. This aggregation collapses the per-item Topic dim across all rows of a (Subject, Visit) group; the output represents the scale-level Parameter (e.g. \"ADAS-Cog (11) Subscore\"). The engine stamps this column from the endpoint slice at execute time."
         }
       ]
     },
@@ -1235,6 +835,12 @@
           "conceptCategory": "VisitDimension",
           "direction": "output",
           "dataStructureRole": "dimension"
+        },
+        {
+          "conceptCategory": "ParameterDimension",
+          "direction": "output",
+          "dataStructureRole": "dimension",
+          "_layerNote": "Rolled-up Parameter identity. This aggregation collapses the per-item Topic dim across all rows of a (Subject, Visit) group; the output represents the scale-level Parameter (e.g. \"ADAS-Cog (11) Subscore\"). The engine stamps this column from the endpoint slice at execute time."
         }
       ]
     },
@@ -1339,7 +945,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -1362,14 +968,16 @@
           "dataStructureRole": "dimension"
         },
         {
-          "conceptCategory": "VisitDimension",
           "direction": "output",
-          "dataStructureRole": "dimension"
+          "dataStructureRole": "dimension",
+          "_layerNote": "Output dimension cascades from the endpoint's dimensionCategoryPicks: the user's choice of which category-member to use (e.g. Visit OC vs AnalysisVisit DC) propagates here so the derivation output cube and the analysis input cube speak the same layer.",
+          "conceptCategory": "VisitDimension"
         },
         {
-          "concept": "Parameter",
           "direction": "output",
-          "dataStructureRole": "dimension"
+          "dataStructureRole": "dimension",
+          "_layerNote": "Output dimension cascades from the endpoint's dimensionCategoryPicks: the user's choice of which category-member to use (e.g. Visit OC vs AnalysisVisit DC) propagates here so the derivation output cube and the analysis input cube speak the same layer.",
+          "conceptCategory": "ParameterDimension"
         }
       ],
       "methodConfigurations": []
@@ -1378,7 +986,7 @@
       "oid": "T.UnitConversion",
       "name": "Unit Conversion",
       "transformationType": "derivation",
-      "description": "Convert a numeric Observation from its per-row source unit to a standardised target unit using the unit_conversions vocabulary. Generic \u2014 works for any numeric Observation whose BC carries a Result.Value + Result.Unit facet pair. Produces a derived Measure with both value and unit facets populated.",
+      "description": "Convert a numeric Observation from its per-row source unit to a standardised target unit using the unit_conversions vocabulary. Generic — works for any numeric Observation whose BC carries a Result.Value + Result.Unit facet pair. Produces a derived Measure with both value and unit facets populated.",
       "instanceOf": "Measure",
       "usesMethod": "M.UnitConversion",
       "validSmartPhrases": [
@@ -1419,7 +1027,7 @@
           "concept": "Measure",
           "qualifierType": "facet",
           "qualifierValue": "result.unit",
-          "note": "Unit of the derived Measure \u2014 equals the target_unit configuration. Propagated so downstream derivations/analyses can read the Measure's unit without re-reading config.",
+          "note": "Unit of the derived Measure — equals the target_unit configuration. Propagated so downstream derivations/analyses can read the Measure's unit without re-reading config.",
           "direction": "output",
           "dataStructureRole": "attribute",
           "methodRole": "result_unit"
@@ -1437,14 +1045,14 @@
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension",
-          "note": "BC identifier \u2014 resolves to --TESTCD in SDTM (e.g., VSTESTCD). The constraint value comes from the endpoint's linked BC specialization."
+          "note": "BC identifier — resolves to --TESTCD in SDTM (e.g., VSTESTCD). The constraint value comes from the endpoint's linked BC specialization."
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "direction": "output",
           "dataStructureRole": "dimension",
           "methodRole": "parameter_label",
-          "note": "Output parameter label \u2014 value comes from the endpoint specification (Step 3), not from the source data. Replaces the SDTM Topic identifier with the clinically meaningful endpoint label (e.g., 'Weight (kg)')."
+          "note": "Output parameter label — value comes from the endpoint specification (Step 3), not from the source data. Replaces the SDTM Topic identifier with the clinically meaningful endpoint label (e.g., 'Weight (kg)')."
         }
       ],
       "slices": [],
@@ -1452,7 +1060,7 @@
         {
           "configurationName": "on_missing_factor",
           "value": "fail",
-          "description": "Fail loudly if a factor is missing \u2014 CDISC convention prefers errors over silent NAs."
+          "description": "Fail loudly if a factor is missing — CDISC convention prefers errors over silent NAs."
         }
       ]
     },
@@ -1460,7 +1068,7 @@
       "oid": "T.DeriveAnalysisVisit",
       "name": "Derive Analysis Visit",
       "transformationType": "derivation",
-      "description": "Assign each observation to a scheduled analysis visit (AVISIT) via day-windows and a target-day tie-break. Default windows are for LZZT ADAS-Cog (\u22641 Baseline, 2-84 Week 8, 85-140 Week 16, >140 Week 24). Consumes a pre-computed study day (SDTM --DY) relative to the randomization anchor BC.",
+      "description": "Assign each observation to a scheduled analysis visit (AVISIT) via day-windows and a target-day tie-break. Default windows are for LZZT ADAS-Cog (≤1 Baseline, 2-84 Week 8, 85-140 Week 16, >140 Week 24). Consumes a pre-computed study day (SDTM --DY) relative to the randomization anchor BC.",
       "instanceOf": "AnalysisVisit",
       "usesMethod": "M.WindowedVisitAssignment",
       "validSmartPhrases": [],
@@ -1541,7 +1149,7 @@
         {
           "configurationName": "tieBreak",
           "value": "closest-to-target-then-earliest",
-          "description": "Tie-break: among windows matching a day, pick min |day\u2212targetDay|, then min visitNumber."
+          "description": "Tie-break: among windows matching a day, pick min |day−targetDay|, then min visitNumber."
         }
       ]
     }
@@ -1643,7 +1251,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -1664,12 +1272,12 @@
           "name": "parameter_baseline",
           "constraints": [
             {
-              "dimension": "Parameter",
+              "conceptCategory": "ParameterDimension",
               "value": "{parameter}"
             },
             {
               "conceptCategory": "VisitDimension",
-              "value": "Baseline"
+              "value": "{baseline_visit}"
             }
           ]
         }
@@ -1742,7 +1350,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -1773,12 +1381,12 @@
           "name": "parameter_baseline",
           "constraints": [
             {
-              "dimension": "Parameter",
+              "conceptCategory": "ParameterDimension",
               "value": "{parameter}"
             },
             {
               "conceptCategory": "VisitDimension",
-              "value": "Baseline"
+              "value": "{baseline_visit}"
             }
           ]
         }
@@ -1856,79 +1464,6 @@
       ]
     },
     {
-      "oid": "T.DescStats_CFB",
-      "name": "Descriptive Statistics of Change From Baseline",
-      "transformationType": "analysis",
-      "description": "Summary statistics (N, mean, SD, median, Q1, Q3, min, max) for change from baseline by treatment group and visit.",
-      "acCategory": "DescriptiveSummary",
-      "usesMethod": "M.DescriptiveStatistics",
-      "methodOutputSlotMapping": {
-        "summary": "ComputedValue"
-      },
-      "validSmartPhrases": [
-        "SP_CFB_ENDPOINT",
-        "SP_PARAMETER",
-        "SP_TIMEPOINT",
-        "SP_POPULATION",
-        "SP_GROUPING",
-        "SP_METHOD_DESCSTATS"
-      ],
-      "composedPhrase": "change from baseline in {parameter} at {visit} in the {population} population comparing {treatment} groups summarised by descriptive statistics",
-      "bindings": [
-        {
-          "methodRole": "response",
-          "concept": "Change",
-          "qualifierType": null,
-          "qualifierValue": null,
-          "requiredValueType": "Quantity",
-          "direction": "input",
-          "dataStructureRole": "measure"
-        },
-        {
-          "methodRole": "group",
-          "concept": "Treatment",
-          "qualifierType": "IntentType",
-          "qualifierValue": "Planned",
-          "requiredValueType": "CodeableConcept",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        },
-        {
-          "concept": "Subject",
-          "methodRole": "partition",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        },
-        {
-          "concept": "Parameter",
-          "methodRole": "constraint",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        },
-        {
-          "conceptCategory": "VisitDimension",
-          "methodRole": "partition",
-          "direction": "input",
-          "dataStructureRole": "dimension"
-        }
-      ],
-      "sliceKeys": [
-        {
-          "dimension": "Parameter",
-          "source": "biomedicalConcept"
-        },
-        {
-          "dimension": "AnalysisVisit",
-          "source": "visit"
-        },
-        {
-          "dimension": "Population",
-          "source": "population"
-        }
-      ],
-      "methodConfigurations": []
-    },
-    {
       "oid": "T.Count_Measure",
       "name": "Count (n)",
       "transformationType": "analysis",
@@ -1972,7 +1507,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -2044,7 +1579,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -2116,7 +1651,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -2188,7 +1723,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -2260,7 +1795,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -2332,7 +1867,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -2404,7 +1939,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -2477,7 +2012,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"

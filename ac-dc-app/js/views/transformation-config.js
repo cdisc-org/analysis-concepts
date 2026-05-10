@@ -7,7 +7,7 @@ import {
   getOutputMapping, getInputBindings,
   getMethodConfigurations, getDimensions
 } from '../utils/transformation-linker.js';
-import { displayConcept, formatDimensionConstraints, formatSliceDisplay, resolveBindingShape, buildSliceLookup } from '../utils/concept-display.js';
+import { displayConcept, formatDimensionConstraints, formatSliceDisplay, resolveBindingShape, buildSliceLookup, buildResolvedSliceData } from '../utils/concept-display.js';
 
 // ===== Helper: Get concept dropdown options from DC model =====
 
@@ -235,6 +235,33 @@ export function buildResolvedExpressionObject(customBindings, method, interactio
   };
 }
 
+// Build a namedSlices lookup with category constraints resolved into concrete
+// dim keys for the active endpoint's slot picks. Use this everywhere the UI
+// needs to render slice constraints; calling buildSliceLookup() alone leaves
+// conceptCategory-based constraints invisible (formatSliceDisplay only reads
+// fixedDimensions).
+function buildResolvedNamedSlices(transform, slotKey) {
+  const raw = buildSliceLookup(transform);
+  const activeSpec = appState.endpointSpecs?.[appState.activeEndpointId] || {};
+  const slotDimOverrides = (activeSpec.dimensionOverrides || {})[slotKey || ''] || {};
+  const out = {};
+  // buildResolvedSliceData is the spec-side single source of truth for slice
+  // resolution + token substitution. It returns { fixedDimensions, substituted,
+  // categoryBy }. We expose `substituted` as the displayed `fixedDimensions`
+  // (so existing consumers — formatSliceDisplay etc. — see resolved values),
+  // and propagate categoryBy for the chip-vs-dropdown decision in the renderer.
+  for (const [name, def] of Object.entries(raw)) {
+    const data = buildResolvedSliceData(def, {
+      activeSpec,
+      sliceName: name,
+      slotOverrides: slotDimOverrides,
+      bindings: transform?.bindings || []
+    });
+    out[name] = { fixedDimensions: data.substituted, categoryBy: data.categoryBy };
+  }
+  return out;
+}
+
 // ===== Helper: Render formula with colored spans =====
 
 export function renderFormulaExpression(customBindings, method, interactions) {
@@ -268,7 +295,7 @@ export function renderFormulaExpression(customBindings, method, interactions) {
       if (b.qualifierValue) opts.qualifierValue = b.qualifierValue;
       if (b.slice) {
         opts.slice = b.slice;
-        opts.namedSlices = buildSliceLookup(appState.selectedTransformation);
+        opts.namedSlices = buildResolvedNamedSlices(appState.selectedTransformation, appState.selectedTransformation?.slotKey);
       } else if (b.dimensionConstraints) {
         opts.dimensionConstraints = b.dimensionConstraints;
       }
@@ -485,13 +512,13 @@ export function renderInteractiveBindings(customBindings, method, dcModel) {
       if (b.qualifierValue) bindingDisplayOpts.qualifierValue = b.qualifierValue;
       if (b.slice) {
         bindingDisplayOpts.slice = b.slice;
-        bindingDisplayOpts.namedSlices = buildSliceLookup(appState.selectedTransformation);
+        bindingDisplayOpts.namedSlices = buildResolvedNamedSlices(appState.selectedTransformation, appState.selectedTransformation?.slotKey);
       } else if (b.dimensionConstraints) {
         bindingDisplayOpts.dimensionConstraints = b.dimensionConstraints;
       }
 
       // Resolve dimensional shape from DC/OC models
-      const namedSlicesStandalone = buildSliceLookup(appState.selectedTransformation);
+      const namedSlicesStandalone = buildResolvedNamedSlices(appState.selectedTransformation, appState.selectedTransformation?.slotKey);
       const shapeStandalone = resolveBindingShape(b.concept, b, appState.dcModel, appState.ocModel, namedSlicesStandalone);
       const standaloneBindingId = `standalone-${role.name}-${i}`;
       const shapeHtmlStandalone = renderShapeAnnotation(shapeStandalone, standaloneBindingId);
@@ -645,38 +672,41 @@ export function renderInteractiveBindingsByRole(customBindings, method, dcModel,
 
   const rawSlices = buildSliceLookup(transform);
 
-  // Resolve slice dimension values: per-slice user overrides > {placeholder} resolution > template defaults
+  // Slice resolution + token substitution + per-slice user value overrides
+  // are all handled by `buildResolvedSliceData`. Pass the slice name so the
+  // helper finds the right `sliceDimensionOverrides[name]` entry.
   const activeSpec = appState.endpointSpecs?.[appState.activeEndpointId] || {};
-  const dimValues = activeSpec.dimensionValues || {};
-  const sliceOverrides = activeSpec.sliceDimensionOverrides || {};
-  const resolvedParamValue = paramValue || dimValues.Parameter || '';
+  const slotKey = appState.selectedTransformation?.slotKey || '';
+  const slotDimOverrides = (activeSpec.dimensionOverrides || {})[slotKey] || {};
+  const sliceCategoriesMap = appState.conceptCategories?.categories || {};
+
   const namedSlices = {};
-  for (const [name, def] of Object.entries(rawSlices)) {
-    const fixedDims = {};
-    const overrides = sliceOverrides[name] || {};
-    for (const [dim, val] of Object.entries(def.fixedDimensions || def)) {
-      // 1. Per-slice user override takes precedence
-      if (overrides[dim] !== undefined && overrides[dim] !== '') {
-        fixedDims[dim] = overrides[dim];
-      } else if (typeof val === 'string' && val.startsWith('{') && val.endsWith('}')) {
-        // 2. Full placeholder — resolve from endpoint dimension values
-        const key = val.slice(1, -1);
-        const dimKey = key.charAt(0).toUpperCase() + key.slice(1);
-        fixedDims[dim] = dimValues[dimKey] || dimValues[key] || val;
-      } else if (typeof val === 'string' && val.includes('{')) {
-        // 3. Partial placeholder — resolve inline tokens
-        let resolved = val;
-        resolved = resolved.replace(/\{parameter\}/gi, resolvedParamValue || '{parameter}');
-        resolved = resolved.replace(/\{(\w+)\}/g, (match, key) => {
-          const dimKey = key.charAt(0).toUpperCase() + key.slice(1);
-          return dimValues[dimKey] || dimValues[key] || match;
-        });
-        fixedDims[dim] = resolved;
-      } else {
-        fixedDims[dim] = val;  // 4. Literal — preserve as-is
-      }
-    }
-    namedSlices[name] = { fixedDimensions: fixedDims };
+  for (const [name, rawDef] of Object.entries(rawSlices)) {
+    const data = buildResolvedSliceData(rawDef, {
+      activeSpec,
+      sliceName: name,
+      slotOverrides: slotDimOverrides,
+      bindings: transform.bindings || [],
+      categoriesMap: sliceCategoriesMap
+    });
+    namedSlices[name] = { fixedDimensions: data.substituted, categoryBy: data.categoryBy };
+  }
+
+  // Inject the endpoint-side slices (Step-3 cube — `Parameter`, `AnalysisVisit`,
+  // `Population`, …) so the RESPONSE binding can render its full input-cube
+  // context as chips, matching the level of detail the derivation view
+  // already shows. Library slices (e.g. `parameter_baseline`) win on name
+  // collision because they carry transformation-side semantics. Endpoint
+  // slices currently have no `categoryBy` (the dim names are already
+  // concrete), so the chip renders as a static badge — same shape the
+  // existing renderer produces for non-category slice constraints.
+  for (const epSlice of (activeSpec.resolvedSlices || [])) {
+    const nm = epSlice.name;
+    if (!nm || namedSlices[nm]) continue;
+    namedSlices[nm] = {
+      fixedDimensions: { ...(epSlice.fixedDimensions || {}) },
+      categoryBy: {}
+    };
   }
 
   let html = '';
@@ -734,30 +764,64 @@ export function renderInteractiveBindingsByRole(customBindings, method, dcModel,
         ? `<div style="font-size:10px; color:var(--cdisc-primary); margin-top:2px;">\u2190 from endpoint: "${paramValue}"</div>`
         : '';
 
-      // Slice resolution annotation — editable inline inputs for each dimension value
+      // Effective slice for chip rendering + shape resolution. The RESPONSE
+      // binding has no explicit `b.slice` but conceptually consumes the
+      // endpoint cube — fall back to the implicit `endpoint` slice that
+      // Step 3 wrote into `activeSpec.resolvedSlices` and that we just
+      // injected into `namedSlices` above. This makes the analysis card
+      // show its full input-cube context (Parameter=..., AnalysisVisit=...)
+      // instead of the misleading `Dims: scalar`.
+      const effectiveSliceName = b.slice
+        || (isResponse && namedSlices.endpoint ? 'endpoint' : null);
+
+      // Slice resolution annotation — editable inline inputs for each dimension value.
+      // When a dimension was resolved from a conceptCategory (categoryBy entry
+      // present), render the dim label as a <select> of the category's
+      // members so the user can switch e.g. ParameterDimension between
+      // Observation.Identification.Topic (OC) and Parameter (DC) directly
+      // from the slice — same UX as the Visit/AnalysisVisit picker.
       let sliceAnnotation = '';
-      if (b.slice && namedSlices[b.slice]) {
-        const sliceDef = namedSlices[b.slice];
+      if (effectiveSliceName && namedSlices[effectiveSliceName]) {
+        const sliceDef = namedSlices[effectiveSliceName];
         const dims = sliceDef.fixedDimensions || sliceDef;
+        const sliceCategoryBy = sliceDef.categoryBy || {};
         const dimInputs = Object.entries(dims).map(([k, v]) => {
-          const inputId = `slice-dim-${b.slice}-${k}-${role.name}-${i}`;
+          const inputId = `slice-dim-${effectiveSliceName}-${k}-${role.name}-${i}`;
+          const categoryName = sliceCategoryBy[k];
+          // Dimension label: dropdown when category-resolved, badge otherwise.
+          const members = categoryName
+            ? (sliceCategoriesMap?.[categoryName]?.members || [])
+            : [];
+          const dimLabel = (categoryName && members.length > 1)
+            ? `<select class="ep-slice-dim-pick badge badge-teal" data-slice-name="${effectiveSliceName}"
+                  data-category="${categoryName}" data-prev-dim="${k}" data-role="${role.name}" data-binding-idx="${i}"
+                  style="font-size:9px; padding:0 4px; border:none; background:var(--cdisc-accent2); color:var(--cdisc-primary); cursor:pointer; font-weight:600;">
+                ${members.map(m => `<option value="${m.concept}" ${m.concept === k ? 'selected' : ''}>${m.concept}</option>`).join('')}
+              </select>`
+            : `<span class="badge badge-teal" style="font-size:9px; padding:0 4px;">${k}</span>`;
           return `<span style="display:inline-flex; align-items:center; gap:2px;">
-            <span class="badge badge-teal" style="font-size:9px; padding:0 4px;">${k}</span>=<input
-              class="ep-slice-dim-input" data-slice-name="${b.slice}" data-dim="${k}" data-role="${role.name}" data-binding-idx="${i}"
+            ${dimLabel}=<input
+              class="ep-slice-dim-input" data-slice-name="${effectiveSliceName}" data-dim="${k}" data-role="${role.name}" data-binding-idx="${i}"
               id="${inputId}" value="${v}" placeholder="${k}"
-              style="font-size:10px; padding:1px 4px; border:1px solid var(--cdisc-border); border-radius:3px; width:${Math.max(60, v.length * 7)}px; color:var(--cdisc-accent2); background:transparent;">
+              style="font-size:10px; padding:1px 4px; border:1px solid var(--cdisc-border); border-radius:3px; width:${Math.max(60, String(v).length * 7)}px; color:var(--cdisc-primary); background:transparent; font-weight:600;">
           </span>`;
         }).join(' ');
-        sliceAnnotation = `<div style="font-size:10px; color:var(--cdisc-accent2); margin-top:4px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
-          <span style="color:var(--cdisc-text-secondary);">slice: ${b.slice} →</span> ${dimInputs}
+        sliceAnnotation = `<div style="font-size:11px; color:var(--cdisc-text); margin-top:4px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+          <span style="color:var(--cdisc-text-secondary);">slice: ${effectiveSliceName} →</span> ${dimInputs}
         </div>`;
       }
 
       // Value type badge
       const valueType = b.requiredValueType || '';
 
-      // Resolve dimensional shape from DC/OC models
-      const shape = resolveBindingShape(b.concept, b, appState.dcModel, appState.ocModel, namedSlices);
+      // Resolve dimensional shape from DC/OC models. When the response
+      // binding is endpoint-sliced via the implicit fallback, pass a shallow
+      // copy carrying the implicit slice so `resolveBindingShape` finds its
+      // fixedDimensions and stops reporting the cube as scalar.
+      const bForShape = (effectiveSliceName && effectiveSliceName !== b.slice)
+        ? { ...b, slice: effectiveSliceName }
+        : b;
+      const shape = resolveBindingShape(bForShape.concept, bForShape, appState.dcModel, appState.ocModel, namedSlices);
       const bindingId = `byrole-${role.name}-${i}`;
       const shapeValueType = shape?.valueType || valueType;
       const shapeHtml = renderShapeAnnotation(shape, bindingId);
@@ -841,21 +905,32 @@ export function renderInteractiveBindingsByRole(customBindings, method, dcModel,
         bindingDisplayOpts.dimensionConstraints = b.dimensionConstraints;
       }
 
-      // Slice annotation — same inline editor as Pass 1
+      // Slice annotation — same inline editor as Pass 1, including the
+      // category-member dropdown when a dim was resolved from a conceptCategory.
       let sliceAnnotation = '';
       if (b.slice && namedSlices[b.slice]) {
         const sliceDef = namedSlices[b.slice];
         const dims = sliceDef.fixedDimensions || sliceDef;
+        const sliceCategoryBy = sliceDef.categoryBy || {};
         const dimInputs = Object.entries(dims).map(([k, v]) => {
           const inputId = `slice-dim-${b.slice}-${k}-${roleName}-${i}`;
+          const categoryName = sliceCategoryBy[k];
+          const members = categoryName ? (sliceCategoriesMap?.[categoryName]?.members || []) : [];
+          const dimLabel = (categoryName && members.length > 1)
+            ? `<select class="ep-slice-dim-pick badge badge-teal" data-slice-name="${b.slice}"
+                  data-category="${categoryName}" data-prev-dim="${k}" data-role="${roleName}" data-binding-idx="${i}"
+                  style="font-size:9px; padding:0 4px; border:none; background:var(--cdisc-accent2); color:var(--cdisc-primary); cursor:pointer; font-weight:600;">
+                ${members.map(m => `<option value="${m.concept}" ${m.concept === k ? 'selected' : ''}>${m.concept}</option>`).join('')}
+              </select>`
+            : `<span class="badge badge-teal" style="font-size:9px; padding:0 4px;">${k}</span>`;
           return `<span style="display:inline-flex; align-items:center; gap:2px;">
-            <span class="badge badge-teal" style="font-size:9px; padding:0 4px;">${k}</span>=<input
+            ${dimLabel}=<input
               class="ep-slice-dim-input" data-slice-name="${b.slice}" data-dim="${k}" data-role="${roleName}" data-binding-idx="${i}"
               id="${inputId}" value="${v}" placeholder="${k}"
-              style="font-size:10px; padding:1px 4px; border:1px solid var(--cdisc-border); border-radius:3px; width:${Math.max(60, String(v).length * 7)}px; color:var(--cdisc-accent2); background:transparent;">
+              style="font-size:10px; padding:1px 4px; border:1px solid var(--cdisc-border); border-radius:3px; width:${Math.max(60, String(v).length * 7)}px; color:var(--cdisc-primary); background:transparent; font-weight:600;">
           </span>`;
         }).join(' ');
-        sliceAnnotation = `<div style="font-size:10px; color:var(--cdisc-accent2); margin-top:4px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+        sliceAnnotation = `<div style="font-size:11px; color:var(--cdisc-text); margin-top:4px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
           <span style="color:var(--cdisc-text-secondary);">slice: ${b.slice} →</span> ${dimInputs}
         </div>`;
       }
@@ -996,7 +1071,7 @@ export async function renderTransformationConfig(container) {
       if (b.qualifierValue) opts.qualifierValue = b.qualifierValue;
       if (b.slice) {
         opts.slice = b.slice;
-        opts.namedSlices = buildSliceLookup(transformation);
+        opts.namedSlices = buildResolvedNamedSlices(transformation, transformation?.slotKey);
       } else if (b.dimensionConstraints) {
         opts.dimensionConstraints = b.dimensionConstraints;
       }

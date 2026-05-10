@@ -197,11 +197,9 @@ Transformations are the bridge between Methods and Concepts. Each transformation
 | SmartPhrase | Template |
 | --- | --- |
 | SP_CFB_ENDPOINT | "change from baseline in {parameter}" |
-| SP_PCTCFB_ENDPOINT | "percent change from baseline in {parameter}" |
 | SP_TTE_ENDPOINT | "time to {event}" |
 | SP_RESPONDER_ENDPOINT | "proportion of responders in {parameter}" |
 | SP_VALUE_ENDPOINT | "{parameter} value" |
-| SP_SHIFT_ENDPOINT | "shift from baseline in {parameter}" |
 
 **ConfigurationOptions** — Parameterized choices resolved at study time:
 

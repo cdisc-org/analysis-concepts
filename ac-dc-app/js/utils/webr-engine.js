@@ -42,7 +42,10 @@ export async function initWebR(onProgress) {
     progress('Installing R package: car (Type III SS)...');
     await webR.installPackages(['car']);
 
-    progress('Loading jsonlite for data exchange...');
+    // jsonlite is no longer pre-bundled in current WebR distributions, so install
+    // it explicitly. Required for the JS↔R data-exchange path used below.
+    progress('Installing R package: jsonlite (data exchange)...');
+    await webR.installPackages(['jsonlite']);
     await webR.evalR('library(jsonlite)');
 
     progress('WebR is ready.');

@@ -1,6 +1,5 @@
 import { parseUSDM } from './utils/usdm-parser.js';
 import { buildUsdmIndex } from './utils/usdm-ref-resolver.js';
-import { buildSoaMatrix } from './utils/soa-matrix.js';
 
 const BASE = getBasePath();
 
@@ -47,7 +46,9 @@ export async function loadAllData(state) {
     esapSchema,
     unitConversions,
     configurationConcepts,
-    conceptCategories
+    conceptCategories,
+    esapTemplate,
+    cptUsdmSectionMap
   ] = await Promise.all([
     fetchJSON('ac-dc-app/data/usdm/studies.json'),
     fetchJSON('model/concept/AC_Concept_Model_v016.json'),
@@ -67,7 +68,12 @@ export async function loadAllData(state) {
     fetchJSON('model/study/study_esap.schema.json'),
     fetchJSON('model/vocabularies/unit_conversions.json'),
     fetchJSON('model/method/configuration_concepts.json'),
-    fetchJSON('model/concept/concept_categories.json')
+    fetchJSON('model/concept/concept_categories.json'),
+    // Non-fatal: when the eSAP template/section-map files are absent or broken
+    // the renderer falls back to the legacy 14-section structure so the rest
+    // of the app (Save/Load, configuration steps) keeps working.
+    fetchJSON('model/study/templates/sap_core_tee_v005.json').catch(() => null),
+    fetchJSON('model/study/templates/cpt_usdm_section_map.json').catch(() => null)
   ]);
 
   // Load all USDM study files in parallel. Manifest entries marked `optional: true`
@@ -107,14 +113,8 @@ export async function loadAllData(state) {
   state.rawUsdm = state.rawUsdmFiles[0] || null;
   state.usdmIndex = state.rawUsdmFiles[0] ? buildUsdmIndex(state.rawUsdmFiles[0]) : null;
 
-  // ---- Study SoA feature ----
-  // Fallback SoA study: the first enriched study on the manifest. SoA views prefer
-  // appState.selectedStudy if it is enriched; otherwise they fall back to this.
-  const soaIdx = state.studies.findIndex(s => s.isSoaEnriched);
-  state.soaRawUsdm = soaIdx >= 0 ? state.rawUsdmFiles[soaIdx] : null;
-  state.soaStudy = soaIdx >= 0 ? state.studies[soaIdx] : null;
-  state.soaMatrix = state.soaRawUsdm ? buildSoaMatrix(state.soaRawUsdm) : null;
-  // _index.json is optional — absent when the enrichment script hasn't been run.
+  // CDISC Library cache index — optional. Kept for future enrichment workflows;
+  // the in-step Schedule of Activities tab does not depend on it.
   state.cdiscLibraryIndex = await fetchJSON('ac-dc-app/data/cdisc-library/_index.json').catch(() => null);
 
   state.acModel = acModel;
@@ -140,6 +140,8 @@ export async function loadAllData(state) {
   state.unitConversions = unitConversions;
   state.configurationConcepts = configurationConcepts;
   state.conceptCategories = conceptCategories;
+  state.esapTemplate = esapTemplate;
+  state.cptUsdmSectionMap = cptUsdmSectionMap;
 }
 
 /**

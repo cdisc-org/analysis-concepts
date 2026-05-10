@@ -12,6 +12,7 @@ import { loadMethod } from '../data-loader.js';
 import { renderFormulaExpression } from './transformation-config.js';
 import { buildEsapSpecification } from '../utils/instance-serializer.js';
 import { ESAP_SECTION_PREFIXES, ESAP_SECTION_LABELS } from '../utils/esap-constants.js';
+import { resolveTitle, buildResolverContext } from './template-resolver.js';
 
 // ===== Helper: build contentItemId → section mapping =====
 function buildNciToSectionMap(study) {
@@ -27,9 +28,38 @@ function buildNciToSectionMap(study) {
   return map;
 }
 
+// ===== Helper: resolve prefixes/label for a template node id =====
+function resolvePrefixesForSection(sectionKey) {
+  const fromMap = appState.cptUsdmSectionMap?.nodes?.[sectionKey]?.usdmPrefixes;
+  if (Array.isArray(fromMap)) return fromMap;
+  // Fall back to legacy keys for backwards compatibility
+  return ESAP_SECTION_PREFIXES[sectionKey] || [];
+}
+
+function findTemplateNode(sections, id) {
+  for (const s of sections || []) {
+    if (s.id === id) return s;
+    const child = findTemplateNode(s.children, id);
+    if (child) return child;
+  }
+  return null;
+}
+
+function resolveSectionLabel(sectionKey, selectedEps) {
+  const tpl = appState.esapTemplate;
+  if (tpl) {
+    const node = findTemplateNode(tpl.sections, sectionKey);
+    if (node) {
+      const ctx = buildResolverContext(appState, selectedEps);
+      return `${node.number}. ${resolveTitle(node.title, ctx)}`;
+    }
+  }
+  return ESAP_SECTION_LABELS[sectionKey] || sectionKey;
+}
+
 // ===== Helper: group narratives for the picker =====
 function groupNarrativesForPicker(narratives, nciToSection, esapSectionKey) {
-  const prefixes = ESAP_SECTION_PREFIXES[esapSectionKey] || [];
+  const prefixes = resolvePrefixesForSection(esapSectionKey);
   const relevant = [];
   const groups = {};
   const other = [];
@@ -138,20 +168,18 @@ export async function renderEsapBuilder(container) {
     </div>
 
     <div class="esap-doc">
-      ${renderEsapSection('abbreviations', ESAP_SECTION_LABELS.abbreviations, renderPlaceholderSection('Link protocol abbreviations from USDM, or add manually.'), false)}
-      ${renderEsapSection('introduction', ESAP_SECTION_LABELS.introduction, renderIntroductionSection(study), false)}
-      ${renderEsapSection('objectives', ESAP_SECTION_LABELS.objectives, renderObjectivesSection(selectedEps, byObjective))}
-      ${renderEsapSection('studyDesign', ESAP_SECTION_LABELS.studyDesign, renderStudyDesignSection(study), false)}
-      ${renderEsapSection('protocolChanges', ESAP_SECTION_LABELS.protocolChanges, renderPlaceholderSection('Link USDM content describing protocol amendments and their impact on planned analyses.'), false)}
-      ${renderEsapSection('estimands', ESAP_SECTION_LABELS.estimands, renderEstimandsSection(selectedEps, study))}
-      ${renderEsapSection('endpoints', ESAP_SECTION_LABELS.endpoints, renderEndpointsSection(selectedEps, study))}
-      ${renderEsapSection('analysisSets', ESAP_SECTION_LABELS.analysisSets, renderAnalysisSetsSection(study))}
-      ${renderEsapSection('statMethods', ESAP_SECTION_LABELS.statMethods, renderStatMethodsSection(selectedEps, study, loadedMethods))}
-      ${renderEsapSection('statAnalysis', ESAP_SECTION_LABELS.statAnalysis, renderStatAnalysisSection(selectedEps, study))}
-      ${renderEsapSection('software', ESAP_SECTION_LABELS.software, renderPlaceholderSection('Specify statistical software (e.g., SAS 9.4, R 4.3).'), false)}
-      ${renderEsapSection('references', ESAP_SECTION_LABELS.references, renderPlaceholderSection('Add references to ICH E9(R1), protocol, and relevant literature.'), false)}
-      ${renderEsapSection('shells', ESAP_SECTION_LABELS.shells, renderPlaceholderSection('Table, figure, and listing shells will be appended.'), false)}
-      ${renderEsapSection('appendices', ESAP_SECTION_LABELS.appendices, renderPlaceholderSection('Supplementary material.'), false)}
+      ${appState.esapTemplate
+        ? renderTemplateTree({
+            template: appState.esapTemplate,
+            sectionMap: appState.cptUsdmSectionMap,
+            study,
+            selectedEps,
+            byObjective,
+            loadedMethods,
+            resolverCtx: buildResolverContext(appState, selectedEps)
+          })
+        : renderLegacyFourteenSections(study, selectedEps, byObjective, loadedMethods)
+      }
     </div>
 
     <div id="esap-datasets-panel" style="display:none; margin-top:16px;">
@@ -265,6 +293,225 @@ export async function renderEsapBuilder(container) {
       // Also update the endpoint-how input if visible
     });
   });
+}
+
+/** Legacy 14-section render — used only when state.esapTemplate is unavailable. */
+function renderLegacyFourteenSections(study, selectedEps, byObjective, loadedMethods) {
+  return [
+    renderEsapSection('abbreviations', ESAP_SECTION_LABELS.abbreviations, renderPlaceholderSection('Link protocol abbreviations from USDM, or add manually.'), false),
+    renderEsapSection('introduction', ESAP_SECTION_LABELS.introduction, renderIntroductionSection(study), false),
+    renderEsapSection('objectives', ESAP_SECTION_LABELS.objectives, renderObjectivesSection(selectedEps, byObjective)),
+    renderEsapSection('studyDesign', ESAP_SECTION_LABELS.studyDesign, renderStudyDesignSection(study), false),
+    renderEsapSection('protocolChanges', ESAP_SECTION_LABELS.protocolChanges, renderPlaceholderSection('Link USDM content describing protocol amendments and their impact on planned analyses.'), false),
+    renderEsapSection('estimands', ESAP_SECTION_LABELS.estimands, renderEstimandsSection(selectedEps, study)),
+    renderEsapSection('endpoints', ESAP_SECTION_LABELS.endpoints, renderEndpointsSection(selectedEps, study)),
+    renderEsapSection('analysisSets', ESAP_SECTION_LABELS.analysisSets, renderAnalysisSetsSection(study)),
+    renderEsapSection('statMethods', ESAP_SECTION_LABELS.statMethods, renderStatMethodsSection(selectedEps, study, loadedMethods)),
+    renderEsapSection('statAnalysis', ESAP_SECTION_LABELS.statAnalysis, renderStatAnalysisSection(selectedEps, study)),
+    renderEsapSection('software', ESAP_SECTION_LABELS.software, renderPlaceholderSection('Specify statistical software (e.g., SAS 9.4, R 4.3).'), false),
+    renderEsapSection('references', ESAP_SECTION_LABELS.references, renderPlaceholderSection('Add references to ICH E9(R1), protocol, and relevant literature.'), false),
+    renderEsapSection('shells', ESAP_SECTION_LABELS.shells, renderPlaceholderSection('Table, figure, and listing shells will be appended.'), false),
+    renderEsapSection('appendices', ESAP_SECTION_LABELS.appendices, renderPlaceholderSection('Supplementary material.'), false)
+  ].join('');
+}
+
+// ===== Template-driven render (TransCelerate Core TEE) =====
+
+/**
+ * Walk the loaded SAP template tree and emit collapsible sections.
+ * Each node's body is dispatched via `cptUsdmSectionMap[node.id].fromSpec`
+ * to one of the existing AC/DC renderers (estimands, endpoints, etc.),
+ * or — when only `usdmPrefixes` is set — falls through to a USDM-link picker.
+ * The original CPT wizard prose is preserved as a collapsed <details> block
+ * so reviewers can see what the predecessor template would have prompted.
+ */
+function renderTemplateTree(args) {
+  const { template, sectionMap } = args;
+  if (!template?.sections?.length) {
+    return '<p style="color:var(--cdisc-text-secondary);">eSAP template not loaded.</p>';
+  }
+  return template.sections.map(node => renderTemplateNode(node, 1, args, sectionMap)).join('');
+}
+
+function renderTemplateNode(node, depth, args, sectionMap) {
+  const { resolverCtx } = args;
+  const mapping = sectionMap?.nodes?.[node.id] || {};
+  const resolvedTitle = resolveTitle(node.title, resolverCtx);
+  const fullTitle = `${node.number}. ${resolvedTitle}`;
+
+  const body = renderNodeBody(node, mapping, args);
+  const cptDetails = renderCptPrompts(node);
+  const childrenHtml = (node.children || [])
+    .map(child => renderTemplateNode(child, depth + 1, args, sectionMap))
+    .join('');
+
+  // Top-level (depth 1) starts collapsed; sub-sections are nested inside.
+  const startOpen = depth === 1 && hasContent(body, childrenHtml);
+
+  return renderEsapSection(
+    node.id,
+    fullTitle,
+    `${body}${cptDetails}${childrenHtml ? `<div style="margin-top:12px;">${childrenHtml}</div>` : ''}`,
+    startOpen,
+    depth
+  );
+}
+
+function hasContent(...parts) {
+  return parts.some(p => p && p.trim().length > 0);
+}
+
+function renderNodeBody(node, mapping, args) {
+  const { study, selectedEps, byObjective, loadedMethods } = args;
+  const fromSpec = mapping.fromSpec;
+
+  // Top-level dispatch first — fall back to USDM linker placeholder
+  if (fromSpec) {
+    return dispatchFromSpec(fromSpec, { node, study, selectedEps, byObjective, loadedMethods });
+  }
+  if (mapping.usdmPrefixes?.length) {
+    return ''; // body comes from the linked-narrative panel rendered by renderEsapSection
+  }
+  // No mapping at all (or leaf without explicit fromSpec) — leave empty so children can carry the content
+  return '';
+}
+
+function dispatchFromSpec(fromSpec, ctx) {
+  const { node, study, selectedEps, byObjective, loadedMethods } = ctx;
+  switch (fromSpec) {
+    case 'objectivesEndpointsEstimands':
+      return renderObjectivesSection(selectedEps, byObjective);
+    case 'decisionCriteria':
+      return renderPlaceholderSection('Decision criteria / statistical hypotheses are derived from the configured estimand frameworks. Use Step 4 (Endpoint How) to add hypotheses; link USDM content for textual context.');
+    case 'multiplicity':
+      return renderPlaceholderSection('Describe multiplicity adjustments (e.g., Hochberg, Holm) per primary endpoint family. Link USDM content if the protocol specifies.');
+    case 'intercurrentEventStrategies':
+      return renderIntercurrentEventsSection(selectedEps);
+    case 'missingDataHandling':
+      return renderPlaceholderSection('Describe handling of missing data (e.g., MMRM, multiple imputation). Link USDM content from the protocol.');
+    case 'analysisSets':
+      return renderAnalysisSetsSection(study);
+    case 'analyses.primary':
+      return renderEndpointLevelAnalysis(selectedEps, study, /Primary/i);
+    case 'analyses.primary.definition':
+      return renderEndpointDefinitions(selectedEps, study, /Primary/i);
+    case 'analyses.primary.main':
+      return renderMainAnalyses(selectedEps, study, /Primary/i);
+    case 'analyses.primary.sensitivity':
+      return renderPlaceholderSection('Sensitivity analyses for primary endpoint(s). Configure variants in Step 4 (Endpoint How) — flag analyses as "sensitivity" to surface here.');
+    case 'analyses.primary.supplementary':
+      return renderPlaceholderSection('Supplementary analyses for primary endpoint(s). Configure variants in Step 4.');
+    case 'analyses.secondary':
+      return renderEndpointLevelAnalysis(selectedEps, study, /Secondary/i);
+    case 'analyses.secondary.key':
+    case 'analyses.secondary.key.main':
+      return renderMainAnalyses(selectedEps, study, /Secondary/i);
+    case 'analyses.secondary.key.definition':
+      return renderEndpointDefinitions(selectedEps, study, /Secondary/i);
+    case 'analyses.secondary.key.sensitivity':
+      return renderPlaceholderSection('Sensitivity analyses for secondary endpoint(s).');
+    case 'analyses.secondary.key.supplementary':
+      return renderPlaceholderSection('Supplementary analyses for secondary endpoint(s).');
+    case 'analyses.secondary.supportive':
+      return renderPlaceholderSection('Supportive secondary endpoint analyses.');
+    case 'analyses.exploratory':
+      return renderEndpointLevelAnalysis(selectedEps, study, /Exploratory|Tertiary/i);
+    case 'analyses.safety':
+      return renderEndpointLevelAnalysis(selectedEps, study, /Safety/i);
+    case 'safety.exposure':
+      return renderPlaceholderSection('Extent of exposure analyses (treatment duration, total dose, compliance).');
+    case 'safety.adverseEvents':
+      return renderPlaceholderSection('Adverse event analyses (TEAE incidence, severity, relationship, SAEs).');
+    case 'safety.additional':
+      return renderPlaceholderSection('Additional safety assessments (vitals, ECG, labs, physical exam).');
+    case 'other':
+    case 'other.variables':
+      return renderPlaceholderSection('Other variables and parameters not covered by primary, secondary, or safety sections.');
+    case 'subgroup':
+      return renderPlaceholderSection('Subgroup analyses by demographic, baseline, or stratification factors.');
+    case 'interim':
+      return renderPlaceholderSection('Interim analyses, including stopping rules and information fractions.');
+    case 'protocolChanges':
+      return renderPlaceholderSection('Changes to the protocol-planned analyses since the protocol was finalized.');
+    case 'sampleSize':
+      return renderPlaceholderSection('Sample size determination — assumptions, effect size, power, drop-out adjustment.');
+    default:
+      return renderPlaceholderSection(`(${fromSpec}) — Link USDM content or configure in earlier steps.`);
+  }
+}
+
+/** Render the original CPT wizard prose as a collapsible details block — the demo callout. */
+function renderCptPrompts(node) {
+  const prompts = node.wizardPrompts || [];
+  if (!prompts.length) return '';
+  const blocks = prompts.map((p, i) => {
+    const label = p.kind === 'example' ? 'Example text' : 'Suggested text';
+    const lines = (p.lines || []).map(l => `<div>${escapeHtml(l)}</div>`).join('');
+    return `
+      <details style="margin-top:8px; padding:8px 12px; background:var(--cdisc-background); border-left:3px dashed var(--cdisc-border); border-radius:0 var(--radius) var(--radius) 0;">
+        <summary style="cursor:pointer; font-size:11px; color:var(--cdisc-text-secondary); font-style:italic;">
+          What the CPT wizard would have prompted here &mdash; ${label} ${prompts.length > 1 ? `(${i + 1}/${prompts.length})` : ''}
+        </summary>
+        <div style="font-size:11px; line-height:1.5; margin-top:6px; color:var(--cdisc-text-secondary);">${lines}</div>
+      </details>`;
+  });
+  return blocks.join('');
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/** Endpoint-level helpers used by the dispatcher. */
+function renderEndpointLevelAnalysis(selectedEps, study, levelRe) {
+  const eps = (selectedEps || []).filter(ep => levelRe.test(ep.level));
+  if (!eps.length) return renderPlaceholderSection(`No endpoints at this level configured for the active study.`);
+  const lib = appState.transformationLibrary;
+  return eps.map(ep => renderStatAnalysisCard(ep, study, lib)).join('') +
+    `<div style="margin-top:8px;"><button class="btn btn-sm btn-secondary esap-edit-btn" data-step="4">Edit in Endpoint How &rarr;</button></div>`;
+}
+
+function renderEndpointDefinitions(selectedEps, study, levelRe) {
+  const eps = (selectedEps || []).filter(ep => levelRe.test(ep.level));
+  if (!eps.length) return renderPlaceholderSection('No endpoints configured at this level.');
+  return eps.map(ep => renderEndpointCard(ep)).join('');
+}
+
+function renderMainAnalyses(selectedEps, study, levelRe) {
+  const eps = (selectedEps || []).filter(ep => levelRe.test(ep.level));
+  if (!eps.length) return renderPlaceholderSection('No analyses configured at this level.');
+  const lib = appState.transformationLibrary;
+  return eps.map(ep => renderStatAnalysisCard(ep, study, lib)).join('');
+}
+
+function renderIntercurrentEventsSection(selectedEps) {
+  const items = [];
+  for (const ep of selectedEps || []) {
+    const spec = appState.endpointSpecs?.[ep.id];
+    const ies = spec?.intercurrentEvents || [];
+    for (const ie of ies) {
+      items.push({ epName: ep.name, ...ie });
+    }
+  }
+  if (!items.length) {
+    return renderPlaceholderSection('Intercurrent event strategies are configured per endpoint in Step 4 (Endpoint How). None defined yet for the selected endpoints.');
+  }
+  return `
+    <table class="data-table" style="font-size:12px;">
+      <thead><tr><th>Endpoint</th><th>Event</th><th>Strategy</th><th>Rationale</th></tr></thead>
+      <tbody>
+        ${items.map(it => `
+          <tr>
+            <td>${escapeHtml(it.epName)}</td>
+            <td>${escapeHtml(it.event || it.name || '')}</td>
+            <td><span class="badge badge-blue">${escapeHtml(it.strategy || '')}</span></td>
+            <td>${escapeHtml(it.rationale || '')}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
 }
 
 // ===== Section Renderers — Front Matter (1-5) =====
@@ -774,16 +1021,21 @@ function renderDatasetsPanel(selectedEps, study) {
 
 // ===== eSAP Section Wrapper =====
 
-function renderEsapSection(sectionKey, title, bodyHtml, startOpen = true) {
+function renderEsapSection(sectionKey, title, bodyHtml, startOpen = true, depth = 1) {
   const linkedCount = (appState.esapLinkedNarratives[sectionKey] || []).length;
   const btnLabel = linkedCount > 0 ? `Linked (${linkedCount})` : 'Link USDM Content';
   const btnClass = linkedCount > 0
     ? 'btn btn-sm btn-primary btn-link-usdm'
     : 'btn btn-sm btn-secondary btn-link-usdm';
 
+  // Visual hierarchy: top-level sections get the heaviest title, sub-sections lighter
+  const titleSize = depth === 1 ? '15px' : depth === 2 ? '13px' : '12px';
+  const titleWeight = depth <= 2 ? '700' : '600';
+  const wrapperMargin = depth === 1 ? '12px 0' : '6px 0';
+
   return `
-    <div class="collapsible ${startOpen ? 'open' : ''}">
-      <div class="collapsible-header" style="display:flex; align-items:center; justify-content:space-between;">
+    <div class="collapsible ${startOpen ? 'open' : ''}" data-depth="${depth}" style="margin:${wrapperMargin};">
+      <div class="collapsible-header" style="display:flex; align-items:center; justify-content:space-between; font-size:${titleSize}; font-weight:${titleWeight};">
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="collapsible-arrow">&#9654;</span>
           ${title}
@@ -852,7 +1104,9 @@ function showNarrativePicker(container, sectionKey) {
   const narratives = study.narrativeContent.filter(nc => nc.text && nc.text.length > 30);
   const nciToSection = buildNciToSectionMap(study);
   const { relevant, groups, other } = groupNarrativesForPicker(narratives, nciToSection, sectionKey);
-  const sectionLabel = ESAP_SECTION_LABELS[sectionKey] || sectionKey;
+  const allEps = getAllEndpoints(study);
+  const selectedEps = allEps.filter(ep => appState.selectedEndpoints.includes(ep.id));
+  const sectionLabel = resolveSectionLabel(sectionKey, selectedEps);
 
   const resolvedCache = new Map();
   for (const nc of narratives) {

@@ -1,0 +1,50 @@
+{
+  "templateId": "sap_core_tee_v005",
+  "description": "Maps each Core TEE template node to USDM protocol section prefixes (narrative source) and/or a fromSpec dispatch key (AC/DC auto-generated content). Sections may carry both: a USDM narrative snippet from the predecessor CPT location plus AC/DC-rendered structured content.",
+  "nodes": {
+    "1":       { "usdmPrefixes": ["1"] },
+    "1.1":     { "usdmPrefixes": ["2", "3.9"], "fromSpec": "objectivesEndpointsEstimands" },
+    "1.2":     { "usdmPrefixes": ["3.1", "3.2", "3.3", "3.5", "3.6", "3.7"] },
+
+    "2":       { "usdmPrefixes": ["3.8", "4"] },
+    "2.1":     { "fromSpec": "decisionCriteria" },
+    "2.2":     { "fromSpec": "multiplicity" },
+    "2.3":     { "fromSpec": "intercurrentEventStrategies" },
+    "2.4":     { "fromSpec": "missingDataHandling" },
+
+    "3":       { "usdmPrefixes": ["3.4"], "fromSpec": "analysisSets" },
+
+    "4":       { "fromSpec": "analyses.primary" },
+    "4.1":     { "fromSpec": "analyses.primary" },
+    "4.1.1":   { "fromSpec": "analyses.primary.definition" },
+    "4.1.2":   { "fromSpec": "analyses.primary.main" },
+    "4.1.3":   { "fromSpec": "analyses.primary.sensitivity" },
+    "4.1.4":   { "fromSpec": "analyses.primary.supplementary" },
+
+    "5":       { "fromSpec": "analyses.secondary" },
+    "5.1":     { "fromSpec": "analyses.secondary" },
+    "5.1.1":   { "fromSpec": "analyses.secondary.key" },
+    "5.1.1.1": { "fromSpec": "analyses.secondary.key.definition" },
+    "5.1.1.2": { "fromSpec": "analyses.secondary.key.main" },
+    "5.1.1.3": { "fromSpec": "analyses.secondary.key.sensitivity" },
+    "5.1.1.4": { "fromSpec": "analyses.secondary.key.supplementary" },
+    "5.1.2":   { "fromSpec": "analyses.secondary.supportive" },
+
+    "6":       { "fromSpec": "analyses.exploratory" },
+
+    "7":       { "fromSpec": "analyses.safety" },
+    "7.1":     { "fromSpec": "safety.exposure" },
+    "7.2":     { "fromSpec": "safety.adverseEvents" },
+    "7.3":     { "fromSpec": "safety.additional" },
+
+    "8":       { "fromSpec": "other" },
+    "8.1":     { "fromSpec": "other.variables" },
+    "8.2":     { "fromSpec": "subgroup" },
+
+    "9":       { "fromSpec": "interim" },
+    "10":      { "usdmPrefixes": [], "fromSpec": "protocolChanges" },
+    "11":      { "fromSpec": "sampleSize" },
+    "12":      { "usdmPrefixes": ["12"] },
+    "13":      { "usdmPrefixes": ["14"] }
+  }
+}

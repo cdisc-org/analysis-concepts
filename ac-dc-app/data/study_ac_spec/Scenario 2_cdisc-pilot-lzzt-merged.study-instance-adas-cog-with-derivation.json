@@ -1,9 +1,9 @@
 {
   "$schema": "acdc-study-instance.schema.json",
-  "instanceId": "SI_CDISC-PILOT-LZZT-merged_2026-04-23",
+  "instanceId": "SI_CDISC-PILOT-LZZT-merged_2026-05-10",
   "formatVersion": "1.0",
-  "createdAt": "2026-04-23T11:06:13.786Z",
-  "updatedAt": "2026-04-23T11:06:13.786Z",
+  "createdAt": "2026-05-10T19:28:05.978Z",
+  "updatedAt": "2026-05-10T19:28:05.978Z",
   "$references": {
     "transformationLibrary": {
       "file": "lib/transformations/ACDC_Transformation_Library_v06.json",
@@ -41,7 +41,36 @@
     "shells": [],
     "appendices": []
   },
-  "endpointAnalyses": {},
+  "endpointAnalyses": {
+    "Endpoint_1": {
+      "composedPhrases": [],
+      "transformationOid": "T.CFB_ANCOVA",
+      "dimensionalSliceValues": {
+        "Parameter": "Adas-Cog(11) Subscore",
+        "Visit": "WEEK 24",
+        "AnalysisVisit": "Week 24",
+        "Population": "AP_1"
+      },
+      "inputBindingEdits": {
+        "added": [
+          {
+            "methodRole": "fixed_effect",
+            "concept": "Site",
+            "direction": "input",
+            "dataStructureRole": "dimension",
+            "description": "",
+            "_custom": true
+          }
+        ],
+        "removed": []
+      },
+      "activeInteractions": [],
+      "methodConfigOverrides": {},
+      "derivationChain": [],
+      "derivationConfigValues": {},
+      "confirmedTerminals": []
+    }
+  },
   "endpointSpecs": {
     "Endpoint_1": {
       "conceptCategory": "Change",
@@ -52,8 +81,8 @@
       "dimensionValues": {
         "Parameter": "Adas-Cog(11) Subscore",
         "Visit": "WEEK 24",
-        "Population": "AP_1",
-        "AnalysisVisit": "Week 24"
+        "AnalysisVisit": "Week 24",
+        "Population": "AP_1"
       },
       "derivationNote": "",
       "selectedTransformationOid": "T.CFB_ANCOVA",
@@ -102,7 +131,7 @@
               "dataStructureRole": "dimension"
             },
             {
-              "concept": "Parameter",
+              "conceptCategory": "ParameterDimension",
               "methodRole": "constraint",
               "direction": "input",
               "dataStructureRole": "dimension"
@@ -159,16 +188,16 @@
           "fixedDimensions": {
             "Parameter": "Adas-Cog(11) Subscore",
             "Visit": "WEEK 24",
-            "Population": "AP_1",
-            "AnalysisVisit": "Week 24"
+            "AnalysisVisit": "Week 24",
+            "Population": "AP_1"
           }
         }
       ],
       "sliceKeyDimensions": [
         "Parameter",
         "Visit",
-        "Population",
-        "AnalysisVisit"
+        "AnalysisVisit",
+        "Population"
       ],
       "resolvedBindings": [
         {
@@ -205,7 +234,7 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "conceptCategory": "ParameterDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -226,41 +255,279 @@
         }
       ],
       "activeInteractions": [],
+      "dimensionCategoryPicks": {
+        "ParameterDimension": "Parameter"
+      },
+      "sliceDimensionOverrides": {
+        "parameter_baseline": {
+          "Visit": "BASELINE"
+        }
+      },
       "derivationChain": [
         {
           "slotKey": "T.CFB_ANCOVA/Change/0",
           "concept": "Change",
-          "derivationOid": "T.ChangeFromBaseline"
+          "derivationOid": "T.ChangeFromBaseline",
+          "customBindings": [
+            {
+              "concept": "Measure",
+              "requiredValueType": "Quantity",
+              "note": "Current visit value",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "methodRole": "minuend"
+            },
+            {
+              "concept": "Measure",
+              "requiredValueType": "Quantity",
+              "note": "Baseline-flagged record",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "methodRole": "subtrahend",
+              "slice": "parameter_baseline"
+            },
+            {
+              "concept": "Subject",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "ParameterDimension",
+              "methodRole": "constraint",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "concept": "Change",
+              "direction": "output",
+              "dataStructureRole": "measure",
+              "methodRole": "difference"
+            },
+            {
+              "concept": "Subject",
+              "direction": "output",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "direction": "output",
+              "dataStructureRole": "dimension",
+              "_layerNote": "Output dimension cascades from the endpoint's dimensionCategoryPicks: the user's choice of which category-member to use (e.g. Visit OC vs AnalysisVisit DC) propagates here so the derivation output cube and the analysis input cube speak the same layer.",
+              "conceptCategory": "ParameterDimension"
+            },
+            {
+              "direction": "output",
+              "dataStructureRole": "dimension",
+              "_layerNote": "Output dimension cascades from the endpoint's dimensionCategoryPicks: the user's choice of which category-member to use (e.g. Visit OC vs AnalysisVisit DC) propagates here so the derivation output cube and the analysis input cube speak the same layer.",
+              "conceptCategory": "VisitDimension"
+            }
+          ]
         },
         {
           "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0",
           "concept": "Measure",
-          "derivationOid": "T.ADAS_Cog_11_TotalScore"
+          "derivationOid": "T.ADAS_Cog_11_TotalScore",
+          "customBindings": [
+            {
+              "concept": "Measure",
+              "note": "Sum of available item scores (T.ADAS_SumAvailableScores, M.Aggregation sum)",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "methodRole": "numerator"
+            },
+            {
+              "concept": "Measure",
+              "note": "Scoreable fraction from T.ADAS_ScoreableFraction (1.0 when no items are missing; (70-x)/70 otherwise)",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "methodRole": "denominator"
+            },
+            {
+              "concept": "Flag",
+              "note": "Scoreable flag from T.ADAS_ScoreableCheck",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "methodRole": "filter"
+            },
+            {
+              "concept": "Subject",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "ParameterDimension",
+              "methodRole": "constraint",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "concept": "Measure",
+              "direction": "output",
+              "dataStructureRole": "measure",
+              "methodRole": "quotient"
+            },
+            {
+              "concept": "Subject",
+              "direction": "output",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "direction": "output",
+              "dataStructureRole": "dimension",
+              "_layerNote": "Output dimension cascades from the endpoint's dimensionCategoryPicks: the user's choice of which category-member to use (e.g. Visit OC vs AnalysisVisit DC) propagates here so the derivation output cube and the analysis input cube speak the same layer.",
+              "conceptCategory": "VisitDimension"
+            },
+            {
+              "direction": "output",
+              "dataStructureRole": "dimension",
+              "_layerNote": "Output dimension cascades from the endpoint's dimensionCategoryPicks: the user's choice of which category-member to use (e.g. Visit OC vs AnalysisVisit DC) propagates here so the derivation output cube and the analysis input cube speak the same layer.",
+              "conceptCategory": "ParameterDimension"
+            }
+          ]
         },
         {
           "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/0",
           "concept": "Measure",
-          "derivationOid": "T.ADAS_SumAvailableScores"
+          "derivationOid": "T.ADAS_SumAvailableScores",
+          "customBindings": [
+            {
+              "concept": "Measure",
+              "note": "11 ADAS-Cog item scores (from BCs)",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "methodRole": "value"
+            },
+            {
+              "concept": "Subject",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "concept": "Measure",
+              "direction": "output",
+              "dataStructureRole": "measure",
+              "methodRole": "result"
+            },
+            {
+              "concept": "Subject",
+              "direction": "output",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "direction": "output",
+              "dataStructureRole": "dimension"
+            }
+          ]
         },
         {
           "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1",
           "concept": "Measure",
-          "derivationOid": "T.ADAS_ScoreableFraction"
+          "derivationOid": "T.ADAS_ScoreableFraction",
+          "customBindings": [
+            {
+              "concept": "Measure",
+              "note": "Total missing-item max-score capacity per Subject/Visit (output of T.ADAS_MissingScaleCapacity)",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "methodRole": "value"
+            },
+            {
+              "concept": "Measure",
+              "direction": "output",
+              "dataStructureRole": "measure",
+              "methodRole": "result"
+            }
+          ]
         },
         {
           "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0",
           "concept": "Measure",
-          "derivationOid": "T.ADAS_MissingScaleCapacity"
+          "derivationOid": "T.ADAS_MissingScaleCapacity",
+          "customBindings": [
+            {
+              "concept": "Measure",
+              "note": "Per-row missing-capacity contribution from T.ADAS_MissingContribution (item_max_score when item is missing, else 0)",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "methodRole": "value"
+            },
+            {
+              "concept": "Subject",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "concept": "Measure",
+              "direction": "output",
+              "dataStructureRole": "measure",
+              "methodRole": "result"
+            },
+            {
+              "concept": "Subject",
+              "direction": "output",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "VisitDimension",
+              "direction": "output",
+              "dataStructureRole": "dimension"
+            }
+          ]
         },
         {
           "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0",
           "concept": "Measure",
-          "derivationOid": "T.ADAS_MissingContribution"
-        },
-        {
-          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0/Measure/1",
-          "concept": "Measure",
-          "derivationOid": "T.ADAS_ItemMaxScore"
+          "derivationOid": "T.ADAS_MissingContribution",
+          "customBindings": [
+            {
+              "concept": "Measure",
+              "note": "Per-row item score (raw observed value; NA when the item was not scored)",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "methodRole": "value"
+            },
+            {
+              "concept": "Measure",
+              "note": "Per-item max possible score from T.ADAS_ItemMaxScore (broadcast to every row of that Parameter)",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "methodRole": "alternate"
+            },
+            {
+              "concept": "Measure",
+              "direction": "output",
+              "dataStructureRole": "measure",
+              "methodRole": "result"
+            }
+          ]
         },
         {
           "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Flag/0",
@@ -345,6 +612,37 @@
               "dataStructureRole": "dimension"
             }
           ]
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0/Measure/1",
+          "concept": "Measure",
+          "derivationOid": "T.ADAS_ItemMaxScore",
+          "customBindings": [
+            {
+              "concept": "Measure",
+              "note": "11 ADAS-Cog item scores",
+              "direction": "input",
+              "dataStructureRole": "measure",
+              "methodRole": "value"
+            },
+            {
+              "conceptCategory": "ParameterDimension",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "concept": "Measure",
+              "direction": "output",
+              "dataStructureRole": "measure",
+              "methodRole": "result"
+            },
+            {
+              "conceptCategory": "ParameterDimension",
+              "direction": "output",
+              "dataStructureRole": "dimension"
+            }
+          ]
         }
       ],
       "selectedDerivations": {
@@ -354,9 +652,9 @@
         "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1": "T.ADAS_ScoreableFraction",
         "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0": "T.ADAS_MissingScaleCapacity",
         "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0": "T.ADAS_MissingContribution",
-        "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0/Measure/1": "T.ADAS_ItemMaxScore",
         "T.CFB_ANCOVA/Change/0/Measure/0/Flag/0": "T.ADAS_ScoreableCheck",
-        "T.CFB_ANCOVA/Change/0/Measure/0/Flag/0/Measure/0": "T.ADAS_NonMissingCount"
+        "T.CFB_ANCOVA/Change/0/Measure/0/Flag/0/Measure/0": "T.ADAS_NonMissingCount",
+        "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0/Measure/1": "T.ADAS_ItemMaxScore"
       },
       "confirmedTerminals": [
         {
@@ -370,7 +668,35 @@
           "roleLabel": "constraint"
         },
         {
+          "slotKey": "T.CFB_ANCOVA/Treatment/2",
+          "concept": "Treatment",
+          "roleLabel": "fixed_effect"
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Visit/5",
+          "concept": "Visit",
+          "roleLabel": "constraint"
+        },
+        {
           "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/0/Measure/0",
+          "concept": "Measure",
+          "roleLabel": "value",
+          "linkedBCIds": [
+            "BiomedicalConcept_315",
+            "BiomedicalConcept_316",
+            "BiomedicalConcept_318",
+            "BiomedicalConcept_320",
+            "BiomedicalConcept_324",
+            "BiomedicalConcept_325",
+            "BiomedicalConcept_326",
+            "BiomedicalConcept_327",
+            "BiomedicalConcept_328",
+            "BiomedicalConcept_329",
+            "BiomedicalConcept_330"
+          ]
+        },
+        {
+          "slotKey": "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0/Measure/0/Measure/0",
           "concept": "Measure",
           "roleLabel": "value",
           "linkedBCIds": [
@@ -412,8 +738,8 @@
           "linkedBCIds": [
             "BiomedicalConcept_315",
             "BiomedicalConcept_316",
-            "BiomedicalConcept_320",
             "BiomedicalConcept_318",
+            "BiomedicalConcept_320",
             "BiomedicalConcept_324",
             "BiomedicalConcept_325",
             "BiomedicalConcept_326",
@@ -440,16 +766,6 @@
             "BiomedicalConcept_329",
             "BiomedicalConcept_330"
           ]
-        },
-        {
-          "slotKey": "T.CFB_ANCOVA/Treatment/2",
-          "concept": "Treatment",
-          "roleLabel": "fixed_effect"
-        },
-        {
-          "slotKey": "T.CFB_ANCOVA/Visit/5",
-          "concept": "Visit",
-          "roleLabel": "constraint"
         }
       ],
       "pipelineReferences": [
@@ -465,7 +781,30 @@
           "referenceSlotKey": "T.CFB_ANCOVA/Change/0/Measure/0",
           "referenceLabel": "minuend → ADAS-Cog (11) Total Score"
         }
-      ]
+      ],
+      "dimensionOverrides": {
+        "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0/Measure/0": {
+          "1": {
+            "concept": "Observation.Identification.Topic"
+          },
+          "3": {
+            "concept": "Observation.Identification.Topic"
+          }
+        },
+        "T.CFB_ANCOVA/Change/0/Measure/0/Measure/1/Measure/0/Measure/0/Measure/1": {
+          "1": {
+            "concept": "Observation.Identification.Topic"
+          },
+          "3": {
+            "concept": "Observation.Identification.Topic"
+          }
+        },
+        "T.CFB_ANCOVA/Change/0/Measure/0": {
+          "4": {
+            "concept": "Observation.Identification.Topic"
+          }
+        }
+      }
     }
   },
   "unitConversions": {
@@ -667,7 +1006,7 @@
     ]
   },
   "preferences": {
-    "modelViewMode": "concepts",
+    "modelViewMode": "adam",
     "currentStep": 8
   }
 }

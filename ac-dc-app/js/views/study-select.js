@@ -45,7 +45,6 @@ function renderStudyCard(study, index) {
           <div class="card-title">${title}</div>
           <div class="card-subtitle">${sponsorId}</div>
         </div>
-        ${study.isSoaEnriched ? `<span class="badge badge-soa" title="This study carries the SDTM-specialization USDM extension — ready for the Protocol SoA / Detailed SoA views.">SoA-ready</span>` : ''}
       </div>
 
       <div class="study-card-meta">

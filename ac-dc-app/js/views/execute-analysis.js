@@ -1,5 +1,5 @@
 import { appState, navigateTo, rebuildSpec } from '../app.js';
-import { getAllEndpoints, getDerivationBCTopicDecode, getEndpointParameterOptions, getArmNames, getVisitLabels } from '../utils/usdm-parser.js';
+import { getAllEndpoints, getDerivationBCTopicDecode, getEndpointParameterOptions, getArmNames, getVisitLabels, getPopulationNames } from '../utils/usdm-parser.js';
 import {
   initWebR, loadXptFile, executeR, isInitialized,
   getLoadedDatasets, loadEngine, setJsonVariable
@@ -8,6 +8,7 @@ import { generateExecutionPayload, getVariableOptions, getDefaultVariable, resol
 import { buildPipelineGraph, orderChainPostOrder, computeColumnMap, computeAnalysisInputColumns } from '../utils/transformation-linker.js';
 import { loadMethod } from '../data-loader.js';
 import { getSpecParameterValue } from './endpoint-spec.js';
+import { substituteTokens, buildDimensionTokenSource, TOKEN_DEFAULTS } from '../utils/concept-display.js';
 
 /**
  * Resolve a derivation's slices into concrete {dimension, value} constraints
@@ -16,22 +17,39 @@ import { getSpecParameterValue } from './endpoint-spec.js';
  * value-level overrides from derivationSliceOverrides are also applied.
  * Returns [] when the derivation declares no slices.
  */
-function resolveDerivationSlices(transform, slotKey, dimensionOverrides, categoriesMap, derivSliceOverrides, endpointPicks) {
+function resolveDerivationSlices(transform, slotKey, dimensionOverrides, categoriesMap, derivSliceOverrides, endpointPicks, endpointParameterValue, endpointSpec) {
   const slices = transform?.slices || [];
   if (slices.length === 0) return [];
   const bindings = transform.bindings || [];
   const perSlotOverrides = derivSliceOverrides?.[slotKey] || {};
   const picks = endpointPicks || {};
+  // Generic `{token}` substitution. Sources, in priority order:
+  //   1. spec.tokenValues       — user-edited per-endpoint token map
+  //   2. explicit parameter     — endpointParameterValue when supplied
+  //   3. dimension values       — buildDimensionTokenSource(spec.dimensionValues)
+  //   4. TOKEN_DEFAULTS         — built-in fallbacks (e.g. baseline_visit → 'Baseline')
+  // Adding a new token to a transformation requires no code change here;
+  // declaring it in metadata + supplying a value via tokenValues is enough.
+  const specTokens = endpointSpec?.tokenValues || {};
+  const explicitParam = endpointParameterValue ? { parameter: endpointParameterValue } : null;
+  const dimTokens = buildDimensionTokenSource(endpointSpec?.dimensionValues);
+  const substTokens = (val) => substituteTokens(val, specTokens, explicitParam, dimTokens, TOKEN_DEFAULTS);
   return slices.map(s => {
-    // Emit BOTH shapes so both consumers work without further plumbing:
-    //   constraints: [{dimension, value}, …]  — for UI/display callers
-    //   resolvedValues: {dim1: val1, …}        — for the R engine's
-    //                                            apply_derivations slice pre-join
-    //                                            (mirrors execute_cube convention)
+    // Spec-level overrides keyed by (sliceName, dim). User types "BASELINE"
+    // in Step 3's slice chip → endpointSpec.sliceDimensionOverrides is what
+    // they edit. The execute path needs to honor it so the engine's slice
+    // pre-join filters on the correct value. Without this lookup the value
+    // silently reverts to TOKEN_DEFAULTS (e.g. "Baseline") while the UI
+    // displays "BASELINE" — exactly the kind of UI/engine divergence the
+    // metadata-first principle should prevent.
+    const sliceLevelOverrides = endpointSpec?.sliceDimensionOverrides?.[s.name] || {};
     const constraints = [];
     const resolvedValues = {};
     for (const c of (s.constraints || [])) {
-      let dim = c.dimension;
+      // The library is heterogeneous: derivation slices use {concept, value},
+      // analysis slices use {dimension, value}. Accept both — they name the
+      // same thing (the cube dim/concept being constrained).
+      let dim = c.dimension || c.concept;
       if (!dim && c.conceptCategory) {
         // Resolve the category with the same precedence as bindings:
         //   per-slot override → endpoint pick → category first member.
@@ -43,16 +61,162 @@ function resolveDerivationSlices(transform, slotKey, dimensionOverrides, categor
         }
         if (!dim) dim = picks[c.conceptCategory];
         if (!dim) dim = categoriesMap?.[c.conceptCategory]?.members?.[0]?.concept;
+      } else if (dim && categoriesMap) {
+        // Cascade explicit category-member concepts through the endpoint
+        // pick (or the category's first member as default). Library
+        // declares AnalysisVisit (DC); the user's effective visit layer
+        // is whatever VisitDimension resolves to. Without this cascade
+        // the engine looks for an AnalysisVisit column that doesn't
+        // exist in SDTM data and silently drops the constraint.
+        for (const [catName, catDef] of Object.entries(categoriesMap)) {
+          if (catDef?.members?.some(m => m.concept === dim)) {
+            const userPick = picks[catName];
+            const fallback = catDef.members[0]?.concept;
+            dim = userPick || fallback || dim;
+            break;
+          }
+        }
       }
       if (!dim) continue;
-      // Apply per-slot value override (user typed a different baseline label, etc.)
-      const overrideVal = perSlotOverrides?.[s.name]?.[dim];
-      const finalVal = overrideVal ?? c.value;
+      // Precedence (most-specific first): per-slot override → spec-level
+      // slice override → library default + token sub.
+      const slotOverride = perSlotOverrides?.[s.name]?.[dim];
+      const sliceOverride = sliceLevelOverrides[dim];
+      const finalVal = substTokens(slotOverride ?? sliceOverride ?? c.value);
       constraints.push({ dimension: dim, value: finalVal });
       resolvedValues[dim] = finalVal;
     }
     return { name: s.name, constraints, resolvedValues };
   });
+}
+
+/**
+ * Find which loaded datasets could provide a given concept, given the
+ * binding's qualifier (e.g. IntentType=Planned). Walks **every store
+ * mapping** in `conceptMappings` (adam, sdtm, omop, …) — a SDTM-loaded
+ * scenario should still find Treatment via the sdtm.dimensions.Treatment
+ * mapping (ARM/ARMCD), not just adam's TRTP/TRTA.
+ *
+ * The logic mirrors what `ingest_to_concepts` does per-dataset at runtime:
+ *   - Read `byDataType` primary candidates (string > code > id > decimal > integer)
+ *   - Read qualifier sub-map candidates (e.g. dim.intentType.Planned.{string,code,...})
+ *   - Read alternativeVariables
+ * Returns dataset names whose columns include any candidate from any store.
+ */
+/**
+ * The cross-dataset join key is the concept marked as the subject identity
+ * in the OC instance model. `OC_Instance_Model_v016.json` tags it with
+ * `relationship: "aboutSubject"` on a shared dimension; whichever concept
+ * name carries that tag is the join key. No hardcoded "Subject" string —
+ * if the model renames the concept tomorrow, this still resolves.
+ */
+function _getSubjectJoinConcept() {
+  const sharedDims = appState?.ocModel?.Observation?.sharedDimensions || {};
+  for (const [name, def] of Object.entries(sharedDims)) {
+    if (def?.relationship === 'aboutSubject') return name;
+  }
+  return null;
+}
+
+function _findDatasetsProvidingConcept(concept, qualifierType, qualifierValue, conceptMappings, loadedDatasets) {
+  if (!concept || !conceptMappings) return [];
+  const stores = Object.keys(conceptMappings);
+  if (stores.length === 0) return [];
+
+  const collectCandidates = (storeName) => {
+    const dim = conceptMappings[storeName]?.dimensions?.[concept];
+    if (!dim) return null;
+    const candidates = new Set();
+    if (dim.byDataType) {
+      for (const v of Object.values(dim.byDataType)) {
+        if (typeof v === 'string') candidates.add(v);
+      }
+    }
+    if (qualifierType && qualifierValue) {
+      const qkey = qualifierType.charAt(0).toLowerCase() + qualifierType.slice(1);
+      const qvar = dim[qkey]?.[qualifierValue];
+      if (qvar) {
+        for (const v of Object.values(qvar)) {
+          if (typeof v === 'string') candidates.add(v);
+        }
+      }
+    }
+    if (Array.isArray(dim.alternativeVariables)) {
+      dim.alternativeVariables.forEach(v => { if (typeof v === 'string') candidates.add(v); });
+    }
+    return candidates.size > 0 ? candidates : null;
+  };
+
+  const allCandidates = new Set();
+  for (const s of stores) {
+    const c = collectCandidates(s);
+    if (c) for (const v of c) allCandidates.add(v);
+  }
+  if (allCandidates.size === 0) return [];
+
+  return (loadedDatasets || [])
+    .filter(ds => {
+      const cols = new Set(ds.columns || []);
+      for (const c of allCandidates) if (cols.has(c)) return true;
+      return false;
+    })
+    .map(ds => ds.name);
+}
+
+/**
+ * Apply the user's per-analysis UI overrides (slice values + variables, plus
+ * method config overrides) to a deep copy of the resolved analysis. Used by
+ * BOTH the rendering path (so the displayed Specification JSON matches what
+ * the engine will actually run) and the execute path. Returning a shared,
+ * idempotent helper guarantees what-you-see is what-runs.
+ *
+ * @param {Object} analysis - The resolved analysis from `resolvedEp.analyses[aIdx]`
+ * @param {Object} resultState - per-endpoint result state (sliceOverrides, varOverrides)
+ * @param {Object} liveConfigOverrides - optional config-overrides map (epSpec.methodConfigOverrides)
+ * @param {Function} [resolveDimColumn] - optional (dim) => column resolver; when supplied, fills `resolvedVariables` for unspecified dims
+ * @returns {Object} a deep-cloned, patched analysis
+ */
+function _applyLiveOverridesToAnalysis(analysis, resultState, liveConfigOverrides, resolveDimColumn) {
+  const out = JSON.parse(JSON.stringify(analysis || {}));
+  const sliceOverrides = resultState?.sliceOverrides || {};
+  if (out.resolvedSlices) {
+    for (const s of out.resolvedSlices) {
+      const vals = s.resolvedValues || {};
+      const vars = s.resolvedVariables || {};
+      for (const dim of Object.keys(vals)) {
+        const key = `${s.name}|${dim}`;
+        if (sliceOverrides[key]?.value !== undefined) {
+          vals[dim] = sliceOverrides[key].value;
+        }
+        const explicit = sliceOverrides[key]?.variable;
+        if (explicit) {
+          vars[dim] = explicit;
+        } else if (typeof resolveDimColumn === 'function') {
+          const resolved = resolveDimColumn(dim);
+          if (resolved && resolved !== dim) vars[dim] = resolved;
+        }
+      }
+      if (Object.keys(vars).length > 0) s.resolvedVariables = vars;
+    }
+  }
+  const live = liveConfigOverrides || {};
+  if (Object.keys(live).length > 0) {
+    const existing = out.configurationValues || [];
+    for (const [name, value] of Object.entries(live)) {
+      const idx = existing.findIndex(cv => cv.name === name);
+      if (idx >= 0) existing[idx] = { name, value: String(value) };
+      else existing.push({ name, value: String(value) });
+    }
+    out.configurationValues = existing;
+  }
+  // Auxiliary sources: per-binding-concept declaration of which loaded
+  // dataset provides the column (and which key joins it to the primary).
+  // The engine reads this at execute time instead of auto-scanning.
+  const auxOverrides = resultState?.auxiliarySources || {};
+  if (Object.keys(auxOverrides).length > 0) {
+    out.auxiliarySources = JSON.parse(JSON.stringify(auxOverrides));
+  }
+  return out;
 }
 
 /**
@@ -357,10 +521,18 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
   const selectedImpl = implList.find(i => i.language === selectedLang) || rImpl;
 
   // Build a per-analysis spec for payload generation (so the R engine, which
-  // reads spec$analyses[[1]], gets the correct analysis)
+  // reads spec$analyses[[1]], gets the correct analysis). The displayed
+  // Specification JSON must reflect the user's UI overrides — otherwise
+  // what-you-see drifts from what-runs. Use the same helper the execute
+  // path uses so both paths produce identical patched analyses.
   const resolvedEp = appState.resolvedSpec?.endpoints?.find(r => r.id === ep.id);
+  const liveCfgOverrides = appState.endpointSpecs?.[ep.id]?.methodConfigOverrides
+    || appState.methodConfig || {};
+  const patchedAnalysisForDisplay = _applyLiveOverridesToAnalysis(
+    analysis, resultState, liveCfgOverrides
+  );
   const singleAnalysisSpec = resolvedEp
-    ? { ...resolvedEp, analyses: [analysis], targetDataset: selectedDataset || resolvedEp.targetDataset }
+    ? { ...resolvedEp, analyses: [patchedAnalysisForDisplay], targetDataset: selectedDataset || resolvedEp.targetDataset }
     : null;
   const payload = singleAnalysisSpec
     ? generateExecutionPayload(singleAnalysisSpec, appState.conceptMappings, resultState.varOverrides, methodDef, rImpl, null, null, null)
@@ -441,26 +613,95 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
               '</tr>';
             }
             const allOptions = getVariableOptions(concept, adam, b.requiredValueType, b.dataStructureRole);
-            // When data is loaded, narrow candidates to columns that exist in some loaded
-            // dataset — but always include the current default so the row never goes blank.
+            // Always offer every model-declared option, plus displayVar as
+            // fallback. (Earlier removed the loadedColumnSet filter so chained
+            // derivations whose model columns get produced downstream still
+            // render the dropdown — see commit history for context.)
             const overrides = resultState.varOverrides || {};
             const displayVar = overrides[concept]
               || getDefaultVariable(concept, b.dataStructureRole, adam, b);
-            const options = hasLoadedColumns
-              ? [...new Set([...allOptions.filter(v => loadedColumnSet.has(v)), displayVar].filter(Boolean))]
-              : allOptions;
-            return '<tr>' +
-              '<td>' + b.methodRole + '</td>' +
-              '<td><code>' + concept + '</code></td>' +
-              '<td>' + (options.length > 1
+            const options = [...new Set([...allOptions, displayVar].filter(Boolean))];
+            // displayVar may be null when the concept has no mapping in the
+            // active data store (e.g. user picked Observation.Identification.Topic
+            // (OC) for ParameterDimension but the dataset is ADaM, where the
+            // matching column is Parameter (PARAM/PARAMCD)).
+            const varCell = displayVar
+              ? (options.length > 1
                 ? '<select class="exec-var-override" data-ep-id="' + ep.id + '" data-concept="' + concept + '"' +
                   ' style="font-size:11px; padding:2px 4px; font-family:monospace;">' +
                   options.map(v => '<option value="' + v + '"' + (v === displayVar ? ' selected' : '') + '>' + v + '</option>').join('') +
                   '</select>'
-                : '<code>' + displayVar + '</code>') + '</td>' +
+                : '<code>' + displayVar + '</code>')
+              : '<span style="color:var(--cdisc-error); font-size:11px; font-style:italic;" title="Concept has no mapping in the active data store. Check the conceptCategory pick (e.g. switch ParameterDimension OC → DC for ADaM data).">— (no mapping)</span>';
+
+            // Auxiliary-source picker row: explicit per-binding "where does
+            // this column come from" choice. Shown for non-constraint
+            // dimension bindings where (a) the primary dataset doesn't
+            // provide the concept (forces user to pick aux), or (b) more
+            // than one loaded dataset provides it (user has a real choice).
+            // Storage: resultState.auxiliarySources[concept] = {dataset, joinKey}
+            // The engine reads this map at execute time; no auto-scan.
+            let auxRow = '';
+            const isAuxCandidate = b.direction !== 'output'
+                                && b.dataStructureRole === 'dimension'
+                                && b.methodRole !== 'constraint'
+                                && !!concept;
+            if (isAuxCandidate && hasLoadedColumns) {
+              const providers = _findDatasetsProvidingConcept(concept, b.qualifierType, b.qualifierValue, appState.conceptMappings, loadedDatasets);
+              const primary = (selectedDataset || '').toUpperCase();
+              const hasPrimary = providers.some(n => n.toUpperCase() === primary);
+              // Only show the picker when the primary doesn't provide the concept.
+              // enrich_dimensions (acdc_engine.R) skips any concept already in the
+              // primary's columns — so a picker whose answer the engine will ignore
+              // creates the illusion of a decision the user must make. Hide it.
+              // When the primary lacks the concept and ≥1 aux dataset provides it,
+              // the picker still appears (and disambiguates between aux candidates
+              // when there's more than one).
+              const showPicker = !hasPrimary && providers.length > 0;
+              if (showPicker) {
+                // Eager auto-fill: the picker's displayed default is the
+                // metadata's only logical answer when providers.length === 1
+                // (one dataset provides the concept) or when the primary
+                // doesn't provide it (only one non-primary candidate). A
+                // <select> without a change-event leaves resultState empty
+                // — the engine then errors at enrich_dimensions because no
+                // auxiliarySource is declared. Persist the default here so
+                // the spec sent to the engine matches the UI display.
+                if (!resultState.auxiliarySources) resultState.auxiliarySources = {};
+                const subjectKey = _getSubjectJoinConcept();
+                if (!resultState.auxiliarySources[concept]?.dataset) {
+                  resultState.auxiliarySources[concept] = {
+                    ...(resultState.auxiliarySources[concept] || {}),
+                    dataset: hasPrimary ? selectedDataset : providers[0],
+                    joinKey: resultState.auxiliarySources[concept]?.joinKey || subjectKey
+                  };
+                }
+                const auxOverrides = resultState.auxiliarySources;
+                const currentDs = auxOverrides[concept].dataset;
+                const currentJoin = auxOverrides[concept].joinKey;
+                const opts = providers.map(n =>
+                  `<option value="${n}" ${n === currentDs ? 'selected' : ''}>${n}${n.toUpperCase() === primary ? ' (primary)' : ''}</option>`
+                ).join('');
+                auxRow = `<tr class="exec-aux-source-row" style="background:rgba(0,0,0,0.02);">
+                  <td colspan="2" style="padding-left:24px; color:var(--cdisc-text-secondary); font-size:10px; font-style:italic;">↳ source dataset</td>
+                  <td colspan="3" style="font-size:11px;">
+                    <select class="exec-aux-source-select" data-ep-id="${ep.id}" data-concept="${concept}"
+                        style="font-size:11px; padding:2px 4px;">${opts}</select>
+                    <span style="font-size:10px; color:var(--cdisc-text-secondary); margin-left:8px;">join key:</span>
+                    <input class="exec-aux-source-join" data-ep-id="${ep.id}" data-concept="${concept}"
+                        value="${currentJoin}" style="font-size:11px; padding:2px 4px; width:80px; font-family:monospace;">
+                  </td>
+                </tr>`;
+              }
+            }
+
+            return '<tr>' +
+              '<td>' + b.methodRole + '</td>' +
+              '<td><code>' + concept + '</code></td>' +
+              '<td>' + varCell + '</td>' +
               '<td>' + b.dataStructureRole + '</td>' +
               '<td>' + (b.slice || '--') + '</td>' +
-            '</tr>';
+            '</tr>' + auxRow;
           }).join('')}
           </tbody>
         </table>
@@ -489,10 +730,9 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
       <!-- Resolved Slices -->
       ${slices.length > 0 ? (() => {
         const isConceptMode = (appState.modelViewMode || 'concepts') === 'concepts';
-        // Build USDM value suggestions per dimension concept.
-        // Population is intentionally omitted: USDM populations[].name is an internal
-        // identifier (e.g. "AP_1") that never matches an ADaM Y/N flag value, and the
-        // slice value here must be a literal that filters the bound column.
+        // Build USDM value suggestions per dimension concept. The spec author
+        // doesn't have data values at this stage — they have USDM design data
+        // (arms, visits, populations) and CDISC controlled terminology.
         const usdmValues = {};
         const parsedStudy = appState.selectedStudy;
         if (parsedStudy) {
@@ -502,7 +742,20 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
           if (armOpts?.length) usdmValues['Treatment'] = armOpts;
           const visitOpts = getVisitLabels(parsedStudy);
           if (visitOpts?.length) usdmValues['AnalysisVisit'] = visitOpts;
+          // Population: USDM analysisPopulations[]/populations[] names. Note
+          // that these are protocol-level identifiers (e.g. "AP_1",
+          // "Efficacy Population") that don't typically match an ADaM Y/N
+          // flag value. The CT-aware "Y" option (added below per-row when
+          // the bound variable is a --FL column) covers the actual-filter
+          // case; the USDM names persist the analysis-population identity
+          // for documentation / write-back.
+          const popOpts = getPopulationNames(parsedStudy);
+          if (popOpts?.length) usdmValues['Population'] = popOpts.map(p => p.value || p);
         }
+        // CDISC controlled-terminology defaults per dimension. ADaMIG flag
+        // columns (--FL) are NY-codelist controlled — in-pop = "Y".
+        const ctValues = {};
+        const isFlagColumn = (col) => typeof col === 'string' && /FL$/i.test(col);
         return `
       <div class="exec-bindings-section">
         <div class="exec-bindings-title">RESOLVED SLICES (cube constraints)</div>
@@ -534,12 +787,22 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
               const displayVar = currentVar
                 || (isDomainKeyed && !loadedColumnSet.has(defaultVar) && detectedFlagColumns[0])
                 || defaultVar;
-              const dimOptions = hasLoadedColumns
-                ? [...new Set([...augmentedDimOptions.filter(v => loadedColumnSet.has(v)), displayVar].filter(Boolean))]
-                : augmentedDimOptions;
+              // Always offer every model-declared option for the dimension,
+              // not just those present in the source upload. For chained
+              // derivations the chain *produces* the model columns
+              // (PARAMCD/PARAM/AVISIT/...) so the source dataset won't contain
+              // them yet — gating on loadedColumnSet would lock the user into
+              // a single read-only label. The displayVar is always included
+              // as a fallback to cover study-specific picks (e.g. flag columns).
+              const dimOptions = [...new Set([...augmentedDimOptions, displayVar].filter(Boolean))];
               const usdmOpts = usdmValues[dim] || [];
               const dataVals = dataValuesByVar[displayVar] || [];
-              const hasAnyValueOptions = usdmOpts.length > 0 || dataVals.length > 0;
+              // CT-aware: when the bound variable is an ADaM flag column
+              // (--FL suffix), the codelist (NY) gives Y/N as the only valid
+              // values. Surface them in the dropdown so the spec author
+              // doesn't need to inspect the data.
+              const ctOpts = isFlagColumn(displayVar) ? ['Y', 'N'] : [];
+              const hasAnyValueOptions = usdmOpts.length > 0 || dataVals.length > 0 || ctOpts.length > 0;
               return `<tr>
                 <td>${s.name}</td>
                 <td>${dim}</td>
@@ -556,11 +819,14 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
                     ${dataVals.length > 0 ? `<optgroup label="${displayVar} values">
                       ${dataVals.map(v => `<option value="${_escapeAttr(v)}" ${v === currentVal ? 'selected' : ''}>${v}</option>`).join('')}
                     </optgroup>` : ''}
+                    ${ctOpts.length > 0 ? `<optgroup label="CT (NY codelist)">
+                      ${ctOpts.map(v => `<option value="${_escapeAttr(v)}" ${v === currentVal ? 'selected' : ''}>${v}</option>`).join('')}
+                    </optgroup>` : ''}
                     ${usdmOpts.length > 0 ? `<optgroup label="USDM">
                       ${usdmOpts.map(v => `<option value="${_escapeAttr(v)}" ${v === currentVal ? 'selected' : ''}>${v}</option>`).join('')}
                     </optgroup>` : ''}
                     <optgroup label="Template">
-                      <option value="${_escapeAttr(val)}" ${val === currentVal && !usdmOpts.includes(val) && !dataVals.includes(val) ? 'selected' : ''}>${val}</option>
+                      <option value="${_escapeAttr(val)}" ${val === currentVal && !usdmOpts.includes(val) && !dataVals.includes(val) && !ctOpts.includes(val) ? 'selected' : ''}>${val}</option>
                     </optgroup>
                   </select>`
                   : `<input class="exec-slice-val-override" data-ep-id="${ep.id}" data-slice="${s.name}" data-dim="${dim}"
@@ -582,7 +848,10 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
           const concept = (b.concept || '').replace(/@.*/, '');
           const userOverride = resultState.varOverrides?.[concept];
           const defaultVar = getDefaultVariable(concept, b.dataStructureRole, adam, b);
-          varMap[concept] = userOverride || defaultVar;
+          // Fall back to concept name if no override and no mapping — keeps the
+          // expression display readable rather than emitting "null" when the
+          // user has picked a layer-mismatched concept (handled separately).
+          varMap[concept] = userOverride || defaultVar || concept;
         }
         let resolved = expression.resolved || '';
         const keys = Object.keys(varMap).sort((a, b) => b.length - a.length);
@@ -1089,6 +1358,30 @@ function _wireEvents(container, configuredEps, study) {
     });
   });
 
+  // Auxiliary-source picker (dataset + joinKey) — explicit per-binding
+  // declaration of "this concept comes from this loaded dataset". Replaces
+  // the old runtime auto-scan in the engine. Stored on the per-endpoint
+  // resultState.auxiliarySources map; flows into the spec at execute time.
+  const _setAux = (epId, concept, key, value) => {
+    const res = _ensureEndpointResult(epId);
+    if (!res.auxiliarySources) res.auxiliarySources = {};
+    if (!res.auxiliarySources[concept]) res.auxiliarySources[concept] = { joinKey: _getSubjectJoinConcept() };
+    res.auxiliarySources[concept][key] = value;
+  };
+  container.querySelectorAll('.exec-aux-source-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      _setAux(sel.dataset.epId, sel.dataset.concept, 'dataset', sel.value);
+    });
+  });
+  container.querySelectorAll('.exec-aux-source-join').forEach(inp => {
+    inp.addEventListener('change', () => {
+      _setAux(inp.dataset.epId, inp.dataset.concept, 'joinKey', inp.value || _getSubjectJoinConcept());
+    });
+    inp.addEventListener('input', () => {
+      _setAux(inp.dataset.epId, inp.dataset.concept, 'joinKey', inp.value || _getSubjectJoinConcept());
+    });
+  });
+
   // Language selection
   container.querySelectorAll('.exec-lang-select').forEach(sel => {
     sel.addEventListener('change', () => {
@@ -1139,6 +1432,7 @@ function _wireEvents(container, configuredEps, study) {
         datasetOverride: prev.datasetOverride,
         selectedLang: prev.selectedLang,
         sliceOverrides: prev.sliceOverrides,
+        auxiliarySources: prev.auxiliarySources,
         analysisResults: {}
       };
       renderExecuteAnalysis(container);
@@ -1250,53 +1544,19 @@ async function _executeAnalysis(container, epId, aIdx) {
     return modelDefault;
   };
 
-  // Build a patched single-analysis spec, apply slice overrides to its slices
-  const singleAnalysis = JSON.parse(JSON.stringify(analysis));
-  const sliceOverrides = resultState.sliceOverrides || {};
-  if (singleAnalysis?.resolvedSlices) {
-    for (const s of singleAnalysis.resolvedSlices) {
-      const vals = s.resolvedValues || {};
-      const vars = s.resolvedVariables || {};
-      for (const dim of Object.keys(vals)) {
-        const key = `${s.name}|${dim}`;
-        if (sliceOverrides[key]?.value !== undefined) {
-          vals[dim] = sliceOverrides[key].value;
-        }
-        // Resolve the actual filter column for this slice/dimension. Priority:
-        //   1. Explicit user override from the slices table dropdown
-        //   2. The dropdown's effective default (model default, OR detected
-        //      Y/N flag column for domain-keyed dims like Population whose
-        //      model default isn't in the loaded data)
-        // This guarantees the engine receives a column choice even when the
-        // user accepts the default without clicking — without it, the engine
-        // would fall back to the dim_name itself (Population), find no such
-        // column, and silently skip the filter.
-        const explicit = sliceOverrides[key]?.variable;
-        if (explicit) {
-          vars[dim] = explicit;
-        } else {
-          const resolved = _resolveDimColumn(dim);
-          if (resolved && resolved !== dim) vars[dim] = resolved;
-        }
-      }
-      if (Object.keys(vars).length > 0) s.resolvedVariables = vars;
-    }
-  }
-  // Merge live UI config overrides into the analysis configurationValues
+  // Build the patched single-analysis spec via the shared helper. The helper
+  // applies slice value/variable overrides, method config overrides, AND
+  // auxiliarySources (per-concept dataset declarations) — all in one place,
+  // so the displayed Specification JSON (rendered via the same helper at the
+  // top of the view) and the spec sent to the engine are identical by
+  // construction. Earlier this path duplicated the slice-override loop
+  // inline and silently dropped auxiliarySources, which is why declaring
+  // a Treatment source in the UI didn't reach the engine.
   const liveOverrides = appState.endpointSpecs?.[epId]?.methodConfigOverrides
     || appState.methodConfig || {};
-  if (Object.keys(liveOverrides).length > 0) {
-    const existing = singleAnalysis.configurationValues || [];
-    for (const [name, value] of Object.entries(liveOverrides)) {
-      const idx = existing.findIndex(cv => cv.name === name);
-      if (idx >= 0) {
-        existing[idx] = { name, value: String(value) };
-      } else {
-        existing.push({ name, value: String(value) });
-      }
-    }
-    singleAnalysis.configurationValues = existing;
-  }
+  const singleAnalysis = _applyLiveOverridesToAnalysis(
+    analysis, resultState, liveOverrides, _resolveDimColumn
+  );
   const patchedSpec = {
     ...resolvedEp,
     analyses: [singleAnalysis],
@@ -1494,7 +1754,9 @@ async function _executeAnalysis(container, epId, aIdx) {
       }
       const resolvedSlices = resolveDerivationSlices(
         transform, entry.slotKey, dimensionOverrides, conceptCategories,
-        endpointSpec?.derivationSliceOverrides, endpointPicks
+        endpointSpec?.derivationSliceOverrides, endpointPicks,
+        getSpecParameterValue(epId, endpointSpec, study),
+        endpointSpec
       );
       const cols = columnMap[entry.slotKey] || {};
       return {
@@ -1524,7 +1786,8 @@ async function _executeAnalysis(container, epId, aIdx) {
   const availableDatasets = getLoadedDatasets().map(d => d.name);
   const payload = generateExecutionPayload(
     patchedSpec, appState.conceptMappings, effectiveOverrides, methodDef, rImpl,
-    derivationChain, unitConversions, rImplCatalog, availableDatasets
+    derivationChain, unitConversions, rImplCatalog, availableDatasets,
+    appState.conceptCategories
   );
 
   _setAnalysisResult(epId, aIdx, { status: 'running', results: null, error: null });
@@ -1546,6 +1809,9 @@ async function _executeAnalysis(container, epId, aIdx) {
     }
     if (payload.rImplsJson !== 'null') {
       await setJsonVariable('r_impls_json', payload.rImplsJson);
+    }
+    if (payload.conceptCategoriesJson !== 'null') {
+      await setJsonVariable('concept_categories_json', payload.conceptCategoriesJson);
     }
 
     const result = await executeR(payload.bootstrapCode);
@@ -1718,7 +1984,9 @@ async function _executeDerivationOnly(container, epId) {
     }
     const resolvedSlices = resolveDerivationSlices(
       transform, entry.slotKey, dimensionOverrides, conceptCategoriesMap,
-      endpointSpec?.derivationSliceOverrides, endpointPicks
+      endpointSpec?.derivationSliceOverrides, endpointPicks,
+      getSpecParameterValue(epId, endpointSpec, study),
+      endpointSpec
     );
     const cols = columnMap[entry.slotKey] || {};
     const result = {

@@ -1,5 +1,6 @@
 import { appState, navigateTo } from '../app.js';
 import { resolveNarrative } from '../utils/usdm-ref-resolver.js';
+import { renderProtocolSoa } from './study-soa.js';
 
 export function renderStudyOverview(container) {
   const study = appState.selectedStudy;
@@ -23,6 +24,7 @@ export function renderStudyOverview(container) {
       <button class="tab-btn active" data-tab="summary">Summary</button>
       <button class="tab-btn" data-tab="arms">Arms</button>
       <button class="tab-btn" data-tab="objectives">Objectives & Endpoints</button>
+      <button class="tab-btn" data-tab="soa">Schedule of Activities</button>
       <button class="tab-btn" data-tab="narrative">Narrative</button>
       <button class="tab-btn" data-tab="configuration">Configuration</button>
     </div>
@@ -30,17 +32,28 @@ export function renderStudyOverview(container) {
     <div class="tab-panel active" id="tab-summary">${renderSummary(study)}</div>
     <div class="tab-panel" id="tab-arms">${renderArms(study)}</div>
     <div class="tab-panel" id="tab-objectives">${renderObjectives(study)}</div>
+    <div class="tab-panel" id="tab-soa"></div>
     <div class="tab-panel" id="tab-narrative">${renderNarrative(study)}</div>
     <div class="tab-panel" id="tab-configuration">${renderConfiguration()}</div>
   `;
 
   // Tab switching
+  let soaRendered = false;
   container.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       container.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+
+      // Lazy-render the SoA grid the first time the tab is opened — the matrix
+      // build + DOM is non-trivial, so we only pay for it on demand.
+      if (btn.dataset.tab === 'soa' && !soaRendered) {
+        const idx = appState.selectedStudyIndex;
+        const rawUsdm = idx != null ? appState.rawUsdmFiles?.[idx] : null;
+        renderProtocolSoa(document.getElementById('tab-soa'), study, rawUsdm);
+        soaRendered = true;
+      }
     });
   });
 

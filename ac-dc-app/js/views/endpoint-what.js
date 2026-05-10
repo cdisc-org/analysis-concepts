@@ -318,6 +318,20 @@ function wireEndpointWhatEvents(container, study, selectedEps) {
       if (!spec.cubeDimensions.some(d => d.dimension === dim)) {
         spec.cubeDimensions.push({ dimension: dim, sliceValue: '' });
       }
+      // Mirror the user's category-member choice into dimensionCategoryPicks
+      // so every downstream consumer (slice resolvers, derivation cards,
+      // analysis bindings) sees the same explicit pick. Without this, picks
+      // stays empty when the user adds a cubeDim via the generic dropdown
+      // (rather than the smart-phrase category picker), and category-based
+      // bindings silently fall back to OC defaults.
+      const categories = appState.conceptCategories?.categories || {};
+      for (const [catName, cat] of Object.entries(categories)) {
+        const isMember = (cat.members || []).some(m => m.concept === dim);
+        if (isMember) {
+          if (!spec.dimensionCategoryPicks) spec.dimensionCategoryPicks = {};
+          spec.dimensionCategoryPicks[catName] = dim;
+        }
+      }
       renderEndpointWhat(container);
     });
   });
@@ -331,7 +345,21 @@ function wireEndpointWhatEvents(container, study, selectedEps) {
       ensureSpec(epId);
       const spec = appState.endpointSpecs[epId];
       if (spec.cubeDimensions?.[idx]) {
+        const removed = spec.cubeDimensions[idx].dimension;
         spec.cubeDimensions.splice(idx, 1);
+        // Also clear the category pick if no remaining cubeDim references
+        // this category. Keeps dimensionCategoryPicks in sync with the
+        // user's actual cube state.
+        const categories = appState.conceptCategories?.categories || {};
+        const remainingDims = new Set(spec.cubeDimensions.map(d => d.dimension));
+        if (spec.dimensionCategoryPicks) {
+          for (const [catName, cat] of Object.entries(categories)) {
+            if (spec.dimensionCategoryPicks[catName] === removed) {
+              const stillUsed = (cat.members || []).some(m => remainingDims.has(m.concept));
+              if (!stillUsed) delete spec.dimensionCategoryPicks[catName];
+            }
+          }
+        }
       }
       renderEndpointWhat(container);
     });

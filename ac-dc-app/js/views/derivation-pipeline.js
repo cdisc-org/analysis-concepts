@@ -3,7 +3,7 @@ import { getAllEndpoints, getDerivationBCTopicDecode, getDerivationBCUnit } from
 import {
   buildPipelineGraph, getUnresolvedConcepts, orderChainPostOrder
 } from '../utils/transformation-linker.js';
-import { displayConcept, normalizeConcept, buildSliceLookup, resolveSliceCategories } from '../utils/concept-display.js';
+import { displayConcept, normalizeConcept, buildSliceLookup, buildResolvedSliceData } from '../utils/concept-display.js';
 import { getSpecParameterValue } from './endpoint-spec.js';
 import { isNumericOutputConcept } from '../utils/concept-classifier.js';
 import { loadMethod } from '../data-loader.js';
@@ -632,20 +632,20 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
     // Slice annotation + optional editor.
     // Slice constraints may use `conceptCategory` instead of a concrete
     // `dimension`; resolve those via the same dimensionOverrides picked on
-    // bindings (e.g. VisitDimension → Visit | AnalysisVisit).
+    // bindings AND the endpoint's dimensionCategoryPicks (e.g.
+    // VisitDimension → Visit | AnalysisVisit). Token values
+    // (`{parameter}` / `{baseline_visit}`) get substituted from the spec's
+    // tokenValues + dimensionValues + TOKEN_DEFAULTS.
     let sliceAnnotation = '';
     if (b.slice && sliceLookup[b.slice]) {
-      const rawSliceDef = sliceLookup[b.slice];
-      const categoriesMap = appState.conceptCategories?.categories || {};
-      const slotOverrides = slot?.key
-        ? (activeSpec?.dimensionOverrides?.[slot.key] || {})
-        : {};
-      const ownerBindings = slot?.selected?.bindings || transformation?.bindings || [];
-      const sliceDef = rawSliceDef.categoryConstraints
-        ? resolveSliceCategories(rawSliceDef, slotOverrides, ownerBindings, categoriesMap)
-        : { ...rawSliceDef, categoryBy: {} };
-      const dims = sliceDef.fixedDimensions || sliceDef;
-      const categoryBy = sliceDef.categoryBy || {};
+      const sliceData = buildResolvedSliceData(sliceLookup[b.slice], {
+        activeSpec,
+        sliceName: b.slice,
+        slotOverrides: slot?.key ? (activeSpec?.dimensionOverrides?.[slot.key] || {}) : {},
+        bindings: slot?.selected?.bindings || transformation?.bindings || []
+      });
+      const dims = sliceData.substituted;
+      const categoryBy = sliceData.categoryBy;
 
       // USDM encounters (for the VisitDimension combobox datalist)
       const encounters = (study?.encounters || [])
@@ -684,6 +684,8 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
             }).join('')}
           </div>`;
       } else {
+        // Read-only summary line. `dims` already carries substituted values
+        // (buildResolvedSliceData does the work), so just emit them.
         const dimStr = Object.entries(dims).map(([k, v]) => {
           const cat = categoryBy[k] ? ` (${categoryBy[k]})` : '';
           return `${k}${cat} = ${v}`;
@@ -701,16 +703,15 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
       // spec.dimensionValues or fall through to the sliceKey label.
       const isParameterConstraint = effectiveConcept === 'Parameter';
       if (isParameterConstraint) {
-        const terminals = activeSpec?.confirmedTerminals || [];
-        let bcInfo = getDerivationBCTopicDecode(activeSpec, slot?.key, study);
-        if (!bcInfo) {
-          for (const term of terminals) {
-            if (term.linkedBCIds?.length) {
-              bcInfo = getDerivationBCTopicDecode(activeSpec, term.slotKey, study);
-              if (bcInfo) break;
-            }
-          }
-        }
+        // BC IN-list is an *ingest-time* narrowing: it filters raw rows by
+        // Observation.Identification.Topic before the rollup. Show it ONLY
+        // when this binding is on a derivation-leaf slot that actually has
+        // BCs linked — at intermediate or analysis-root slots the cube is
+        // already collapsed to a single Parameter label and the BC IN-list
+        // doesn't apply. Without this gate, every Parameter constraint
+        // (including the analysis-root one) would falsely advertise the
+        // ingest-time filter as if it constrained the analysis cube.
+        const bcInfo = getDerivationBCTopicDecode(activeSpec, slot?.key, study);
         if (bcInfo) {
           const decodes = (bcInfo.decodes && bcInfo.decodes.length > 0) ? bcInfo.decodes : [bcInfo.decode].filter(Boolean);
           const names = (bcInfo.bcNames && bcInfo.bcNames.length > 0) ? bcInfo.bcNames : [bcInfo.bcName].filter(Boolean);
@@ -721,6 +722,18 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
               ${valueText} &larr; BC: ${namesText}
             </span>
           </div>`;
+        } else {
+          // Non-leaf Parameter constraint (analysis root, intermediate
+          // derivation): the cube has been rolled up to one row per
+          // parameter label. Show the endpoint's resolved Parameter value.
+          const dimVal = activeSpec?.dimensionValues?.Parameter;
+          if (dimVal) {
+            constraintAnnotation = `<div style="margin-top:4px;">
+              <span class="badge" style="background:var(--cdisc-primary-light);color:var(--cdisc-primary);font-size:11px;padding:2px 8px;border-radius:10px;">
+                ${dimVal} &larr; endpoint
+              </span>
+            </div>`;
+          }
         }
       } else {
         // Non-Parameter constraint: read from endpoint dimensionValues.
@@ -833,15 +846,14 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
     // Editable slice constraints for reference nodes
     let sliceEditor = '';
     if (slot.slice && sliceLookup[slot.slice]) {
-      const rawSliceDef = sliceLookup[slot.slice];
-      const categoriesMap = appState.conceptCategories?.categories || {};
-      const slotOverrides = activeSpec?.dimensionOverrides?.[slot.key] || {};
-      const ownerBindings = slot.selected?.bindings || transformation?.bindings || [];
-      const sliceDef = rawSliceDef.categoryConstraints
-        ? resolveSliceCategories(rawSliceDef, slotOverrides, ownerBindings, categoriesMap)
-        : { ...rawSliceDef, categoryBy: {} };
-      const dims = sliceDef.fixedDimensions || sliceDef;
-      const categoryBy = sliceDef.categoryBy || {};
+      const sliceData = buildResolvedSliceData(sliceLookup[slot.slice], {
+        activeSpec,
+        sliceName: slot.slice,
+        slotOverrides: activeSpec?.dimensionOverrides?.[slot.key] || {},
+        bindings: slot.selected?.bindings || transformation?.bindings || []
+      });
+      const dims = sliceData.substituted;
+      const categoryBy = sliceData.categoryBy;
       const overrides = activeSpec?.derivationSliceOverrides?.[slot.key]?.[slot.slice] || {};
       const encounters = (appState.selectedStudy?.encounters || [])
         .map(e => ({ value: e.label || e.name || '', desc: e.description || e.type || '' }))
@@ -986,17 +998,17 @@ function renderNodeConfigPanel(slot, transformation, lib, activeSpec) {
     // derivation, which is included via ancestorSlices in getSliceLookup.
     let inheritedSliceBlock = '';
     if (slot.slice && sliceLookup[slot.slice]) {
-      const rawSliceDef = sliceLookup[slot.slice];
-      const categoriesMap = appState.conceptCategories?.categories || {};
-      const slotOverrides = activeSpec?.dimensionOverrides?.[slot.key] || {};
-      // ancestor binding list is unknown here, but the category resolver
-      // tolerates empty bindings — it falls through to endpointPicks then
-      // the first member.
-      const resolved = rawSliceDef.categoryConstraints
-        ? resolveSliceCategories(rawSliceDef, slotOverrides, [], categoriesMap)
-        : { ...rawSliceDef, categoryBy: {} };
-      const dims = resolved.fixedDimensions || resolved;
-      const categoryBy = resolved.categoryBy || {};
+      // The ancestor's binding list is unknown here, but `buildResolvedSliceData`
+      // tolerates empty bindings — `resolveSliceCategories` falls through to
+      // endpointPicks then the first category member.
+      const sliceData = buildResolvedSliceData(sliceLookup[slot.slice], {
+        activeSpec,
+        sliceName: slot.slice,
+        slotOverrides: activeSpec?.dimensionOverrides?.[slot.key] || {},
+        bindings: []
+      });
+      const dims = sliceData.substituted;
+      const categoryBy = sliceData.categoryBy;
       const overrides = activeSpec?.derivationSliceOverrides?.[slot.key]?.[slot.slice] || {};
       const encounters = (appState.selectedStudy?.encounters || [])
         .map(e => ({ value: e.label || e.name || '', desc: e.description || e.type || '' }))

@@ -10,6 +10,13 @@
         { "model": "OC", "concept": "Timepoint",     "label": "Timepoint (OC, collection timepoint)" },
         { "model": "DC", "concept": "AnalysisVisit", "label": "AnalysisVisit (DC, analysis-derived visit)" }
       ]
+    },
+    "ParameterDimension": {
+      "description": "Indexes observations by parameter. A binding may resolve to either the OC-level Observation.Identification.Topic (the code/Topic form, e.g. SDTM --TESTCD / ADaM PARAMCD) or the DC-level Parameter (the descriptive label form, e.g. SDTM --TEST / ADaM PARAM), depending on whether the analysis runs on observation or derived data.",
+      "members": [
+        { "model": "OC", "concept": "Observation.Identification.Topic", "label": "Topic (OC, code form — PARAMCD-equivalent)" },
+        { "model": "DC", "concept": "Parameter",                         "label": "Parameter (DC, label form — PARAM-equivalent)" }
+      ]
     }
   }
 }

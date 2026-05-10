@@ -420,11 +420,24 @@ export function computeAnalysisInputColumns(slots, chain, pipelineReferences = [
     // resolution diverged between library concept and the slot's concept).
     const rootSlot = rootByKey.get(rootKey) || (slots || [])[i];
     if (!rootSlot) return;
+    // Slice suffix mirrors the slice-pre-join naming in apply_derivations
+    // ("<base_col>__<slice_name>"). When the analysis binding declares a
+    // slice (e.g. covariate Measure with slice=parameter_baseline), the
+    // R engine's slice-join produces a slice-suffixed column for the
+    // referent and rewires the role to it. The chain-lookup mapping must
+    // resolve to that suffixed column — otherwise the covariate would
+    // reference the non-sliced minuend column (Week 24 value), making
+    // Change ≈ -1·covariate + intercept, which lm sees as perfect fit
+    // (RSS ≈ 0).
+    const bindingSlice = b.slice || '';
+    const sliceSuffix = bindingSlice
+      ? `__${String(bindingSlice).replace(/[^A-Za-z0-9]/g, '_')}`
+      : '';
     if (chainKeys.has(rootSlot.key)) {
-      result[role] = outputCol[rootSlot.key];
+      result[role] = outputCol[rootSlot.key] + sliceSuffix;
     } else {
       const referent = resolveRef(rootSlot.key);
-      if (referent && outputCol[referent]) result[role] = outputCol[referent];
+      if (referent && outputCol[referent]) result[role] = outputCol[referent] + sliceSuffix;
     }
   });
   return result;

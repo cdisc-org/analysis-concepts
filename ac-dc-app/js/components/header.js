@@ -64,13 +64,32 @@ export function renderHeader() {
 
   // Load button — file picker, deserialize, navigate to eSAP builder
   header.querySelector('#btn-load-instance').addEventListener('click', () => {
-    if (!appState.loaded) return;
+    if (!appState.loaded) {
+      // Surface the silent no-op so the user sees why the button doesn't react.
+      // Common cause: a required fetch in loadAllData() failed at bootstrap.
+      console.error('[Load button] App is not yet loaded — appState.loaded is false. ' +
+        'Check the Network tab for failed JSON fetches and refresh.');
+      alert('App data is still loading (or a startup fetch failed). ' +
+        'Open DevTools → Console / Network to see which file failed, then refresh.');
+      return;
+    }
+    // Some Chrome variants silently no-op when .click() is called on a
+    // detached file input. Attach off-screen, click, then remove on completion
+    // (whether the user picks a file or cancels — handled below).
+    document.querySelectorAll('input[data-load-instance]').forEach(el => el.remove());
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
+    input.dataset.loadInstance = '1';
+    input.style.cssText = 'position:fixed; left:-9999px; top:-9999px; opacity:0; pointer-events:none;';
+    document.body.appendChild(input);
+    // Cleanup if user cancels the dialog (focus returns to the window without onchange firing).
+    const cleanup = () => { input.remove(); window.removeEventListener('focus', onFocusCleanup); };
+    const onFocusCleanup = () => setTimeout(() => { if (!input.files?.length) cleanup(); }, 300);
+    window.addEventListener('focus', onFocusCleanup, { once: true });
     input.onchange = async (e) => {
       const file = e.target.files[0];
-      if (!file) return;
+      if (!file) { cleanup(); return; }
       try {
         const text = await file.text();
         const json = JSON.parse(text);
@@ -104,6 +123,8 @@ export function renderHeader() {
       } catch (err) {
         console.error('Failed to load study instance:', err);
         alert('Failed to load study instance: ' + err.message);
+      } finally {
+        cleanup();
       }
     };
     input.click();

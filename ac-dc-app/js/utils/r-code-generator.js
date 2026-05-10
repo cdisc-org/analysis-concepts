@@ -17,7 +17,7 @@
 export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, overrides,
                                           methodDef, rImplementation,
                                           derivations, unitConversions, rImplCatalog,
-                                          availableDatasets) {
+                                          availableDatasets, conceptCategories) {
   const adam = conceptMappings?.adam || {};
 
   // Strip $ui fields for clean spec
@@ -35,6 +35,8 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
     ? JSON.stringify(unitConversions) : 'null';
   const rImplsJson = rImplCatalog
     ? JSON.stringify(rImplCatalog) : 'null';
+  const conceptCategoriesJson = conceptCategories
+    ? JSON.stringify(conceptCategories) : 'null';
 
   const datasetName = (cleanSpec.targetDataset || 'addata').toLowerCase();
 
@@ -60,6 +62,7 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
     `derivations <- if (exists("derivations_json")) jsonlite::fromJSON(derivations_json, simplifyVector = FALSE) else NULL`,
     `unit_conversions <- if (exists("unit_conversions_json")) jsonlite::fromJSON(unit_conversions_json, simplifyVector = FALSE) else NULL`,
     `r_impls <- if (exists("r_impls_json")) jsonlite::fromJSON(r_impls_json, simplifyVector = FALSE) else NULL`,
+    `concept_categories <- if (exists("concept_categories_json")) jsonlite::fromJSON(concept_categories_json, simplifyVector = FALSE) else NULL`,
     ``,
     `# User variable overrides (selected in UI)`,
     overridesJson === 'NULL'
@@ -77,7 +80,8 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
     `console_log <- capture.output({`,
     `  result <- tryCatch(`,
     `    acdc_execute(spec, mappings, dataset, overrides, method_def, r_impl,`,
-    `                 derivations, unit_conversions, r_impls, all_mappings, available_datasets),`,
+    `                 derivations, unit_conversions, r_impls, all_mappings, available_datasets,`,
+    `                 concept_categories),`,
     `    error = function(e) list(engine_error = e$message)`,
     `  )`,
     `})`,
@@ -88,7 +92,8 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
   ].join('\n');
 
   return { specJson, mappingJson, methodJson, rImplJson, overridesJson,
-           derivationsJson, unitConversionsJson, rImplsJson, bootstrapCode };
+           derivationsJson, unitConversionsJson, rImplsJson,
+           conceptCategoriesJson, bootstrapCode };
 }
 
 /**
@@ -321,7 +326,12 @@ export function getVariableOptions(concept, adam, valueType, structRole) {
  */
 export function getDefaultVariable(concept, dataStructureRole, adam, binding) {
   const entry = adam?.concepts?.[concept] || adam?.dimensions?.[concept];
-  if (!entry?.byDataType) return concept.toUpperCase();
+  // No mapping in this data store → return null. The previous fallback
+  // (concept.toUpperCase()) made unmapped OC concepts look like real ADaM
+  // columns (e.g. "OBSERVATION.IDENTIFICATION.TOPIC"), masking the fact that
+  // the user picked an OC-layer concept against an ADaM dataset (or vice
+  // versa). Caller should render "—" or a layer-mismatch warning.
+  if (!entry?.byDataType) return null;
 
   // Honor binding qualifiers when present. The mapping declares qualifier-specific
   // sub-tables (e.g. Treatment.intentType.Planned.code = "TRTP"); when a binding

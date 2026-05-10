@@ -51,8 +51,7 @@
       "linkedBCIds": [],
       "dimensionValues": {
         "Parameter": "Adas-Cog(11) Subscore",
-        "AnalysisVisit": "Week 24",
-        "Population": "EFFFL"
+        "AnalysisVisit": "Week 24"
       },
       "derivationNote": "",
       "selectedTransformationOid": "T.CFB_ANCOVA",
@@ -157,8 +156,7 @@
           "name": "endpoint",
           "fixedDimensions": {
             "Parameter": "Adas-Cog(11) Subscore",
-            "AnalysisVisit": "Week 24",
-            "Population": "EFFFL"
+            "AnalysisVisit": "Week 24"
           }
         }
       ],
@@ -168,7 +166,8 @@
         "Population"
       ],
       "dimensionCategoryPicks": {
-        "VisitDimension": "AnalysisVisit"
+        "VisitDimension": "AnalysisVisit",
+        "ParameterDimension": "Parameter"
       },
       "resolvedBindings": [
         {

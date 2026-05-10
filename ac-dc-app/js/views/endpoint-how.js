@@ -650,6 +650,44 @@ function wireEndpointHowEvents(container, study, configuredEps) {
     input.addEventListener('input', handler);
   });
 
+  // --- Slice dimension category picker (member of conceptCategory) ---
+  // Switching the dim label between OC/DC members rewrites the endpoint's
+  // dimensionCategoryPicks so all slices that resolve via this category
+  // pick up the new member. Carries any per-slice value override forward
+  // to the new dim key so the user's typed value isn't lost.
+  container.querySelectorAll('.ep-slice-dim-pick').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const categoryName = sel.dataset.category;
+      const newDim = sel.value;
+      const prevDim = sel.dataset.prevDim;
+      const sliceName = sel.dataset.sliceName;
+      const epId = appState.activeEndpointId;
+      if (!epId || !categoryName || !newDim) return;
+
+      ensureSpec(epId);
+      const spec = appState.endpointSpecs[epId];
+
+      // Update endpoint-level pick for this category (drives all slice & binding resolutions)
+      if (!spec.dimensionCategoryPicks) spec.dimensionCategoryPicks = {};
+      spec.dimensionCategoryPicks[categoryName] = newDim;
+
+      // Carry forward any user-typed slice value override from prevDim → newDim
+      if (sliceName && prevDim && prevDim !== newDim) {
+        const ov = spec.sliceDimensionOverrides?.[sliceName];
+        if (ov && ov[prevDim] !== undefined) {
+          ov[newDim] = ov[prevDim];
+          delete ov[prevDim];
+        }
+        if (spec.dimensionValues?.[prevDim] !== undefined) {
+          spec.dimensionValues[newDim] = spec.dimensionValues[prevDim];
+          delete spec.dimensionValues[prevDim];
+        }
+      }
+      rebuildSpec();
+      renderEndpointHow(container);
+    });
+  });
+
   // --- Remove analysis button ---
   container.querySelectorAll('.ep-remove-analysis').forEach(btn => {
     btn.addEventListener('click', (e) => {

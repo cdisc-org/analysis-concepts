@@ -8,6 +8,7 @@ import {
   getTransformationByOid, getDerivationTransformationByOid
 } from '../views/endpoint-spec.js';
 import { ESAP_SECTION_LABELS } from './esap-constants.js';
+import { buildSliceLookup, buildResolvedSliceData } from './concept-display.js';
 
 /**
  * Build a W3C Data Cube-aligned merged data structure from endpoint spec + analysis template.
@@ -98,35 +99,30 @@ export function buildMergedDataStructure(spec, analysisTransform) {
       }
     }
 
-    // Analysis-defined slices (W3C QB multi-dimension)
-    const categoriesMap = appState?.conceptCategories?.categories || {};
-    const epPicks = spec?.dimensionCategoryPicks || {};
+    // Analysis-defined slices (W3C QB multi-dimension). Delegate the
+    // resolve+substitute+sliceDimensionOverride chain to the shared helper
+    // so the engine's resolvedValues match exactly what the UI displays.
+    // Without this, user-typed slice values (e.g. Visit="BASELINE" on the
+    // parameter_baseline slice) get dropped on the way to the engine and
+    // resolved values silently revert to TOKEN_DEFAULTS.
+    //
+    // `buildSliceLookup` translates the raw library shape (`{name,
+    // constraints: [{conceptCategory|dimension, value}]}`) into the helper's
+    // expected shape (`{fixedDimensions, categoryConstraints}`).
+    const sliceLookup = buildSliceLookup(analysisTransform);
     for (const s of (analysisTransform.slices || [])) {
       const measureBinding = (analysisTransform.bindings || [])
         .find(b => b.slice === s.name && b.dataStructureRole === 'measure');
-      const fixedDimensions = {};
-      // New format: constraints[] array. A constraint may name a concrete
-      // dimension (c.dimension) OR a category (c.conceptCategory); the latter
-      // must be resolved via the endpoint's dimensionCategoryPicks, falling
-      // back to the category's first member — the same precedence used for
-      // bindings. Without this resolution the slice row renders
-      // fixedDimensions[undefined] = value in downstream consumers.
-      for (const c of (s.constraints || [])) {
-        let dimName = c.dimension;
-        if (!dimName && c.conceptCategory) {
-          dimName = epPicks[c.conceptCategory]
-            || categoriesMap[c.conceptCategory]?.members?.[0]?.concept;
-        }
-        if (dimName) fixedDimensions[dimName] = c.value;
-      }
-      // Backward compat: old single-dimension format
-      if (s.dimension && s.constraint) {
-        fixedDimensions[s.dimension] = s.constraint;
-      }
+      const rawSliceDef = sliceLookup[s.name] || { fixedDimensions: {}, categoryConstraints: [] };
+      const data = buildResolvedSliceData(rawSliceDef, {
+        activeSpec: spec,
+        sliceName: s.name,
+        bindings: analysisTransform.bindings || []
+      });
       slices.push({
         name: s.name,
         appliesTo: measureBinding ? [measureBinding.concept] : [],
-        fixedDimensions,
+        fixedDimensions: { ...data.substituted },
         source: 'analysis'
       });
     }
