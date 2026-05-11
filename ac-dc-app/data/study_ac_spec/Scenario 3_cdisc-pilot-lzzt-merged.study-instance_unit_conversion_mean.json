@@ -1,9 +1,9 @@
 {
   "$schema": "acdc-study-instance.schema.json",
-  "instanceId": "SI_CDISC-PILOT-LZZT-merged_2026-04-22",
+  "instanceId": "SI_CDISC-PILOT-LZZT-merged_2026-05-11",
   "formatVersion": "1.0",
-  "createdAt": "2026-04-22T11:55:09.913Z",
-  "updatedAt": "2026-04-22T11:55:09.913Z",
+  "createdAt": "2026-05-11T12:05:22.295Z",
+  "updatedAt": "2026-05-11T12:05:22.295Z",
   "$references": {
     "transformationLibrary": {
       "file": "lib/transformations/ACDC_Transformation_Library_v06.json",
@@ -62,8 +62,7 @@
       "derivationConfigValues": {
         "T.Mean_Measure/Measure/0": {
           "target_unit": "kg",
-          "precision": 2,
-          "on_missing_factor": "passthrough"
+          "precision": 2
         }
       },
       "derivationDimensionValues": {},
@@ -90,7 +89,13 @@
               "dataStructureRole": "dimension"
             },
             {
-              "concept": "Parameter",
+              "concept": "Subject",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "conceptCategory": "ParameterDimension",
               "methodRole": "constraint",
               "direction": "input",
               "dataStructureRole": "dimension"
@@ -134,6 +139,9 @@
       "sliceKeyDimensions": [
         "Parameter"
       ],
+      "dimensionCategoryPicks": {
+        "ParameterDimension": "Parameter"
+      },
       "resolvedBindings": [
         {
           "methodRole": "response",
@@ -154,7 +162,13 @@
           "dataStructureRole": "dimension"
         },
         {
-          "concept": "Parameter",
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "conceptCategory": "ParameterDimension",
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension"
@@ -235,7 +249,7 @@
               "note": "BC identifier — resolves to --TESTCD in SDTM (e.g., VSTESTCD). The constraint value comes from the endpoint's linked BC specialization."
             },
             {
-              "concept": "Parameter",
+              "conceptCategory": "ParameterDimension",
               "direction": "output",
               "dataStructureRole": "dimension",
               "methodRole": "parameter_label",
@@ -489,7 +503,7 @@
     ]
   },
   "preferences": {
-    "modelViewMode": "concepts",
+    "modelViewMode": "adam",
     "currentStep": 8
   }
 }

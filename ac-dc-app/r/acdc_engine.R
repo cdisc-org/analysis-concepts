@@ -853,18 +853,32 @@ enrich_dimensions <- function(dataset, bindings, all_mappings, available_dataset
                    aux_name, concept))
     }
 
-    # Keep the concept-keyed column AND any column the user's override
-    # names. When the user picks TRT01P in the dropdown for Treatment, the
-    # formula will reference TRT01P — if we only merge the concept-keyed
-    # 'Treatment' column, R can't resolve the formula. The qualifier walk
-    # in ingest_to_concepts has already copied TRT01P → Treatment inside
-    # the aux dataset; we just need to retain the source variant column
-    # too so both names survive the merge.
+    # Keep the concept-keyed column AND a column under the user's override
+    # name. The user's dropdown pick (e.g. ARM, TRT01P, SITEGR1) is the
+    # variable name the formula will reference. Two cases:
+    #
+    # (a) override column SURVIVES ingest — e.g. ADSL with TRT01P resolved
+    #     via Treatment.intentType.Planned.alternativeVariables: ingest copies
+    #     TRT01P → Treatment but TRT01P itself stays in colnames(aux). Just
+    #     include it in keep_cols.
+    #
+    # (b) override column was RENAMED AWAY by ingest — e.g. DM with ARM
+    #     resolved via Treatment.byDataType.string: ingest's primary loop
+    #     consumes ARM, no copy survives. Alias the concept-keyed column
+    #     back to the user's pick name. The mapping declared ARM as a
+    #     Treatment variant, so the alias is metadata-faithful, not a
+    #     hardcoded fallback. Same data, two names.
     keep_cols <- unique(c(join_key, concept))
     override_var <- if (!is.null(overrides) && !is.null(overrides[[concept]])) overrides[[concept]] else NULL
-    if (!is.null(override_var) && nzchar(override_var)
-        && override_var != concept && override_var %in% colnames(aux)) {
-      keep_cols <- unique(c(keep_cols, override_var))
+    if (!is.null(override_var) && nzchar(override_var) && override_var != concept) {
+      if (override_var %in% colnames(aux)) {
+        keep_cols <- unique(c(keep_cols, override_var))
+      } else if (concept %in% colnames(aux)) {
+        aux[[override_var]] <- aux[[concept]]
+        keep_cols <- unique(c(keep_cols, override_var))
+        cat(sprintf("    [enrich] alias '%s' <- '%s' (override survived ingest's primary rename)\n",
+                    override_var, concept))
+      }
     }
     aux_subset <- unique(aux[, keep_cols, drop = FALSE])
     dataset <- merge(dataset, aux_subset, by = join_key, all.x = TRUE)
@@ -1245,7 +1259,19 @@ build_concept_var_map <- function(bindings, mappings = NULL, overrides = NULL,
     # Key by full concept key (e.g., Measure.Result.Value) not just concept name
     by_concept[[storage_key]] <- var_name
 
-    if (!is.null(role) && role != "") {
+    # Output bindings populate by_concept (column resolution) but NOT by_role.
+    # Output methodRoles can name placeholders the template wants substituted
+    # from CONFIGS (e.g. T.UnitConversion's output binding methodRole=
+    # "parameter_label" → template uses <parameter_label>, which the JS auto-
+    # injects as a config). Letting outputs populate by_role makes the role-
+    # substitution pass clobber the placeholder with the concept name before
+    # the config-substitution pass runs — for parameter_label that means the
+    # column gets stamped with the literal string "Parameter" instead of the
+    # endpoint's actual label ("Weight (cm)"). The chain-output-column
+    # override in apply_derivations (~line 1271) explicitly sets by_role for
+    # measure outputs that the template references by role — outputs that
+    # need a by_role entry get one there, intentionally.
+    if (!is.null(role) && role != "" && !identical(b$direction, "output")) {
       if (!is.null(by_role[[role]])) {
         by_role[[role]] <- c(by_role[[role]], var_name)
       } else {
