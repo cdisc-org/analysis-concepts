@@ -462,7 +462,7 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
       </div>
 
       <!-- Derivation Pipeline (if any) -->
-      ${_renderDerivationSummary(ep)}
+      ${_renderDerivationSummary(ep, result)}
 
       <!-- Analysis sub-cards -->
       ${analyses.length === 0
@@ -567,8 +567,8 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
   const canRun = webRReady && hasDatasets && !!payload && !!selectedDataset;
 
   return `
-    <div class="exec-analysis-sub ${aStatusClass}" data-ep-id="${ep.id}" data-a-idx="${aIdx}">
-      <div class="exec-sub-header">
+    <details class="exec-analysis-sub ${aStatusClass}" data-ep-id="${ep.id}" data-a-idx="${aIdx}" open>
+      <summary class="exec-sub-header" style="cursor:pointer;">
         <div>
           <span class="exec-sub-seq">#${aIdx + 1}</span>
           <strong>${methodName}</strong>
@@ -579,11 +579,12 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
           ${aResult.status === 'error' ? '<span class="badge" style="background:var(--cdisc-error); color:white;">Error</span>' : ''}
           ${aResult.status === 'running' ? '<span class="badge badge-blue">Running...</span>' : ''}
           <button class="btn btn-primary btn-sm exec-run-btn" data-ep-id="${ep.id}" data-a-idx="${aIdx}"
+            onclick="event.stopPropagation();"
             ${!canRun ? 'disabled style="opacity:0.5;"' : ''}>
             ${aResult.status === 'complete' ? 'Re-run' : 'Execute'}
           </button>
         </div>
-      </div>
+      </summary>
 
       <!-- Resolved Bindings — view-mode-aware variable display -->
       ${activeBindings.length > 0 ? (() => {
@@ -950,7 +951,7 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
         <div class="exec-bindings-title">GENERATED ${selectedLang} PROGRAM</div>
         <div style="font-size:11px; color:var(--cdisc-text-secondary); padding:6px 0;">No ${selectedLang} implementation available for ${methodOid}.</div>
       </div>`}
-    </div>
+    </details>
   `;
 }
 
@@ -2068,7 +2069,7 @@ async function _executeDerivationOnly(container, epId) {
   renderExecuteAnalysis(container);
 }
 
-function _renderDerivationSummary(ep) {
+function _renderDerivationSummary(ep, result) {
   const rawChain = appState.endpointSpecs?.[ep.id]?.derivationChain || [];
   const derivConfigValues = appState.endpointSpecs?.[ep.id]?.derivationConfigValues || {};
   const txLib = [
@@ -2091,12 +2092,86 @@ function _renderDerivationSummary(ep) {
   const derivResult = appState.endpointResults[ep.id]?.derivationOnly;
   const derivMessage = appState.endpointResults[ep.id]?.derivationOnlyMessage;
 
-  return `
-    <div class="exec-bindings-section" style="margin:8px 0; padding:10px 14px; background:rgba(13,110,253,0.04); border:1px solid var(--cdisc-primary); border-radius:var(--radius);">
-      <div style="display:flex; align-items:center; font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-primary); margin-bottom:8px;">
-        Derivation Pipeline (runs before analysis)
-        <button class="btn btn-sm exec-derive-only-btn" data-ep-id="${ep.id}" style="margin-left:auto; font-size:11px; padding:2px 8px;">Run Derivation Only</button>
+  // Overall pipeline status reflects the most recent execution. Two paths can
+  // exercise the derivation chain:
+  //   (a) Full analysis execute — chain runs as Step 2 of acdc_execute. Errors
+  //       before Step 5 mean the chain failed. Status comes from analysisResults.
+  //   (b) "Run Derivation Only" button — runs acdc_derive_only; result lands in
+  //       derivationOnly. Has its own success/error signal.
+  // Per-step granularity would require the engine to emit a structured per-
+  // derivation status array; for now we color all steps with the overall.
+  // NOTE: result.analysisResults is an OBJECT keyed by analysis index (see
+  // `_ensureEndpointResult`), not an array — must iterate via Object.values.
+  const analysisStatuses = Object.values(result?.analysisResults || {});
+  const anyComplete = analysisStatuses.some(a => a?.status === 'complete');
+  const anyRunning = analysisStatuses.some(a => a?.status === 'running');
+  const anyError = analysisStatuses.some(a => a?.status === 'error');
+  const derivOnlyHasError = !!derivResult?.error;
+  const derivOnlyComplete = !!derivResult && !derivResult.error;
+  const pipelineStatus = anyRunning ? 'running'
+    : anyError ? 'error'
+    : anyComplete ? 'complete'
+    : derivOnlyHasError ? 'error'
+    : derivOnlyComplete ? 'complete'
+    : 'pending';
+  const statusBadge = pipelineStatus === 'running'
+      ? '<span class="badge badge-blue" style="font-size:10px;">Running…</span>'
+    : pipelineStatus === 'complete'
+      ? '<span class="badge badge-teal" style="font-size:10px;">✓ Complete</span>'
+    : pipelineStatus === 'error'
+      ? '<span class="badge" style="font-size:10px; background:var(--cdisc-error); color:white;">✗ Failed</span>'
+    : '<span style="font-size:10px; color:var(--cdisc-text-secondary);">Not yet run</span>';
+
+  // Step-status dot color follows the overall pipeline status. Pending = gray.
+  const stepDotColor = pipelineStatus === 'complete' ? 'var(--cdisc-success, #22863a)'
+    : pipelineStatus === 'error' ? 'var(--cdisc-error, #cb2431)'
+    : pipelineStatus === 'running' ? 'var(--cdisc-primary, #0366d6)'
+    : 'var(--cdisc-text-secondary, #888)';
+  const stepDot = `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${stepDotColor};"></span>`;
+
+  const analysisTx = appState.transformationLibrary?.analysisTransformations
+    ?.find(t => t.oid === appState.endpointSpecs?.[ep.id]?.selectedTransformationOid);
+  const total = derivations.length + 1;
+
+  // Compact "Execution Order" panel — one row per derivation, analysis root last.
+  const orderHtml = derivations.map((d, i) => `
+    <div style="display:grid; grid-template-columns:20px 28px 1fr auto; align-items:center; gap:8px; padding:4px 0; border-bottom:1px solid var(--cdisc-border);">
+      <div>${stepDot}</div>
+      <div style="font-size:11px; font-weight:700; color:var(--cdisc-text-secondary); text-align:right;">${i + 1}.</div>
+      <div>
+        <div style="font-size:12px; color:var(--cdisc-text);">${_escapeHtml(d.transform.name || d.transform.oid)}</div>
+        <div style="font-size:10px; color:var(--cdisc-text-secondary);">concept: <code>${_escapeHtml(d.entry.concept || '')}</code></div>
       </div>
+      <span class="badge badge-secondary" style="font-size:10px;">${_escapeHtml(d.transform.usesMethod || '')}</span>
+    </div>
+  `).join('');
+  const analysisRootRow = `
+    <div style="display:grid; grid-template-columns:20px 28px 1fr auto; align-items:center; gap:8px; padding:4px 0;">
+      <div>${stepDot}</div>
+      <div style="font-size:11px; font-weight:700; color:${pipelineStatus === 'complete' ? 'var(--cdisc-success)' : 'var(--cdisc-text-secondary)'}; text-align:right;">${total}.</div>
+      <div>
+        <div style="font-size:12px; font-weight:600; color:var(--cdisc-text);">${_escapeHtml(analysisTx?.name || 'Analysis')}</div>
+        <div style="font-size:10px; color:var(--cdisc-text-secondary);">analysis root</div>
+      </div>
+      <span class="badge badge-secondary" style="font-size:10px;">${_escapeHtml(analysisTx?.usesMethod || '')}</span>
+    </div>`;
+
+  return `
+    <details class="exec-bindings-section" style="margin:8px 0; padding:10px 14px; background:rgba(13,110,253,0.04); border:1px solid var(--cdisc-primary); border-radius:var(--radius);">
+      <summary style="display:flex; align-items:center; gap:10px; font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-primary); cursor:pointer; list-style:revert;">
+        Derivation Pipeline (runs before analysis)
+        ${statusBadge}
+        <button class="btn btn-sm exec-derive-only-btn" data-ep-id="${ep.id}" style="margin-left:auto; font-size:11px; padding:2px 8px;" onclick="event.stopPropagation();">Run Derivation Only</button>
+      </summary>
+      <div style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--cdisc-border);">
+        <div style="font-size:11px; font-weight:600; color:var(--cdisc-text-secondary); margin-bottom:6px;">
+          Execution Order (${total} step${total === 1 ? '' : 's'})
+        </div>
+        ${orderHtml}
+        ${analysisRootRow}
+      </div>
+      <details class="exec-deriv-details" style="margin-top:10px;">
+        <summary style="font-size:11px; color:var(--cdisc-text-secondary); cursor:pointer; padding:4px 0;">Show full bindings &amp; cube details</summary>
       ${derivMessage && !derivResult ? `
       <div style="margin-top:6px; padding:8px 10px; background:rgba(255,193,7,0.1); border:1px solid var(--cdisc-warning, #ffc107); border-radius:var(--radius); font-size:11px;">
         ${_escapeHtml(derivMessage)}
@@ -2274,7 +2349,8 @@ function _renderDerivationSummary(ep) {
           </div>
         </div>`;
       }).join('')}
-    </div>`;
+      </details>
+    </details>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -2433,6 +2509,18 @@ function _styles() {
     .exec-sub-running { border-left:3px solid var(--cdisc-primary); }
     .exec-sub-error { border-left:3px solid var(--cdisc-error); }
     .exec-sub-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    /* <summary class="exec-sub-header"> needs list-style suppression so the
+       default disclosure triangle doesn't break the flex layout. The chevron
+       below provides a clear expand/collapse affordance instead. */
+    summary.exec-sub-header { list-style:none; }
+    summary.exec-sub-header::-webkit-details-marker { display:none; }
+    summary.exec-sub-header::before { content:'▸'; margin-right:6px; color:var(--cdisc-text-secondary); font-size:10px; transition:transform 0.15s; display:inline-block; }
+    details[open] > summary.exec-sub-header::before { transform:rotate(90deg); }
+    /* Same treatment for the derivation pipeline outer details/summary */
+    details.exec-bindings-section > summary { list-style:none; }
+    details.exec-bindings-section > summary::-webkit-details-marker { display:none; }
+    details.exec-bindings-section > summary::before { content:'▸'; margin-right:6px; color:var(--cdisc-primary); font-size:11px; transition:transform 0.15s; display:inline-block; }
+    details.exec-bindings-section[open] > summary::before { transform:rotate(90deg); }
     .exec-sub-seq { display:inline-block; min-width:22px; padding:1px 6px; margin-right:6px; font-size:10px; font-weight:700; color:var(--cdisc-text-secondary); background:var(--cdisc-background); border-radius:10px; }
 
     .exec-bindings-section { margin:10px 0; }
