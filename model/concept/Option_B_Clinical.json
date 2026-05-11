@@ -1,6 +1,6 @@
 {
   "model": "DC",
-  "version": "0.20b",
+  "version": "0.20",
   "variant": "clinical",
   "description": "Derivation Concepts with clinical naming. Each concept describes what kind of data the result is, using names a clinical programmer would naturally use. The concept carries only its result structure (value type and unit behaviour). Identification (MeasureIdentifier, MeasureCategory, Sequence) and shared dimensions (Subject, Timing, etc.) are external — selected by the Transformation.",
   "namingPrinciples": [
@@ -12,27 +12,85 @@
     "Is it a different ingredient type, not a different brand of the same ingredient?"
   ],
   "sharedDimensions": {
-    "note": "Dimensional concepts — also part of the concept model, but not derivation concepts. They define the context in which a derivation is performed. The Transformation selects which ones apply. The Implementation maps them to physical columns (e.g. USUBJID → Subject, PARAMCD → Parameter, AVISIT → Visit).",
+    "note": "Dimensional concepts — also part of the concept model, but not derivation concepts. They define the context in which a derivation is performed. The Transformation selects which ones apply. The Implementation maps them to physical columns (e.g. USUBJID → Subject, PARAMCD → Parameter, AVISIT → Visit). The autoConfirm flag marks dimensions whose terminal pipeline slots are taken as source data automatically, without user confirmation.",
     "Subject": {
-      "cardinality": "1"
+      "cardinality": "1",
+      "autoConfirm": true,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
     },
     "Timing": {
-      "cardinality": "1"
+      "cardinality": "1",
+      "autoConfirm": false,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
     },
     "Parameter": {
-      "cardinality": "0..1"
+      "cardinality": "0..1",
+      "autoConfirm": true,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
     },
     "AnalysisVisit": {
-      "cardinality": "0..1"
+      "cardinality": "0..1",
+      "autoConfirm": true,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
     },
     "Treatment": {
-      "cardinality": "0..1"
+      "cardinality": "0..1",
+      "autoConfirm": false,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
     },
     "Population": {
-      "cardinality": "0..1"
+      "cardinality": "0..1",
+      "autoConfirm": true,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
     },
     "Period": {
-      "cardinality": "0..1"
+      "cardinality": "0..1",
+      "autoConfirm": false,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "Study": {
+      "cardinality": "1",
+      "autoConfirm": true,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "Site": {
+      "cardinality": "0..1",
+      "autoConfirm": true,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    }
+  },
+  "conceptProxies": {
+    "description": "Maps app-level pseudo-categories (like 'Observation') to a DC concept that should stand in for them during transformation-matching lookups. The proxy is chosen so that its result.valueType matches the pseudo-category's expected output shape.",
+    "Observation": {
+      "proxyConcept": "Measure",
+      "rationale": "Observation results and Measure outputs share NumericValue; analyses that accept Measure inputs accept observation results."
     }
   },
   "categories": {
@@ -59,6 +117,10 @@
               "CodedResponse"
             ],
             "unit": "inherited or specified"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         }
       }
@@ -79,6 +141,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "inherited"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "PercentChange": {
@@ -92,6 +158,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "fixed: %"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "Ratio": {
@@ -105,6 +175,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "dimensionless"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "LogRatio": {
@@ -118,6 +192,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "dimensionless"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "Shift": {
@@ -131,6 +209,10 @@
           "result": {
             "valueType": "CodedResponse",
             "unit": "none"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         }
       }
@@ -151,6 +233,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "inherited"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "TroughValue": {
@@ -165,6 +251,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "inherited"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "TimeToPeak": {
@@ -177,6 +267,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "time unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "TimeToTrough": {
@@ -189,6 +283,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "time unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "AreaUnderCurve": {
@@ -203,6 +301,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "source_unit × time_unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "CumulativeTotal": {
@@ -216,6 +318,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "inherited"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "RateOfChange": {
@@ -230,6 +336,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "source_unit / time_unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "HalfLife": {
@@ -243,6 +353,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "time unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "LastValue": {
@@ -256,6 +370,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "inherited"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "FirstValue": {
@@ -269,6 +387,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "inherited"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "TimeInState": {
@@ -283,6 +405,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "time unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "TimeToThreshold": {
@@ -296,6 +422,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "time unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "Range": {
@@ -309,6 +439,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "inherited"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         }
       }
@@ -329,6 +463,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "none"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "EventRate": {
@@ -342,6 +480,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "events / time_unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "TimeToEvent": {
@@ -356,6 +498,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "time unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "TimeBetweenEvents": {
@@ -369,6 +515,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "time unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         }
       }
@@ -389,6 +539,10 @@
           "result": {
             "valueType": "CodedResponse",
             "unit": "none"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "Category": {
@@ -403,6 +557,28 @@
           "result": {
             "valueType": "CodedResponse",
             "unit": "none"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "AnalysisVisit": {
+          "mathematicalEquivalent": "Classification",
+          "definition": "A scheduled analysis visit (label and visit number) assigned to an observation by a windowing rule that maps each observation's study day to a planned-visit category.",
+          "math": "f(day) → {visit_label, visit_number}",
+          "examples": [
+            "Baseline (Visit 3)",
+            "Week 8 (Visit 8)",
+            "Week 24 (Visit 12)"
+          ],
+          "result": {
+            "valueType": "CodedResponse",
+            "unit": "none"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "Rank": {
@@ -416,6 +592,10 @@
           "result": {
             "valueType": "NumericValue",
             "unit": "none"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         },
         "QuantileGroup": {
@@ -429,6 +609,10 @@
           "result": {
             "valueType": "CodedResponse",
             "unit": "none"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
           }
         }
       }

@@ -1,0 +1,508 @@
+{
+  "model": "AC",
+  "version": "0.17",
+  "description": "Analysis Concept model with three levels: Statistical Concepts (atoms), Result Patterns (molecules), and Categories (groupings). The shared statistics vocabulary is referenced by both methods and result patterns but owned by neither. — v0.17 corrects four result patterns (LSMeans, Contrasts, ComputedValue, CovarianceParameters) whose dimensions previously held layer-3 study values; they now match the layer-1 abstract pattern shape from output_class_templates.json.",
+  "$vocabulary": {
+    "valueTypes": "../shared/fhir_value_types.json"
+  },
+  "designPrinciples": [
+    "Statistical concepts are individual data points — each has its own identity in the graph",
+    "Result patterns group statistical concepts that belong together and should be interpreted together",
+    "Categories group result patterns that typically appear together in the same kind of analysis",
+    "The shared statistics vocabulary is independent — methods reference it for output slots, result patterns reference it for grouping",
+    "Methods do not reference AC concepts — the Transformation maps method output slots to result patterns",
+    "The model is representation-neutral — it works in tabular, graph, or any other physical format"
+  ],
+  "qualifierTypes": {
+    "note": "Qualifier types are defined in the CDDM shared vocabulary (CDDM_Shared_QualifierTypes.json). They represent semantically different versions of a data definition. Statistical concepts and result patterns do not have qualifiers — qualifiers apply only to data definitions at the transformation/CDDM layer.",
+    "$ref": "CDDM_Shared_QualifierTypes.json"
+  },
+  "sharedStatisticsVocabulary": {
+    "note": "These are Level 1 Statistical Concepts. Both methods and result patterns reference them. Neither owns them.",
+    "concepts": {
+      "Estimate": {
+        "definition": "Point estimate of a quantity",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000599",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "SE": {
+        "definition": "Standard error of an estimate",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000562",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "CI_Lower": {
+        "definition": "Lower bound of a confidence interval",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000315",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "CI_Upper": {
+        "definition": "Upper bound of a confidence interval",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000314",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "DF": {
+        "definition": "Degrees of freedom",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000069",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "PValue": {
+        "definition": "P-value for a statistical test",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000193",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "TStatistic": {
+        "definition": "t test statistic",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000176",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "FStatistic": {
+        "definition": "F test statistic",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000282",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "ChiSquared": {
+        "definition": "Chi-squared test statistic",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000030",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Coefficient": {
+        "definition": "Model coefficient (log scale for GLMs)",
+        "dataType": "decimal",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "HazardRatio": {
+        "definition": "Hazard ratio (exponentiated Cox coefficient)",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000224",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "OddsRatio": {
+        "definition": "Odds ratio (exponentiated log-odds coefficient)",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000182",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "SurvivalProb": {
+        "definition": "Estimated survival probability",
+        "dataType": "decimal",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Median": {
+        "definition": "Median estimate",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000574",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Mean": {
+        "definition": "Mean estimate",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000573",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "NRisk": {
+        "definition": "Number at risk",
+        "dataType": "decimal",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "NEvent": {
+        "definition": "Number of events",
+        "dataType": "decimal",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "NCensored": {
+        "definition": "Number censored",
+        "dataType": "decimal",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "AIC": {
+        "definition": "Akaike Information Criterion",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000328",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "BIC": {
+        "definition": "Bayesian Information Criterion",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000327",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Minus2LogL": {
+        "definition": "-2 Log Likelihood",
+        "dataType": "decimal",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "DF_Num": {
+        "definition": "Numerator degrees of freedom",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000498",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "DF_Den": {
+        "definition": "Denominator degrees of freedom",
+        "dataType": "decimal",
+        "statoMapping": "STATO:0000527",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Value": {
+        "definition": "A computed/derived value (generic)",
+        "dataType": "decimal",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      }
+    }
+  },
+  "resultPatterns": {
+    "note": "Level 2 Result Patterns. Each groups a set of statistical concepts and defines the identifying relationships for each instance.",
+    "LSMeans": {
+      "definition": "Least-squares means (adjusted marginal means) per factor level or level combination",
+      "constituents": [
+        "Estimate",
+        "SE",
+        "CI_Lower",
+        "CI_Upper",
+        "DF"
+      ],
+      "dimensions": [
+        "factor",
+        "level"
+      ],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "Contrasts": {
+      "definition": "Pairwise or custom contrasts between LS means",
+      "constituents": [
+        "Estimate",
+        "SE",
+        "CI_Lower",
+        "CI_Upper",
+        "TStatistic",
+        "PValue",
+        "DF"
+      ],
+      "dimensions": [
+        "contrast",
+        "at_level"
+      ],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "Type3Tests": {
+      "definition": "Type III omnibus tests, one per model term",
+      "constituents": [
+        "FStatistic",
+        "PValue",
+        "DF_Num",
+        "DF_Den"
+      ],
+      "dimensions": [
+        "term"
+      ],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "ParameterEstimates": {
+      "definition": "Solution for fixed effects, one row per model coefficient",
+      "constituents": [
+        "Coefficient",
+        "SE",
+        "TStatistic",
+        "PValue",
+        "CI_Lower",
+        "CI_Upper",
+        "DF"
+      ],
+      "dimensions": [
+        "term",
+        "level"
+      ],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "FitStatistics": {
+      "definition": "Overall model goodness-of-fit measures",
+      "constituents": [
+        "AIC",
+        "BIC",
+        "Minus2LogL"
+      ],
+      "dimensions": [],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "CovarianceParameters": {
+      "definition": "Estimated covariance/variance components",
+      "constituents": [
+        "Estimate",
+        "SE"
+      ],
+      "dimensions": [
+        "repeated_factor",
+        "cov_param"
+      ],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "TestResult": {
+      "definition": "Single overall test result",
+      "constituents": [
+        "ChiSquared",
+        "PValue",
+        "DF"
+      ],
+      "dimensions": [],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "SurvivalTable": {
+      "definition": "Life table with survival estimates at each event time",
+      "constituents": [
+        "NRisk",
+        "NEvent",
+        "NCensored",
+        "SurvivalProb",
+        "SE",
+        "CI_Lower",
+        "CI_Upper"
+      ],
+      "dimensions": [
+        "group",
+        "time"
+      ],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "MedianSurvival": {
+      "definition": "Median survival time per group",
+      "constituents": [
+        "Median",
+        "CI_Lower",
+        "CI_Upper"
+      ],
+      "dimensions": [
+        "group"
+      ],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "EventSummary": {
+      "definition": "Summary counts of events and censoring per group",
+      "constituents": [
+        "NRisk",
+        "NEvent",
+        "NCensored"
+      ],
+      "dimensions": [
+        "group"
+      ],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "HazardRatioEstimates": {
+      "definition": "Hazard ratios with confidence intervals",
+      "constituents": [
+        "HazardRatio",
+        "CI_Lower",
+        "CI_Upper"
+      ],
+      "dimensions": [
+        "term",
+        "level"
+      ],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "OddsRatioEstimates": {
+      "definition": "Odds ratios with confidence intervals",
+      "constituents": [
+        "OddsRatio",
+        "CI_Lower",
+        "CI_Upper"
+      ],
+      "dimensions": [
+        "term",
+        "level"
+      ],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    }
+  },
+  "categories": {
+    "note": "Level 3 AC Categories. Group result patterns that typically appear together.",
+    "TreatmentComparison": {
+      "definition": "A comparison of an outcome between treatment groups, producing estimated treatment effects with inference.",
+      "typicallyInvolves": [
+        "Contrasts",
+        "LSMeans",
+        "Type3Tests",
+        "ParameterEstimates",
+        "FitStatistics"
+      ],
+      "typicalMethods": [
+        "M.MMRM",
+        "M.ANCOVA",
+        "M.TTest",
+        "M.WilcoxonRankSum"
+      ],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "SurvivalAnalysis": {
+      "definition": "An analysis of time-to-event outcomes, estimating survival patterns and comparing them between groups.",
+      "typicallyInvolves": [
+        "TestResult",
+        "SurvivalTable",
+        "MedianSurvival",
+        "EventSummary",
+        "HazardRatioEstimates"
+      ],
+      "typicalMethods": [
+        "M.LogRankTest",
+        "M.KaplanMeier",
+        "M.CoxPH"
+      ],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "DescriptiveSummary": {
+      "definition": "A statistical summary of a distribution within a group. No comparison between groups required. After the FHIR-datatype retargeting pass, descriptive methods produce FHIR Quantity (or Count/Duration) atomic values directly rather than structured ResultPatterns; typicallyInvolves is empty because the per-row output isn't a multi-statistic table.",
+      "typicallyInvolves": [],
+      "typicalMethods": [
+        "M.Mean",
+        "M.Quartile",
+        "M.Skewness",
+        "M.Sum",
+        "M.WinsorizedMean"
+      ],
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    }
+  },
+  "methodOutputSlotMapping": {
+    "note": "This shows how method output slots map to result patterns. The method defines slots using the shared vocabulary. The Transformation maps slots to result patterns. Neither the method nor the result pattern references the other directly.",
+    "M.MMRM": {
+      "adjusted_means": "LSMeans",
+      "pairwise_diffs": "Contrasts",
+      "omnibus_tests": "Type3Tests",
+      "fixed_effects": "ParameterEstimates",
+      "model_fit": "FitStatistics",
+      "covariance": "CovarianceParameters"
+    },
+    "M.LogRankTest": {
+      "test": "TestResult"
+    },
+    "M.Quartile": {
+      "summary": "ComputedValue"
+    }
+  }
+}
