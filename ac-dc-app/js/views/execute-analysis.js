@@ -898,6 +898,9 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
         <pre style="margin:4px 0; padding:8px; background:rgba(0,0,0,0.04); border-radius:var(--radius); font-size:10px; max-height:300px; overflow:auto;">${_escapeHtml(aResult.console)}</pre>
       </details>` : ''}
 
+      <!-- Derived Data Preview (store-mapped post-derivation rows) -->
+      ${aResult.results?.derived_data_preview ? _renderDerivedDataPreview(aResult.results) : ''}
+
       <!-- Results (per-analysis) -->
       ${aResult.results ? _renderARDResults(aResult.results, analysis, adam, resultState.varOverrides) : ''}
 
@@ -1020,6 +1023,46 @@ function _filterRowsByOutputConfig(rows, termKey, roleMap, selectedDimensions) {
     if (!concept) return true;
     return selected.has(concept);
   });
+}
+
+/**
+ * Render the store-mapped derived-data preview. Columns carry their
+ * ADaM names (TRT01P, AVAL, AVISIT...) — the engine ran the derivation
+ * chain in concept-keyed form and applied present_as_store() to head
+ * rows before returning. Shown as a collapsed details so it doesn't
+ * push the ARD result table off-screen.
+ */
+function _renderDerivedDataPreview(results) {
+  const raw = results?.derived_data_preview;
+  if (!raw) return '';
+  const rows = Array.isArray(raw) ? raw : [raw];
+  if (rows.length === 0 || !rows[0]) return '';
+  const cols = Object.keys(rows[0]);
+  if (cols.length === 0) return '';
+  const store = (results.derived_data_store || 'adam').toUpperCase();
+  const total = results.derived_data_total;
+  const totalSuffix = (typeof total === 'number' && total > rows.length)
+    ? ` of ${total.toLocaleString()}`
+    : '';
+  return `
+    <details class="exec-bindings-section" style="margin-top:10px;" open>
+      <summary style="cursor:pointer;">
+        <span class="exec-bindings-title" style="display:inline;">DERIVED DATA PREVIEW</span>
+        <span style="font-size:11px; color:var(--cdisc-text-secondary); margin-left:6px;">
+          ${store} columns — first ${rows.length} row${rows.length === 1 ? '' : 's'}${totalSuffix}
+        </span>
+      </summary>
+      <div style="margin-top:6px; overflow-x:auto;">
+        <table class="exec-bindings-table" style="font-size:10px;">
+          <thead><tr>${cols.map(c => `<th><code>${_escapeHtml(c)}</code></th>`).join('')}</tr></thead>
+          <tbody>${rows.map(row => `<tr>${cols.map(c => {
+            const v = row[c];
+            return `<td>${_escapeHtml(v == null ? '' : String(v))}</td>`;
+          }).join('')}</tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </details>
+  `;
 }
 
 function _renderARDResults(results, analysis, adam, varOverrides) {
@@ -1268,6 +1311,17 @@ function _renderTable(rows, columns) {
       `<tr>${columns.map(c => `<td>${_fmt(row[c])}</td>`).join('')}</tr>`
     ).join('')}</tbody>
   </table>`;
+}
+
+/**
+ * Map a modelViewMode value to the store key the R engine should use for
+ * present_as_store(). Returns null when the user has picked concept-only
+ * — engine then skips the rename and the preview shows concept keys.
+ */
+function _resolvePresentationStore(mode) {
+  if (!mode || mode === 'concepts') return null;
+  const key = mode.startsWith('concepts_') ? mode.slice('concepts_'.length) : mode;
+  return ['adam', 'sdtm', 'omop', 'fhir'].includes(key) ? key : 'adam';
 }
 
 function _toRows(df) {
@@ -1785,10 +1839,11 @@ async function _executeAnalysis(container, epId, aIdx) {
     : null;
 
   const availableDatasets = getLoadedDatasets().map(d => d.name);
+  const presentationStore = _resolvePresentationStore(appState.modelViewMode);
   const payload = generateExecutionPayload(
     patchedSpec, appState.conceptMappings, effectiveOverrides, methodDef, rImpl,
     derivationChain, unitConversions, rImplCatalog, availableDatasets,
-    appState.conceptCategories
+    appState.conceptCategories, presentationStore
   );
 
   _setAnalysisResult(epId, aIdx, { status: 'running', results: null, error: null });
@@ -2028,6 +2083,11 @@ async function _executeDerivationOnly(container, epId) {
   const unitConversionsJson = JSON.stringify(appState.unitConversions || null);
   const rImplCatalog = Object.values(appState.methodImplementationCatalog?.implementations || {}).flat().filter(i => i.language === 'R');
   const rImplsJson = JSON.stringify(rImplCatalog);
+  // The "display this dataset" preview store. The user picks one of
+  // {adam, sdtm, omop, fhir} (combined or pure form) in the header toggle;
+  // we collapse that to the bare store key here. Concept-only mode keeps the
+  // engine-internal concept keys visible — diagnostic fallback.
+  const presentationStore = _resolvePresentationStore(appState.modelViewMode);
 
   try {
     await setJsonVariable('spec_json', specJson);
@@ -2047,7 +2107,8 @@ async function _executeDerivationOnly(container, epId) {
       `r_impls <- jsonlite::fromJSON(r_impls_json, simplifyVector = FALSE)`,
       `dataset <- get("${datasetName}")`,
       `available_datasets <- c(${allDatasetNames.map(d => `"${d}"`).join(', ')})`,
-      `result <- acdc_derive_only(spec, mappings, dataset, derivations, unit_conversions, r_impls, all_mappings, available_datasets)`,
+      `presentation_store <- ${presentationStore ? `"${presentationStore}"` : 'NULL'}`,
+      `result <- acdc_derive_only(spec, mappings, dataset, derivations, unit_conversions, r_impls, all_mappings, available_datasets, presentation_store = presentation_store)`,
       `jsonlite::toJSON(result, auto_unbox = TRUE, pretty = TRUE)`
     ].join('\n');
 
@@ -2129,12 +2190,22 @@ function _renderDerivationSummary(ep, result) {
     : 'var(--cdisc-text-secondary, #888)';
   const stepDot = `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${stepDotColor};"></span>`;
 
-  const analysisTx = appState.transformationLibrary?.analysisTransformations
-    ?.find(t => t.oid === appState.endpointSpecs?.[ep.id]?.selectedTransformationOid);
-  const total = derivations.length + 1;
+  // methodsIndex tags each method with type: "analysis" | "derivation".
+  // Filter out any chain entries whose method is type=analysis — those are
+  // rendered separately as the interactive analysis sub-card below the
+  // pipeline (with variable/slice selects), so showing them again here
+  // would be redundant.
+  const methodTypeByOid = {};
+  for (const m of (appState.methodsIndex?.methods || [])) {
+    if (m.oid) methodTypeByOid[m.oid] = m.type;
+  }
+  const isAnalysisMethod = (oid) => methodTypeByOid[oid] === 'analysis';
+  const derivationSteps = derivations.filter(d => !isAnalysisMethod(d.transform.usesMethod));
+  const derivationCount = derivationSteps.length;
 
-  // Compact "Execution Order" panel — one row per derivation, analysis root last.
-  const orderHtml = derivations.map((d, i) => `
+  // Compact "Execution Order" panel — derivation rows only. The analysis
+  // step is the interactive sub-card below this panel.
+  const orderHtml = derivationSteps.map((d, i) => `
     <div style="display:grid; grid-template-columns:20px 28px 1fr auto; align-items:center; gap:8px; padding:4px 0; border-bottom:1px solid var(--cdisc-border);">
       <div>${stepDot}</div>
       <div style="font-size:11px; font-weight:700; color:var(--cdisc-text-secondary); text-align:right;">${i + 1}.</div>
@@ -2145,16 +2216,7 @@ function _renderDerivationSummary(ep, result) {
       <span class="badge badge-secondary" style="font-size:10px;">${_escapeHtml(d.transform.usesMethod || '')}</span>
     </div>
   `).join('');
-  const analysisRootRow = `
-    <div style="display:grid; grid-template-columns:20px 28px 1fr auto; align-items:center; gap:8px; padding:4px 0;">
-      <div>${stepDot}</div>
-      <div style="font-size:11px; font-weight:700; color:${pipelineStatus === 'complete' ? 'var(--cdisc-success)' : 'var(--cdisc-text-secondary)'}; text-align:right;">${total}.</div>
-      <div>
-        <div style="font-size:12px; font-weight:600; color:var(--cdisc-text);">${_escapeHtml(analysisTx?.name || 'Analysis')}</div>
-        <div style="font-size:10px; color:var(--cdisc-text-secondary);">analysis root</div>
-      </div>
-      <span class="badge badge-secondary" style="font-size:10px;">${_escapeHtml(analysisTx?.usesMethod || '')}</span>
-    </div>`;
+  const analysisRootRow = '';
 
   return `
     <details class="exec-bindings-section" style="margin:8px 0; padding:10px 14px; background:rgba(13,110,253,0.04); border:1px solid var(--cdisc-primary); border-radius:var(--radius);">
@@ -2165,7 +2227,7 @@ function _renderDerivationSummary(ep, result) {
       </summary>
       <div style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--cdisc-border);">
         <div style="font-size:11px; font-weight:600; color:var(--cdisc-text-secondary); margin-bottom:6px;">
-          Execution Order (${total} step${total === 1 ? '' : 's'})
+          ${derivationCount} derivation${derivationCount === 1 ? '' : 's'} (analysis configured below)
         </div>
         ${orderHtml}
         ${analysisRootRow}
@@ -2216,7 +2278,8 @@ function _renderDerivationSummary(ep, result) {
           if (rowArr.length === 0) return '';
           const cols = Object.keys(rowArr[0] || {});
           if (cols.length === 0) return '';
-          return '<div style="margin-top:8px; overflow-x:auto;"><strong>Data preview (first ' + rowArr.length + ' rows):</strong>' +
+          const storeLabel = (derivResult.data_preview_store || 'adam').toUpperCase();
+          return '<div style="margin-top:8px; overflow-x:auto;"><strong>Data preview (' + storeLabel + ' columns, first ' + rowArr.length + ' rows):</strong>' +
             '<table class="exec-bindings-table" style="margin-top:4px; font-size:10px;"><thead><tr>' +
             cols.map(c => '<th>' + _escapeHtml(c) + '</th>').join('') +
             '</tr></thead><tbody>' +

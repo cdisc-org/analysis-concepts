@@ -21,13 +21,25 @@ def main():
     repo_root = os.path.dirname(script_dir)
     os.chdir(repo_root)
 
-    handler = http.server.SimpleHTTPRequestHandler
-    handler.extensions_map.update({
+    base_handler = http.server.SimpleHTTPRequestHandler
+    base_handler.extensions_map.update({
         '.js': 'application/javascript',
         '.json': 'application/json',
         '.css': 'text/css',
         '.svg': 'image/svg+xml',
     })
+
+    # Dev server: disable HTTP caching so module edits show up on simple
+    # reload. Without this, the browser caches ES modules indefinitely and
+    # users have to "Empty Cache and Hard Reload" between iterations.
+    class NoCacheHandler(base_handler):
+        def end_headers(self):
+            self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            self.send_header('Pragma', 'no-cache')
+            self.send_header('Expires', '0')
+            super().end_headers()
+
+    handler = NoCacheHandler
 
     with http.server.HTTPServer(('', PORT), handler) as httpd:
         url = f'http://localhost:{PORT}/ac-dc-app/index.html'

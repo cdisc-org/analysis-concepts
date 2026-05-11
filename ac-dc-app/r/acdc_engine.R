@@ -20,6 +20,31 @@
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
 # ---------------------------------------------------------------------------
+# Resolve a concept's display name in a given store mapping. Used by the
+# derived-data preview to rename engine-internal chain columns (e.g.
+# __col_T_CFB_ANCOVA_Change_0) into the concept's natural ADaM/SDTM variable
+# (CHG) so the preview reads as a real analysis dataset.
+# ---------------------------------------------------------------------------
+
+.adam_var_for_concept <- function(concept_name, mappings) {
+  if (is.null(concept_name) || !nzchar(concept_name)) return(NULL)
+  base <- sub("@.*", "", concept_name)
+  entry <- mappings$concepts[[base]] %||% mappings$dimensions[[base]]
+  if (is.null(entry)) return(NULL)
+  if (!is.null(entry$byDataType)) {
+    for (dtype in c("decimal", "code", "string", "integer", "id")) {
+      v <- entry$byDataType[[dtype]]
+      if (!is.null(v) && nzchar(v)) return(v)
+    }
+  }
+  if (!is.null(entry$variable) && nzchar(entry$variable)) {
+    return(strsplit(entry$variable, "/")[[1]][1])
+  }
+  if (!is.null(entry$facets$Result.Value)) return(entry$facets$Result.Value)
+  NULL
+}
+
+# ---------------------------------------------------------------------------
 # Facet case normalization: "result.value" → "Result.Value"
 # Ensures concept keys from bindings match the canonical form from ingest.
 # ---------------------------------------------------------------------------
@@ -494,7 +519,7 @@ present_as_store <- function(dataset, store_mappings, domain_code = NULL) {
 acdc_derive_only <- function(spec, mappings, dataset,
                               derivations = NULL, unit_conversions = NULL, r_impls = NULL,
                               all_mappings = NULL, available_datasets = NULL,
-                              concept_categories = NULL) {
+                              concept_categories = NULL, presentation_store = NULL) {
   # Strip haven labels
   dataset <- as.data.frame(lapply(dataset, function(col) {
     if (inherits(col, "haven_labelled")) as.vector(col) else col
@@ -753,9 +778,28 @@ acdc_derive_only <- function(spec, mappings, dataset,
     enriched_dims <- setdiff(colnames(dataset), pre_enrich_cols)
   }
 
-  # Build a data preview (first 10 rows, all columns as character for JSON safety)
+  # Build a data preview (first 10 rows, all columns as character for JSON safety).
+  # Apply present_as_store with the user-selected store mappings so the preview
+  # surfaces familiar names (USUBJID, PARAMCD, AVAL, AVISIT for ADaM; VSTESTCD,
+  # VSORRES, VISIT for SDTM; …). Default ADaM (analysis-time target) when no
+  # explicit choice. Unmapped engine-internal columns (e.g. __col_T_Mean_…)
+  # pass through untouched because present_as_store renames only when a mapping
+  # exists.
   preview_rows <- min(10L, nrow(dataset))
-  preview <- as.data.frame(lapply(utils::head(dataset, preview_rows), function(col) {
+  preview_head <- utils::head(dataset, preview_rows)
+  chosen_store <- presentation_store %||% "adam"
+  chosen_mappings <- if (!is.null(all_mappings)) all_mappings[[chosen_store]] else NULL
+  if (is.null(chosen_mappings)) {
+    chosen_mappings <- if (!is.null(all_mappings)) all_mappings$adam else NULL
+    if (!is.null(chosen_mappings)) chosen_store <- "adam"
+  }
+  present_mappings <- chosen_mappings %||% source_mappings
+  preview_store <- if (!is.null(chosen_mappings)) chosen_store else (detected$store %||% chosen_store)
+  presented_preview <- tryCatch(
+    present_as_store(preview_head, present_mappings, domain_code = NULL),
+    error = function(e) { cat("  [derive-only preview] present_as_store failed:", e$message, "\n"); preview_head }
+  )
+  preview <- as.data.frame(lapply(presented_preview, function(col) {
     if (is.numeric(col)) round(col, 4) else as.character(col)
   }), stringsAsFactors = FALSE)
 
@@ -769,7 +813,8 @@ acdc_derive_only <- function(spec, mappings, dataset,
     nrow = nrow(dataset),
     derivation_log = deriv_log,
     enriched_dimensions = enriched_dims,
-    data_preview = preview
+    data_preview = preview,
+    data_preview_store = preview_store
   )
 }
 
@@ -937,7 +982,7 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
                          method_def = NULL, r_impl = NULL,
                          derivations = NULL, unit_conversions = NULL, r_impls = NULL,
                          all_mappings = NULL, available_datasets = NULL,
-                         concept_categories = NULL) {
+                         concept_categories = NULL, presentation_store = NULL) {
   analysis <- spec$analyses[[1]]
   if (is.null(analysis)) stop("No analysis found in specification")
   if (is.null(r_impl)) stop("No R implementation provided for this method")
@@ -1165,6 +1210,148 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
     }
   }
 
+  # Derived-data preview (store-mapped). Snapshot analysis_data BEFORE
+  # coerce_types so factors don't serialize as level codes. Apply
+  # present_as_store with the user-selected store mappings — default ADaM
+  # (analysis-time target).
+  #
+  # Binding-driven preview: only columns the analysis ACTUALLY consumes show
+  # up. Walking analysis$resolvedBindings tells us exactly which concept-keyed
+  # columns matter (response, covariate, fixed_effects, partition, constraints,
+  # …). Anything else — SDTM leftovers (QSTEST/QSDTC/...) that ingest renamed
+  # into spurious concept keys, plus the engine-internal __col_* chain
+  # intermediates the analysis doesn't read — is dropped.
+  #
+  # Two refinements vs. naive "keep mapped columns":
+  #   (a) Slice-aware target naming. A Measure-as-covariate with slice
+  #       "parameter_baseline" should render BASE, not AVAL — the baseline
+  #       facet of Measure in ADaM is BASE. We bias the rename for sliced
+  #       baselines accordingly so it doesn't collide with the post-baseline
+  #       AVAL produced by the chain.
+  #   (b) Chain output override. The response role usually points to a
+  #       __col_T_*_Change_* chain column rather than the bare "Change"
+  #       concept-key. We rename that to the concept's friendly ADaM name
+  #       (CHG) directly.
+  derived_data_preview <- NULL
+  derived_data_store <- NULL
+  derived_data_total <- NULL
+  if (nrow(analysis_data) > 0) {
+    chosen_store <- presentation_store %||% "adam"
+    chosen_mappings <- if (!is.null(all_mappings)) all_mappings[[chosen_store]] else NULL
+    if (is.null(chosen_mappings)) {
+      chosen_mappings <- if (!is.null(all_mappings)) all_mappings$adam else NULL
+      if (!is.null(chosen_mappings)) chosen_store <- "adam"
+    }
+    present_mappings <- chosen_mappings %||% source_mappings
+    present_store <- if (!is.null(chosen_mappings)) chosen_store else source_store
+    preview_n <- min(20L, nrow(analysis_data))
+
+    # 1. Walk bindings → build a (source_col → target_name) map.
+    #    source_col is what the column is called in analysis_data (concept-key
+    #    or __col_* chain output). target_name is the friendly store name.
+    col_renames <- list()  # named list source_col → target_name (order preserved)
+    seen_targets <- character(0)
+    add_rename <- function(src, tgt) {
+      if (is.null(src) || is.null(tgt) || !nzchar(src) || !nzchar(tgt)) return()
+      if (!(src %in% colnames(analysis_data))) return()
+      # Disambiguate collisions on the target name: keep first writer (which
+      # typically is the dominant binding for that variable) and skip the rest.
+      if (tgt %in% seen_targets) return()
+      col_renames[[src]] <<- tgt
+      seen_targets <<- c(seen_targets, tgt)
+    }
+
+    # Pre-compute role → __col_ override map.
+    role_col_override <- list()
+    for (role in names(analysis$analysisInputColumns %||% list())) {
+      col <- analysis$analysisInputColumns[[role]]
+      if (!is.null(col) && length(col) == 1 && nzchar(col)) {
+        role_col_override[[role]] <- col
+      }
+    }
+
+    for (b in (analysis$resolvedBindings %||% list())) {
+      if (identical(b$direction, "output")) next
+      concept <- b$concept
+      if (is.null(concept) || !nzchar(concept)) next
+      base <- sub("@.*", "", concept)
+
+      # Determine source column:
+      #   1. Chain override for this role (e.g. response → __col_T_CFB_Change_0)
+      #   2. Facet-qualified concept (e.g. Measure + qualifierValue=result.value → Measure.Result.Value)
+      #   3. Concepts with facets default to .Result.Value/.Result.Unit by role
+      #   4. Bare concept key (e.g. Subject, Treatment)
+      role <- b$methodRole
+      src <- NULL
+      if (!is.null(role) && !is.null(role_col_override[[role]])) {
+        src <- role_col_override[[role]]
+      }
+      if (is.null(src)) {
+        if (identical(b$qualifierType, "facet") && !is.null(b$qualifierValue) && nzchar(b$qualifierValue)) {
+          src <- paste0(base, ".", normalize_facet_case(b$qualifierValue))
+        } else if (!is.null(source_mappings$concepts[[base]]$facets)) {
+          if (identical(b$dataStructureRole, "measure")) {
+            src <- paste0(base, ".Result.Value")
+          } else if (identical(b$dataStructureRole, "attribute")) {
+            src <- paste0(base, ".Result.Unit")
+          } else {
+            src <- base
+          }
+        } else {
+          src <- base
+        }
+      }
+
+      # Determine target name (store-specific variable for the concept).
+      # Slice-aware: a baseline-sliced Measure goes to BASE if the ADaM mapping
+      # exposes a 'baseline' byDataType key; otherwise falls back to .Result.Value.
+      tgt <- NULL
+      slice_is_baseline <- !is.null(b$slice) && grepl("baseline", b$slice, ignore.case = TRUE)
+      if (slice_is_baseline && !is.null(present_mappings$concepts[[base]]$byDataType$baseline)) {
+        tgt <- present_mappings$concepts[[base]]$byDataType$baseline
+      } else {
+        tgt <- .adam_var_for_concept(base, present_mappings)
+      }
+      # For concepts with facets, the displayable variable usually lives on the
+      # facet mapping (e.g. Measure.facets.Result.Value = "AVAL"). Prefer that
+      # when source is a facet form.
+      if (!is.null(present_mappings$concepts[[base]]$facets)) {
+        facet_key <- sub("^[^.]+\\.", "", src)  # drop "Measure." → "Result.Value"
+        facet_target <- present_mappings$concepts[[base]]$facets[[facet_key]]
+        if (!is.null(facet_target) && nzchar(facet_target) && !slice_is_baseline) {
+          tgt <- facet_target
+        }
+      }
+      # If src is a chain override, ignore the facet-derived target above and
+      # take the concept's friendly name — BUT still honour slice_is_baseline,
+      # so a CFB chain's baseline output binds to BASE rather than AVAL. The
+      # earlier version dropped the baseline preference in this branch and
+      # printed the baseline column as AVAL.
+      if (startsWith(src, "__col_")) {
+        if (slice_is_baseline && !is.null(present_mappings$concepts[[base]]$byDataType$baseline)) {
+          tgt <- present_mappings$concepts[[base]]$byDataType$baseline
+        } else {
+          tgt <- .adam_var_for_concept(base, present_mappings)
+        }
+      }
+
+      add_rename(src, tgt %||% base)
+    }
+
+    # 2. Apply renames in a single pass and order columns by binding order.
+    ordered_sources <- names(col_renames)
+    ordered_sources <- ordered_sources[ordered_sources %in% colnames(analysis_data)]
+    if (length(ordered_sources) > 0) {
+      head_df <- utils::head(analysis_data[, ordered_sources, drop = FALSE], preview_n)
+      colnames(head_df) <- vapply(ordered_sources, function(s) col_renames[[s]], character(1))
+      derived_data_preview <- as.data.frame(lapply(head_df, function(col) {
+        if (is.numeric(col)) round(col, 4) else as.character(col)
+      }), stringsAsFactors = FALSE)
+      derived_data_store <- present_store
+      derived_data_total <- nrow(analysis_data)
+    }
+  }
+
   # 6. Coerce column types based on dataStructureRole (measure → numeric, dimension → factor)
   analysis_data <- tryCatch(
     coerce_types(analysis_data, analysis$resolvedBindings, concept_vars$by_concept),
@@ -1196,6 +1383,17 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
     narrowed_impl, concept_vars, configs,
     analysis$resolvedSlices, analysis$resolvedBindings
   )
+
+  # Attach the store-mapped derived-data preview so the UI can render a
+  # "Derived Data Preview" panel without re-running the chain in
+  # diagnostic mode. Carries store-renamed columns (TRT01P / AVAL / AVISIT)
+  # plus the row count of the full analysis cube so the panel can show
+  # "<preview> of <total>".
+  if (!is.null(derived_data_preview)) {
+    result$derived_data_preview <- derived_data_preview
+    result$derived_data_store <- derived_data_store
+    result$derived_data_total <- derived_data_total
+  }
 
   return(result)
 }

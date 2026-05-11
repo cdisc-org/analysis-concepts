@@ -1,6 +1,6 @@
 import { appState, navigateTo, rebuildSpec } from '../app.js';
 import { getAllEndpoints } from '../utils/usdm-parser.js';
-import { getPhraseResolvedRefs } from '../utils/concept-display.js';
+import { getPhraseResolvedRefs, displayConcept } from '../utils/concept-display.js';
 import {
   ensureSpec, getConceptCategoryOptions,
   buildSyntaxTemplate, updateSyntaxPreview,
@@ -245,7 +245,7 @@ function renderSmartPhrasePanel(spec) {
                    </option>`).join('')}
                </select>
              </div>`
-          : `<div style="font-size:10px; color:var(--cdisc-text-secondary);">${concreteRef}</div>`;
+          : `<div style="font-size:10px; color:var(--cdisc-text-secondary);">${concreteRef ? displayConcept(concreteRef) : ''}</div>`;
         return `
           <label class="ep-library-card" style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; ${isChecked ? 'border-color:var(--cdisc-accent2); background:rgba(161,208,202,0.08);' : ''}">
             <input type="checkbox" class="ep-dim-phrase-cb" data-oid="${sp.oid}" data-dim-ref="${dataDim}" data-category="${catName}" ${isChecked ? 'checked' : ''} style="margin-top:3px;">

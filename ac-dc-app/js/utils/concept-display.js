@@ -371,8 +371,11 @@ export function displayConcept(conceptName, options) {
 
   if (!variable) return conceptName + dimSuffix;
 
+  // Combined mode: variable is primary, concept is annotation in parens —
+  // matches user-mental-model of "I know AVAL, but here's the concept it
+  // realises". Old layout was "Measure [AVAL]"; new is "AVAL (Measure)".
   if (combined) {
-    return `${conceptName}${dimSuffix} [${variable}${inlineSuffix}]`;
+    return `${variable}${inlineSuffix} (${conceptName}${dimSuffix})`;
   }
   return variable + inlineSuffix + dimSuffix;
 }

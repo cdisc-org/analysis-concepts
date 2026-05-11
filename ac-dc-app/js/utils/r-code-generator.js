@@ -17,7 +17,8 @@
 export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, overrides,
                                           methodDef, rImplementation,
                                           derivations, unitConversions, rImplCatalog,
-                                          availableDatasets, conceptCategories) {
+                                          availableDatasets, conceptCategories,
+                                          presentationStore) {
   const adam = conceptMappings?.adam || {};
 
   // Strip $ui fields for clean spec
@@ -76,12 +77,15 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
     `# Available datasets for dimension enrichment (all uploaded XPTs)`,
     `available_datasets <- c(${(availableDatasets || []).map(d => `"${d}"`).join(', ')})`,
     ``,
+    `# Presentation store for the Derived Data Preview panel (UI toggle).`,
+    `presentation_store <- ${presentationStore ? `"${presentationStore}"` : 'NULL'}`,
+    ``,
     `# Execute using the generic AC/DC engine (capture console output for diagnostics)`,
     `console_log <- capture.output({`,
     `  result <- tryCatch(`,
     `    acdc_execute(spec, mappings, dataset, overrides, method_def, r_impl,`,
     `                 derivations, unit_conversions, r_impls, all_mappings, available_datasets,`,
-    `                 concept_categories),`,
+    `                 concept_categories, presentation_store = presentation_store),`,
     `    error = function(e) list(engine_error = e$message)`,
     `  )`,
     `})`,

@@ -58,7 +58,14 @@ export const appState = window.appState = {
   // Concept-to-variable mapping
   conceptMappings: null,
   configPanelOpen: false,
-  modelViewMode: 'concepts',  // concepts | adam | omop | fhir | concepts_adam | concepts_omop | concepts_fhir
+  // Default: 'concepts_adam' renders concept keys annotated with their ADaM
+  // variable mapping ("Measure [AVAL]") so spec authors see both layers
+  // without toggling. In Execute, the Resolved Bindings table routes any
+  // non-'concepts' mode through its Implementation Variable column — so the
+  // store variables (TRT01P, AVAL, AVISIT) surface there by default. Users
+  // can switch to a pure-concept or pure-variable view via the header
+  // dropdown.
+  modelViewMode: 'concepts_adam',  // concepts | adam | omop | fhir | concepts_adam | concepts_omop | concepts_fhir
   // CDISC Library cache index (kept for any future enrichment workflows; the
   // in-step Schedule of Activities tab does not depend on this).
   cdiscLibraryIndex: null,

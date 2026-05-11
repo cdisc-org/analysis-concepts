@@ -231,7 +231,7 @@ function renderConfiguration() {
     `;
   }
 
-  const MODEL_LABELS = { sdtm: 'SDTM', adam: 'ADaM', omop: 'OMOP', fhir: 'FHIR' };
+  const MODEL_LABELS = { sdtm: 'SDTM', adam: 'ADaM' };
   const modelKeys = Object.keys(MODEL_LABELS).filter(k => mappings[k]);
 
   return `
@@ -274,7 +274,7 @@ function renderConfiguration() {
 function wireConfigurationTab(container) {
   // Sub-tab switching — dynamic model keys from available mappings
   const mappings = appState.conceptMappings || {};
-  const modelKeys = ['sdtm', 'adam', 'omop', 'fhir'].filter(k => mappings[k]);
+  const modelKeys = ['sdtm', 'adam'].filter(k => mappings[k]);
   container.querySelectorAll('#config-sub-tabs button').forEach(btn => {
     btn.addEventListener('click', () => {
       container.querySelectorAll('#config-sub-tabs button').forEach(b => b.classList.remove('active'));

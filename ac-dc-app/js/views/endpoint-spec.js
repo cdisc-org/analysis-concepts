@@ -4,7 +4,7 @@ import {
   getVisitLabels, getPopulationNames, getArmNames,
   getEndpointParameterOptions
 } from '../utils/usdm-parser.js';
-import { buildSliceLookup, getPhraseResolvedRefs } from '../utils/concept-display.js';
+import { buildSliceLookup, getPhraseResolvedRefs, displayConcept } from '../utils/concept-display.js';
 import { groupBCsByActivity } from '../utils/bc-domain-grouper.js';
 import {
   isObservationCategory, derivationProxyFor, isNumericOutputConcept
@@ -366,10 +366,20 @@ function buildTransformationSyntaxTemplate(ep, spec, study, analysisTransform, d
   };
   const dimSuffix = { Population: 'population' };
 
+  // Only render syntax phrases for dimensions the user has actually added to
+  // the endpoint cube. The analysis transformation declares all its possible
+  // slice keys (Population, Treatment, AnalysisVisit, …), but Population in
+  // particular gets auto-set in dimValues from USDM's analysisPopulations
+  // even when the user hasn't included it as a cube dimension — that leaked
+  // 'in the {Population} population' into the syntax. Treating the cube as
+  // the source of truth means a removed dimension also disappears from the
+  // sentence; consistent with "what the user sees in the cube".
+  const cubeDimNames = new Set((spec.cubeDimensions || []).map(d => d.dimension));
   const sliceKeys = analysisTransform?.sliceKeys || [];
   for (const sk of sliceKeys) {
     const dim = sk.dimension;
     if (SKIP_IN_DIM_GRID.has(dim)) continue;
+    if (!cubeDimNames.has(dim)) continue;
 
     const value = dimValues[dim] || null;
     const prep = dimPrep[dim] || '';
@@ -1463,7 +1473,7 @@ export function renderDataCube(ep, spec, study) {
     return `
       <tr style="border-bottom:1px solid var(--cdisc-border);">
         <td style="padding:6px 10px; width:140px; vertical-align:middle;">
-          <span class="badge badge-teal" style="font-size:11px; padding:2px 8px;">${d.dimension}</span>
+          <span class="badge badge-teal" style="font-size:11px; padding:2px 8px;">${displayConcept(d.dimension)}</span>
         </td>
         <td style="padding:6px 10px;">${sliceInput}</td>
         <td style="padding:6px 4px; width:32px; text-align:center; vertical-align:middle;">
@@ -1673,10 +1683,9 @@ export function renderDataCube(ep, spec, study) {
         <span style="font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-text-secondary);">Endpoint Data Cube</span>
       </div>
       <div style="padding:14px;">
-        <!-- Measure -->
+        <!-- Measure (the analysis value): role implied by the highlighted block + position above "Dimensions". -->
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding:8px 12px; background:var(--cdisc-primary-light); border-radius:var(--radius);">
-          <span class="badge badge-blue">measure</span>
-          <code style="font-size:13px; font-weight:600;">${isObservation ? (spec.selectedOcFacet || 'Result.Value') : concept}</code>
+          <code style="font-size:13px; font-weight:600;">${isObservation ? (spec.selectedOcFacet || 'Result.Value') : displayConcept(concept, { dataType: dataType?.toLowerCase() })}</code>
           <span style="font-size:11px; color:var(--cdisc-text-secondary);">(${dataType})</span>
         </div>
 
@@ -1691,7 +1700,7 @@ export function renderDataCube(ep, spec, study) {
               <span class="ep-cube-dim-tag" data-ep-id="${ep.id}" data-idx="${i}"
                 style="display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border:1px solid ${d.isSliceKey ? 'var(--cdisc-primary)' : 'var(--cdisc-border)'}; border-radius:var(--radius); font-size:12px; cursor:pointer; ${d.isSliceKey ? 'background:var(--cdisc-primary-light);' : ''}"
                 title="Click to toggle slice key">
-                ${d.dimension}
+                ${displayConcept(d.dimension)}
                 ${d.isSliceKey ? '<span style="font-size:9px; color:var(--cdisc-primary);">&#128273;</span>' : ''}
                 <button class="ep-cube-remove-dim" data-ep-id="${ep.id}" data-idx="${i}" style="border:none; background:none; color:var(--cdisc-error); cursor:pointer; font-size:12px; padding:0 2px;">&times;</button>
               </span>
@@ -1705,7 +1714,7 @@ export function renderDataCube(ep, spec, study) {
           ${availableDims.length > 0 ? `
           <select class="config-select ep-cube-add-dim" data-ep-id="${ep.id}" style="font-size:12px; padding:4px 8px; border:1px dashed var(--cdisc-border);">
             <option value="">+ Add dimension...</option>
-            ${availableDims.map(d => `<option value="${d}">${d}</option>`).join('')}
+            ${availableDims.map(d => `<option value="${d}">${displayConcept(d)}</option>`).join('')}
           </select>
           ` : ''}
         </div>

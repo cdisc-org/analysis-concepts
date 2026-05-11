@@ -19,14 +19,12 @@ export function renderHeader() {
     <div class="header-center">
       <h1>Analysis Concepts / Derivation Concepts</h1>
     </div>
-    <select class="model-view-toggle" id="model-view-toggle">
-      <option value="concepts">Concepts</option>
-      <option value="adam">ADaM Variables</option>
-      <option value="omop">OMOP Fields</option>
-      <option value="fhir">FHIR Elements</option>
-      <option value="concepts_adam">Concepts + ADaM</option>
-      <option value="concepts_omop">Concepts + OMOP</option>
-      <option value="concepts_fhir">Concepts + FHIR</option>
+    <select class="model-view-toggle" id="model-view-toggle" title="How to display each variable in the UI. Default shows the store variable with the concept name in parentheses — e.g. AVAL (Measure) — so the variable is primary and the concept is annotation. Switch to Concepts to hide store names, or to a pure store mode to see variables only. The Execute view's data previews also pivot to the selected store.">
+      <option value="concepts_adam">ADaM (store)</option>
+      <option value="concepts_sdtm">SDTM (store)</option>
+      <option value="concepts">Concepts only</option>
+      <option value="adam">ADaM variables only</option>
+      <option value="sdtm">SDTM variables only</option>
     </select>
     <button class="header-btn" id="btn-save-instance" title="Save study instance">Save</button>
     <button class="header-btn" id="btn-load-instance" title="Load study instance">Load</button>

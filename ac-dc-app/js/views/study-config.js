@@ -1,7 +1,7 @@
 import { appState } from '../app.js';
 
 const PRIMITIVE_TYPES = ['decimal', 'integer', 'code', 'string', 'boolean', 'date', 'dateTime', 'id'];
-const MODEL_LABELS = { sdtm: 'SDTM', adam: 'ADaM', omop: 'OMOP', fhir: 'FHIR' };
+const MODEL_LABELS = { sdtm: 'SDTM', adam: 'ADaM' };
 
 let activeModel = 'adam';
 let defaultMappingsCache = null;
