@@ -3585,7 +3585,9 @@
       "statistics": [
         "S.AIC",
         "S.BIC",
-        "S.minus2LogL"
+        "S.minus2LogL",
+        "s.R_squared",
+        "s.concordance"
       ]
     },
     {
@@ -3599,7 +3601,9 @@
         "S.df_num",
         "S.df_den",
         "S.SS",
-        "S.MS"
+        "S.MS",
+        "s.df",
+        "s.chi_squared"
       ]
     },
     {
@@ -3614,7 +3618,10 @@
         "S.p_value",
         "S.CI_lower",
         "S.CI_upper",
-        "S.df"
+        "S.df",
+        "s.z_statistic",
+        "s.hazard_ratio",
+        "s.odds_ratio"
       ]
     },
     {
@@ -3627,7 +3634,8 @@
         "S.SE",
         "S.CI_lower",
         "S.CI_upper",
-        "S.df"
+        "S.df",
+        "s.mean"
       ]
     },
     {
@@ -3663,7 +3671,8 @@
       "statistics": [
         "S.chi_squared",
         "S.p_value",
-        "S.df"
+        "S.df",
+        "s.t_statistic"
       ]
     },
     {
@@ -3674,7 +3683,8 @@
       "statistics": [
         "S.estimate",
         "S.CI_lower",
-        "S.CI_upper"
+        "S.CI_upper",
+        "s.odds_ratio"
       ]
     },
     {
@@ -3694,7 +3704,36 @@
       "name": "computed_value",
       "description": "Single derived/computed output value (for derivation methods)",
       "statistics": [
-        "S.value"
+        "S.value",
+        "s.cv",
+        "s.n",
+        "s.cumulative_n",
+        "s.cumulative_pct",
+        "s.frequency",
+        "s.geometric_cv",
+        "s.geometric_mean",
+        "s.harmonic_mean",
+        "s.iqr",
+        "s.kurtosis",
+        "s.max",
+        "s.mean",
+        "s.median",
+        "s.min",
+        "s.mode",
+        "s.percentile",
+        "s.proportion",
+        "s.pct",
+        "s.CI_lower",
+        "s.CI_upper",
+        "s.Q1",
+        "s.Q3",
+        "s.range",
+        "s.skewness",
+        "s.sd",
+        "s.sum",
+        "s.trimmed_mean",
+        "s.variance",
+        "s.winsorized_mean"
       ]
     },
     {
@@ -3801,7 +3840,8 @@
         "S.mean",
         "S.SE",
         "S.CI_lower",
-        "S.CI_upper"
+        "S.CI_upper",
+        "s.estimate"
       ]
     }
   ],
