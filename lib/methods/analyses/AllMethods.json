@@ -2672,12 +2672,914 @@
           "description": "Optional grouping variable(s)"
         }
       ]
+    },
+    {
+      "conceptId": "M.Aggregation",
+      "ncitCode": "C00040_NEW",
+      "name": "Aggregation",
+      "type": "derivation",
+      "category": "Summary",
+      "intent": [
+        "DataAggregation"
+      ],
+      "description": "Aggregates values within a partition using specified function",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := AGG(value) OVER (partition)",
+        "genericExpression": "result := <agg_func>(<value>) OVER (<partition>+)"
+      },
+      "configurations": [
+        {
+          "name": "agg_func",
+          "dataType": "enum",
+          "defaultValue": "mean",
+          "enumValues": [
+            "sum",
+            "mean",
+            "median",
+            "min",
+            "max",
+            "count",
+            "first",
+            "last"
+          ],
+          "description": "Aggregation function to apply"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "The aggregated value per partition group",
+          "outputClass": "OC.computed_value",
+          "indexedBy": [
+            "partition"
+          ]
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "value",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Values to aggregate"
+        },
+        {
+          "name": "partition",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "multiple",
+          "description": "Grouping variables defining the partition"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Categorization",
+      "ncitCode": "C00041_NEW",
+      "name": "Categorization",
+      "type": "derivation",
+      "category": "Classification",
+      "intent": [
+        "ValueClassification"
+      ],
+      "description": "Maps continuous or discrete values to categories",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := CASE WHEN conditions THEN categories END",
+        "genericExpression": "result := CASE WHEN <conditions> THEN <categories> ELSE <default_category> END"
+      },
+      "configurations": [
+        {
+          "name": "conditions",
+          "dataType": "string",
+          "description": "Condition expressions (e.g., 'value < 30, value < 70, value >= 70')"
+        },
+        {
+          "name": "categories",
+          "dataType": "code",
+          "description": "Category labels (e.g., 'Low, Medium, High')"
+        },
+        {
+          "name": "default_category",
+          "dataType": "code",
+          "description": "Category when no condition matches"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "The category label",
+          "outputClass": "OC.computed_value",
+          "indexedBy": null
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "value",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Value to categorize"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.DateDifference",
+      "ncitCode": "C00042_NEW",
+      "name": "Date Difference",
+      "type": "derivation",
+      "category": "Arithmetic",
+      "intent": [
+        "ChangeComputation"
+      ],
+      "description": "Computes the difference between two dates in specified units",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := date_diff(end_date, start_date, unit)",
+        "genericExpression": "result := date_diff(<end_date>, <start_date>, <unit>)"
+      },
+      "configurations": [
+        {
+          "name": "unit",
+          "dataType": "enum",
+          "defaultValue": "days",
+          "enumValues": [
+            "days",
+            "weeks",
+            "months",
+            "years"
+          ],
+          "description": "Unit for the result"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "The difference in the specified unit",
+          "outputClass": "OC.computed_value",
+          "indexedBy": null
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "start_date",
+          "dataType": "date",
+          "required": true,
+          "cardinality": "single",
+          "description": "The starting date"
+        },
+        {
+          "name": "end_date",
+          "dataType": "date",
+          "required": true,
+          "cardinality": "single",
+          "description": "The ending date"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Division",
+      "ncitCode": "C00043_NEW",
+      "name": "Division",
+      "type": "derivation",
+      "category": "Arithmetic",
+      "intent": [
+        "RatioComputation"
+      ],
+      "description": "Computes the quotient of two numeric values",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := numerator / denominator",
+        "genericExpression": "result := <numerator> / <denominator>"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "Result: numerator / denominator",
+          "outputClass": "OC.computed_value",
+          "indexedBy": null
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "numerator",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The value to divide"
+        },
+        {
+          "name": "denominator",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The value to divide by"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Imputation",
+      "ncitCode": "C00044_NEW",
+      "name": "Apply Imputation",
+      "type": "derivation",
+      "category": "Data Handling",
+      "intent": [
+        "MissingDataHandling"
+      ],
+      "description": "Replaces missing values with a pre-computed imputed value. This is the application step only — the imputed_value must be computed upstream by one of the M.ImputedValue_* methods. Designed for use in transformation pipelines.",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := COALESCE(value, imputed_value)",
+        "genericExpression": "result := COALESCE(<value>, <imputed_value>)"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "The resulting value (original if non-missing, otherwise imputed)",
+          "outputClass": "OC.computed_value",
+          "indexedBy": null
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "value",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Original value (may be missing)"
+        },
+        {
+          "name": "imputed_value",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Pre-computed replacement value (from an M.ImputedValue_* method)"
+        }
+      ],
+      "_design_note": "This method has no imputation_method configuration. The strategy is determined by which M.ImputedValue_* method is upstream in the transformation pipeline. This makes each step independently testable and auditable."
+    },
+    {
+      "conceptId": "M.ImputedValue_BOCF",
+      "ncitCode": "C00045_NEW",
+      "name": "Baseline Observation Carried Forward",
+      "type": "derivation",
+      "category": "Data Handling",
+      "intent": [
+        "MissingDataHandling"
+      ],
+      "description": "Uses the baseline value as the imputed value for all missing post-baseline observations within a partition. Conservative strategy assuming return to baseline.",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "imputed_value := baseline_value",
+        "genericExpression": "imputed_value := <baseline_value> OVER (<partition>+)",
+        "notes": "The baseline value is propagated to all rows within the partition. This is a lookup, not a carry-forward — the imputed value is the same regardless of when the observation is missing."
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "The baseline value to use as imputation",
+          "outputClass": "OC.computed_value",
+          "indexedBy": [
+            "partition"
+          ]
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "baseline_value",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The baseline value for the subject/parameter (typically BASE or value at ABLFL='Y')"
+        },
+        {
+          "name": "partition",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "multiple",
+          "description": "Grouping variables defining scope (typically subject, parameter)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.ImputedValue_LOCF",
+      "ncitCode": "C00046_NEW",
+      "name": "Last Observation Carried Forward",
+      "type": "derivation",
+      "category": "Data Handling",
+      "intent": [
+        "MissingDataHandling"
+      ],
+      "description": "Computes the last non-missing observed value within a partition, ordered by a time variable. The result carries forward the most recent non-missing value and is intended as input to M.Imputation.",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "imputed_value := LOCF(value) OVER (partition ORDER BY time_order)",
+        "genericExpression": "imputed_value := LOCF(<value>) OVER (<partition>+ ORDER BY <time_order>)",
+        "notes": "LOCF scans backwards in time_order within each partition and returns the most recent non-missing value. If no prior non-missing value exists, the result is missing."
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "The last non-missing value carried forward",
+          "outputClass": "OC.computed_value",
+          "indexedBy": [
+            "partition",
+            "time_order"
+          ]
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "value",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Source value to carry forward (may contain missing values)"
+        },
+        {
+          "name": "partition",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "multiple",
+          "description": "Grouping variables defining the carry-forward scope (typically subject, parameter)"
+        },
+        {
+          "name": "time_order",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Variable defining the temporal ordering within partition (e.g., AVISITN, ADY)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.ImputedValue_Mean",
+      "ncitCode": "C00047_NEW",
+      "name": "Mean Imputation",
+      "type": "derivation",
+      "category": "Data Handling",
+      "intent": [
+        "MissingDataHandling"
+      ],
+      "description": "Computes the arithmetic mean of all non-missing observed values within a group as the imputed value. Common for baseline covariates or when a group-level central tendency is an appropriate replacement.",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "imputed_value := MEAN(value) OVER (group_partition)",
+        "genericExpression": "imputed_value := MEAN(<value>) OVER (<group_partition>+)",
+        "notes": "The partition defines the scope of the mean computation. For subject-level mean imputation, partition by subject. For group-level, partition by treatment group. The mean excludes the missing values being imputed."
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "The group mean of non-missing observed values",
+          "outputClass": "OC.computed_value",
+          "indexedBy": [
+            "group_partition"
+          ]
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "value",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Source values from which the mean is computed"
+        },
+        {
+          "name": "group_partition",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "multiple",
+          "description": "Grouping variables defining the mean computation scope (e.g., treatment group, site, or subject)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.ImputedValue_Median",
+      "ncitCode": "C00048_NEW",
+      "name": "Median Imputation",
+      "type": "derivation",
+      "category": "Data Handling",
+      "intent": [
+        "MissingDataHandling"
+      ],
+      "description": "Computes the median of all non-missing observed values within a group as the imputed value. More robust to outliers than mean imputation.",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "imputed_value := MEDIAN(value) OVER (group_partition)",
+        "genericExpression": "imputed_value := MEDIAN(<value>) OVER (<group_partition>+)",
+        "notes": "Same partitioning logic as mean imputation. Preferred when the distribution is skewed or when outliers may distort the mean."
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "The group median of non-missing observed values",
+          "outputClass": "OC.computed_value",
+          "indexedBy": [
+            "group_partition"
+          ]
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "value",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Source values from which the median is computed"
+        },
+        {
+          "name": "group_partition",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "multiple",
+          "description": "Grouping variables defining the median computation scope"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.ImputedValue_WOCF",
+      "ncitCode": "C00049_NEW",
+      "name": "Worst Observation Carried Forward",
+      "type": "derivation",
+      "category": "Data Handling",
+      "intent": [
+        "MissingDataHandling"
+      ],
+      "description": "Uses the worst (most extreme) observed value within a partition as the imputed value. Worst is defined by the direction configuration: 'high' takes the maximum, 'low' takes the minimum.",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "imputed_value := WORST(value) OVER (partition)",
+        "genericExpression": "imputed_value := WORST(<value>, <direction>) OVER (<partition>+)",
+        "notes": "WORST is an alias for MAX when direction='high' (e.g., adverse events, lab toxicity) or MIN when direction='low' (e.g., efficacy scores where lower is worse). Only non-missing observed values up to the current time are considered."
+      },
+      "configurations": [
+        {
+          "name": "direction",
+          "dataType": "enum",
+          "defaultValue": "high",
+          "enumValues": [
+            "high",
+            "low"
+          ],
+          "description": "Which direction is 'worst': 'high' = MAX is worst (e.g., toxicity), 'low' = MIN is worst (e.g., efficacy where higher is better)"
+        },
+        {
+          "name": "scope",
+          "dataType": "enum",
+          "defaultValue": "cumulative",
+          "enumValues": [
+            "cumulative",
+            "all_observed"
+          ],
+          "description": "Whether to consider only values observed up to the current time point (cumulative) or all observed values in the partition (all_observed)"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "The worst observed value within the partition",
+          "outputClass": "OC.computed_value",
+          "indexedBy": [
+            "partition"
+          ]
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "value",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Source values from which the worst is selected"
+        },
+        {
+          "name": "partition",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "multiple",
+          "description": "Grouping variables (typically subject, parameter)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.ImputedValue_Zero",
+      "ncitCode": "C00050_NEW",
+      "name": "Zero Imputation",
+      "type": "derivation",
+      "category": "Data Handling",
+      "intent": [
+        "MissingDataHandling"
+      ],
+      "description": "Uses a fixed constant (default 0) as the imputed value for all missing observations. Simplest strategy; appropriate when missingness can be interpreted as absence of the measured quantity (e.g., zero cost, zero count).",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "imputed_value := 0",
+        "genericExpression": "imputed_value := <constant>",
+        "notes": "No data-dependent computation. The constant is always used regardless of observed values."
+      },
+      "configurations": [
+        {
+          "name": "constant",
+          "dataType": "decimal",
+          "defaultValue": 0,
+          "description": "The fixed value to use for imputation. Defaults to 0 but can be set to any value (e.g., 999 for sentinel, or a clinically meaningful default)."
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "The constant imputation value",
+          "outputClass": "OC.computed_value",
+          "indexedBy": null
+        }
+      ],
+      "inputRoles": []
+    },
+    {
+      "conceptId": "M.PercentChange",
+      "ncitCode": "C00051_NEW",
+      "name": "Percent Change",
+      "type": "derivation",
+      "category": "Arithmetic",
+      "intent": [
+        "ChangeComputation"
+      ],
+      "description": "Computes proportional change as a percentage",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := 100 * (post - pre) / pre",
+        "genericExpression": "result := 100 * (<post> - <pre>) / <pre>"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "Result: 100 * (post - pre) / pre",
+          "outputClass": "OC.computed_value",
+          "indexedBy": null
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "pre",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The baseline/reference value"
+        },
+        {
+          "name": "post",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The post-baseline value"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.RecordSelection",
+      "ncitCode": "C00052_NEW",
+      "name": "Record Selection",
+      "type": "derivation",
+      "category": "Data Handling",
+      "intent": [
+        "ValueRetrieval"
+      ],
+      "description": "Identifies one or more records within a partition that satisfy a selection rule and flags them. In a graph context, downstream transformations resolve values by traversing to the flagged record(s) — no value copying is required. Covers baseline selection (ABLFL), analysis record flags (ANL01FL), worst/best post-baseline selection, and any other record-level flagging pattern.",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "flag := IF(selection_rule(value, time_order) OVER (partition), 'Y', '')",
+        "genericExpression": "<flag> := IF(<selection_rule>(<value>, <time_order>) OVER (<partition>+), 'Y', '')",
+        "notes": "The selection rule is applied within each partition. Cardinality configuration controls whether one or multiple records can be flagged per partition. Scope configuration controls which records are eligible for selection."
+      },
+      "configurations": [
+        {
+          "name": "selection_rule",
+          "dataType": "enum",
+          "defaultValue": "last_non_missing",
+          "enumValues": [
+            "last_non_missing",
+            "first_non_missing",
+            "worst",
+            "best",
+            "closest_to_target",
+            "all_matching"
+          ],
+          "description": "Rule for selecting record(s) within the partition"
+        },
+        {
+          "name": "scope",
+          "dataType": "enum",
+          "defaultValue": "pre_treatment",
+          "enumValues": [
+            "pre_treatment",
+            "post_baseline",
+            "on_treatment",
+            "all",
+            "custom"
+          ],
+          "description": "Which records are eligible for selection"
+        },
+        {
+          "name": "cardinality",
+          "dataType": "enum",
+          "defaultValue": "single",
+          "enumValues": [
+            "single",
+            "multiple"
+          ],
+          "description": "Whether the rule selects one record or multiple records per partition"
+        },
+        {
+          "name": "reference_event",
+          "dataType": "code",
+          "defaultValue": "first_dose",
+          "description": "The event that defines scope boundaries (e.g. first dose date, randomisation date)"
+        },
+        {
+          "name": "target_value",
+          "dataType": "decimal",
+          "defaultValue": null,
+          "description": "Target value for closest_to_target rule"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "Indicator marking selected record(s) ('Y' on selected, blank otherwise). In ADaM context: ABLFL for baseline, ANL01FL for analysis records, etc.",
+          "outputClass": "OC.computed_value",
+          "indexedBy": [
+            "partition"
+          ]
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "value",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The observed values to evaluate for selection"
+        },
+        {
+          "name": "partition",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "multiple",
+          "description": "Variables defining the selection scope (e.g. subject, parameter)"
+        },
+        {
+          "name": "time_order",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Variable defining temporal ordering within partition (e.g. visit number, analysis date)"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Rounding",
+      "ncitCode": "C00053_NEW",
+      "name": "Rounding",
+      "type": "derivation",
+      "category": "Arithmetic",
+      "intent": [
+        "PrecisionAdjustment"
+      ],
+      "description": "Rounds numeric value to specified precision",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := ROUND(value, decimals)",
+        "genericExpression": "result := ROUND(<value>, <decimals>)"
+      },
+      "configurations": [
+        {
+          "name": "decimals",
+          "dataType": "decimal",
+          "defaultValue": "",
+          "description": "Number of decimal places"
+        },
+        {
+          "name": "method",
+          "dataType": "enum",
+          "defaultValue": "half_up",
+          "enumValues": [
+            "half_up",
+            "half_even",
+            "half_down",
+            "floor",
+            "ceiling"
+          ],
+          "description": "Rounding method for tie-breaking"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "The rounded value",
+          "outputClass": "OC.computed_value",
+          "indexedBy": null
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "value",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Value to round"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.Subtraction",
+      "ncitCode": "C00054_NEW",
+      "name": "Subtraction",
+      "type": "derivation",
+      "category": "Arithmetic",
+      "intent": [
+        "ChangeComputation"
+      ],
+      "description": "Computes the difference between two numeric values",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := minuend - subtrahend",
+        "genericExpression": "result := <minuend> - <subtrahend>"
+      },
+      "configurations": [],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "Result: minuend - subtrahend",
+          "outputClass": "OC.computed_value",
+          "indexedBy": null
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "minuend",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The value to subtract from"
+        },
+        {
+          "name": "subtrahend",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "The value to subtract"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.ThresholdCompare",
+      "ncitCode": "C00055_NEW",
+      "name": "Threshold Comparison",
+      "type": "derivation",
+      "category": "Classification",
+      "intent": [
+        "ValueClassification"
+      ],
+      "description": "Compares value against threshold and returns result",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := IF(value >= threshold, true_value, false_value)",
+        "genericExpression": "result := IF(<value> <operator> <threshold>, <true_value>, <false_value>)"
+      },
+      "configurations": [
+        {
+          "name": "operator",
+          "dataType": "enum",
+          "defaultValue": ">=",
+          "enumValues": [
+            ">=",
+            ">",
+            "<=",
+            "<",
+            "==",
+            "!="
+          ],
+          "description": "Comparison operator"
+        },
+        {
+          "name": "true_value",
+          "dataType": "code",
+          "defaultValue": "Y",
+          "description": "Value when condition is true"
+        },
+        {
+          "name": "false_value",
+          "dataType": "code",
+          "defaultValue": "N",
+          "description": "Value when condition is false"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "Comparison result flag",
+          "outputClass": "OC.computed_value",
+          "indexedBy": null
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "value",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Value to compare"
+        },
+        {
+          "name": "threshold",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Threshold value"
+        }
+      ]
+    },
+    {
+      "conceptId": "M.WindowLookup",
+      "ncitCode": "C00056_NEW",
+      "name": "Window Lookup",
+      "type": "derivation",
+      "category": "Data Handling",
+      "intent": [
+        "ValueRetrieval"
+      ],
+      "description": "Retrieves value from another row within partition",
+      "formula": {
+        "notation": "assignment",
+        "defaultExpression": "result := LAG(value, 1) OVER (partition ORDER BY order_by)",
+        "genericExpression": "result := <window_func>(<value>, <offset>?) OVER (<partition>+ ORDER BY <order_by>)"
+      },
+      "configurations": [
+        {
+          "name": "window_func",
+          "dataType": "enum",
+          "defaultValue": "lag",
+          "enumValues": [
+            "lag",
+            "lead",
+            "first",
+            "last"
+          ],
+          "description": "Window function type"
+        },
+        {
+          "name": "offset",
+          "dataType": "decimal",
+          "defaultValue": 1,
+          "description": "Row offset for lag/lead"
+        },
+        {
+          "name": "order_by",
+          "dataType": "code",
+          "description": "Variable defining row order within partition"
+        }
+      ],
+      "outputSpecifications": [
+        {
+          "name": "computed_value",
+          "description": "The looked-up value",
+          "outputClass": "OC.computed_value",
+          "indexedBy": [
+            "partition"
+          ]
+        }
+      ],
+      "inputRoles": [
+        {
+          "name": "value",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Value to look up"
+        },
+        {
+          "name": "partition",
+          "dataType": "code",
+          "required": true,
+          "cardinality": "multiple",
+          "description": "Partitioning variables"
+        }
+      ]
     }
   ],
   "outputClassTemplates": [
     {
       "conceptId": "OC.fit_statistics",
-      "ncitCode": "C00040_NEW",
+      "ncitCode": "C00057_NEW",
       "name": "fit_statistics",
       "description": "Overall model goodness-of-fit measures",
       "statistics": [
@@ -2688,7 +3590,7 @@
     },
     {
       "conceptId": "OC.type3_tests",
-      "ncitCode": "C00041_NEW",
+      "ncitCode": "C00058_NEW",
       "name": "type3_tests",
       "description": "Type III (or other SS type) omnibus tests, one per model term",
       "statistics": [
@@ -2702,7 +3604,7 @@
     },
     {
       "conceptId": "OC.parameter_estimates",
-      "ncitCode": "C00042_NEW",
+      "ncitCode": "C00059_NEW",
       "name": "parameter_estimates",
       "description": "Solution for fixed effects, one row per model coefficient",
       "statistics": [
@@ -2717,7 +3619,7 @@
     },
     {
       "conceptId": "OC.ls_means",
-      "ncitCode": "C00043_NEW",
+      "ncitCode": "C00060_NEW",
       "name": "ls_means",
       "description": "Least-squares means (adjusted marginal means) per factor level or level combination",
       "statistics": [
@@ -2730,7 +3632,7 @@
     },
     {
       "conceptId": "OC.contrasts",
-      "ncitCode": "C00044_NEW",
+      "ncitCode": "C00061_NEW",
       "name": "contrasts",
       "description": "Pairwise or custom contrasts between LS means",
       "statistics": [
@@ -2745,7 +3647,7 @@
     },
     {
       "conceptId": "OC.covariance_parameters",
-      "ncitCode": "C00045_NEW",
+      "ncitCode": "C00062_NEW",
       "name": "covariance_parameters",
       "description": "Estimated covariance/variance components",
       "statistics": [
@@ -2755,7 +3657,7 @@
     },
     {
       "conceptId": "OC.test_result",
-      "ncitCode": "C00046_NEW",
+      "ncitCode": "C00063_NEW",
       "name": "test_result",
       "description": "Single overall test result (for non-regression methods)",
       "statistics": [
@@ -2766,7 +3668,7 @@
     },
     {
       "conceptId": "OC.association_measures",
-      "ncitCode": "C00047_NEW",
+      "ncitCode": "C00064_NEW",
       "name": "association_measures",
       "description": "Effect size / association measures with inference",
       "statistics": [
@@ -2777,7 +3679,7 @@
     },
     {
       "conceptId": "OC.homogeneity_test",
-      "ncitCode": "C00048_NEW",
+      "ncitCode": "C00065_NEW",
       "name": "homogeneity_test",
       "description": "Breslow-Day test for homogeneity of odds ratios across strata",
       "statistics": [
@@ -2788,7 +3690,7 @@
     },
     {
       "conceptId": "OC.computed_value",
-      "ncitCode": "C00049_NEW",
+      "ncitCode": "C00066_NEW",
       "name": "computed_value",
       "description": "Single derived/computed output value (for derivation methods)",
       "statistics": [
@@ -2797,7 +3699,7 @@
     },
     {
       "conceptId": "OC.global_tests",
-      "ncitCode": "C00050_NEW",
+      "ncitCode": "C00067_NEW",
       "name": "global_tests",
       "description": "Overall model significance tests (likelihood ratio, Wald, score)",
       "statistics": [
@@ -2808,7 +3710,7 @@
     },
     {
       "conceptId": "OC.hazard_ratio_estimates",
-      "ncitCode": "C00051_NEW",
+      "ncitCode": "C00068_NEW",
       "name": "hazard_ratio_estimates",
       "description": "Hazard ratios with confidence intervals (exponentiated coefficients)",
       "statistics": [
@@ -2819,7 +3721,7 @@
     },
     {
       "conceptId": "OC.event_summary",
-      "ncitCode": "C00052_NEW",
+      "ncitCode": "C00069_NEW",
       "name": "event_summary",
       "description": "Summary counts of events and censoring per group",
       "statistics": [
@@ -2830,7 +3732,7 @@
     },
     {
       "conceptId": "OC.survival_table",
-      "ncitCode": "C00053_NEW",
+      "ncitCode": "C00070_NEW",
       "name": "survival_table",
       "description": "Life table with survival estimates at each event time",
       "statistics": [
@@ -2845,7 +3747,7 @@
     },
     {
       "conceptId": "OC.median_survival",
-      "ncitCode": "C00054_NEW",
+      "ncitCode": "C00071_NEW",
       "name": "median_survival",
       "description": "Median survival time per group",
       "statistics": [
@@ -2856,7 +3758,7 @@
     },
     {
       "conceptId": "OC.landmark_estimates",
-      "ncitCode": "C00055_NEW",
+      "ncitCode": "C00072_NEW",
       "name": "landmark_estimates",
       "description": "Survival probability at specific landmark times",
       "statistics": [
@@ -2868,7 +3770,7 @@
     },
     {
       "conceptId": "OC.odds_ratio_estimates",
-      "ncitCode": "C00056_NEW",
+      "ncitCode": "C00073_NEW",
       "name": "odds_ratio_estimates",
       "description": "Odds ratios with confidence intervals (exponentiated coefficients)",
       "statistics": [
@@ -2879,7 +3781,7 @@
     },
     {
       "conceptId": "OC.multivariate_tests",
-      "ncitCode": "C00057_NEW",
+      "ncitCode": "C00074_NEW",
       "name": "multivariate_tests",
       "description": "Multivariate test statistics for overall hypothesis",
       "statistics": [
@@ -2892,7 +3794,7 @@
     },
     {
       "conceptId": "OC.point_estimate",
-      "ncitCode": "C00058_NEW",
+      "ncitCode": "C00075_NEW",
       "name": "point_estimate",
       "description": "Estimated mean with inference",
       "statistics": [
@@ -2906,7 +3808,7 @@
   "statistics": [
     {
       "conceptId": "S.estimate",
-      "ncitCode": "C00059_NEW",
+      "ncitCode": "C00076_NEW",
       "name": "estimate",
       "description": "Point estimate of the quantity",
       "codings": [
@@ -2920,7 +3822,7 @@
     },
     {
       "conceptId": "S.SE",
-      "ncitCode": "C00060_NEW",
+      "ncitCode": "C00077_NEW",
       "name": "SE",
       "description": "Standard error of the estimate",
       "codings": [
@@ -2934,7 +3836,7 @@
     },
     {
       "conceptId": "S.CI_lower",
-      "ncitCode": "C00061_NEW",
+      "ncitCode": "C00078_NEW",
       "name": "CI_lower",
       "description": "Lower bound of confidence interval",
       "codings": [
@@ -2948,7 +3850,7 @@
     },
     {
       "conceptId": "S.CI_upper",
-      "ncitCode": "C00062_NEW",
+      "ncitCode": "C00079_NEW",
       "name": "CI_upper",
       "description": "Upper bound of confidence interval",
       "codings": [
@@ -2962,7 +3864,7 @@
     },
     {
       "conceptId": "S.df",
-      "ncitCode": "C00063_NEW",
+      "ncitCode": "C00080_NEW",
       "name": "df",
       "description": "Degrees of freedom",
       "codings": [
@@ -2976,7 +3878,7 @@
     },
     {
       "conceptId": "S.df_num",
-      "ncitCode": "C00064_NEW",
+      "ncitCode": "C00081_NEW",
       "name": "df_num",
       "description": "Numerator degrees of freedom",
       "codings": [
@@ -2990,7 +3892,7 @@
     },
     {
       "conceptId": "S.df_den",
-      "ncitCode": "C00065_NEW",
+      "ncitCode": "C00082_NEW",
       "name": "df_den",
       "description": "Denominator degrees of freedom",
       "codings": [
@@ -3004,7 +3906,7 @@
     },
     {
       "conceptId": "S.t_statistic",
-      "ncitCode": "C00066_NEW",
+      "ncitCode": "C00083_NEW",
       "name": "t_statistic",
       "description": "t test statistic",
       "codings": [
@@ -3018,7 +3920,7 @@
     },
     {
       "conceptId": "S.F_statistic",
-      "ncitCode": "C00067_NEW",
+      "ncitCode": "C00084_NEW",
       "name": "F_statistic",
       "description": "F test statistic",
       "codings": [
@@ -3032,7 +3934,7 @@
     },
     {
       "conceptId": "S.z_statistic",
-      "ncitCode": "C00068_NEW",
+      "ncitCode": "C00085_NEW",
       "name": "z_statistic",
       "description": "z test statistic",
       "codings": [
@@ -3046,7 +3948,7 @@
     },
     {
       "conceptId": "S.chi_squared",
-      "ncitCode": "C00069_NEW",
+      "ncitCode": "C00086_NEW",
       "name": "chi_squared",
       "description": "Chi-squared test statistic",
       "codings": [
@@ -3060,7 +3962,7 @@
     },
     {
       "conceptId": "S.p_value",
-      "ncitCode": "C00070_NEW",
+      "ncitCode": "C00087_NEW",
       "name": "p_value",
       "description": "P-value for the test",
       "codings": [
@@ -3074,14 +3976,14 @@
     },
     {
       "conceptId": "S.SS",
-      "ncitCode": "C00071_NEW",
+      "ncitCode": "C00088_NEW",
       "name": "SS",
       "description": "Sum of squares",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.MS",
-      "ncitCode": "C00072_NEW",
+      "ncitCode": "C00089_NEW",
       "name": "MS",
       "description": "Mean square",
       "codings": [
@@ -3095,7 +3997,7 @@
     },
     {
       "conceptId": "S.odds_ratio",
-      "ncitCode": "C00073_NEW",
+      "ncitCode": "C00090_NEW",
       "name": "odds_ratio",
       "description": "Odds ratio (exp of log-odds coefficient)",
       "codings": [
@@ -3109,7 +4011,7 @@
     },
     {
       "conceptId": "S.hazard_ratio",
-      "ncitCode": "C00074_NEW",
+      "ncitCode": "C00091_NEW",
       "name": "hazard_ratio",
       "description": "Hazard ratio (exp of Cox coefficient)",
       "codings": [
@@ -3123,42 +4025,42 @@
     },
     {
       "conceptId": "S.coefficient",
-      "ncitCode": "C00075_NEW",
+      "ncitCode": "C00092_NEW",
       "name": "coefficient",
       "description": "Model coefficient (log scale for GLMs)",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.n_risk",
-      "ncitCode": "C00076_NEW",
+      "ncitCode": "C00093_NEW",
       "name": "n_risk",
       "description": "Number at risk",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.n_event",
-      "ncitCode": "C00077_NEW",
+      "ncitCode": "C00094_NEW",
       "name": "n_event",
       "description": "Number of events",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.n_censored",
-      "ncitCode": "C00078_NEW",
+      "ncitCode": "C00095_NEW",
       "name": "n_censored",
       "description": "Number censored",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.survival_prob",
-      "ncitCode": "C00079_NEW",
+      "ncitCode": "C00096_NEW",
       "name": "survival_prob",
       "description": "Estimated survival probability",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.median",
-      "ncitCode": "C00080_NEW",
+      "ncitCode": "C00097_NEW",
       "name": "median",
       "description": "Median estimate",
       "codings": [
@@ -3172,7 +4074,7 @@
     },
     {
       "conceptId": "S.mean",
-      "ncitCode": "C00081_NEW",
+      "ncitCode": "C00098_NEW",
       "name": "mean",
       "description": "Mean estimate",
       "codings": [
@@ -3186,7 +4088,7 @@
     },
     {
       "conceptId": "S.AIC",
-      "ncitCode": "C00082_NEW",
+      "ncitCode": "C00099_NEW",
       "name": "AIC",
       "description": "Akaike Information Criterion",
       "codings": [
@@ -3200,7 +4102,7 @@
     },
     {
       "conceptId": "S.BIC",
-      "ncitCode": "C00083_NEW",
+      "ncitCode": "C00100_NEW",
       "name": "BIC",
       "description": "Bayesian Information Criterion",
       "codings": [
@@ -3214,14 +4116,14 @@
     },
     {
       "conceptId": "S.minus2LogL",
-      "ncitCode": "C00084_NEW",
+      "ncitCode": "C00101_NEW",
       "name": "minus2LogL",
       "description": "-2 Log Likelihood",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.R_squared",
-      "ncitCode": "C00085_NEW",
+      "ncitCode": "C00102_NEW",
       "name": "R_squared",
       "description": "Coefficient of determination",
       "codings": [
@@ -3235,21 +4137,21 @@
     },
     {
       "conceptId": "S.concordance",
-      "ncitCode": "C00086_NEW",
+      "ncitCode": "C00103_NEW",
       "name": "concordance",
       "description": "Concordance statistic (C-index)",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.value",
-      "ncitCode": "C00087_NEW",
+      "ncitCode": "C00104_NEW",
       "name": "value",
       "description": "The computed/derived value",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.n",
-      "ncitCode": "C00088_NEW",
+      "ncitCode": "C00105_NEW",
       "name": "n",
       "description": "Count of non-missing observations",
       "codings": [
@@ -3263,28 +4165,28 @@
     },
     {
       "conceptId": "S.n_obs",
-      "ncitCode": "C00089_NEW",
+      "ncitCode": "C00106_NEW",
       "name": "n_obs",
       "description": "Total number of observations (non-missing + missing)",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.n_missing",
-      "ncitCode": "C00090_NEW",
+      "ncitCode": "C00107_NEW",
       "name": "n_missing",
       "description": "Count of missing observations",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.pct_missing",
-      "ncitCode": "C00091_NEW",
+      "ncitCode": "C00108_NEW",
       "name": "pct_missing",
       "description": "Percentage of missing observations",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.geometric_mean",
-      "ncitCode": "C00092_NEW",
+      "ncitCode": "C00109_NEW",
       "name": "geometric_mean",
       "description": "Geometric mean (exp of mean of log values)",
       "codings": [
@@ -3298,7 +4200,7 @@
     },
     {
       "conceptId": "S.harmonic_mean",
-      "ncitCode": "C00093_NEW",
+      "ncitCode": "C00110_NEW",
       "name": "harmonic_mean",
       "description": "Harmonic mean (reciprocal of mean of reciprocals)",
       "codings": [
@@ -3312,21 +4214,21 @@
     },
     {
       "conceptId": "S.trimmed_mean",
-      "ncitCode": "C00094_NEW",
+      "ncitCode": "C00111_NEW",
       "name": "trimmed_mean",
       "description": "Trimmed mean (mean after removing extreme values from each tail)",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.winsorized_mean",
-      "ncitCode": "C00095_NEW",
+      "ncitCode": "C00112_NEW",
       "name": "winsorized_mean",
       "description": "Winsorized mean (mean after replacing extreme values with boundary values)",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.mode",
-      "ncitCode": "C00096_NEW",
+      "ncitCode": "C00113_NEW",
       "name": "mode",
       "description": "Most frequently occurring value",
       "codings": [
@@ -3340,7 +4242,7 @@
     },
     {
       "conceptId": "S.sd",
-      "ncitCode": "C00097_NEW",
+      "ncitCode": "C00114_NEW",
       "name": "sd",
       "description": "Standard deviation",
       "codings": [
@@ -3354,7 +4256,7 @@
     },
     {
       "conceptId": "S.variance",
-      "ncitCode": "C00098_NEW",
+      "ncitCode": "C00115_NEW",
       "name": "variance",
       "description": "Variance",
       "codings": [
@@ -3368,7 +4270,7 @@
     },
     {
       "conceptId": "S.cv",
-      "ncitCode": "C00099_NEW",
+      "ncitCode": "C00116_NEW",
       "name": "cv",
       "description": "Coefficient of variation (SD/mean × 100)",
       "codings": [
@@ -3382,14 +4284,14 @@
     },
     {
       "conceptId": "S.geometric_cv",
-      "ncitCode": "C00100_NEW",
+      "ncitCode": "C00117_NEW",
       "name": "geometric_cv",
       "description": "Geometric coefficient of variation",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.range",
-      "ncitCode": "C00101_NEW",
+      "ncitCode": "C00118_NEW",
       "name": "range",
       "description": "Range (max − min)",
       "codings": [
@@ -3403,7 +4305,7 @@
     },
     {
       "conceptId": "S.min",
-      "ncitCode": "C00102_NEW",
+      "ncitCode": "C00119_NEW",
       "name": "min",
       "description": "Minimum observed value",
       "codings": [
@@ -3417,7 +4319,7 @@
     },
     {
       "conceptId": "S.max",
-      "ncitCode": "C00103_NEW",
+      "ncitCode": "C00120_NEW",
       "name": "max",
       "description": "Maximum observed value",
       "codings": [
@@ -3431,7 +4333,7 @@
     },
     {
       "conceptId": "S.iqr",
-      "ncitCode": "C00104_NEW",
+      "ncitCode": "C00121_NEW",
       "name": "iqr",
       "description": "Interquartile range (Q3 − Q1)",
       "codings": [
@@ -3445,14 +4347,14 @@
     },
     {
       "conceptId": "S.sum",
-      "ncitCode": "C00105_NEW",
+      "ncitCode": "C00122_NEW",
       "name": "sum",
       "description": "Sum of all values",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.Q1",
-      "ncitCode": "C00106_NEW",
+      "ncitCode": "C00123_NEW",
       "name": "Q1",
       "description": "First quartile (25th percentile)",
       "codings": [
@@ -3466,7 +4368,7 @@
     },
     {
       "conceptId": "S.Q3",
-      "ncitCode": "C00107_NEW",
+      "ncitCode": "C00124_NEW",
       "name": "Q3",
       "description": "Third quartile (75th percentile)",
       "codings": [
@@ -3480,7 +4382,7 @@
     },
     {
       "conceptId": "S.percentile",
-      "ncitCode": "C00108_NEW",
+      "ncitCode": "C00125_NEW",
       "name": "percentile",
       "description": "Percentile value at a specified rank",
       "codings": [
@@ -3494,7 +4396,7 @@
     },
     {
       "conceptId": "S.skewness",
-      "ncitCode": "C00109_NEW",
+      "ncitCode": "C00126_NEW",
       "name": "skewness",
       "description": "Skewness (measure of asymmetry of the distribution)",
       "codings": [
@@ -3508,7 +4410,7 @@
     },
     {
       "conceptId": "S.kurtosis",
-      "ncitCode": "C00110_NEW",
+      "ncitCode": "C00127_NEW",
       "name": "kurtosis",
       "description": "Kurtosis (measure of tailedness of the distribution)",
       "codings": [
@@ -3522,7 +4424,7 @@
     },
     {
       "conceptId": "S.frequency",
-      "ncitCode": "C00111_NEW",
+      "ncitCode": "C00128_NEW",
       "name": "frequency",
       "description": "Frequency count per category",
       "codings": [
@@ -3536,7 +4438,7 @@
     },
     {
       "conceptId": "S.proportion",
-      "ncitCode": "C00112_NEW",
+      "ncitCode": "C00129_NEW",
       "name": "proportion",
       "description": "Proportion (0–1 scale)",
       "codings": [
@@ -3550,21 +4452,21 @@
     },
     {
       "conceptId": "S.pct",
-      "ncitCode": "C00113_NEW",
+      "ncitCode": "C00130_NEW",
       "name": "pct",
       "description": "Percentage (0–100 scale)",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.cumulative_n",
-      "ncitCode": "C00114_NEW",
+      "ncitCode": "C00131_NEW",
       "name": "cumulative_n",
       "description": "Cumulative count",
       "dataType": "numeric"
     },
     {
       "conceptId": "S.cumulative_pct",
-      "ncitCode": "C00115_NEW",
+      "ncitCode": "C00132_NEW",
       "name": "cumulative_pct",
       "description": "Cumulative percentage",
       "dataType": "numeric"
