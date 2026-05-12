@@ -1084,25 +1084,43 @@ export function deserializeStudyInstance(json, appState) {
     appState.modelViewMode = json.preferences.modelViewMode;
   }
 
-  // Restore selected study — saved files carry selectedStudyIndex (new format)
-  // or the legacy hardcoded usdmFile (old format). Load-time behaviour:
-  //   - if the target index is available and differs from current selection,
-  //     switch to it so endpoint IDs in the spec resolve correctly
-  //   - if the index isn't valid, warn but continue (user may have stripped
-  //     the studies manifest)
+  // Restore selected study. The Load path needs to be robust against the
+  // studies manifest changing between save-time and load-time (renames,
+  // additions, deletions). Resolution order:
+  //   1. The saved selectedStudyIndex, if still in range AND no name conflict.
+  //   2. Match by saved studyName against the current studies list.
+  //   3. If we still have no selection and only one study exists, pick it.
+  //   4. Otherwise leave the current selection (likely null) and warn loudly.
+  // Without (3) the deserializer silently leaves selectedStudy null, which
+  // crashes downstream renderers — that's the symptom users see as "Load
+  // doesn't do anything".
+  const studies = Array.isArray(appState.studies) ? appState.studies : [];
   const targetIdx = json.studyRef?.selectedStudyIndex;
-  if (typeof targetIdx === 'number' && appState.studies?.[targetIdx]) {
-    if (appState.selectedStudyIndex !== targetIdx) {
-      appState.selectedStudyIndex = targetIdx;
-      appState.selectedStudy = appState.studies[targetIdx];
-      warnings.push(`Switched to study "${appState.selectedStudy?.name || '(unnamed)'}" referenced by the saved file`);
-    }
-  } else if (json.studyRef?.studyName && appState.selectedStudy) {
-    const savedName = json.studyRef.studyName;
+  const savedName = json.studyRef?.studyName;
+
+  let resolvedIdx = -1;
+  if (typeof targetIdx === 'number' && studies[targetIdx]) {
+    resolvedIdx = targetIdx;
+  }
+  if (resolvedIdx === -1 && savedName && studies.length > 0) {
+    resolvedIdx = studies.findIndex(s =>
+      (s?.name === savedName) || (s?.studyTitle === savedName));
+  }
+  if (resolvedIdx === -1 && !appState.selectedStudy && studies.length === 1) {
+    resolvedIdx = 0;
+    warnings.push(`Saved file referenced study "${savedName || '(unnamed)'}" — selecting the only available study "${studies[0]?.name || '(unnamed)'}" instead.`);
+  }
+  if (resolvedIdx >= 0 && appState.selectedStudyIndex !== resolvedIdx) {
+    appState.selectedStudyIndex = resolvedIdx;
+    appState.selectedStudy = studies[resolvedIdx];
+    warnings.push(`Switched to study "${appState.selectedStudy?.name || '(unnamed)'}" referenced by the saved file`);
+  } else if (resolvedIdx === -1 && savedName && appState.selectedStudy) {
     const currentName = appState.selectedStudy.name || appState.selectedStudy.studyTitle;
     if (savedName !== currentName) {
       warnings.push(`Saved file was for study "${savedName}" — current selection is "${currentName}". Endpoint references may not match.`);
     }
+  } else if (resolvedIdx === -1 && !appState.selectedStudy) {
+    warnings.push(`Saved file referenced study "${savedName || '(unnamed)'}" but no matching study is loaded. Pick a study in Step 1 first, then re-load.`);
   }
 
   // Restore selected endpoints — stored as plain string IDs in live appState

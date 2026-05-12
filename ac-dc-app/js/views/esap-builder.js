@@ -162,6 +162,7 @@ export async function renderEsapBuilder(container) {
       <div style="display:flex; gap:8px;">
         <button class="btn btn-secondary esap-view-toggle active" data-view="document" style="font-size:11px; background:var(--cdisc-primary); color:#fff;">SAP Document</button>
         <button class="btn btn-secondary esap-view-toggle" data-view="datasets" style="font-size:11px;">ADaM Datasets</button>
+        <button class="btn btn-secondary esap-view-toggle" data-view="adamspec" style="font-size:11px;">ADaM Spec</button>
         <button class="btn btn-secondary esap-view-toggle" data-view="json" style="font-size:11px;">{ } JSON</button>
         <button class="btn btn-secondary" id="btn-back-pipeline">&larr; Back to Pipeline</button>
       </div>
@@ -184,6 +185,10 @@ export async function renderEsapBuilder(container) {
 
     <div id="esap-datasets-panel" style="display:none; margin-top:16px;">
       ${renderDatasetsPanel(selectedEps, study)}
+    </div>
+
+    <div id="esap-adamspec-panel" style="display:none; margin-top:16px;">
+      ${renderAdamSpecPanel(selectedEps, study)}
     </div>
 
     <div id="esap-json-panel" style="display:none; margin-top:16px;">
@@ -237,10 +242,11 @@ export async function renderEsapBuilder(container) {
     });
   });
 
-  // View toggle (Document / ADaM Datasets / JSON)
+  // View toggle (Document / ADaM Datasets / ADaM Spec / JSON)
   const panels = {
     document: container.querySelector('.esap-doc'),
     datasets: container.querySelector('#esap-datasets-panel'),
+    adamspec: container.querySelector('#esap-adamspec-panel'),
     json: container.querySelector('#esap-json-panel')
   };
   const jsonContent = container.querySelector('#esap-json-content');
@@ -1287,4 +1293,219 @@ function showNarrativePicker(container, sectionKey) {
   });
 
   searchInput.focus();
+}
+
+// ===== ADaM Specification Panel =====
+//
+// Renders a traditional ADaM-spec view for each endpoint: dataset name,
+// variable rows (name + type + concept + source/method), and a methods
+// reference. All metadata is already in the spec — we just project it
+// through the ADaM store mappings. The same projection would work for
+// SDTM, OMOP, etc. — concept-keyed bindings make the rendering
+// store-agnostic.
+
+function renderAdamSpecPanel(selectedEps, study) {
+  const adam = appState.conceptMappings?.adam || {};
+  const lib = appState.transformationLibrary;
+  const derivationsLib = lib?.derivationTransformations || [];
+  const analysesLib = lib?.analysisTransformations || [];
+
+  const adamVarLabel = (storeVar) => {
+    if (!storeVar) return '';
+    // Multi-token mapping ("TRTA/TRTP" etc.) — take the first token
+    return String(storeVar).split('/')[0];
+  };
+
+  const adamVarType = (entry, dtype) => {
+    if (!entry) return '';
+    const t = (dtype || '').toLowerCase();
+    if (['decimal', 'integer'].includes(t)) return 'Num';
+    return 'Char';
+  };
+
+  // Walk a binding → produce a row { variable, type, concept, source, slice }
+  const rowFromBinding = (binding, derivedConceptSet, role_to_chainCol) => {
+    const concept = (binding.concept || '').replace(/@.*/, '');
+    if (!concept) return null;
+
+    // Resolve the variable name + type. Honor baseline slice (BASE not AVAL).
+    const sliceIsBaseline = !!(binding.slice && /baseline/i.test(binding.slice));
+    const conceptEntry = adam.concepts?.[concept] || adam.dimensions?.[concept];
+    let variable = null;
+    let dataType = (binding.requiredValueType || '').toLowerCase();
+    if (conceptEntry?.byDataType) {
+      if (sliceIsBaseline && conceptEntry.byDataType.baseline) {
+        variable = conceptEntry.byDataType.baseline;
+      } else {
+        for (const k of ['decimal', 'integer', 'string', 'code', 'id']) {
+          if (conceptEntry.byDataType[k]) { variable = conceptEntry.byDataType[k]; dataType = dataType || k; break; }
+        }
+      }
+    }
+    if (!variable && conceptEntry?.variable) variable = conceptEntry.variable;
+    variable = adamVarLabel(variable);
+    if (!variable) return null;
+
+    // Determine source: was this concept produced by a derivation in the
+    // chain, or read in from the source dataset?
+    const isDerived = derivedConceptSet.has(concept);
+    let source = '';
+    if (isDerived) {
+      // Find the chain step that produced this concept (sliced match for baseline)
+      const epSpec = derivedConceptSet._epSpec;
+      let producingMethodOid = '';
+      for (const entry of (epSpec?.derivationChain || [])) {
+        const d = derivationsLib.find(x => x.oid === entry.derivationOid);
+        if (!d) continue;
+        const out = (d.bindings || []).find(b => b.direction === 'output');
+        const outConcept = (out?.concept || '').replace(/@.*/, '');
+        if (outConcept === concept) {
+          producingMethodOid = d.usesMethod || '';
+          break;
+        }
+      }
+      source = producingMethodOid
+        ? `Derived via <code style="font-size:11px;">${producingMethodOid}</code>${sliceIsBaseline ? ' (Baseline slice)' : ''}`
+        : (sliceIsBaseline ? 'Baseline slice of AVAL' : 'Computed (chain output)');
+    } else {
+      // Ingested from store column — look up the SDTM source for reference
+      const sdtm = appState.conceptMappings?.sdtm || {};
+      const sdtmEntry = sdtm.concepts?.[concept] || sdtm.dimensions?.[concept];
+      let sdtmVar = '';
+      if (sdtmEntry?.byDataType) {
+        for (const k of ['string', 'code', 'decimal', 'integer', 'id']) {
+          if (sdtmEntry.byDataType[k]) { sdtmVar = sdtmEntry.byDataType[k]; break; }
+        }
+      }
+      sdtmVar = adamVarLabel(sdtmVar || sdtmEntry?.variable || '');
+      source = sdtmVar ? `From SDTM <code style="font-size:11px;">${sdtmVar}</code>` : 'Source dataset';
+    }
+
+    return { variable, type: adamVarType(conceptEntry, dataType), concept, source, slice: binding.slice || '' };
+  };
+
+  // Per-endpoint render
+  const sections = selectedEps.map(ep => {
+    const spec = appState.endpointSpecs?.[ep.id] || {};
+    const resolvedEp = appState.resolvedSpec?.endpoints?.find(r => r.id === ep.id);
+    const analysis = resolvedEp?.analyses?.[0];
+    if (!analysis) return '';
+
+    // Dataset name: prefer explicit targetDataset, fallback to ADxxx by parameter
+    const dataset = (spec.targetDataset || resolvedEp?.targetDataset || '').toUpperCase()
+      || 'AD' + ((spec.dimensionValues?.Parameter || ep.name || 'DATA').replace(/[^A-Za-z]/g, '').slice(0, 6).toUpperCase());
+
+    // Which concepts come from the derivation chain?
+    const derivedConcepts = new Set();
+    for (const entry of (spec.derivationChain || [])) {
+      const d = derivationsLib.find(x => x.oid === entry.derivationOid);
+      const out = d?.bindings?.find(b => b.direction === 'output');
+      const outConcept = (out?.concept || '').replace(/@.*/, '');
+      if (outConcept) derivedConcepts.add(outConcept);
+    }
+    // The analysis transform's response output is also "derived"
+    const analysisTx = analysesLib.find(t => t.oid === spec.selectedTransformationOid);
+    for (const b of (analysisTx?.bindings || [])) {
+      if (b.direction === 'output') {
+        const c = (b.concept || '').replace(/@.*/, '');
+        if (c) derivedConcepts.add(c);
+      }
+    }
+    derivedConcepts._epSpec = spec;
+
+    // Variable rows from resolvedBindings + de-dup on variable name
+    const seenVars = new Set();
+    const rows = [];
+    for (const b of (analysis.resolvedBindings || [])) {
+      if (b.direction === 'output') continue;
+      const row = rowFromBinding(b, derivedConcepts);
+      if (!row) continue;
+      if (seenVars.has(row.variable)) continue;
+      seenVars.add(row.variable);
+      rows.push(row);
+    }
+
+    // Methods used in this endpoint (derivation chain + analysis)
+    const methodOids = new Set();
+    for (const entry of (spec.derivationChain || [])) {
+      const d = derivationsLib.find(x => x.oid === entry.derivationOid);
+      if (d?.usesMethod) methodOids.add(d.usesMethod);
+    }
+    if (analysisTx?.usesMethod) methodOids.add(analysisTx.usesMethod);
+    const methodsList = [...methodOids].map(oid => {
+      const m = appState.methodsCache?.[oid];
+      return { oid, name: m?.name || oid, description: m?.description || '' };
+    });
+
+    return `
+      <details class="card" style="padding:16px; margin-bottom:14px;" open>
+        <summary style="cursor:pointer; display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+          <strong style="font-size:15px;">${dataset}</strong>
+          <span class="badge ${ep.level.includes('Primary') ? 'badge-primary' : 'badge-secondary'}" style="font-size:10px;">${ep.level}</span>
+          <span style="font-size:12px; color:var(--cdisc-text-secondary);">${ep.name}</span>
+        </summary>
+
+        <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:8px;">
+          <strong>Variables</strong> &mdash; projected from concept bindings via the ADaM concept-mapping. The same bindings would project to a different ADaM realization under a different mapping; the concepts are the source of truth.
+        </div>
+        <table class="data-table" style="font-size:12px; margin-bottom:14px;">
+          <thead><tr>
+            <th style="width:90px;">Variable</th>
+            <th style="width:50px;">Type</th>
+            <th>Concept</th>
+            <th>Source / Method</th>
+            <th style="width:120px;">Slice</th>
+          </tr></thead>
+          <tbody>
+            ${rows.map(r => `
+              <tr>
+                <td><code style="font-weight:600;">${r.variable}</code></td>
+                <td>${r.type}</td>
+                <td>${r.concept}</td>
+                <td>${r.source}</td>
+                <td>${r.slice || '&mdash;'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        ${methodsList.length > 0 ? `
+        <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:8px;">
+          <strong>Methods</strong> &mdash; transformations referenced by this dataset's variables.
+        </div>
+        <table class="data-table" style="font-size:12px;">
+          <thead><tr>
+            <th style="width:160px;">Method OID</th>
+            <th style="width:200px;">Name</th>
+            <th>Description</th>
+          </tr></thead>
+          <tbody>
+            ${methodsList.map(m => `
+              <tr>
+                <td><code>${m.oid}</code></td>
+                <td>${m.name}</td>
+                <td style="font-size:11px; color:var(--cdisc-text-secondary);">${escapeHtml(m.description || '')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>` : ''}
+      </details>`;
+  }).filter(Boolean).join('');
+
+  if (!sections) {
+    return `<div class="card" style="padding:24px; text-align:center;">
+      <p style="color:var(--cdisc-text-secondary);">No endpoint specifications yet. Configure endpoints first (Step 3 onward).</p>
+    </div>`;
+  }
+
+  return `
+    <div class="card" style="padding:16px; margin-bottom:12px;">
+      <div style="font-weight:700; font-size:14px;">ADaM Specification</div>
+      <p style="font-size:12px; color:var(--cdisc-text-secondary); margin-top:4px;">
+        Dataset-by-dataset spec rendered from the concept-keyed metadata.
+        Variable names, types, and derivation methods are projected through the ADaM mapping.
+        The concepts are the source of truth &mdash; the same bindings produce a different ADaM realization under a different mapping.
+      </p>
+    </div>
+    ${sections}`;
 }
