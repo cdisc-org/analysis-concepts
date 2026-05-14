@@ -4,7 +4,7 @@ import {
   initWebR, loadXptFile, executeR, isInitialized,
   getLoadedDatasets, loadEngine, setJsonVariable
 } from '../utils/webr-engine.js';
-import { generateExecutionPayload, getVariableOptions, getDefaultVariable, resolveCallTemplate } from '../utils/r-code-generator.js';
+import { generateExecutionPayload, getVariableOptions, getDefaultVariable, resolveCallTemplate, resolveDerivationCallTemplate } from '../utils/r-code-generator.js';
 import { buildPipelineGraph, orderChainPostOrder, computeColumnMap, computeAnalysisInputColumns } from '../utils/transformation-linker.js';
 import { loadMethod } from '../data-loader.js';
 import { getSpecParameterValue } from './endpoint-spec.js';
@@ -902,7 +902,7 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
       ${aResult.results?.derived_data_preview ? _renderDerivedDataPreview(aResult.results) : ''}
 
       <!-- Results (per-analysis) -->
-      ${aResult.results ? _renderARDResults(aResult.results, analysis, adam, resultState.varOverrides) : ''}
+      ${aResult.results ? _renderARDResults(aResult.results, analysis, adam, resultState.varOverrides, aResult.analysisInputColumns) : ''}
 
       <!-- Generated Program -->
       ${selectedImpl ? (() => {
@@ -963,55 +963,86 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
 // ---------------------------------------------------------------------------
 
 /**
- * Build a reverse lookup: ADaM variable name → { role, roleLabel, concept }.
- * Used to annotate term-level result rows with their dimension type.
+ * Build a reverse lookup keyed by both the ADaM variable name AND any
+ * chain-lookup column the engine routed this role through.
+ *
+ * Why both: Scenario-1 analyses fit `lm(CHG ~ BASE + TRT01P + SITEGR1)`, so
+ * Type III row names match ADaM variables directly. Scenario-2 analyses fit
+ * `lm(\`__col_T_CFB_…\` ~ \`__col_T_CFB_…_Measure_0__parameter_baseline\` +
+ * TRT01P + SITEGR1)` — the covariate term in the result is the engine's
+ * internal chain-output column, which is unintelligible to a reader. Adding
+ * the `__col_*` keys lets `_classifyTerm` map them back to the role's ADaM
+ * variable for display.
+ *
+ * Slice awareness: a Measure binding with a baseline-style slice should map
+ * to the `byDataType.baseline` variable (BASE), not the default
+ * `byDataType.decimal` (AVAL).
  */
-function _buildTermRoleMap(analysisBindings, adam, varOverrides) {
+function _buildTermRoleMap(analysisBindings, adam, varOverrides, analysisInputColumns) {
   const map = {};
   if (!analysisBindings) return map;
+
+  const resolveAdamVar = (b, concept) => {
+    if (varOverrides?.[concept]) return varOverrides[concept];
+    const entry = adam?.concepts?.[concept] || adam?.dimensions?.[concept];
+    if (!entry) return concept.toUpperCase();
+    const bt = entry.byDataType;
+    if (!bt) return entry.variable?.split('/')[0] || concept.toUpperCase();
+    const wantsBaseline = /baseline/i.test(b.slice || '');
+    if (b.dataStructureRole === 'measure') {
+      return wantsBaseline
+        ? (bt.baseline || bt.decimal || bt.code || bt.string)
+        : (bt.decimal || bt.baseline || bt.code || bt.string);
+    }
+    return bt.code || bt.string || bt.decimal;
+  };
+
   for (const b of analysisBindings) {
     if (b.direction === 'output') continue;
     const concept = (b.concept || '').replace(/@.*/, '');
     const role = b.methodRole || '';
-
-    let adamVar;
-    if (varOverrides?.[concept]) {
-      adamVar = varOverrides[concept];
-    } else {
-      const entry = adam?.concepts?.[concept] || adam?.dimensions?.[concept];
-      if (entry?.byDataType) {
-        const bt = entry.byDataType;
-        adamVar = b.dataStructureRole === 'measure'
-          ? (bt.decimal || bt.baseline || bt.code || bt.string)
-          : (bt.code || bt.string || bt.decimal);
-        if (!adamVar) adamVar = entry.variable?.split('/')[0];
-      } else {
-        adamVar = concept.toUpperCase();
-      }
-    }
+    const adamVar = resolveAdamVar(b, concept);
     if (!adamVar) continue;
-
     const roleLabel = role.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    map[adamVar] = { role, roleLabel, concept };
+    map[adamVar] = { role, roleLabel, concept, displayName: adamVar };
+  }
+
+  if (analysisInputColumns) {
+    for (const role of Object.keys(analysisInputColumns)) {
+      const col = analysisInputColumns[role];
+      if (!col || !col.startsWith('__col_')) continue;
+      const binding = analysisBindings.find(b =>
+        b.methodRole === role && b.direction !== 'output');
+      if (!binding) continue;
+      const concept = (binding.concept || '').replace(/@.*/, '');
+      const displayName = resolveAdamVar(binding, concept) || concept.toUpperCase();
+      const roleLabel = role.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      map[col] = { role, roleLabel, concept, displayName };
+    }
   }
   return map;
 }
 
 function _classifyTerm(term, roleMap) {
-  if (!term) return { roleLabel: '', role: '', concept: '' };
-  const t = String(term).trim();
+  const empty = { roleLabel: '', role: '', concept: '', displayName: '' };
+  if (!term) return empty;
+  // R's anova/Anova preserves backticks around non-syntactic column names
+  // (chain-lookup `__col_*` outputs). Strip them before lookup.
+  const stripTicks = (s) => s.replace(/^`|`$/g, '');
+  const t = stripTicks(String(term).trim());
   if (t.includes(':')) {
-    const parts = t.split(':');
+    const parts = t.split(':').map(stripTicks);
     const entries = parts.map(p => roleMap[p]);
     const roles = entries.map(e => e?.role || '').filter(Boolean);
     const concepts = entries.map(e => e?.concept || '').filter(Boolean);
+    const displays = parts.map((p, i) => entries[i]?.displayName || p);
     const concept = concepts.length === 2 ? `${concepts[0]}:${concepts[1]}` : '';
     const role = roles.length === 2 ? `${roles[0]}:${roles[1]}` : '';
-    return { roleLabel: 'Interaction', role, concept };
+    return { roleLabel: 'Interaction', role, concept, displayName: displays.join(':') };
   }
   const entry = roleMap[t];
-  if (!entry) return { roleLabel: '', role: '', concept: '' };
-  return { roleLabel: entry.roleLabel, role: entry.role, concept: entry.concept };
+  if (!entry) return { ...empty, displayName: t };
+  return { roleLabel: entry.roleLabel, role: entry.role, concept: entry.concept, displayName: entry.displayName };
 }
 
 function _filterRowsByOutputConfig(rows, termKey, roleMap, selectedDimensions) {
@@ -1065,9 +1096,12 @@ function _renderDerivedDataPreview(results) {
   `;
 }
 
-function _renderARDResults(results, analysis, adam, varOverrides) {
+function _renderARDResults(results, analysis, adam, varOverrides, analysisInputColumns) {
   const sections = [];
-  const roleMap = _buildTermRoleMap(analysis?.resolvedBindings, adam, varOverrides);
+  const roleMap = _buildTermRoleMap(
+    analysis?.resolvedBindings, adam, varOverrides,
+    analysisInputColumns || analysis?.analysisInputColumns
+  );
 
   const outputConfigArr = analysis?.outputConfiguration || [];
   const outputConfigMap = {};
@@ -1289,13 +1323,16 @@ function _renderAnnotatedTable(rows, columns, termKey, roleMap) {
   return `<table class="exec-ard-table">
     <thead><tr>${columns.map(c => `<th>${c}</th>`).join('')}</tr></thead>
     <tbody>${rows.map(row => {
-      const { roleLabel } = _classifyTerm(row[termKey], roleMap);
+      const { roleLabel, displayName } = _classifyTerm(row[termKey], roleMap);
       return `<tr>${columns.map(c => {
         if (c === 'Type') {
           const color = roleLabel === 'Interaction' ? 'var(--cdisc-accent2)'
             : roleLabel === 'Covariate' ? 'var(--cdisc-text-secondary)'
             : 'var(--cdisc-primary)';
           return `<td style="font-size:10px; font-style:italic; color:${color};">${roleLabel}</td>`;
+        }
+        if (c === termKey) {
+          return `<td>${_escapeHtml(displayName || String(row[termKey] ?? ''))}</td>`;
         }
         return `<td>${_fmt(row[c])}</td>`;
       }).join('')}</tr>`;
@@ -1887,7 +1924,15 @@ async function _executeAnalysis(container, epId, aIdx) {
         // Attach console output to results for diagnostics
         const console = parsed?.console;
         if (console) delete parsed.console;
-        _setAnalysisResult(epId, aIdx, { status: 'complete', results: parsed, error: null, console });
+        // Persist analysisInputColumns alongside results so the Type III
+        // renderer can map chain-lookup columns (__col_*) back to their
+        // ADaM variable for display. The original analysis object in
+        // resolvedSpec doesn't carry this — it's only stamped onto the
+        // engine-bound `singleAnalysis` clone above.
+        _setAnalysisResult(epId, aIdx, {
+          status: 'complete', results: parsed, error: null, console,
+          analysisInputColumns
+        });
       }
     } else {
       _setAnalysisResult(epId, aIdx, { status: 'error', results: null, error: result.error });
@@ -2130,6 +2175,133 @@ async function _executeDerivationOnly(container, epId) {
   renderExecuteAnalysis(container);
 }
 
+/**
+ * Build resolved R code for the derivation chain by walking each entry in
+ * execution (post-) order, looking up its R implementation, and
+ * substituting role/config placeholders. Uses transformation-linker's
+ * computeColumnMap to assign unique chain-lookup column names
+ * (`__col_T_*_<role>_<idx>`) — same names the R engine produces at runtime —
+ * so the resolved code is a faithful, runnable mirror of what eval()s.
+ */
+function _renderChainResolvedCode(ep) {
+  const spec = appState.endpointSpecs?.[ep.id];
+  if (!spec) return '';
+  const rawChain = spec.derivationChain || [];
+  if (rawChain.length === 0) return '';
+
+  const fullLib = appState.transformationLibrary;
+  const txLib = [
+    ...(fullLib?.derivationTransformations || []),
+    ...(fullLib?.analysisTransformations || [])
+  ];
+  const analysisTx = fullLib?.analysisTransformations?.find(
+    t => t.oid === spec.selectedTransformationOid
+  );
+  if (!analysisTx) return '';
+
+  // Reuse the same chain-building pipeline as _executeAnalysis so the
+  // chain-lookup column names align with what the engine actually uses.
+  const confirmedKeys = new Set((spec.confirmedTerminals || []).map(t => t.slotKey));
+  const slotsForSort = buildPipelineGraph(
+    analysisTx, fullLib,
+    spec.selectedDerivations || {}, confirmedKeys,
+    spec.dimensionCategoryPicks || {},
+    appState.conceptCategories?.categories || {}
+  );
+  const liveKeys = new Set();
+  (function collect(list) {
+    for (const s of (list || [])) { liveKeys.add(s.key); if (s.children?.length) collect(s.children); }
+  })(slotsForSort);
+  const cleanRawChain = rawChain.filter(e => liveKeys.has(e.slotKey));
+  const pipelineRefs = spec.pipelineReferences || [];
+  const sortedChain = orderChainPostOrder(slotsForSort, cleanRawChain, pipelineRefs);
+  const columnMap = computeColumnMap(slotsForSort, sortedChain, pipelineRefs);
+
+  // R impl catalog (flatten across methods, filter to R, language-key by oid)
+  const allImpls = Object.values(appState.methodImplementationCatalog?.implementations || {})
+    .flat()
+    .filter(i => i.language === 'R');
+  const rImplByOid = {};
+  for (const i of allImpls) rImplByOid[i.methodOid] = i;
+
+  const adam = appState.conceptMappings?.adam || {};
+  const methodTypeByOid = {};
+  for (const m of (appState.methodsIndex?.methods || [])) {
+    if (m.oid) methodTypeByOid[m.oid] = m.type;
+  }
+
+  const blocks = [];
+  let stepN = 1;
+  for (const rawEntry of sortedChain) {
+    const transform = txLib.find(t => t.oid === rawEntry.derivationOid);
+    if (!transform) continue;
+    const usesMethod = transform.usesMethod;
+    // Skip analysis-typed entries — those have their own resolved-code pane below
+    if (methodTypeByOid[usesMethod] === 'analysis') continue;
+
+    // Augment the entry with chain-lookup overrides + a resolvedBindings
+    // copy that knows about constraint values. We rebuild a minimal version
+    // here — the full version (with slice resolution etc.) is built at
+    // execute time, but for display the column map is what matters.
+    //
+    // Configs come from two sources, in increasing precedence:
+    //   1. transform.methodConfigurations — the library default values that
+    //      bake in the method's role (e.g. agg_func='sum' for T.ADAS_Sum…).
+    //   2. spec.derivationConfigValues[slotKey] — per-instance overrides
+    //      the user set in Step 6. Same merge order as _executeAnalysis.
+    const cols = columnMap[rawEntry.slotKey] || {};
+    const configMap = new Map();
+    for (const mc of (transform.methodConfigurations || [])) {
+      if (mc?.configurationName != null) configMap.set(mc.configurationName, mc.value);
+    }
+    for (const [name, value] of Object.entries(spec.derivationConfigValues?.[rawEntry.slotKey] || {})) {
+      configMap.set(name, value);
+    }
+    const entry = {
+      ...rawEntry,
+      outputColumn: cols.outputColumn || null,
+      inputColumns: cols.inputColumns || {},
+      resolvedBindings: transform.bindings || [],
+      configurationValues: [...configMap.entries()].map(([name, value]) => ({ name, value }))
+    };
+
+    const impl = rImplByOid[usesMethod];
+    let body;
+    if (!impl?.callTemplate) {
+      body = `# (no R implementation registered for ${usesMethod})`;
+    } else {
+      body = resolveDerivationCallTemplate(
+        entry, transform, impl, adam,
+        spec.dimensionCategoryPicks || {},
+        appState.conceptCategories?.categories || {}
+      ) || '# (resolver returned empty)';
+    }
+    blocks.push(`# Step ${stepN++} — ${transform.name}  (${usesMethod})\n${body}`);
+  }
+
+  if (blocks.length === 0) return '';
+
+  const code = [
+    `# AC/DC derivation chain — runs on the concept-keyed cube (concept_data).`,
+    `# Each block is the resolved R for one transformation step, in execution order.`,
+    `# Chain-output columns use __col_* names so sibling derivations producing the`,
+    `# same concept don't collide on merge — same convention used by acdc_engine.R.`,
+    ``,
+    blocks.join('\n\n')
+  ].join('\n');
+
+  return `
+    <details class="exec-bindings-section" style="margin-top:10px; background:rgba(0,0,0,0.02); border:1px solid var(--cdisc-border); border-radius:var(--radius); padding:8px 12px;">
+      <summary style="cursor:pointer; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cdisc-text-secondary);">
+        Resolved R Code &mdash; Derivation Chain
+        <span style="font-weight:400; text-transform:none; letter-spacing:0; margin-left:6px; color:var(--cdisc-text-secondary);">
+          ${blocks.length} step${blocks.length === 1 ? '' : 's'}
+        </span>
+      </summary>
+      <pre class="exec-code-pre" style="margin:8px 0 0; max-height:420px; overflow:auto;">${_escapeHtml(code)}</pre>
+    </details>`;
+}
+
 function _renderDerivationSummary(ep, result) {
   const rawChain = appState.endpointSpecs?.[ep.id]?.derivationChain || [];
   const derivConfigValues = appState.endpointSpecs?.[ep.id]?.derivationConfigValues || {};
@@ -2232,6 +2404,12 @@ function _renderDerivationSummary(ep, result) {
         ${orderHtml}
         ${analysisRootRow}
       </div>
+
+      <!-- Resolved R Code (chain) — generated from method callTemplates + the
+           chain-lookup column map. Same code the engine eval()s at runtime;
+           viewers see what would run in their validated R environment. -->
+      ${_renderChainResolvedCode(ep)}
+
       <details class="exec-deriv-details" style="margin-top:10px;">
         <summary style="font-size:11px; color:var(--cdisc-text-secondary); cursor:pointer; padding:4px 0;">Show full bindings &amp; cube details</summary>
       ${derivMessage && !derivResult ? `

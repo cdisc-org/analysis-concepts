@@ -201,6 +201,115 @@ export function resolveCallTemplate(impl, bindings, overrides, adam, configs, da
 }
 
 /**
+ * Resolve a derivation step's callTemplate to standalone runnable code.
+ *
+ * The analysis resolver above skips output bindings (`<difference>` /
+ * `<quotient>` / etc.) — derivations rely on those for the column being
+ * written. We also honour chain-lookup overrides on the entry:
+ *   • `entry.outputColumn` renames the primary output column to a unique
+ *     `__col_*` name so sibling derivations producing the same concept don't
+ *     collide on merge.
+ *   • `entry.inputColumns[role]` redirects an input role to an upstream
+ *     chain-output column (e.g. M.Subtraction's `minuend` points at the
+ *     ADAS-Cog (11) Total Score chain column).
+ *
+ * Returns null when there's no R implementation for the method.
+ *
+ * @param {Object} entry      - One element of endpointSpec.derivationChain,
+ *                              augmented with outputColumn + inputColumns
+ *                              (see transformation-linker.computeColumnMap).
+ * @param {Object} transform  - The transformation definition (library entry).
+ * @param {Object} impl       - The R implementation entry (callTemplate + role spec).
+ * @param {Object} adam       - conceptMappings.adam (for facet inference).
+ */
+export function resolveDerivationCallTemplate(entry, transform, impl, adam, categoryPicks, categoriesMap) {
+  if (!impl?.callTemplate) return null;
+  let code = impl.callTemplate;
+  const isR = (impl.language || '').toUpperCase() === 'R';
+
+  // Resolve a binding to a concrete concept name. The library authors
+  // sometimes use `conceptCategory` (e.g. ParameterDimension) for dimension
+  // bindings — those need to be projected through the endpoint's
+  // dimensionCategoryPicks to find the concrete dim (Parameter / AnalysisVisit
+  // / etc.). Falls back to the category's first member.
+  const resolveBindingConcept = (b) => {
+    const direct = (b.concept || '').replace(/@.*/, '');
+    if (direct) return direct;
+    const cat = b.conceptCategory;
+    if (!cat) return '';
+    if (categoryPicks?.[cat]) return categoryPicks[cat];
+    const members = categoriesMap?.[cat]?.members;
+    if (members?.[0]?.concept) return members[0].concept;
+    return cat; // last-ditch placeholder so the user can see what was unresolved
+  };
+
+  // Build role → column[s] map. Both inputs AND outputs are considered;
+  // chain-lookup overrides win, otherwise we synthesise a concept-keyed name
+  // (Measure → Measure.Result.Value, etc.).
+  const roleMap = {};
+  const bindings = entry.resolvedBindings || transform.bindings || [];
+  for (const b of bindings) {
+    const role = b.methodRole;
+    if (!role) continue;
+    const concept = resolveBindingConcept(b);
+    if (!concept) continue;
+
+    let col;
+    if (b.direction === 'output') {
+      // Primary output → chain-lookup outputColumn; companions keep their
+      // concept-keyed name (units, labels) since they don't collide.
+      col = (b.dataStructureRole === 'measure' && entry.outputColumn)
+        ? entry.outputColumn
+        : concept;
+    } else if (entry.inputColumns?.[role]) {
+      col = entry.inputColumns[role];
+    } else if (b.qualifierType === 'facet' && b.qualifierValue) {
+      col = `${concept}.${normalizeFacetCase(b.qualifierValue)}`;
+    } else {
+      const cEntry = adam?.concepts?.[concept];
+      if (cEntry?.facets && b.dataStructureRole === 'measure') {
+        col = `${concept}.Result.Value`;
+      } else if (cEntry?.facets && b.dataStructureRole === 'attribute') {
+        col = `${concept}.Result.Unit`;
+      } else {
+        col = concept;
+      }
+    }
+    if (!roleMap[role]) roleMap[role] = [];
+    roleMap[role].push(col);
+  }
+
+  // Substitute <role> placeholders. Backticked positions get per-term
+  // backticking; bare positions use the role separator. Sort roles by
+  // length-desc so e.g. `<minuend>` matches before `<min>` would.
+  const sep = impl.roleSeparator || (isR ? ' + ' : ' ');
+  const roles = Object.keys(roleMap).sort((a, b) => b.length - a.length);
+  for (const role of roles) {
+    const ph = `<${role}>`;
+    const terms = roleMap[role];
+    if (isR) {
+      const back = '`' + ph + '`';
+      const backVal = '`' + terms.join('` + `') + '`';
+      code = code.replaceAll(back, backVal);
+    }
+    code = code.replaceAll(ph, terms.join(sep));
+  }
+
+  // Substitute <config> placeholders from entry.configurationValues. Values
+  // go in BARE — templates already include any surrounding quotes the host
+  // language needs (e.g. `switch("<agg_func>", …)` → `switch("sum", …)`).
+  // Quoting here would double-wrap and break the resolved code.
+  const configs = {};
+  for (const cv of (entry.configurationValues || [])) configs[cv.name] = cv.value;
+  for (const [name, val] of Object.entries(configs)) {
+    if (val == null) continue;
+    code = code.replaceAll(`<${name}>`, String(val));
+  }
+
+  return code;
+}
+
+/**
  * Narrow <fixed_effect> in post-hoc lines of a callTemplate based on
  * outputConfiguration.  The model formula keeps ALL fixed effects, but
  * post-hoc lines (emmeans, LSMEANS, etc.) use only the selected ones.
