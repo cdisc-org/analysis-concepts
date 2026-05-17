@@ -8,6 +8,7 @@
   },
   "name": "M.KaplanMeier",
   "label": "Kaplan-Meier Estimator",
+  "shortLabel": "KM",
   "code": {
     "system": "NCI",
     "value": null

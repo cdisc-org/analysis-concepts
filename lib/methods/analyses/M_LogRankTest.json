@@ -8,6 +8,7 @@
   },
   "name": "M.LogRankTest",
   "label": "Log-rank Test",
+  "shortLabel": "log-rank",
   "code": {
     "system": "NCI",
     "value": null

@@ -1,0 +1,426 @@
+{
+  "schema_version": "0.5.0",
+  "description": "Registry of all ACDC method definitions",
+  "methods": [
+    {
+      "name": "M.Subtraction",
+      "label": "Subtraction",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M_Subtraction.json"
+    },
+    {
+      "name": "M.Division",
+      "label": "Division",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M_Division.json"
+    },
+    {
+      "name": "M.PercentChange",
+      "label": "Percent Change",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M_PercentChange.json"
+    },
+    {
+      "name": "M.DateDifference",
+      "label": "Date Difference",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M_DateDifference.json"
+    },
+    {
+      "name": "M.Aggregation",
+      "label": "Aggregation",
+      "type": "derivation",
+      "class": "Summary",
+      "path": "derivations/M_Aggregation.json"
+    },
+    {
+      "name": "M.Categorization",
+      "label": "Categorization",
+      "type": "derivation",
+      "class": "Classification",
+      "path": "derivations/M_Categorization.json"
+    },
+    {
+      "name": "M.ThresholdCompare",
+      "label": "Threshold Comparison",
+      "type": "derivation",
+      "class": "Classification",
+      "path": "derivations/M_ThresholdCompare.json"
+    },
+    {
+      "name": "M.WindowedVisitAssignment",
+      "label": "Windowed Visit Assignment",
+      "type": "derivation",
+      "class": "Classification",
+      "path": "derivations/M_WindowedVisitAssignment.json"
+    },
+    {
+      "name": "M.Imputation",
+      "label": "Apply Imputation",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M_Imputation.json"
+    },
+    {
+      "name": "M.ImputedValue_LOCF",
+      "label": "Last Observation Carried Forward",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M_ImputedValue_LOCF.json"
+    },
+    {
+      "name": "M.ImputedValue_BOCF",
+      "label": "Baseline Observation Carried Forward",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M_ImputedValue_BOCF.json"
+    },
+    {
+      "name": "M.ImputedValue_WOCF",
+      "label": "Worst Observation Carried Forward",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M_ImputedValue_WOCF.json"
+    },
+    {
+      "name": "M.ImputedValue_Mean",
+      "label": "Mean Imputation",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M_ImputedValue_Mean.json"
+    },
+    {
+      "name": "M.ImputedValue_Median",
+      "label": "Median Imputation",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M_ImputedValue_Median.json"
+    },
+    {
+      "name": "M.ImputedValue_Zero",
+      "label": "Zero Imputation",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M_ImputedValue_Zero.json"
+    },
+    {
+      "name": "M.WindowLookup",
+      "label": "Window Lookup",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M_WindowLookup.json"
+    },
+    {
+      "name": "M.Rounding",
+      "label": "Rounding",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M_Rounding.json"
+    },
+    {
+      "name": "M.UnitConversion",
+      "label": "Unit Conversion",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M_UnitConversion.json"
+    },
+    {
+      "name": "M.ConditionalValue",
+      "label": "Conditional Value",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M_ConditionalValue.json"
+    },
+    {
+      "name": "M.AffineTransform",
+      "label": "Affine Transform",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M_AffineTransform.json"
+    },
+    {
+      "name": "M.OneSampleTTest",
+      "label": "One-sample t-test",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M_OneSampleTTest.json"
+    },
+    {
+      "name": "M.PairedTTest",
+      "label": "Paired t-test",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M_PairedTTest.json"
+    },
+    {
+      "name": "M.TwoSampleTTest",
+      "label": "Two-sample t-test",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M_TwoSampleTTest.json"
+    },
+    {
+      "name": "M.ANOVA",
+      "label": "ANOVA",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M_ANOVA.json"
+    },
+    {
+      "name": "M.ANCOVA",
+      "label": "ANCOVA",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M_ANCOVA.json"
+    },
+    {
+      "name": "M.MMRM",
+      "label": "Mixed Model for Repeated Measures",
+      "type": "analysis",
+      "class": "Repeated Measures",
+      "path": "analyses/M_MMRM.json"
+    },
+    {
+      "name": "M.ChiSquaredTest",
+      "label": "Chi-squared Test",
+      "type": "analysis",
+      "class": "Categorical Data Analysis",
+      "path": "analyses/M_ChiSquaredTest.json"
+    },
+    {
+      "name": "M.CMH",
+      "label": "Cochran-Mantel-Haenszel Test",
+      "type": "analysis",
+      "class": "Categorical Data Analysis",
+      "path": "analyses/M_CMH.json"
+    },
+    {
+      "name": "M.FisherExactTest",
+      "label": "Fisher's Exact Test",
+      "type": "analysis",
+      "class": "Categorical Data Analysis",
+      "path": "analyses/M_FisherExactTest.json"
+    },
+    {
+      "name": "M.LogisticRegression",
+      "label": "Logistic Regression",
+      "type": "analysis",
+      "class": "Generalized Linear Models",
+      "path": "analyses/M_LogisticRegression.json"
+    },
+    {
+      "name": "M.KaplanMeier",
+      "label": "Kaplan-Meier Estimator",
+      "type": "analysis",
+      "class": "Survival Models",
+      "path": "analyses/M_KaplanMeier.json"
+    },
+    {
+      "name": "M.LogRankTest",
+      "label": "Log-rank Test",
+      "type": "analysis",
+      "class": "Survival Models",
+      "path": "analyses/M_LogRankTest.json"
+    },
+    {
+      "name": "M.CoxPH",
+      "label": "Cox Proportional Hazards",
+      "type": "analysis",
+      "class": "Survival Models",
+      "path": "analyses/M_CoxPH.json"
+    },
+    {
+      "name": "M.MANOVA",
+      "label": "Multivariate Analysis of Variance",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M_MANOVA.json"
+    },
+    {
+      "name": "M.Mean",
+      "label": "Arithmetic Mean",
+      "type": "analysis",
+      "class": "Central Tendency",
+      "path": "analyses/M_Mean.json"
+    },
+    {
+      "name": "M.GeometricMean",
+      "label": "Geometric Mean",
+      "type": "analysis",
+      "class": "Central Tendency",
+      "path": "analyses/M_GeometricMean.json"
+    },
+    {
+      "name": "M.HarmonicMean",
+      "label": "Harmonic Mean",
+      "type": "analysis",
+      "class": "Central Tendency",
+      "path": "analyses/M_HarmonicMean.json"
+    },
+    {
+      "name": "M.TrimmedMean",
+      "label": "Trimmed Mean",
+      "type": "analysis",
+      "class": "Central Tendency",
+      "path": "analyses/M_TrimmedMean.json"
+    },
+    {
+      "name": "M.WinsorizedMean",
+      "label": "Winsorized Mean",
+      "type": "analysis",
+      "class": "Central Tendency",
+      "path": "analyses/M_WinsorizedMean.json"
+    },
+    {
+      "name": "M.Median",
+      "label": "Median",
+      "type": "analysis",
+      "class": "Central Tendency",
+      "path": "analyses/M_Median.json"
+    },
+    {
+      "name": "M.Mode",
+      "label": "Mode",
+      "type": "analysis",
+      "class": "Central Tendency",
+      "path": "analyses/M_Mode.json"
+    },
+    {
+      "name": "M.StandardDeviation",
+      "label": "Standard Deviation",
+      "type": "analysis",
+      "class": "Dispersion",
+      "path": "analyses/M_StandardDeviation.json"
+    },
+    {
+      "name": "M.Variance",
+      "label": "Variance",
+      "type": "analysis",
+      "class": "Dispersion",
+      "path": "analyses/M_Variance.json"
+    },
+    {
+      "name": "M.CoefficientOfVariation",
+      "label": "Coefficient of Variation",
+      "type": "analysis",
+      "class": "Dispersion",
+      "path": "analyses/M_CoefficientOfVariation.json"
+    },
+    {
+      "name": "M.GeometricCV",
+      "label": "Geometric Coefficient of Variation",
+      "type": "analysis",
+      "class": "Dispersion",
+      "path": "analyses/M_GeometricCV.json"
+    },
+    {
+      "name": "M.Range",
+      "label": "Range",
+      "type": "analysis",
+      "class": "Dispersion",
+      "path": "analyses/M_Range.json"
+    },
+    {
+      "name": "M.InterquartileRange",
+      "label": "Interquartile Range",
+      "type": "analysis",
+      "class": "Dispersion",
+      "path": "analyses/M_InterquartileRange.json"
+    },
+    {
+      "name": "M.Percentile",
+      "label": "Percentile",
+      "type": "analysis",
+      "class": "Quantile",
+      "path": "analyses/M_Percentile.json"
+    },
+    {
+      "name": "M.Quartile",
+      "label": "Quartile",
+      "type": "analysis",
+      "class": "Quantile",
+      "path": "analyses/M_Quartile.json"
+    },
+    {
+      "name": "M.Skewness",
+      "label": "Skewness",
+      "type": "analysis",
+      "class": "Shape",
+      "path": "analyses/M_Skewness.json"
+    },
+    {
+      "name": "M.Kurtosis",
+      "label": "Kurtosis",
+      "type": "analysis",
+      "class": "Shape",
+      "path": "analyses/M_Kurtosis.json"
+    },
+    {
+      "name": "M.Count",
+      "label": "Count",
+      "type": "analysis",
+      "class": "Counting",
+      "path": "analyses/M_Count.json"
+    },
+    {
+      "name": "M.Frequency",
+      "label": "Frequency",
+      "type": "analysis",
+      "class": "Counting",
+      "path": "analyses/M_Frequency.json"
+    },
+    {
+      "name": "M.Proportion",
+      "label": "Proportion",
+      "type": "analysis",
+      "class": "Counting",
+      "path": "analyses/M_Proportion.json"
+    },
+    {
+      "name": "M.CumulativeCount",
+      "label": "Cumulative Count",
+      "type": "analysis",
+      "class": "Counting",
+      "path": "analyses/M_CumulativeCount.json"
+    },
+    {
+      "name": "M.CumulativeFrequency",
+      "label": "Cumulative Frequency",
+      "type": "analysis",
+      "class": "Counting",
+      "path": "analyses/M_CumulativeFrequency.json"
+    },
+    {
+      "name": "M.Minimum",
+      "label": "Minimum",
+      "type": "analysis",
+      "class": "Extremes",
+      "path": "analyses/M_Minimum.json"
+    },
+    {
+      "name": "M.Maximum",
+      "label": "Maximum",
+      "type": "analysis",
+      "class": "Extremes",
+      "path": "analyses/M_Maximum.json"
+    },
+    {
+      "name": "M.Sum",
+      "label": "Sum",
+      "type": "analysis",
+      "class": "Extremes",
+      "path": "analyses/M_Sum.json"
+    },
+    {
+      "name": "M.RecordSelection",
+      "label": "Record Selection",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M_RecordSelection.json"
+    }
+  ]
+}

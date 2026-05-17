@@ -9,6 +9,7 @@
   },
   "name": "M.OneSampleTTest",
   "label": "One-sample t-test",
+  "shortLabel": "1-sample t",
   "code": {
     "system": "NCI",
     "value": null

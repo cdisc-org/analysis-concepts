@@ -8,6 +8,7 @@
   },
   "name": "M.Imputation",
   "label": "Apply Imputation",
+  "shortLabel": "Imputation",
   "code": {
     "system": "NCI",
     "value": null

@@ -8,6 +8,7 @@
   },
   "name": "M.ImputedValue_Zero",
   "label": "Zero Imputation",
+  "shortLabel": "Zero",
   "code": {
     "system": "NCI",
     "value": null

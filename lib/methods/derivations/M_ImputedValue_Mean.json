@@ -8,6 +8,7 @@
   },
   "name": "M.ImputedValue_Mean",
   "label": "Mean Imputation",
+  "shortLabel": "Mean",
   "code": {
     "system": "NCI",
     "value": null

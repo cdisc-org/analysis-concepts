@@ -8,6 +8,7 @@
   },
   "name": "M.ImputedValue_BOCF",
   "label": "Baseline Observation Carried Forward",
+  "shortLabel": "BOCF",
   "code": {
     "system": "NCI",
     "value": null

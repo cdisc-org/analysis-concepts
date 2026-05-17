@@ -8,6 +8,7 @@
   },
   "name": "M.StandardDeviation",
   "label": "Standard Deviation",
+  "shortLabel": "SD",
   "code": {
     "system": "NCI",
     "value": null

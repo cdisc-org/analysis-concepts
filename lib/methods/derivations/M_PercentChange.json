@@ -8,6 +8,7 @@
   },
   "name": "M.PercentChange",
   "label": "Percent Change",
+  "shortLabel": "%CFB",
   "code": {
     "system": "NCI",
     "value": null

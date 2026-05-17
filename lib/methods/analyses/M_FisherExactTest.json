@@ -8,6 +8,7 @@
   },
   "name": "M.FisherExactTest",
   "label": "Fisher's Exact Test",
+  "shortLabel": "Fisher's exact",
   "code": {
     "system": "NCI",
     "value": null

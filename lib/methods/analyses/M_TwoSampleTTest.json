@@ -9,6 +9,7 @@
   },
   "name": "M.TwoSampleTTest",
   "label": "Two-sample t-test",
+  "shortLabel": "2-sample t",
   "code": {
     "system": "NCI",
     "value": null

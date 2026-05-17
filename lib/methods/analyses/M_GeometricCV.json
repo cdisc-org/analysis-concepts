@@ -8,6 +8,7 @@
   },
   "name": "M.GeometricCV",
   "label": "Geometric Coefficient of Variation",
+  "shortLabel": "GeoCV",
   "code": {
     "system": "NCI",
     "value": null

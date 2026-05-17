@@ -8,6 +8,7 @@
   },
   "name": "M.ImputedValue_LOCF",
   "label": "Last Observation Carried Forward",
+  "shortLabel": "LOCF",
   "code": {
     "system": "NCI",
     "value": null

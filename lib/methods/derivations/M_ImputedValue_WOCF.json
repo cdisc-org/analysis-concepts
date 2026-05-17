@@ -8,6 +8,7 @@
   },
   "name": "M.ImputedValue_WOCF",
   "label": "Worst Observation Carried Forward",
+  "shortLabel": "WOCF",
   "code": {
     "system": "NCI",
     "value": null

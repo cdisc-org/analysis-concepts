@@ -8,6 +8,7 @@
   },
   "name": "M.CMH",
   "label": "Cochran-Mantel-Haenszel Test",
+  "shortLabel": "CMH",
   "code": {
     "system": "NCI",
     "value": null

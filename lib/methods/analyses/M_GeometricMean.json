@@ -8,6 +8,7 @@
   },
   "name": "M.GeometricMean",
   "label": "Geometric Mean",
+  "shortLabel": "geo mean",
   "code": {
     "system": "NCI",
     "value": null

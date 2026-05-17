@@ -9,6 +9,7 @@
   },
   "name": "M.PairedTTest",
   "label": "Paired t-test",
+  "shortLabel": "paired t",
   "code": {
     "system": "NCI",
     "value": null

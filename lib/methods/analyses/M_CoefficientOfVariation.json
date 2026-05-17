@@ -8,6 +8,7 @@
   },
   "name": "M.CoefficientOfVariation",
   "label": "Coefficient of Variation",
+  "shortLabel": "CV",
   "code": {
     "system": "NCI",
     "value": null

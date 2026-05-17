@@ -9,6 +9,7 @@
   },
   "name": "M.MANOVA",
   "label": "Multivariate Analysis of Variance",
+  "shortLabel": "MANOVA",
   "code": {
     "system": "NCI",
     "value": null

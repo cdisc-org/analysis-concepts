@@ -8,6 +8,7 @@
   },
   "name": "M.ChiSquaredTest",
   "label": "Chi-squared Test",
+  "shortLabel": "chi-square",
   "code": {
     "system": "NCI",
     "value": null

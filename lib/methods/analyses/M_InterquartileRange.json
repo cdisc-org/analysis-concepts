@@ -8,6 +8,7 @@
   },
   "name": "M.InterquartileRange",
   "label": "Interquartile Range",
+  "shortLabel": "IQR",
   "code": {
     "system": "NCI",
     "value": null

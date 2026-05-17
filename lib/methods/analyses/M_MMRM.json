@@ -9,6 +9,7 @@
   },
   "name": "M.MMRM",
   "label": "Mixed Model for Repeated Measures",
+  "shortLabel": "MMRM",
   "code": {
     "system": "NCI",
     "value": null

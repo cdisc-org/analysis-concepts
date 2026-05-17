@@ -9,6 +9,7 @@
   },
   "name": "M.CoxPH",
   "label": "Cox Proportional Hazards",
+  "shortLabel": "Cox PH",
   "code": {
     "system": "NCI",
     "value": null

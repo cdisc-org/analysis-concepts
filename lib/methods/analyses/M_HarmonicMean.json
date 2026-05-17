@@ -8,6 +8,7 @@
   },
   "name": "M.HarmonicMean",
   "label": "Harmonic Mean",
+  "shortLabel": "harmonic mean",
   "code": {
     "system": "NCI",
     "value": null
