@@ -22,6 +22,8 @@
     "concepts": {
       "Estimate": {
         "definition": "Point estimate of a quantity",
+        "label": "Point estimate",
+        "shortLabel": "est",
         "dataType": "decimal",
         "statoMapping": "STATO:0000599",
         "code": {
@@ -31,6 +33,8 @@
       },
       "SE": {
         "definition": "Standard error of an estimate",
+        "label": "Standard error",
+        "shortLabel": "SE",
         "dataType": "decimal",
         "statoMapping": "STATO:0000562",
         "code": {
@@ -40,6 +44,8 @@
       },
       "CI_Lower": {
         "definition": "Lower bound of a confidence interval",
+        "label": "Confidence interval lower bound",
+        "shortLabel": "CI lower",
         "dataType": "decimal",
         "statoMapping": "STATO:0000315",
         "code": {
@@ -49,6 +55,8 @@
       },
       "CI_Upper": {
         "definition": "Upper bound of a confidence interval",
+        "label": "Confidence interval upper bound",
+        "shortLabel": "CI upper",
         "dataType": "decimal",
         "statoMapping": "STATO:0000314",
         "code": {
@@ -58,6 +66,8 @@
       },
       "DF": {
         "definition": "Degrees of freedom",
+        "label": "Degrees of freedom",
+        "shortLabel": "DF",
         "dataType": "decimal",
         "statoMapping": "STATO:0000069",
         "code": {
@@ -67,6 +77,8 @@
       },
       "PValue": {
         "definition": "P-value for a statistical test",
+        "label": "P-value",
+        "shortLabel": "p",
         "dataType": "decimal",
         "statoMapping": "STATO:0000193",
         "code": {
@@ -76,6 +88,8 @@
       },
       "TStatistic": {
         "definition": "t test statistic",
+        "label": "t statistic",
+        "shortLabel": "t",
         "dataType": "decimal",
         "statoMapping": "STATO:0000176",
         "code": {
@@ -85,6 +99,8 @@
       },
       "FStatistic": {
         "definition": "F test statistic",
+        "label": "F statistic",
+        "shortLabel": "F",
         "dataType": "decimal",
         "statoMapping": "STATO:0000282",
         "code": {
@@ -94,6 +110,8 @@
       },
       "ChiSquared": {
         "definition": "Chi-squared test statistic",
+        "label": "Chi-squared statistic",
+        "shortLabel": "χ²",
         "dataType": "decimal",
         "statoMapping": "STATO:0000030",
         "code": {
@@ -103,6 +121,8 @@
       },
       "Coefficient": {
         "definition": "Model coefficient (log scale for GLMs)",
+        "label": "Model coefficient",
+        "shortLabel": "coef",
         "dataType": "decimal",
         "code": {
           "system": "NCI",
@@ -111,6 +131,8 @@
       },
       "HazardRatio": {
         "definition": "Hazard ratio (exponentiated Cox coefficient)",
+        "label": "Hazard ratio",
+        "shortLabel": "HR",
         "dataType": "decimal",
         "statoMapping": "STATO:0000224",
         "code": {
@@ -120,6 +142,8 @@
       },
       "OddsRatio": {
         "definition": "Odds ratio (exponentiated log-odds coefficient)",
+        "label": "Odds ratio",
+        "shortLabel": "OR",
         "dataType": "decimal",
         "statoMapping": "STATO:0000182",
         "code": {
@@ -129,6 +153,8 @@
       },
       "SurvivalProb": {
         "definition": "Estimated survival probability",
+        "label": "Survival probability",
+        "shortLabel": "S(t)",
         "dataType": "decimal",
         "code": {
           "system": "NCI",
@@ -155,6 +181,8 @@
       },
       "NRisk": {
         "definition": "Number at risk",
+        "label": "Number at risk",
+        "shortLabel": "n at risk",
         "dataType": "decimal",
         "code": {
           "system": "NCI",
@@ -163,6 +191,8 @@
       },
       "NEvent": {
         "definition": "Number of events",
+        "label": "Number of events",
+        "shortLabel": "n events",
         "dataType": "decimal",
         "code": {
           "system": "NCI",
@@ -171,6 +201,8 @@
       },
       "NCensored": {
         "definition": "Number censored",
+        "label": "Number censored",
+        "shortLabel": "n cens",
         "dataType": "decimal",
         "code": {
           "system": "NCI",
@@ -179,6 +211,8 @@
       },
       "AIC": {
         "definition": "Akaike Information Criterion",
+        "label": "Akaike Information Criterion",
+        "shortLabel": "AIC",
         "dataType": "decimal",
         "statoMapping": "STATO:0000328",
         "code": {
@@ -188,6 +222,8 @@
       },
       "BIC": {
         "definition": "Bayesian Information Criterion",
+        "label": "Bayesian Information Criterion",
+        "shortLabel": "BIC",
         "dataType": "decimal",
         "statoMapping": "STATO:0000327",
         "code": {
@@ -197,6 +233,8 @@
       },
       "Minus2LogL": {
         "definition": "-2 Log Likelihood",
+        "label": "−2 log likelihood",
+        "shortLabel": "−2LL",
         "dataType": "decimal",
         "code": {
           "system": "NCI",
@@ -205,6 +243,8 @@
       },
       "DF_Num": {
         "definition": "Numerator degrees of freedom",
+        "label": "Numerator degrees of freedom",
+        "shortLabel": "DF (num)",
         "dataType": "decimal",
         "statoMapping": "STATO:0000498",
         "code": {
@@ -214,6 +254,8 @@
       },
       "DF_Den": {
         "definition": "Denominator degrees of freedom",
+        "label": "Denominator degrees of freedom",
+        "shortLabel": "DF (den)",
         "dataType": "decimal",
         "statoMapping": "STATO:0000527",
         "code": {
