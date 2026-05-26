@@ -1,0 +1,657 @@
+{
+  "model": "eSAP",
+  "version": "0.1.0",
+  "description": "Study eSAP for CDISC PILOT - LZZT - merged",
+  "$provenance": {
+    "usdm": {
+      "model": "CDISC Unified Study Definitions Model",
+      "version": "4.0",
+      "uri": "https://www.cdisc.org/usdm",
+      "entities": [
+        "Study",
+        "StudyVersion",
+        "StudyDesign",
+        "Objective",
+        "Endpoint",
+        "AnalysisPopulation",
+        "StudyIntervention",
+        "IntercurrentEvent",
+        "StudyDefinitionDocument",
+        "NarrativeContent",
+        "StudyTitle"
+      ]
+    },
+    "transformation_library": {
+      "model": "Transformation & Method Library",
+      "schemaRef": "https://cdisc.org/acdc/transformation",
+      "entities": [
+        "TransformationTemplate",
+        "SmartPhrase",
+        "Method",
+        "MethodOutput"
+      ],
+      "version": "0.6"
+    },
+    "ars": {
+      "model": "Analysis Results Standard",
+      "uri": "https://www.cdisc.org/ars",
+      "entities": [
+        "Analysis"
+      ]
+    }
+  },
+  "study": {
+    "id": "Study_1",
+    "instanceType": "Study",
+    "name": "H2Q-MC-LZZT - pilot_LZZT_narrative_2026MAR10",
+    "label": "Alzheimer Study",
+    "description": "Patients with probable mild to moderate AD will be studied in a randomized, double-blind, parallel (3 arm), placebo-controlled trial of 26 weeks duration. The study will be conducted on an outpatient basis. Approximately 300 patients will be enrolled",
+    "versions": [
+      {
+        "id": "StudyVersion_1",
+        "instanceType": "StudyVersion",
+        "versionIdentifier": "1",
+        "rationale": "The discontinuation rate associated with this oral dosing regimen was 58.6% in previous studies, and alternative clinical strategies have been sought to improve tolerance for the compound. To that end, development of a Transdermal Therapeutic System (TTS) has been initiated.",
+        "titles": [
+          {
+            "id": "StudyTitle_1",
+            "instanceType": "StudyTitle",
+            "text": "Alzheimer Study",
+            "type": "Official Study Title"
+          }
+        ],
+        "studyDesigns": [
+          {
+            "id": "InterventionalStudyDesign_1",
+            "instanceType": "StudyDesign",
+            "name": "Darren",
+            "description": "Patients with probable mild to moderate AD will be studied in a randomized, double-blind, parallel (3 arm), placebo-controlled trial of 26 weeks duration. The study will be conducted on an outpatient basis. Approximately 300 patients will be enrolled",
+            "objectives": [
+              {
+                "id": "Objective_1",
+                "instanceType": "Objective",
+                "name": "OBJ1",
+                "level": "primary",
+                "endpoints": [
+                  {
+                    "id": "Endpoint_1",
+                    "instanceType": "Endpoint",
+                    "name": "END1",
+                    "text": "Alzheimer's Disease Assessment Scale - Cognitive Subscale, total of 11 items [ADAS-Cog (11)] at Week 24",
+                    "level": "primary",
+                    "hasTransformation": [
+                      {
+                        "sequence": 1,
+                        "basedOn": {
+                          "transformationTemplateId": "T.ChangeFromBaseline"
+                        },
+                        "resolvedSlices": [],
+                        "resolvedPhrases": [],
+                        "hasInput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "minuend",
+                            "dataStructureRole": "measure",
+                            "requiredValueType": "Quantity"
+                          },
+                          {
+                            "concept": "Measure",
+                            "methodRole": "subtrahend",
+                            "dataStructureRole": "measure",
+                            "slice": "parameter_baseline",
+                            "requiredValueType": "Quantity"
+                          },
+                          {
+                            "concept": "Subject",
+                            "methodRole": "partition",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "concept": "Parameter",
+                            "methodRole": "constraint",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "methodRole": "partition",
+                            "dataStructureRole": "dimension"
+                          }
+                        ],
+                        "hasOutput": [
+                          {
+                            "concept": "Change",
+                            "methodRole": "difference",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Subject",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "concept": "Parameter",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "dataStructureRole": "dimension"
+                          }
+                        ]
+                      },
+                      {
+                        "sequence": 2,
+                        "basedOn": {
+                          "transformationTemplateId": "T.ADAS_Cog_11_TotalScore"
+                        },
+                        "resolvedSlices": [],
+                        "resolvedPhrases": [],
+                        "hasInput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "numerator",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Measure",
+                            "methodRole": "denominator",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Flag",
+                            "methodRole": "filter",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Subject",
+                            "methodRole": "partition",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "concept": "Parameter",
+                            "methodRole": "constraint",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "methodRole": "partition",
+                            "dataStructureRole": "dimension"
+                          }
+                        ],
+                        "hasOutput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "quotient",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Subject",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "concept": "Parameter",
+                            "dataStructureRole": "dimension"
+                          }
+                        ]
+                      },
+                      {
+                        "sequence": 3,
+                        "basedOn": {
+                          "transformationTemplateId": "T.ADAS_SumAvailableScores"
+                        },
+                        "resolvedSlices": [],
+                        "resolvedPhrases": [],
+                        "hasInput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "value",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Subject",
+                            "methodRole": "partition",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "methodRole": "partition",
+                            "dataStructureRole": "dimension"
+                          }
+                        ],
+                        "hasOutput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "result",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Subject",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "dataStructureRole": "dimension"
+                          }
+                        ]
+                      },
+                      {
+                        "sequence": 4,
+                        "basedOn": {
+                          "transformationTemplateId": "T.ADAS_ScoreableFraction"
+                        },
+                        "resolvedSlices": [],
+                        "resolvedPhrases": [],
+                        "hasInput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "value",
+                            "dataStructureRole": "measure"
+                          }
+                        ],
+                        "hasOutput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "result",
+                            "dataStructureRole": "measure"
+                          }
+                        ]
+                      },
+                      {
+                        "sequence": 5,
+                        "basedOn": {
+                          "transformationTemplateId": "T.ADAS_MissingScaleCapacity"
+                        },
+                        "resolvedSlices": [],
+                        "resolvedPhrases": [],
+                        "hasInput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "value",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Subject",
+                            "methodRole": "partition",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "methodRole": "partition",
+                            "dataStructureRole": "dimension"
+                          }
+                        ],
+                        "hasOutput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "result",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Subject",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "dataStructureRole": "dimension"
+                          }
+                        ]
+                      },
+                      {
+                        "sequence": 6,
+                        "basedOn": {
+                          "transformationTemplateId": "T.ADAS_MissingContribution"
+                        },
+                        "resolvedSlices": [],
+                        "resolvedPhrases": [],
+                        "hasInput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "value",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Measure",
+                            "methodRole": "alternate",
+                            "dataStructureRole": "measure"
+                          }
+                        ],
+                        "hasOutput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "result",
+                            "dataStructureRole": "measure"
+                          }
+                        ]
+                      },
+                      {
+                        "sequence": 7,
+                        "basedOn": {
+                          "transformationTemplateId": "T.ADAS_ItemMaxScore"
+                        },
+                        "resolvedSlices": [],
+                        "resolvedPhrases": [],
+                        "hasInput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "value",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Parameter",
+                            "methodRole": "partition",
+                            "dataStructureRole": "dimension"
+                          }
+                        ],
+                        "hasOutput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "result",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Parameter",
+                            "dataStructureRole": "dimension"
+                          }
+                        ]
+                      },
+                      {
+                        "sequence": 8,
+                        "basedOn": {
+                          "transformationTemplateId": "T.ADAS_ScoreableCheck"
+                        },
+                        "resolvedSlices": [],
+                        "resolvedPhrases": [],
+                        "hasInput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "value",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Subject",
+                            "methodRole": "partition",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "methodRole": "partition",
+                            "dataStructureRole": "dimension"
+                          }
+                        ],
+                        "hasOutput": [
+                          {
+                            "concept": "Flag",
+                            "methodRole": "result",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Subject",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "dataStructureRole": "dimension"
+                          }
+                        ]
+                      },
+                      {
+                        "sequence": 9,
+                        "basedOn": {
+                          "transformationTemplateId": "T.ADAS_NonMissingCount"
+                        },
+                        "resolvedSlices": [],
+                        "resolvedPhrases": [],
+                        "hasInput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "value",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Subject",
+                            "methodRole": "partition",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "methodRole": "partition",
+                            "dataStructureRole": "dimension"
+                          }
+                        ],
+                        "hasOutput": [
+                          {
+                            "concept": "Measure",
+                            "methodRole": "result",
+                            "dataStructureRole": "measure"
+                          },
+                          {
+                            "concept": "Subject",
+                            "dataStructureRole": "dimension"
+                          },
+                          {
+                            "dataStructureRole": "dimension"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "estimands": [
+      {
+        "id": "Estimand_Endpoint_1",
+        "instanceType": "Estimand",
+        "name": "Estimand for END1",
+        "label": "Change change from baseline in Adas-Cog(11) Subscore at Week 24 in the AP_1 population",
+        "populationSummary": "AP_1",
+        "variableOfInterest": {
+          "id": "Endpoint_1",
+          "instanceType": "VariableOfInterest",
+          "name": "END1"
+        },
+        "analysisPopulation": {
+          "id": "AnalysisPopulation_1",
+          "instanceType": "AnalysisPopulation",
+          "name": "AP_1"
+        },
+        "interventions": [
+          {
+            "id": "Intervention_unspecified",
+            "instanceType": "StudyIntervention",
+            "name": "Unspecified"
+          }
+        ],
+        "intercurrentEvents": [],
+        "hasTransformation": [
+          {
+            "sequence": 1,
+            "basedOn": {
+              "transformationTemplateId": "T.CFB_ANCOVA"
+            },
+            "resolvedSlices": [
+              {
+                "name": "endpoint",
+                "resolvedValues": {
+                  "Parameter": "Adas-Cog(11) Subscore",
+                  "Visit": "WEEK 24",
+                  "Population": "AP_1",
+                  "AnalysisVisit": "Week 24"
+                }
+              },
+              {
+                "name": "parameter_baseline",
+                "resolvedValues": {
+                  "Parameter": "Adas-Cog(11) Subscore",
+                  "Visit": "Baseline"
+                }
+              }
+            ],
+            "resolvedExpression": {
+              "notation": "wilkinson_rogers",
+              "resolved": "Change ~ Measure@Parameter_baseline + Treatment + Site"
+            },
+            "arsAnalysis": {
+              "analysisId": "ARS_T.CFB_ANCOVA_Endpoint_1"
+            },
+            "hasInput": [
+              {
+                "concept": "Change",
+                "methodRole": "response",
+                "dataStructureRole": "measure",
+                "requiredValueType": "Quantity"
+              },
+              {
+                "concept": "Measure",
+                "methodRole": "covariate",
+                "dataStructureRole": "measure",
+                "requiredValueType": "Quantity",
+                "slice": "parameter_baseline",
+                "description": "Baseline value of the endpoint parameter"
+              },
+              {
+                "concept": "Treatment",
+                "methodRole": "fixed_effect",
+                "dataStructureRole": "dimension",
+                "requiredValueType": "CodeableConcept",
+                "qualifierType": "IntentType",
+                "qualifierValue": "Planned"
+              },
+              {
+                "concept": "Subject",
+                "methodRole": "partition",
+                "dataStructureRole": "dimension"
+              },
+              {
+                "concept": "Parameter",
+                "methodRole": "constraint",
+                "dataStructureRole": "dimension"
+              },
+              {
+                "concept": "Visit",
+                "methodRole": "constraint",
+                "dataStructureRole": "dimension",
+                "conceptCategory": "VisitDimension"
+              },
+              {
+                "concept": "Site",
+                "methodRole": "fixed_effect",
+                "dataStructureRole": "dimension"
+              }
+            ],
+            "hasOutput": []
+          }
+        ]
+      }
+    ],
+    "documentedBy": [
+      {
+        "id": "eSAP_Document",
+        "instanceType": "StudyDefinitionDocument",
+        "name": "electronic Statistical Analysis Plan",
+        "type": "eSAP",
+        "versions": [
+          {
+            "id": "eSAP_DocVersion_1",
+            "instanceType": "StudyDefinitionDocumentVersion",
+            "contents": [
+              {
+                "id": "eSAP_Section_abbreviations",
+                "instanceType": "NarrativeContent",
+                "name": "abbreviations",
+                "sectionNumber": "1",
+                "sectionTitle": "1. List of Abbreviations"
+              },
+              {
+                "id": "eSAP_Section_introduction",
+                "instanceType": "NarrativeContent",
+                "name": "introduction",
+                "sectionNumber": "2",
+                "sectionTitle": "2. Introduction"
+              },
+              {
+                "id": "eSAP_Section_objectives",
+                "instanceType": "NarrativeContent",
+                "name": "objectives",
+                "sectionNumber": "3",
+                "sectionTitle": "3. Study Objectives"
+              },
+              {
+                "id": "eSAP_Section_studyDesign",
+                "instanceType": "NarrativeContent",
+                "name": "studyDesign",
+                "sectionNumber": "4",
+                "sectionTitle": "4. Study Design"
+              },
+              {
+                "id": "eSAP_Section_protocolChanges",
+                "instanceType": "NarrativeContent",
+                "name": "protocolChanges",
+                "sectionNumber": "5",
+                "sectionTitle": "5. Changes in the Protocol"
+              },
+              {
+                "id": "eSAP_Section_estimands",
+                "instanceType": "NarrativeContent",
+                "name": "estimands",
+                "sectionNumber": "6",
+                "sectionTitle": "6. Estimands"
+              },
+              {
+                "id": "eSAP_Section_endpoints",
+                "instanceType": "NarrativeContent",
+                "name": "endpoints",
+                "sectionNumber": "7",
+                "sectionTitle": "7. Study Endpoints"
+              },
+              {
+                "id": "eSAP_Section_analysisSets",
+                "instanceType": "NarrativeContent",
+                "name": "analysisSets",
+                "sectionNumber": "8",
+                "sectionTitle": "8. Analysis Sets"
+              },
+              {
+                "id": "eSAP_Section_statMethods",
+                "instanceType": "NarrativeContent",
+                "name": "statMethods",
+                "sectionNumber": "9",
+                "sectionTitle": "9. Statistical Methods"
+              },
+              {
+                "id": "eSAP_Section_statAnalysis",
+                "instanceType": "NarrativeContent",
+                "name": "statAnalysis",
+                "sectionNumber": "10",
+                "sectionTitle": "10. Statistical Analysis"
+              },
+              {
+                "id": "eSAP_Section_software",
+                "instanceType": "NarrativeContent",
+                "name": "software",
+                "sectionNumber": "11",
+                "sectionTitle": "11. Computer Software"
+              },
+              {
+                "id": "eSAP_Section_references",
+                "instanceType": "NarrativeContent",
+                "name": "references",
+                "sectionNumber": "12",
+                "sectionTitle": "12. References"
+              },
+              {
+                "id": "eSAP_Section_shells",
+                "instanceType": "NarrativeContent",
+                "name": "shells",
+                "sectionNumber": "13",
+                "sectionTitle": "13. Table/Figure/Listing Shells"
+              },
+              {
+                "id": "eSAP_Section_appendices",
+                "instanceType": "NarrativeContent",
+                "name": "appendices",
+                "sectionNumber": "14",
+                "sectionTitle": "14. Appendices"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
