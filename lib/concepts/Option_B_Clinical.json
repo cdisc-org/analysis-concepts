@@ -1,0 +1,631 @@
+{
+  "model": "DC",
+  "version": "0.20",
+  "variant": "clinical",
+  "description": "Derivation Concepts with clinical naming. Each concept describes what kind of data the result is, using names a clinical programmer would naturally use. The concept carries only its result structure (value type and unit behaviour). Identification (MeasureIdentifier, MeasureCategory, Sequence) and shared dimensions (Subject, Timing, etc.) are external \u2014 selected by the Transformation.",
+  "namingPrinciples": [
+    "Would a clinical programmer call this data by this name without further context?",
+    "Does the name describe what the data IS, not how or why it was produced?",
+    "Can you say the name without referencing a parameter, visit, or standard?",
+    "Would you handle this data differently than any other concept?",
+    "Could you define it in one sentence without referencing another concept?",
+    "Is it a different ingredient type, not a different brand of the same ingredient?"
+  ],
+  "sharedDimensions": {
+    "note": "Dimensional concepts \u2014 also part of the concept model, but not derivation concepts. They define the context in which a derivation is performed. The Transformation selects which ones apply. The Implementation maps them to physical columns (e.g. USUBJID \u2192 Subject, PARAMCD \u2192 Parameter, AVISIT \u2192 Visit). The autoConfirm flag marks dimensions whose terminal pipeline slots are taken as source data automatically, without user confirmation.",
+    "Subject": {
+      "cardinality": "1",
+      "autoConfirm": true,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "Timing": {
+      "cardinality": "1",
+      "autoConfirm": false,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "Parameter": {
+      "cardinality": "0..1",
+      "autoConfirm": true,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "AnalysisVisit": {
+      "cardinality": "0..1",
+      "autoConfirm": true,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "Treatment": {
+      "cardinality": "0..1",
+      "autoConfirm": false,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "Population": {
+      "cardinality": "0..1",
+      "autoConfirm": true,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "Period": {
+      "cardinality": "0..1",
+      "autoConfirm": false,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "Study": {
+      "cardinality": "1",
+      "autoConfirm": true,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    },
+    "Site": {
+      "cardinality": "0..1",
+      "autoConfirm": true,
+      "code": {
+        "system": "NCI",
+        "value": null
+      }
+    }
+  },
+  "conceptProxies": {
+    "description": "Maps app-level pseudo-categories (like 'Observation') to a DC concept that should stand in for them during transformation-matching lookups. The proxy is chosen so that its result.valueType matches the pseudo-category's expected output shape.",
+    "Observation": {
+      "proxyConcept": "Measure",
+      "rationale": "Observation results and Measure outputs share NumericValue; analyses that accept Measure inputs accept observation results."
+    }
+  },
+  "categories": {
+    "PointComputation": {
+      "definition": "A value computed at a specific point, without reference comparison, temporal aggregation, event aggregation, or classification.",
+      "inputPattern": "Method-driven. The concept defines output shape only; the method determines what inputs are needed.",
+      "concepts": {
+        "Measure": {
+          "mathematicalEquivalent": "DirectValue",
+          "definition": "A value produced by applying a computation to one or more source values.",
+          "math": "f(x\u2081, \u2026, x\u2099)",
+          "examples": [
+            "BMI",
+            "eGFR",
+            "QTcF",
+            "unit-converted lab",
+            "LOCF imputed value",
+            "questionnaire total score"
+          ],
+          "result": {
+            "valueType": [
+              "NumericValue",
+              "CharacterValue",
+              "CodedResponse"
+            ],
+            "unit": "inherited or specified"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        }
+      }
+    },
+    "Comparison": {
+      "definition": "Data expressing the relationship between two values of the same parameter.",
+      "inputPattern": "Concept-driven. Requires 2\u00d7 Measure inputs, intrinsic to the category.",
+      "concepts": {
+        "Change": {
+          "mathematicalEquivalent": "AbsoluteDifference",
+          "definition": "The arithmetic difference between two values of the same parameter.",
+          "math": "x \u2212 x_ref",
+          "examples": [
+            "change from baseline in SBP",
+            "inter-visit difference in weight",
+            "difference between duplicate measurements"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "PercentChange": {
+          "mathematicalEquivalent": "RelativeDifference",
+          "definition": "The proportional difference between two values of the same parameter, expressed as a percentage.",
+          "label": "Percent change from baseline",
+          "shortLabel": "%CFB",
+          "math": "(x \u2212 x_ref) / x_ref",
+          "examples": [
+            "percent change from baseline in tumor size",
+            "relative change in eGFR"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "fixed: %"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "Ratio": {
+          "mathematicalEquivalent": "Ratio",
+          "definition": "The quotient of two values of the same parameter.",
+          "math": "x / x_ref",
+          "examples": [
+            "fold change in biomarker",
+            "post/pre treatment ratio"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "dimensionless"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "LogRatio": {
+          "mathematicalEquivalent": "LogRatio",
+          "definition": "The logarithm of the quotient of two values. Symmetric, additive scale.",
+          "math": "ln(x / x_ref)",
+          "examples": [
+            "log-fold change in gene expression",
+            "log-ratio of drug concentrations"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "dimensionless"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "Shift": {
+          "mathematicalEquivalent": "CategoricalTransition",
+          "definition": "The categorical movement between two values of the same parameter.",
+          "math": "class(x) vs class(x_ref)",
+          "examples": [
+            "normal-to-abnormal shift in lab",
+            "severity worsening from baseline"
+          ],
+          "result": {
+            "valueType": "CodedResponse",
+            "unit": "none"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        }
+      }
+    },
+    "SequenceAggregate": {
+      "definition": "A summary of an ordered series of the same parameter over time.",
+      "inputPattern": "Concept-driven. Requires 1\u00d7 Measure input; the ordered series emerges from dimensional scoping.",
+      "concepts": {
+        "PeakValue": {
+          "mathematicalEquivalent": "SequenceMaximum",
+          "definition": "The highest value in an ordered series.",
+          "math": "sup{y\u1d62}",
+          "examples": [
+            "Cmax",
+            "maximum heart rate during exercise",
+            "highest recorded SBP"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "TroughValue": {
+          "mathematicalEquivalent": "SequenceMinimum",
+          "definition": "The lowest value in an ordered series.",
+          "math": "inf{y\u1d62}",
+          "examples": [
+            "Ctrough",
+            "nadir neutrophil count",
+            "minimum platelet count"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "TimeToPeak": {
+          "mathematicalEquivalent": "SequenceArgMaximum",
+          "definition": "The time at which the highest value occurs.",
+          "math": "argmax_t{y\u1d62}",
+          "examples": [
+            "Tmax"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "TimeToTrough": {
+          "mathematicalEquivalent": "SequenceArgMinimum",
+          "definition": "The time at which the lowest value occurs.",
+          "math": "argmin_t{y\u1d62}",
+          "examples": [
+            "time to nadir"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "AreaUnderCurve": {
+          "mathematicalEquivalent": "SequenceIntegral",
+          "definition": "The integrated value over time.",
+          "label": "Area under the curve",
+          "shortLabel": "AUC",
+          "math": "\u222by dt",
+          "examples": [
+            "AUC\u2080\u208b\u2082\u2084",
+            "AUC\u2080\u208b\u221e",
+            "glucose AUC during OGTT"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "source_unit \u00d7 time_unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "CumulativeTotal": {
+          "mathematicalEquivalent": "SequenceCumulativeSum",
+          "definition": "The running total accumulated over time.",
+          "math": "\u03a3y\u1d62 for i \u2264 k",
+          "examples": [
+            "cumulative dose",
+            "cumulative exposure"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "RateOfChange": {
+          "mathematicalEquivalent": "SequenceRateOfChange",
+          "definition": "The rate at which a value changes over a time segment.",
+          "math": "\u0394y/\u0394t",
+          "examples": [
+            "eGFR slope",
+            "tumor growth rate",
+            "rate of decline in FEV1"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "source_unit / time_unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "HalfLife": {
+          "mathematicalEquivalent": "ExponentialDecayConstant",
+          "definition": "The time for a value to decline by half.",
+          "math": "ln(2) / \u03bb",
+          "examples": [
+            "drug half-life",
+            "antibody half-life"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "LastValue": {
+          "mathematicalEquivalent": "SequenceTerminalValue",
+          "definition": "The last observed value in an ordered series.",
+          "math": "y\u2099",
+          "examples": [
+            "last observed concentration",
+            "end-of-study value"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "FirstValue": {
+          "mathematicalEquivalent": "SequenceInitialValue",
+          "definition": "The first value in an ordered series.",
+          "math": "y\u2081",
+          "examples": [
+            "first post-dose concentration",
+            "initial measurement"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "TimeInState": {
+          "mathematicalEquivalent": "SequenceThresholdDuration",
+          "definition": "The total time spent above or below a threshold.",
+          "math": "measure({t : y(t) > \u03b8})",
+          "examples": [
+            "time in therapeutic range",
+            "time above MIC",
+            "time in hypoglycemia"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "TimeToThreshold": {
+          "mathematicalEquivalent": "SequenceThresholdCrossing",
+          "definition": "The time at which a series first crosses a defined threshold.",
+          "math": "inf{t : y(t) = \u03b8}",
+          "examples": [
+            "time to target concentration",
+            "time to normalization"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "Range": {
+          "mathematicalEquivalent": "SequenceRange",
+          "definition": "The difference between the highest and lowest values in a series.",
+          "math": "sup{y\u1d62} \u2212 inf{y\u1d62}",
+          "examples": [
+            "blood pressure variability",
+            "PK concentration range"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "inherited"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        }
+      }
+    },
+    "EventAggregate": {
+      "definition": "A summary of discrete event occurrences on a timeline.",
+      "inputPattern": "Concept-driven. Requires 1\u00d7 Observation (OC layer); the event set emerges from dimensional scoping.",
+      "concepts": {
+        "EventCount": {
+          "mathematicalEquivalent": "Count",
+          "definition": "The number of times an event or condition occurs.",
+          "label": "Event count",
+          "shortLabel": "n events",
+          "math": "|{events}|",
+          "examples": [
+            "number of AEs",
+            "seizure count",
+            "number of exacerbations"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "none"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "EventRate": {
+          "mathematicalEquivalent": "Rate",
+          "definition": "The number of occurrences per unit of time or exposure.",
+          "label": "Event rate",
+          "shortLabel": "rate",
+          "math": "|{events}| / T",
+          "examples": [
+            "annualized relapse rate",
+            "AE rate per patient-year"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "events / time_unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "TimeToEvent": {
+          "mathematicalEquivalent": "TimeToEvent",
+          "definition": "The duration from a defined start to event occurrence or censoring.",
+          "label": "Time to event",
+          "shortLabel": "TTE",
+          "math": "inf{t\u1d62}",
+          "examples": [
+            "time to first AE",
+            "overall survival",
+            "progression-free survival"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "TimeBetweenEvents": {
+          "mathematicalEquivalent": "InterEventInterval",
+          "definition": "The duration between consecutive recurrent events.",
+          "math": "t_{i+1} \u2212 t\u1d62",
+          "examples": [
+            "time between seizures",
+            "inter-exacerbation interval"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "time unit"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        }
+      }
+    },
+    "Classification": {
+      "definition": "A derivation mapping value(s) to a categorical assignment.",
+      "inputPattern": "Concept-driven. Requires 1\u00d7 any concept as input (the value being classified).",
+      "concepts": {
+        "Flag": {
+          "mathematicalEquivalent": "Indicator",
+          "definition": "A binary indicator evaluating a criterion (Y/N).",
+          "math": "I(criterion)",
+          "examples": [
+            "baseline flag (ABLFL)",
+            "population flag (SAFFL)",
+            "responder flag"
+          ],
+          "result": {
+            "valueType": "CodedResponse",
+            "unit": "none"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "Category": {
+          "mathematicalEquivalent": "Classification",
+          "definition": "A categorical grouping derived from rules.",
+          "math": "f(x) \u2192 {c\u2081, c\u2082, \u2026}",
+          "examples": [
+            "severity grade",
+            "BMI category",
+            "renal impairment stage"
+          ],
+          "result": {
+            "valueType": "CodedResponse",
+            "unit": "none"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "AnalysisVisit": {
+          "mathematicalEquivalent": "Classification",
+          "definition": "A scheduled analysis visit (label and visit number) assigned to an observation by a windowing rule that maps each observation's study day to a planned-visit category.",
+          "math": "f(day) \u2192 {visit_label, visit_number}",
+          "examples": [
+            "Baseline (Visit 3)",
+            "Week 8 (Visit 8)",
+            "Week 24 (Visit 12)"
+          ],
+          "result": {
+            "valueType": "CodedResponse",
+            "unit": "none"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "Rank": {
+          "mathematicalEquivalent": "Rank",
+          "definition": "The ordinal position of a value within a defined scope.",
+          "math": "rank(x) within group",
+          "examples": [
+            "worst post-baseline rank",
+            "severity ranking"
+          ],
+          "result": {
+            "valueType": "NumericValue",
+            "unit": "none"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        },
+        "QuantileGroup": {
+          "mathematicalEquivalent": "Quantile",
+          "definition": "A distributional bin assignment (tertiles, quartiles, quintiles).",
+          "math": "Q\u2096 where F(x) in bin k",
+          "examples": [
+            "exposure quartile",
+            "baseline severity tertile"
+          ],
+          "result": {
+            "valueType": "CodedResponse",
+            "unit": "none"
+          },
+          "code": {
+            "system": "NCI",
+            "value": null
+          }
+        }
+      }
+    }
+  }
+}
