@@ -1,2 +1,7 @@
 documents/presentations/phuse/.DS_Store
 .env
+.playwright-mcp
+ac-dc-app/.DS_Store
+lib/.DS_Store
+model/.DS_Store
+documents/.DS_Store
