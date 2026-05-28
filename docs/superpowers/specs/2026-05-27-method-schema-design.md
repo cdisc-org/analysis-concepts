@@ -536,6 +536,7 @@ Changes vs today:
 | `instanceOf: "Flag"` | *removed* | Redundant with the new output-side measure binding's `concept` field. See §6.3. |
 | `derivationTransformations[]` + `analysisTransformations[]` | Single `transformations[]` array; `transformationType` discriminator | One schema, one validation pipeline. |
 | `bindings[]` with `direction` + `dataStructureRole` | `inputDataStructure` + `outputDataStructure` blocks, each carrying its own `dimensions[]` + `measures[]` (§6.3) | Each block IS a `qb:DataStructureDefinition` 1:1 — qb expects each `qb:DataSet` to have its own DSD, not a flattened cross-direction structure. The JSON→RDF converter emits two DSDs mechanically. Authors duplicate dim entries when both cubes share them; the UI layer handles carry-forward ergonomics. |
+| `composedPhrase: "..."` (rendered phrase baked into the source) | *removed* | The composed phrase is a deterministic render of `validSmartPhrases[]` × sliceKey-supplied values. Storing the rendered form in the source invites drift between the field and what would actually be rendered if the underlying SmartPhrases change. Render-time composition (in the UI / export layer) is the right home. |
 
 ### 6.3 Two DSD blocks: `inputDataStructure` and `outputDataStructure`
 
@@ -784,6 +785,7 @@ What changed (mechanical):
 - The output FK changed from `methodRole: "flag"` to `methodOutput: "derived_value"` — this assumes the method-side rename to the standardized derivation output slot name `derived_value` (§3.6 examples). If `M.RecordSelection` declares a `flag` output slot instead, the FK stays `methodOutput: "flag"`.
 - Output-side dims drop the `methodInput: "partition"` FK — `methodInput` is rejected on `outputDataStructure.*` items (the output is what the transformation *produces*, not what the method consumes).
 - This transformation has no `sliceKeys` and no `slices` — `M.RecordSelection` operates on the full cube; no slice templates needed.
+- The `T.BaselineSelection` entry in the current library has no `composedPhrase` field to drop (its `validSmartPhrases[]` is empty). Transformations that DO carry `composedPhrase` today (e.g. `T.ChangeFromBaseline`, `T.CFB_ANCOVA`, `T.CFB_MMRM_Primary`) have the field stripped per §6.9 step 5 — the rendered phrase becomes a UI-layer derivation from `validSmartPhrases[]` + sliceKey-bound values.
 
 ### 6.8 Worked example — analysis transformation (`T.CFB_ANCOVA`)
 
@@ -904,10 +906,11 @@ In addition to the method migration in §5:
 2. **Update `_w3c_alignment` block** at the top of the transformation library file (§6.5).
 3. **Rewrite each entry** in `derivationTransformations[]` and `analysisTransformations[]` to the new shape (mechanical mapping per §6.7). Merge both arrays into one `transformations[]`.
 4. **Drop `instanceOf`** during the rewrite — confirm each transformation's output bindings carry the same concept it previously held.
-5. **Validate FKs** against the migrated method files (§5 step 4) — every `methodInput`/`methodOutput` reference must resolve.
-6. **Update consumers** (app code, validators) that read the old `bindings[].direction` / `dataStructureRole` / `methodRole` / `oid` / `instanceOf` fields.
+5. **Drop `composedPhrase`** during the rewrite. The rendered phrase is generated at display time from `validSmartPhrases[]` + sliceKey-supplied values (§6.2 table). Verify each transformation's `validSmartPhrases[]` list is complete enough that the render produces the same phrase the old `composedPhrase` field held; flag any divergences before the field is removed.
+6. **Validate FKs** against the migrated method files (§5 step 4) — every `methodInput`/`methodOutput` reference must resolve.
+7. **Update consumers** (app code, validators) that read the old `bindings[].direction` / `dataStructureRole` / `methodRole` / `oid` / `instanceOf` / `composedPhrase` fields. The composed-phrase render becomes a UI/export utility.
 
-Steps 1–3 produce a working state; 4–6 finish the migration.
+Steps 1–3 produce a working state; 4–7 finish the migration.
 
 ### 6.10 Alternative transformation shapes considered
 

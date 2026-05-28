@@ -1,0 +1,403 @@
+# ACDC Method Schema (LinkML)
+#
+# Encodes §3 of docs/superpowers/specs/2026-05-27-method-schema-design.md.
+# Methods are concept-free, reusable building blocks. They declare:
+#   - Identity (conceptId, label, code, codings)
+#   - A formula (Wilkinson-Rogers for analysis, assignment for derivation)
+#   - methodInput[] slots that downstream formulas and transformations reference
+#     by name
+#   - methodOutput[] slots typed by an output_type FK into output_class_templates
+#
+# Methods MUST NOT reference clinical or analysis concepts. Concept binding
+# happens at the transformation layer (see acdc_transformation.linkml.yaml).
+
+id: https://cdisc.org/acdc/method
+name: acdc_method
+title: ACDC Method Schema
+description: >-
+  Schema for ACDC method files (M_*.json). Methods are concept-free, reusable
+  statistical/derivational primitives that define their own input slots,
+  output slots, and configuration options. Transformations bind methods to
+  concepts and supply cube structure.
+version: 0.1.0
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  acdc:   https://cdisc.org/acdc/
+  skos:   http://www.w3.org/2004/02/skos/core#
+  ncit:   http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#
+  stato:  http://purl.obolibrary.org/obo/STATO_
+  fhir:   http://hl7.org/fhir/
+
+default_prefix: acdc
+default_range:  string
+
+imports:
+  - linkml:types
+
+
+# ============================================================================
+# Enums
+# ============================================================================
+
+enums:
+
+  MethodType:
+    description: Whether this method is an analysis or a derivation.
+    permissible_values:
+      analysis:
+        description: Statistical analysis method (e.g. ANCOVA, MMRM, LogRank).
+      derivation:
+        description: Data derivation method (e.g. Subtraction, Aggregation, RecordSelection).
+
+  FormulaNotation:
+    description: The grammar used by the method's formula. See lib/vocabulary/formula_grammar.json.
+    permissible_values:
+      wilkinson_rogers:
+        description: "response ~ covariate + fixed_effect form (analysis methods)."
+      assignment:
+        description: "result := expression form (derivation methods)."
+
+  ConfigurationDataType:
+    description: Data type of a method or output configuration value.
+    permissible_values:
+      decimal:
+      string:
+      code:
+      boolean:
+      integer:
+      enum:
+        description: Constrained to enumValues.
+
+  MethodInputDataType:
+    description: Expected data type of a method input slot.
+    permissible_values:
+      decimal:
+      string:
+      code:
+      boolean:
+      integer:
+
+  Cardinality:
+    description: How many bindings may fill a method input slot.
+    permissible_values:
+      single:
+        description: Exactly one binding required.
+      multiple:
+        description: One or more bindings required.
+      single_or_multiple:
+        description: One or more bindings; both forms are valid.
+
+  UnitPolicy:
+    description: >-
+      How a derivation method handles units on its output. Per §3.6.1, this is
+      a per-output property (lives on MethodOutput, not Method).
+    permissible_values:
+      preserved:
+        description: Output carries the source value's unit unchanged.
+      inherited:
+        description: Output inherits unit from the primary input.
+      dimensionless:
+        description: Output is unitless (e.g. ratios, fractions).
+      fixed:
+        description: Output has a fixed unit specified per-method (e.g. "%").
+      derived:
+        description: Output unit is computed from input units (e.g. source_unit × time_unit).
+
+  CodeSystem:
+    description: Coding system for code references.
+    permissible_values:
+      NCI:
+        description: NCI Thesaurus.
+        meaning: ncit:Thesaurus
+
+  FHIRValueType:
+    description: >-
+      FHIR datatype carried by a method output. Used by derivation outputs
+      (§3.6). Analysis outputs use output_type FK into output_class_templates
+      instead.
+    permissible_values:
+      Quantity:
+        meaning: fhir:Quantity
+      CodeableConcept:
+        meaning: fhir:CodeableConcept
+      Identifier:
+        meaning: fhir:Identifier
+      string:
+        description: Plain string.
+      decimal:
+      integer:
+      boolean:
+
+  # The three axes from §3.5 (analysis output decomposition).
+  # These are documented here for reference; the canonical vocabulary lives in
+  # lib/vocabulary/output_class_templates.json. Method files reference an
+  # output_type identifier that decomposes into a (class, shape, distribution)
+  # tuple in that vocab file.
+
+  OutputClass:
+    description: >-
+      §3.5.1 — the inferential ROLE of an analysis output (the "what is it
+      for"). Vocabulary anchor for output_class_templates.json values.
+    permissible_values:
+      ls_means:
+        description: Least-squares means / adjusted marginal means.
+      contrast_estimates:
+        description: Estimated contrasts between factor levels.
+      contrast_tests:
+        description: Hypothesis tests on contrasts (TStatistic + PValue).
+      type3_tests:
+        description: Type III omnibus tests of model terms.
+      parameter_estimates:
+        description: Solution for fixed effects (model coefficients).
+      parameter_tests:
+        description: Hypothesis tests on parameter estimates.
+      fit_statistics:
+        description: Overall model goodness-of-fit measures.
+      test_result:
+        description: A single overall test result (e.g. log-rank).
+      survival_table:
+        description: Life-table-style output (KM estimates).
+      computed_value:
+        description: A single derived scalar (e.g. mean, median, SD).
+
+  OutputShape:
+    description: §3.5.2 — the inferential PATTERN (the structure of the result).
+    permissible_values:
+      scalar:
+        description: A single value.
+      vector:
+        description: One row per factor level / per term.
+      matrix:
+        description: Two-dimensional table indexed by two factors.
+
+  Distribution:
+    description: §3.5.3 — the probabilistic basis of the test statistic.
+    permissible_values:
+      F:
+      t:
+      chi_squared:
+      normal:
+      none:
+        description: No test statistic (e.g. descriptive output).
+
+
+# ============================================================================
+# Classes
+# ============================================================================
+
+classes:
+
+  Method:
+    description: >-
+      Top-level structure of an M_*.json file. Per §3.2, methods carry
+      identity (§3.3), a formula contract (§3.4), input/output slots, and
+      configurations. They never reference clinical or analysis concepts.
+    tree_root: true
+    attributes:
+      schema_version:
+        description: Version of this LinkML schema the file conforms to.
+        range: string
+      conceptId:
+        description: §3.3 — the canonical identifier (e.g. M.ANCOVA). Replaces the legacy `name` field on existing M_*.json files.
+        range: string
+        identifier: true
+        required: true
+        pattern: "^M\\.[A-Za-z0-9_]+$"
+      label:
+        description: §3.2 — human-readable label. Used by SmartPhrase rendering.
+        range: string
+        required: true
+      shortLabel:
+        description: §3.2 — compact label. Used by SmartPhrase rendering when a tight form is needed.
+        range: string
+      code:
+        description: §3.3 — primary code (typically NCI). value may be null when not yet assigned.
+        range: Code
+      type:
+        description: Whether this method is an analysis or a derivation.
+        range: MethodType
+        required: true
+      class:
+        description: Free-text method family (e.g. "General Linear Models", "Summary", "Data Handling").
+        range: string
+      intent:
+        description: Free-text intent tags (e.g. "GroupComparison", "DataAggregation", "MissingDataHandling").
+        range: string
+        multivalued: true
+      codings:
+        description: §3.3 — additional codings (STATO, third-party). Supplements `code`.
+        range: Coding
+        multivalued: true
+      description:
+        description: Free-text method description.
+        range: string
+      formula:
+        description: §3.4 — formula declaration. Token names in generic_expression MUST resolve to methodInput[].name values.
+        range: Formula
+      configurations:
+        description: Method-level configuration options. Per-output configurations live on MethodOutput.
+        range: Configuration
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      methodInput:
+        description: §3.4 — input slots. Slot names are formula tokens AND transformation-binding FK targets.
+        range: MethodInput
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        required: true
+      methodOutput:
+        description: §3.5/§3.6 — output slots. Slot names are transformation-binding FK targets.
+        range: MethodOutput
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        required: true
+      assumptions:
+        description: Free-text method assumptions (e.g. "Pre value is non-zero"). Reserved for future machine-readability (§7 open question).
+        range: string
+        multivalued: true
+
+  Code:
+    description: §3.3 — a single (system, value) code reference.
+    attributes:
+      system:
+        range: CodeSystem
+        required: true
+      value:
+        description: The code value within the system. May be null when not yet assigned.
+        range: string
+
+  Coding:
+    description: §3.3 — a (system, value) coding with optional human label. Used in `codings[]` for supplementary codes beyond the primary `code`.
+    attributes:
+      system:
+        range: string
+        required: true
+      value:
+        range: string
+        required: true
+      label:
+        range: string
+
+  Formula:
+    description: §3.4 — the formula contract. The generic_expression's <token> identifiers MUST appear in the parent method's methodInput[].name.
+    attributes:
+      notation:
+        range: FormulaNotation
+        required: true
+      default_expression:
+        description: "Concrete example expression (e.g. 'response ~ covariate + fixed_effect')."
+        range: string
+        required: true
+      generic_expression:
+        description: "Pattern showing input slots in angle brackets (e.g. '<response> ~ <covariate>* + <fixed_effect>+')."
+        range: string
+        required: true
+      notes:
+        description: Author notes about the formula.
+        range: string
+
+  Configuration:
+    description: A configuration option on a method or on a method output. Values are supplied by transformations via `methodConfigurations[].value`.
+    attributes:
+      name:
+        description: Configuration identifier within the parent's configurations[]. Referenced from transformation `methodConfigurations[].configurationName`.
+        range: string
+        identifier: true
+        required: true
+      conforms_to:
+        description: Optional FK into a controlled vocabulary (e.g. "alpha", "multiplicity_adjustment") for reusable configuration semantics.
+        range: string
+      dataType:
+        range: ConfigurationDataType
+        required: true
+      defaultValue:
+        description: Default value if not supplied by the transformation. Type matches dataType.
+        range: string  # LinkML coerces; runtime validates against dataType
+      enumValues:
+        description: Allowed values when dataType=enum.
+        range: string
+        multivalued: true
+      description:
+        range: string
+      applicable_scopes:
+        description: "Optional list of scopes where this configuration applies (e.g. ['universal'], ['per_test'])."
+        range: string
+        multivalued: true
+
+  MethodInput:
+    description: §3.4 — an input slot on the method. `name` is both a formula token and a transformation-binding FK target.
+    attributes:
+      name:
+        description: Slot identifier within methodInput[]. Appears in formula.generic_expression as <name> and in transformation bindings as methodInput.
+        range: string
+        identifier: true
+        required: true
+      dataType:
+        range: MethodInputDataType
+        required: true
+      required:
+        range: boolean
+        ifabsent: "boolean(true)"
+      cardinality:
+        range: Cardinality
+        required: true
+      description:
+        range: string
+
+  MethodOutput:
+    description: >-
+      §3.5/§3.6 — an output slot on the method. For analysis methods,
+      `output_type` references an entry in output_class_templates.json
+      (which decomposes into output_class + output_shape + distribution per
+      §3.5). For derivation methods, `value_type` and `unit_policy` give the
+      direct value type (§3.6).
+    attributes:
+      name:
+        description: Slot identifier within methodOutput[]. Referenced from transformation outputDataStructure.measures[].methodOutput.
+        range: string
+        identifier: true
+        required: true
+      output_type:
+        description: >-
+          FK into lib/vocabulary/output_class_templates.json. Identifies a
+          (class, shape, distribution) tuple per §3.5. Typically used by
+          analysis methods.
+        range: string
+      value_type:
+        description: §3.6 — FHIR value type for derivation outputs (e.g. fhir:Quantity).
+        range: FHIRValueType
+      unit_policy:
+        description: §3.6.1 — per-output unit-handling policy for derivation outputs.
+        range: UnitPolicy
+      indexed_by:
+        description: >-
+          For multi-row outputs (e.g. one row per factor level), the methodInput
+          names whose levels index the output rows. May include interaction
+          tokens (e.g. "fixed_effect:fixed_effect").
+        range: string
+        multivalued: true
+      configurations:
+        description: Per-output configurations (e.g. multiplicity_adjustment on p-value outputs).
+        range: Configuration
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+
+
+# ============================================================================
+# Cross-field rules (§3.6.2, §3.4)
+# ============================================================================
+
+# Note: the constraint "method files MUST NOT reference clinical concepts"
+# (§3.6.2) is enforced by the absence of any concept-typed slot in this
+# schema — there is no slot that could carry a concept reference. The
+# transformation schema is where concepts come in.
+
+# Rule reserved for future: validate that formula.generic_expression's
+# <token>s all resolve to methodInput[].name. Requires a parser; left to
+# build-time validator.

@@ -1,0 +1,438 @@
+# ACDC Transformation Schema (LinkML)
+#
+# Encodes §6 of docs/superpowers/specs/2026-05-27-method-schema-design.md
+# (Option B — strict twin DSDs per §6.10).
+#
+# A transformation applies a reusable Method to clinical/analysis concepts.
+# It declares:
+#   - usesMethod (FK to Method.conceptId)
+#   - methodConfigurations (values for the method's configuration options)
+#   - inputDataStructure (qb:DataStructureDefinition for the cube consumed)
+#   - outputDataStructure (qb:DataStructureDefinition for the cube produced)
+#   - sliceKeys (qb:SliceKey templates parameterized against the endpoint spec)
+#
+# Concepts are referenced as strings (FKs into Option_B_Clinical.json for
+# derivations and AC_Concept_Model_v017.json for analyses). Cross-file FK
+# resolution is enforced at build/validation time, not in LinkML itself.
+
+id: https://cdisc.org/acdc/transformation
+name: acdc_transformation
+title: ACDC Transformation Schema
+description: >-
+  Schema for ACDC transformation files. Each transformation pairs a reusable
+  Method with clinical/analysis concepts and declares the cube structure
+  (input and output qb:DataStructureDefinitions) the method operates on.
+  Strict twin-DSD shape per §6.3 / §6.10 Option B.
+version: 0.1.0
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  acdc:   https://cdisc.org/acdc/
+  qb:     http://purl.org/linked-data/cube#
+  skos:   http://www.w3.org/2004/02/skos/core#
+  rdf:    http://www.w3.org/1999/02/22-rdf-syntax-ns#
+
+default_prefix: acdc
+default_range:  string
+
+imports:
+  - linkml:types
+  - acdc_method  # same directory; for Method, MethodInput, MethodOutput cross-references
+
+
+# ============================================================================
+# Enums
+# ============================================================================
+
+enums:
+
+  TransformationType:
+    description: §6.1 — single transformations[] array with a discriminator.
+    permissible_values:
+      derivation:
+        description: Binds a derivation method to clinical concepts (Option_B_Clinical).
+      analysis:
+        description: Binds an analysis method to analysis concepts (AC_Concept_Model).
+
+  FHIRValueType:
+    description: >-
+      Optional value-type constraint on an input measure binding. Mirrors
+      acdc_method.FHIRValueType but listed here so the transformation schema
+      is self-contained at validation time.
+    permissible_values:
+      Quantity:
+      CodeableConcept:
+      Identifier:
+      string:
+      decimal:
+      integer:
+      boolean:
+      NumericValue:
+        description: Option_B_Clinical result.valueType.
+      CharacterValue:
+        description: Option_B_Clinical result.valueType.
+      CodedResponse:
+        description: Option_B_Clinical result.valueType.
+
+  SliceKeySource:
+    description: >-
+      §6.4 — where a slice-key's fixed-dimension value comes from at study-spec
+      time. Currently an informal three-value vocabulary in the existing
+      library (§7 open question: formalize). Listed here as an enum so the
+      validator can warn on unknown values.
+    permissible_values:
+      biomedicalConcept:
+        description: Value is the endpoint's linked biomedical concept identifier.
+      visit:
+        description: Value is the endpoint's chosen analysis visit.
+      population:
+        description: Value is the endpoint's chosen analysis population.
+
+
+# ============================================================================
+# Classes
+# ============================================================================
+
+classes:
+
+  # --- Top level --------------------------------------------------------------
+
+  TransformationLibrary:
+    description: Top-level container for one or more transformations.
+    tree_root: true
+    attributes:
+      version:
+        range: string
+      description:
+        range: string
+      transformations:
+        description: §6.1 — unified array (analyses + derivations merged with a discriminator).
+        range: Transformation
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+
+  Transformation:
+    description: §6.2 — a single transformation entry.
+    attributes:
+      conceptId:
+        description: §3.3 / §6.2 — canonical identifier (e.g. T.CFB_ANCOVA).
+        range: string
+        identifier: true
+        required: true
+        pattern: "^T\\.[A-Za-z0-9_]+$"
+      label:
+        description: SmartPhrase-rendering label.
+        range: string
+        required: true
+      shortLabel:
+        description: Optional compact label.
+        range: string
+      transformationType:
+        range: TransformationType
+        required: true
+      description:
+        range: string
+      usesMethod:
+        description: §6.2 — FK to Method.conceptId. Cross-file resolution enforced at build time.
+        range: string
+        required: true
+        pattern: "^M\\.[A-Za-z0-9_]+$"
+      methodConfigurations:
+        description: Values for the method's configuration options.
+        range: MethodConfigurationOverride
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      inputDataStructure:
+        description: §6.3 — the qb:DataStructureDefinition for the cube this transformation consumes.
+        range: InputDataStructure
+        required: true
+        inlined: true
+      outputDataStructure:
+        description: §6.3 — the qb:DataStructureDefinition for the cube this transformation produces.
+        range: OutputDataStructure
+        required: true
+        inlined: true
+      sliceKeys:
+        description: §6.4 — declares how slice-template placeholders bind to the endpoint spec at study time.
+        range: SliceKey
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      validSmartPhrases:
+        description: SmartPhrase OIDs compatible with this transformation.
+        range: string
+        multivalued: true
+
+  MethodConfigurationOverride:
+    description: A configuration value supplied to the named method's `configurations[].name` slot.
+    attributes:
+      configurationName:
+        description: FK to Method.configurations[].name (validated cross-file).
+        range: string
+        required: true
+      value:
+        description: Configuration value (type matches the configuration's dataType).
+        range: string
+
+  # --- DSDs -------------------------------------------------------------------
+
+  DataStructureDefinition:
+    description: >-
+      §6.3 / §6.5 — abstract base for the input and output DSDs. Each instance
+      IS a qb:DataStructureDefinition. Subclasses (InputDataStructure /
+      OutputDataStructure) constrain which kinds of bindings are permitted.
+    abstract: true
+    class_uri: qb:DataStructureDefinition
+    attributes:
+      dimensions:
+        description: qb:dimension components of this DSD.
+        slot_uri: qb:dimension
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      measures:
+        description: qb:measure components of this DSD.
+        slot_uri: qb:measure
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      attributes_:  # avoids shadowing LinkML's `attributes` keyword in the metamodel
+        description: qb:attribute components of this DSD. Reserved per §6.3; typically absent.
+        slot_uri: qb:attribute
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      slices:
+        description: §6.4 — slice templates that pre-filter cubes derived from this DSD.
+        range: Slice
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+
+  InputDataStructure:
+    description: >-
+      §6.3 — DSD for the cube the transformation consumes. dimensions[] and
+      measures[] items may carry `methodInput` FKs; measures[] items may carry
+      `slice`. Output-only fields are rejected.
+    is_a: DataStructureDefinition
+    slot_usage:
+      dimensions:
+        range: InputDimensionBinding
+      measures:
+        range: InputMeasureBinding
+      attributes_:
+        range: InputAttributeBinding
+
+  OutputDataStructure:
+    description: >-
+      §6.3 — DSD for the cube the transformation produces. dimensions[] items
+      list the output cube's qb:dimension components (no methodInput FK on
+      this side per §6.3 note 3). measures[] items carry `methodOutput` FKs.
+      slice is rejected on output measures (§6.4).
+    is_a: DataStructureDefinition
+    slot_usage:
+      dimensions:
+        range: OutputDimensionBinding
+      measures:
+        range: OutputMeasureBinding
+      attributes_:
+        range: OutputAttributeBinding
+
+  # --- Bindings ---------------------------------------------------------------
+
+  ConceptReference:
+    description: >-
+      Abstract base for any binding that references a clinical/analysis concept
+      OR a concept category. Enforces "concept XOR conceptCategory" per §6.6 #8.
+    abstract: true
+    attributes:
+      concept:
+        description: >-
+          §6.3 — name of a concrete concept in Option_B_Clinical.json
+          (for derivations) or AC_Concept_Model_v017.json (for analyses).
+          Cross-file FK validated at build time.
+        range: string
+      conceptCategory:
+        description: >-
+          §6.3 — name of a concept category (e.g. ParameterDimension,
+          VisitDimension). User picks a concrete member at study-spec time.
+        range: string
+    rules:
+      - description: §6.6 #8 — concept and conceptCategory are mutually exclusive (exactly one is set).
+        postconditions:
+          exactly_one_of:
+            - slot_conditions:
+                concept:
+                  required: true
+            - slot_conditions:
+                conceptCategory:
+                  required: true
+
+  DimensionBinding:
+    description: >-
+      Abstract base for an entry in a DSD's dimensions[]. Subclasses constrain
+      whether methodInput is permitted.
+    is_a: ConceptReference
+    abstract: true
+    class_uri: qb:ComponentSpecification
+    attributes:
+      methodInput:
+        description: §6.3 note 2 — when present, this dim fills a specific method input slot (bound dim). When absent, the dim is pure cube context.
+        range: string
+
+  InputDimensionBinding:
+    description: §6.3 — a dimension on the input cube. methodInput is optional.
+    is_a: DimensionBinding
+    slot_usage:
+      methodInput:
+        required: false
+
+  OutputDimensionBinding:
+    description: §6.3 note 3 — a dimension on the output cube. methodInput is rejected here.
+    is_a: DimensionBinding
+    slot_usage:
+      methodInput:
+        ifabsent: "null"
+    rules:
+      - description: §6.3 note 3 — methodInput is rejected on output-side dimension bindings.
+        postconditions:
+          slot_conditions:
+            methodInput:
+              required: false
+              equals_string: ""  # treated as "must not be present"
+
+  MeasureBinding:
+    description: >-
+      Abstract base for an entry in a DSD's measures[]. Subclasses constrain
+      direction: input measures carry methodInput + optional slice; output
+      measures carry methodOutput.
+    is_a: ConceptReference
+    abstract: true
+    class_uri: qb:ComponentSpecification
+    attributes:
+      requiredValueType:
+        description: §6.3 — optional FHIR value-type constraint on the input measure.
+        range: FHIRValueType
+      description:
+        description: Free-text note on the binding (e.g. "Baseline value of the endpoint parameter").
+        range: string
+
+  InputMeasureBinding:
+    description: §6.3 — a measure on the input cube. Carries methodInput; may carry slice.
+    is_a: MeasureBinding
+    attributes:
+      methodInput:
+        description: FK to Method.methodInput[].name (validated cross-file).
+        range: string
+        required: true
+      slice:
+        description: §6.4 — name of a Slice in inputDataStructure.slices[] that pre-filters this measure's cube before the method sees it.
+        range: string
+
+  OutputMeasureBinding:
+    description: §6.3 — a measure on the output cube. Carries methodOutput; slice is rejected (§6.4).
+    is_a: MeasureBinding
+    attributes:
+      methodOutput:
+        description: FK to Method.methodOutput[].name (validated cross-file).
+        range: string
+        required: true
+
+  # Reserved attribute bindings — present so the schema is closed and future-
+  # use cases can land without a breaking change.
+  InputAttributeBinding:
+    description: Reserved (§6.3 — Attributes). qb:attribute on the input cube.
+    is_a: ConceptReference
+    class_uri: qb:ComponentSpecification
+
+  OutputAttributeBinding:
+    description: Reserved (§6.3 — Attributes). qb:attribute on the output cube.
+    is_a: ConceptReference
+    class_uri: qb:ComponentSpecification
+
+  # --- Slices -----------------------------------------------------------------
+
+  Slice:
+    description: >-
+      §6.4 — a named, parameterized slice TEMPLATE. Instantiated to a real
+      qb:Slice at execution time when sliceKey placeholders bind to endpoint
+      values. Lives inside a DSD's slices[] array.
+    class_uri: qb:Slice
+    attributes:
+      name:
+        description: Slice identifier within slices[]. Referenced by InputMeasureBinding.slice.
+        range: string
+        identifier: true
+        required: true
+      description:
+        range: string
+      constraints:
+        description: One constraint per fixed dimension. Values may be literal or {placeholder}.
+        range: SliceConstraint
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        required: true
+
+  SliceConstraint:
+    description: §6.4 — one fixed dimension within a slice template.
+    attributes:
+      dimension:
+        description: References a dimension name in the parent DSD's dimensions[] (concept or conceptCategory).
+        range: string
+        required: true
+      value:
+        description: >-
+          Literal value OR a {placeholder} that resolves via sliceKeys at
+          study-spec time. Recognized placeholders include {parameter},
+          {visit}, {baseline_visit}, {population}.
+        range: string
+        required: true
+
+  SliceKey:
+    description: >-
+      §6.4 / §6.5 — qb:SliceKey extended with `source` to declare where the
+      fixed-dimension value comes from at study-spec time. Lives at the
+      transformation top level.
+    class_uri: qb:SliceKey
+    attributes:
+      dimension:
+        description: References a dimension in inputDataStructure.dimensions[].
+        slot_uri: qb:componentProperty
+        range: string
+        required: true
+      source:
+        description: §6.5 — AC/DC extension. Endpoint-spec attribute name supplying the value.
+        range: SliceKeySource
+        required: true
+
+
+# ============================================================================
+# Cross-field rules from §6.6 (validation contracts)
+# ============================================================================
+#
+# The following invariants are stated in §6.6 of the design doc but are not
+# expressible purely in LinkML's rule language (they require cross-file FK
+# resolution, parser logic, or value-set lookups). They are enforced by the
+# build-time validator that consumes this LinkML alongside the method file
+# and the concept files:
+#
+#   §6.6 #1  usesMethod resolves to an existing Method.conceptId.
+#   §6.6 #2  methodInput / methodOutput FKs resolve into the named method.
+#   §6.6 #3  methodConfigurations[].configurationName ∈ method.configurations[].name
+#            AND value matches the configuration's dataType + enumValues.
+#   §6.6 #4  Slice references resolve; {placeholder} resolves to a sliceKey
+#            source value or a transformation-local default.
+#   §6.6 #5  sliceKeys[].dimension ∈ inputDataStructure.dimensions[].(concept | conceptCategory).
+#   §6.6 #6  Cardinality of bindings sharing a methodInput FK matches the
+#            method's methodInput[].cardinality.
+#   §6.6 #7  concept / conceptCategory references resolve against the concept
+#            files declared in $references.
+#   §6.6 #9  Twin-DSD consistency advisory — warn (non-blocking) when a dim
+#            appears on one side and not the other without comment.
+#
+# The XOR rule from §6.6 #8 (concept XOR conceptCategory) IS expressible in
+# LinkML and is encoded on ConceptReference above.
