@@ -909,6 +909,261 @@ In addition to the method migration in §5:
 
 Steps 1–3 produce a working state; 4–6 finish the migration.
 
+### 6.10 Alternative transformation shapes considered
+
+This appendix records the three transformation-shape options that were on the table during the §6 design discussion, with the same two example transformations (`T.ChangeFromBaseline` and `T.CFB_ANCOVA`) shown in each shape. Option B was chosen; A and C are preserved here so future readers know the choice was deliberate and what costs were knowingly paid.
+
+All three options share the same slice-expression pattern (every input cites a named slice; no implicit slicing) so the comparison is purely about DSD shape.
+
+#### Option A — Flattened (one logical cube)
+
+Top-level `dimensions[]` + `measures[]`. Direction of a measure is inferred from `methodInput` vs `methodOutput` on each entry. No partitioning into input/output blocks.
+
+```jsonc
+// T.ChangeFromBaseline
+{
+  "conceptId": "T.ChangeFromBaseline", "label": "Change From Baseline", "shortLabel": "CFB",
+  "transformationType": "derivation", "usesMethod": "M.Subtraction",
+  "methodConfigurations": [],
+  "dimensions": [
+    { "concept": "Subject" },
+    { "conceptCategory": "ParameterDimension" },
+    { "conceptCategory": "VisitDimension" }
+  ],
+  "measures": [
+    { "methodInput": "minuend",    "concept": "Measure", "requiredValueType": "Quantity",
+      "slice": "endpoint",           "description": "Current visit value" },
+    { "methodInput": "subtrahend", "concept": "Measure", "requiredValueType": "Quantity",
+      "slice": "parameter_baseline", "description": "Baseline value" },
+    { "methodOutput": "difference", "concept": "Change" }
+  ],
+  "sliceKeys": [
+    { "dimension": "ParameterDimension", "source": "biomedicalConcept" },
+    { "dimension": "VisitDimension",     "source": "visit" }
+  ],
+  "slices": [
+    { "name": "endpoint",
+      "constraints": [
+        { "dimension": "ParameterDimension", "value": "{parameter}" },
+        { "dimension": "VisitDimension",     "value": "{visit}" } ] },
+    { "name": "parameter_baseline",
+      "constraints": [
+        { "dimension": "ParameterDimension", "value": "{parameter}" },
+        { "dimension": "VisitDimension",     "value": "{baseline_visit}" } ] }
+  ]
+}
+```
+
+```jsonc
+// T.CFB_ANCOVA
+{
+  "conceptId": "T.CFB_ANCOVA", "label": "Change From Baseline ANCOVA", "shortLabel": "CFB ANCOVA",
+  "transformationType": "analysis", "usesMethod": "M.ANCOVA",
+  "methodConfigurations": [{ "configurationName": "ss_type", "value": "III" }],
+  "dimensions": [
+    { "methodInput": "fixed_effect", "concept": "Treatment" },
+    { "concept": "Subject" },
+    { "conceptCategory": "ParameterDimension" },
+    { "conceptCategory": "VisitDimension" }
+  ],
+  "measures": [
+    { "methodInput":  "response",  "concept": "Change",  "requiredValueType": "Quantity",
+      "slice": "endpoint" },
+    { "methodInput":  "covariate", "concept": "Measure", "requiredValueType": "Quantity",
+      "slice": "parameter_baseline", "description": "Baseline value of the endpoint parameter" },
+    { "methodOutput": "ls_means",                   "concept": "LSMeans" },
+    { "methodOutput": "contrasts_t",                "concept": "Contrasts" },
+    { "methodOutput": "type3_tests_f",              "concept": "Type3Tests" },
+    { "methodOutput": "parameter_estimates_linear", "concept": "ParameterEstimates" },
+    { "methodOutput": "fit_statistics_linear",      "concept": "FitStatistics" }
+  ],
+  "sliceKeys": [
+    { "dimension": "ParameterDimension", "source": "biomedicalConcept" },
+    { "dimension": "VisitDimension",     "source": "visit" },
+    { "dimension": "Population",         "source": "population" }
+  ],
+  "slices": [
+    { "name": "endpoint",
+      "constraints": [
+        { "dimension": "ParameterDimension", "value": "{parameter}" },
+        { "dimension": "VisitDimension",     "value": "{visit}" },
+        { "dimension": "Population",         "value": "{population}" } ] },
+    { "name": "parameter_baseline",
+      "constraints": [
+        { "dimension": "ParameterDimension", "value": "{parameter}" },
+        { "dimension": "VisitDimension",     "value": "{baseline_visit}" },
+        { "dimension": "Population",         "value": "{population}" } ] }
+  ]
+}
+```
+
+**Pros**
+- Most compact authoring: dimensions that appear on both cubes are written once.
+- Smallest amount of JSON for the common "all dims carry forward" case.
+- Closest to the existing library's flat `bindings[]` array (smallest mental jump for current authors).
+
+**Cons**
+- **Not 1:1 with qb.** `qb:DataStructureDefinition` describes one DSD per dataset; this shape blends two DSDs (input + output) into one logical cube with direction-tagged measures. A JSON→RDF converter must re-derive the two real DSDs by partitioning `measures[]` on `methodInput` vs `methodOutput`.
+- **Aggregations need special syntax.** A transformation that drops a dim on output (e.g. `T.PeakConcentration` collapses Timing) has no clean way to express that without a bolted-on per-dim `scope: "input_only" / "both"` field.
+- **No clean home for output-side slices.** If a transformation wants to publish named slices of its OUTPUT cube (e.g. "LS means at Week 24"), there's nowhere to put them — `slices[]` is implicitly input-side only.
+- **The "input cube" and "output cube" notions are implicit.** A reader must mentally split `measures[]` by FK presence to understand the two cubes.
+
+#### Option B — Strict twin DSDs (CHOSEN)
+
+Each transformation declares two `qb:DataStructureDefinition`s explicitly: `inputDataStructure` and `outputDataStructure`. Shared dims are listed in both. No carry-forward shorthand.
+
+This is the shape adopted in §6.3, §6.7, §6.8. Full worked examples for `T.BaselineSelection` and `T.CFB_ANCOVA` appear in §6.7 and §6.8 respectively; `T.ChangeFromBaseline` follows the same pattern with `M.Subtraction`'s `minuend` / `subtrahend` / `difference` slots in place of ANCOVA's.
+
+**Pros**
+- **1:1 with qb.** Each `*DataStructure` block IS a `qb:DataStructureDefinition`. JSON→RDF emits two real DSDs with no re-derivation step. The schema reflects the actual data flow exactly.
+- **Aggregations are natural.** A transformation that drops a dim (`T.PeakConcentration` drops Timing; `T.ADAS_MissingScaleCapacity` collapses Topic) simply doesn't list that dim in `outputDataStructure.dimensions`. No special syntax.
+- **Output-side slices have a home.** If a transformation wants to publish named slices of its output, they go in `outputDataStructure.slices[]`. Permitted; typically empty.
+- **Reading the JSON tells you what each cube looks like.** No mental split required.
+- **Validator is simpler.** Each block validates independently — no rules about "this field is allowed on input-direction measures but rejected on output-direction measures within the same array."
+
+**Cons**
+- **Dimension duplication.** When both cubes share a dim (the common case — `T.CFB_ANCOVA` repeats four dim entries; `T.ChangeFromBaseline` repeats three), authors write the entry twice. Drift between the two lists is possible.
+- **More keystrokes** for hand-edited files. The authoring UI absorbs this; hand-edit becomes the exception.
+
+**Costs accepted**
+- The duplication cost (~3–4 dim entries × ~30 transformations in the current library) is one-time at migration and ongoing during UI-assisted authoring. Manageable.
+- The validator emits a non-blocking advisory when a dim appears on one side and not the other without comment (§6.6 #9) — catches accidental drift while allowing legitimate diverge (aggregations).
+
+#### Option C — Twin DSDs with carry-forward shorthand
+
+Same two-block skeleton as Option B, but the output side can declare `dimensionsFrom: "input"` + optional `dimensionsDrop` / `dimensionsAdd` instead of listing every dim. The common all-carry-forward case becomes a one-line directive.
+
+```jsonc
+// T.ChangeFromBaseline
+{
+  "conceptId": "T.ChangeFromBaseline", "label": "Change From Baseline", "shortLabel": "CFB",
+  "transformationType": "derivation", "usesMethod": "M.Subtraction",
+  "methodConfigurations": [],
+  "inputDataStructure": {
+    "dimensions": [
+      { "concept": "Subject" },
+      { "conceptCategory": "ParameterDimension" },
+      { "conceptCategory": "VisitDimension" }
+    ],
+    "measures": [
+      { "methodInput": "minuend",    "concept": "Measure", "requiredValueType": "Quantity",
+        "slice": "endpoint",           "description": "Current visit value" },
+      { "methodInput": "subtrahend", "concept": "Measure", "requiredValueType": "Quantity",
+        "slice": "parameter_baseline", "description": "Baseline value" }
+    ],
+    "slices": [
+      { "name": "endpoint",
+        "constraints": [
+          { "dimension": "ParameterDimension", "value": "{parameter}" },
+          { "dimension": "VisitDimension",     "value": "{visit}" } ] },
+      { "name": "parameter_baseline",
+        "constraints": [
+          { "dimension": "ParameterDimension", "value": "{parameter}" },
+          { "dimension": "VisitDimension",     "value": "{baseline_visit}" } ] }
+    ]
+  },
+  "outputDataStructure": {
+    "dimensionsFrom": "input",
+    "dimensionsDrop": [],
+    "dimensionsAdd":  [],
+    "measures": [
+      { "methodOutput": "difference", "concept": "Change" }
+    ]
+  },
+  "sliceKeys": [
+    { "dimension": "ParameterDimension", "source": "biomedicalConcept" },
+    { "dimension": "VisitDimension",     "source": "visit" }
+  ]
+}
+```
+
+```jsonc
+// T.CFB_ANCOVA
+{
+  "conceptId": "T.CFB_ANCOVA", "label": "Change From Baseline ANCOVA", "shortLabel": "CFB ANCOVA",
+  "transformationType": "analysis", "usesMethod": "M.ANCOVA",
+  "methodConfigurations": [{ "configurationName": "ss_type", "value": "III" }],
+  "inputDataStructure": {
+    "dimensions": [
+      { "methodInput": "fixed_effect", "concept": "Treatment" },
+      { "concept": "Subject" },
+      { "conceptCategory": "ParameterDimension" },
+      { "conceptCategory": "VisitDimension" }
+    ],
+    "measures": [
+      { "methodInput": "response",  "concept": "Change",  "requiredValueType": "Quantity",
+        "slice": "endpoint" },
+      { "methodInput": "covariate", "concept": "Measure", "requiredValueType": "Quantity",
+        "slice": "parameter_baseline", "description": "Baseline value of the endpoint parameter" }
+    ],
+    "slices": [
+      { "name": "endpoint",
+        "constraints": [
+          { "dimension": "ParameterDimension", "value": "{parameter}" },
+          { "dimension": "VisitDimension",     "value": "{visit}" },
+          { "dimension": "Population",         "value": "{population}" } ] },
+      { "name": "parameter_baseline",
+        "constraints": [
+          { "dimension": "ParameterDimension", "value": "{parameter}" },
+          { "dimension": "VisitDimension",     "value": "{baseline_visit}" },
+          { "dimension": "Population",         "value": "{population}" } ] }
+    ]
+  },
+  "outputDataStructure": {
+    "dimensionsFrom": "input",
+    "dimensionsDrop": [],
+    "dimensionsAdd":  [],
+    "measures": [
+      { "methodOutput": "ls_means",                   "concept": "LSMeans" },
+      { "methodOutput": "contrasts_t",                "concept": "Contrasts" },
+      { "methodOutput": "type3_tests_f",              "concept": "Type3Tests" },
+      { "methodOutput": "parameter_estimates_linear", "concept": "ParameterEstimates" },
+      { "methodOutput": "fit_statistics_linear",      "concept": "FitStatistics" }
+    ]
+  },
+  "sliceKeys": [
+    { "dimension": "ParameterDimension", "source": "biomedicalConcept" },
+    { "dimension": "VisitDimension",     "source": "visit" },
+    { "dimension": "Population",         "source": "population" }
+  ]
+}
+```
+
+**Pros**
+- Carries Option B's qb fidelity after `dimensionsFrom` is mechanically expanded — both blocks resolve to real `qb:DataStructureDefinition`s.
+- No dimension duplication for the all-carry-forward case (the common one).
+- Aggregations are natural: `"dimensionsDrop": ["Timing"]` reads cleanly.
+
+**Cons**
+- **Expansion step before validation.** The validator (and the JSON→RDF converter) must resolve `dimensionsFrom` / `dimensionsDrop` / `dimensionsAdd` before doing any cross-block consistency check. Two layers of representation (authored + expanded) means more places for mismatch.
+- **Two ways to express the same thing.** Authors can write either an explicit dim list OR `dimensionsFrom`, even within the same library. Linting can normalize, but the schema admits both forms.
+- **Hides the "two cubes" structure from a casual reader.** With Option B you see the output cube's dims directly; with Option C you see a directive and have to mentally expand.
+- **Output-side slices that reference output-only dims are awkward.** If `dimensionsAdd` introduces a dim, output slices that constrain it must wait for expansion to be valid.
+
+#### Comparison summary
+
+| Aspect | Option A (flattened) | Option B (strict twin DSD) | Option C (twin DSD + shorthand) |
+|---|---|---|---|
+| qb fidelity | 1 logical cube ≠ qb (qb has 2 datasets) | 1:1 with two `qb:DataStructureDefinition`s | 1:1 once `dimensionsFrom` is expanded |
+| Dim duplication (CFB/ANCOVA case) | none | 3 / 4 dim entries duplicated | none (shorthand) |
+| Direction signal | `methodInput` vs `methodOutput` FK on each measure | block name (`inputDataStructure` vs `outputDataStructure`) | block name |
+| Aggregations (T.PeakConcentration drops Timing) | needs a per-dim `scope` field bolted on | natural (omit Timing from `outputDataStructure.dimensions`) | natural (`"dimensionsDrop": ["Timing"]`) |
+| Output-side slices | nowhere to put them | `outputDataStructure.slices` | `outputDataStructure.slices` |
+| Author effort, simplest CFB case | smallest | largest (most duplication) | small (shorthand collapses common case) |
+| Validator complexity | medium (must enforce in/out partition by FK) | low (each block validates independently) | medium (must resolve `dimensionsFrom` before validating output) |
+| Two ways to write the same thing | no | no | yes (explicit list OR `dimensionsFrom`) |
+
+#### Decision
+
+**Option B (strict twin DSDs)** was adopted on 2026-05-28. The deciding factors:
+
+1. **Schema fidelity to qb matters more than authoring brevity.** Schemas live for years; UI absorbs hand-authoring cost.
+2. **One representation, not two.** Option C's shorthand creates two valid ways to write the same transformation, which fragments tooling and review.
+3. **The JSON IS the truth.** No expansion step between what's authored and what gets validated/converted. A diff in code review reads as the actual cube structure, not as a directive that resolves to one.
+4. **Aggregations stop being a special case.** ~20% of the existing library's transformations change DSD between input and output (aggregations, event-aggregates). Option B handles them with the same machinery as carry-forward cases.
+
+What we accepted: dimension duplication for the carry-forward case (~3–4 entries per analysis transformation, ~3 for the typical derivation), absorbed by the authoring UI. The non-blocking twin-DSD consistency advisory (§6.6 #9) catches drift without forbidding legitimate diverge.
+
 ## 7. Open questions
 
 - **`unit_policy` on inferential outputs.** Decision is "omit it." If a downstream consumer needs it (e.g. to render a contrast estimate with units), it can read the policy from the *companion* value-bearing output of the same method. Confirm this is acceptable.
