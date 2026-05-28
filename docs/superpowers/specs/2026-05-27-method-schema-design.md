@@ -322,7 +322,7 @@ A new JSON-Schema file lands at `model/method/acdc_methods.schema.json` (current
 
 ```json
 {
-  "conceptId": "M.ANCOVA", "label": "ANCOVA", "shortLabel": "ANCOVA",
+  "conceptId": "M.ANCOVA", "label": "Analysis of Covariate", "shortLabel": "ANCOVA",
   "code": { "system": "NCI", "value": "C00001_NEW" },
   "codings": [ { "system": "http://purl.obolibrary.org/obo/stato",
                  "code": "STATO_0000179", "display": "ANCOVA" } ],
