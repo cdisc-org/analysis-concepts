@@ -284,7 +284,7 @@ A new JSON-Schema file lands at `model/method/acdc_methods.schema.json` (current
 
 ```json
 {
-  "name": "M.ANCOVA", "label": "ANCOVA", "shortLabel": "ANCOVA",
+  "name": "M.ANCOVA", "label": "Analysis of Covariate", "shortLabel": "ANCOVA",
   "code": { "system": "NCI", "value": null, "_note": "NCI C-code to be assigned" },
   "type": "analysis", "class": "General Linear Models",
   "intent": ["GroupComparison"],
