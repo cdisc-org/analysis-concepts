@@ -1,23 +1,15 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.LogRankTest",
-  "label": "Log-rank Test",
-  "shortLabel": "log-rank",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "Survival Models",
-  "intent": [
-    "TimeToEventEstimate"
-  ],
+  "conceptId": "M.LogRankTest",
+  "name": "Log-Rank Test",
+  "label": "log-rank",
+  "ncitCode": null,
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
@@ -40,7 +32,7 @@
       "description": "Weight parameter: 0 = log-rank (default), 1 = Wilcoxon/Peto"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "time",
       "dataType": "decimal",
@@ -70,14 +62,10 @@
       "description": "Optional stratification variables"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name": "chi_squared_test_result",
       "output_type": "chi_squared_test_result"
     }
-  ],
-  "assumptions": [
-    "Non-informative censoring",
-    "Proportional hazards (for optimal power)"
   ]
 }

@@ -1,29 +1,21 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.Rounding",
+  "conceptId": "M.Rounding",
+  "name": "Rounding",
   "label": "Rounding",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "derivation",
-  "class": "Arithmetic",
-  "intent": [
-    "PrecisionAdjustment"
-  ],
+  "ncitCode": null,
   "description": "Rounds numeric value to specified precision",
   "formula": {
     "notation": "assignment",
     "default_expression": "result := ROUND(value, decimals)",
     "generic_expression": "result := ROUND(<value>, <decimals>)"
   },
-  "unit_policy": "preserved",
   "configurations": [
     {
       "name": "decimals",
@@ -45,7 +37,7 @@
       "description": "Rounding method for tie-breaking"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "value",
       "dataType": "decimal",
@@ -54,11 +46,12 @@
       "description": "Value to round"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
-      "output_type": "fhir:Quantity",
-      "name": "derived_value"
+      "output_type": "computed_value",
+      "name": "result",
+      "unit_policy": "preserved",
+      "dataType": "decimal"
     }
-  ],
-  "assumptions": []
+  ]
 }

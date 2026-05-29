@@ -1,22 +1,15 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.Mode",
+  "conceptId": "M.Mode",
+  "name": "Mode",
   "label": "Mode",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "Central Tendency",
-  "intent": [
-    "DescriptiveSummary"
-  ],
+  "ncitCode": null,
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
@@ -27,14 +20,12 @@
   "description": "Determines the most frequently occurring value",
   "formula": {
     "notation": "assignment",
-    "default_expression": "result := MODE(response) OVER (group)",
-    "generic_expression": "result := MODE(<response>) OVER (<group>*)"
+    "default_expression": "result := MODE(value) OVER (group)",
+    "generic_expression": "result := MODE(<value>) OVER (<group>*)"
   },
-  "unit_policy": "preserved",
-  "configurations": [],
-  "methodInput": [
+  "inputs": [
     {
-      "name": "response",
+      "name": "value",
       "dataType": "decimal",
       "required": true,
       "cardinality": "single",
@@ -44,18 +35,19 @@
       "name": "group",
       "dataType": "code",
       "required": false,
-      "cardinality": "single_or_multiple",
+      "cardinality": "multiple",
       "description": "Optional grouping variable(s)"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
-      "output_type": "fhir:Quantity",
-      "name": "derived_value",
+      "output_type": "computed_value",
+      "name": "result",
       "indexed_by": [
         "group"
-      ]
+      ],
+      "unit_policy": "preserved",
+      "dataType": "decimal"
     }
-  ],
-  "assumptions": []
+  ]
 }

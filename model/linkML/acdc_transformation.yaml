@@ -215,7 +215,7 @@ classes:
   InputDataStructure:
     description: >-
       §6.3 — DSD for the cube the transformation consumes. dimensions[] and
-      measures[] items may carry `methodInput` FKs; measures[] items may carry
+      measures[] items may carry `input` FKs; measures[] items may carry
       `slice`. Output-only fields are rejected.
     is_a: DataStructureDefinition
     slot_usage:
@@ -229,8 +229,8 @@ classes:
   OutputDataStructure:
     description: >-
       §6.3 — DSD for the cube the transformation produces. dimensions[] items
-      list the output cube's qb:dimension components (no methodInput FK on
-      this side per §6.3 note 3). measures[] items carry `methodOutput` FKs.
+      list the output cube's qb:dimension components (no input FK on
+      this side per §6.3 note 3). measures[] items carry `output` FKs.
       slice is rejected on output measures (§6.4).
     is_a: DataStructureDefinition
     slot_usage:
@@ -274,41 +274,41 @@ classes:
   DimensionBinding:
     description: >-
       Abstract base for an entry in a DSD's dimensions[]. Subclasses constrain
-      whether methodInput is permitted.
+      whether input is permitted.
     is_a: ConceptReference
     abstract: true
     class_uri: qb:ComponentSpecification
     attributes:
-      methodInput:
+      input:
         description: §6.3 note 2 — when present, this dim fills a specific method input slot (bound dim). When absent, the dim is pure cube context.
         range: string
 
   InputDimensionBinding:
-    description: §6.3 — a dimension on the input cube. methodInput is optional.
+    description: §6.3 — a dimension on the input cube. input is optional.
     is_a: DimensionBinding
     slot_usage:
-      methodInput:
+      input:
         required: false
 
   OutputDimensionBinding:
-    description: §6.3 note 3 — a dimension on the output cube. methodInput is rejected here.
+    description: §6.3 note 3 — a dimension on the output cube. input is rejected here.
     is_a: DimensionBinding
     slot_usage:
-      methodInput:
+      input:
         ifabsent: "null"
     rules:
-      - description: §6.3 note 3 — methodInput is rejected on output-side dimension bindings.
+      - description: §6.3 note 3 — input is rejected on output-side dimension bindings.
         postconditions:
           slot_conditions:
-            methodInput:
+            input:
               required: false
               equals_string: ""  # treated as "must not be present"
 
   MeasureBinding:
     description: >-
       Abstract base for an entry in a DSD's measures[]. Subclasses constrain
-      direction: input measures carry methodInput + optional slice; output
-      measures carry methodOutput.
+      direction: input measures carry input + optional slice; output
+      measures carry output.
     is_a: ConceptReference
     abstract: true
     class_uri: qb:ComponentSpecification
@@ -321,11 +321,11 @@ classes:
         range: string
 
   InputMeasureBinding:
-    description: §6.3 — a measure on the input cube. Carries methodInput; may carry slice.
+    description: §6.3 — a measure on the input cube. Carries input; may carry slice.
     is_a: MeasureBinding
     attributes:
-      methodInput:
-        description: FK to Method.methodInput[].name (validated cross-file).
+      input:
+        description: FK to Method.inputs[].name (validated cross-file).
         range: string
         required: true
       slice:
@@ -333,11 +333,11 @@ classes:
         range: string
 
   OutputMeasureBinding:
-    description: §6.3 — a measure on the output cube. Carries methodOutput; slice is rejected (§6.4).
+    description: §6.3 — a measure on the output cube. Carries output; slice is rejected (§6.4).
     is_a: MeasureBinding
     attributes:
-      methodOutput:
-        description: FK to Method.methodOutput[].name (validated cross-file).
+      output:
+        description: FK to Method.outputs[].name (validated cross-file).
         range: string
         required: true
 
@@ -421,14 +421,14 @@ classes:
 # and the concept files:
 #
 #   §6.6 #1  usesMethod resolves to an existing Method.conceptId.
-#   §6.6 #2  methodInput / methodOutput FKs resolve into the named method.
+#   §6.6 #2  input / output FKs resolve into the named method.
 #   §6.6 #3  methodConfigurations[].configurationName ∈ method.configurations[].name
 #            AND value matches the configuration's dataType + enumValues.
 #   §6.6 #4  Slice references resolve; {placeholder} resolves to a sliceKey
 #            source value or a transformation-local default.
 #   §6.6 #5  sliceKeys[].dimension ∈ inputDataStructure.dimensions[].(concept | conceptCategory).
-#   §6.6 #6  Cardinality of bindings sharing a methodInput FK matches the
-#            method's methodInput[].cardinality.
+#   §6.6 #6  Cardinality of bindings sharing a input FK matches the
+#            method's inputs[].cardinality.
 #   §6.6 #7  concept / conceptCategory references resolve against the concept
 #            files declared in $references.
 #   §6.6 #9  Twin-DSD consistency advisory — warn (non-blocking) when a dim

@@ -1,33 +1,24 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.CumulativeFrequency",
+  "conceptId": "M.CumulativeFrequency",
+  "name": "Cumulative Frequency",
   "label": "Cumulative Frequency",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "Counting",
-  "intent": [
-    "DescriptiveSummary"
-  ],
+  "ncitCode": null,
   "description": "Computes cumulative frequency and percentage across ordered categories",
   "formula": {
     "notation": "assignment",
-    "default_expression": "result := CUMFREQ(response) OVER (group)",
-    "generic_expression": "result := CUMFREQ(<response>) OVER (<group>*)"
+    "default_expression": "result := CUMFREQ(value) OVER (group)",
+    "generic_expression": "result := CUMFREQ(<value>) OVER (<group>*)"
   },
-  "unit_policy": "dimensionless",
-  "configurations": [],
-  "methodInput": [
+  "inputs": [
     {
-      "name": "response",
+      "name": "value",
       "dataType": "code",
       "required": true,
       "cardinality": "single",
@@ -37,18 +28,19 @@
       "name": "group",
       "dataType": "code",
       "required": false,
-      "cardinality": "single_or_multiple",
+      "cardinality": "multiple",
       "description": "Optional grouping variable(s)"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
-      "output_type": "fhir:Quantity",
-      "name": "derived_value",
+      "output_type": "computed_value",
+      "name": "result",
       "indexed_by": [
         "group"
-      ]
+      ],
+      "unit_policy": "dimensionless",
+      "dataType": "decimal"
     }
-  ],
-  "assumptions": []
+  ]
 }

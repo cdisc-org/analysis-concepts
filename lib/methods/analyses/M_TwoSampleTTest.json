@@ -1,5 +1,5 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
@@ -7,18 +7,10 @@
     "formula_grammar": "../../model/method/formula_grammar.json",
     "configuration_concepts": "../../model/method/configuration_concepts.json"
   },
-  "name": "M.TwoSampleTTest",
-  "label": "Two-sample t-test",
-  "shortLabel": "2-sample t",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "General Linear Models",
-  "intent": [
-    "GroupComparison"
-  ],
+  "conceptId": "M.TwoSampleTTest",
+  "name": "Two-Sample t-Test",
+  "label": "2-sample t",
+  "ncitCode": null,
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
@@ -56,7 +48,7 @@
       "conforms_to": "conf_level"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "response",
       "dataType": "decimal",
@@ -72,7 +64,7 @@
       "description": "Grouping variable (exactly two levels)"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name": "t_test_result",
       "output_type": "t_test_result"
@@ -88,10 +80,5 @@
       "name": "contrasts_t",
       "output_type": "contrasts_t"
     }
-  ],
-  "assumptions": [
-    "Normality within groups",
-    "Independence of observations",
-    "Equal variances (if var_equal=true)"
   ]
 }

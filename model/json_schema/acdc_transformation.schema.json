@@ -1,71 +1,53 @@
 {
     "$defs": {
+        "Any": {
+            "additionalProperties": true,
+            "description": "Wildcard class accepting any JSON value. Used for slots like `$vocabulary` (object of strings) and `Configuration.defaultValue` (decimal | string | boolean depending on dataType).",
+            "title": "Any",
+            "type": [
+                "null",
+                "boolean",
+                "object",
+                "number",
+                "string"
+            ]
+        },
         "Cardinality": {
-            "description": "How many bindings may fill a method input slot.",
+            "description": "How many bindings may fill a method input slot. Reduced from {single, multiple, single_or_multiple} on 2026-05-28: `multiple` now means \"one or more\" (covers the n=1 case), making the third value redundant.",
             "enum": [
                 "single",
-                "multiple",
-                "single_or_multiple"
+                "multiple"
             ],
             "title": "Cardinality",
             "type": "string"
         },
-        "Code": {
-            "additionalProperties": false,
-            "description": "\u00a73.3 \u2014 a single (system, value) code reference.",
-            "properties": {
-                "system": {
-                    "$ref": "#/$defs/CodeSystem"
-                },
-                "value": {
-                    "description": "The code value within the system. May be null when not yet assigned.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "system"
-            ],
-            "title": "Code",
-            "type": "object"
-        },
-        "CodeSystem": {
-            "description": "Coding system for code references.",
-            "enum": [
-                "NCI"
-            ],
-            "title": "CodeSystem",
-            "type": "string"
-        },
         "Coding": {
             "additionalProperties": false,
-            "description": "\u00a73.3 \u2014 a (system, value) coding with optional human label. Used in `codings[]` for supplementary codes beyond the primary `code`.",
+            "description": "A (system, code, display) coding. Used in `codings[]` for supplementary codes (STATO, etc.). Field names follow FHIR Coding convention (code + display, not value + label).",
             "properties": {
-                "label": {
+                "code": {
+                    "type": "string"
+                },
+                "display": {
                     "type": [
                         "string",
                         "null"
                     ]
                 },
                 "system": {
-                    "type": "string"
-                },
-                "value": {
                     "type": "string"
                 }
             },
             "required": [
                 "system",
-                "value"
+                "code"
             ],
             "title": "Coding",
             "type": "object"
         },
         "Configuration": {
             "additionalProperties": false,
-            "description": "A configuration option on a method or on a method output. Values are supplied by transformations via `methodConfigurations[].value`.",
+            "description": "A configuration option on a method. Values are supplied by transformations via `methodConfigurations[].value`.",
             "properties": {
                 "applicable_scopes": {
                     "description": "Optional list of scopes where this configuration applies (e.g. ['universal'], ['per_test']).",
@@ -85,14 +67,19 @@
                     ]
                 },
                 "dataType": {
-                    "$ref": "#/$defs/ConfigurationDataType"
+                    "$ref": "#/$defs/ConfigurationDataType",
+                    "description": "Required unless `conforms_to` is set (in which case the dataType is inherited from the vocabulary entry referenced)."
                 },
                 "defaultValue": {
-                    "description": "Default value if not supplied by the transformation. Type matches dataType.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Any"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Default value if not supplied by the transformation. Type matches the parent dataType (decimal, string, boolean, enum value, ...)."
                 },
                 "description": {
                     "type": [
@@ -111,26 +98,27 @@
                     ]
                 },
                 "name": {
-                    "description": "Configuration identifier within the parent's configurations[]. Referenced from transformation `methodConfigurations[].configurationName`.",
+                    "description": "Configuration identifier within the parent method's configurations[]. Referenced from transformation `methodConfigurations[].configurationName`.",
                     "type": "string"
                 }
             },
             "required": [
-                "name",
-                "dataType"
+                "name"
             ],
             "title": "Configuration",
             "type": "object"
         },
         "ConfigurationDataType": {
-            "description": "Data type of a method or output configuration value.",
+            "description": "Data type of a method configuration value.",
             "enum": [
                 "decimal",
                 "string",
                 "code",
                 "boolean",
                 "integer",
-                "enum"
+                "enum",
+                "object",
+                "object[]"
             ],
             "title": "ConfigurationDataType",
             "type": "string"
@@ -166,7 +154,7 @@
         },
         "Formula": {
             "additionalProperties": false,
-            "description": "\u00a73.4 \u2014 the formula contract. The generic_expression's <token> identifiers MUST appear in the parent method's methodInput[].name.",
+            "description": "\u00a73.4 \u2014 the formula contract. The generic_expression's <token> identifiers MUST appear in the parent method's inputs[].name (or outputs[].name for the LHS of a derivation assignment).",
             "properties": {
                 "default_expression": {
                     "description": "Concrete example expression (e.g. 'response ~ covariate + fixed_effect').",
@@ -199,7 +187,8 @@
             "description": "The grammar used by the method's formula. See lib/vocabulary/formula_grammar.json.",
             "enum": [
                 "wilkinson_rogers",
-                "assignment"
+                "assignment",
+                "survival"
             ],
             "title": "FormulaNotation",
             "type": "string"
@@ -248,7 +237,7 @@
         },
         "InputDataStructure": {
             "additionalProperties": false,
-            "description": "\u00a76.3 \u2014 DSD for the cube the transformation consumes. dimensions[] and measures[] items may carry `methodInput` FKs; measures[] items may carry `slice`. Output-only fields are rejected.",
+            "description": "\u00a76.3 \u2014 DSD for the cube the transformation consumes. dimensions[] and measures[] items may carry `input` FKs; measures[] items may carry `slice`. Output-only fields are rejected.",
             "properties": {
                 "attributes_": {
                     "description": "qb:attribute components of this DSD. Reserved per \u00a76.3; typically absent.",
@@ -296,7 +285,7 @@
         },
         "InputDimensionBinding": {
             "additionalProperties": false,
-            "description": "\u00a76.3 \u2014 a dimension on the input cube. methodInput is optional.",
+            "description": "\u00a76.3 \u2014 a dimension on the input cube. input is optional.",
             "properties": {
                 "concept": {
                     "description": "\u00a76.3 \u2014 name of a concrete concept in Option_B_Clinical.json (for derivations) or AC_Concept_Model_v017.json (for analyses). Cross-file FK validated at build time.",
@@ -312,7 +301,7 @@
                         "null"
                     ]
                 },
-                "methodInput": {
+                "input": {
                     "description": "\u00a76.3 note 2 \u2014 when present, this dim fills a specific method input slot (bound dim). When absent, the dim is pure cube context.",
                     "type": [
                         "string",
@@ -345,7 +334,7 @@
         },
         "InputMeasureBinding": {
             "additionalProperties": false,
-            "description": "\u00a76.3 \u2014 a measure on the input cube. Carries methodInput; may carry slice.",
+            "description": "\u00a76.3 \u2014 a measure on the input cube. Carries input; may carry slice.",
             "properties": {
                 "concept": {
                     "description": "\u00a76.3 \u2014 name of a concrete concept in Option_B_Clinical.json (for derivations) or AC_Concept_Model_v017.json (for analyses). Cross-file FK validated at build time.",
@@ -368,8 +357,8 @@
                         "null"
                     ]
                 },
-                "methodInput": {
-                    "description": "FK to Method.methodInput[].name (validated cross-file).",
+                "input": {
+                    "description": "FK to Method.inputs[].name (validated cross-file).",
                     "type": "string"
                 },
                 "requiredValueType": {
@@ -385,7 +374,7 @@
                 }
             },
             "required": [
-                "methodInput"
+                "input"
             ],
             "then": {
                 "oneOf": [
@@ -414,36 +403,26 @@
             "additionalProperties": false,
             "description": "Top-level structure of an M_*.json file. Per \u00a73.2, methods carry identity (\u00a73.3), a formula contract (\u00a73.4), input/output slots, and configurations. They never reference clinical or analysis concepts.",
             "properties": {
-                "assumptions": {
-                    "description": "Free-text method assumptions (e.g. \"Pre value is non-zero\"). Reserved for future machine-readability (\u00a77 open question).",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "class": {
-                    "description": "Free-text method family (e.g. \"General Linear Models\", \"Summary\", \"Data Handling\").",
+                "$schema": {
+                    "description": "JSON Schema reference. Path to the JSON-Schema-Draft-2019-09 file generated from this LinkML.",
                     "type": [
                         "string",
                         "null"
                     ]
                 },
-                "code": {
+                "$vocabulary": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/Code"
+                            "$ref": "#/$defs/Any"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "description": "\u00a73.3 \u2014 primary code (typically NCI). value may be null when not yet assigned."
+                    "description": "Map of vocabulary name \u2192 file path. Resolver hints for cross-file references (statistics, output_classes, formula_grammar, etc.)."
                 },
                 "codings": {
-                    "description": "\u00a73.3 \u2014 additional codings (STATO, third-party). Supplements `code`.",
+                    "description": "\u00a73.3 \u2014 supplementary external code system mappings (STATO, third-party). Typically empty until a curator adds them.",
                     "items": {
                         "$ref": "#/$defs/Coding"
                     },
@@ -453,12 +432,12 @@
                     ]
                 },
                 "conceptId": {
-                    "description": "\u00a73.3 \u2014 the canonical identifier (e.g. M.ANCOVA). Replaces the legacy `name` field on existing M_*.json files.",
+                    "description": "\u00a73.3 \u2014 the canonical identifier (e.g. M.ANCOVA). Matches the file basename minus `.json`. The field other ACDC files reference via `usesMethod`.",
                     "pattern": "^M\\.[A-Za-z0-9_]+$",
                     "type": "string"
                 },
                 "configurations": {
-                    "description": "Method-level configuration options. Per-output configurations live on MethodOutput.",
+                    "description": "Method-level configuration options. Per-output configurations were removed during the 2026-05-28 revision.",
                     "items": {
                         "$ref": "#/$defs/Configuration"
                     },
@@ -475,39 +454,33 @@
                     ]
                 },
                 "formula": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/Formula"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "\u00a73.4 \u2014 formula declaration. Token names in generic_expression MUST resolve to methodInput[].name values."
+                    "$ref": "#/$defs/Formula",
+                    "description": "\u00a73.4 \u2014 formula declaration. Token names in generic_expression MUST resolve to inputs[].name values."
                 },
-                "intent": {
-                    "description": "Free-text intent tags (e.g. \"GroupComparison\", \"DataAggregation\", \"MissingDataHandling\").",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "label": {
-                    "description": "\u00a73.2 \u2014 human-readable label. Used by SmartPhrase rendering.",
-                    "type": "string"
-                },
-                "methodInput": {
-                    "description": "\u00a73.4 \u2014 input slots. Slot names are formula tokens AND transformation-binding FK targets.",
+                "inputs": {
+                    "description": "\u00a73.4 \u2014 input slots. Slot names are formula tokens AND transformation-binding FK targets (referenced by `input` on transformation measure/dimension bindings).",
                     "items": {
                         "$ref": "#/$defs/MethodInput"
                     },
                     "type": "array"
                 },
-                "methodOutput": {
-                    "description": "\u00a73.5/\u00a73.6 \u2014 output slots. Slot names are transformation-binding FK targets.",
+                "label": {
+                    "description": "\u00a73.3 \u2014 short / acronym form (e.g. \"ANCOVA\", \"MMRM\", \"LOCF\"). Used for compact display and SmartPhrase rendering. May equal `name` for methods without a recognized acronym.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "\u00a73.3 \u2014 preferred (written-out) term, SKOS-prefLabel style. E.g. \"Analysis of Covariance\" for M.ANCOVA, \"Last Observation Carried Forward\" for M.ImputedValue_LOCF. Distinct from `conceptId` (the machine identifier) and `label` (the short / acronym form).",
+                    "type": "string"
+                },
+                "ncitCode": {
+                    "description": "\u00a73.3 \u2014 NCI C-code as a flat string (e.g. \"C00001_NEW\" while placeholder, eventually the assigned C-code). Null when unassigned. Replaces the previous {system, value} Code object.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "outputs": {
+                    "description": "\u00a73.5/\u00a73.6 \u2014 output slots. Slot names are transformation-binding FK targets (referenced by `output` on transformation outputDataStructure.measures[] bindings).",
                     "items": {
                         "$ref": "#/$defs/MethodOutput"
                     },
@@ -519,25 +492,15 @@
                         "string",
                         "null"
                     ]
-                },
-                "shortLabel": {
-                    "description": "\u00a73.2 \u2014 compact label. Used by SmartPhrase rendering when a tight form is needed.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "type": {
-                    "$ref": "#/$defs/MethodType",
-                    "description": "Whether this method is an analysis or a derivation."
                 }
             },
             "required": [
                 "conceptId",
+                "name",
                 "label",
-                "type",
-                "methodInput",
-                "methodOutput"
+                "formula",
+                "inputs",
+                "outputs"
             ],
             "title": "Method",
             "type": "object"
@@ -566,7 +529,7 @@
         },
         "MethodInput": {
             "additionalProperties": false,
-            "description": "\u00a73.4 \u2014 an input slot on the method. `name` is both a formula token and a transformation-binding FK target.",
+            "description": "\u00a73.4 \u2014 an input slot definition within a Method's inputs[]. `name` is both a formula token and a transformation-binding FK target.",
             "properties": {
                 "cardinality": {
                     "$ref": "#/$defs/Cardinality"
@@ -581,7 +544,7 @@
                     ]
                 },
                 "name": {
-                    "description": "Slot identifier within methodInput[]. Appears in formula.generic_expression as <name> and in transformation bindings as methodInput.",
+                    "description": "Slot identifier within inputs[]. Appears in formula.generic_expression as <name> and in transformation bindings via the `input` FK.",
                     "type": "string"
                 },
                 "required": {
@@ -606,19 +569,22 @@
                 "string",
                 "code",
                 "boolean",
-                "integer"
+                "integer",
+                "id",
+                "date",
+                "Quantity"
             ],
             "title": "MethodInputDataType",
             "type": "string"
         },
         "MethodOutput": {
             "additionalProperties": false,
-            "description": "\u00a73.5/\u00a73.6 \u2014 an output slot on the method. For analysis methods, `output_type` references an entry in output_class_templates.json (which decomposes into output_class + output_shape + distribution per \u00a73.5). For derivation methods, `value_type` and `unit_policy` give the direct value type (\u00a73.6).",
+            "description": "\u00a73.5/\u00a73.6 \u2014 an output slot definition within a Method's outputs[]. For analysis methods, `output_type` references an entry in output_class_templates.json (which decomposes into output_class + output_shape + distribution per \u00a73.5). For derivation methods, `value_type` and `unit_policy` give the direct value type (\u00a73.6). Per-output configurations were removed in the 2026-05-28 revision.",
             "properties": {
-                "configurations": {
-                    "description": "Per-output configurations (e.g. multiplicity_adjustment on p-value outputs).",
+                "examples": {
+                    "description": "Optional worked-example entries (free-form). Author / documentation scaffolding; not consumed by validators.",
                     "items": {
-                        "$ref": "#/$defs/Configuration"
+                        "$ref": "#/$defs/Any"
                     },
                     "type": [
                         "array",
@@ -626,7 +592,7 @@
                     ]
                 },
                 "indexed_by": {
-                    "description": "For multi-row outputs (e.g. one row per factor level), the methodInput names whose levels index the output rows. May include interaction tokens (e.g. \"fixed_effect:fixed_effect\").",
+                    "description": "For multi-row outputs (e.g. one row per factor level), the input slot names whose levels index the output rows. May include interaction tokens (e.g. \"fixed_effect:fixed_effect\").",
                     "items": {
                         "type": "string"
                     },
@@ -635,14 +601,41 @@
                         "null"
                     ]
                 },
+                "label": {
+                    "description": "Optional human-readable label for this output (e.g. \"Converted Value\" for M.UnitConversion's derived_value).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
                 "name": {
-                    "description": "Slot identifier within methodOutput[]. Referenced from transformation outputDataStructure.measures[].methodOutput.",
+                    "description": "Slot identifier within outputs[]. Referenced from transformation outputDataStructure.measures[].output.",
                     "type": "string"
                 },
                 "output_type": {
                     "description": "FK into lib/vocabulary/output_class_templates.json. Identifies a (class, shape, distribution) tuple per \u00a73.5. Typically used by analysis methods.",
                     "type": [
                         "string",
+                        "null"
+                    ]
+                },
+                "sub_types": {
+                    "description": "Optional list of named sub-output specializations (e.g. for MMRM's ls_means broken down by group\u00d7time vs by group). Free-form; reviewed during the \u00a73.5 vocabulary work.",
+                    "items": {
+                        "$ref": "#/$defs/Any"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "test_types": {
+                    "description": "Optional list of named test specializations (e.g. for CoxPH/MANOVA outputs that aggregate multiple test variants). Free-form; reviewed during the \u00a73.5 vocabulary work.",
+                    "items": {
+                        "$ref": "#/$defs/Any"
+                    },
+                    "type": [
+                        "array",
                         "null"
                     ]
                 },
@@ -660,15 +653,6 @@
             ],
             "title": "MethodOutput",
             "type": "object"
-        },
-        "MethodType": {
-            "description": "Whether this method is an analysis or a derivation.",
-            "enum": [
-                "analysis",
-                "derivation"
-            ],
-            "title": "MethodType",
-            "type": "string"
         },
         "OutputAttributeBinding": {
             "additionalProperties": false,
@@ -731,7 +715,7 @@
         },
         "OutputDataStructure": {
             "additionalProperties": false,
-            "description": "\u00a76.3 \u2014 DSD for the cube the transformation produces. dimensions[] items list the output cube's qb:dimension components (no methodInput FK on this side per \u00a76.3 note 3). measures[] items carry `methodOutput` FKs. slice is rejected on output measures (\u00a76.4).",
+            "description": "\u00a76.3 \u2014 DSD for the cube the transformation produces. dimensions[] items list the output cube's qb:dimension components (no input FK on this side per \u00a76.3 note 3). measures[] items carry `output` FKs. slice is rejected on output measures (\u00a76.4).",
             "properties": {
                 "attributes_": {
                     "description": "qb:attribute components of this DSD. Reserved per \u00a76.3; typically absent.",
@@ -783,7 +767,7 @@
                 {
                     "then": {
                         "properties": {
-                            "methodInput": {
+                            "input": {
                                 "const": ""
                             }
                         }
@@ -812,7 +796,7 @@
                     }
                 }
             ],
-            "description": "\u00a76.3 note 3 \u2014 a dimension on the output cube. methodInput is rejected here.",
+            "description": "\u00a76.3 note 3 \u2014 a dimension on the output cube. input is rejected here.",
             "properties": {
                 "concept": {
                     "description": "\u00a76.3 \u2014 name of a concrete concept in Option_B_Clinical.json (for derivations) or AC_Concept_Model_v017.json (for analyses). Cross-file FK validated at build time.",
@@ -828,7 +812,7 @@
                         "null"
                     ]
                 },
-                "methodInput": {
+                "input": {
                     "description": "\u00a76.3 note 2 \u2014 when present, this dim fills a specific method input slot (bound dim). When absent, the dim is pure cube context.",
                     "type": [
                         "string",
@@ -841,7 +825,7 @@
         },
         "OutputMeasureBinding": {
             "additionalProperties": false,
-            "description": "\u00a76.3 \u2014 a measure on the output cube. Carries methodOutput; slice is rejected (\u00a76.4).",
+            "description": "\u00a76.3 \u2014 a measure on the output cube. Carries output; slice is rejected (\u00a76.4).",
             "properties": {
                 "concept": {
                     "description": "\u00a76.3 \u2014 name of a concrete concept in Option_B_Clinical.json (for derivations) or AC_Concept_Model_v017.json (for analyses). Cross-file FK validated at build time.",
@@ -864,8 +848,8 @@
                         "null"
                     ]
                 },
-                "methodOutput": {
-                    "description": "FK to Method.methodOutput[].name (validated cross-file).",
+                "output": {
+                    "description": "FK to Method.outputs[].name (validated cross-file).",
                     "type": "string"
                 },
                 "requiredValueType": {
@@ -874,7 +858,7 @@
                 }
             },
             "required": [
-                "methodOutput"
+                "output"
             ],
             "then": {
                 "oneOf": [
@@ -1118,7 +1102,9 @@
                 "inherited",
                 "dimensionless",
                 "fixed",
-                "derived"
+                "derived",
+                "computed",
+                "configured"
             ],
             "title": "UnitPolicy",
             "type": "string"
@@ -1130,36 +1116,26 @@
     "description": "Top-level structure of an M_*.json file. Per \u00a73.2, methods carry identity (\u00a73.3), a formula contract (\u00a73.4), input/output slots, and configurations. They never reference clinical or analysis concepts.",
     "metamodel_version": "1.7.0",
     "properties": {
-        "assumptions": {
-            "description": "Free-text method assumptions (e.g. \"Pre value is non-zero\"). Reserved for future machine-readability (\u00a77 open question).",
-            "items": {
-                "type": "string"
-            },
-            "type": [
-                "array",
-                "null"
-            ]
-        },
-        "class": {
-            "description": "Free-text method family (e.g. \"General Linear Models\", \"Summary\", \"Data Handling\").",
+        "$schema": {
+            "description": "JSON Schema reference. Path to the JSON-Schema-Draft-2019-09 file generated from this LinkML.",
             "type": [
                 "string",
                 "null"
             ]
         },
-        "code": {
+        "$vocabulary": {
             "anyOf": [
                 {
-                    "$ref": "#/$defs/Code"
+                    "$ref": "#/$defs/Any"
                 },
                 {
                     "type": "null"
                 }
             ],
-            "description": "\u00a73.3 \u2014 primary code (typically NCI). value may be null when not yet assigned."
+            "description": "Map of vocabulary name \u2192 file path. Resolver hints for cross-file references (statistics, output_classes, formula_grammar, etc.)."
         },
         "codings": {
-            "description": "\u00a73.3 \u2014 additional codings (STATO, third-party). Supplements `code`.",
+            "description": "\u00a73.3 \u2014 supplementary external code system mappings (STATO, third-party). Typically empty until a curator adds them.",
             "items": {
                 "$ref": "#/$defs/Coding"
             },
@@ -1169,12 +1145,12 @@
             ]
         },
         "conceptId": {
-            "description": "\u00a73.3 \u2014 the canonical identifier (e.g. M.ANCOVA). Replaces the legacy `name` field on existing M_*.json files.",
+            "description": "\u00a73.3 \u2014 the canonical identifier (e.g. M.ANCOVA). Matches the file basename minus `.json`. The field other ACDC files reference via `usesMethod`.",
             "pattern": "^M\\.[A-Za-z0-9_]+$",
             "type": "string"
         },
         "configurations": {
-            "description": "Method-level configuration options. Per-output configurations live on MethodOutput.",
+            "description": "Method-level configuration options. Per-output configurations were removed during the 2026-05-28 revision.",
             "items": {
                 "$ref": "#/$defs/Configuration"
             },
@@ -1191,39 +1167,33 @@
             ]
         },
         "formula": {
-            "anyOf": [
-                {
-                    "$ref": "#/$defs/Formula"
-                },
-                {
-                    "type": "null"
-                }
-            ],
-            "description": "\u00a73.4 \u2014 formula declaration. Token names in generic_expression MUST resolve to methodInput[].name values."
+            "$ref": "#/$defs/Formula",
+            "description": "\u00a73.4 \u2014 formula declaration. Token names in generic_expression MUST resolve to inputs[].name values."
         },
-        "intent": {
-            "description": "Free-text intent tags (e.g. \"GroupComparison\", \"DataAggregation\", \"MissingDataHandling\").",
-            "items": {
-                "type": "string"
-            },
-            "type": [
-                "array",
-                "null"
-            ]
-        },
-        "label": {
-            "description": "\u00a73.2 \u2014 human-readable label. Used by SmartPhrase rendering.",
-            "type": "string"
-        },
-        "methodInput": {
-            "description": "\u00a73.4 \u2014 input slots. Slot names are formula tokens AND transformation-binding FK targets.",
+        "inputs": {
+            "description": "\u00a73.4 \u2014 input slots. Slot names are formula tokens AND transformation-binding FK targets (referenced by `input` on transformation measure/dimension bindings).",
             "items": {
                 "$ref": "#/$defs/MethodInput"
             },
             "type": "array"
         },
-        "methodOutput": {
-            "description": "\u00a73.5/\u00a73.6 \u2014 output slots. Slot names are transformation-binding FK targets.",
+        "label": {
+            "description": "\u00a73.3 \u2014 short / acronym form (e.g. \"ANCOVA\", \"MMRM\", \"LOCF\"). Used for compact display and SmartPhrase rendering. May equal `name` for methods without a recognized acronym.",
+            "type": "string"
+        },
+        "name": {
+            "description": "\u00a73.3 \u2014 preferred (written-out) term, SKOS-prefLabel style. E.g. \"Analysis of Covariance\" for M.ANCOVA, \"Last Observation Carried Forward\" for M.ImputedValue_LOCF. Distinct from `conceptId` (the machine identifier) and `label` (the short / acronym form).",
+            "type": "string"
+        },
+        "ncitCode": {
+            "description": "\u00a73.3 \u2014 NCI C-code as a flat string (e.g. \"C00001_NEW\" while placeholder, eventually the assigned C-code). Null when unassigned. Replaces the previous {system, value} Code object.",
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "outputs": {
+            "description": "\u00a73.5/\u00a73.6 \u2014 output slots. Slot names are transformation-binding FK targets (referenced by `output` on transformation outputDataStructure.measures[] bindings).",
             "items": {
                 "$ref": "#/$defs/MethodOutput"
             },
@@ -1235,25 +1205,15 @@
                 "string",
                 "null"
             ]
-        },
-        "shortLabel": {
-            "description": "\u00a73.2 \u2014 compact label. Used by SmartPhrase rendering when a tight form is needed.",
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "type": {
-            "$ref": "#/$defs/MethodType",
-            "description": "Whether this method is an analysis or a derivation."
         }
     },
     "required": [
         "conceptId",
+        "name",
         "label",
-        "type",
-        "methodInput",
-        "methodOutput"
+        "formula",
+        "inputs",
+        "outputs"
     ],
     "title": "acdc_transformation",
     "type": "object",

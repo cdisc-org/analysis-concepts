@@ -1,5 +1,5 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
@@ -7,18 +7,10 @@
     "formula_grammar": "../../model/method/formula_grammar.json",
     "configuration_concepts": "../../model/method/configuration_concepts.json"
   },
-  "name": "M.MMRM",
-  "label": "Mixed Model for Repeated Measures",
-  "shortLabel": "MMRM",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "Repeated Measures",
-  "intent": [
-    "LongitudinalEstimate"
-  ],
+  "conceptId": "M.MMRM",
+  "name": "Mixed Model for Repeated Measures",
+  "label": "MMRM",
+  "ncitCode": null,
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
@@ -70,7 +62,7 @@
       "description": "Degrees of freedom method"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "response",
       "dataType": "decimal",
@@ -96,7 +88,7 @@
       "name": "fixed_effect",
       "dataType": "code",
       "required": true,
-      "cardinality": "single_or_multiple",
+      "cardinality": "multiple",
       "description": "Treatment group (and optionally additional factors like region, sex)"
     },
     {
@@ -107,7 +99,7 @@
       "description": "Subject identifier for the repeated measures clustering"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name": "fit_statistics_basic",
       "output_type": "fit_statistics_basic"
@@ -121,15 +113,6 @@
         "fixed_effect",
         "fixed_effect:repeated_factor",
         "covariate:fixed_effect"
-      ],
-      "configurations": [
-        {
-          "name": "multiplicity_adjustment",
-          "conforms_to": "multiplicity_adjustment",
-          "applicable_scopes": [
-            "universal"
-          ]
-        }
       ],
       "examples": [
         {
@@ -213,18 +196,6 @@
     {
       "name": "contrasts_t",
       "output_type": "contrasts_t",
-      "configurations": [
-        {
-          "name": "multiplicity_adjustment",
-          "conforms_to": "multiplicity_adjustment",
-          "applicable_scopes": [
-            "universal",
-            "anova_pairwise_means",
-            "anova_many_to_one",
-            "linear_contrasts"
-          ]
-        }
-      ],
       "sub_types": [
         {
           "name": "group_contrast_at_time",
@@ -285,10 +256,5 @@
         "repeated_factor"
       ]
     }
-  ],
-  "assumptions": [
-    "Missing at Random (MAR)",
-    "Multivariate normality of residuals",
-    "Correct specification of covariance structure"
   ]
 }

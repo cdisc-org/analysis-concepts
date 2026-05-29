@@ -46,14 +46,16 @@ This design settles the method schema, drops the legacy file, and adopts a decom
 
 - **Delete** `lib/methods/AllMethods.json`.
 - Per-file `lib/methods/{analyses,derivations}/M_*.json` files are canonical.
-- `lib/methods/_index.json` is a build artifact: it is generated from the per-file fields (`name`, `label`, `shortLabel`, `type`, `class`, `intent`). Hand-editing `_index.json` is no longer required.
-- Before deletion of `AllMethods.json`, harvest the `ncitCode` placeholders (e.g. `C00001_NEW`) into the per-file `code.value` field. See §3.3.
+- `lib/methods/_index.json` is a build artifact: it is generated from the per-file fields (`conceptId`, `name`, `label`). Hand-editing `_index.json` is no longer required.
+- Before deletion of `AllMethods.json`, harvest the `ncitCode` placeholders (e.g. `C00001_NEW`) into the per-file `ncitCode` field. See §3.3.
 
 ### 3.2 Method file canonical structure
 
+*Revised 2026-05-28 (peer review)*: the `inputs[]`/`outputs[]` arrays replace `methodInput[]`/`methodOutput[]`; `name` is repurposed to hold the preferred (long-form) term; `shortLabel` is removed; `code`/`codings` flatten to a single `ncitCode` string; `type`/`class`/`intent`/`assumptions` are removed; cardinality reduces to `single | multiple`.
+
 ```json
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.10.0",
   "$vocabulary": {
     "statistics":     "../../model/method/statistics_vocabulary.json",
@@ -63,16 +65,13 @@ This design settles the method schema, drops the legacy file, and adopts a decom
     "formula_grammar":"../../model/method/formula_grammar.json"
   },
 
-  "conceptId":       "M.ANCOVA",                   // canonical id; matches file basename
-  "label":      "ANCOVA",
-  "shortLabel": "ANCOVA",
-  "code":       { "system": "NCI", "value": "C00001_NEW" },
-  "codings":    [ { "system": "http://purl.obolibrary.org/obo/stato",
-                    "code": "STATO_0000179", "display": "ANCOVA" } ],
+  "conceptId":   "M.ANCOVA",                 // canonical id; matches file basename
+  "name":        "Analysis of Covariance",   // preferred term (long form, written out)
+  "label":       "ANCOVA",                   // short form / acronym (for compact display + SmartPhrase rendering)
+  "ncitCode":    "C00001_NEW",               // NCI C-code (nullable until assigned)
+  "codings":     [ { "system": "http://purl.obolibrary.org/obo/stato",
+                     "code": "STATO_0000179", "display": "ANCOVA" } ],
 
-  "type":  "analysis | derivation",
-  "class": "General Linear Models",
-  "intent":["GroupComparison"],
   "description": "...",
 
   "formula": {
@@ -82,69 +81,72 @@ This design settles the method schema, drops the legacy file, and adopts a decom
     "notes":              "..."
   },
 
-  "unit_policy": "preserved | dimensionless | derived",
-
   "configurations": [ { "name", "dataType", "defaultValue",
                         "enumValues?", "description",
                         "conforms_to?" /* link to a vocabulary term */ } ],
 
-  "methodInput":  [ /* see §3.4 */ ],
-  "methodOutput": [ /* see §3.5 (analysis) or §3.6 (derivation) */ ],
-
-  "assumptions": []
+  "inputs":  [ /* see §3.4 */ ],
+  "outputs": [ /* see §3.5 (analysis) or §3.6 (derivation) */ ]
 }
 ```
 
 Notes:
 
-- `conceptId` is the canonical identifier. It MUST match the file basename minus `.json` (e.g. `M_ANCOVA.json` → `conceptId: "M.ANCOVA"`). This name preserves the legacy field used in `AllMethods.json` and avoids confusion with the slot-level `name` field inside `methodInput[]`/`methodOutput[]`.
-- `code.value` carries the NCI C-code (currently the `C00001_NEW`-style placeholder, eventually the real C-code). `codings[]` carries supplementary external code system mappings (STATO etc.).
-- `label` and `shortLabel` are consumed both by UI surfaces AND by **SmartPhrase rendering** in the transformation library (`lib/transformations/ACDC_Transformation_Library_v06.json`). When a SmartPhrase template references a method via the `method` role, the rendered phrase substitutes the method's `label` (full form) or `shortLabel` (compact form), so both fields are part of the public contract — not just decoration.
-- `shortLabel` is required for analysis methods (so SmartPhrases have a compact form to render — e.g. "ANCOVA", "MMRM"). For derivations it's required when the method has a recognized compact form (e.g. `%CFB` for `M.PercentChange`) and otherwise falls back to `label`.
+- `conceptId` is the canonical identifier. It MUST match the file basename minus `.json` (e.g. `M_ANCOVA.json` → `conceptId: "M.ANCOVA"`). It is the field other ACDC files reference (`usesMethod: "M.ANCOVA"` in the transformation library) and is distinct from the slot-level `name` field inside `inputs[]`/`outputs[]`.
+- `name` is the preferred (written-out) term — e.g. "Analysis of Covariance" for `M.ANCOVA`, "Last Observation Carried Forward" for `M.ImputedValue_LOCF`. This is the SKOS-prefLabel-style human form intended for documentation, glossaries, and any UI surface that needs the unambiguous full term.
+- `label` is the short / acronym form (e.g. "ANCOVA", "MMRM", "LOCF") used for compact display and **SmartPhrase rendering**. When a SmartPhrase template references a method via the `method` role, the rendered phrase substitutes the method's `label`. For methods without a recognized acronym, `label` may equal `name`.
+- `ncitCode` carries the NCI C-code as a flat string (currently the `C00001_NEW`-style placeholder, eventually the real C-code). When unassigned, the value is `null`. `codings[]` carries supplementary external code system mappings (STATO etc.) when present.
+- Fields **removed** in this revision: `shortLabel` (collapsed into `label`), `type` / `class` / `intent` (the analysis-vs-derivation discriminator survives implicitly via the file's `formula.notation` and directory location; the free-text `class` and `intent` tags were unused by tooling), `assumptions` (free-text list with no machine-readable consumer; can be reintroduced if §7's open question gains a typed answer).
 
 ### 3.3 Identity and codings
 
-The `conceptId` / `code` / `codings` triad replaces the legacy split:
+The `conceptId` / `name` / `label` / `ncitCode` quartet replaces the legacy split:
 
 | Legacy (`AllMethods.json`) | New (per-file) |
 |---|---|
 | `conceptId: "M.ANCOVA"` | `conceptId: "M.ANCOVA"` (unchanged) |
-| `ncitCode: "C00001_NEW"` | `code: { "system": "NCI", "value": "C00001_NEW" }` |
+| `name: "M.ANCOVA"` (dotted ID — duplicate of conceptId) | `name: "Analysis of Covariance"` (repurposed: preferred term) |
+| `label: "ANCOVA"` | `label: "ANCOVA"` (unchanged) |
+| `shortLabel: "ANCOVA"` | *removed* (collapsed into `label`) |
+| `ncitCode: "C00001_NEW"` | `ncitCode: "C00001_NEW"` (flat string, unchanged shape) |
 | `codings: [...]` | `codings: [...]` (unchanged) |
 
-`conceptId` is the identifier other ACDC files reference (`usesMethod: "M.ANCOVA"` in the transformation library). `code` is the formal NCI registration, kept separate so we can populate it as codes are assigned without rewriting cross-references. The slot-level `name` field on `methodInput[]`/`methodOutput[]` items (the formula/binding role token, §3.4) is a different field and is unchanged by this decision.
+`conceptId` is the identifier; `name` is the long-form human term; `label` is the short-form display token; `ncitCode` is the formal NCI registration. The slot-level `name` field on `inputs[]`/`outputs[]` items (the formula/binding role token, §3.4) is a different field and is unchanged by this decision.
 
 ### 3.4 Input / output naming as the formula and binding contract
 
-The names in `methodInput[]` and `methodOutput[]` are **role tokens** with three simultaneous obligations:
+The names in `inputs[]`, `outputs[]`, and `configurations[]` are **role tokens** with four simultaneous obligations:
 
-1. **Formula contract.** Every `<x>` in `formula.generic_expression` MUST resolve to a `methodInput[i].name` or `methodOutput[i].name`. Cardinality suffixes (`*`, `+`, `?`) come from the formula grammar; the role token by itself names the slot.
-2. **Transformation binding contract.** `bindings[].methodRole` in a transformation MUST equal a `methodInput[i].name` or `methodOutput[i].name`. (Today's example: `M.RecordSelection` declares `methodInput[].name = "value"`; `T.BaselineSelection` binds `methodRole: "value"`.)
-3. **Indexing contract.** Strings in `methodOutput[i].indexed_by` MUST be input role names (or `role:role` interaction shorthand).
+1. **Formula bracket-token contract.** Every `<x>` in `formula.generic_expression` MUST resolve to an `inputs[i].name`, an `outputs[i].name`, OR a `configurations[i].name`. Cardinality suffixes (`*`, `+`, `?`) come from the formula grammar; the role token by itself names the slot. *(Extension added 2026-05-28: configurations are legal bracket-tokens. This formalizes a convention already used by many derivations — e.g. M.Aggregation's `<agg_func>` is a configuration, M.AffineTransform's `<scale>`/`<offset>` are configurations.)*
+2. **Formula LHS contract** *(assignment notation only)*. For derivation formulas of the form `<lhs> := <expression>`, the bare LHS identifier MUST equal an `outputs[i].name`. The output's name is the formula's "what does this compute" — choose it to read naturally on the LHS (e.g. `result := ...`, `imputed_value := ...`, `analysisVisit := ...`). The previous one-size-fits-all `derived_value` convention was retired 2026-05-28; outputs now name themselves after the formula token they implement.
+3. **Transformation binding contract.** A transformation measure binding's `input` / `output` FK MUST equal an `inputs[i].name` / `outputs[i].name`. (Example: `M.RecordSelection` declares `inputs[].name = "value"`; `T.BaselineSelection` binds `input: "value"`.)
+4. **Indexing contract.** Strings in `outputs[i].indexed_by` MUST be input role names (or `role:role` interaction shorthand).
 
 Implications:
 
 - **No separate `statisticalRole` field.** The role IS the name. The roles `response`, `covariate`, `fixed_effect`, `strata`, `repeated_subject`, `repeated_factor` from the old `AllMethods.json` are kept as conventional names for analysis methods (and listed in the formula grammar's `<role_tag>` enum so a validator can recognize them), but they are not a separate slot of the schema.
-- **Validation rules** (to add to `acdc_methods.schema.json` + a JSON-Schema-based validator):
-  - Every `<token>` in `generic_expression` exists as an input or output name.
-  - Every transformation `methodRole` resolves to the method's input/output names.
+- **`response` vs `value` — the modelling/descriptive split.** `response` is reserved for *modelling* methods (Wilkinson-Rogers notation: ANCOVA, ANOVA, MMRM, MANOVA, t-tests, logistic regression, etc.) where it carries the technical meaning of "the dependent variable in the `Y ~ X` model specification." For *descriptive* methods that summarise a single variable with no model (Mean, Median, SD, Quartile, Frequency, ...), the input is named `value` instead — it's the variable being summarised, not a model response. This split was applied 2026-05-28 across the 25 descriptive-stat methods.
+- **Validation rules** (to add to the LinkML + a build-time validator):
+  - Every `<token>` in `generic_expression` exists as an input, output, or configuration name.
+  - For assignment formulas, the bare LHS identifier exists as an output name.
+  - Every transformation `input` / `output` FK resolves to the method's `inputs[].name` / `outputs[].name`.
   - `indexed_by` entries reference input names (or `<input>:<input>` interactions).
 
-`methodInput[]` item shape:
+`inputs[]` item shape:
 
 ```json
 {
   "name":        "response",          // role token (see above)
   "dataType":    "decimal | code | boolean | id",
   "required":    true,
-  "cardinality": "single | multiple | single_or_multiple",
+  "cardinality": "single | multiple",   // reduced from {single, multiple, single_or_multiple}: multiple now means "one or more" (covers the n=1 case)
   "description": "..."
 }
 ```
 
 ### 3.5 Analysis output type — three-axis decomposition
 
-Each `methodOutput[i]` for an analysis method is a TABLE described by four axes plus an optional escape hatch:
+Each `outputs[i]` for an analysis method is a TABLE described by four axes plus an optional escape hatch:
 
 ```json
 {
@@ -221,38 +223,55 @@ Combined with `shape`, the four axes uniquely determine the column set of the ou
 
 - Per-output `configurations` for multiplicity adjustment (already present on some ANCOVA outputs). Drop these during migration; we'll revisit when an MCC design is settled.
 
-### 3.6 Derivation output type — same shape, simpler vocabulary
+### 3.6 Derivation output type — same shape, type flows from concept
 
-Derivations don't carry inferential semantics, so `distribution` defaults to `"none"` and `shape` is typically `"computed_value"`. The interesting axis is the **value type** of the produced column. Two more keys:
+*Revised 2026-05-28*: instead of declaring `value_type` per output, atomic outputs (descriptive analyses + derivations) reference a single new template `computed_value` in `output_class_templates.json`. The template declares only the *shape* (`statistics: ["value"]`). The FHIR datatype of the produced column is supplied by the bound concept at transformation time via `concept.result.valueType` — the concept is the single source of truth for value type, not the method or the template.
 
 ```json
-"methodOutput": [
+"outputs": [
   {
-    "name":         "derived_value",
-    "output_class": "scalar_value",       // or categorical_value | flag | datetime_value | count_value
-    "shape":        "computed_value",
-    "distribution": "none",
-    "value_type":   "fhir:Quantity",      // structural type of the produced column
-    "unit_policy":  "preserved",          // moved from method-level to per-output (see §3.6.1)
-    "indexed_by":   ["partition"]
+    "name":         "result",                   // matches the formula's LHS (§3.4)
+    "output_type":  "computed_value",           // FK to output_class_templates (atomic-value family)
+    "dataType":     "decimal",                  // structural primitive — parallel to inputs[].dataType
+    "unit_policy":  "preserved",                // method-side behavior (§3.6.1)
+    "indexed_by":   ["partition"]               // method-side row indexing
   }
 ]
 ```
 
-#### 3.6.1 `unit_policy` moves to per-output
+The keys consolidated by this revision:
 
-Currently `unit_policy` sits at the method level. Per-output is more accurate: a method that produces both a count and a ratio has two different policies. For analysis methods, `unit_policy` is set per output whose `output_class` is a *value-bearing* class (`ls_means`, `point_estimate`, `parameter_estimates`); on pure inferential outputs (`type3_tests`, `test_result`) it is omitted.
+- **`value_type` (FHIR complex type) removed from method outputs.** Was previously a FHIR-type string (`fhir:Quantity`, `fhir:CodeableConcept`, ...) on each atomic output. The FHIR complex datatype now flows from the bound concept's `result.valueType` field at transformation time. Methods stay type-agnostic, consistent with "methods are concept-free, reusable" (§3.6.2).
+- **`dataType` (structural primitive) added to method outputs.** Parallels `inputs[].dataType`. Carries the computational shape the method's formula produces (`decimal` for numeric methods, `integer` for counts, `code` for flags/categories, `boolean`, `date`). This is intrinsic method-side knowledge — M.Mean computes a decimal regardless of what concept it's bound to; M.RecordSelection emits a code regardless of which flag concept it's bound to. At transformation binding time the validator checks that the method-output `dataType` is compatible with the bound concept's `result.valueType` (§6.6 rule 10).
+- **`output_class` / `shape` / `distribution` collapsed into a single `output_type` FK.** The atomic-output template `computed_value` is the only entry needed for derivations and descriptive analyses; the structured-table templates (`ls_means`, `type3_tests_f`, ...) remain the entries used by modelling analyses. One field name (`output_type`), one FK target file (`output_class_templates.json`), uniform across all 60 methods.
+- **`unit_policy` stays on the method.** Behavior (how units flow from input to output) is per-method: `M.Mean` preserves units from input; `M.PercentChange` is always dimensionless; `M.UnitConversion` reads the unit from a configuration. Pinning it onto the template would force a fan-out into `computed_quantity_preserved` / `computed_quantity_dimensionless` / `computed_quantity_configured` and buy nothing.
+- **For structured outputs (modelling analyses)**: no per-output `dataType` field. The template's `statistics[]` list (FK into `statistics_vocabulary.json`) carries the per-column dataType — different columns have different types and a single field on the output entry doesn't fit. See §6.6 rule 11 for the binding-time validation.
+
+The `output_class_templates.json` `computed_value` entry:
+
+```jsonc
+"computed_value": {
+  "label": "Computed value",
+  "description": "Family of single-value atomic outputs (one value per row) produced by descriptive statistics and derivations. The FHIR datatype is supplied by the bound concept at transformation time via concept.result.valueType — the template carries the shape only, not the type.",
+  "broader": null,
+  "statistics": ["value"]
+}
+```
+
+#### 3.6.1 `unit_policy` lives on the method
+
+`unit_policy` is per-output and per-method (it characterizes how the method's computation propagates units). For analysis methods with value-bearing outputs (e.g. `ls_means`, `point_estimate`, `parameter_estimates`), it MAY also be set per-output; on pure inferential outputs (`type3_tests`, `test_result`) it is omitted.
 
 #### 3.6.2 Derivation outputs do NOT reference clinical concepts
 
 The semantic typing of a derived value (`Flag`, `Measure`, `Change`, `PercentChange`, …) lives in `lib/concepts/Option_B_Clinical.json` and is **bound at the transformation layer**, never declared on the method. A derivation method is structural and reusable: `M.PercentChange` produces "a scalar percentage indexed by partition", and a transformation in `lib/transformations/` decides that this particular use of `M.PercentChange` represents the `PercentChange` clinical concept.
 
-The contract this design preserves is: a method declares `methodOutput[i].name` as the slot identifier; a transformation references that slot through an `outputs[i].methodOutput` FK and attaches a `concept`. The same principle applies to analysis methods — an analysis method declares `methodOutput[].name = "ls_means"`, and the transformation binds that slot to an AC concept like `LSMeans_SBP_CFB`.
+The contract this design preserves is: a method declares `outputs[i].name` as the slot identifier; a transformation references that slot through an `outputDataStructure.measures[].output` FK and attaches a `concept`. The same principle applies to analysis methods — an analysis method declares `outputs[].name = "ls_means"`, and the transformation binds that slot to an AC concept like `LSMeans`.
 
 See **§6** for the full transformation schema, **§6.3** for the binding object shape, and **§6.7** for a concrete before/after of `T.BaselineSelection` (which binds `M.RecordSelection`'s output to the `Flag` concept). The cross-file invariants:
 
 - A method file MUST NOT reference clinical, derivation, or analysis concepts. The only "concept-like" code on a method is its own `code` / `codings` (NCI / STATO identifiers for the method itself).
-- A transformation file MUST cite its method by `usesMethod` and MUST bind every method output slot it cares about via an entry in `outputDataStructure.measures[]` (each item carries `methodOutput` + `concept`). Outputs the transformation does not bind are surfaced structurally with no semantic concept — that's an allowed state (see also §6.8).
+- A transformation file MUST cite its method by `usesMethod` and MUST bind every method output slot it cares about via an entry in `outputDataStructure.measures[]` (each item carries `output` + `concept`). Outputs the transformation does not bind are surfaced structurally with no semantic concept — that's an allowed state (see also §6.8).
 - The `Option_B_Clinical.json` / `AC_Concept_Model_v017.json` concept files are loaded only when validating transformation bindings, never when validating methods.
 
 This is the asymmetry that makes the library work: ~60 reusable methods × N concepts = ~hundreds of transformations, each a small file with no method-internals knowledge to repeat.
@@ -263,8 +282,8 @@ This is the asymmetry that makes the library work: ~60 reusable methods × N con
 |---|---|---|
 | `lib/vocabulary/statistics_vocabulary.json` | Column-level semantic vocabulary (the "Semantic Statistical Definitions" layer in the architecture diagram). Each entry has dataType, description, and (where available) STATO codings. | Keep as-is; this is the reference. |
 | `lib/vocabulary/output_class_templates.json` | Current SKOS family/concrete-template hierarchy. | **Replace** with three new files (§3.5.1–§3.5.3): `output_class_vocabulary.json`, `output_shape_vocabulary.json`, `distribution_vocabulary.json`. Keep the old file during migration; delete when all methods are migrated. |
-| `lib/vocabulary/formula_grammar.json` | BNF for the formula DSL. | Update the `<role_tag>` enum's purpose: it lists *conventional* role names useful across analysis methods, but the validator enforces `<token>` resolution against the method's own `methodInput[]`/`methodOutput[]` `name` values, not against this enum. |
-| `lib/vocabulary/fhir_value_types.json` | `value_type` enum for `methodOutput[].value_type`. | Reuse as-is. |
+| `lib/vocabulary/formula_grammar.json` | BNF for the formula DSL. | Update the `<role_tag>` enum's purpose: it lists *conventional* role names useful across analysis methods, but the validator enforces `<token>` resolution against the method's own `inputs[]`/`outputs[]` `name` values, not against this enum. |
+| `lib/vocabulary/fhir_value_types.json` | FHIR datatype enum. | No longer referenced from methods (per §3.6 revision 2026-05-28, methods don't carry `value_type` — it flows from concepts). Still referenced from `lib/concepts/*.json` where each concept's `result.valueType` is constrained by this enum. |
 
 Concept files (`lib/concepts/*.json`) stay outside this design's scope: they define clinical/derivation/analysis concepts referenced by transformations, not by methods.
 
@@ -318,16 +337,16 @@ A new JSON-Schema file lands at `model/method/acdc_methods.schema.json` (current
 }
 ```
 
-**After** (proposed — switches the method identifier from `name` to `conceptId`):
+**After** (proposed, revised 2026-05-28):
 
 ```json
 {
-  "conceptId": "M.ANCOVA", "label": "Analysis of Covariate", "shortLabel": "ANCOVA",
-  "code": { "system": "NCI", "value": "C00001_NEW" },
-  "codings": [ { "system": "http://purl.obolibrary.org/obo/stato",
-                 "code": "STATO_0000179", "display": "ANCOVA" } ],
-  "type": "analysis", "class": "General Linear Models",
-  "intent": ["GroupComparison"],
+  "conceptId":   "M.ANCOVA",
+  "name":        "Analysis of Covariance",
+  "label":       "ANCOVA",
+  "ncitCode":    "C00001_NEW",
+  "codings":     [ { "system": "http://purl.obolibrary.org/obo/stato",
+                     "code": "STATO_0000179", "display": "ANCOVA" } ],
   "description": "Analysis of Covariance — ANOVA with continuous covariate adjustment",
   "formula": {
     "notation": "wilkinson_rogers",
@@ -338,12 +357,12 @@ A new JSON-Schema file lands at `model/method/acdc_methods.schema.json` (current
     { "name": "ss_type", "dataType": "enum", "defaultValue": "III", "enumValues": ["I","II","III","IV"] },
     { "name": "alpha",   "conforms_to": "alpha", "dataType": "decimal", "defaultValue": 0.05 }
   ],
-  "methodInput": [
+  "inputs": [
     { "name": "response",     "dataType": "decimal", "required": true,  "cardinality": "single" },
     { "name": "covariate",    "dataType": "decimal", "required": false, "cardinality": "multiple" },
-    { "name": "fixed_effect", "dataType": "code",    "required": true,  "cardinality": "single_or_multiple" }
+    { "name": "fixed_effect", "dataType": "code",    "required": true,  "cardinality": "multiple" }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name":         "fit_statistics",
       "output_class": "fit_statistics",
@@ -403,13 +422,18 @@ A new JSON-Schema file lands at `model/method/acdc_methods.schema.json` (current
 
 What changed:
 
-- Method identifier renamed: `name` → `conceptId`.
-- `code.value` populated.
-- `methodOutput[].output_type` (single key into the SKOS catalogue) → four explicit axes.
-- The split: one `parameter_estimates_linear` becomes `parameter_estimates` + `parameter_tests`; one `contrasts_t` becomes `contrast_estimates` + `contrast_tests`.
-- Per-output `multiplicity_adjustment` configurations dropped (out of scope, §3.5.5).
+- Method identifier added: `conceptId: "M.ANCOVA"` (the old `name: "M.ANCOVA"` slot is repurposed).
+- `name` repurposed to hold the preferred (long-form) term: `"Analysis of Covariance"`.
+- `label` keeps the short / acronym form (`"ANCOVA"`); `shortLabel` removed (collapsed into `label`).
+- `code: { system, value }` flattened to `ncitCode: "C00001_NEW"` (string, or null when unassigned).
+- `type`, `class`, `intent`, `assumptions` removed.
+- `inputs[]` → `inputs[]`; `outputs[]` → `outputs[]`.
+- Cardinality enum reduced to `single | multiple`; the previous `fixed_effect.cardinality: "single_or_multiple"` is now `"multiple"` (the `multiple` value covers the n=1 case under the new contract).
+- `outputs[].output_type` (single key into the SKOS catalogue) → four explicit axes (`output_class`, `shape`, `distribution`, optional `additional_statistics`).
+- The output split: one `parameter_estimates_linear` becomes `parameter_estimates` + `parameter_tests`; one `contrasts_t` becomes `contrast_estimates` + `contrast_tests`.
+- Per-output `multiplicity_adjustment` configurations dropped (out of scope, §3.5.5; confirmed during the 2026-05-28 peer review — outputs do not carry their own configurations).
 - `unit_policy` lifted from method-level to per-output, only on value-bearing outputs.
-- The slot-level `name` field on each `methodInput[i]` / `methodOutput[i]` stays as the role token transformations bind to via `methodRole`.
+- The slot-level `name` field on each `inputs[i]` / `outputs[i]` stays as the role token transformations bind to via `input` / `output` FKs.
 
 ### 4.2 M.PercentChange — before / after
 
@@ -435,41 +459,46 @@ What changed:
 }
 ```
 
-**After**:
+**After** (revised 2026-05-28):
 
 ```json
 {
-  "conceptId": "M.PercentChange", "label": "Percent Change", "shortLabel": "%CFB",
-  "code": { "system": "NCI", "value": null },
-  "type": "derivation", "class": "Arithmetic",
-  "intent": ["ChangeComputation"],
+  "conceptId":   "M.PercentChange",
+  "name":        "Percent Change",
+  "label":       "%CFB",
+  "ncitCode":    null,
   "description": "Computes proportional change as a percentage",
   "formula": {
     "notation": "assignment",
     "default_expression": "result := 100 * (post - pre) / pre",
     "generic_expression": "result := 100 * (<post> - <pre>) / <pre>"
   },
-  "methodInput": [
+  "inputs": [
     { "name": "pre",  "dataType": "decimal", "required": true, "cardinality": "single",
       "description": "The baseline/reference value" },
     { "name": "post", "dataType": "decimal", "required": true, "cardinality": "single",
       "description": "The post-baseline value" }
   ],
-  "methodOutput": [
+  "outputs": [
     {
-      "name":         "derived_value",
-      "output_class": "scalar_value",
-      "shape":        "computed_value",
-      "distribution": "none",
-      "value_type":   "fhir:Quantity",
+      "name":         "result",                // matches the formula's LHS (§3.4)
+      "output_type":  "computed_value",        // FK to output_class_templates (§3.6)
       "unit_policy":  "dimensionless"
     }
-  ],
-  "assumptions": ["Pre value is non-zero"]
+  ]
 }
 ```
 
-The transformation that *uses* this method binds the output to the `PercentChange` clinical concept (`instanceOf: "PercentChange"`, `bindings[output].concept: "PercentChange"`, `methodRole: "derived_value"`). The method itself stays concept-free.
+What changed (same revisions as §4.1, applied to a derivation):
+
+- `name` repurposed to "Percent Change" (preferred term); `label: "% Change"` is the short form (the original `%CFB` overspecified — the method is not baseline-specific); `shortLabel` removed.
+- `code: { system, value }` flattened to `ncitCode: null` (unassigned).
+- `type`, `class`, `intent`, `assumptions` removed.
+- `methodInput[]` → `inputs[]`; `methodOutput[]` → `outputs[]`.
+- Output `name` aligned to the formula's LHS: `derived_value` → `result`.
+- Atomic-output four-axis form (`output_class` + `shape` + `distribution` + `value_type`) collapsed to a single `output_type: "computed_value"` FK; the FHIR datatype now flows from the bound concept at transformation time, not the method (per §3.6 revision 2026-05-28). `unit_policy` stays on the method.
+
+The transformation that *uses* this method binds the output to the `PercentChange` clinical concept (in §6 terms: `outputDataStructure.measures[].output: "result"`, `concept: "PercentChange"`), and the `Quantity` datatype propagates from `PercentChange.result.valueType` in `Option_B_Clinical.json`. The method itself stays concept-free.
 
 ## 5. Migration plan
 
@@ -478,9 +507,9 @@ In order, each step landable on its own:
 1. **Write `model/method/acdc_methods.schema.json`** (currently missing). Encode §3.2 + §3.4 validation rules.
 2. **Write `output_class_vocabulary.json`, `output_shape_vocabulary.json`, `distribution_vocabulary.json`** under `lib/vocabulary/`. (Pre-existing inconsistency: per-file `$vocabulary` blocks reference `../../model/method/…`, but the actual files live in `lib/vocabulary/`. Pick one location during this migration and update the references in every method file accordingly. Recommendation: keep `lib/vocabulary/` since the files are already there.)
 3. **Harvest `ncitCode` placeholders** from `AllMethods.json` into per-file `code.value`. Mechanical pass keyed on `name`.
-4. **Rewrite per-file `methodOutput` blocks** from `output_type` → 4-axis. Most are mechanical: the current `output_class_templates.json` carries enough info (template family + statistics) to derive `(output_class, shape, distribution, additional_statistics)`. The splits (parameter_estimates → +parameter_tests, contrasts → +contrast_estimates/contrast_tests) need a manual one-time choice.
+4. **Rewrite per-file `output` blocks** from `output_type` → 4-axis. Most are mechanical: the current `output_class_templates.json` carries enough info (template family + statistics) to derive `(output_class, shape, distribution, additional_statistics)`. The splits (parameter_estimates → +parameter_tests, contrasts → +contrast_estimates/contrast_tests) need a manual one-time choice.
 5. **Add per-output `unit_policy`** on value-bearing outputs of every analysis method; remove method-level `unit_policy` from analysis methods (keep it on derivations only as a fallback, or remove entirely once outputs all carry it).
-6. **Upgrade derivation `methodOutput[]`** (~21 derivations) to the §3.6 form — mostly a `output_class`/`shape`/`distribution`/`value_type`/`unit_policy` block in place of the bare `output_type`.
+6. **Migrate derivation + descriptive-stat `outputs[]`** (~46 methods) to the §3.6 form (revised 2026-05-28): single `output_type: "computed_value"` FK referencing the new template in `output_class_templates.json`. The FHIR datatype is no longer carried on the method — it flows from the bound concept's `result.valueType` at transformation time. `unit_policy` stays on the method.
 7. **Generate `_index.json`** from per-file fields; mark the file as generated.
 8. **Delete `AllMethods.json`** and the old `output_class_templates.json`.
 9. **Update validators / app code** that read the old shape (search for `outputSpecifications`, `inputRoles`, `outputClass`, `indexedBy` in `lib/`, `model/`, and `ac-dc-app/`).
@@ -545,12 +574,12 @@ The transformation declares two `qb:DataStructureDefinition`s — one for the cu
 ```jsonc
 "inputDataStructure": {
   "dimensions": [
-    { "methodInput": "partition", "concept": "Subject" },
-    { "methodInput": "partition", "conceptCategory": "ParameterDimension" },
-    { "methodInput": "partition", "conceptCategory": "VisitDimension" }
+    { "input": "partition", "concept": "Subject" },
+    { "input": "partition", "conceptCategory": "ParameterDimension" },
+    { "input": "partition", "conceptCategory": "VisitDimension" }
   ],
   "measures": [
-    { "methodInput": "value", "concept": "Measure",
+    { "input": "value", "concept": "Measure",
       "requiredValueType": null,
       "slice": "baseline_only" }                        // optional pre-filter (§6.4)
   ],
@@ -564,7 +593,7 @@ The transformation declares two `qb:DataStructureDefinition`s — one for the cu
     { "conceptCategory": "VisitDimension" }
   ],
   "measures": [
-    { "methodOutput": "derived_value", "concept": "Flag" }
+    { "output": "derived_value", "concept": "Flag" }
   ]
   // "slices": [...] permitted but typically empty for derivations.
 }
@@ -574,8 +603,8 @@ The transformation declares two `qb:DataStructureDefinition`s — one for the cu
 
 | Field | On | Purpose |
 |---|---|---|
-| `methodInput` | items in `inputDataStructure.measures[]` (required); items in `inputDataStructure.dimensions[]` (optional — see semantic note 2) | FK to method's `methodInput[].name` (the slot this binding fills) |
-| `methodOutput` | items in `outputDataStructure.measures[]` (required) | FK to method's `methodOutput[].name` |
+| `input` | items in `inputDataStructure.measures[]` (required); items in `inputDataStructure.dimensions[]` (optional — see semantic note 2) | FK to method's `inputs[].name` (the slot this binding fills) |
+| `output` | items in `outputDataStructure.measures[]` (required) | FK to method's `outputs[].name` |
 | `concept` | any | Single clinical/analysis concept (e.g. `Subject`, `Measure`, `Flag`) |
 | `conceptCategory` | any | Concept category — user picks a member at study-spec time (e.g. `ParameterDimension`); exclusive with `concept` |
 | `requiredValueType` | `inputDataStructure.measures[]` | Optional: constrain the value type accepted (e.g. `NumericValue`) |
@@ -584,12 +613,12 @@ The transformation declares two `qb:DataStructureDefinition`s — one for the cu
 **Semantic notes:**
 
 1. **Each block IS a `qb:DataStructureDefinition`.** No carry-forward shorthand; if a dim appears on both cubes, it appears in both `dimensions[]` arrays. Drift between the two lists is what the diff (and the validator) catch.
-2. **`methodInput` on an `inputDataStructure.dimensions[]` item is optional.** Two distinct cases:
-   - **Bound dim** — the dimension fills a specific method input slot (e.g. `Treatment` fills M.ANCOVA's `fixed_effect`). Set `methodInput`.
-   - **Context dim** — the dimension is pure cube scope; the method doesn't take it as an argument (e.g. `Subject`, `ParameterDimension`, `VisitDimension` for M.ANCOVA). Omit `methodInput`. Study-time values for context dims come from `sliceKeys[]` (§6.4).
-3. **`methodInput` is never set on an `outputDataStructure` item.** The output side is what the transformation *produces*, not what it consumes. Even when a dim that was bound to a method input on the input side reappears on the output side (e.g. `Treatment`), the output-side entry just lists the concept — no FK. The validator strips/rejects `methodInput` on the output side.
-4. **The same `methodInput` slot can be filled by multiple bindings.** Example: `M.Aggregation`'s `partition` slot (`cardinality: "multiple"`) can be filled by several dimension bindings (Subject, ParameterDimension, VisitDimension) at once. Cardinality is enforced against the method's `methodInput[].cardinality`.
-5. **Output measure bindings type the result with a concept.** `{ "methodOutput": "derived_value", "concept": "Flag" }` says "the method's `derived_value` output represents the clinical concept `Flag`." That's the semantic typing that the old `instanceOf` field carried, now consolidated where it belongs.
+2. **`input` on an `inputDataStructure.dimensions[]` item is optional.** Two distinct cases:
+   - **Bound dim** — the dimension fills a specific method input slot (e.g. `Treatment` fills M.ANCOVA's `fixed_effect`). Set `input`.
+   - **Context dim** — the dimension is pure cube scope; the method doesn't take it as an argument (e.g. `Subject`, `ParameterDimension`, `VisitDimension` for M.ANCOVA). Omit `input`. Study-time values for context dims come from `sliceKeys[]` (§6.4).
+3. **`input` is never set on an `outputDataStructure` item.** The output side is what the transformation *produces*, not what it consumes. Even when a dim that was bound to a method input on the input side reappears on the output side (e.g. `Treatment`), the output-side entry just lists the concept — no FK. The validator strips/rejects `input` on the output side.
+4. **The same `input` slot can be filled by multiple bindings.** Example: `M.Aggregation`'s `partition` slot (`cardinality: "multiple"`) can be filled by several dimension bindings (Subject, ParameterDimension, VisitDimension) at once. Cardinality is enforced against the method's `inputs[].cardinality`.
+5. **Output measure bindings type the result with a concept.** `{ "output": "derived_value", "concept": "Flag" }` says "the method's `derived_value` output represents the clinical concept `Flag`." That's the semantic typing that the old `instanceOf` field carried, now consolidated where it belongs.
 6. **Aggregations and other DSD-changing transformations are natural.** A transformation that consumes a Timing-ordered cube and produces a per-Subject summary (e.g. `T.PeakConcentration`) just lists `Timing` in `inputDataStructure.dimensions` and omits it from `outputDataStructure.dimensions`. No special syntax needed.
 
 **Attributes (reserved).** A future `attributes[]` array would map to `qb:attribute` (cube metadata like unit-of-measure, observation status). It would live inside each DSD block (input-side and/or output-side, as appropriate). Reserved in the schema; not added until a concrete use case lands.
@@ -611,8 +640,8 @@ Slices are pre-filtered views of a cube — a `qb:Slice` that fixes some dimensi
 "inputDataStructure": {
   "dimensions": [ /* ... */ ],
   "measures": [
-    { "methodInput": "response",  "concept": "Change",  "slice": "endpoint" },
-    { "methodInput": "covariate", "concept": "Measure", "slice": "parameter_baseline" }
+    { "input": "response",  "concept": "Change",  "slice": "endpoint" },
+    { "input": "covariate", "concept": "Measure", "slice": "parameter_baseline" }
   ],
   "slices": [
     {
@@ -662,9 +691,9 @@ The transformation schema borrows qb's component model for describing cube struc
   },
   "mapping_acdc_extensions": {
     "transformation as a whole":  "AC/DC extension. qb is silent on dataset-to-dataset derivation (W3C §8.4); we add an explicit transformation vocabulary that USES qb cube terms for input and output DSDs.",
-    "measures[].methodInput":     "AC/DC extension — FK to method.methodInput[].name. Required on inputDataStructure.measures[] items; rejected on outputDataStructure.measures[] items.",
-    "measures[].methodOutput":    "AC/DC extension — FK to method.methodOutput[].name. Required on outputDataStructure.measures[] items; rejected on inputDataStructure.measures[] items.",
-    "dimensions[].methodInput":   "AC/DC extension on inputDataStructure.dimensions[] only — marks the dim as filling a specific method input slot (e.g. Treatment → fixed_effect). Rejected on outputDataStructure.dimensions[].",
+    "measures[].input":     "AC/DC extension — FK to method.inputs[].name. Required on inputDataStructure.measures[] items; rejected on outputDataStructure.measures[] items.",
+    "measures[].output":    "AC/DC extension — FK to method.outputs[].name. Required on outputDataStructure.measures[] items; rejected on inputDataStructure.measures[] items.",
+    "dimensions[].input":   "AC/DC extension on inputDataStructure.dimensions[] only — marks the dim as filling a specific method input slot (e.g. Treatment → fixed_effect). Rejected on outputDataStructure.dimensions[].",
     "measures[].slice":           "AC/DC extension on inputDataStructure.measures[] only — pre-filter this measure's cube to the named slice before the method sees it.",
     "sliceKeys[].source":         "AC/DC extension on qb:SliceKey — declares where the fixed-dim value comes from at run time (e.g. the endpoint's biomedicalConcept attribute). Vanilla qb:SliceKey lists only WHICH dim is fixed; our parameterized SliceKeys also say WHERE THE VALUE BINDS FROM.",
     "slices[].constraints[].value as \"{placeholder}\"": "AC/DC extension — slice TEMPLATES whose dimension values are bound at study-spec time from sliceKeys. A true qb:Slice has literal values; we instantiate the template into one at execution.",
@@ -681,9 +710,9 @@ The schema (and a JSON-Schema-based validator) enforce:
 
 1. **`usesMethod` resolves.** Must match an existing `method.conceptId`.
 2. **FK fields resolve into the named method:**
-   - `inputDataStructure.dimensions[].methodInput` (when present), `inputDataStructure.measures[].methodInput` (required) ∈ `method.methodInput[].name`
-   - `outputDataStructure.measures[].methodOutput` (required) ∈ `method.methodOutput[].name`
-   - `methodInput` is rejected on `outputDataStructure.*` items; `methodOutput` is rejected on `inputDataStructure.*` items.
+   - `inputDataStructure.dimensions[].input` (when present), `inputDataStructure.measures[].input` (required) ∈ `method.inputs[].name`
+   - `outputDataStructure.measures[].output` (required) ∈ `method.outputs[].name`
+   - `input` is rejected on `outputDataStructure.*` items; `output` is rejected on `inputDataStructure.*` items.
 3. **`methodConfigurations` is valid:**
    - Every `configurationName` ∈ `method.configurations[].name`
    - Every `value` matches the configuration's `dataType` and (if present) `enumValues`
@@ -692,10 +721,25 @@ The schema (and a JSON-Schema-based validator) enforce:
    - `inputDataStructure.slices[].constraints[].dimension` ∈ `inputDataStructure.dimensions[].conceptCategory` ∪ `inputDataStructure.dimensions[].concept` (same applies inside `outputDataStructure.slices[]` if used)
    - Every `{placeholder}` in `slices[].constraints[].value` either resolves to a `sliceKeys[].source`-supplied value (`{parameter}`, `{visit}`, `{population}`) or to a transformation-local constant (`{baseline_visit}` — flagged for the endpoint to supply or the transformation to default).
 5. **sliceKeys references resolve.** `sliceKeys[].dimension` ∈ `inputDataStructure.dimensions[].conceptCategory` ∪ `inputDataStructure.dimensions[].concept`; `sliceKeys[].source` is one of the recognized endpoint-spec attribute names (`biomedicalConcept`, `visit`, `population`, ...).
-6. **Cardinality respected.** When several `inputDataStructure.measures[]` or `inputDataStructure.dimensions[]` bindings share the same `methodInput` FK, their count satisfies the method's `methodInput[].cardinality` (`single` / `multiple` / `single_or_multiple`).
+6. **Cardinality respected.** When several `inputDataStructure.measures[]` or `inputDataStructure.dimensions[]` bindings share the same `input` FK, their count satisfies the method's `inputs[].cardinality` (`single` / `multiple`).
 7. **Concept / conceptCategory references resolve.** Against the concept files declared in `$references` (`Option_B_Clinical.json` for derivation transformations, `AC_Concept_Model_v017.json` for analyses).
 8. **Mutual exclusion.** `concept` XOR `conceptCategory` on each binding item (never both).
 9. **Twin-DSD consistency advisory (non-blocking).** The validator emits a warning when a dim appears on one side and not the other without a documented reason (e.g. an aggregation that legitimately drops Timing). This catches drift between the two `dimensions[]` lists without forbidding the legitimate diverge-case.
+10. **Output-type compatibility (atomic outputs).** For each `outputDataStructure.measures[]` item whose bound method-output has `output_type: "computed_value"` (atomic): the method-output's `dataType` (`decimal` | `integer` | `code` | `boolean` | `date`) must be compatible with the bound concept's `result.valueType`. Compatibility table:
+    - `decimal` / `integer` → compatible with FHIR `Quantity`, `Count`, `Duration`, and Option_B `NumericValue`.
+    - `code` → compatible with FHIR `CodeableConcept`, `Coding`, and Option_B `CodedResponse`.
+    - `boolean` → compatible with `boolean`.
+    - `date` → compatible with FHIR `date`, `dateTime`.
+    - Mismatched bindings (e.g. method emits `code`, concept requires `Quantity`) are rejected.
+11. **Output-type compatibility (structured outputs).** For each `outputDataStructure.measures[]` item whose bound method-output has `output_type` referencing a structured-table template (e.g. `ls_means`, `type3_tests_f`, `contrasts_t`, ...):
+    - **Constituents alignment.** The template's `statistics[]` list MUST be the same set as the bound AC concept's `constituents[]` list (modulo the case/naming reconciliation in §3.7).
+    - **Per-statistic dataType.** Each statistic's dataType in `statistics_vocabulary.json` MUST equal the corresponding AC atomic concept's dataType in `AC_Concept_Model_v017.json.sharedStatisticsVocabulary`.
+    - **Dimension chain-resolution.** The bound AC concept's `dimensions[]` (e.g. `["factor", "level"]`) describes a *semantic* dimensional shape — concepts know nothing about methods. The actual identity of each dimension is resolved at validation time by walking the transformation's existing bindings:
+        1. Read the method-output's `indexed_by` (e.g. `["fixed_effect"]`).
+        2. For each input slot named in `indexed_by`, look up its binding in `inputDataStructure.measures[]` or `inputDataStructure.dimensions[]` within the same transformation. That binding's `concept` (or `conceptCategory`) is the identity of the corresponding AC `factor`-class dimension (e.g. `Treatment`).
+        3. The AC concept's `level`-class dimension is implicit: the runtime values of the resolved concept (e.g. `Drug A`, `Drug B`, `Placebo` from the bound Treatment column).
+    - **Multi-factor outputs** (e.g. M.MMRM's `ls_means` with `indexed_by: ["fixed_effect", "repeated_factor"]`): the chain resolves each `indexed_by` slot independently, producing N (factor, level) pairs. The AC concept's flat `dimensions` field is interpreted as "this many factor/level pairs per row" — the concept stays generic; the transformation chain fills in the specifics.
+    - **No `dimension_bindings` block is added to transformations.** The information is already present through the input bindings; the validator/resolver walks it.
 
 ### 6.7 Worked example — T.BaselineSelection before / after
 
@@ -752,23 +796,23 @@ The schema (and a JSON-Schema-based validator) enforce:
 
   "inputDataStructure": {
     "dimensions": [
-      { "methodInput": "partition", "concept": "Subject" },
-      { "methodInput": "partition", "conceptCategory": "ParameterDimension" },
-      { "methodInput": "partition", "conceptCategory": "VisitDimension" }
+      { "input": "partition", "concept": "Subject" },
+      { "input": "partition", "conceptCategory": "ParameterDimension" },
+      { "input": "partition", "conceptCategory": "VisitDimension" }
     ],
     "measures": [
-      { "methodInput": "value", "concept": "Measure", "requiredValueType": null }
+      { "input": "value", "concept": "Measure", "requiredValueType": null }
     ]
   },
 
   "outputDataStructure": {
     "dimensions": [
-      { "concept": "Subject" },                          // duplicated, no methodInput FK
+      { "concept": "Subject" },                          // duplicated, no input FK
       { "conceptCategory": "ParameterDimension" },       // duplicated
       { "conceptCategory": "VisitDimension" }            // duplicated
     ],
     "measures": [
-      { "methodOutput": "derived_value", "concept": "Flag" }
+      { "output": "derived_value", "concept": "Flag" }
     ]
   },
 
@@ -781,9 +825,9 @@ What changed (mechanical):
 - `oid` → `conceptId`; `name` → `label` (plus `shortLabel` added).
 - `instanceOf: "Flag"` removed (subsumed by the output-side measure binding's `concept`).
 - `bindings[]` split into twin `inputDataStructure` / `outputDataStructure` blocks, each a `qb:DataStructureDefinition` 1:1 (§6.5). Dimensions that appear on both cubes are listed in both arrays.
-- Per-item `direction`, `dataStructureRole`, `methodRole` removed; replaced by block placement + `methodInput`/`methodOutput` FK fields.
-- The output FK changed from `methodRole: "flag"` to `methodOutput: "derived_value"` — this assumes the method-side rename to the standardized derivation output slot name `derived_value` (§3.6 examples). If `M.RecordSelection` declares a `flag` output slot instead, the FK stays `methodOutput: "flag"`.
-- Output-side dims drop the `methodInput: "partition"` FK — `methodInput` is rejected on `outputDataStructure.*` items (the output is what the transformation *produces*, not what the method consumes).
+- Per-item `direction`, `dataStructureRole`, `methodRole` removed; replaced by block placement + `input`/`output` FK fields.
+- The output FK changed from `methodRole: "flag"` to `output: "derived_value"` — this assumes the method-side rename to the standardized derivation output slot name `derived_value` (§3.6 examples). If `M.RecordSelection` declares a `flag` output slot instead, the FK stays `output: "flag"`.
+- Output-side dims drop the `input: "partition"` FK — `input` is rejected on `outputDataStructure.*` items (the output is what the transformation *produces*, not what the method consumes).
 - This transformation has no `sliceKeys` and no `slices` — `M.RecordSelection` operates on the full cube; no slice templates needed.
 - The `T.BaselineSelection` entry in the current library has no `composedPhrase` field to drop (its `validSmartPhrases[]` is empty). Transformations that DO carry `composedPhrase` today (e.g. `T.ChangeFromBaseline`, `T.CFB_ANCOVA`, `T.CFB_MMRM_Primary`) have the field stripped per §6.9 step 5 — the rendered phrase becomes a UI-layer derivation from `validSmartPhrases[]` + sliceKey-bound values.
 
@@ -807,7 +851,7 @@ This is the existing `T.CFB_ANCOVA` from `ACDC_Transformation_Library_v06.json` 
   "inputDataStructure": {
     "dimensions": [
       // Bound dim — fills the method's fixed_effect slot.
-      { "methodInput": "fixed_effect", "concept": "Treatment" },
+      { "input": "fixed_effect", "concept": "Treatment" },
 
       // Context dims — pure cube scope, no method-input FK. Pinned at study
       // time via sliceKeys below.
@@ -819,7 +863,7 @@ This is the existing `T.CFB_ANCOVA` from `ACDC_Transformation_Library_v06.json` 
     "measures": [
       // Response: the *Change* cube, sliced to the endpoint (this parameter,
       // this analysis visit, this population).
-      { "methodInput":       "response",
+      { "input":       "response",
         "concept":           "Change",
         "requiredValueType": "Quantity",
         "slice":             "endpoint" },
@@ -827,7 +871,7 @@ This is the existing `T.CFB_ANCOVA` from `ACDC_Transformation_Library_v06.json` 
       // Covariate: a *Measure* cube, sliced to the SAME parameter and
       // population but a DIFFERENT visit ({baseline_visit} instead of
       // {visit}). The slice diff is the load-bearing signal.
-      { "methodInput":       "covariate",
+      { "input":       "covariate",
         "concept":           "Measure",
         "requiredValueType": "Quantity",
         "slice":             "parameter_baseline",
@@ -858,7 +902,7 @@ This is the existing `T.CFB_ANCOVA` from `ACDC_Transformation_Library_v06.json` 
 
   "outputDataStructure": {
     "dimensions": [
-      // All input dims carry forward — listed explicitly. No methodInput FK
+      // All input dims carry forward — listed explicitly. No input FK
       // on the output side (the dims are not method args here).
       { "concept": "Treatment" },
       { "concept": "Subject" },
@@ -868,11 +912,11 @@ This is the existing `T.CFB_ANCOVA` from `ACDC_Transformation_Library_v06.json` 
     "measures": [
       // Each method-output slot binds to an AC result pattern from
       // AC_Concept_Model_v017.json. No invented concepts.
-      { "methodOutput": "ls_means",                   "concept": "LSMeans" },
-      { "methodOutput": "contrasts_t",                "concept": "Contrasts" },
-      { "methodOutput": "type3_tests_f",              "concept": "Type3Tests" },
-      { "methodOutput": "parameter_estimates_linear", "concept": "ParameterEstimates" },
-      { "methodOutput": "fit_statistics_linear",      "concept": "FitStatistics" }
+      { "output": "ls_means",                   "concept": "LSMeans" },
+      { "output": "contrasts_t",                "concept": "Contrasts" },
+      { "output": "type3_tests_f",              "concept": "Type3Tests" },
+      { "output": "parameter_estimates_linear", "concept": "ParameterEstimates" },
+      { "output": "fit_statistics_linear",      "concept": "FitStatistics" }
     ]
   },
 
@@ -894,7 +938,7 @@ What this example demonstrates:
 
 - **Real concepts only.** Inputs/dimensions bind to atomic clinical concepts from `Option_B_Clinical.json` (`Change`, `Measure`, `Treatment`, `Subject`). Outputs bind to AC result patterns from `AC_Concept_Model_v017.json` (`LSMeans`, `Contrasts`, `Type3Tests`, `ParameterEstimates`, `FitStatistics`). The transformation is *parameterized*, not concept-specific — the same `T.CFB_ANCOVA` serves SBP, DBP, heart rate, or any parameter whose AC endpoint is "change from baseline at a visit."
 - **Both inputs cite a named slice — no implicit slicing.** The endpoint and the covariate are both filtered views, declared symmetrically in `inputDataStructure.slices[]`. The diff between the two slices (`{visit}` vs `{baseline_visit}`) is the load-bearing signal that says "the covariate is the baseline value of the same parameter and population." Nothing is hidden in engine convention.
-- **The bound/context dim distinction.** `Treatment` carries `methodInput: "fixed_effect"` on the input side — the method consumes it as an argument. `Subject` / `ParameterDimension` / `VisitDimension` carry no `methodInput` — the method doesn't take them, but the cube still has them (and they pin the slice). On the output side, `Treatment` reappears as a plain dim (the output cube has Treatment too, but it's not a method arg there).
+- **The bound/context dim distinction.** `Treatment` carries `input: "fixed_effect"` on the input side — the method consumes it as an argument. `Subject` / `ParameterDimension` / `VisitDimension` carry no `input` — the method doesn't take them, but the cube still has them (and they pin the slice). On the output side, `Treatment` reappears as a plain dim (the output cube has Treatment too, but it's not a method arg there).
 - **Every method output binds cleanly.** Each of M.ANCOVA's five output slots has a 1:1 match in an AC result pattern.
 - **Twin-DSD shape is qb-aligned.** `inputDataStructure` and `outputDataStructure` are each `qb:DataStructureDefinition`s 1:1. The four dim entries listed twice (Treatment, Subject, ParameterDimension, VisitDimension) reflect that both cubes really do have those dims; the duplication is qb-honest, not a denormalization to undo at conversion time.
 
@@ -907,7 +951,7 @@ In addition to the method migration in §5:
 3. **Rewrite each entry** in `derivationTransformations[]` and `analysisTransformations[]` to the new shape (mechanical mapping per §6.7). Merge both arrays into one `transformations[]`.
 4. **Drop `instanceOf`** during the rewrite — confirm each transformation's output bindings carry the same concept it previously held.
 5. **Drop `composedPhrase`** during the rewrite. The rendered phrase is generated at display time from `validSmartPhrases[]` + sliceKey-supplied values (§6.2 table). Verify each transformation's `validSmartPhrases[]` list is complete enough that the render produces the same phrase the old `composedPhrase` field held; flag any divergences before the field is removed.
-6. **Validate FKs** against the migrated method files (§5 step 4) — every `methodInput`/`methodOutput` reference must resolve.
+6. **Validate FKs** against the migrated method files (§5 step 4) — every `input`/`output` reference must resolve.
 7. **Update consumers** (app code, validators) that read the old `bindings[].direction` / `dataStructureRole` / `methodRole` / `oid` / `instanceOf` / `composedPhrase` fields. The composed-phrase render becomes a UI/export utility.
 
 Steps 1–3 produce a working state; 4–7 finish the migration.
@@ -920,7 +964,7 @@ All three options share the same slice-expression pattern (every input cites a n
 
 #### Option A — Flattened (one logical cube)
 
-Top-level `dimensions[]` + `measures[]`. Direction of a measure is inferred from `methodInput` vs `methodOutput` on each entry. No partitioning into input/output blocks.
+Top-level `dimensions[]` + `measures[]`. Direction of a measure is inferred from `input` vs `output` on each entry. No partitioning into input/output blocks.
 
 ```jsonc
 // T.ChangeFromBaseline
@@ -934,11 +978,11 @@ Top-level `dimensions[]` + `measures[]`. Direction of a measure is inferred from
     { "conceptCategory": "VisitDimension" }
   ],
   "measures": [
-    { "methodInput": "minuend",    "concept": "Measure", "requiredValueType": "Quantity",
+    { "input": "minuend",    "concept": "Measure", "requiredValueType": "Quantity",
       "slice": "endpoint",           "description": "Current visit value" },
-    { "methodInput": "subtrahend", "concept": "Measure", "requiredValueType": "Quantity",
+    { "input": "subtrahend", "concept": "Measure", "requiredValueType": "Quantity",
       "slice": "parameter_baseline", "description": "Baseline value" },
-    { "methodOutput": "difference", "concept": "Change" }
+    { "output": "difference", "concept": "Change" }
   ],
   "sliceKeys": [
     { "dimension": "ParameterDimension", "source": "biomedicalConcept" },
@@ -964,21 +1008,21 @@ Top-level `dimensions[]` + `measures[]`. Direction of a measure is inferred from
   "transformationType": "analysis", "usesMethod": "M.ANCOVA",
   "methodConfigurations": [{ "configurationName": "ss_type", "value": "III" }],
   "dimensions": [
-    { "methodInput": "fixed_effect", "concept": "Treatment" },
+    { "input": "fixed_effect", "concept": "Treatment" },
     { "concept": "Subject" },
     { "conceptCategory": "ParameterDimension" },
     { "conceptCategory": "VisitDimension" }
   ],
   "measures": [
-    { "methodInput":  "response",  "concept": "Change",  "requiredValueType": "Quantity",
+    { "input":  "response",  "concept": "Change",  "requiredValueType": "Quantity",
       "slice": "endpoint" },
-    { "methodInput":  "covariate", "concept": "Measure", "requiredValueType": "Quantity",
+    { "input":  "covariate", "concept": "Measure", "requiredValueType": "Quantity",
       "slice": "parameter_baseline", "description": "Baseline value of the endpoint parameter" },
-    { "methodOutput": "ls_means",                   "concept": "LSMeans" },
-    { "methodOutput": "contrasts_t",                "concept": "Contrasts" },
-    { "methodOutput": "type3_tests_f",              "concept": "Type3Tests" },
-    { "methodOutput": "parameter_estimates_linear", "concept": "ParameterEstimates" },
-    { "methodOutput": "fit_statistics_linear",      "concept": "FitStatistics" }
+    { "output": "ls_means",                   "concept": "LSMeans" },
+    { "output": "contrasts_t",                "concept": "Contrasts" },
+    { "output": "type3_tests_f",              "concept": "Type3Tests" },
+    { "output": "parameter_estimates_linear", "concept": "ParameterEstimates" },
+    { "output": "fit_statistics_linear",      "concept": "FitStatistics" }
   ],
   "sliceKeys": [
     { "dimension": "ParameterDimension", "source": "biomedicalConcept" },
@@ -1006,7 +1050,7 @@ Top-level `dimensions[]` + `measures[]`. Direction of a measure is inferred from
 - Closest to the existing library's flat `bindings[]` array (smallest mental jump for current authors).
 
 **Cons**
-- **Not 1:1 with qb.** `qb:DataStructureDefinition` describes one DSD per dataset; this shape blends two DSDs (input + output) into one logical cube with direction-tagged measures. A JSON→RDF converter must re-derive the two real DSDs by partitioning `measures[]` on `methodInput` vs `methodOutput`.
+- **Not 1:1 with qb.** `qb:DataStructureDefinition` describes one DSD per dataset; this shape blends two DSDs (input + output) into one logical cube with direction-tagged measures. A JSON→RDF converter must re-derive the two real DSDs by partitioning `measures[]` on `input` vs `output`.
 - **Aggregations need special syntax.** A transformation that drops a dim on output (e.g. `T.PeakConcentration` collapses Timing) has no clean way to express that without a bolted-on per-dim `scope: "input_only" / "both"` field.
 - **No clean home for output-side slices.** If a transformation wants to publish named slices of its OUTPUT cube (e.g. "LS means at Week 24"), there's nowhere to put them — `slices[]` is implicitly input-side only.
 - **The "input cube" and "output cube" notions are implicit.** A reader must mentally split `measures[]` by FK presence to understand the two cubes.
@@ -1049,9 +1093,9 @@ Same two-block skeleton as Option B, but the output side can declare `dimensions
       { "conceptCategory": "VisitDimension" }
     ],
     "measures": [
-      { "methodInput": "minuend",    "concept": "Measure", "requiredValueType": "Quantity",
+      { "input": "minuend",    "concept": "Measure", "requiredValueType": "Quantity",
         "slice": "endpoint",           "description": "Current visit value" },
-      { "methodInput": "subtrahend", "concept": "Measure", "requiredValueType": "Quantity",
+      { "input": "subtrahend", "concept": "Measure", "requiredValueType": "Quantity",
         "slice": "parameter_baseline", "description": "Baseline value" }
     ],
     "slices": [
@@ -1070,7 +1114,7 @@ Same two-block skeleton as Option B, but the output side can declare `dimensions
     "dimensionsDrop": [],
     "dimensionsAdd":  [],
     "measures": [
-      { "methodOutput": "difference", "concept": "Change" }
+      { "output": "difference", "concept": "Change" }
     ]
   },
   "sliceKeys": [
@@ -1088,15 +1132,15 @@ Same two-block skeleton as Option B, but the output side can declare `dimensions
   "methodConfigurations": [{ "configurationName": "ss_type", "value": "III" }],
   "inputDataStructure": {
     "dimensions": [
-      { "methodInput": "fixed_effect", "concept": "Treatment" },
+      { "input": "fixed_effect", "concept": "Treatment" },
       { "concept": "Subject" },
       { "conceptCategory": "ParameterDimension" },
       { "conceptCategory": "VisitDimension" }
     ],
     "measures": [
-      { "methodInput": "response",  "concept": "Change",  "requiredValueType": "Quantity",
+      { "input": "response",  "concept": "Change",  "requiredValueType": "Quantity",
         "slice": "endpoint" },
-      { "methodInput": "covariate", "concept": "Measure", "requiredValueType": "Quantity",
+      { "input": "covariate", "concept": "Measure", "requiredValueType": "Quantity",
         "slice": "parameter_baseline", "description": "Baseline value of the endpoint parameter" }
     ],
     "slices": [
@@ -1117,11 +1161,11 @@ Same two-block skeleton as Option B, but the output side can declare `dimensions
     "dimensionsDrop": [],
     "dimensionsAdd":  [],
     "measures": [
-      { "methodOutput": "ls_means",                   "concept": "LSMeans" },
-      { "methodOutput": "contrasts_t",                "concept": "Contrasts" },
-      { "methodOutput": "type3_tests_f",              "concept": "Type3Tests" },
-      { "methodOutput": "parameter_estimates_linear", "concept": "ParameterEstimates" },
-      { "methodOutput": "fit_statistics_linear",      "concept": "FitStatistics" }
+      { "output": "ls_means",                   "concept": "LSMeans" },
+      { "output": "contrasts_t",                "concept": "Contrasts" },
+      { "output": "type3_tests_f",              "concept": "Type3Tests" },
+      { "output": "parameter_estimates_linear", "concept": "ParameterEstimates" },
+      { "output": "fit_statistics_linear",      "concept": "FitStatistics" }
     ]
   },
   "sliceKeys": [
@@ -1149,7 +1193,7 @@ Same two-block skeleton as Option B, but the output side can declare `dimensions
 |---|---|---|---|
 | qb fidelity | 1 logical cube ≠ qb (qb has 2 datasets) | 1:1 with two `qb:DataStructureDefinition`s | 1:1 once `dimensionsFrom` is expanded |
 | Dim duplication (CFB/ANCOVA case) | none | 3 / 4 dim entries duplicated | none (shorthand) |
-| Direction signal | `methodInput` vs `methodOutput` FK on each measure | block name (`inputDataStructure` vs `outputDataStructure`) | block name |
+| Direction signal | `input` vs `output` FK on each measure | block name (`inputDataStructure` vs `outputDataStructure`) | block name |
 | Aggregations (T.PeakConcentration drops Timing) | needs a per-dim `scope` field bolted on | natural (omit Timing from `outputDataStructure.dimensions`) | natural (`"dimensionsDrop": ["Timing"]`) |
 | Output-side slices | nowhere to put them | `outputDataStructure.slices` | `outputDataStructure.slices` |
 | Author effort, simplest CFB case | smallest | largest (most duplication) | small (shorthand collapses common case) |

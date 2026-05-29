@@ -1,25 +1,15 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.ANCOVA",
+  "conceptId": "M.ANCOVA",
+  "name": "Analysis of Covariance",
   "label": "ANCOVA",
-  "shortLabel": "ANCOVA",
-  "code": {
-    "system": "NCI",
-    "value": null,
-    "_note": "NCI C-code to be assigned"
-  },
-  "type": "analysis",
-  "class": "General Linear Models",
-  "intent": [
-    "GroupComparison"
-  ],
-  "codings": [],
+  "ncitCode": null,
   "description": "Analysis of Covariance - ANOVA with continuous covariate adjustment",
   "formula": {
     "notation": "wilkinson_rogers",
@@ -48,7 +38,7 @@
       "description": "Type I error rate for confidence intervals; 1-alpha is the confidence level."
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "response",
       "dataType": "decimal",
@@ -67,11 +57,11 @@
       "name": "fixed_effect",
       "dataType": "code",
       "required": true,
-      "cardinality": "single_or_multiple",
+      "cardinality": "multiple",
       "description": "Grouping/factor variable(s) (e.g., treatment arm, region)"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name": "fit_statistics_linear",
       "output_type": "fit_statistics_linear"
@@ -84,17 +74,6 @@
         "fixed_effect",
         "fixed_effect:fixed_effect",
         "covariate:fixed_effect"
-      ],
-      "configurations": [
-        {
-          "name": "multiplicity_adjustment",
-          "conforms_to": "multiplicity_adjustment",
-          "dataType": "code",
-          "defaultValue": "none",
-          "applicable_scopes": [
-            "universal"
-          ]
-        }
       ]
     },
     {
@@ -119,16 +98,7 @@
       "output_type": "contrasts_t",
       "indexed_by": [
         "fixed_effect"
-      ],
-      "configurations": [
-        {
-          "name": "multiplicity_adjustment",
-          "conforms_to": "multiplicity_adjustment",
-          "dataType": "code",
-          "defaultValue": "none"
-        }
       ]
     }
-  ],
-  "assumptions": []
+  ]
 }

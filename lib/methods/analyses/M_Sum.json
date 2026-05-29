@@ -1,33 +1,24 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.Sum",
+  "conceptId": "M.Sum",
+  "name": "Sum",
   "label": "Sum",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "Extremes",
-  "intent": [
-    "DescriptiveSummary"
-  ],
+  "ncitCode": null,
   "description": "Computes the sum of all values of a numeric variable",
   "formula": {
     "notation": "assignment",
-    "default_expression": "result := SUM(response) OVER (group)",
-    "generic_expression": "result := SUM(<response>) OVER (<group>*)"
+    "default_expression": "result := SUM(value) OVER (group)",
+    "generic_expression": "result := SUM(<value>) OVER (<group>*)"
   },
-  "unit_policy": "preserved",
-  "configurations": [],
-  "methodInput": [
+  "inputs": [
     {
-      "name": "response",
+      "name": "value",
       "dataType": "decimal",
       "required": true,
       "cardinality": "single",
@@ -37,18 +28,19 @@
       "name": "group",
       "dataType": "code",
       "required": false,
-      "cardinality": "single_or_multiple",
+      "cardinality": "multiple",
       "description": "Optional grouping variable(s)"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
-      "output_type": "fhir:Quantity",
-      "name": "derived_value",
+      "output_type": "computed_value",
+      "name": "result",
       "indexed_by": [
         "group"
-      ]
+      ],
+      "unit_policy": "preserved",
+      "dataType": "decimal"
     }
-  ],
-  "assumptions": []
+  ]
 }

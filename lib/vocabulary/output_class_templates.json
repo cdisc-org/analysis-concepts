@@ -484,6 +484,14 @@
         "Q1",
         "Q3"
       ]
+    },
+    "computed_value": {
+      "label": "Computed value",
+      "description": "Family of single-value atomic outputs (one value per row) produced by descriptive statistics and derivations. The FHIR datatype is supplied by the bound concept at transformation time via concept.result.valueType \u2014 the template carries the shape only, not the type.",
+      "broader": null,
+      "statistics": [
+        "value"
+      ]
     }
   }
 }

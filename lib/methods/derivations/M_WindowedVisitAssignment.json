@@ -1,22 +1,15 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.WindowedVisitAssignment",
+  "conceptId": "M.WindowedVisitAssignment",
+  "name": "Windowed Visit Assignment",
   "label": "Windowed Visit Assignment",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "derivation",
-  "class": "Classification",
-  "intent": [
-    "ValueClassification"
-  ],
+  "ncitCode": null,
   "description": "Assign each observation to a scheduled analysis visit using day-windows and a target-day tie-break. SAP-style AVISIT derivation. Consumes a pre-computed study day (SDTM --DY) relative to the randomization anchor; no date subtraction inside the method.",
   "formula": {
     "notation": "assignment",
@@ -41,7 +34,7 @@
       "description": "Tie-break rule when multiple windows match the day."
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "day",
       "dataType": "decimal",
@@ -57,11 +50,11 @@
       "description": "Subject-level partitioning. Not used by the default template (assignment is row-wise on day)."
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
-      "output_type": "fhir:CodeableConcept",
-      "name": "derived_value"
+      "output_type": "computed_value",
+      "name": "analysisVisit",
+      "dataType": "code"
     }
-  ],
-  "assumptions": []
+  ]
 }

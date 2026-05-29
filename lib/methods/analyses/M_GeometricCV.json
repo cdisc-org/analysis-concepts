@@ -1,34 +1,24 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.GeometricCV",
-  "label": "Geometric Coefficient of Variation",
-  "shortLabel": "GeoCV",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "Dispersion",
-  "intent": [
-    "DescriptiveSummary"
-  ],
+  "conceptId": "M.GeometricCV",
+  "name": "Geometric Coefficient of Variation",
+  "label": "GeoCV",
+  "ncitCode": null,
   "description": "Computes the geometric coefficient of variation",
   "formula": {
     "notation": "assignment",
-    "default_expression": "result := GEOMCV(response) OVER (group)",
-    "generic_expression": "result := GEOMCV(<response>) OVER (<group>*)"
+    "default_expression": "result := GEOMCV(value) OVER (group)",
+    "generic_expression": "result := GEOMCV(<value>) OVER (<group>*)"
   },
-  "unit_policy": "dimensionless",
-  "configurations": [],
-  "methodInput": [
+  "inputs": [
     {
-      "name": "response",
+      "name": "value",
       "dataType": "decimal",
       "required": true,
       "cardinality": "single",
@@ -38,20 +28,19 @@
       "name": "group",
       "dataType": "code",
       "required": false,
-      "cardinality": "single_or_multiple",
+      "cardinality": "multiple",
       "description": "Optional grouping variable(s)"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
-      "output_type": "fhir:Quantity",
-      "name": "derived_value",
+      "output_type": "computed_value",
+      "name": "result",
       "indexed_by": [
         "group"
-      ]
+      ],
+      "unit_policy": "dimensionless",
+      "dataType": "decimal"
     }
-  ],
-  "assumptions": [
-    "All values must be positive"
   ]
 }

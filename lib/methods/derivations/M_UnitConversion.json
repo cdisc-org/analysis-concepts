@@ -1,5 +1,5 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
@@ -7,19 +7,10 @@
     "formula_grammar": "../../model/method/formula_grammar.json",
     "unit_conversions": "../../model/vocabularies/unit_conversions.json"
   },
-  "name": "M.UnitConversion",
-  "label": "Unit Conversion",
-  "shortLabel": "unit conv",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "derivation",
-  "class": "Arithmetic",
-  "intent": [
-    "PrecisionAdjustment"
-  ],
-  "codings": [],
+  "conceptId": "M.UnitConversion",
+  "name": "Unit Conversion",
+  "label": "Unit Conv",
+  "ncitCode": null,
   "description": "Convert a numeric value from its per-row source unit to a fixed target unit, using a scalar factor looked up in the unit_conversions vocabulary keyed by (source_unit, target_unit). Linear conversions only \u2014 non-linear conversions (e.g. temperature) require a different method.",
   "formula": {
     "notation": "assignment",
@@ -27,7 +18,6 @@
     "generic_expression": "result := round(<value>.value * factor(<value>.unit, <target_unit>), <precision>, <rounding_method>) [<target_unit>]",
     "notes": "Algorithm reads the input Quantity's .value (decimal) and .unit (code) fields, applies the scalar factor from the unit_conversions vocabulary, and produces a Quantity with the target unit. Single Quantity output combines the converted value and target unit."
   },
-  "unit_policy": "configured",
   "configurations": [
     {
       "name": "target_unit",
@@ -65,25 +55,21 @@
       "description": "Behaviour when no (source_unit, target_unit) entry is found in the vocabulary. fail: raise an error. na: set result to NA. passthrough: keep the original value unchanged."
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "value",
-      "dataType": "Quantity",
+      "dataType": "decimal",
       "required": true,
       "cardinality": "single",
       "description": "The Quantity to convert (value + unit). Algorithm reads both .value (decimal) and .unit (code) fields. Resolves via Observation.Result facet \u2192 SDTM --ORRES + --ORRESU."
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name": "result",
-      "output_type": "fhir:Quantity",
-      "label": "Converted Quantity in target_unit"
+      "output_type": "computed_value",
+      "unit_policy": "configured",
+      "dataType": "decimal"
     }
-  ],
-  "assumptions": [
-    "The (source_unit, target_unit) pair exists in the unit_conversions vocabulary for every row.",
-    "Conversion is linear: target_value = source_value * scalar_factor.",
-    "Non-linear conversions (e.g. Fahrenheit\u2194Celsius, affine transforms) are out of scope \u2014 use a separate method (M.AffineUnitConversion)."
   ]
 }

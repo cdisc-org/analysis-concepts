@@ -1,5 +1,5 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
@@ -7,18 +7,10 @@
     "formula_grammar": "../../model/method/formula_grammar.json",
     "configuration_concepts": "../../model/method/configuration_concepts.json"
   },
-  "name": "M.PairedTTest",
-  "label": "Paired t-test",
-  "shortLabel": "paired t",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "General Linear Models",
-  "intent": [
-    "GroupComparison"
-  ],
+  "conceptId": "M.PairedTTest",
+  "name": "Paired t-Test",
+  "label": "paired t",
+  "ncitCode": null,
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
@@ -45,7 +37,7 @@
       "conforms_to": "conf_level"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "response",
       "dataType": "decimal",
@@ -61,7 +53,7 @@
       "description": "Subject identifier for pairing"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name": "t_test_result",
       "output_type": "t_test_result"
@@ -70,9 +62,5 @@
       "name": "point_estimate",
       "output_type": "point_estimate"
     }
-  ],
-  "assumptions": [
-    "Differences are normally distributed",
-    "Pairs are independent"
   ]
 }

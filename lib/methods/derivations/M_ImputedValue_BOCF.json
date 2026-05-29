@@ -1,23 +1,15 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.ImputedValue_BOCF",
-  "label": "Baseline Observation Carried Forward",
-  "shortLabel": "BOCF",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "derivation",
-  "class": "Data Handling",
-  "intent": [
-    "MissingDataHandling"
-  ],
+  "conceptId": "M.ImputedValue_BOCF",
+  "name": "Baseline Observation Carried Forward",
+  "label": "BOCF",
+  "ncitCode": null,
   "description": "Uses the baseline value as the imputed value for all missing post-baseline observations within a partition. Conservative strategy assuming return to baseline.",
   "formula": {
     "notation": "assignment",
@@ -25,9 +17,7 @@
     "generic_expression": "imputed_value := <baseline_value> OVER (<partition>+)",
     "notes": "The baseline value is propagated to all rows within the partition. This is a lookup, not a carry-forward \u2014 the imputed value is the same regardless of when the observation is missing."
   },
-  "unit_policy": "preserved",
-  "configurations": [],
-  "methodInput": [
+  "inputs": [
     {
       "name": "baseline_value",
       "dataType": "decimal",
@@ -43,17 +33,15 @@
       "description": "Grouping variables defining scope (typically subject, parameter)"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
-      "output_type": "fhir:Quantity",
-      "name": "derived_value",
+      "output_type": "computed_value",
+      "name": "imputed_value",
       "indexed_by": [
         "partition"
-      ]
+      ],
+      "unit_policy": "preserved",
+      "dataType": "decimal"
     }
-  ],
-  "assumptions": [
-    "A non-missing baseline value exists for each partition",
-    "Return-to-baseline is a clinically reasonable assumption for the endpoint"
   ]
 }

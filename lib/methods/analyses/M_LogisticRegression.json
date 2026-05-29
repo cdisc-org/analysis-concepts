@@ -1,5 +1,5 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
@@ -7,18 +7,10 @@
     "formula_grammar": "../../model/method/formula_grammar.json",
     "configuration_concepts": "../../model/method/configuration_concepts.json"
   },
-  "name": "M.LogisticRegression",
-  "label": "Logistic Regression",
-  "shortLabel": "logistic regression",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "Generalized Linear Models",
-  "intent": [
-    "OutcomeModeling"
-  ],
+  "conceptId": "M.LogisticRegression",
+  "name": "Logistic Regression",
+  "label": "logistic regression",
+  "ncitCode": null,
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
@@ -46,7 +38,7 @@
       "description": "Link function"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "response",
       "dataType": "code",
@@ -65,11 +57,11 @@
       "name": "fixed_effect",
       "dataType": "code",
       "required": true,
-      "cardinality": "single_or_multiple",
+      "cardinality": "multiple",
       "description": "Treatment group and/or other categorical factors"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name": "fit_statistics_concordance",
       "output_type": "fit_statistics_concordance"
@@ -82,15 +74,6 @@
         "fixed_effect",
         "covariate:fixed_effect",
         "fixed_effect:fixed_effect"
-      ],
-      "configurations": [
-        {
-          "name": "multiplicity_adjustment",
-          "conforms_to": "multiplicity_adjustment",
-          "applicable_scopes": [
-            "universal"
-          ]
-        }
       ]
     },
     {
@@ -101,15 +84,6 @@
         "fixed_effect",
         "covariate:fixed_effect",
         "fixed_effect:fixed_effect"
-      ],
-      "configurations": [
-        {
-          "name": "multiplicity_adjustment",
-          "conforms_to": "multiplicity_adjustment",
-          "applicable_scopes": [
-            "universal"
-          ]
-        }
       ]
     },
     {
@@ -122,10 +96,5 @@
         "fixed_effect:fixed_effect"
       ]
     }
-  ],
-  "assumptions": [
-    "Independence of observations",
-    "Linear relationship between log-odds and predictors",
-    "No multicollinearity"
   ]
 }

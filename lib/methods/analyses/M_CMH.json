@@ -1,23 +1,15 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.CMH",
-  "label": "Cochran-Mantel-Haenszel Test",
-  "shortLabel": "CMH",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "Categorical Data Analysis",
-  "intent": [
-    "CategoricalAssociation"
-  ],
+  "conceptId": "M.CMH",
+  "name": "Cochran-Mantel-Haenszel Test",
+  "label": "CMH",
+  "ncitCode": null,
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
@@ -44,7 +36,7 @@
       "description": "Odds ratio reporting type"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "response",
       "dataType": "code",
@@ -63,11 +55,11 @@
       "name": "strata",
       "dataType": "code",
       "required": true,
-      "cardinality": "single_or_multiple",
+      "cardinality": "multiple",
       "description": "Stratification variable(s)"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name": "chi_squared_test_result",
       "output_type": "chi_squared_test_result"
@@ -104,9 +96,5 @@
       "name": "homogeneity_test",
       "output_type": "homogeneity_test"
     }
-  ],
-  "assumptions": [
-    "Independence within strata",
-    "Homogeneous odds ratios across strata (for common OR interpretation)"
   ]
 }

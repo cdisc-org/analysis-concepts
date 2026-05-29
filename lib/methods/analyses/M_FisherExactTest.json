@@ -1,23 +1,15 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.FisherExactTest",
-  "label": "Fisher's Exact Test",
-  "shortLabel": "Fisher's exact",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "Categorical Data Analysis",
-  "intent": [
-    "CategoricalAssociation"
-  ],
+  "conceptId": "M.FisherExactTest",
+  "name": "Fisher Exact Test",
+  "label": "Fisher's exact",
+  "ncitCode": null,
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
@@ -45,7 +37,7 @@
       "description": "Direction of alternative hypothesis"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "response",
       "dataType": "code",
@@ -61,7 +53,7 @@
       "description": "Treatment grouping variable"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name": "exact_test_result",
       "output_type": "exact_test_result"
@@ -70,9 +62,5 @@
       "name": "odds_ratio_measures",
       "output_type": "odds_ratio_measures"
     }
-  ],
-  "assumptions": [
-    "Independence of observations",
-    "Fixed marginal totals"
   ]
 }

@@ -1,29 +1,21 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.TrimmedMean",
+  "conceptId": "M.TrimmedMean",
+  "name": "Trimmed Mean",
   "label": "Trimmed Mean",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "Central Tendency",
-  "intent": [
-    "DescriptiveSummary"
-  ],
+  "ncitCode": null,
   "description": "Computes the trimmed mean after removing a fraction of extreme values from each tail",
   "formula": {
     "notation": "assignment",
-    "default_expression": "result := TRIMMEAN(response, trim_fraction) OVER (group)",
-    "generic_expression": "result := TRIMMEAN(<response>, <trim_fraction>) OVER (<group>*)"
+    "default_expression": "result := TRIMMEAN(value, trim_fraction) OVER (group)",
+    "generic_expression": "result := TRIMMEAN(<value>, <trim_fraction>) OVER (<group>*)"
   },
-  "unit_policy": "preserved",
   "configurations": [
     {
       "name": "trim_fraction",
@@ -32,9 +24,9 @@
       "description": "Fraction to trim from each tail (0 to 0.5)"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
-      "name": "response",
+      "name": "value",
       "dataType": "decimal",
       "required": true,
       "cardinality": "single",
@@ -44,18 +36,19 @@
       "name": "group",
       "dataType": "code",
       "required": false,
-      "cardinality": "single_or_multiple",
+      "cardinality": "multiple",
       "description": "Optional grouping variable(s)"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
-      "output_type": "fhir:Quantity",
-      "name": "derived_value",
+      "output_type": "computed_value",
+      "name": "result",
       "indexed_by": [
         "group"
-      ]
+      ],
+      "unit_policy": "preserved",
+      "dataType": "decimal"
     }
-  ],
-  "assumptions": []
+  ]
 }

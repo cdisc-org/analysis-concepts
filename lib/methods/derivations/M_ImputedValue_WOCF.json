@@ -1,23 +1,15 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.ImputedValue_WOCF",
-  "label": "Worst Observation Carried Forward",
-  "shortLabel": "WOCF",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "derivation",
-  "class": "Data Handling",
-  "intent": [
-    "MissingDataHandling"
-  ],
+  "conceptId": "M.ImputedValue_WOCF",
+  "name": "Worst Observation Carried Forward",
+  "label": "WOCF",
+  "ncitCode": null,
   "description": "Uses the worst (most extreme) observed value within a partition as the imputed value. Worst is defined by the direction configuration: 'high' takes the maximum, 'low' takes the minimum.",
   "formula": {
     "notation": "assignment",
@@ -25,7 +17,6 @@
     "generic_expression": "imputed_value := WORST(<value>, <direction>) OVER (<partition>+)",
     "notes": "WORST is an alias for MAX when direction='high' (e.g., adverse events, lab toxicity) or MIN when direction='low' (e.g., efficacy scores where lower is worse). Only non-missing observed values up to the current time are considered."
   },
-  "unit_policy": "preserved",
   "configurations": [
     {
       "name": "direction",
@@ -48,7 +39,7 @@
       "description": "Whether to consider only values observed up to the current time point (cumulative) or all observed values in the partition (all_observed)"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "value",
       "dataType": "decimal",
@@ -64,17 +55,15 @@
       "description": "Grouping variables (typically subject, parameter)"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
-      "output_type": "fhir:Quantity",
-      "name": "derived_value",
+      "output_type": "computed_value",
+      "name": "imputed_value",
       "indexed_by": [
         "partition"
-      ]
+      ],
+      "unit_policy": "preserved",
+      "dataType": "decimal"
     }
-  ],
-  "assumptions": [
-    "At least one non-missing observed value exists in the partition",
-    "The direction of 'worst' is clinically defined for the endpoint"
   ]
 }

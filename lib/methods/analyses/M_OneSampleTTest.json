@@ -1,5 +1,5 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
@@ -7,18 +7,10 @@
     "formula_grammar": "../../model/method/formula_grammar.json",
     "configuration_concepts": "../../model/method/configuration_concepts.json"
   },
-  "name": "M.OneSampleTTest",
-  "label": "One-sample t-test",
-  "shortLabel": "1-sample t",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "General Linear Models",
-  "intent": [
-    "GroupComparison"
-  ],
+  "conceptId": "M.OneSampleTTest",
+  "name": "One-Sample t-Test",
+  "label": "1-sample t",
+  "ncitCode": null,
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
@@ -56,7 +48,7 @@
       "conforms_to": "conf_level"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "response",
       "dataType": "decimal",
@@ -65,7 +57,7 @@
       "description": "The sample data"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name": "t_test_result",
       "output_type": "t_test_result"
@@ -74,9 +66,5 @@
       "name": "point_estimate",
       "output_type": "point_estimate"
     }
-  ],
-  "assumptions": [
-    "Normality of data (or large sample size)",
-    "Independence of observations"
   ]
 }

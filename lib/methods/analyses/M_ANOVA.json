@@ -1,5 +1,5 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
@@ -7,18 +7,10 @@
     "formula_grammar": "../../model/method/formula_grammar.json",
     "configuration_concepts": "../../model/method/configuration_concepts.json"
   },
-  "name": "M.ANOVA",
+  "conceptId": "M.ANOVA",
+  "name": "Analysis of Variance",
   "label": "ANOVA",
-  "shortLabel": "ANOVA",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "General Linear Models",
-  "intent": [
-    "GroupComparison"
-  ],
+  "ncitCode": null,
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
@@ -47,7 +39,7 @@
       "description": "Sum of squares type"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "response",
       "dataType": "decimal",
@@ -59,11 +51,11 @@
       "name": "fixed_effect",
       "dataType": "code",
       "required": true,
-      "cardinality": "single_or_multiple",
+      "cardinality": "multiple",
       "description": "Grouping/factor variable(s)"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name": "fit_statistics_linear",
       "output_type": "fit_statistics_linear"
@@ -74,15 +66,6 @@
       "indexed_by": [
         "fixed_effect",
         "fixed_effect:fixed_effect"
-      ],
-      "configurations": [
-        {
-          "name": "multiplicity_adjustment",
-          "conforms_to": "multiplicity_adjustment",
-          "applicable_scopes": [
-            "universal"
-          ]
-        }
       ]
     },
     {
@@ -97,24 +80,7 @@
       "output_type": "contrasts_t",
       "indexed_by": [
         "fixed_effect"
-      ],
-      "configurations": [
-        {
-          "name": "multiplicity_adjustment",
-          "conforms_to": "multiplicity_adjustment",
-          "applicable_scopes": [
-            "universal",
-            "anova_pairwise_means",
-            "anova_many_to_one",
-            "linear_contrasts"
-          ]
-        }
       ]
     }
-  ],
-  "assumptions": [
-    "Independence of observations",
-    "Normality within groups",
-    "Homogeneity of variance"
   ]
 }

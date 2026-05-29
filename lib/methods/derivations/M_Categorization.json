@@ -1,22 +1,15 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.Categorization",
+  "conceptId": "M.Categorization",
+  "name": "Categorization",
   "label": "Categorization",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "derivation",
-  "class": "Classification",
-  "intent": [
-    "ValueClassification"
-  ],
+  "ncitCode": null,
   "description": "Maps continuous or discrete values to categories",
   "formula": {
     "notation": "assignment",
@@ -40,7 +33,7 @@
       "description": "Category when no condition matches"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "value",
       "dataType": "decimal",
@@ -49,11 +42,11 @@
       "description": "Value to categorize"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
-      "output_type": "fhir:CodeableConcept",
-      "name": "derived_value"
+      "output_type": "computed_value",
+      "name": "result",
+      "dataType": "code"
     }
-  ],
-  "assumptions": []
+  ]
 }

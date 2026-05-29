@@ -1,30 +1,21 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.ConditionalValue",
+  "conceptId": "M.ConditionalValue",
+  "name": "Conditional Value",
   "label": "Conditional Value",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "derivation",
-  "class": "Data Handling",
-  "intent": [
-    "Masking",
-    "MissingnessHandling"
-  ],
+  "ncitCode": null,
   "description": "Per-row conditional. If the input value is NA (missing), output the alternate value; else output the configured base value (default 0).",
   "formula": {
     "notation": "assignment",
     "default_expression": "result := IF(IS_NA(value), alternate, base)",
     "generic_expression": "result := IF(IS_NA(<value>), <alternate>, <base>)"
   },
-  "unit_policy": "preserved",
   "configurations": [
     {
       "name": "base",
@@ -33,7 +24,7 @@
       "description": "Value emitted when the input is NOT missing"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "value",
       "dataType": "decimal",
@@ -49,11 +40,12 @@
       "description": "Per-row replacement value used when value is NA"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
-      "output_type": "fhir:Quantity",
-      "name": "derived_value"
+      "output_type": "computed_value",
+      "name": "result",
+      "unit_policy": "preserved",
+      "dataType": "decimal"
     }
-  ],
-  "assumptions": []
+  ]
 }

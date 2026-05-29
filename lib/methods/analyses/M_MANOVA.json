@@ -1,5 +1,5 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
@@ -7,18 +7,10 @@
     "formula_grammar": "../../model/method/formula_grammar.json",
     "configuration_concepts": "../../model/method/configuration_concepts.json"
   },
-  "name": "M.MANOVA",
-  "label": "Multivariate Analysis of Variance",
-  "shortLabel": "MANOVA",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "General Linear Models",
-  "intent": [
-    "GroupComparison"
-  ],
+  "conceptId": "M.MANOVA",
+  "name": "Multivariate Analysis of Variance",
+  "label": "MANOVA",
+  "ncitCode": null,
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
@@ -58,7 +50,7 @@
       "description": "Covariance structure among responses"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "response",
       "dataType": "decimal",
@@ -70,7 +62,7 @@
       "name": "fixed_effect",
       "dataType": "code",
       "required": true,
-      "cardinality": "single_or_multiple",
+      "cardinality": "multiple",
       "description": "Treatment/factor variable(s)"
     },
     {
@@ -86,9 +78,16 @@
       "required": true,
       "cardinality": "single",
       "description": "Parameter/subscale identifier (defines which response variable)"
+    },
+    {
+      "name": "covariate",
+      "dataType": "decimal",
+      "required": false,
+      "cardinality": "multiple",
+      "description": "Continuous covariate(s) for adjustment."
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name": "multivariate_tests",
       "output_type": "multivariate_tests",
@@ -105,15 +104,6 @@
       "indexed_by": [
         "response",
         "fixed_effect"
-      ],
-      "configurations": [
-        {
-          "name": "multiplicity_adjustment",
-          "conforms_to": "multiplicity_adjustment",
-          "applicable_scopes": [
-            "universal"
-          ]
-        }
       ]
     },
     {
@@ -124,10 +114,5 @@
         "fixed_effect"
       ]
     }
-  ],
-  "assumptions": [
-    "Multivariate normality of residuals",
-    "Homogeneity of covariance matrices",
-    "Independence of observations"
   ]
 }

@@ -1,23 +1,15 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.ChiSquaredTest",
-  "label": "Chi-squared Test",
-  "shortLabel": "chi-square",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "Categorical Data Analysis",
-  "intent": [
-    "CategoricalAssociation"
-  ],
+  "conceptId": "M.ChiSquaredTest",
+  "name": "Chi-Squared Test",
+  "label": "chi-square",
+  "ncitCode": null,
   "codings": [
     {
       "system": "http://purl.obolibrary.org/obo/stato",
@@ -44,7 +36,7 @@
       "description": "Continuity correction (applicable for 2x2 tables)"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "response",
       "dataType": "code",
@@ -60,14 +52,10 @@
       "description": "Grouping variable"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name": "chi_squared_test_result",
       "output_type": "chi_squared_test_result"
     }
-  ],
-  "assumptions": [
-    "Independence of observations",
-    "Expected cell counts >= 5"
   ]
 }

@@ -1,29 +1,21 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
     "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar": "../../model/method/formula_grammar.json"
   },
-  "name": "M.WindowLookup",
+  "conceptId": "M.WindowLookup",
+  "name": "Window Lookup",
   "label": "Window Lookup",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "derivation",
-  "class": "Data Handling",
-  "intent": [
-    "ValueRetrieval"
-  ],
+  "ncitCode": null,
   "description": "Retrieves value from another row within partition",
   "formula": {
     "notation": "assignment",
     "default_expression": "result := LAG(value, 1) OVER (partition ORDER BY order_by)",
     "generic_expression": "result := <window_func>(<value>, <offset>?) OVER (<partition>+ ORDER BY <order_by>)"
   },
-  "unit_policy": "preserved",
   "configurations": [
     {
       "name": "window_func",
@@ -49,7 +41,7 @@
       "description": "Variable defining row order within partition"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "value",
       "dataType": "decimal",
@@ -65,14 +57,15 @@
       "description": "Partitioning variables"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
-      "output_type": "fhir:Quantity",
-      "name": "derived_value",
+      "output_type": "computed_value",
+      "name": "result",
       "indexed_by": [
         "partition"
-      ]
+      ],
+      "unit_policy": "preserved",
+      "dataType": "decimal"
     }
-  ],
-  "assumptions": []
+  ]
 }

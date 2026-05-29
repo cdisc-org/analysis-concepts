@@ -1,5 +1,5 @@
 {
-  "$schema": "../../model/method/acdc_methods.schema.json",
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
   "schema_version": "0.9.1",
   "$vocabulary": {
     "statistics": "../../model/method/statistics_vocabulary.json",
@@ -7,18 +7,10 @@
     "formula_grammar": "../../model/method/formula_grammar.json",
     "configuration_concepts": "../../model/method/configuration_concepts.json"
   },
-  "name": "M.CoxPH",
-  "label": "Cox Proportional Hazards",
-  "shortLabel": "Cox PH",
-  "code": {
-    "system": "NCI",
-    "value": null
-  },
-  "type": "analysis",
-  "class": "Survival Models",
-  "intent": [
-    "TimeToEventEstimate"
-  ],
+  "conceptId": "M.CoxPH",
+  "name": "Cox Proportional Hazards Regression",
+  "label": "Cox PH",
+  "ncitCode": null,
   "description": "Semi-parametric regression for survival data modeling the hazard function",
   "formula": {
     "notation": "survival",
@@ -39,7 +31,7 @@
       "description": "Method for handling tied event times"
     }
   ],
-  "methodInput": [
+  "inputs": [
     {
       "name": "time",
       "dataType": "decimal",
@@ -65,7 +57,7 @@
       "name": "fixed_effect",
       "dataType": "code",
       "required": true,
-      "cardinality": "single_or_multiple",
+      "cardinality": "multiple",
       "description": "Treatment group and/or other categorical factors"
     },
     {
@@ -76,7 +68,7 @@
       "description": "Stratification variable(s) for stratified Cox model"
     }
   ],
-  "methodOutput": [
+  "outputs": [
     {
       "name": "fit_statistics_concordance",
       "output_type": "fit_statistics_concordance"
@@ -97,15 +89,6 @@
         "covariate",
         "fixed_effect",
         "covariate:fixed_effect"
-      ],
-      "configurations": [
-        {
-          "name": "multiplicity_adjustment",
-          "conforms_to": "multiplicity_adjustment",
-          "applicable_scopes": [
-            "universal"
-          ]
-        }
       ]
     },
     {
@@ -115,15 +98,6 @@
         "covariate",
         "fixed_effect",
         "covariate:fixed_effect"
-      ],
-      "configurations": [
-        {
-          "name": "multiplicity_adjustment",
-          "conforms_to": "multiplicity_adjustment",
-          "applicable_scopes": [
-            "universal"
-          ]
-        }
       ]
     },
     {
@@ -135,10 +109,5 @@
         "covariate:fixed_effect"
       ]
     }
-  ],
-  "assumptions": [
-    "Proportional hazards",
-    "Non-informative censoring",
-    "Independence of survival times"
   ]
 }
