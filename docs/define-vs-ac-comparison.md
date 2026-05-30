@@ -302,8 +302,14 @@ So the right way to read the abridged "two-block" example earlier is: *those are
 
 #### What is gained going from AC → Define (CFB)
 
-1. **Audit & governance.** `GovernedElement` mixes in `OID`, `mandatory`, `comments`, `siteOrSponsorComments`, `lastUpdated`, `owner`, `wasDerivedFrom`. AC files have only `version` and provenance is implicit in git history.
-2. **Multilingual labels.** `Labelled` carries `label`, `description`, `aliases` all able to be `TranslatedText`. AC labels are plain strings.
+1. **Per-element audit / governance fields.** Needs nuance — AC already has identifier and governance metadata, just not the full Define set:
+
+   - AC carries (on every method/transformation): `conceptId` (= Define's `OID`, just renamed and pattern-validated as `M.*` / `T.*`), `name`, `label`, `description`, `ncitCode`, `codings[]`, `schema_version` (the LinkML version the instance conforms to). The transformation library file carries `version`.
+   - AC transformations carry `usesMethod` — a typed FK that plays the role of `wasDerivedFrom` for the Method→Transformation relationship.
+   - AC **lacks**: `mandatory` (per-element required-in-this-context flag), `comments[]` / `siteOrSponsorComments[]` (per-element review annotations), `lastUpdated` (per-element timestamp), `owner` (typed User / Organization attribution), generic `wasDerivedFrom` (Define's `Governed` mixin makes this available on *every* governed element, not just transformation→method), and `deprecated`.
+
+   Versioning and provenance in AC currently live in git history and the `schema_version` field. For *the specific use cases the AC framework targets today* (cross-study method libraries that change rarely), git-history versioning is sufficient and matches how the library is reviewed. For *standards-package distribution* (where downstream consumers need machine-readable audit trail), Define's per-element governance fields are the gap.
+2. **Multilingual labels and `aliases[]`.** Define's `Labelled` mixin makes `label`, `description`, `aliases` all able to be `TranslatedText` polymorphically. AC's labels are plain `range: string` with no `TranslatedText` alternative and no `aliases[]` slot on the method or transformation schemas. If labels ever need to be rendered in Japanese or Chinese for trial-master-file consumption, AC has no current path.
 3. **Schema-level standards mappings on every class.** Each Define class declares `exact_mappings` / `close_mappings` / `narrow_mappings` against SDMX, qb, FHIR, OMOP, USDM, ODM, NCIt, and PROV. The AC framework already maps qb (class-level in `acdc_transformation.yaml` + file-level `_w3c_alignment`), FHIR (value types in concept results + the §6.6 rule 10 compatibility table), OMOP (top-level section in `concept-variable-mappings.json`), and NCIt (per-concept `code` blocks) — these are equivalent in *coverage*, but Define puts them on the class metadata so LinkML→RDF tooling consumes them directly, whereas AC puts them in the data instances. AC genuinely lacks: SDMX (no `sdmx:*` references at all), PROV (no machine-readable provenance vocabulary), ODM (no round-trip), and schema-level USDM linkage. See §6.1 for the full audit.
 4. **Origin & traceability.** `Origin` (with `type`: Collected / Derived / Assigned / Predecessor / Protocol) plus `sourceItems` gives a uniform way to record where every `Item` value comes from. AC's `concept-variable-mappings.json` covers the *target*-side projection but does not model the SDTM-to-ADaM derivation chain explicitly.
 
@@ -481,9 +487,11 @@ The analysis concepts the outputs map onto (`LSMeans`, `Contrasts`, `Type3Tests`
 #### What is gained going from AC → Define (ANCOVA CFB)
 
 1. **`analysisReason`, `analysisPurpose`, `applicableWhen`** — explicit narrative slots tied to USDM that AC currently shells out to the protocol or the analysis spec.
-2. **`Analysis is_a Method`** — Method and Analysis share the same surface (governance, audit, mappings, OID identity). The AC stack instead splits them into `M_*.json` and `analyses/M_*.json` (a directory naming convention, not a schema discriminator).
-3. **`Display` and `Dataflow`** — first-class objects for "the rendered output" and "the data movement". AC has neither; ARS submissions and TLF rendering live downstream of the framework.
-4. **`Origin.sourceItems` on every Item** — uniform provenance, including documenting that `CHG` was derived from `AVAL - BASE`. The AC framework's "source store / execution layer" idea (see project memory) maps cleanly to this.
+2. **`Analysis is_a Method`** — partial gain. AC files DO have a discriminator now (`transformationType: "derivation" | "analysis"` at the transformation level, post-§6) and the methods themselves are distinguished by `formula.notation` (`assignment` vs `wilkinson_rogers` vs `survival`). The directory split (`analyses/` vs `derivations/`) is convention plus discriminator, not just naming. What Define gains by inheritance is that any feature added to `Method` is automatically available on `Analysis` — useful if the `Governed` mixin grows new fields later.
+3. **`Display`** — genuinely absent in AC. First-class object for "the rendered output" (tables, listings, figures). ARS submissions and TLF rendering currently live downstream of the AC framework with no schema representation.
+4. **`Origin.sourceItems` on every Item** — uniform per-variable provenance chain, including documenting that `CHG` was derived from `AVAL - BASE` and that `AVAL` was a `Predecessor`-of `VSSTRESN`. The dataContracts approach (see `docs/dataContracts-approach.md` §8.4) gives AC something *stronger* than `Origin.sourceItems` — the full DC graph with `derives_from` edges — but only when projected; the underlying library files don't carry per-variable lineage because they're concept-level, not variable-level. Define's `Origin.sourceItems` is a per-variable mechanism that fits its physical layer; AC's equivalent only exists post-projection.
+
+Note: `Dataflow` is *not* listed here — the §6 migration made AC's Transformation structurally equivalent to a `Dataflow` (input DSD + output DSD + analysisMethod). That's no longer a gain.
 
 ---
 
@@ -597,29 +605,29 @@ This one needs nuance — AC is not a blank slate here. A fair accounting:
 
 So the real gain on standards is narrow: **(a)** schema-level uniformity (every Define class declares its mapping URIs in one place, so a LinkML processor emits qb-/FHIR-/OMOP-compliant output without per-class wiring), and **(b)** the two specific standards AC doesn't yet cover (SDMX, PROV) plus ODM and stronger USDM. The pre-§6 claim that AC needed Define for FHIR / OMOP / qb alignment was wrong — that alignment is already present, just at the data layer rather than the class layer.
 
-### 6.2 Governance fields
+### 6.2 Per-element governance fields (partial gain)
 
-`Governed` mixin (`mandatory`, `comments`, `siteOrSponsorComments`, `purpose`, `lastUpdated`, `owner`, `wasDerivedFrom`) gives every metadata element an audit trail. The AC framework has only `version`.
+`Governed` mixin (`mandatory`, `comments`, `siteOrSponsorComments`, `purpose`, `lastUpdated`, `owner`, `wasDerivedFrom`) makes per-element audit data uniformly available across every governed element. AC already has the identification side (`conceptId`, `name`, `label`, `description`, `ncitCode`, `codings[]`, `schema_version`, plus `usesMethod` as a typed derivation FK on transformations); what's missing is the **review/audit trail** (`mandatory`, `comments`, `siteOrSponsorComments`, `lastUpdated`, `owner`). For cross-study library files reviewed in git that's currently fine; for standards-package distribution to downstream consumers it's the gap.
 
-### 6.3 Multilingual / labelled
+### 6.3 Multilingual / labelled (real gain)
 
-`Labelled` mixin makes `label`, `description`, `aliases` `TranslatedText`-capable. AC labels are plain strings.
+`Labelled` mixin makes `label`, `description`, `aliases` `TranslatedText`-capable. AC labels are plain strings; no `aliases[]` slot exists in the AC method or transformation schemas. Material gap for non-English trial-master-file consumption.
 
-### 6.4 `Origin`, `SourceItem`, `wasDerivedFrom`
+### 6.4 `Origin` + `SourceItem` per-variable lineage (gain at the projection layer only)
 
-Uniform provenance. `Item` → `Method` → `FormalExpression` → `Parameter.items → Item` is a navigable derivation graph. The AC framework's pipeline / "source store" concern is materially served by this.
+`Item` → `Method` → `FormalExpression` → `Parameter.items → Item` is a navigable derivation graph at the variable level. The dataContracts model gives AC a *stronger* lineage mechanism — the full DC graph with `derives_from` edges and per-DP provenance — but only at projection time; the library files don't carry per-variable lineage because they're concept-level. So Define's `Origin.sourceItems` is the natural gain *for the Define projection itself*, fitting its physical layer. It's not a gain over the dataContracts model upstream — only over hand-authored Define-XML.
 
-### 6.5 First-class `Dataset`, `Dataflow`, `Display`
+### 6.5 First-class `Display` (genuine gain)
 
-Define models the full upstream-and-downstream pipeline. The AC framework stops at the transformation; ARS submission and TLF rendering live downstream. If you want one schema to describe all of it, Define already has the slots.
+`Display` is a first-class object for "the rendered output" (tables, listings, figures). AC has nothing equivalent — ARS submissions and TLF rendering live downstream of the framework. `Dataflow` is *not* listed here: the §6 migration made AC's Transformation structurally a `Dataflow` (twin DSDs + analysisMethod), so that part is no longer a gain.
 
 ### 6.6 `Condition` / `WhereClause` / `RangeCheck` composability
 
-AC's `slice.constraints` are flat (a list of `{ concept, value }`). Define's `Condition` / `WhereClause` / `RangeCheck` support nesting, operators (AND/OR/NOT/EXPRESSION), reusable OIDs, and formal-expression escapes for the corner cases. The AC slice mechanism would benefit from this composability when validation rules get more complex.
+AC's `slice.constraints` are flat (a list of `{ dimension, value }`). Define's `Condition` / `WhereClause` / `RangeCheck` support nesting, operators (AND/OR/NOT/EXPRESSION), reusable OIDs, and formal-expression escapes for the corner cases. The AC slice mechanism would benefit from this composability when validation rules get more complex.
 
 ### 6.7 Standards-package shape
 
-Define is designed to be the publishing format for CDISC standards packages (SDTMIG, ADaMIG, CDASH, Define-XML). Sponsors already speak it. If the AC framework is to be ratified as a CDISC standard, expressing it in `define.yaml` reduces the learning curve.
+Define is designed to be the publishing format for CDISC standards packages (SDTMIG, ADaMIG, CDASH, Define-XML). Sponsors already speak it. If the AC framework is to be ratified as a CDISC standard, expressing the *standards-package projection* in `define.yaml` reduces the learning curve. (The library files themselves stay AC-native; only the standards-package distribution shape is Define.)
 
 ---
 
@@ -644,19 +652,20 @@ Keep the AC framework and the dataContracts pipeline as-is. When a study reaches
 
 ### 7.2 Build a Define-XML projection generator from the DC graph (recommended near-term)
 
-Add a generator that emits Define-XML / Define-JSON from the DC + DP graph — one of N projection generators (alongside SDTM tables, ADaM tables, ARS packages, FHIR resources, OMOP CDM). The §6 migration of the transformation library makes the mapping near-mechanical for the metadata side:
+Add a generator that emits Define-XML / Define-JSON from the DC + DP graph — one of N projection generators (alongside SDTM tables, ADaM tables, ARS packages, FHIR resources, OMOP CDM). The §6 migration of the transformation library makes the metadata side near-mechanical:
 
-- `M_*.json` → `Method` instances (with `implementsConcept` left null to mark them concept-free).
-- `Transformation` entries → a `Dataflow` whose `structure` is the input `DataStructureDefinition` (from `inputDataStructure`), whose corresponding output `Dataset.structuredBy` is the output `DataStructureDefinition` (from `outputDataStructure`), and whose `analysisMethod` references the named `Method` (with `methodConfigurations[]` projected onto `FormalExpression.parameters[].value`). For analyses, the transformation also maps to an `Analysis` instance with `analysisMethod` set; for derivations, the bound output measures' `concept` field projects to `Item.conceptProperty` on the output cube.
-- `Option_B_Clinical.json` / `AC_Concept_Model_v017.json` / `OC_Instance_Model_v016.json` → `ReifiedConcept` instances.
-- `concept-variable-mappings.json` → `Item` instances in the SDTMIG / ADaMIG packages, each with `conceptProperty` set.
-- `inputDataStructure.slices[]` → `WhereClause` + `Condition` + `RangeCheck` (one per `SliceConstraint`), with `{placeholder}` values left as a comment string until the endpoint binds them.
-- `sliceKeys[].source` → an AC-specific *extension* slot on the Define `WhereClause` (or a Coding under `Condition`). This is the one place AC carries information Define cannot express natively.
-- `_w3c_alignment` block → already says the same thing Define's class-level `exact_mappings: qb:DataStructureDefinition` etc. say. The transformer can simply elide it on emission.
+- `lib/methods/M_*.json` → `Method` instances on the emitted MetaDataVersion (with `implementsConcept` left null to mark them concept-free). Library-side; emitted once per Standards package (ADaMIG, SDTMIG, …).
+- `lib/transformations/T.*` → a `Dataflow` whose input cube's DSD is generated from `inputDataStructure`, whose output cube's DSD is generated from `outputDataStructure`, and whose `analysisMethod` references the named `Method` (with `methodConfigurations[]` projected onto `FormalExpression.parameters[].value`). For `transformationType: analysis`, also emit an `Analysis` instance with `analysisMethod` set.
+- `lib/concepts/{Option_B_Clinical,AC_Concept_Model,OC_Instance_Model}.json` → `ReifiedConcept` instances; emitted once into the standards package.
+- **The per-study `MetaDataVersion`** is generated from the eSAP + USDM (study design, study-bound endpoints) and the DC graph. Items in `IG.ADVS`, `IG.ADSL`, `IG.VS`, … are emitted from the projection rules in `concept-variable-mappings.json` applied to the DCs the study spec declares.
+- `Item.origin.sourceItems` chains are emitted from the DC graph's `derives_from` edges (see `docs/dataContracts-approach.md` §8.4 — the chain is structural, not narrative). Define-XML's Origin and Method elements stop being hand-authored.
+- `inputDataStructure.slices[]` `{placeholder}` values are resolved against the eSAP-bound endpoint at projection time; what gets emitted into Define is the literal `WhereClause` + `Condition` + `RangeCheck` for the bound parameter/visit/population, not the template.
+- `sliceKeys[].source` is *not* emitted into Define directly — it's a property of the authoring layer that drove the projection, not a property of the projection itself. The bound values appear in the emitted `WhereClause`.
+- The library's `_w3c_alignment` block has no representation on the Define side; Define's class-level `exact_mappings: qb:DataStructureDefinition` etc. provide the same information automatically on emission.
 
-**Gain**: a Define-XML / Define-JSON export of the AC library *with full SDMX/qb/FHIR/OMOP/USDM mappings* falls out automatically. The twin-DSD shape is exactly what Define expects on both ends of a `Dataflow`.
+**Gain over Option 7.1**: the submission Define-XML is structurally derived from the same DC graph that produces SDTM/ADaM. Drift between Define and the data it describes becomes impossible. Per `docs/dataContracts-approach.md` §8.4: *"every claim in the Define-XML is backed by a URI that resolves to a structural lineage chain"*.
 
-**Cost**: a transformer with tests; no breaking changes to the AC library; ongoing maintenance of the transformer when either schema evolves.
+**Cost**: a generator with tests; ongoing maintenance when either schema evolves; explicit handling of the cases the dataContracts model exposes that Define-XML can't represent without extensions (e.g. value-set IDs that aren't NCI codes, FHIR-only types when projecting a study into the FHIR target).
 
 ### 7.3 Migrate AC schemas to inherit from Define classes (longer-term)
 
