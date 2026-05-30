@@ -311,7 +311,7 @@ So the right way to read the abridged "two-block" example earlier is: *those are
    Versioning and provenance in AC currently live in git history and the `schema_version` field. For *the specific use cases the AC framework targets today* (cross-study method libraries that change rarely), git-history versioning is sufficient and matches how the library is reviewed. For *standards-package distribution* (where downstream consumers need machine-readable audit trail), Define's per-element governance fields are the gap.
 2. **Multilingual labels and `aliases[]`.** Define's `Labelled` mixin makes `label`, `description`, `aliases` all able to be `TranslatedText` polymorphically. AC's labels are plain `range: string` with no `TranslatedText` alternative and no `aliases[]` slot on the method or transformation schemas. If labels ever need to be rendered in Japanese or Chinese for trial-master-file consumption, AC has no current path.
 3. **Schema-level standards mappings on every class.** Each Define class declares `exact_mappings` / `close_mappings` / `narrow_mappings` against SDMX, qb, FHIR, OMOP, USDM, ODM, NCIt, and PROV. The AC framework already maps qb (class-level in `acdc_transformation.yaml` + file-level `_w3c_alignment`), FHIR (value types in concept results + the §6.6 rule 10 compatibility table), OMOP (top-level section in `concept-variable-mappings.json`), and NCIt (per-concept `code` blocks) — these are equivalent in *coverage*, but Define puts them on the class metadata so LinkML→RDF tooling consumes them directly, whereas AC puts them in the data instances. AC genuinely lacks: SDMX (no `sdmx:*` references at all), PROV (no machine-readable provenance vocabulary), ODM (no round-trip), and schema-level USDM linkage. See §6.1 for the full audit.
-4. **Origin & traceability.** `Origin` (with `type`: Collected / Derived / Assigned / Predecessor / Protocol) plus `sourceItems` gives a uniform way to record where every `Item` value comes from. AC's `concept-variable-mappings.json` covers the *target*-side projection but does not model the SDTM-to-ADaM derivation chain explicitly.
+4. **Origin & traceability** — *not* a gain in the dataContracts architecture. Define's `Origin.type` (Collected / Derived / Assigned / Predecessor / Protocol / NotAvailable / Other) and `sourceItems[]` are *derivable* from upstream metadata: USDM (`Collected` ⇐ BC bound to ScheduledActivityInstance; `Protocol` ⇐ bound to StudyDesign), the AC transformation library (`Derived` ⇐ has a `T.*` in lineage; `sourceItems[]` ⇐ the transformation's input bindings), and `concept-variable-mappings.json` (`Predecessor` ⇐ direct projection rule; `Assigned` ⇐ CodeList lookup). The Define projection generator computes `Origin` at emission time; it isn't authored. See §6.4 for the full table.
 
 ---
 
@@ -489,9 +489,18 @@ The analysis concepts the outputs map onto (`LSMeans`, `Contrasts`, `Type3Tests`
 1. **`analysisReason`, `analysisPurpose`, `applicableWhen`** — explicit narrative slots tied to USDM that AC currently shells out to the protocol or the analysis spec.
 2. **`Analysis is_a Method`** — partial gain. AC files DO have a discriminator now (`transformationType: "derivation" | "analysis"` at the transformation level, post-§6) and the methods themselves are distinguished by `formula.notation` (`assignment` vs `wilkinson_rogers` vs `survival`). The directory split (`analyses/` vs `derivations/`) is convention plus discriminator, not just naming. What Define gains by inheritance is that any feature added to `Method` is automatically available on `Analysis` — useful if the `Governed` mixin grows new fields later.
 3. **`Display`** — genuinely absent in AC. First-class object for "the rendered output" (tables, listings, figures). ARS submissions and TLF rendering currently live downstream of the AC framework with no schema representation.
-4. **`Origin.sourceItems` on every Item** — uniform per-variable provenance chain, including documenting that `CHG` was derived from `AVAL - BASE` and that `AVAL` was a `Predecessor`-of `VSSTRESN`. The dataContracts approach (see `docs/dataContracts-approach.md` §8.4) gives AC something *stronger* than `Origin.sourceItems` — the full DC graph with `derives_from` edges — but only when projected; the underlying library files don't carry per-variable lineage because they're concept-level, not variable-level. Define's `Origin.sourceItems` is a per-variable mechanism that fits its physical layer; AC's equivalent only exists post-projection.
+4. **`Origin.sourceItems` on every Item** — *not* a gain in the dataContracts architecture. Define's `Origin.type` (`Collected` / `Derived` / `Assigned` / `Predecessor` / `Protocol` / `Not Available` / `Other`) and `sourceItems[]` are entirely *derivable* from the upstream metadata you already maintain:
 
-Note: `Dataflow` is *not* listed here — the §6 migration made AC's Transformation structurally equivalent to a `Dataflow` (input DSD + output DSD + analysisMethod). That's no longer a gain.
+   - `Collected` ⇐ Item's concept is bound to a `usdm:ScheduledActivityInstance` (BC at a SoA point).
+   - `Derived` ⇐ Item's concept has a `T.*` transformation in its lineage (or its DC has `derives_from` edges to other DCs).
+   - `Assigned` ⇐ Item value comes from a CodeList lookup or a CRF label.
+   - `Predecessor` ⇐ Item is a direct projection of another Item (e.g. `AVAL ← VSSTRESN` via `concept-variable-mappings.json`).
+   - `Protocol` ⇐ Item is bound to a `usdm:StudyDesign` element (arm, epoch, planned treatment).
+   - `sourceItems[]` ⇐ direct `derives_from` edges in the DC graph. For `Item.CHG`, those are `[Item.AVAL, Item.BASE]` because `T.ChangeFromBaseline` declares `minuend: Measure` (projects to AVAL) and `subtrahend: Measure sliced to baseline` (projects to BASE).
+
+   So `Origin` in the emitted Define-XML is a **rendering at projection time**, not a stored fact — exactly the position `docs/dataContracts-approach.md` §8.4 takes: *"Define-XML's Origin and Method elements are GENERATED from the graph rather than hand-authored. They cannot drift, because they aren't independent artifacts — they are projections of the same source."* Storing `Origin` as a primary field (as today's hand-authored Define-XML workflows do) IS the drift hazard the dataContracts approach exists to eliminate.
+
+Note: `Dataflow` is also *not* a gain — the §6 migration made AC's Transformation structurally equivalent to a `Dataflow` (input DSD + output DSD + analysisMethod).
 
 ---
 
@@ -539,7 +548,9 @@ So a real Define instance of an ADaM ADVS dataset would include:
 - The `Method` instances referenced by `Item.method` (the derivation algorithms).
 - The `ReifiedConcept` / `ConceptProperty` instances referenced by `Item.conceptProperty` (the BC semantic anchors).
 
-This is materially what `concept-variable-mappings.json` encodes for AC — *which ADaM/SDTM variable carries which concept's value*, plus the variable's role and physical type — but Define expresses it per-variable on each `Item`, with a navigable `Origin.sourceItems` chain making the derivation lineage explicit. AC's mapping file is a compact "concept → variable name" lookup; Define's encoding is verbose-but-traceable. Both are valid; they answer different questions ("what variable holds this concept?" vs. "where did this variable's value come from?").
+This is materially what `concept-variable-mappings.json` encodes for AC — *which ADaM/SDTM variable carries which concept's value*, plus the variable's role and physical type — but Define expresses it per-variable on each `Item`, with a navigable `Origin.sourceItems` chain making the derivation lineage explicit. AC's mapping file is a compact "concept → variable name" lookup; Define's encoding is verbose-but-traceable.
+
+The key point — and the reason §6.4 reframed `Origin` as *not* a gain — is that **Define's verbosity adds no new information**. The `Origin.type` label and the `sourceItems[]` chain are both derivable from the upstream metadata (USDM + transformation library + projection rules); the Define encoding is a *rendering* of that derived information at projection time, not a separate source of truth. AC's compact lookup answers "what variable holds this concept?" directly; the answer to "where did this variable's value come from?" falls out of the DC graph and the transformation library, and the Define projection generator stamps it onto the emitted `Item` objects. Both encodings are correct; only one needs to be authored.
 
 ---
 
@@ -594,7 +605,7 @@ This one needs nuance — AC is not a blank slate here. A fair accounting:
 **Where AC genuinely lacks the mapping:**
 
 - **SDMX** — no `sdmx:*` references anywhere in the AC schemas or library. Define has `sdmx:DataStructureDefinition`, `sdmx:Dimension`, `sdmx:Measure`, `sdmx:Concept`, `sdmx:DataConstraint`, `sdmx:Dataflow`, `sdmx:JsonDataset`, … on most classes. This is a real gap.
-- **PROV** — no explicit `prov:*` vocabulary. Provenance lives in git history, in `wasDerivedFrom`-style natural-language fields, and in the implicit Method→Transformation→Result chain. Define has `prov:wasDerivedFrom`, `prov:wasAttributedTo`, `prov:wasAssociatedBy` mappings on its `Governed` mixin — meaning every governed element automatically carries machine-readable provenance.
+- **PROV** — nuanced. AC has no explicit `prov:*` vocabulary in its schemas. But the *data-level* provenance Define renders as `prov:wasDerivedFrom` (i.e. the lineage between a derived value and its sources) is fully derivable from the DC graph's `derives_from` edges plus the transformation library's input bindings — exactly the same logic as Define's `Origin.sourceItems` (see §6.4). The projection generator can emit PROV triples without AC ever storing them. What remains a genuine gap is *library-element* provenance ("who created `M.ANCOVA` on what date?") — Define's `Governed.owner` / `lastUpdated` would carry that as data; AC defers it to git history. So: PROV-as-data-lineage is not a gap; PROV-as-library-authorship is.
 - **ODM** — Define has `exact_mappings: odm:MethodDef`, `odm:ItemRef`, `odm:ItemGroupDef`, `odm:FormalExpression` everywhere; AC has no ODM references. Matters if you ever need ODM round-trip.
 - **USDM** — Define has `narrow_mappings: usdm:BiomedicalConcept`, `usdm:AnalysisConcept`, `usdm:DerivationConcept`, `usdm:StudyDesign`. AC has *behavioural* USDM linkage (the endpoint-spec drives the sliceKey sources) but no schema-level `usdm:` mappings.
 
@@ -613,9 +624,26 @@ So the real gain on standards is narrow: **(a)** schema-level uniformity (every 
 
 `Labelled` mixin makes `label`, `description`, `aliases` `TranslatedText`-capable. AC labels are plain strings; no `aliases[]` slot exists in the AC method or transformation schemas. Material gap for non-English trial-master-file consumption.
 
-### 6.4 `Origin` + `SourceItem` per-variable lineage (gain at the projection layer only)
+### 6.4 `Origin` + `SourceItem` per-variable lineage — *not* a gain; derivable from upstream metadata
 
-`Item` → `Method` → `FormalExpression` → `Parameter.items → Item` is a navigable derivation graph at the variable level. The dataContracts model gives AC a *stronger* lineage mechanism — the full DC graph with `derives_from` edges and per-DP provenance — but only at projection time; the library files don't carry per-variable lineage because they're concept-level. So Define's `Origin.sourceItems` is the natural gain *for the Define projection itself*, fitting its physical layer. It's not a gain over the dataContracts model upstream — only over hand-authored Define-XML.
+This was originally listed as a gain. It isn't. Define's `Origin.type` enum (`Collected` / `Derived` / `Assigned` / `Predecessor` / `Protocol` / `Not Available` / `Other`) and `sourceItems[]` chain are entirely *derivable* from metadata the AC + USDM + dataContracts stack already maintains:
+
+| Define `Origin.type` | Derivable from |
+|---|---|
+| `Collected` | Concept bound to a `usdm:ScheduledActivityInstance` (BC at a SoA point) |
+| `Derived` | Concept has a `T.*` transformation in its lineage / DC has `derives_from` edges |
+| `Assigned` | Value comes from a CodeList lookup or a CRF label binding |
+| `Predecessor` | Item is a direct projection of another Item (`AVAL ← VSSTRESN` via `concept-variable-mappings.json`) |
+| `Protocol` | Item bound to a `usdm:StudyDesign` element (arm, epoch, planned treatment) |
+| `Not Available` / `Other` | Negative space; computable by exclusion |
+
+`Origin.sourceItems[]` is the same picture: the `derives_from` edges in the DC graph. The Define projection generator computes both at emission time; they're never authored.
+
+Storing `Origin` as a primary, hand-authored field — which is the workflow today's Define-XML uses, and which Define's schema enables — is precisely the failure mode `docs/dataContracts-approach.md` §8.4 calls out:
+
+> *"Those three artifacts drift independently — the SAS program changes but the Define-XML annotation doesn't, or the ADaM spec evolves but the Origin element isn't updated."*
+
+The dataContracts approach fixes this *not* by adopting `Origin` as a stored field at the authoring layer, but by **deriving it from the graph at projection time**. The Define-XML projection generator (§7.2) is the only place `Origin` exists; it's read, not written.
 
 ### 6.5 First-class `Display` (genuine gain)
 
