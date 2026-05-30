@@ -268,14 +268,14 @@ The two-block snippet above (`M.CHG.SBP` + `Item.CHG`) is **abridged** — it sh
 
 So the right way to read the abridged "two-block" example earlier is: *those are the two new objects Define needs to add to an existing `MetaDataVersion`, given that the encompassing `IG.ADVS` and the source `Item.AVAL` / `Item.BASE` already exist.*
 
-#### What is the same
+#### What is the same (CFB)
 
 - `FormalExpression.expression` corresponds to the AC method's `formula.generic_expression`. (The Define expression is a concrete code string; the AC one is a symbolic template — see §3.4.)
 - `Parameter` corresponds to `MethodInput`. Both carry name + dataType + binding.
 - `Method.implementsConcept → ReifiedConcept` corresponds to `binding.concept = "Change"`.
 - `ItemGroup` of type `DataCube` with `dimensions / measures` corresponds to the AC transformation's `inputDataStructure` / `outputDataStructure`.
 
-#### What changes shape
+#### What changes shape (CFB)
 
 | AC artefact (post-§6) | Define.yaml location | Comment |
 |---|---|---|
@@ -288,13 +288,13 @@ So the right way to read the abridged "two-block" example earlier is: *those are
 | `requiredValueType: Quantity` on the binding | `Item.dataType` + Item's link to FHIR Quantity (via `narrow_mappings: fhir:StructureDefinition/variable`) | Define expresses type constraints on the `Item`, not on the binding. |
 | `_w3c_alignment` block at the top of the file (new in v0.7) | Mappings declared inline on each class (`exact_mappings: qb:DataStructureDefinition`, etc.) | The §6.5 alignment block is conceptually similar to Define's `exact_mappings` — both say "this AC/Define construct is a qb thing." Define puts it on the class; the migrated AC library puts it once at file scope. |
 
-#### What is lost going from AC → Define
+#### What is lost going from AC → Define (CFB)
 
 1. **The concept-free invariant for methods.** In AC, `M.ANCOVA.json` *cannot* mention `Change` — there is no slot to hold it. In Define, `Method.implementsConcept` is always available, so a sponsor could publish `M.ANCOVA_for_change_in_SBP` and Define would accept it. The reusability discipline becomes a convention, not a schema rule.
 2. **The transformation as an addressable object.** `T.ChangeFromBaseline` has its own OID, its own `composedPhrase`, its own `validSmartPhrases`. In Define, the binding is implicit in `Item.method` + `FormalExpression.parameters`; you can't grant or revoke it as a unit, and there's no `composedPhrase`-like field at all.
 3. **The endpoint-spec coupling (`sliceKeys[].source`).** Slice values like `{baseline_visit}` flow from a USDM endpoint at study time. Define has no slot that says "this dimension is bound at endpoint-pick time."
 
-#### What is gained going from AC → Define
+#### What is gained going from AC → Define (CFB)
 
 1. **Audit & governance.** `GovernedElement` mixes in `OID`, `mandatory`, `comments`, `siteOrSponsorComments`, `lastUpdated`, `owner`, `wasDerivedFrom`. AC files have only `version` and provenance is implicit in git history.
 2. **Multilingual labels.** `Labelled` carries `label`, `description`, `aliases` all able to be `TranslatedText`. AC labels are plain strings.
@@ -445,7 +445,7 @@ The analysis concepts the outputs map onto (`LSMeans`, `Contrasts`, `Type3Tests`
     - id: IG.ADVS_BDS         # ItemGroup with dimensions+measures
 ```
 
-#### What is the same
+#### What is the same (ANCOVA CFB)
 
 - `Analysis.analysisMethod` is the AC `usesMethod` FK.
 - The formula text in `FormalExpression.expression` is the AC `formula.default_expression`.
@@ -453,7 +453,7 @@ The analysis concepts the outputs map onto (`LSMeans`, `Contrasts`, `Type3Tests`
 - `Analysis.applicableWhen → WhereClause → Condition → RangeCheck` is how Define expresses the AC `sliceKeys` / `slice.constraints`.
 - `Analysis.inputData → ItemGroup | Dataset` is the AC `inputDataStructure`.
 
-#### What changes shape
+#### What changes shape (ANCOVA CFB)
 
 | AC artefact (post-§6) | Define.yaml location | Comment |
 |---|---|---|
@@ -461,18 +461,18 @@ The analysis concepts the outputs map onto (`LSMeans`, `Contrasts`, `Type3Tests`
 | `outputs[]` with `output_type` into `output_class_templates.json` (template by *statistical shape*) | `ReturnValue` plus `Item`s in the output `ItemGroup` (a `Dataset` typed as `DataCube`) | Define's output shape is enumerated as concrete `Item`s. The AC layer-1 / layer-2 / layer-3 templates (statistic / pattern / instance) are not modelled as such — though `ReifiedConcept` plus `ConceptProperty` could carry the same info if you reified the patterns. |
 | Output measure bindings `{output: "ls_means", concept: "LSMeans"}` (one per method-output slot) | One `Item` per output column in the output `ItemGroup`, each with `conceptProperty → LSMeans.<constituent>` | Define expresses each column individually; AC binds the *method-output slot* directly to the *AC result pattern*, and the validator (per §6.6 rule 11) chain-resolves the per-statistic columns from the pattern's `constituents[]` against `statistics_vocabulary.json`. |
 | `methodConfigurations[].configurationName="ss_type", value="III"` | `Parameter.value` on a `FormalExpression` parameter | Define's `Parameter` is overloaded: it can be a formula token AND a configuration value-holder. AC keeps these in separate arrays (`inputs[]` vs `configurations[]`), which is easier to validate and easier to render. |
-| Twin `inputDataStructure` + `outputDataStructure` with explicit dim duplication | One `Analysis.inputData → ItemGroup | Dataset` plus an output `ItemGroup`, each with its own DSD | After the §6 migration both schemas now describe the consumed vs. produced cubes as independent DSDs. AC carries this duplication on purpose ("the price of qb fidelity" per §6.5); Define does it because `Dataflow` already separates input from output. |
+| Twin `inputDataStructure` + `outputDataStructure` with explicit dim duplication | One `Analysis.inputData → ItemGroup` \| `Dataset` plus an output `ItemGroup`, each with its own DSD | After the §6 migration both schemas now describe the consumed vs. produced cubes as independent DSDs. AC carries this duplication on purpose ("the price of qb fidelity" per §6.5); Define does it because `Dataflow` already separates input from output. |
 | `inputDataStructure.slices[]` with `{visit}` / `{baseline_visit}` placeholders | `WhereClause` + `Condition` + `RangeCheck` (no templating) | Define can express the literal version of either slice but does not have the *template* mechanism. The endpoint-driven binding (`sliceKeys[].source = "visit"`) has no Define counterpart. |
 | `validSmartPhrases[]` (composed phrase rendered at display time from this list × sliceKey-bound values) | No equivalent slot | Same point as before; with the §6 migration the rendered string is no longer baked into the JSON (`composedPhrase` was dropped), reinforcing that this is a UI-layer concern. Define has no slot for it on either side. |
 
-#### What is lost going from AC → Define
+#### What is lost going from AC → Define (ANCOVA CFB)
 
 1. **Concept-free method discipline** (same point as §2.2 — louder here because analyses are where it matters most).
 2. **Output decomposition into (class, shape, distribution).** `output_class_templates.json` decomposes every analysis output as a triple (e.g. `(ls_means, vector, none)` or `(type3_tests_f, vector, F)`). Define expresses outputs as `Item`s and leaves the statistical typology to documentation.
 3. **The SmartPhrase / `composedPhrase` rendering contract.** Authors-of-protocols-see-and-edit-spec-as-text is a first-class concern in AC; in Define it would have to live in `comments` or `description`.
 4. **Slice templates with parameterised placeholders.** AC's `Slice.constraints[].value = "{baseline_visit}"` is a *template*, not a literal. Define's `RangeCheck.checkValues` is a list of literal strings.
 
-#### What is gained going from AC → Define
+#### What is gained going from AC → Define (ANCOVA CFB)
 
 1. **`analysisReason`, `analysisPurpose`, `applicableWhen`** — explicit narrative slots tied to USDM that AC currently shells out to the protocol or the analysis spec.
 2. **`Analysis is_a Method`** — Method and Analysis share the same surface (governance, audit, mappings, OID identity). The AC stack instead splits them into `M_*.json` and `analyses/M_*.json` (a directory naming convention, not a schema discriminator).
