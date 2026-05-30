@@ -14,22 +14,56 @@
 
 ## 0. Executive summary
 
-`define.yaml` and the AC framework cover overlapping territory in opposite styles:
+### 0.1 The structural argument — Specification Layer vs. Execution Layer
 
-- `define.yaml` is **one Rosetta-Stone schema** (~2,560 lines, ~50 classes) that models items, item groups, methods, conditions, datasets, data flows, and analyses in a single type system with `exact_mappings` / `close_mappings` to SDMX, qb (RDF Data Cube), FHIR, OMOP, USDM, ODM, NCIt and PROV. Everything is one graph; the cost is breadth of types and many optional slots.
-- The AC framework is **a stack of narrow, layered artefacts** (`acdc_method.yaml`, `acdc_transformation.yaml`, `lib/concepts/*`, `concept-variable-mappings.json`) where each layer enforces one invariant the others cannot violate. The headline invariant is the *concept-free method*: `M.ANCOVA` knows nothing about "baseline" or "Change"; that binding only exists in the transformation.
+The AC framework draws an explicit line between two layers:
 
-The two models could coexist. `define.yaml` already has the slots an AC `Method` or `Transformation` would need (`Method`, `Analysis`, `FormalExpression`, `Parameter`, `DataStructureDefinition`, `Dimension`, `Measure`, `ReifiedConcept`, `ConceptProperty`). What it doesn't yet have is the **architectural rule** that those slots stay layered. That rule is not expressible in LinkML alone, which is exactly why the AC framework keeps it as a separate schema with a build-time validator.
+![AC framework — Specification Layer (Method, Transformation, Concept) and Execution Layer (Code, Data Binding), with two narrow contact points: Code→Method and Data Binding→Concept.](../images/ac-framework-layers.png)
 
-**The post-§6 migration tightens the alignment seam.** The new twin-DSD shape (`inputDataStructure` / `outputDataStructure`) maps almost 1:1 onto Define's `Dataflow` + `Dataset.structuredBy → DataStructureDefinition` pattern. The `_w3c_alignment` block at the top of the transformation library file is conceptually the same thing as Define's class-level `exact_mappings: qb:DataStructureDefinition`. The export transformer described in §7.2 becomes materially easier to write after the migration than it would have been before.
+```text
+┌── Specification Layer ──┐   ┌── Execution Layer ──┐
+│                         │   │                     │
+│   ┌───────────────┐     │   │   ┌─────────────┐   │
+│   │    Method     │◄────┼───┼───│    Code     │   │
+│   └───────┬───────┘     │   │   └─────────────┘   │
+│           │             │   │                     │
+│   ┌───────▼───────┐     │   │                     │
+│   │ Transformation│     │   │                     │
+│   └───────▲───────┘     │   │                     │
+│           │             │   │                     │
+│   ┌───────┴───────┐     │   │   ┌─────────────┐   │
+│   │    Concept    │◄────┼───┼───│ Data Binding│   │
+│   └───────────────┘     │   │   └─────────────┘   │
+│                         │   │                     │
+│   implementation-       │   │   implementation-   │
+│   agnostic              │   │   bound             │
+└─────────────────────────┘   └─────────────────────┘
+```
 
-**The recommendation in this doc (refined per `docs/dataContracts-approach.md` §8.4) is *not* to elevate Define to a peer of AC as an authoring surface.** Define-XML / Define-JSON is *one of several auto-generated projections* of the concept-anchored DC graph — sitting alongside SDTM tables, ADaM tables, ARS packages, FHIR resources, and OMOP CDM, not above them. The dataContracts approach already names this position explicitly: *"Define-XML's Origin and Method elements are GENERATED from the graph rather than hand-authored. They cannot drift, because they aren't independent artifacts — they are projections of the same source."* So:
+The two layers and their narrow contact points are deliberate:
 
-- The **authoring surface** is the AC framework (cross-study libraries) + eSAP + USDM (per-study). Concept-bound, physical-agnostic. The concept-free method rule lives here, schema-enforced.
-- The **canonical source of truth** is the DC + DP graph produced from those authoring artefacts.
-- **Define-XML** is one *required* projection of the graph — required because FDA expects it in every submission. It does not go away, and a generator for it is needed. But it is an output deliverable, not a spec format.
+- **Specification Layer** (left): `Method`, `Transformation`, `Concept`. Implementation-agnostic by construction. A `Method` (`M.ANCOVA`) doesn't know what concept it will operate on; a `Concept` (`Change`) doesn't know which physical column it will project to; a `Transformation` (`T.CFB_ANCOVA`) binds Method to Concept but still references neither code nor column names.
+- **Execution Layer** (right): `Code` and `Data Binding`. Implementation-bound. *Code* picks the actual R / SAS / Python implementation of a method; *Data Binding* projects a concept onto specific SDTM / ADaM columns. The dataContracts model (`docs/dataContracts-approach.md` §8.4) names additional Execution-Layer artefacts: the SDTM-tables projection, the ADaM-tables projection, the ARS-package projection, the FHIR projection, the OMOP-CDM projection, and **the Define-XML projection** — all generated from the Specification Layer + DC graph, all implementation-bound.
+- **The contact points are narrow and one-directional**: Code implements Method (Execution reads from Spec); Data Binding attaches data to Concept (Execution reads from Spec). The Specification Layer never reaches into the Execution Layer. A Concept does not know its target columns; a Method does not know its compiled R code; a Transformation does not know what dataset its output lives in.
 
-What the §7-§8 recommendation thus reduces to: **build a projection generator** that emits Define-XML / Define-JSON from the DC graph (along with the SDTM / ADaM / ARS / FHIR / OMOP siblings). The generator inherits the SDMX, PROV, and ODM mappings AC doesn't yet have, gives schema-level uniformity for the mappings AC already covers at the data layer (qb, FHIR, OMOP, NCIt — see §6.1 for that audit), and never becomes the source of truth.
+**`define.yaml` does not respect this boundary.** Its abstract primitives (`Method`, `ReifiedConcept`, `Analysis`, `FormalExpression`) look Specification-Layer-shaped — but every FK chain in a usable Define instance eventually terminates at `Item` (with `dataType`, `length`, `displayFormat`, `codeList`, `origin.sourceItems[]`) and `ItemGroup` (with `domain: "ADVS"`, `observationClass`, `keySequence`), which are pure Execution-Layer concepts. The Define schema *flattens the two layers into one type system*. A `Method` that doesn't bind to an `Item` accomplishes nothing in Define; an `Item` without `dataType` and `length` is not a Define-XML-compliant submission element. The two layers are fused **by design** — because Define's job is to describe the submission artefact, which sits entirely in the Execution Layer.
+
+There is no subset of `define.yaml` that retains the AC framework's Specification / Execution separation. Even using only `ReifiedConcept` + `Method` + `FormalExpression` (the seemingly abstract primitives) requires references to `Item` / `Parameter.items` once you want to actually express anything that does work. The flattening is structural, not accidental.
+
+### 0.2 Therefore — Define is a projection target, never an authoring layer
+
+The architectural fit follows directly:
+
+- The **Specification Layer** stays where it is: AC framework (`lib/methods/*`, `lib/transformations/*`, `lib/concepts/*`) + USDM (study design) + eSAP (analysis plan) + the controlled terminology you're building. Concept-bound, physical-agnostic. The concept-free Method rule lives here, schema-enforced.
+- The **Execution Layer** carries the Code (engine + generated SAS / R / Python) and the Data Bindings (`concept-variable-mappings.json` as projection rules; SDTM-tables projection; ADaM-tables projection; **Define-XML / Define-JSON projection**; ARS, FHIR, OMOP projections).
+- The **canonical source of truth** between them is the DC + DP graph that the engine builds from the Specification-Layer artefacts.
+- `define.yaml` lives entirely on the Execution Layer side, *one* generated artefact among the projection siblings. It is required (FDA submissions need it) but not elevated.
+
+The recommendation in §7-§8 thus reduces to: **build a projection generator** that emits Define-XML / Define-JSON from the DC graph alongside the SDTM-tables / ADaM-tables / ARS / FHIR / OMOP generators. The generator inherits the SDMX, PROV, ODM, and schema-level USDM mappings the AC libraries don't carry (per §6.1), uses Define's class-level `exact_mappings` to satisfy LinkML→RDF tooling for free, and never feeds back into the Specification Layer.
+
+### 0.3 What this means for the rest of the document
+
+The two-walkthrough analysis (§2, §3), the gain/loss inventories (§5, §6), and the audit of standards mappings (§6.1) all sit *underneath* this structural argument. They explain *why* particular Define elements look attractive — but every "gain" in the §6 inventory is a gain *for the Execution Layer projection*, not for the Specification Layer. Read with that distinction in mind, several items in §6 turn out not to be gains at all over the dataContracts model upstream (most notably §6.4 — `Origin` is derivable from upstream metadata, not a primitive that needs storing).
 
 ---
 
