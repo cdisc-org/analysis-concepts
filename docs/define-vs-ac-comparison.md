@@ -23,7 +23,7 @@ The two models could coexist. `define.yaml` already has the slots an AC `Method`
 
 **The post-§6 migration tightens the alignment seam.** The new twin-DSD shape (`inputDataStructure` / `outputDataStructure`) maps almost 1:1 onto Define's `Dataflow` + `Dataset.structuredBy → DataStructureDefinition` pattern. The `_w3c_alignment` block at the top of the transformation library file is conceptually the same thing as Define's class-level `exact_mappings: qb:DataStructureDefinition`. The export transformer described in §7.2 becomes materially easier to write after the migration than it would have been before.
 
-The recommendation at the end of this doc is to **adopt define.yaml as the export / interchange surface** (so AC artefacts can be serialised as Define-style governed elements with full SDMX / FHIR / qb mappings) while **keeping the AC framework as the authoring surface** (so the concept-free method rule is enforceable, not just recommended).
+The recommendation at the end of this doc is to **adopt define.yaml as the export / interchange surface** while **keeping the AC framework as the authoring surface**. The export side gives you the SDMX, PROV, and ODM mappings AC doesn't yet have, plus schema-level uniformity for the mappings AC *does* have (qb, FHIR, OMOP, NCIt — see §6.1 for why "AC needs Define for standards mappings" is mostly wrong). The authoring side keeps the concept-free method rule enforceable, not just recommended.
 
 ---
 
@@ -298,7 +298,7 @@ So the right way to read the abridged "two-block" example earlier is: *those are
 
 1. **Audit & governance.** `GovernedElement` mixes in `OID`, `mandatory`, `comments`, `siteOrSponsorComments`, `lastUpdated`, `owner`, `wasDerivedFrom`. AC files have only `version` and provenance is implicit in git history.
 2. **Multilingual labels.** `Labelled` carries `label`, `description`, `aliases` all able to be `TranslatedText`. AC labels are plain strings.
-3. **Standards mappings everywhere.** Each Define class declares `exact_mappings` / `close_mappings` / `narrow_mappings` against SDMX (`sdmx:Measure`, `sdmx:Dimension`, `sdmx:DataStructureDefinition`), RDF Data Cube (`qb:DataStructureDefinition`, `qb:dimension`, `qb:measure`, `qb:Slice`, `qb:SliceKey`), FHIR (`fhir:Expression`, `fhir:StructureDefinition`), OMOP (`omop:Transformation`, `omop:Table`, `omop:Field`), USDM (`usdm:BiomedicalConcept`, `usdm:AnalysisConcept`, `usdm:DerivationConcept`), ODM (`odm:Method`, `odm:ItemGroupDef`), and PROV (`prov:wasDerivedFrom`, `prov:wasAttributedTo`). The AC schemas have a handful (NCIt, STATO, FHIR) but nothing approaching this breadth.
+3. **Schema-level standards mappings on every class.** Each Define class declares `exact_mappings` / `close_mappings` / `narrow_mappings` against SDMX, qb, FHIR, OMOP, USDM, ODM, NCIt, and PROV. The AC framework already maps qb (class-level in `acdc_transformation.yaml` + file-level `_w3c_alignment`), FHIR (value types in concept results + the §6.6 rule 10 compatibility table), OMOP (top-level section in `concept-variable-mappings.json`), and NCIt (per-concept `code` blocks) — these are equivalent in *coverage*, but Define puts them on the class metadata so LinkML→RDF tooling consumes them directly, whereas AC puts them in the data instances. AC genuinely lacks: SDMX (no `sdmx:*` references at all), PROV (no machine-readable provenance vocabulary), ODM (no round-trip), and schema-level USDM linkage. See §6.1 for the full audit.
 4. **Origin & traceability.** `Origin` (with `type`: Collected / Derived / Assigned / Predecessor / Protocol) plus `sourceItems` gives a uniform way to record where every `Item` value comes from. AC's `concept-variable-mappings.json` covers the *target*-side projection but does not model the SDTM-to-ADaM derivation chain explicitly.
 
 ---
@@ -565,9 +565,31 @@ Authoring an analysis spec by typing *"change from baseline in {parameter} at {v
 
 In priority order.
 
-### 6.1 SDMX / qb / FHIR / OMOP / PROV mapping out of the box
+### 6.1 Uniform class-level standards mappings (and the two standards AC genuinely lacks)
 
-Every Define class declares mappings against the major statistical and clinical metadata standards. Today the AC framework has NCI/STATO/FHIR codings on `Method` and `Coding` but no class-level mappings. Adopting Define would let you serialise the AC library as RDF Data Cube / SDMX / FHIR resources without writing transformers.
+This one needs nuance — AC is not a blank slate here. A fair accounting:
+
+**Where AC already has the mapping:**
+
+- **qb (RDF Data Cube)** — full class-level alignment in `acdc_transformation.yaml`: `class_uri: qb:DataStructureDefinition`, `slot_uri: qb:dimension`, `qb:measure`, `class_uri: qb:Slice`, `qb:SliceKey`, `qb:ComponentSpecification`, `qb:componentProperty`. Plus the file-level `_w3c_alignment` block in the transformation library. This is *structurally equivalent* to Define's `exact_mappings: qb:DataStructureDefinition` etc. — no gain from Define on the qb axis.
+- **FHIR** — FHIR complex types (`Quantity`, `CodeableConcept`, `Count`, `Duration`) drive the method-output `dataType` compatibility table (§6.6 rule 10) and the per-concept `result.valueType` in `Option_B_Clinical.json` / `AC_Concept_Model_v017.json`. `concept-variable-mappings.json` has a top-level `fhir` section. Define carries `narrow_mappings: fhir:*` on its classes; both stacks express FHIR alignment, just at different layers.
+- **OMOP** — `concept-variable-mappings.json` has a top-level `omop` section mirroring `sdtm` and `adam`. Define has `narrow_mappings: omop:Transformation`, `omop:Field`, `omop:Table` on its classes. Same coverage, different layer.
+- **NCIt** — every concept in DC / AC / OC carries a `code: { system: "NCI", value }` slot. Heavy use.
+- **STATO** — referenced in `acdc_method.yaml`'s `codings[]` slot for statistical methods.
+
+**Where AC genuinely lacks the mapping:**
+
+- **SDMX** — no `sdmx:*` references anywhere in the AC schemas or library. Define has `sdmx:DataStructureDefinition`, `sdmx:Dimension`, `sdmx:Measure`, `sdmx:Concept`, `sdmx:DataConstraint`, `sdmx:Dataflow`, `sdmx:JsonDataset`, … on most classes. This is a real gap.
+- **PROV** — no explicit `prov:*` vocabulary. Provenance lives in git history, in `wasDerivedFrom`-style natural-language fields, and in the implicit Method→Transformation→Result chain. Define has `prov:wasDerivedFrom`, `prov:wasAttributedTo`, `prov:wasAssociatedBy` mappings on its `Governed` mixin — meaning every governed element automatically carries machine-readable provenance.
+- **ODM** — Define has `exact_mappings: odm:MethodDef`, `odm:ItemRef`, `odm:ItemGroupDef`, `odm:FormalExpression` everywhere; AC has no ODM references. Matters if you ever need ODM round-trip.
+- **USDM** — Define has `narrow_mappings: usdm:BiomedicalConcept`, `usdm:AnalysisConcept`, `usdm:DerivationConcept`, `usdm:StudyDesign`. AC has *behavioural* USDM linkage (the endpoint-spec drives the sliceKey sources) but no schema-level `usdm:` mappings.
+
+**What's genuinely different** when AC and Define both map the same standard (qb, FHIR, OMOP, NCIt):
+
+- **AC carries the mapping at the data layer** — per-concept `code` blocks, per-output `valueType`, per-target sections in the mappings file. Compact and study-author-friendly.
+- **Define carries the mapping at the schema layer** — class-level `exact_mappings` / `close_mappings` / `narrow_mappings` URIs that LinkML-to-RDF / LinkML-to-JSON-Schema tooling consumes directly. This is what produces the "drop in a LinkML processor, get RDF" workflow.
+
+So the real gain on standards is narrow: **(a)** schema-level uniformity (every Define class declares its mapping URIs in one place, so a LinkML processor emits qb-/FHIR-/OMOP-compliant output without per-class wiring), and **(b)** the two specific standards AC doesn't yet cover (SDMX, PROV) plus ODM and stronger USDM. The pre-§6 claim that AC needed Define for FHIR / OMOP / qb alignment was wrong — that alignment is already present, just at the data layer rather than the class layer.
 
 ### 6.2 Governance fields
 
