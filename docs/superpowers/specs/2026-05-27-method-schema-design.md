@@ -718,9 +718,9 @@ The schema (and a JSON-Schema-based validator) enforce:
    - Every `value` matches the configuration's `dataType` and (if present) `enumValues`
 4. **Slice references resolve.**
    - `inputDataStructure.measures[].slice` ∈ `inputDataStructure.slices[].name`
-   - `inputDataStructure.slices[].constraints[].dimension` ∈ `inputDataStructure.dimensions[].conceptCategory` ∪ `inputDataStructure.dimensions[].concept` (same applies inside `outputDataStructure.slices[]` if used)
+   - `inputDataStructure.slices[].constraints[].dimension` ∈ `inputDataStructure.dimensions[].conceptCategory` ∪ `inputDataStructure.dimensions[].concept` (same applies inside `outputDataStructure.slices[]` if used). **Every dimension constrained by a slice MUST be declared in the same DSD's `dimensions[]` array — including dimensions that act purely as slice context with no `input` FK (e.g. `Population` as a Subject-attribute context dim). The validator rejects any slice constraint that names an undeclared dim.**
    - Every `{placeholder}` in `slices[].constraints[].value` either resolves to a `sliceKeys[].source`-supplied value (`{parameter}`, `{visit}`, `{population}`) or to a transformation-local constant (`{baseline_visit}` — flagged for the endpoint to supply or the transformation to default).
-5. **sliceKeys references resolve.** `sliceKeys[].dimension` ∈ `inputDataStructure.dimensions[].conceptCategory` ∪ `inputDataStructure.dimensions[].concept`; `sliceKeys[].source` is one of the recognized endpoint-spec attribute names (`biomedicalConcept`, `visit`, `population`, ...).
+5. **sliceKeys references resolve.** `sliceKeys[].dimension` ∈ `inputDataStructure.dimensions[].conceptCategory` ∪ `inputDataStructure.dimensions[].concept`; `sliceKeys[].source` is one of the recognized endpoint-spec attribute names (`biomedicalConcept`, `visit`, `population`, ...). **As with rule 4, every dimension named in `sliceKeys[]` MUST be declared in `inputDataStructure.dimensions[]`. In particular, `Population` is a concrete shared dimension from `Option_B_Clinical.sharedDimensions`; transformations whose `sliceKeys[]` cite `Population` (or whose slice constraints cite it) MUST list `{ "concept": "Population" }` in `inputDataStructure.dimensions[]` as a context dim. This applies symmetrically to any other shared dimension used purely for slicing.**
 6. **Cardinality respected.** When several `inputDataStructure.measures[]` or `inputDataStructure.dimensions[]` bindings share the same `input` FK, their count satisfies the method's `inputs[].cardinality` (`single` / `multiple`).
 7. **Concept / conceptCategory references resolve.** Against the concept files declared in `$references` (`Option_B_Clinical.json` for derivation transformations, `AC_Concept_Model_v017.json` for analyses).
 8. **Mutual exclusion.** `concept` XOR `conceptCategory` on each binding item (never both).
@@ -854,8 +854,12 @@ This is the existing `T.CFB_ANCOVA` from `ACDC_Transformation_Library_v06.json` 
       { "input": "fixed_effect", "concept": "Treatment" },
 
       // Context dims — pure cube scope, no method-input FK. Pinned at study
-      // time via sliceKeys below.
+      // time via sliceKeys below. Population is a shared Subject-attribute
+      // dim from Option_B_Clinical.sharedDimensions; it MUST be declared
+      // here because sliceKeys[] and the slices' constraints[] reference it
+      // (§6.6 rules 4 and 5).
       { "concept": "Subject" },
+      { "concept": "Population" },
       { "conceptCategory": "ParameterDimension" },
       { "conceptCategory": "VisitDimension" }
     ],
@@ -906,6 +910,7 @@ This is the existing `T.CFB_ANCOVA` from `ACDC_Transformation_Library_v06.json` 
       // on the output side (the dims are not method args here).
       { "concept": "Treatment" },
       { "concept": "Subject" },
+      { "concept": "Population" },
       { "conceptCategory": "ParameterDimension" },
       { "conceptCategory": "VisitDimension" }
     ],
