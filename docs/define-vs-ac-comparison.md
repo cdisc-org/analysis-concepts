@@ -23,7 +23,13 @@ The two models could coexist. `define.yaml` already has the slots an AC `Method`
 
 **The post-§6 migration tightens the alignment seam.** The new twin-DSD shape (`inputDataStructure` / `outputDataStructure`) maps almost 1:1 onto Define's `Dataflow` + `Dataset.structuredBy → DataStructureDefinition` pattern. The `_w3c_alignment` block at the top of the transformation library file is conceptually the same thing as Define's class-level `exact_mappings: qb:DataStructureDefinition`. The export transformer described in §7.2 becomes materially easier to write after the migration than it would have been before.
 
-The recommendation at the end of this doc is to **adopt define.yaml as the export / interchange surface** while **keeping the AC framework as the authoring surface**. The export side gives you the SDMX, PROV, and ODM mappings AC doesn't yet have, plus schema-level uniformity for the mappings AC *does* have (qb, FHIR, OMOP, NCIt — see §6.1 for why "AC needs Define for standards mappings" is mostly wrong). The authoring side keeps the concept-free method rule enforceable, not just recommended.
+**The recommendation in this doc (refined per `docs/dataContracts-approach.md` §8.4) is *not* to elevate Define to a peer of AC as an authoring surface.** Define-XML / Define-JSON is *one of several auto-generated projections* of the concept-anchored DC graph — sitting alongside SDTM tables, ADaM tables, ARS packages, FHIR resources, and OMOP CDM, not above them. The dataContracts approach already names this position explicitly: *"Define-XML's Origin and Method elements are GENERATED from the graph rather than hand-authored. They cannot drift, because they aren't independent artifacts — they are projections of the same source."* So:
+
+- The **authoring surface** is the AC framework (cross-study libraries) + eSAP + USDM (per-study). Concept-bound, physical-agnostic. The concept-free method rule lives here, schema-enforced.
+- The **canonical source of truth** is the DC + DP graph produced from those authoring artefacts.
+- **Define-XML** is one *required* projection of the graph — required because FDA expects it in every submission. It does not go away, and a generator for it is needed. But it is an output deliverable, not a spec format.
+
+What the §7-§8 recommendation thus reduces to: **build a projection generator** that emits Define-XML / Define-JSON from the DC graph (along with the SDTM / ADaM / ARS / FHIR / OMOP siblings). The generator inherits the SDMX, PROV, and ODM mappings AC doesn't yet have, gives schema-level uniformity for the mappings AC already covers at the data layer (qb, FHIR, OMOP, NCIt — see §6.1 for that audit), and never becomes the source of truth.
 
 ---
 
@@ -619,15 +625,26 @@ Define is designed to be the publishing format for CDISC standards packages (SDT
 
 ## 7. Alignment options
 
-Three plausible postures, in increasing order of integration:
+### 7.0 Framing — Define is a projection, not an authoring layer
 
-### 7.1 Status quo — independent stacks (no alignment)
+Before listing options, a position the rest of §7 depends on (and that the earlier draft of this doc didn't make explicit). `docs/dataContracts-approach.md` §8.4 puts SDTM / ADaM / Define-XML / ARS / FHIR / OMOP on the same footing: each is an *auto-generated projection* of the concept-anchored DC + DP graph. None of them is the source of truth. The authoring surface is:
 
-Keep the AC framework as-is. Use `define.yaml` only for `define.json` / `define-xml` exports of the resulting study artefacts. **Risk**: divergence; the same Method/Concept information is maintained in two places.
+- **Cross-study libraries** (concept-bound, physical-agnostic): `lib/methods/*`, `lib/transformations/*`, `lib/concepts/*`.
+- **Per-study spec**: USDM (study design) + eSAP (executable Statistical Analysis Plan). The eSAP references the library transformations and binds them to the study's endpoints, visits, and populations.
 
-### 7.2 Map AC → Define at export time (recommended near-term)
+From those, the engine generates the DC graph; from the DC graph it projects whichever physical realizations are needed for submission and downstream use. Define-XML is one such projection — required because FDA expects it, structurally no different from the SDTM-tables projection or the FHIR projection.
 
-Add a transformer that emits Define instances from the AC library. The post-§6 shape makes most of these mappings near-mechanical:
+This reframes what the §7 options are. The question is not *"do we adopt Define as our spec format?"* (no, that conflicts with the dataContracts model on two fronts — it's a study instance, and it's physical-bound). The question is *"how do we build the Define projection generator and what does its relationship to the authoring layer look like?"*
+
+The three options below now read as three different placements for the Define generator.
+
+### 7.1 Status quo — hand-author Define-XML at submission time
+
+Keep the AC framework and the dataContracts pipeline as-is. When a study reaches submission, hand-author the Define-XML (as today). **Cost**: Define drifts from the DC graph it should describe — exactly the failure mode `dataContracts-approach.md` §8.4 calls out (*"Those three artifacts drift independently … reviewers reading the submission package have to compare them and reconcile"*). Acceptable as a transitional state, untenable long-term.
+
+### 7.2 Build a Define-XML projection generator from the DC graph (recommended near-term)
+
+Add a generator that emits Define-XML / Define-JSON from the DC + DP graph — one of N projection generators (alongside SDTM tables, ADaM tables, ARS packages, FHIR resources, OMOP CDM). The §6 migration of the transformation library makes the mapping near-mechanical for the metadata side:
 
 - `M_*.json` → `Method` instances (with `implementsConcept` left null to mark them concept-free).
 - `Transformation` entries → a `Dataflow` whose `structure` is the input `DataStructureDefinition` (from `inputDataStructure`), whose corresponding output `Dataset.structuredBy` is the output `DataStructureDefinition` (from `outputDataStructure`), and whose `analysisMethod` references the named `Method` (with `methodConfigurations[]` projected onto `FormalExpression.parameters[].value`). For analyses, the transformation also maps to an `Analysis` instance with `analysisMethod` set; for derivations, the bound output measures' `concept` field projects to `Item.conceptProperty` on the output cube.
