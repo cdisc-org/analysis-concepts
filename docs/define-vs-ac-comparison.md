@@ -4,11 +4,10 @@
 
 | | |
 |---|---|
-| **Status** | Draft (rev 2 — updated for the §6 Option B twin-DSD transformation shape) |
-| **Date** | 2026-05-30 |
+| **Status** | Draft |
+| **Date** | 2026-06-01 |
 | **Audience** | AC/DC working group; reviewers deciding whether to converge on `define.yaml` |
-| **Scope** | Method / Analysis / Transformation layer only. The Item / ItemGroup / Dataset / Dataflow parts of `define.yaml` are summarised but not compared in detail. |
-| **Library version** | `ACDC_Transformation_Library_v06.json` v0.7 (post-§6 migration). Transformation bindings are now twin `inputDataStructure` / `outputDataStructure` qb:DSDs. |
+| **Scope** | Method / Analysis / Transformation layer of the AC framework, compared against `define.yaml`. The Item / ItemGroup / Dataset / Dataflow parts of `define.yaml` are summarised but not compared in detail. |
 
 ---
 
@@ -63,7 +62,7 @@ The recommendation in §7-§8 thus reduces to: **build a projection generator** 
 
 ### 0.3 What this means for the rest of the document
 
-The two-walkthrough analysis (§2, §3), the gain/loss inventories (§5, §6), and the audit of standards mappings (§6.1) all sit *underneath* this structural argument. They explain *why* particular Define elements look attractive — but every "gain" in the §6 inventory is a gain *for the Execution Layer projection*, not for the Specification Layer. Read with that distinction in mind, several items in §6 turn out not to be gains at all over the dataContracts model upstream (most notably §6.4 — `Origin` is derivable from upstream metadata, not a primitive that needs storing).
+The two-walkthrough analysis (§2, §3), the gain/loss inventories (§5, §6), and the audit of standards mappings (§6.1) all sit *underneath* this structural argument. They explain *why* particular Define elements look attractive — but every "gain" in the §6 inventory is a gain *for the Execution Layer projection*, not for the Specification Layer. Read with that distinction in mind, several items in §6 are not gains over the dataContracts model upstream (most notably §6.4 — `Origin` is derivable from upstream metadata, not a primitive that needs storing).
 
 ---
 
@@ -78,7 +77,7 @@ DEFINE.YAML  (one schema, ~50 classes)            AC FRAMEWORK  (stacked schemas
                               │  Formal-   │         "concept-free" — enforced by absence
                               │  Expression│         of any concept-typed slot
 GovernedElement ──┬── Item ───┘  Parameter │
-                  ├── ItemGroup ─┐         │      acdc_transformation.yaml (post-§6)
+                  ├── ItemGroup ─┐         │      acdc_transformation.yaml
                   ├── Data-      │  Reified-       Transformation
                   │   Structure- │  Concept          inputDataStructure  ─┐
                   │   Definition │  Concept-         outputDataStructure ─┴── twin qb:DSDs
@@ -130,7 +129,7 @@ Three artefacts collaborate:
 
 No mention of *baseline*, *visit*, *parameter*, or *CHG*. This file is reusable for any subtraction — date differences, residuals, anything.
 
-**`lib/transformations/ACDC_Transformation_Library_v06.json` → `T.ChangeFromBaseline`** — the binding layer, in the §6 Option B twin-DSD shape.
+**`lib/transformations/ACDC_Transformation_Library_v06.json` → `T.ChangeFromBaseline`** — the binding layer.
 
 ```jsonc
 {
@@ -185,7 +184,7 @@ No mention of *baseline*, *visit*, *parameter*, or *CHG*. This file is reusable 
 }
 ```
 
-The two slices `endpoint` and `parameter_baseline` are the only place "baseline" exists; their *diff* (one `{visit}`, the other `{baseline_visit}`) is the load-bearing signal that says "subtract the baseline value from the current value." The method has no idea it's being used for CFB. The §6 migration also moved several things: the qb cube structure is now twin `qb:DataStructureDefinition` blocks (each 1:1 with `qb:DataStructureDefinition`); slice templates live inside `inputDataStructure.slices[]`; the output binding's `concept` ("Change") replaces the old top-level `instanceOf: "Change"` field; and the rendered phrase that used to live in `composedPhrase` is now derived at render time from `validSmartPhrases[]` × `sliceKeys[]`-bound values.
+The two slices `endpoint` and `parameter_baseline` are the only place "baseline" exists; their *diff* (one `{visit}`, the other `{baseline_visit}`) is the load-bearing signal that says "subtract the baseline value from the current value." The method has no idea it's being used for CFB. The cube structure is twin `qb:DataStructureDefinition` blocks (each 1:1 with `qb:DataStructureDefinition`); slice templates live inside `inputDataStructure.slices[]`; the output binding's `concept` ("Change") identifies what the produced cube represents; the rendered phrase is composed at display time from `validSmartPhrases[]` × `sliceKeys[]`-bound values.
 
 **`lib/concepts/Option_B_Clinical.json` → `Change`** — the semantic anchor.
 
@@ -317,16 +316,16 @@ So the right way to read the abridged "two-block" example earlier is: *those are
 
 #### What changes shape (CFB)
 
-| AC artefact (post-§6) | Define.yaml location | Comment |
+| AC artefact | `define.yaml` location | Comment |
 |---|---|---|
 | `M.Subtraction` (concept-free) | A *generic* `Method` instance, possibly without `implementsConcept` set | Define allows this — but does not require it. There is no rule that says "a Method MUST NOT reference a ReifiedConcept." |
 | `T.ChangeFromBaseline` | A bespoke `Method` per parameter, OR a single `Method` plus per-`Item` rebinding | Define has no first-class "transformation" object; the binding lives on the `Item.method` reference and the `FormalExpression.parameters[].items`. |
-| Twin `inputDataStructure` / `outputDataStructure` blocks | Two `DataStructureDefinition`s, one per `Dataflow` (or `Dataset.structuredBy`) | The new twin-DSD shape lines up almost 1:1 with Define's pattern of a `Dataflow` referencing an input and an output `Dataset`, each `structuredBy → DataStructureDefinition`. This is the closest direct correspondence in the whole comparison. |
+| Twin `inputDataStructure` / `outputDataStructure` blocks | Two `DataStructureDefinition`s, one per `Dataflow` (or `Dataset.structuredBy`) | The twin-DSD shape lines up almost 1:1 with Define's pattern of a `Dataflow` referencing an input and an output `Dataset`, each `structuredBy → DataStructureDefinition`. This is the closest direct correspondence in the whole comparison. |
 | `inputDataStructure.measures[].input: "minuend"` / `outputDataStructure.measures[].output: "result"` | `FormalExpression.parameters[].name` / `FormalExpression.returnValue.id`, with `parameters[].items → Item` | Both sides FK the method's input/output slot names; both validate against the method definition at build time. |
 | `slice = parameter_baseline` (in `inputDataStructure.slices[]`) | A `WhereClause` containing `Condition`s on `PARAMCD` and `AVISIT`, attached either to a `Parameter` (`applicableWhen`) or used as a `qb:SliceKey` analogue | Define has `WhereClause`, `Condition`, `RangeCheck`, and `qb:SliceKey` listed under `Condition.related_mappings` — but no concrete `Slice` class with a templated value like `{baseline_visit}`. |
 | `sliceKeys[].source = "biomedicalConcept" \| "visit" \| "population"` | No direct equivalent | This is the AC-specific contract that *the endpoint spec supplies the slice values*. Define-yaml doesn't speak about endpoints. |
 | `requiredValueType: Quantity` on the binding | `Item.dataType` + Item's link to FHIR Quantity (via `narrow_mappings: fhir:StructureDefinition/variable`) | Define expresses type constraints on the `Item`, not on the binding. |
-| `_w3c_alignment` block at the top of the file (new in v0.7) | Mappings declared inline on each class (`exact_mappings: qb:DataStructureDefinition`, etc.) | The §6.5 alignment block is conceptually similar to Define's `exact_mappings` — both say "this AC/Define construct is a qb thing." Define puts it on the class; the migrated AC library puts it once at file scope. |
+| `_w3c_alignment` block at the top of the transformation library file | Mappings declared inline on each class (`exact_mappings: qb:DataStructureDefinition`, etc.) | The alignment block is conceptually equivalent to Define's `exact_mappings` — both say "this AC/Define construct is a qb thing." Define puts it on the class; the AC library puts it once at file scope. |
 
 #### What is lost going from AC → Define (CFB)
 
@@ -342,7 +341,7 @@ So the right way to read the abridged "two-block" example earlier is: *those are
    - AC transformations carry `usesMethod` — a typed FK that plays the role of `wasDerivedFrom` for the Method→Transformation relationship.
    - AC **lacks**: `mandatory` (per-element required-in-this-context flag), `comments[]` / `siteOrSponsorComments[]` (per-element review annotations), `lastUpdated` (per-element timestamp), `owner` (typed User / Organization attribution), generic `wasDerivedFrom` (Define's `Governed` mixin makes this available on *every* governed element, not just transformation→method), and `deprecated`.
 
-   Versioning and provenance in AC currently live in git history and the `schema_version` field. For *the specific use cases the AC framework targets today* (cross-study method libraries that change rarely), git-history versioning is sufficient and matches how the library is reviewed. For *standards-package distribution* (where downstream consumers need machine-readable audit trail), Define's per-element governance fields are the gap.
+   Versioning and provenance in AC live in git history and the `schema_version` field. For the use cases the AC framework targets (cross-study method libraries that change rarely), git-history versioning is sufficient and matches how the library is reviewed. For standards-package distribution to downstream consumers who expect machine-readable audit trails on every element, Define's per-element governance fields are what those consumers expect to find.
 2. **Multilingual labels and `aliases[]`.** Define's `Labelled` mixin makes `label`, `description`, `aliases` all able to be `TranslatedText` polymorphically. AC's labels are plain `range: string` with no `TranslatedText` alternative and no `aliases[]` slot on the method or transformation schemas. If labels ever need to be rendered in Japanese or Chinese for trial-master-file consumption, AC has no current path.
 3. **Schema-level standards mappings on every class.** Each Define class declares `exact_mappings` / `close_mappings` / `narrow_mappings` against SDMX, qb, FHIR, OMOP, USDM, ODM, NCIt, and PROV. The AC framework already maps qb (class-level in `acdc_transformation.yaml` + file-level `_w3c_alignment`), FHIR (value types in concept results + the §6.6 rule 10 compatibility table), OMOP (top-level section in `concept-variable-mappings.json`), and NCIt (per-concept `code` blocks) — these are equivalent in *coverage*, but Define puts them on the class metadata so LinkML→RDF tooling consumes them directly, whereas AC puts them in the data instances. AC genuinely lacks: SDMX (no `sdmx:*` references at all), PROV (no machine-readable provenance vocabulary), ODM (no round-trip), and schema-level USDM linkage. See §6.1 for the full audit.
 4. **Origin & traceability** — *not* a gain in the dataContracts architecture. Define's `Origin.type` (Collected / Derived / Assigned / Predecessor / Protocol / NotAvailable / Other) and `sourceItems[]` are *derivable* from upstream metadata: USDM (`Collected` ⇐ BC bound to ScheduledActivityInstance; `Protocol` ⇐ bound to StudyDesign), the AC transformation library (`Derived` ⇐ has a `T.*` in lineage; `sourceItems[]` ⇐ the transformation's input bindings), and `concept-variable-mappings.json` (`Predecessor` ⇐ direct projection rule; `Assigned` ⇐ CodeList lookup). The Define projection generator computes `Origin` at emission time; it isn't authored. See §6.4 for the full table.
@@ -389,7 +388,7 @@ So the right way to read the abridged "two-block" example earlier is: *those are
 
 Nothing here says "change from baseline", "treatment", or "site". The five outputs are statistical *patterns* indexed by formula slot names.
 
-**`T.CFB_ANCOVA`** — the binding, in the §6 Option B twin-DSD shape.
+**`T.CFB_ANCOVA`** — the binding.
 
 ```jsonc
 {
@@ -457,10 +456,10 @@ Nothing here says "change from baseline", "treatment", or "site". The five outpu
 
 This single object encodes: *ANCOVA, with response = the Change concept (which T.ChangeFromBaseline produced), with the baseline value of the same parameter as covariate, with planned treatment as the fixed effect, at one analysis visit, in one population, using SS type III*. Producing the same ANCOVA on the raw (unsubtracted) value would be a different transformation but the same method.
 
-Two §6-migration details worth noting against the older v06 shape:
+Two details worth highlighting about this shape:
 
-- The five method outputs `ls_means`, `contrasts_t`, `type3_tests_f`, `parameter_estimates_linear`, `fit_statistics_linear` each bind to the corresponding AC result pattern via `output` + `concept`. The old `methodOutputSlotMapping` block is gone — that mapping IS the output-measure binding list now.
-- Both inputs cite a named slice (`endpoint` for the response, `parameter_baseline` for the covariate). The diff between the two slices (`{visit}` vs `{baseline_visit}`) is the load-bearing signal. The old v06 only sliced the covariate explicitly and left the response's implicit endpoint filter to engine convention.
+- The five method outputs `ls_means`, `contrasts_t`, `type3_tests_f`, `parameter_estimates_linear`, `fit_statistics_linear` each bind to the corresponding AC result pattern via `output` + `concept`. The mapping between method-output slot and AC result pattern IS the output-measure binding list.
+- Both inputs cite a named slice (`endpoint` for the response, `parameter_baseline` for the covariate). The diff between the two slices (`{visit}` vs `{baseline_visit}`) is the load-bearing signal that says "the covariate is the baseline value of the same parameter and population as the response."
 
 The analysis concepts the outputs map onto (`LSMeans`, `Contrasts`, `Type3Tests`, `ParameterEstimates`, `FitStatistics`) live in `AC_Concept_Model_v017.json` and define *what statistical objects look like* (constituents and dimensions) independently of the method that produced them.
 
@@ -501,15 +500,15 @@ The analysis concepts the outputs map onto (`LSMeans`, `Contrasts`, `Type3Tests`
 
 #### What changes shape (ANCOVA CFB)
 
-| AC artefact (post-§6) | Define.yaml location | Comment |
+| AC artefact | `define.yaml` location | Comment |
 |---|---|---|
 | `M.ANCOVA` (concept-free, statistical generic) | A `Method` instance, possibly tagged `implementsConcept: ANCOVA` | Same problem as §2.2: nothing in Define stops a sponsor from collapsing M and T into one statement (`A.CFB_ANCOVA.SBP.Week24` above already does it implicitly — there is no separate ANCOVA-without-context object). |
 | `outputs[]` with `output_type` into `output_class_templates.json` (template by *statistical shape*) | `ReturnValue` plus `Item`s in the output `ItemGroup` (a `Dataset` typed as `DataCube`) | Define's output shape is enumerated as concrete `Item`s. The AC layer-1 / layer-2 / layer-3 templates (statistic / pattern / instance) are not modelled as such — though `ReifiedConcept` plus `ConceptProperty` could carry the same info if you reified the patterns. |
-| Output measure bindings `{output: "ls_means", concept: "LSMeans"}` (one per method-output slot) | One `Item` per output column in the output `ItemGroup`, each with `conceptProperty → LSMeans.<constituent>` | Define expresses each column individually; AC binds the *method-output slot* directly to the *AC result pattern*, and the validator (per §6.6 rule 11) chain-resolves the per-statistic columns from the pattern's `constituents[]` against `statistics_vocabulary.json`. |
+| Output measure bindings `{output: "ls_means", concept: "LSMeans"}` (one per method-output slot) | One `Item` per output column in the output `ItemGroup`, each with `conceptProperty → LSMeans.<constituent>` | Define expresses each column individually; AC binds the *method-output slot* directly to the *AC result pattern*, and the validator chain-resolves the per-statistic columns from the pattern's `constituents[]` against `statistics_vocabulary.json`. |
 | `methodConfigurations[].configurationName="ss_type", value="III"` | `Parameter.value` on a `FormalExpression` parameter | Define's `Parameter` is overloaded: it can be a formula token AND a configuration value-holder. AC keeps these in separate arrays (`inputs[]` vs `configurations[]`), which is easier to validate and easier to render. |
-| Twin `inputDataStructure` + `outputDataStructure` with explicit dim duplication | One `Analysis.inputData → ItemGroup` \| `Dataset` plus an output `ItemGroup`, each with its own DSD | After the §6 migration both schemas now describe the consumed vs. produced cubes as independent DSDs. AC carries this duplication on purpose ("the price of qb fidelity" per §6.5); Define does it because `Dataflow` already separates input from output. |
+| Twin `inputDataStructure` + `outputDataStructure` with explicit dim duplication | One `Analysis.inputData → ItemGroup` \| `Dataset` plus an output `ItemGroup`, each with its own DSD | Both schemas describe the consumed and produced cubes as independent DSDs. AC carries this duplication on purpose ("the price of qb fidelity"); Define does it because `Dataflow` already separates input from output. |
 | `inputDataStructure.slices[]` with `{visit}` / `{baseline_visit}` placeholders | `WhereClause` + `Condition` + `RangeCheck` (no templating) | Define can express the literal version of either slice but does not have the *template* mechanism. The endpoint-driven binding (`sliceKeys[].source = "visit"`) has no Define counterpart. |
-| `validSmartPhrases[]` (composed phrase rendered at display time from this list × sliceKey-bound values) | No equivalent slot | Same point as before; with the §6 migration the rendered string is no longer baked into the JSON (`composedPhrase` was dropped), reinforcing that this is a UI-layer concern. Define has no slot for it on either side. |
+| `validSmartPhrases[]` (composed phrase rendered at display time from this list × sliceKey-bound values) | No equivalent slot | The rendered string is composed at display time from the SmartPhrase list and the sliceKey-bound values, never stored as data; Define has no slot for it on either side. |
 
 #### What is lost going from AC → Define (ANCOVA CFB)
 
@@ -520,21 +519,11 @@ The analysis concepts the outputs map onto (`LSMeans`, `Contrasts`, `Type3Tests`
 
 #### What is gained going from AC → Define (ANCOVA CFB)
 
-1. **`analysisReason`, `analysisPurpose`, `applicableWhen`** — explicit narrative slots tied to USDM that AC currently shells out to the protocol or the analysis spec.
-2. **`Analysis is_a Method`** — partial gain. AC files DO have a discriminator now (`transformationType: "derivation" | "analysis"` at the transformation level, post-§6) and the methods themselves are distinguished by `formula.notation` (`assignment` vs `wilkinson_rogers` vs `survival`). The directory split (`analyses/` vs `derivations/`) is convention plus discriminator, not just naming. What Define gains by inheritance is that any feature added to `Method` is automatically available on `Analysis` — useful if the `Governed` mixin grows new fields later.
-3. **`Display`** — genuinely absent in AC. First-class object for "the rendered output" (tables, listings, figures). ARS submissions and TLF rendering currently live downstream of the AC framework with no schema representation.
-4. **`Origin.sourceItems` on every Item** — *not* a gain in the dataContracts architecture. Define's `Origin.type` (`Collected` / `Derived` / `Assigned` / `Predecessor` / `Protocol` / `Not Available` / `Other`) and `sourceItems[]` are entirely *derivable* from the upstream metadata you already maintain:
+1. **`analysisReason`, `analysisPurpose`, `applicableWhen`** — explicit narrative slots tied to USDM. AC carries this information on the eSAP / analysis-spec side rather than on the transformation schema; if submission consumers expect it on the per-analysis projection, Define has slots and AC routes it through the per-study spec.
+2. **`Analysis is_a Method`** — Define gives Method and Analysis a shared schema surface via inheritance, so any feature added to `Method` is automatically available on `Analysis`. AC distinguishes the two using the `transformationType: "derivation" | "analysis"` discriminator on the transformation plus the `formula.notation` (`assignment` vs `wilkinson_rogers` vs `survival`) on the method; the same separation is expressed, but without the polymorphism a generic procedure that accepts "any Method" would inherit.
+3. **`Display`** — first-class schema object for "the rendered output" (tables, listings, figures). AC has no equivalent at the schema level; ARS submissions and TLF rendering are downstream concerns handled by the ARS projection.
 
-   - `Collected` ⇐ Item's concept is bound to a `usdm:ScheduledActivityInstance` (BC at a SoA point).
-   - `Derived` ⇐ Item's concept has a `T.*` transformation in its lineage (or its DC has `derives_from` edges to other DCs).
-   - `Assigned` ⇐ Item value comes from a CodeList lookup or a CRF label.
-   - `Predecessor` ⇐ Item is a direct projection of another Item (e.g. `AVAL ← VSSTRESN` via `concept-variable-mappings.json`).
-   - `Protocol` ⇐ Item is bound to a `usdm:StudyDesign` element (arm, epoch, planned treatment).
-   - `sourceItems[]` ⇐ direct `derives_from` edges in the DC graph. For `Item.CHG`, those are `[Item.AVAL, Item.BASE]` because `T.ChangeFromBaseline` declares `minuend: Measure` (projects to AVAL) and `subtrahend: Measure sliced to baseline` (projects to BASE).
-
-   So `Origin` in the emitted Define-XML is a **rendering at projection time**, not a stored fact — exactly the position `docs/dataContracts-approach.md` §8.4 takes: *"Define-XML's Origin and Method elements are GENERATED from the graph rather than hand-authored. They cannot drift, because they aren't independent artifacts — they are projections of the same source."* Storing `Origin` as a primary field (as today's hand-authored Define-XML workflows do) IS the drift hazard the dataContracts approach exists to eliminate.
-
-Note: `Dataflow` is also *not* a gain — the §6 migration made AC's Transformation structurally equivalent to a `Dataflow` (input DSD + output DSD + analysisMethod).
+(`Dataflow` and `Origin.sourceItems` are *not* listed here. AC's Transformation is structurally equivalent to a `Dataflow` — input DSD + output DSD + method reference — so the schemas align on that axis. `Origin.sourceItems` and `Origin.type` are both derivable from upstream AC + USDM + projection-rule metadata, and the Define projection generator computes them at emission time rather than reading them as authored data; §6.4 has the full table.)
 
 ---
 
@@ -648,19 +637,19 @@ This one needs nuance — AC is not a blank slate here. A fair accounting:
 - **AC carries the mapping at the data layer** — per-concept `code` blocks, per-output `valueType`, per-target sections in the mappings file. Compact and study-author-friendly.
 - **Define carries the mapping at the schema layer** — class-level `exact_mappings` / `close_mappings` / `narrow_mappings` URIs that LinkML-to-RDF / LinkML-to-JSON-Schema tooling consumes directly. This is what produces the "drop in a LinkML processor, get RDF" workflow.
 
-So the real gain on standards is narrow: **(a)** schema-level uniformity (every Define class declares its mapping URIs in one place, so a LinkML processor emits qb-/FHIR-/OMOP-compliant output without per-class wiring), and **(b)** the two specific standards AC doesn't yet cover (SDMX, PROV) plus ODM and stronger USDM. The pre-§6 claim that AC needed Define for FHIR / OMOP / qb alignment was wrong — that alignment is already present, just at the data layer rather than the class layer.
+So the genuine gain on standards is narrow: **(a)** schema-level uniformity (every Define class declares its mapping URIs in one place, so a LinkML processor emits qb-/FHIR-/OMOP-compliant output without per-class wiring), and **(b)** the two specific standards AC doesn't cover (SDMX, PROV) plus ODM and stronger USDM. For the standards both stacks address (qb, FHIR, OMOP, NCIt), the alignment is present in both — AC at the data layer, Define at the class layer.
 
-### 6.2 Per-element governance fields (partial gain)
+### 6.2 Per-element review and audit fields
 
-`Governed` mixin (`mandatory`, `comments`, `siteOrSponsorComments`, `purpose`, `lastUpdated`, `owner`, `wasDerivedFrom`) makes per-element audit data uniformly available across every governed element. AC already has the identification side (`conceptId`, `name`, `label`, `description`, `ncitCode`, `codings[]`, `schema_version`, plus `usesMethod` as a typed derivation FK on transformations); what's missing is the **review/audit trail** (`mandatory`, `comments`, `siteOrSponsorComments`, `lastUpdated`, `owner`). For cross-study library files reviewed in git that's currently fine; for standards-package distribution to downstream consumers it's the gap.
+`Governed` mixin (`mandatory`, `comments`, `siteOrSponsorComments`, `purpose`, `lastUpdated`, `owner`, `wasDerivedFrom`) makes per-element audit data uniformly available across every governed element. AC carries the identification side (`conceptId`, `name`, `label`, `description`, `ncitCode`, `codings[]`, `schema_version`, plus `usesMethod` as a typed derivation FK on transformations); what is distinctively Define is the **review/audit trail** (`mandatory`, `comments`, `siteOrSponsorComments`, `lastUpdated`, `owner`). For cross-study library files reviewed in git, AC's posture is sufficient; for standards-package distribution to downstream consumers, the per-element trail is the gap.
 
-### 6.3 Multilingual / labelled (real gain)
+### 6.3 Multilingual labels and aliases
 
 `Labelled` mixin makes `label`, `description`, `aliases` `TranslatedText`-capable. AC labels are plain strings; no `aliases[]` slot exists in the AC method or transformation schemas. Material gap for non-English trial-master-file consumption.
 
-### 6.4 `Origin` + `SourceItem` per-variable lineage — *not* a gain; derivable from upstream metadata
+### 6.4 `Origin` + `SourceItem` per-variable lineage (derivable from upstream metadata)
 
-This was originally listed as a gain. It isn't. Define's `Origin.type` enum (`Collected` / `Derived` / `Assigned` / `Predecessor` / `Protocol` / `Not Available` / `Other`) and `sourceItems[]` chain are entirely *derivable* from metadata the AC + USDM + dataContracts stack already maintains:
+Define's `Origin.type` enum (`Collected` / `Derived` / `Assigned` / `Predecessor` / `Protocol` / `Not Available` / `Other`) and `sourceItems[]` chain are entirely *derivable* from metadata the AC + USDM + dataContracts stack maintains:
 
 | Define `Origin.type` | Derivable from |
 |---|---|
@@ -679,9 +668,9 @@ Storing `Origin` as a primary, hand-authored field — which is the workflow tod
 
 The dataContracts approach fixes this *not* by adopting `Origin` as a stored field at the authoring layer, but by **deriving it from the graph at projection time**. The Define-XML projection generator (§7.2) is the only place `Origin` exists; it's read, not written.
 
-### 6.5 First-class `Display` (genuine gain)
+### 6.5 First-class `Display`
 
-`Display` is a first-class object for "the rendered output" (tables, listings, figures). AC has nothing equivalent — ARS submissions and TLF rendering live downstream of the framework. `Dataflow` is *not* listed here: the §6 migration made AC's Transformation structurally a `Dataflow` (twin DSDs + analysisMethod), so that part is no longer a gain.
+`Display` is a first-class schema object for "the rendered output" (tables, listings, figures). AC has nothing equivalent at the schema level — ARS submissions and TLF rendering live downstream of the framework. (`Dataflow` is not listed here: AC's Transformation is structurally a `Dataflow` — twin DSDs + analysisMethod — so the two schemas align on that axis.)
 
 ### 6.6 `Condition` / `WhereClause` / `RangeCheck` composability
 
@@ -697,7 +686,7 @@ Define is designed to be the publishing format for CDISC standards packages (SDT
 
 ### 7.0 Framing — Define is a projection, not an authoring layer
 
-Before listing options, a position the rest of §7 depends on (and that the earlier draft of this doc didn't make explicit). `docs/dataContracts-approach.md` §8.4 puts SDTM / ADaM / Define-XML / ARS / FHIR / OMOP on the same footing: each is an *auto-generated projection* of the concept-anchored DC + DP graph. None of them is the source of truth. The authoring surface is:
+A position the rest of §7 depends on. `docs/dataContracts-approach.md` §8.4 puts SDTM / ADaM / Define-XML / ARS / FHIR / OMOP on the same footing: each is an *auto-generated projection* of the concept-anchored DC + DP graph. None of them is the source of truth. The authoring surface is:
 
 - **Cross-study libraries** (concept-bound, physical-agnostic): `lib/methods/*`, `lib/transformations/*`, `lib/concepts/*`.
 - **Per-study spec**: USDM (study design) + eSAP (executable Statistical Analysis Plan). The eSAP references the library transformations and binds them to the study's endpoints, visits, and populations.
@@ -714,7 +703,7 @@ Keep the AC framework and the dataContracts pipeline as-is. When a study reaches
 
 ### 7.2 Build a Define-XML projection generator from the DC graph (recommended near-term)
 
-Add a generator that emits Define-XML / Define-JSON from the DC + DP graph — one of N projection generators (alongside SDTM tables, ADaM tables, ARS packages, FHIR resources, OMOP CDM). The §6 migration of the transformation library makes the metadata side near-mechanical:
+Add a generator that emits Define-XML / Define-JSON from the DC + DP graph — one of N projection generators (alongside SDTM tables, ADaM tables, ARS packages, FHIR resources, OMOP CDM). The twin-DSD shape of the transformation library makes the metadata side near-mechanical:
 
 - `lib/methods/M_*.json` → `Method` instances on the emitted MetaDataVersion (with `implementsConcept` left null to mark them concept-free). Library-side; emitted once per Standards package (ADaMIG, SDTMIG, …).
 - `lib/transformations/T.*` → a `Dataflow` whose input cube's DSD is generated from `inputDataStructure`, whose output cube's DSD is generated from `outputDataStructure`, and whose `analysisMethod` references the named `Method` (with `methodConfigurations[]` projected onto `FormalExpression.parameters[].value`). For `transformationType: analysis`, also emit an `Analysis` instance with `analysisMethod` set.
@@ -731,7 +720,7 @@ Add a generator that emits Define-XML / Define-JSON from the DC + DP graph — o
 
 ### 7.3 Migrate AC schemas to inherit from Define classes (longer-term)
 
-Rewrite `acdc_method.yaml` and `acdc_transformation.yaml` so their root classes `is_a` Define classes. The post-§6 shape makes the inheritance graph particularly clean:
+Rewrite `acdc_method.yaml` and `acdc_transformation.yaml` so their root classes `is_a` Define classes. The twin-DSD shape makes the inheritance graph particularly clean:
 
 - `acdc_method.Method` (renamed something like `ACDCMethod`) `is_a: define.Method` with `implementsConcept` *removed* via `slot_usage`. (LinkML supports overriding a parent slot to be forbidden; the validator checks this.)
 - `acdc_method.MethodInput` `is_a: define.Parameter`.
@@ -760,22 +749,6 @@ Adopt **Option 7.2** now and **plan for 7.3** once two AC-side designs settle:
    - keep them as AC-private extensions of `WhereClause` and accept that AC artefacts round-trip through Define only with a `comments` field carrying the AC encoding.
 
 You are not missing anything material *for the current AC framework's job* by not having adopted Define. What you would gain is **publishability**: SDMX / qb / FHIR / USDM / PROV mappings on every element, a multilingual labelling story, full audit fields, and a path to express the AC library as a Define-JSON / Define-XML deliverable. What you would lose if you adopted Define naïvely (no extensions, no `slot_usage` overrides) is the very thing that makes the AC framework distinctive: the schema-enforced separation of *math* from *meaning*. The recommendation is to keep that separation as the authoring discipline, and to use Define as the publication and interoperability surface.
-
----
-
-## 9. Post-§6 migration: what the assessment changed
-
-The §6 (Option B twin-DSD) migration of `ACDC_Transformation_Library_v06.json` (v0.6 → v0.7) does **not** change the high-level conclusion: the AC framework's concept-free method discipline is still its load-bearing distinction from `define.yaml`, and `define.yaml` still wins on standards mappings, governance, and publishability. The recommendation (do Option 7.2 now, plan for 7.3 later) is unchanged.
-
-What the migration does change:
-
-1. **The qb correspondence is no longer aspirational.** Pre-§6, the AC library asserted qb alignment via a `_w3c_alignment` block but used a single flat `bindings[]` array with a `direction` discriminator — meaning a JSON→RDF converter had to *partition* `bindings[]` to materialise the two real DSDs. Post-§6, the file has two literal `qb:DataStructureDefinition`s on disk. A converter just emits them.
-2. **The Define `Dataflow` correspondence becomes obvious.** Pre-§6, mapping a transformation to Define required choosing between a bespoke `Method`-per-binding or some `ItemGroup`-of-output construction. Post-§6, a transformation IS a `Dataflow` with an input DSD, an output DSD, and an `analysisMethod` — exactly what `define.Dataflow` carries. §7.2 of this doc was rewritten to reflect that.
-3. **The FK structure is now uniform.** Every binding now carries either an `input` FK (into `method.inputs[].name`) or an `output` FK (into `method.outputs[].name`). The migrated library has 25 transformations and every input/output/configuration FK validates cleanly against the method files. This is the same FK contract Define enforces between `Item.method`, `FormalExpression.parameters[].items`, and `Item`s — the validation surfaces line up.
-4. **`composedPhrase` is gone; `methodOutputSlotMapping` is gone; `instanceOf` is gone.** All three were AC-only conveniences with no Define counterpart. Dropping them simplifies §3's "what changes shape" table and removes friction in any future export transformer.
-5. **`output_class_templates.json` is now the only AC artefact with no clean Define counterpart.** The three-axis decomposition (class × shape × distribution) is still AC-specific. §8's recommendation to formalise it before pursuing Option 7.3 stands.
-
-The biggest *non-change*: `define.yaml` still has no schema-level way to enforce the concept-free method rule. Whatever path the working group picks, that rule has to be re-encoded — either as a LinkML `slot_usage` override on a subclassed Method (Option 7.3), or as a validator-rule maintained alongside the transformer (Option 7.2).
 
 ---
 
