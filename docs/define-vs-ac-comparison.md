@@ -557,98 +557,105 @@ The key point — and the reason §6.4 reframed `Origin` as *not* a gain — is 
 
 ### 4.4 Study eSAP — the per-study Spec-Layer artefact
 
-When §0.2 named *"USDM (study design) + eSAP (analysis plan)"* as the per-study Specification-Layer authoring surface, eSAP was a placeholder. `model/linkML/study_esap.schema.yaml` (draft, v0.4.0) makes it concrete. This subsection covers what eSAP carries, how it relates to `define.yaml`'s analogous slots, and where the two stacks line up vs. diverge.
+When §0.2 named *"USDM (study design) + eSAP (analysis plan)"* as the per-study Specification-Layer authoring surface, eSAP was a placeholder. `model/linkML/study_esap.schema.yaml` (draft, v0.5.0) makes it concrete. This subsection covers what eSAP carries, how it relates to `define.yaml`'s analogous slots, and where the two stacks line up vs. diverge.
+
+**Architectural posture** — the study Transformation is a **full copy** of the library `TransformationTemplate`, not a `Reference + Resolution` composition. Cube structure (twin `inputDataStructure` / `outputDataStructure` qb:DSDs), slice templates, `sliceKeys`, `methodConfigurations`, and `validSmartPhrases` are all *copied verbatim* from the library template into the study Transformation. The study then adds `sliceKeys[].value` (resolving placeholders) and substitutes the resolved values in-place into matching `{placeholder}` tokens in slice constraint values. The **`Method` is the only library artefact that stays referenced** — via `usesMethod` (FK to `M.<conceptId>`). Everything else is inlined so the eSAP is self-contained for regulatory reproducibility. The `basedOn → TransformationRef` slot keeps copy-provenance auditable but is *not* a live reference — once copied, the study Transformation is independently editable.
 
 #### 4.4.1 Structure
 
 eSAP is structured around three conformance categories (the schema's `x-provenance.conformance` field on every type):
 
 - **`reference`** — USDM entities (`Study`, `StudyVersion`, `StudyDesign`, `Objective`, `Endpoint`, `Estimand`, `AnalysisPopulation`, `StudyIntervention`, `IntercurrentEvent`, `ScheduleTimeline`, `StudyDefinitionDocument`, …) imported by reference. Each is `additionalProperties: true` for pass-through of the full USDM payload; eSAP does *not* redefine them.
-- **`owned`** — eSAP-specific types: `Transformation` (abstract) and its concrete subclasses `Derivation` and `Analysis` (the study-resolved instances); `Binding`, `Configuration`, `Slice`, `PhraseInstance`, `ResolvedExpression`, `OutputClassConfig` (resolved-binding shapes); `IceHandling` (per-estimand ICE handling); typed enums `IchE9R1Strategy` and `AnalysisRole`.
+- **`owned`** — eSAP-specific types: `Transformation` (abstract) and its concrete subclasses `Derivation` and `Analysis` (the study-resolved instances); structural twin-DSD types `DataStructure`, `DimensionEntry`, `MeasureEntry`, `SliceTemplate`, `SliceConstraint`, `SliceKey` (qb cube components copied from library templates); `MethodConfiguration` (template-level defaults), `Configuration` (study-resolved overrides), `PhraseInstance` (resolved SmartPhrase text), `ResolvedExpression` (resolved formula), `OutputClassConfig` (per-output dimension selection); `IceHandling` (per-estimand ICE handling); typed enums `IchE9R1Strategy` and `AnalysisRole`.
 - **`cross-reference`** — `TransformationRef`, `SmartPhraseRef`, `MethodOutputRef`, `ARSAnalysisRef` — typed FKs into the Transformation Library and ARS, validated at build/exec time.
 
-```text
-SPECIFICATION LAYER (study eSAP scope)
-═════════════════════════════════════
+![Study eSAP structure — USDM passthrough nodes, eSAP-owned types, and external Spec-Layer references (Library v0.7 and ARS) with the basedOn, hasTransformation, variableOfInterest, intercurrentEvents, handlesIntercurrentEvent, detectedBy, implementedBy, arsAnalysis, and summarizedByOutputClass edges.](../images/study-esap-structure.png)
 
-╔═ USDM passthrough (conformance: reference) ═══════════════════════════╗
-║                                                                        ║
-║   Study (root)                                                         ║
-║    ├─ versions[] → StudyVersion → StudyDesign → Objective              ║
-║    │                                              └─ endpoints[]       ║
-║    │                                                  → Endpoint ◄──┐  ║
-║    │                                                       │         │  ║
-║    │                                          hasTransformation      │  ║
-║    │                                                       ▼         │  ║
-║    │                                                    Derivation   │  ║
-║    │                                                    (is-a T)     │  ║
-║    │                                                                  │  ║
-║    ├─ estimands[] → Estimand (ICH E9 R1)                              │  ║
-║    │                  ├─ variableOfInterest ──────────────────────────┘  ║
-║    │                  ├─ analysisPopulation  → AnalysisPopulation        ║
-║    │                  ├─ interventions[]     → StudyIntervention         ║
-║    │                  ├─ intercurrentEvents[]→ IntercurrentEvent         ║
-║    │                  │      ├─ icheStrategy → IchE9R1Strategy           ║
-║    │                  │      ├─ hasScheduleTimeline → ScheduleTimeline    ║
-║    │                  │      └─ detectedBy ────► TransformationRef ┐     ║
-║    │                  ├─ handlesIntercurrentEvent[] → IceHandling   │     ║
-║    │                  │      ├─ forIntercurrentEvent                 │     ║
-║    │                  │      ├─ icheStrategy → IchE9R1Strategy       │     ║
-║    │                  │      └─ implementedBy → Transformation.id    │     ║
-║    │                  └─ hasTransformation[] → Analysis              │     ║
-║    │                                          (is-a T,                │     ║
-║    │                                           is-a ARS Analysis)    │     ║
-║    │                                                                  │     ║
-║    └─ documentedBy[] → StudyDefinitionDocument                        │     ║
-║         └─ versions → … → NarrativeContent (the eSAP document)        │     ║
-║                                                                       │     ║
-╚═══════════════════════════════════════════════════════════════════════│═════╝
-                                                                       │
-╔═ eSAP-owned (conformance: owned) ═════════════════════════════════════│═════╗
-║                                                                       │     ║
-║   Transformation (abstract)                                           │     ║
-║    ├─ basedOn ────────────────────────────► TransformationRef ◄───────┘     ║
-║    ├─ configurationValues[]  : Configuration  (resolved enum/decimal/…)     ║
-║    ├─ hasInput[]   : Binding  (concept ↔ methodRole, optional slice ref)    ║
-║    ├─ hasOutput[]  : Binding                                                ║
-║    ├─ resolvedSlices[]       : Slice  (template placeholders → values)      ║
-║    ├─ hasPhraseInstance[]    : PhraseInstance                                ║
-║    │      └─ basedOn ────────────────────► SmartPhraseRef ─────────────┐    ║
-║    ├─ resolvedExpression     : ResolvedExpression                       │    ║
-║    └─ hasOutputConfig[]      : OutputClassConfig                        │    ║
-║                                                                          │    ║
-║   Derivation is_a Transformation                                         │    ║
-║                                                                          │    ║
-║   Analysis is_a Transformation, adds:                                    │    ║
-║    ├─ arsAnalysis ──────────────────────► ARSAnalysisRef ────────────┐  │    ║
-║    ├─ analysisRole : AnalysisRole                                     │  │    ║
-║    │       (MainEstimator | SensitivityAnalysis | SupplementaryAnalysis)  │    ║
-║    └─ summarizedByOutputClass ─────────► MethodOutputRef ──────────┐ │  │    ║
-║                                              (path: M.X/output/N)  │ │  │    ║
-║                                                                    │ │  │    ║
-║   Typed enums (ICH E9 R1):                                         │ │  │    ║
-║    ├─ IchE9R1Strategy ∈ {TreatmentPolicy, Hypothetical, Composite, │ │  │    ║
-║    │                     WhileOnTreatment, PrincipalStratum}        │ │  │    ║
-║    └─ AnalysisRole                                                  │ │  │    ║
-║                                                                    │ │  │    ║
-╚════════════════════════════════════════════════════════════════════│═│══│════╝
-                                                                    │ │  │
-External Spec-Layer cross-references (conformance: cross-reference) │ │  │
-                                                                    ▼ ▼  ▼
-┌──────────────────────────────────────────────────────────────────────────────┐
-│  Transformation Library v0.7 (lib/transformations/, lib/methods/)            │
-│   ├─ T.* templates ◄──── TransformationRef.transformationTemplateId          │
-│   ├─ SP_* phrases ◄────  SmartPhraseRef.smartPhraseId                        │
-│   └─ M_*.json methods                                                        │
-│        └─ outputs[].name ◄──── MethodOutputRef.methodOutputId                 │
-│                                  (path 'M.<id>/output/<output-name>')         │
-│                                                                              │
-│  ARS — Analysis Results Standard                                             │
-│   └─ Analysis defs ◄──── ARSAnalysisRef.analysisId                           │
-└──────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    %% ─── USDM passthrough (conformance: reference) ───
+    subgraph USDM["USDM passthrough — conformance: reference"]
+        direction TB
+        Study(["Study"])
+        SV["StudyVersion → StudyDesign → Objective"]
+        EP["Endpoint"]
+        Est(["Estimand<br/>(ICH E9 R1)"])
+        ICE["IntercurrentEvent"]
+        STL["ScheduleTimeline"]
+        AP["AnalysisPopulation"]
+        SI["StudyIntervention"]
+        SDD["StudyDefinitionDocument<br/>(eSAP narrative)"]
+
+        Study --> SV
+        SV --> EP
+        Study --> Est
+        Study --> SDD
+        Est -- variableOfInterest --> EP
+        Est -- analysisPopulation --> AP
+        Est -- interventions --> SI
+        Est -- intercurrentEvents --> ICE
+        ICE -- hasScheduleTimeline --> STL
+    end
+
+    %% ─── eSAP-owned (conformance: owned) ───
+    subgraph eSAP["eSAP-owned — conformance: owned"]
+        direction TB
+        T["Transformation (abstract — full copy of template)<br/>basedOn (copy provenance) · usesMethod (live FK)<br/>transformationType · label · shortLabel<br/>── copied verbatim from library template ──<br/>inputDataStructure (qb:DSD)<br/>outputDataStructure (qb:DSD)<br/>sliceKeys · methodConfigurations · validSmartPhrases<br/>── study-resolved overlays ──<br/>configurationValues · hasPhraseInstance<br/>resolvedExpression · hasOutputConfig"]
+        D["Derivation"]
+        A["Analysis<br/>+ arsAnalysis<br/>+ analysisRole<br/>+ summarizedByOutputClass"]
+        IH["IceHandling<br/>(forICE · icheStrategy · implementedBy)"]
+        IES{{"IchE9R1Strategy enum<br/>TreatmentPolicy · Hypothetical<br/>Composite · WhileOnTreatment<br/>PrincipalStratum"}}
+        AR{{"AnalysisRole enum<br/>MainEstimator<br/>SensitivityAnalysis<br/>SupplementaryAnalysis"}}
+
+        D -. is-a .-> T
+        A -. is-a .-> T
+        A -- analysisRole --> AR
+        IH -- icheStrategy --> IES
+    end
+
+    %% ─── External Spec-Layer references (conformance: cross-reference) ───
+    subgraph Refs["External Spec-Layer references — conformance: cross-reference"]
+        direction TB
+        Lib(["Transformation Library v0.7<br/>T.* templates · SP_* phrases · M_*.json methods"])
+        ARS(["ARS — Analysis Results Standard<br/>Analysis defs"])
+    end
+
+    %% ─── Cross-group edges ───
+    EP -- hasTransformation --> D
+    Est -- hasTransformation --> A
+    Est -- handlesIntercurrentEvent --> IH
+    ICE -. icheStrategy .-> IES
+    IH -. implementedBy .-> T
+    ICE -- detectedBy --> Lib
+
+    T -. basedOn (copy provenance) .-> Lib
+    T == usesMethod (live FK) ==> Lib
+    A -- arsAnalysis --> ARS
+    A -- summarizedByOutputClass --> Lib
+
+    %% ─── Styling ───
+    classDef usdmCls fill:#e8f4e8,stroke:#2a6a2a,color:#000
+    classDef esapCls fill:#fff4e0,stroke:#a85a0a,color:#000
+    classDef refCls  fill:#e8e0f4,stroke:#3a3a8a,color:#000
+
+    class Study,SV,EP,Est,ICE,STL,AP,SI,SDD usdmCls
+    class T,D,A,IH,IES,AR esapCls
+    class Lib,ARS refCls
 ```
 
-**The key structural pattern is `basedOn` + resolved bindings.** A study `Transformation` never repeats what's in the library template. It carries `basedOn → TransformationRef` plus the *resolved* bindings: which study-specific concept fills each `methodRole` slot, which slice template gets which `{placeholder}` values, which configuration enums resolve to which study choices. The library template stays concept-free (M.* and T.* in their cross-study form); the eSAP instance specialises by binding.
+**The key structural pattern is full-copy with in-place placeholder substitution.** A study `Transformation` is a verbatim copy of its library `TransformationTemplate`, not a reference + per-slot bindings. The cube structure (twin qb:DSDs), slice templates, sliceKeys, methodConfigurations, and validSmartPhrases are inlined. The study fills `sliceKeys[].value` with concrete values resolved from the endpoint spec, and substitutes those values in-place into matching `{placeholder}` tokens in slice constraint values (the original `source` field stays so the resolution remains auditable). The library template stays concept-free (M.* and T.* in their cross-study form); the eSAP instance specialises by *editing the copy*. The single live cross-reference is `usesMethod → M.<conceptId>` — the only library artefact that isn't inlined.
+
+**Direction encoding is now structural.** The older "binding" shape (`hasInput[]` / `hasOutput[]` / `direction` field on each binding) has been replaced. Direction is encoded by which DSD a dimension or measure entry lives in: `inputDataStructure.dimensions[*].input` is an FK to `method.inputs[].name`; `outputDataStructure.measures[*].output` is an FK to `method.outputs[].name`. No `direction` field appears anywhere — placement determines it.
+
+**Cube identity.** Each study `Transformation`'s `inputDataStructure` and `outputDataStructure` is a distinct `qb:DataStructureDefinition` with its own IRI, even when structurally identical to the library template's. The copy is a new RDF resource, not an alias of the library DSD.
+
+**Schema-level types backing the copy** (eSAP-owned, conformance: owned):
+
+- `DataStructure` — twin qb:DSD wrapper carrying `dimensions[]`, `measures[]`, `slices[]`.
+- `DimensionEntry` / `MeasureEntry` — qb component entries; each carries `input` / `output` FK (mutually exclusive by DSD placement) plus `concept` / `conceptCategory` for the bound concept.
+- `SliceTemplate` / `SliceConstraint` — named slice with `{dimension, value}` constraints; `value` may be a `{placeholder}` token in library templates, substituted in-place in study copies.
+- `SliceKey` — `{dimension, source, value}` triple. Library template carries `{dimension, source}` (placeholder name + endpoint-spec attribute); study adds `value` (resolved value).
+- `MethodConfiguration` — template-level default override of a method config parameter. Distinct from `Configuration` (study-resolved value override) — both can coexist with the study one winning.
 
 #### 4.4.2 Comparison with `define.yaml`'s per-study analysis side
 
@@ -660,21 +667,23 @@ External Spec-Layer cross-references (conformance: cross-reference) │ │  │
 | Estimand modelling | No first-class Estimand; estimand information lives in narrative slots (`purpose`, `analysisReason`) | First-class `Estimand` (USDM) with typed ICH E9(R1) attributes (`variableOfInterest`, `analysisPopulation`, `interventions`, `intercurrentEvents`, `handlesIntercurrentEvent`, `hasTransformation`) |
 | ICH E9(R1) strategy | Free-text or coded under `WhereClause` | Typed enum `IchE9R1Strategy` with five members + reified `IceHandling` for per-estimand overrides |
 | Intercurrent events | Not modelled directly | First-class `IntercurrentEvent` (USDM) with typed `hasScheduleTimeline` + `detectedBy → TransformationRef` |
-| Concept binding | Inline on each `Item` (`dataType`, `length`, `codeList`, `conceptProperty`, `origin`) | Deferred to library templates; study supplies resolved `Binding[]` referencing concepts |
+| Concept binding | Inline on each `Item` (`dataType`, `length`, `codeList`, `conceptProperty`, `origin`) | Inlined on cube components — `DimensionEntry.concept` / `MeasureEntry.concept` carry the bound concept; copied from library template, optionally narrowed for study |
 | Implementation binding | Inline (`Item.dataType` / `length`, `ItemGroup.domain`, `Origin.sourceItems`) | None — eSAP stays implementation-agnostic, projection rules live separately in `concept-variable-mappings.json` |
-| SmartPhrase rendering | Not modelled | `hasPhraseInstance` carries the resolved text from a `SmartPhraseRef` |
-| Library vs study split | None — methods and analyses live alongside study-bound `itemGroups` in the same `MetaDataVersion` | Hard split — library templates in `lib/transformations/*` + `lib/methods/*`; eSAP cites them via `TransformationRef` / `MethodOutputRef` |
+| SmartPhrase rendering | Not modelled | `hasPhraseInstance` carries the resolved text from a `SmartPhraseRef`; `validSmartPhrases` list copied from template |
+| Library vs study split | None — methods and analyses live alongside study-bound `itemGroups` in the same `MetaDataVersion` | **Full-copy** — library `TransformationTemplate` is copied verbatim into the study Transformation (twin DSDs, slice templates, sliceKeys, methodConfigurations, validSmartPhrases all inlined). Only `Method` stays as a live cross-reference via `usesMethod`. The eSAP is self-contained for regulatory reproducibility. |
 
 #### 4.4.3 Fit assessment
 
 1. **eSAP IS the per-study Specification-Layer artefact §0.2 named.** Now explicit and schema-shaped. The `Study` root + eSAP-owned `Transformation` / `Derivation` / `Analysis` + cross-references to the Library and ARS line up exactly with the Specification-Layer half of the §0.1 diagram. Concept-bound, implementation-agnostic; eSAP relies on the Library for the concept-free Methods and Transformations.
 2. **eSAP carries strictly richer estimand / ICH E9(R1) framing than `define.yaml`.** Where `define.yaml` has `analysisReason` / `analysisPurpose` narrative slots, eSAP has typed `Estimand` (from USDM) with `intercurrentEvents`, `handlesIntercurrentEvent` (reified per-estimand `IceHandling`), the `IchE9R1Strategy` enum, and the `AnalysisRole` enum. The `detectedBy → TransformationRef` and `implementedBy → Transformation.id` linkages close the loop between ICH-E9(R1)-prescribed strategies and the actual derivations that operationalise them — *exactly the structural traceability auditors want and `define.yaml` doesn't carry*.
 3. **eSAP doesn't replicate `define.yaml`'s Execution-Layer surface.** No `Item`, no `ItemGroup`, no `Origin`, no `CodeList` references in eSAP. The implementation bindings live in `concept-variable-mappings.json` (projection rules) and are read by the projection generators at emission time. This keeps eSAP on the Specification-Layer side of the §0.1 line.
-4. **The library + ARS factoring is what makes eSAP small.** `define.yaml`'s `MetaDataVersion` is heavy because it inlines every `Method`, `Item`, `ItemGroup`, `CodeList`. eSAP at ~860 lines stays tight because the Library and ARS carry the templates and analysis defs; eSAP only carries what's study-specific (Estimands, ICE handling, resolved bindings, resolved phrases, ICH E9(R1) typed choices).
+4. **The full-copy model is what makes eSAP self-contained for regulatory reproducibility.** `define.yaml`'s `MetaDataVersion` is heavy because it inlines every `Method`, `Item`, `ItemGroup`, `CodeList` — bound to one specific physical realisation. eSAP is also self-contained, but at the Specification Layer: cube structure, slice templates, sliceKeys, methodConfigurations, and validSmartPhrases are *copied verbatim* from the library `TransformationTemplate` into the study Transformation; the study substitutes placeholders in-place; only `Method` (the algorithmic primitive) stays as a live cross-reference via `usesMethod`. Consumers can read the eSAP without re-resolving against the library at consumption time, and the eSAP remains valid against a *snapshot* of the library at study-spec time — important for audit traceability when the library evolves after a study is locked.
 
-#### 4.4.4 Open question worth surfacing
+#### 4.4.4 Open questions worth surfacing
 
-eSAP's `arsAnalysis → ARSAnalysisRef` says *"this study Analysis is-a ARS Analysis."* ARS itself has notions of `Operation` (the statistical method) and `Method` references. There's potential overlap between the ARS Analysis definition (cited via `arsAnalysis`) and the library Method (cited via `basedOn` + `summarizedByOutputClass`). For a given study Analysis: is the ARS reference the canonical *"what this analysis is"*, or is the library reference? If both are canonical, what does each contribute? Worth resolving in the eSAP design before downstream consumers (ARS readers, Define-XML generators) try to interpret the dual reference.
+**ARS reference vs. library reference.** eSAP's `arsAnalysis → ARSAnalysisRef` says *"this study Analysis is-a ARS Analysis."* ARS itself has notions of `Operation` (the statistical method) and `Method` references. There's potential overlap between the ARS Analysis definition (cited via `arsAnalysis`) and the library Method (cited via `usesMethod` + `summarizedByOutputClass`). For a given study Analysis: is the ARS reference the canonical *"what this analysis is"*, or is the library reference? If both are canonical, what does each contribute? Worth resolving before downstream consumers (ARS readers, Define-XML generators) try to interpret the dual reference.
+
+**Full-copy vs. reference — trade-off.** The v0.5.0 design copies the library template's structure into the study Transformation rather than referencing it. The benefit is **self-containment**: the eSAP can be consumed without resolving against the library, and remains valid against a snapshot of the library at study-spec time (important when a study is locked and the library evolves). The cost is **drift potential**: a sponsor can edit the copied template in the study Transformation without that edit being reflected back in the library — and conversely, an upstream library fix won't propagate into already-locked studies. Worth tooling for: a validator that detects when a study Transformation's copied structure diverges from its `basedOn` template (and flags whether the divergence is intentional study-level narrowing or accidental drift), and a re-derive-from-template operation for sponsors who want to refresh against a newer library version. Neither is in the schema yet; both are natural follow-ons.
 
 ---
 

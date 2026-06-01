@@ -1,11 +1,15 @@
 $id: https://cdisc.org/acdc/study_esap
 $schema: https://json-schema.org/draft/2019-09/schema
 title: study_esap
-description: Study eSAP Model schema. Binds reusable Transformation templates and Methods to a study's objectives, endpoints,
-  and estimands. Built on the CDISC USDM v4.0 study structure, with bindings to a Transformation & Method Library and to ARS
+description: 'Study eSAP Model schema. Binds Methods to a study''s objectives, endpoints, and estimands by full-copy of library
+  TransformationTemplates: each study Transformation copies its template''s cube structure (twin qb:DataStructureDefinitions),
+  slice templates, sliceKeys, methodConfigurations, and validSmartPhrases — and adds study-resolved values (sliceKeys[].value
+  filled in, slice constraint {placeholder} tokens substituted, configurationValues, hasPhraseInstance, resolvedExpression).
+  The Method is the only library artefact that stays referenced (via usesMethod); everything else is copied so the eSAP is
+  self-contained for regulatory reproducibility. Built on the CDISC USDM v4.0 study structure with cross-references to ARS
   Analysis definitions. Aligned with Transformation Library v0.7 (Option B strict twin DSDs per WG method-schema-design 2026-05-27)
-  and Method schema v0.9.1 (conceptId-keyed, inputs[]/outputs[] shape). Validates study eSAP instance files.
-version: 0.4.0
+  and Method schema v0.9.1 (conceptId-keyed, inputs[]/outputs[] shape). Validates study eSAP instance files.'
+version: 0.5.0
 type: object
 additionalProperties: true
 properties:
@@ -157,100 +161,186 @@ $defs:
     - MainEstimator
     - SensitivityAnalysis
     - SupplementaryAnalysis
-  Binding:
+  DataStructure:
     x-provenance:
       source: esap
       conformance: owned
-    description: A study-level resolved binding — a copy of a transformation template Binding with study-specific modifications.
-      When used inside Transformation.hasInput[] or .hasOutput[], direction is implicit from the parent array; when used inside
-      Transformation.hasBinding[] (the unified form), direction may be carried explicitly.
+    description: Twin qb:DataStructureDefinition shape, copied from the library TransformationTemplate into the study Transformation.
+      Each study Transformation's inputDataStructure / outputDataStructure is a distinct qb:DataStructureDefinition with its
+      own IRI — even when structurally identical to the library template's. Use inputDataStructure for the consumed qb:DataSet,
+      outputDataStructure for the produced qb:DataSet. Direction is encoded structurally — no per-item direction field is
+      needed.
     type: object
     properties:
+      dimensions:
+        type: array
+        items:
+          $ref: '#/$defs/DimensionEntry'
+        description: qb:dimension components of this DSD.
+      measures:
+        type: array
+        items:
+          $ref: '#/$defs/MeasureEntry'
+        description: qb:measure components of this DSD.
+      slices:
+        type: array
+        items:
+          $ref: '#/$defs/SliceTemplate'
+        description: qb:Slice templates — fixed-dimension subsets of the DataSet. In a study Transformation, any {placeholder}
+          tokens in constraint values are substituted in-place with the resolved values from sliceKeys[].value.
+  DimensionEntry:
+    x-provenance:
+      source: esap
+      conformance: owned
+    description: A qb:dimension component of a DataStructure. Direction is encoded structurally by which DSD the entry lives
+      in (inputDataStructure → input slot; outputDataStructure → output slot).
+    type: object
+    properties:
+      input:
+        type: string
+        description: When present, FK to method.inputs[].name — declares which method input slot this dimension fills (typically
+          a factor / fixed_effect role). Only meaningful inside inputDataStructure.
+      output:
+        type: string
+        description: When present, FK to method.outputs[].name — declares which method output slot this dimension indexes.
+          Only meaningful inside outputDataStructure.
       concept:
         type: string
-        description: Concept OID or name being bound (e.g. C.Measure, C.Change, Subject, AnalysisVisit). Optional — free dimension
-          slots (e.g. an unnamed partition dimension) carry methodRole + dataStructureRole without a concept.
-      methodRole:
+        description: Concept bound to this dimension (e.g., 'Treatment', 'Subject'). The study may override the library template's
+          concept here for narrower study-specific binding.
+      conceptCategory:
         type: string
-        description: 'The method slot this concept is bound to — matches method.inputs[].name (when direction=''input'', e.g.
-          response, covariate, fixed_effect, minuend) or method.outputs[].name (when direction=''output'', e.g. result, ls_means,
-          contrasts_t). v0.7+: methods declare slots under inputs[] / outputs[] (was methodInput[] / methodOutput[]).'
-      direction:
+        description: Concept category bound to this dimension (e.g., 'ParameterDimension', 'VisitDimension'). Alternative
+          to `concept` when binding to a category rather than a specific concept.
+  MeasureEntry:
+    x-provenance:
+      source: esap
+      conformance: owned
+    description: A qb:measure component of a DataStructure. Direction is encoded structurally by which DSD the entry lives
+      in.
+    type: object
+    properties:
+      input:
         type: string
-        enum:
-        - input
-        - output
-        description: Whether this binding supplies input to the method or captures its output. Optional when the binding sits
-          inside a hasInput[] / hasOutput[] array (direction is then implicit from the parent array).
-      dataStructureRole:
+        description: When present, FK to method.inputs[].name — declares which method input slot this measure fills (typically
+          the response / covariate). Only meaningful inside inputDataStructure.
+      output:
         type: string
-        enum:
-        - measure
-        - dimension
-        - attribute
-        description: 'The structural role: measure (value being computed), dimension (grouping/partitioning), or attribute
-          (metadata)'
-      slice:
+        description: When present, FK to method.outputs[].name — declares which method output slot this measure carries. Only
+          meaningful inside outputDataStructure.
+      concept:
         type: string
-        description: Reference to a named slice that constrains this binding (e.g. 'baseline')
-      qualifierType:
-        type: string
-        description: Qualifier type from shared qualifier vocabulary
-      qualifierValue:
-        type: string
-        description: Value for the qualifier type
+        description: Concept bound to this measure (e.g., 'Change', 'Measure', 'LSMeans'). The study may override the library
+          template's concept for narrower study-specific binding.
       requiredValueType:
         type:
         - string
         - 'null'
-        description: Required FHIR/data type for the bound concept (e.g. Quantity, CodeableConcept)
-      note:
+        description: Required FHIR/data type for the bound concept (e.g. 'Quantity', 'CodeableConcept').
+      slice:
         type: string
-        description: Implementation note for this binding
+        description: Name reference to a SliceTemplate in this DataStructure's slices[] — restricts this measure to a specific
+          cube slice.
       description:
         type: string
-        description: Human-readable description of this binding's purpose
+  SliceTemplate:
+    x-provenance:
+      source: esap
+      conformance: owned
+    description: A qb:Slice — a fixed-dimension subset of the DataSet. Copied from the library template. In a study Transformation,
+      any {placeholder} tokens in constraint values are substituted in-place with the resolved values from sliceKeys[].value;
+      the resolved values remain auditable via sliceKeys[].value alongside the source field.
+    type: object
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      constraints:
+        type: array
+        items:
+          $ref: '#/$defs/SliceConstraint'
     required:
-    - dataStructureRole
+    - name
+  SliceConstraint:
+    x-provenance:
+      source: esap
+      conformance: owned
+    description: A single constraint on a slice — pins a dimension to a specific value. In library templates the value may
+      carry a {placeholder} token (e.g. '{parameter}'); in study Transformations, tokens are substituted in-place with the
+      resolved value from the corresponding sliceKeys[] entry.
+    type: object
+    properties:
+      dimension:
+        type: string
+        description: Dimension name being constrained (e.g., 'ParameterDimension', 'VisitDimension', 'Population').
+      value:
+        type: string
+        description: Concrete value constraining the dimension. May carry a {placeholder} token in library templates; substituted
+          in-place in study copies.
+    required:
+    - dimension
+    - value
+  SliceKey:
+    x-provenance:
+      source: esap
+      conformance: owned
+    description: A placeholder binding for the transformation. Library templates author this as {dimension, source} declaring
+      the placeholder name and where its value is sourced from in the endpoint spec. Study Transformations add `value` filling
+      in the resolved placeholder. The resolved value is also substituted in-place into matching {placeholder} tokens in slice
+      constraint values, so consumers don't need to do placeholder lookup at consumption time — sliceKeys[].value remains
+      for audit and re-rendering.
+    type: object
+    properties:
+      dimension:
+        type: string
+        description: Placeholder name (e.g., 'ParameterDimension', 'VisitDimension', 'Population'). Also the {token} that
+          appears in slice constraint values inside the library template.
+      source:
+        type: string
+        description: Provenance — where this placeholder's value comes from in the endpoint spec (e.g., 'biomedicalConcept',
+          'visit', 'population').
+      value:
+        type: string
+        description: Study-resolved value filling the placeholder. Added by the eSAP author when the study Transformation
+          is copied from the library template; absent in library templates.
+    required:
+    - dimension
+  MethodConfiguration:
+    x-provenance:
+      source: esap
+      conformance: owned
+    description: A per-template default override of a method configuration parameter — copied verbatim from the library TransformationTemplate's
+      methodConfigurations[]. Distinct from a study-resolved Configuration (which carries the actual study value).
+    type: object
+    properties:
+      configurationName:
+        type: string
+        description: Configuration parameter name — matches method.configurations[].name.
+      value:
+        type: string
+        description: Default value the template specifies. May be further overridden by Transformation.configurationValues
+          at the study level.
+    required:
+    - configurationName
+    - value
   Configuration:
     x-provenance:
       source: esap
       conformance: owned
-    description: A resolved configuration parameter value for a study-level analysis or derivation step
+    description: A study-resolved configuration parameter value for a study Transformation. Overrides the template-level MethodConfiguration
+      default and the Method's defaultValue.
     type: object
     properties:
       name:
         type: string
-        description: Configuration parameter name — matches method.configurations[].name (e.g. 'ss_type', 'alpha', 'imputation')
-          or a TransformationTemplate.methodConfigurations[].configurationName override.
+        description: Configuration parameter name — matches method.configurations[].name (e.g. 'ss_type', 'alpha', 'imputation').
       value:
         type: string
-        description: Resolved value for this study
+        description: Study-resolved value for this configuration parameter.
     required:
     - name
     - value
-  Slice:
-    x-provenance:
-      source: esap
-      conformance: owned
-    description: 'A resolved data slice for a study-level step — specifies the concrete dimension values that segment the
-      data. v0.7+: library transformations declare slice templates inside inputDataStructure.slices[] / outputDataStructure.slices[];
-      this study-side Slice resolves a named template by filling its {placeholder} constraints with concrete values.'
-    type: object
-    properties:
-      name:
-        type: string
-        description: Slice name — matches inputDataStructure.slices[].name (or outputDataStructure.slices[].name) on the basedOn
-          TransformationTemplate.
-      resolvedValues:
-        type: object
-        description: Placeholder name → resolved value(s) for this study. Keys match {placeholder} tokens declared in the
-          template's constraints (e.g. '{parameter}', '{visit}', '{baseline_visit}', '{population}'). The set of expected
-          placeholders is declared at the transformation's top-level sliceKeys[].
-        additionalProperties: true
-    required:
-    - name
-    - resolvedValues
   PhraseInstance:
     x-provenance:
       source: esap
@@ -353,9 +443,23 @@ $defs:
     x-provenance:
       source: esap
       conformance: owned
-    description: Abstract base for Analysis and Derivation — shared composition of transformation binding, configurations,
-      slices, and phrases. A Transformation instantiates a TransformationTemplate from the library and resolves its bindings
-      to study-level concepts.
+    description: 'A study-level transformation — a full copy of a library TransformationTemplate with study-specific resolutions.
+      The Method is the only library artefact that stays referenced (via usesMethod); cube structure (twin DSDs), slice templates,
+      sliceKeys, methodConfigurations, and validSmartPhrases are copied verbatim from the basedOn template and may be modified
+      in-place for study specifics (e.g., concept narrowing on a measure, study override of a default configuration value).
+      The study fills sliceKeys[].value and substitutes the resolved values in-place into matching {placeholder} tokens in
+      slice constraint values, so consumers can read the eSAP without re-resolving against the library.
+
+
+      Direction encoding: no explicit direction field exists anywhere on bindings — direction is structural via inputDataStructure
+      vs outputDataStructure. The discriminator fields of the older Binding shape (direction, methodRole, dataStructureRole)
+      collapse into structural placement: methodRole → DimensionEntry.input/output or MeasureEntry.input/output FK; dataStructureRole
+      → dimensions[] vs measures[] array.
+
+
+      Cube identity: each study Transformation''s inputDataStructure and outputDataStructure is a distinct qb:DataStructureDefinition
+      with its own IRI, even when structurally identical to the library template''s. Study-specific overrides live in-place
+      on the copied cube.'
     type: object
     properties:
       id:
@@ -364,59 +468,77 @@ $defs:
           to reference it.
       sequence:
         type: integer
-        description: Execution order within the parent transformation list
+        description: Execution order within the parent transformation list.
       basedOn:
         $ref: '#/$defs/TransformationRef'
-        description: The TransformationTemplate this transformation instantiates
+        description: Provenance — the library TransformationTemplate this study Transformation was copied from.
+      transformationType:
+        type: string
+        enum:
+        - analysis
+        - derivation
+        description: Copied from the library template.
+      usesMethod:
+        type: string
+        description: Method conceptId (e.g. 'M.ANCOVA', 'M.Subtraction'). The only library artefact that stays referenced
+          rather than copied — the method body lives in the methods catalogue and is not inlined here.
+      label:
+        type: string
+      shortLabel:
+        type: string
+      description:
+        type: string
+      inputDataStructure:
+        $ref: '#/$defs/DataStructure'
+        description: Cube structure for the input qb:DataSet — copied from the library template. Study may override concept
+          fields on dimensions/measures for study-specific narrowing.
+      outputDataStructure:
+        $ref: '#/$defs/DataStructure'
+        description: Cube structure for the output qb:DataSet — copied from the library template. Study may override concept
+          fields for study-specific narrowing.
+      sliceKeys:
+        type: array
+        items:
+          $ref: '#/$defs/SliceKey'
+        description: Placeholder bindings — copied from the library template; the study adds a `value` to each entry filling
+          in the placeholder. Slice constraint values in inputDataStructure.slices[] (and outputDataStructure.slices[], if
+          any) have their matching {placeholder} tokens substituted in-place with these values.
+      methodConfigurations:
+        type: array
+        items:
+          $ref: '#/$defs/MethodConfiguration'
+        description: Per-template default overrides of method configurations — copied from the library template.
+      validSmartPhrases:
+        type: array
+        items:
+          type: string
+        description: IDs of SmartPhrase templates valid for this transformation — copied from the library template.
       configurationValues:
         type: array
         items:
           $ref: '#/$defs/Configuration'
-        description: Resolved configuration parameter values for this transformation
-      hasInput:
-        type: array
-        items:
-          $ref: '#/$defs/Binding'
-        description: Study-level resolved input bindings (direction implicit). The authoring-preferred shape; pairs with hasOutput.
-      hasOutput:
-        type: array
-        items:
-          $ref: '#/$defs/Binding'
-        description: Study-level resolved output bindings (direction implicit). May be empty when the transformation has no
-          declared outputs in the authoring layer (e.g., an analysis whose outputs are derived from the method's output classes).
-      hasBinding:
-        type: array
-        items:
-          $ref: '#/$defs/Binding'
-        description: Optional unified-form alternative to hasInput / hasOutput. When used, each item should carry direction
-          explicitly.
-      resolvedSlices:
-        type: array
-        items:
-          $ref: '#/$defs/Slice'
-        description: Resolved data slices for this transformation
+        description: Study-resolved configuration values for this transformation — overrides methodConfigurations defaults
+          and the Method's defaultValue.
       hasPhraseInstance:
         type: array
         items:
           $ref: '#/$defs/PhraseInstance'
-        description: Resolved SmartPhrase texts for this transformation
+        description: Resolved SmartPhrase texts — the subset of validSmartPhrases this transformation actually realises with
+          study-specific parameter values.
       resolvedExpression:
         $ref: '#/$defs/ResolvedExpression'
-        description: The method formula resolved with study-level concept bindings and active interactions
+        description: The method formula resolved with study-level concept bindings and active interactions.
       hasOutputConfig:
         type: array
         items:
           $ref: '#/$defs/OutputClassConfig'
-        description: Optional per-output-class dimension selection. When absent, all method-declared dimensions are included
-          in each output class.
+        description: Optional per-output dimension selection. When absent, all method-declared indexed_by[] dimensions are
+          included for each output.
     required:
     - sequence
     - basedOn
-    anyOf:
-    - required:
-      - hasInput
-    - required:
-      - hasBinding
+    - transformationType
+    - usesMethod
   Derivation:
     x-provenance:
       source: esap

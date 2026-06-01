@@ -100,5 +100,12 @@
         "fixed_effect"
       ]
     }
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000179",
+      "display": "ANCOVA"
+    }
   ]
 }

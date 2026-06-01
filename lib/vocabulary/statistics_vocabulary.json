@@ -3,500 +3,752 @@
   "description": "Reusable statistic definitions referenced by output classes across ACDC methods",
   "statistics": {
     "estimate": {
-      "dataType": "numeric",
-      "description": "Point estimate of the quantity",
+      "conceptId": "estimate",
+      "name": "Point estimate of the quantity",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000599",
           "display": "point estimate"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Point estimate of the quantity"
     },
     "SE": {
-      "dataType": "numeric",
-      "description": "Standard error of the estimate",
+      "conceptId": "SE",
+      "name": "Standard error of the estimate",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000562",
           "display": "standard error of estimate"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Standard error of the estimate"
     },
     "CI_lower": {
-      "dataType": "numeric",
-      "description": "Lower bound of confidence interval",
+      "conceptId": "CI_lower",
+      "name": "Lower bound of confidence interval",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000315",
           "display": "lower confidence limit"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Lower bound of confidence interval"
     },
     "CI_upper": {
-      "dataType": "numeric",
-      "description": "Upper bound of confidence interval",
+      "conceptId": "CI_upper",
+      "name": "Upper bound of confidence interval",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000314",
           "display": "upper confidence limit"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Upper bound of confidence interval"
     },
     "df": {
-      "dataType": "numeric",
-      "description": "Degrees of freedom",
+      "conceptId": "df",
+      "name": "Degrees of freedom",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000069",
           "display": "number of degrees of freedom"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Degrees of freedom"
     },
     "df_num": {
-      "dataType": "numeric",
-      "description": "Numerator degrees of freedom",
+      "conceptId": "df_num",
+      "name": "Numerator degrees of freedom",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000498",
           "display": "numerator degrees of freedom"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Numerator degrees of freedom"
     },
     "df_den": {
-      "dataType": "numeric",
-      "description": "Denominator degrees of freedom",
+      "conceptId": "df_den",
+      "name": "Denominator degrees of freedom",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000527",
           "display": "denominator degrees of freedom"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Denominator degrees of freedom"
     },
     "t_statistic": {
-      "dataType": "numeric",
-      "description": "t test statistic",
+      "conceptId": "t_statistic",
+      "name": "t test statistic",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000176",
           "display": "t-statistic"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "t test statistic"
     },
     "F_statistic": {
-      "dataType": "numeric",
-      "description": "F test statistic",
+      "conceptId": "F_statistic",
+      "name": "F test statistic",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000282",
           "display": "F-statistic"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "F test statistic"
     },
     "z_statistic": {
-      "dataType": "numeric",
-      "description": "z test statistic",
+      "conceptId": "z_statistic",
+      "name": "z test statistic",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000376",
           "display": "Z-statistic"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "z test statistic"
     },
     "chi_squared": {
-      "dataType": "numeric",
-      "description": "Chi-squared test statistic",
+      "conceptId": "chi_squared",
+      "name": "Chi-squared test statistic",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000030",
           "display": "Chi-Squared statistic"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Chi-squared test statistic"
     },
     "p_value": {
-      "dataType": "numeric",
-      "description": "P-value for the test",
+      "conceptId": "p_value",
+      "name": "P-value for the test",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000700",
           "display": "p-value"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "P-value for the test"
     },
     "p_value_adjusted": {
+      "conceptId": "p_value_adjusted",
+      "name": "P-value after multiplicity adjustment",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "P-value after multiplicity adjustment (Bonferroni, Tukey, Holm, BH, etc.). Reported alongside the unadjusted p-value when an adjustment procedure has been applied."
     },
     "SS": {
+      "conceptId": "SS",
+      "name": "Sum of squares",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Sum of squares"
     },
     "MS": {
-      "dataType": "numeric",
-      "description": "Mean square",
+      "conceptId": "MS",
+      "name": "Mean square",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000375",
           "display": "residual mean square"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Mean square"
     },
     "odds_ratio": {
-      "dataType": "numeric",
-      "description": "Odds ratio (exp of log-odds coefficient)",
+      "conceptId": "odds_ratio",
+      "name": "Odds ratio",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000182",
           "display": "odds ratio"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Odds ratio (exp of log-odds coefficient)"
     },
     "hazard_ratio": {
-      "dataType": "numeric",
-      "description": "Hazard ratio (exp of Cox coefficient)",
+      "conceptId": "hazard_ratio",
+      "name": "Hazard ratio",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000677",
           "display": "hazard ratio"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Hazard ratio (exp of Cox coefficient)"
     },
     "coefficient": {
+      "conceptId": "coefficient",
+      "name": "Model coefficient",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Model coefficient (log scale for GLMs)"
     },
     "n_risk": {
+      "conceptId": "n_risk",
+      "name": "Number at risk",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Number at risk"
     },
     "n_event": {
+      "conceptId": "n_event",
+      "name": "Number of events",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Number of events"
     },
     "n_censored": {
+      "conceptId": "n_censored",
+      "name": "Number censored",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Number censored"
     },
     "survival_prob": {
+      "conceptId": "survival_prob",
+      "name": "Estimated survival probability",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Estimated survival probability"
     },
     "median": {
-      "dataType": "numeric",
-      "description": "Median estimate",
+      "conceptId": "median",
+      "name": "Median estimate",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000574",
           "display": "center value"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Median estimate"
     },
     "mean": {
-      "dataType": "numeric",
-      "description": "Mean estimate",
+      "conceptId": "mean",
+      "name": "Mean estimate",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000573",
           "display": "average value"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Mean estimate"
     },
     "AIC": {
-      "dataType": "numeric",
-      "description": "Akaike Information Criterion",
+      "conceptId": "AIC",
+      "name": "Akaike Information Criterion",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000325",
           "display": "Akaike information criterion"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Akaike Information Criterion"
     },
     "BIC": {
-      "dataType": "numeric",
-      "description": "Bayesian Information Criterion",
+      "conceptId": "BIC",
+      "name": "Bayesian Information Criterion",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000327",
           "display": "Bayesian information criterion"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Bayesian Information Criterion"
     },
     "minus2LogL": {
+      "conceptId": "minus2LogL",
+      "name": "-2 Log Likelihood",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "-2 Log Likelihood"
     },
     "R_squared": {
-      "dataType": "numeric",
-      "description": "Coefficient of determination",
+      "conceptId": "R_squared",
+      "name": "Coefficient of determination",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000564",
           "display": "coefficient of determination"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Coefficient of determination"
     },
     "concordance": {
+      "conceptId": "concordance",
+      "name": "Concordance statistic",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Concordance statistic (C-index)"
     },
     "value": {
+      "conceptId": "value",
+      "name": "The computed/derived value",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "The computed/derived value"
     },
     "n": {
-      "dataType": "numeric",
-      "description": "Count of non-missing observations",
+      "conceptId": "n",
+      "name": "Count of non-missing observations",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000047",
           "display": "count"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Count of non-missing observations"
     },
     "n_obs": {
+      "conceptId": "n_obs",
+      "name": "Total number of observations",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Total number of observations (non-missing + missing)"
     },
     "n_missing": {
+      "conceptId": "n_missing",
+      "name": "Count of missing observations",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Count of missing observations"
     },
     "pct_missing": {
+      "conceptId": "pct_missing",
+      "name": "Percentage of missing observations",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Percentage of missing observations"
     },
     "geometric_mean": {
-      "dataType": "numeric",
-      "description": "Geometric mean (exp of mean of log values)",
+      "conceptId": "geometric_mean",
+      "name": "Geometric mean",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000396",
           "display": "geometric mean"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Geometric mean (exp of mean of log values)"
     },
     "harmonic_mean": {
-      "dataType": "numeric",
-      "description": "Harmonic mean (reciprocal of mean of reciprocals)",
+      "conceptId": "harmonic_mean",
+      "name": "Harmonic mean",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000397",
           "display": "harmonic mean"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Harmonic mean (reciprocal of mean of reciprocals)"
     },
     "trimmed_mean": {
+      "conceptId": "trimmed_mean",
+      "name": "Trimmed mean",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Trimmed mean (mean after removing extreme values from each tail)"
     },
     "winsorized_mean": {
+      "conceptId": "winsorized_mean",
+      "name": "Winsorized mean",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Winsorized mean (mean after replacing extreme values with boundary values)"
     },
     "mode": {
-      "dataType": "numeric",
-      "description": "Most frequently occurring value",
+      "conceptId": "mode",
+      "name": "Most frequently occurring value",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000033",
           "display": "mode"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Most frequently occurring value"
     },
     "sd": {
-      "dataType": "numeric",
-      "description": "Standard deviation",
+      "conceptId": "sd",
+      "name": "Standard deviation",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000237",
           "display": "standard deviation"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Standard deviation"
     },
     "variance": {
-      "dataType": "numeric",
-      "description": "Variance",
+      "conceptId": "variance",
+      "name": "Variance",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000113",
           "display": "variance"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Variance"
     },
     "cv": {
-      "dataType": "numeric",
-      "description": "Coefficient of variation (SD/mean × 100)",
+      "conceptId": "cv",
+      "name": "Coefficient of variation",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000236",
           "display": "coefficient of variation"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Coefficient of variation (SD/mean \u00d7 100)"
     },
     "geometric_cv": {
+      "conceptId": "geometric_cv",
+      "name": "Geometric coefficient of variation",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Geometric coefficient of variation"
     },
     "range": {
-      "dataType": "numeric",
-      "description": "Range (max − min)",
+      "conceptId": "range",
+      "name": "Range",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000035",
           "display": "range"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Range (max \u2212 min)"
     },
     "min": {
-      "dataType": "numeric",
-      "description": "Minimum observed value",
+      "conceptId": "min",
+      "name": "Minimum observed value",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000150",
           "display": "minimum observed value"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Minimum observed value"
     },
     "max": {
-      "dataType": "numeric",
-      "description": "Maximum observed value",
+      "conceptId": "max",
+      "name": "Maximum observed value",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000151",
           "display": "maximum observed value"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Maximum observed value"
     },
     "iqr": {
-      "dataType": "numeric",
-      "description": "Interquartile range (Q3 − Q1)",
+      "conceptId": "iqr",
+      "name": "Interquartile range",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000164",
           "display": "inter quartile range"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Interquartile range (Q3 \u2212 Q1)"
     },
     "sum": {
+      "conceptId": "sum",
+      "name": "Sum of all values",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Sum of all values"
     },
     "Q1": {
-      "dataType": "numeric",
-      "description": "First quartile (25th percentile)",
+      "conceptId": "Q1",
+      "name": "First quartile",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000167",
           "display": "first quartile"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "First quartile (25th percentile)"
     },
     "Q3": {
-      "dataType": "numeric",
-      "description": "Third quartile (75th percentile)",
+      "conceptId": "Q3",
+      "name": "Third quartile",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000170",
           "display": "third quartile"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Third quartile (75th percentile)"
     },
     "percentile": {
-      "dataType": "numeric",
-      "description": "Percentile value at a specified rank",
+      "conceptId": "percentile",
+      "name": "Percentile value at a specified rank",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000293",
           "display": "percentile"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Percentile value at a specified rank"
     },
     "skewness": {
-      "dataType": "numeric",
-      "description": "Skewness (measure of asymmetry of the distribution)",
+      "conceptId": "skewness",
+      "name": "Skewness",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000068",
           "display": "skewness"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Skewness (measure of asymmetry of the distribution)"
     },
     "kurtosis": {
-      "dataType": "numeric",
-      "description": "Kurtosis (measure of tailedness of the distribution)",
+      "conceptId": "kurtosis",
+      "name": "Kurtosis",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000178",
           "display": "kurtosis"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Kurtosis (measure of tailedness of the distribution)"
     },
     "frequency": {
-      "dataType": "numeric",
-      "description": "Frequency count per category",
+      "conceptId": "frequency",
+      "name": "Frequency count per category",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000674",
           "display": "frequency"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Frequency count per category"
     },
     "proportion": {
-      "dataType": "numeric",
-      "description": "Proportion (0–1 scale)",
+      "conceptId": "proportion",
+      "name": "Proportion",
+      "label": null,
+      "ncitCode": null,
       "codings": [
         {
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000607",
           "display": "proportion"
         }
-      ]
+      ],
+      "dataType": "numeric",
+      "description": "Proportion (0\u20131 scale)"
     },
     "pct": {
+      "conceptId": "pct",
+      "name": "Percentage",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
-      "description": "Percentage (0–100 scale)"
+      "description": "Percentage (0\u2013100 scale)"
     },
     "cumulative_n": {
+      "conceptId": "cumulative_n",
+      "name": "Cumulative count",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Cumulative count"
     },
     "cumulative_pct": {
+      "conceptId": "cumulative_pct",
+      "name": "Cumulative percentage",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
       "dataType": "numeric",
       "description": "Cumulative percentage"
     }

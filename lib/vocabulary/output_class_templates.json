@@ -68,13 +68,21 @@
   },
   "output_class_templates": {
     "fit_statistics": {
+      "conceptId": "fit_statistics",
+      "name": "Family of overall model goodness-of-fit summary tables",
       "label": "Fit statistics",
+      "ncitCode": null,
+      "codings": [],
       "description": "Family of overall model goodness-of-fit summary tables.",
       "abstract": true,
       "broader": null
     },
     "fit_statistics_basic": {
+      "conceptId": "fit_statistics_basic",
+      "name": "Basic model fit indices common to most likelihood-based models",
       "label": "Basic fit statistics",
+      "ncitCode": null,
+      "codings": [],
       "description": "Basic model fit indices common to most likelihood-based models.",
       "broader": "fit_statistics",
       "statistics": [
@@ -84,7 +92,11 @@
       ]
     },
     "fit_statistics_linear": {
+      "conceptId": "fit_statistics_linear",
+      "name": "Linear-model fit indices including R-squared",
       "label": "Linear-model fit statistics",
+      "ncitCode": null,
+      "codings": [],
       "description": "Linear-model fit indices including R-squared.",
       "broader": "fit_statistics",
       "statistics": [
@@ -95,7 +107,11 @@
       ]
     },
     "fit_statistics_concordance": {
+      "conceptId": "fit_statistics_concordance",
+      "name": "Fit indices including the concordance statistic",
       "label": "Concordance-based fit statistics",
+      "ncitCode": null,
+      "codings": [],
       "description": "Fit indices including the concordance statistic (logistic regression, Cox PH).",
       "broader": "fit_statistics",
       "statistics": [
@@ -106,13 +122,21 @@
       ]
     },
     "type3_tests": {
+      "conceptId": "type3_tests",
+      "name": "Family of per-term omnibus tests",
       "label": "Type III tests",
+      "ncitCode": null,
+      "codings": [],
       "description": "Family of per-term omnibus tests.",
       "abstract": true,
       "broader": null
     },
     "type3_tests_f": {
+      "conceptId": "type3_tests_f",
+      "name": "Type III F-tests with sums-of-squares decomposition",
       "label": "Type III F-tests",
+      "ncitCode": null,
+      "codings": [],
       "description": "Type III F-tests with sums-of-squares decomposition (linear models).",
       "broader": "type3_tests",
       "statistics": [
@@ -125,7 +149,11 @@
       ]
     },
     "type3_tests_mixed": {
+      "conceptId": "type3_tests_mixed",
+      "name": "Type III F-tests for mixed and multivariate models",
       "label": "Type III F-tests (mixed/multivariate)",
+      "ncitCode": null,
+      "codings": [],
       "description": "Type III F-tests for mixed and multivariate models (no SS/MS exposure).",
       "broader": "type3_tests",
       "statistics": [
@@ -136,7 +164,11 @@
       ]
     },
     "type3_tests_chi_squared": {
+      "conceptId": "type3_tests_chi_squared",
+      "name": "Type III Wald or LR chi-squared tests",
       "label": "Type III chi-squared tests",
+      "ncitCode": null,
+      "codings": [],
       "description": "Type III Wald or LR chi-squared tests (logistic regression, Cox PH).",
       "broader": "type3_tests",
       "statistics": [
@@ -146,13 +178,21 @@
       ]
     },
     "test_result": {
+      "conceptId": "test_result",
+      "name": "Family of single-row test result tables",
       "label": "Test result",
+      "ncitCode": null,
+      "codings": [],
       "description": "Family of single-row test result tables.",
       "abstract": true,
       "broader": null
     },
     "chi_squared_test_result": {
+      "conceptId": "chi_squared_test_result",
+      "name": "Single chi-squared test result",
       "label": "Chi-squared test result",
+      "ncitCode": null,
+      "codings": [],
       "description": "Single chi-squared test result.",
       "broader": "test_result",
       "statistics": [
@@ -162,7 +202,11 @@
       ]
     },
     "t_test_result": {
+      "conceptId": "t_test_result",
+      "name": "Single t-test result",
       "label": "T-test result",
+      "ncitCode": null,
+      "codings": [],
       "description": "Single t-test result (one-sample, paired, or two-sample).",
       "broader": "test_result",
       "statistics": [
@@ -172,7 +216,11 @@
       ]
     },
     "exact_test_result": {
+      "conceptId": "exact_test_result",
+      "name": "Exact test result",
       "label": "Exact test result",
+      "ncitCode": null,
+      "codings": [],
       "description": "Exact test result (Fisher exact) \u2014 p-value only.",
       "broader": "test_result",
       "statistics": [
@@ -180,7 +228,11 @@
       ]
     },
     "homogeneity_test": {
+      "conceptId": "homogeneity_test",
+      "name": "Breslow-Day test for homogeneity of odds ratios across strata",
       "label": "Homogeneity test",
+      "ncitCode": null,
+      "codings": [],
       "description": "Breslow-Day test for homogeneity of odds ratios across strata.",
       "broader": "test_result",
       "statistics": [
@@ -190,13 +242,21 @@
       ]
     },
     "parameter_estimates": {
+      "conceptId": "parameter_estimates",
+      "name": "Family of per-coefficient model parameter tables",
       "label": "Parameter estimates",
+      "ncitCode": null,
+      "codings": [],
       "description": "Family of per-coefficient model parameter tables.",
       "abstract": true,
       "broader": null
     },
     "parameter_estimates_linear": {
+      "conceptId": "parameter_estimates_linear",
+      "name": "Linear-model coefficients with t-based inference",
       "label": "Linear-model parameter estimates",
+      "ncitCode": null,
+      "codings": [],
       "description": "Linear-model coefficients with t-based inference.",
       "broader": "parameter_estimates",
       "statistics": [
@@ -210,7 +270,11 @@
       ]
     },
     "parameter_estimates_glm": {
+      "conceptId": "parameter_estimates_glm",
+      "name": "GLM coefficients with z-based inference",
       "label": "GLM parameter estimates",
+      "ncitCode": null,
+      "codings": [],
       "description": "GLM coefficients with z-based inference; includes odds_ratio for logistic.",
       "broader": "parameter_estimates",
       "statistics": [
@@ -224,7 +288,11 @@
       ]
     },
     "parameter_estimates_cox": {
+      "conceptId": "parameter_estimates_cox",
+      "name": "Cox PH coefficients with z-based inference",
       "label": "Cox PH parameter estimates",
+      "ncitCode": null,
+      "codings": [],
       "description": "Cox PH coefficients with z-based inference; includes hazard_ratio.",
       "broader": "parameter_estimates",
       "statistics": [
@@ -238,7 +306,11 @@
       ]
     },
     "covariance_parameters": {
+      "conceptId": "covariance_parameters",
+      "name": "Estimated covariance/variance components of the random-effects structure",
       "label": "Covariance parameters",
+      "ncitCode": null,
+      "codings": [],
       "description": "Estimated covariance/variance components of the random-effects structure.",
       "broader": "parameter_estimates",
       "statistics": [
@@ -247,13 +319,21 @@
       ]
     },
     "contrasts": {
+      "conceptId": "contrasts",
+      "name": "Family of contrast tables",
       "label": "Contrasts",
+      "ncitCode": null,
+      "codings": [],
       "description": "Family of contrast tables \u2014 linear combinations of model coefficients with inference.",
       "abstract": true,
       "broader": null
     },
     "contrasts_t": {
+      "conceptId": "contrasts_t",
+      "name": "Contrasts from linear models with t-based inference",
       "label": "T-based contrasts",
+      "ncitCode": null,
+      "codings": [],
       "description": "Contrasts from linear models with t-based inference.",
       "broader": "contrasts",
       "statistics": [
@@ -271,7 +351,11 @@
       ]
     },
     "contrasts_z": {
+      "conceptId": "contrasts_z",
+      "name": "Contrasts from GLM or Cox PH with z-based inference",
       "label": "Z-based contrasts",
+      "ncitCode": null,
+      "codings": [],
       "description": "Contrasts from GLM or Cox PH with z-based inference.",
       "broader": "contrasts",
       "statistics": [
@@ -288,13 +372,21 @@
       ]
     },
     "association_measures": {
+      "conceptId": "association_measures",
+      "name": "Family of effect-size / association measure tables with inference",
       "label": "Association measures",
+      "ncitCode": null,
+      "codings": [],
       "description": "Family of effect-size / association measure tables with inference.",
       "abstract": true,
       "broader": null
     },
     "odds_ratio_measures": {
+      "conceptId": "odds_ratio_measures",
+      "name": "Odds ratio with confidence interval",
       "label": "Odds ratio measures",
+      "ncitCode": null,
+      "codings": [],
       "description": "Odds ratio with confidence interval (CMH common OR or per-stratum, Fisher OR).",
       "broader": "association_measures",
       "statistics": [
@@ -304,13 +396,21 @@
       ]
     },
     "marginal_estimates": {
+      "conceptId": "marginal_estimates",
+      "name": "Family of model-derived estimates at specific factor levels",
       "label": "Marginal estimates",
+      "ncitCode": null,
+      "codings": [],
       "description": "Family of model-derived estimates at specific factor levels \u2014 adjusted means and predictions from a fitted model, distinct from raw coefficient estimates.",
       "abstract": true,
       "broader": null
     },
     "ls_means": {
+      "conceptId": "ls_means",
+      "name": "Least-squares means",
       "label": "Least-squares means",
+      "ncitCode": null,
+      "codings": [],
       "description": "Least-squares means (adjusted marginal means) per factor level or level combination.",
       "broader": "marginal_estimates",
       "statistics": [
@@ -322,7 +422,11 @@
       ]
     },
     "point_estimate": {
+      "conceptId": "point_estimate",
+      "name": "Estimated mean",
       "label": "Point estimate",
+      "ncitCode": null,
+      "codings": [],
       "description": "Estimated mean (or paired-difference mean) with inference.",
       "broader": "marginal_estimates",
       "statistics": [
@@ -333,13 +437,21 @@
       ]
     },
     "exponentiated_estimates": {
+      "conceptId": "exponentiated_estimates",
+      "name": "Family of coefficients exponentiated from a transformed scale",
       "label": "Exponentiated estimates",
+      "ncitCode": null,
+      "codings": [],
       "description": "Family of coefficients exponentiated from a transformed scale (log, logit) back to the natural scale of multiplicative effects.",
       "abstract": true,
       "broader": null
     },
     "odds_ratio_estimates": {
+      "conceptId": "odds_ratio_estimates",
+      "name": "Odds ratios with confidence intervals",
       "label": "Odds ratio estimates",
+      "ncitCode": null,
+      "codings": [],
       "description": "Odds ratios with confidence intervals (exponentiated logistic coefficients).",
       "broader": "exponentiated_estimates",
       "statistics": [
@@ -349,7 +461,11 @@
       ]
     },
     "hazard_ratio_estimates": {
+      "conceptId": "hazard_ratio_estimates",
+      "name": "Hazard ratios with confidence intervals",
       "label": "Hazard ratio estimates",
+      "ncitCode": null,
+      "codings": [],
       "description": "Hazard ratios with confidence intervals (exponentiated Cox coefficients).",
       "broader": "exponentiated_estimates",
       "statistics": [
@@ -359,13 +475,21 @@
       ]
     },
     "omnibus_tests": {
+      "conceptId": "omnibus_tests",
+      "name": "Family of overall-model significance tests indexed by test type",
       "label": "Omnibus tests",
+      "ncitCode": null,
+      "codings": [],
       "description": "Family of overall-model significance tests indexed by test type (Wilks, Pillai, likelihood ratio, Wald, score, etc.), distinct from per-term tests.",
       "abstract": true,
       "broader": null
     },
     "multivariate_tests": {
+      "conceptId": "multivariate_tests",
+      "name": "Multivariate test statistics for overall hypothesis",
       "label": "Multivariate tests",
+      "ncitCode": null,
+      "codings": [],
       "description": "Multivariate test statistics for overall hypothesis (Wilks, Pillai, Hotelling-Lawley, Roy).",
       "broader": "omnibus_tests",
       "statistics": [
@@ -377,7 +501,11 @@
       ]
     },
     "global_tests": {
+      "conceptId": "global_tests",
+      "name": "Overall model significance tests",
       "label": "Global tests",
+      "ncitCode": null,
+      "codings": [],
       "description": "Overall model significance tests (likelihood ratio, Wald, score).",
       "broader": "omnibus_tests",
       "statistics": [
@@ -387,13 +515,21 @@
       ]
     },
     "survival_outputs": {
+      "conceptId": "survival_outputs",
+      "name": "Family of outputs from time-to-event analyses",
       "label": "Survival outputs",
+      "ncitCode": null,
+      "codings": [],
       "description": "Family of outputs from time-to-event analyses \u2014 life tables, median survival, event counts, landmark estimates.",
       "abstract": true,
       "broader": null
     },
     "survival_table": {
+      "conceptId": "survival_table",
+      "name": "Life table with survival estimates at each event time",
       "label": "Survival table",
+      "ncitCode": null,
+      "codings": [],
       "description": "Life table with survival estimates at each event time.",
       "broader": "survival_outputs",
       "statistics": [
@@ -407,7 +543,11 @@
       ]
     },
     "median_survival": {
+      "conceptId": "median_survival",
+      "name": "Median survival time per group",
       "label": "Median survival",
+      "ncitCode": null,
+      "codings": [],
       "description": "Median survival time per group.",
       "broader": "survival_outputs",
       "statistics": [
@@ -417,7 +557,11 @@
       ]
     },
     "event_summary": {
+      "conceptId": "event_summary",
+      "name": "Summary counts of events and censoring per group",
       "label": "Event summary",
+      "ncitCode": null,
+      "codings": [],
       "description": "Summary counts of events and censoring per group.",
       "broader": "survival_outputs",
       "statistics": [
@@ -427,7 +571,11 @@
       ]
     },
     "landmark_estimates": {
+      "conceptId": "landmark_estimates",
+      "name": "Survival probability at specific landmark times",
       "label": "Landmark estimates",
+      "ncitCode": null,
+      "codings": [],
       "description": "Survival probability at specific landmark times.",
       "broader": "survival_outputs",
       "statistics": [
@@ -438,13 +586,21 @@
       ]
     },
     "group_summaries": {
+      "conceptId": "group_summaries",
+      "name": "Family of descriptive summaries broken down by group",
       "label": "Group summaries",
+      "ncitCode": null,
+      "codings": [],
       "description": "Family of descriptive summaries broken down by group \u2014 proportions, frequency tables, quartile estimates. No model fit involved.",
       "abstract": true,
       "broader": null
     },
     "proportion_estimate": {
+      "conceptId": "proportion_estimate",
+      "name": "Group-wise proportion with optional confidence interval",
       "label": "Proportion estimate",
+      "ncitCode": null,
+      "codings": [],
       "description": "Group-wise proportion with optional confidence interval.",
       "broader": "group_summaries",
       "statistics": [
@@ -459,7 +615,11 @@
       ]
     },
     "frequency_table": {
+      "conceptId": "frequency_table",
+      "name": "Counts of response categories per group",
       "label": "Frequency table",
+      "ncitCode": null,
+      "codings": [],
       "description": "Counts of response categories per group.",
       "broader": "group_summaries",
       "statistics": [
@@ -468,7 +628,11 @@
       ]
     },
     "cumulative_frequency_table": {
+      "conceptId": "cumulative_frequency_table",
+      "name": "Cumulative counts and percentages of response categories per group",
       "label": "Cumulative frequency table",
+      "ncitCode": null,
+      "codings": [],
       "description": "Cumulative counts and percentages of response categories per group.",
       "broader": "group_summaries",
       "statistics": [
@@ -477,7 +641,11 @@
       ]
     },
     "quartile_estimates": {
+      "conceptId": "quartile_estimates",
+      "name": "Q1 and Q3 quartile estimates per group",
       "label": "Quartile estimates",
+      "ncitCode": null,
+      "codings": [],
       "description": "Q1 and Q3 quartile estimates per group.",
       "broader": "group_summaries",
       "statistics": [
@@ -486,7 +654,11 @@
       ]
     },
     "computed_value": {
+      "conceptId": "computed_value",
+      "name": "Family of single-value atomic outputs",
       "label": "Computed value",
+      "ncitCode": null,
+      "codings": [],
       "description": "Family of single-value atomic outputs (one value per row) produced by descriptive statistics and derivations. The FHIR datatype is supplied by the bound concept at transformation time via concept.result.valueType \u2014 the template carries the shape only, not the type.",
       "broader": null,
       "statistics": [
