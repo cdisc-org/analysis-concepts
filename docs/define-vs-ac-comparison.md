@@ -58,7 +58,7 @@ The architectural fit follows directly:
 - The **engine's lineage record** is what mediates between Spec and Execution. The dataContracts approach (`docs/dataContracts-approach.md` — DC URIs + DP graph with `derives_from` edges) is *one* implementation choice for that record, optional alongside tabular engines with sidecar lineage manifests, concept-cube engines, and hybrid stores; the AC Specification Layer is the same regardless. The dataContracts choice is the natural fit for a true digital data flow because it makes lineage machine-queryable end-to-end, lets every submission/exchange projection fall out of the same graph (so SDTM, ADaM, Define-XML, ARS, FHIR, and OMOP cannot drift from each other or from the data), and gives every value a stable identifier across studies (so multi-study pooling is structural, not a JOIN reconstruction). Where the rest of this document writes "the DC graph", read it as shorthand for *the engine's lineage record* in whichever implementation you pick.
 - `define.yaml` lives entirely on the Execution Layer side, *one* generated artefact among the projection siblings. It is required (FDA submissions need it) but not elevated.
 
-The recommendation in §7-§8 thus reduces to: **build a projection generator** that emits Define-XML / Define-JSON from the engine's lineage record alongside the SDTM-tables / ADaM-tables / ARS / FHIR / OMOP generators. The generator inherits the SDMX, PROV, ODM, and schema-level USDM mappings the AC libraries don't carry (per §6.1), uses Define's class-level `exact_mappings` to satisfy LinkML→RDF tooling for free, and never feeds back into the Specification Layer.
+The recommendation in §7-§8 thus reduces to: **build a projection generator** that emits Define-XML / Define-JSON from the engine's lineage record alongside the SDTM-tables / ADaM-tables / ARS / FHIR / OMOP generators. The generator picks up the ODM, PROV (library-element provenance), and schema-level USDM mappings the AC libraries don't carry (per §6.1), uses Define's class-level `exact_mappings` to satisfy LinkML→RDF tooling for free, and never feeds back into the Specification Layer.
 
 ### 0.3 What this means for the rest of the document
 
@@ -343,7 +343,7 @@ So the right way to read the abridged "two-block" example earlier is: *those are
 
    Versioning and provenance in AC live in git history and the `schema_version` field. For the use cases the AC framework targets (cross-study method libraries that change rarely), git-history versioning is sufficient and matches how the library is reviewed. For standards-package distribution to downstream consumers who expect machine-readable audit trails on every element, Define's per-element governance fields are what those consumers expect to find.
 2. **Multilingual labels and `aliases[]`.** Define's `Labelled` mixin makes `label`, `description`, `aliases` all able to be `TranslatedText` polymorphically. AC's labels are plain `range: string` with no `TranslatedText` alternative and no `aliases[]` slot on the method or transformation schemas. If labels ever need to be rendered in Japanese or Chinese for trial-master-file consumption, AC has no current path.
-3. **Schema-level standards mappings on every class.** Each Define class declares `exact_mappings` / `close_mappings` / `narrow_mappings` against SDMX, qb, FHIR, OMOP, USDM, ODM, NCIt, and PROV. The AC framework already maps qb (class-level in `acdc_transformation.yaml` + file-level `_w3c_alignment`), FHIR (value types in concept results + the §6.6 rule 10 compatibility table), OMOP (top-level section in `concept-variable-mappings.json`), and NCIt (per-concept `code` blocks) — these are equivalent in *coverage*, but Define puts them on the class metadata so LinkML→RDF tooling consumes them directly, whereas AC puts them in the data instances. AC genuinely lacks: SDMX (no `sdmx:*` references at all), PROV (no machine-readable provenance vocabulary), ODM (no round-trip), and schema-level USDM linkage. See §6.1 for the full audit.
+3. **Schema-level standards mappings on every class.** Each Define class declares `exact_mappings` / `close_mappings` / `narrow_mappings` against qb, SDMX, FHIR, OMOP, USDM, ODM, NCIt, and PROV. The AC framework already maps qb (class-level in `acdc_transformation.yaml` + file-level `_w3c_alignment` — which by transitivity is SDMX information-model alignment too, since W3C qb is the RDF binding of SDMX), FHIR (value types in concept results + the §6.6 rule 10 compatibility table), OMOP (top-level section in `concept-variable-mappings.json`), and NCIt (per-concept `code` blocks) — these are equivalent in *coverage*, but Define puts them on the class metadata so LinkML→RDF tooling consumes them directly, whereas AC puts them in the data instances. AC genuinely lacks: ODM (no round-trip), schema-level USDM linkage, and library-element PROV authorship. See §6.1 for the full audit.
 4. **Origin & traceability** — *not* a gain in the dataContracts architecture. Define's `Origin.type` (Collected / Derived / Assigned / Predecessor / Protocol / NotAvailable / Other) and `sourceItems[]` are *derivable* from upstream metadata: USDM (`Collected` ⇐ BC bound to ScheduledActivityInstance; `Protocol` ⇐ bound to StudyDesign), the AC transformation library (`Derived` ⇐ has a `T.*` in lineage; `sourceItems[]` ⇐ the transformation's input bindings), and `concept-variable-mappings.json` (`Predecessor` ⇐ direct projection rule; `Assigned` ⇐ CodeList lookup). The Define projection generator computes `Origin` at emission time; it isn't authored. See §6.4 for the full table.
 
 ---
@@ -575,6 +575,127 @@ This is materially what `concept-variable-mappings.json` encodes for AC — *whi
 
 The key point — and the reason §6.4 reframed `Origin` as *not* a gain — is that **Define's verbosity adds no new information**. The `Origin.type` label and the `sourceItems[]` chain are both derivable from the upstream metadata (USDM + transformation library + projection rules); the Define encoding is a *rendering* of that derived information at projection time, not a separate source of truth. AC's compact lookup answers "what variable holds this concept?" directly; the answer to "where did this variable's value come from?" falls out of the DC graph and the transformation library, and the Define projection generator stamps it onto the emitted `Item` objects. Both encodings are correct; only one needs to be authored.
 
+### 4.4 Study eSAP — the per-study Spec-Layer artefact
+
+When §0.2 named *"USDM (study design) + eSAP (analysis plan)"* as the per-study Specification-Layer authoring surface, eSAP was a placeholder. `model/linkML/study_esap.schema.yaml` (draft, v0.4.0) makes it concrete. This subsection covers what eSAP carries, how it relates to `define.yaml`'s analogous slots, and where the two stacks line up vs. diverge.
+
+#### 4.4.1 Structure
+
+eSAP is structured around three conformance categories (the schema's `x-provenance.conformance` field on every type):
+
+- **`reference`** — USDM entities (`Study`, `StudyVersion`, `StudyDesign`, `Objective`, `Endpoint`, `Estimand`, `AnalysisPopulation`, `StudyIntervention`, `IntercurrentEvent`, `ScheduleTimeline`, `StudyDefinitionDocument`, …) imported by reference. Each is `additionalProperties: true` for pass-through of the full USDM payload; eSAP does *not* redefine them.
+- **`owned`** — eSAP-specific types: `Transformation` (abstract) and its concrete subclasses `Derivation` and `Analysis` (the study-resolved instances); `Binding`, `Configuration`, `Slice`, `PhraseInstance`, `ResolvedExpression`, `OutputClassConfig` (resolved-binding shapes); `IceHandling` (per-estimand ICE handling); typed enums `IchE9R1Strategy` and `AnalysisRole`.
+- **`cross-reference`** — `TransformationRef`, `SmartPhraseRef`, `MethodOutputRef`, `ARSAnalysisRef` — typed FKs into the Transformation Library and ARS, validated at build/exec time.
+
+```text
+SPECIFICATION LAYER (study eSAP scope)
+═════════════════════════════════════
+
+╔═ USDM passthrough (conformance: reference) ═══════════════════════════╗
+║                                                                        ║
+║   Study (root)                                                         ║
+║    ├─ versions[] → StudyVersion → StudyDesign → Objective              ║
+║    │                                              └─ endpoints[]       ║
+║    │                                                  → Endpoint ◄──┐  ║
+║    │                                                       │         │  ║
+║    │                                          hasTransformation      │  ║
+║    │                                                       ▼         │  ║
+║    │                                                    Derivation   │  ║
+║    │                                                    (is-a T)     │  ║
+║    │                                                                  │  ║
+║    ├─ estimands[] → Estimand (ICH E9 R1)                              │  ║
+║    │                  ├─ variableOfInterest ──────────────────────────┘  ║
+║    │                  ├─ analysisPopulation  → AnalysisPopulation        ║
+║    │                  ├─ interventions[]     → StudyIntervention         ║
+║    │                  ├─ intercurrentEvents[]→ IntercurrentEvent         ║
+║    │                  │      ├─ icheStrategy → IchE9R1Strategy           ║
+║    │                  │      ├─ hasScheduleTimeline → ScheduleTimeline    ║
+║    │                  │      └─ detectedBy ────► TransformationRef ┐     ║
+║    │                  ├─ handlesIntercurrentEvent[] → IceHandling   │     ║
+║    │                  │      ├─ forIntercurrentEvent                 │     ║
+║    │                  │      ├─ icheStrategy → IchE9R1Strategy       │     ║
+║    │                  │      └─ implementedBy → Transformation.id    │     ║
+║    │                  └─ hasTransformation[] → Analysis              │     ║
+║    │                                          (is-a T,                │     ║
+║    │                                           is-a ARS Analysis)    │     ║
+║    │                                                                  │     ║
+║    └─ documentedBy[] → StudyDefinitionDocument                        │     ║
+║         └─ versions → … → NarrativeContent (the eSAP document)        │     ║
+║                                                                       │     ║
+╚═══════════════════════════════════════════════════════════════════════│═════╝
+                                                                       │
+╔═ eSAP-owned (conformance: owned) ═════════════════════════════════════│═════╗
+║                                                                       │     ║
+║   Transformation (abstract)                                           │     ║
+║    ├─ basedOn ────────────────────────────► TransformationRef ◄───────┘     ║
+║    ├─ configurationValues[]  : Configuration  (resolved enum/decimal/…)     ║
+║    ├─ hasInput[]   : Binding  (concept ↔ methodRole, optional slice ref)    ║
+║    ├─ hasOutput[]  : Binding                                                ║
+║    ├─ resolvedSlices[]       : Slice  (template placeholders → values)      ║
+║    ├─ hasPhraseInstance[]    : PhraseInstance                                ║
+║    │      └─ basedOn ────────────────────► SmartPhraseRef ─────────────┐    ║
+║    ├─ resolvedExpression     : ResolvedExpression                       │    ║
+║    └─ hasOutputConfig[]      : OutputClassConfig                        │    ║
+║                                                                          │    ║
+║   Derivation is_a Transformation                                         │    ║
+║                                                                          │    ║
+║   Analysis is_a Transformation, adds:                                    │    ║
+║    ├─ arsAnalysis ──────────────────────► ARSAnalysisRef ────────────┐  │    ║
+║    ├─ analysisRole : AnalysisRole                                     │  │    ║
+║    │       (MainEstimator | SensitivityAnalysis | SupplementaryAnalysis)  │    ║
+║    └─ summarizedByOutputClass ─────────► MethodOutputRef ──────────┐ │  │    ║
+║                                              (path: M.X/output/N)  │ │  │    ║
+║                                                                    │ │  │    ║
+║   Typed enums (ICH E9 R1):                                         │ │  │    ║
+║    ├─ IchE9R1Strategy ∈ {TreatmentPolicy, Hypothetical, Composite, │ │  │    ║
+║    │                     WhileOnTreatment, PrincipalStratum}        │ │  │    ║
+║    └─ AnalysisRole                                                  │ │  │    ║
+║                                                                    │ │  │    ║
+╚════════════════════════════════════════════════════════════════════│═│══│════╝
+                                                                    │ │  │
+External Spec-Layer cross-references (conformance: cross-reference) │ │  │
+                                                                    ▼ ▼  ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  Transformation Library v0.7 (lib/transformations/, lib/methods/)            │
+│   ├─ T.* templates ◄──── TransformationRef.transformationTemplateId          │
+│   ├─ SP_* phrases ◄────  SmartPhraseRef.smartPhraseId                        │
+│   └─ M_*.json methods                                                        │
+│        └─ outputs[].name ◄──── MethodOutputRef.methodOutputId                 │
+│                                  (path 'M.<id>/output/<output-name>')         │
+│                                                                              │
+│  ARS — Analysis Results Standard                                             │
+│   └─ Analysis defs ◄──── ARSAnalysisRef.analysisId                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**The key structural pattern is `basedOn` + resolved bindings.** A study `Transformation` never repeats what's in the library template. It carries `basedOn → TransformationRef` plus the *resolved* bindings: which study-specific concept fills each `methodRole` slot, which slice template gets which `{placeholder}` values, which configuration enums resolve to which study choices. The library template stays concept-free (M.* and T.* in their cross-study form); the eSAP instance specialises by binding.
+
+#### 4.4.2 Comparison with `define.yaml`'s per-study analysis side
+
+| Concern | `define.yaml` | study eSAP |
+|---|---|---|
+| Per-study root | `MetaDataVersion` (with `itemGroups`, `items`, `methods`, `analyses`, `codeLists`, …) | `Study` (USDM root; carries `versions`, `estimands`, `documentedBy`) |
+| Where the study skeleton comes from | `StudyMetadata` mixin (`studyOID`, `studyName`, `protocolName`) | USDM imported by reference; full USDM payload passes through |
+| Analysis as a typed concept | `Analysis is_a Method` with `analysisReason` / `analysisPurpose` / `applicableWhen` / `inputData` | `Analysis is_a Transformation`, `basedOn` library template, plus `arsAnalysis` / `analysisRole` / `summarizedByOutputClass` |
+| Estimand modelling | No first-class Estimand; estimand information lives in narrative slots (`purpose`, `analysisReason`) | First-class `Estimand` (USDM) with typed ICH E9(R1) attributes (`variableOfInterest`, `analysisPopulation`, `interventions`, `intercurrentEvents`, `handlesIntercurrentEvent`, `hasTransformation`) |
+| ICH E9(R1) strategy | Free-text or coded under `WhereClause` | Typed enum `IchE9R1Strategy` with five members + reified `IceHandling` for per-estimand overrides |
+| Intercurrent events | Not modelled directly | First-class `IntercurrentEvent` (USDM) with typed `hasScheduleTimeline` + `detectedBy → TransformationRef` |
+| Concept binding | Inline on each `Item` (`dataType`, `length`, `codeList`, `conceptProperty`, `origin`) | Deferred to library templates; study supplies resolved `Binding[]` referencing concepts |
+| Implementation binding | Inline (`Item.dataType` / `length`, `ItemGroup.domain`, `Origin.sourceItems`) | None — eSAP stays implementation-agnostic, projection rules live separately in `concept-variable-mappings.json` |
+| SmartPhrase rendering | Not modelled | `hasPhraseInstance` carries the resolved text from a `SmartPhraseRef` |
+| Library vs study split | None — methods and analyses live alongside study-bound `itemGroups` in the same `MetaDataVersion` | Hard split — library templates in `lib/transformations/*` + `lib/methods/*`; eSAP cites them via `TransformationRef` / `MethodOutputRef` |
+
+#### 4.4.3 Fit assessment
+
+1. **eSAP IS the per-study Specification-Layer artefact §0.2 named.** Now explicit and schema-shaped. The `Study` root + eSAP-owned `Transformation` / `Derivation` / `Analysis` + cross-references to the Library and ARS line up exactly with the Specification-Layer half of the §0.1 diagram. Concept-bound, implementation-agnostic; eSAP relies on the Library for the concept-free Methods and Transformations.
+2. **eSAP carries strictly richer estimand / ICH E9(R1) framing than `define.yaml`.** Where `define.yaml` has `analysisReason` / `analysisPurpose` narrative slots, eSAP has typed `Estimand` (from USDM) with `intercurrentEvents`, `handlesIntercurrentEvent` (reified per-estimand `IceHandling`), the `IchE9R1Strategy` enum, and the `AnalysisRole` enum. The `detectedBy → TransformationRef` and `implementedBy → Transformation.id` linkages close the loop between ICH-E9(R1)-prescribed strategies and the actual derivations that operationalise them — *exactly the structural traceability auditors want and `define.yaml` doesn't carry*.
+3. **eSAP doesn't replicate `define.yaml`'s Execution-Layer surface.** No `Item`, no `ItemGroup`, no `Origin`, no `CodeList` references in eSAP. The implementation bindings live in `concept-variable-mappings.json` (projection rules) and are read by the projection generators at emission time. This keeps eSAP on the Specification-Layer side of the §0.1 line.
+4. **The library + ARS factoring is what makes eSAP small.** `define.yaml`'s `MetaDataVersion` is heavy because it inlines every `Method`, `Item`, `ItemGroup`, `CodeList`. eSAP at ~860 lines stays tight because the Library and ARS carry the templates and analysis defs; eSAP only carries what's study-specific (Estimands, ICE handling, resolved bindings, resolved phrases, ICH E9(R1) typed choices).
+
+#### 4.4.4 Open question worth surfacing
+
+eSAP's `arsAnalysis → ARSAnalysisRef` says *"this study Analysis is-a ARS Analysis."* ARS itself has notions of `Operation` (the statistical method) and `Method` references. There's potential overlap between the ARS Analysis definition (cited via `arsAnalysis`) and the library Method (cited via `basedOn` + `summarizedByOutputClass`). For a given study Analysis: is the ARS reference the canonical *"what this analysis is"*, or is the library reference? If both are canonical, what does each contribute? Worth resolving in the eSAP design before downstream consumers (ARS readers, Define-XML generators) try to interpret the dual reference.
+
 ---
 
 ## 5. What you would lose by adopting `define.yaml` wholesale
@@ -625,9 +746,21 @@ This one needs nuance — AC is not a blank slate here. A fair accounting:
 - **NCIt** — every concept in DC / AC / OC carries a `code: { system: "NCI", value }` slot. Heavy use.
 - **STATO** — referenced in `acdc_method.yaml`'s `codings[]` slot for statistical methods.
 
+**SDMX is not a gap.** W3C qb is — by the qb spec itself — an RDF binding of the SDMX information model. `qb:DataStructureDefinition`, `qb:dimension`, `qb:measure`, `qb:Slice`, `qb:SliceKey`, `qb:Observation` map one-to-one onto their `sdmx:*` counterparts (`sdmx:DataStructureDefinition`, `sdmx:DimensionConcept`, `sdmx:MeasureConcept`, `sdmx:Slice`, `sdmx:SliceKey`, `sdmx:Observation`). AC's `acdc_transformation.yaml` already declares `class_uri: qb:DataStructureDefinition`, `slot_uri: qb:dimension`, `qb:measure`, `qb:Slice`, `qb:SliceKey` — that *is* SDMX information-model alignment, by transitivity. `define.yaml`'s practice of double-tagging the same concept with both `qb:DataStructureDefinition` and `sdmx:DataStructureDefinition` is not additional coverage; it's the same concept under two URIs.
+
+Where SDMX has features qb doesn't pull in, the clinical analogs are either encoded through different mechanisms or simply don't apply:
+
+| SDMX feature beyond qb | Clinical equivalent / why it doesn't carry over |
+|---|---|
+| **Hierarchical code lists (HCL)** — parent/child beyond plain SKOS | Clinical hierarchies (MedDRA SOC→HLGT→HLT→PT→LLT, WHODrug ATC, SNOMED CT, ICD-10/11) are **external code systems we *reference*, not author**. SDTM materializes the relevant levels as separate columns (`--BODSYS`, `--SOC`, `--HLT`, `--PT`, `--DECOD`); analysis roll-up is just choosing a different dimension to group by. AC-framework-owned codelists (NY, UNIT, SEX, RACE, study Arm, study Population) are flat enumerations. |
+| **SDMX registries** — agency-to-agency structural metadata exchange | **CDISC Library** + **NCI EVS** + **FDA Data Standards Catalog** are the clinical-domain equivalents. We already use them. |
+| **`TIME_PERIOD` + FREQ codes** (CL_FREQ: `A`/`S`/`Q`/`M`/`W`/`D`/`B`/`H`/`N`) — calendar-aggregation periodicity. FREQ is structurally a Dimension that qualifies how `TIME_PERIOD` strings parse (`2024-Q1` requires `FREQ=Q`); typical Dataflows constrain it to a single value via DSD Constraints. | **No clinical analog.** Clinical analyses emit results per protocol-scheduled event — per-visit endpoint (Week 4 / 8 / 12 / 24), per-epoch summary (screening / treatment / follow-up), per-study, or event-anchored (time-to-event). Time is anchored *per-subject-relative-to-randomisation*, not absolute calendar position. The SDMX FREQ vocabulary contains no code that applies — even `W` (Weekly) in SDMX means "one observation per calendar week of the reporting period", not "every Week-1, Week-2, Week-3 visit per subject." USDM Schedule of Activities encodes structurally richer timing (per-activity, per-visit, per-epoch, with `windowLower` / `windowUpper`, anchored to Encounters and StudyEpochs) in a vocabulary (`Encounter`, `StudyEpoch`, `ScheduledActivityInstance`, `Timing`) that has no overlap with the calendar-aggregation codes; eSAP transformations express analysis structure directly. SDTM `--DOSFRQ` covers regimen-level dosing cadence at the data layer. Continuous-monitoring BCs would benefit from a device-intrinsic sampling-rate slot (wearable Hz, CGM interval) — but that's data acquisition metadata on the device, not a reporting cadence, so it's a different category from FREQ. |
+| **SDMX wire formats** (SDMX-ML / SDMX-CSV / SDMX-JSON) — exchange formats for statistical-agency tooling | Clinical sponsors need Define-XML, SAS XPT, Dataset-JSON, FHIR, OMOP CDM, ARS JSON. None ask for SDMX-ML. |
+
+So Define's `sdmx:*` mappings carry no clinical capability AC doesn't already have via qb (information-model alignment) plus its domain-specific frequency / hierarchy / exchange encodings.
+
 **Where AC genuinely lacks the mapping:**
 
-- **SDMX** — no `sdmx:*` references anywhere in the AC schemas or library. Define has `sdmx:DataStructureDefinition`, `sdmx:Dimension`, `sdmx:Measure`, `sdmx:Concept`, `sdmx:DataConstraint`, `sdmx:Dataflow`, `sdmx:JsonDataset`, … on most classes. This is a real gap.
 - **PROV** — nuanced. AC has no explicit `prov:*` vocabulary in its schemas. But the *data-level* provenance Define renders as `prov:wasDerivedFrom` (i.e. the lineage between a derived value and its sources) is fully derivable from the DC graph's `derives_from` edges plus the transformation library's input bindings — exactly the same logic as Define's `Origin.sourceItems` (see §6.4). The projection generator can emit PROV triples without AC ever storing them. What remains a genuine gap is *library-element* provenance ("who created `M.ANCOVA` on what date?") — Define's `Governed.owner` / `lastUpdated` would carry that as data; AC defers it to git history. So: PROV-as-data-lineage is not a gap; PROV-as-library-authorship is.
 - **ODM** — Define has `exact_mappings: odm:MethodDef`, `odm:ItemRef`, `odm:ItemGroupDef`, `odm:FormalExpression` everywhere; AC has no ODM references. Matters if you ever need ODM round-trip.
 - **USDM** — Define has `narrow_mappings: usdm:BiomedicalConcept`, `usdm:AnalysisConcept`, `usdm:DerivationConcept`, `usdm:StudyDesign`. AC has *behavioural* USDM linkage (the endpoint-spec drives the sliceKey sources) but no schema-level `usdm:` mappings.
@@ -637,7 +770,7 @@ This one needs nuance — AC is not a blank slate here. A fair accounting:
 - **AC carries the mapping at the data layer** — per-concept `code` blocks, per-output `valueType`, per-target sections in the mappings file. Compact and study-author-friendly.
 - **Define carries the mapping at the schema layer** — class-level `exact_mappings` / `close_mappings` / `narrow_mappings` URIs that LinkML-to-RDF / LinkML-to-JSON-Schema tooling consumes directly. This is what produces the "drop in a LinkML processor, get RDF" workflow.
 
-So the genuine gain on standards is narrow: **(a)** schema-level uniformity (every Define class declares its mapping URIs in one place, so a LinkML processor emits qb-/FHIR-/OMOP-compliant output without per-class wiring), and **(b)** the two specific standards AC doesn't cover (SDMX, PROV) plus ODM and stronger USDM. For the standards both stacks address (qb, FHIR, OMOP, NCIt), the alignment is present in both — AC at the data layer, Define at the class layer.
+So the genuine gain on standards is narrow: **(a)** schema-level uniformity (every Define class declares its mapping URIs in one place, so a LinkML processor emits qb-/FHIR-/OMOP-compliant output without per-class wiring), and **(b)** the specific standards AC doesn't carry — ODM (for round-trip), library-element PROV authorship, and schema-level USDM linkage. For the standards both stacks address (qb — which is the RDF binding of SDMX, hence SDMX information-model alignment too; FHIR, OMOP, NCIt), the alignment is present in both — AC at the data layer, Define at the class layer.
 
 ### 6.2 Per-element review and audit fields
 
@@ -731,7 +864,7 @@ Rewrite `acdc_method.yaml` and `acdc_transformation.yaml` so their root classes 
 - `acdc_transformation.Slice` `is_a: define.WhereClause` (plus the placeholder extension).
 - `acdc_transformation.SliceKey` — no Define parent; an AC-specific extension.
 
-**Gain**: one schema, one validator, AC-extracted SDMX/qb/FHIR mappings preserved across the layered enforcement. The twin-DSD shape inherits Define's mappings on `DataStructureDefinition` automatically.
+**Gain**: one schema, one validator, AC-extracted qb / FHIR / OMOP mappings preserved across the layered enforcement. The twin-DSD shape inherits Define's mappings on `DataStructureDefinition` automatically.
 
 **Cost**: schema redesign, file regeneration, validator rewrite. The concept-free rule on `Method` is preserved by `slot_usage: { implementsConcept: { required: false, equals_string: "" } }` plus a build-time rule; that's a structural pattern Define currently doesn't use but LinkML supports. The `_w3c_alignment` block at the top of the transformation library file becomes redundant (the class-level Define mappings replace it).
 
@@ -748,7 +881,7 @@ Adopt **Option 7.2** now and **plan for 7.3** once two AC-side designs settle:
    - propose them as a Define extension (e.g. a `Slice` class with `constraints: SliceConstraint[]` carrying templated values, parallel to AC), or
    - keep them as AC-private extensions of `WhereClause` and accept that AC artefacts round-trip through Define only with a `comments` field carrying the AC encoding.
 
-You are not missing anything material *for the current AC framework's job* by not having adopted Define. What you would gain is **publishability**: SDMX / qb / FHIR / USDM / PROV mappings on every element, a multilingual labelling story, full audit fields, and a path to express the AC library as a Define-JSON / Define-XML deliverable. What you would lose if you adopted Define naïvely (no extensions, no `slot_usage` overrides) is the very thing that makes the AC framework distinctive: the schema-enforced separation of *math* from *meaning*. The recommendation is to keep that separation as the authoring discipline, and to use Define as the publication and interoperability surface.
+You are not missing anything material *for the current AC framework's job* by not having adopted Define. What you would gain is **publishability**: schema-level qb (≡ SDMX information model) / FHIR / OMOP / NCIt mappings already present in AC, plus the ODM, USDM, and library-element PROV mappings AC doesn't carry, a multilingual labelling story, full review/audit fields, and a path to express the AC library as a Define-JSON / Define-XML deliverable. What you would lose if you adopted Define naïvely (no extensions, no `slot_usage` overrides) is the very thing that makes the AC framework distinctive: the schema-enforced separation of *math* from *meaning*. The recommendation is to keep that separation as the authoring discipline, and to use Define as the publication and interoperability surface.
 
 ---
 
