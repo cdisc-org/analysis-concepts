@@ -19,26 +19,6 @@ The AC framework draws an explicit line between two layers:
 
 ![AC framework — Specification Layer (Method, Transformation, Concept) and Execution Layer (Code, Data Binding), with two narrow contact points: Code→Method and Data Binding→Concept.](../images/ac-framework-layers.png)
 
-```text
-┌── Specification Layer ──┐   ┌── Execution Layer ──┐
-│                         │   │                     │
-│   ┌───────────────┐     │   │   ┌─────────────┐   │
-│   │    Method     │◄────┼───┼───│    Code     │   │
-│   └───────┬───────┘     │   │   └─────────────┘   │
-│           │             │   │                     │
-│   ┌───────▼───────┐     │   │                     │
-│   │ Transformation│     │   │                     │
-│   └───────▲───────┘     │   │                     │
-│           │             │   │                     │
-│   ┌───────┴───────┐     │   │   ┌─────────────┐   │
-│   │    Concept    │◄────┼───┼───│ Data Binding│   │
-│   └───────────────┘     │   │   └─────────────┘   │
-│                         │   │                     │
-│   implementation-       │   │   implementation-   │
-│   agnostic              │   │   bound             │
-└─────────────────────────┘   └─────────────────────┘
-```
-
 The two layers and their narrow contact points are deliberate:
 
 - **Specification Layer** (left): `Method`, `Transformation`, `Concept`. Implementation-agnostic by construction. A `Method` (`M.ANCOVA`) doesn't know what concept it will operate on; a `Concept` (`Change`) doesn't know which physical column it will project to; a `Transformation` (`T.CFB_ANCOVA`) binds Method to Concept but still references neither code nor column names.
