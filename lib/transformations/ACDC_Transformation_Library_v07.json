@@ -121,12 +121,49 @@
       "name": "Change from baseline endpoint",
       "role": "endpoint",
       "phrase_template": "change from baseline in {parameter}",
-      "configurations": [
-        "parameter"
-      ],
-      "references": [
-        "Change",
-        "Parameter"
+      "anchors": {
+        "produced_concept": "Change"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
+      ]
+    },
+    {
+      "oid": "SP_PCTCFB_ENDPOINT",
+      "name": "Percent change from baseline endpoint",
+      "role": "endpoint",
+      "phrase_template": "percent change from baseline in {parameter}",
+      "anchors": {
+        "produced_concept": "PercentChange"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
       ]
     },
     {
@@ -134,11 +171,24 @@
       "name": "Time-to-event endpoint",
       "role": "endpoint",
       "phrase_template": "time to {event}",
-      "configurations": [
-        "event"
-      ],
-      "references": [
-        "TimeToEvent"
+      "anchors": {
+        "produced_concept": "TimeToEvent"
+      },
+      "placeholders": [
+        {
+          "name": "event",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Event",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
       ]
     },
     {
@@ -146,12 +196,24 @@
       "name": "Responder endpoint",
       "role": "endpoint",
       "phrase_template": "proportion of responders in {parameter}",
-      "configurations": [
-        "parameter"
-      ],
-      "references": [
-        "Flag",
-        "Parameter"
+      "anchors": {
+        "produced_concept": "Flag"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
       ]
     },
     {
@@ -159,12 +221,49 @@
       "name": "Analysis value endpoint",
       "role": "endpoint",
       "phrase_template": "{parameter} value",
-      "configurations": [
-        "parameter"
-      ],
-      "references": [
-        "Measure",
-        "Parameter"
+      "anchors": {
+        "produced_concept": "Measure"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
+      ]
+    },
+    {
+      "oid": "SP_SHIFT_ENDPOINT",
+      "name": "Shift endpoint",
+      "role": "endpoint",
+      "phrase_template": "shift from baseline in {parameter}",
+      "anchors": {
+        "produced_concept": "Shift"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
       ]
     },
     {
@@ -172,12 +271,49 @@
       "name": "Peak value endpoint",
       "role": "endpoint",
       "phrase_template": "peak {parameter}",
-      "configurations": [
-        "parameter"
-      ],
-      "references": [
-        "PeakValue",
-        "Parameter"
+      "anchors": {
+        "produced_concept": "PeakValue"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
+      ]
+    },
+    {
+      "oid": "SP_AUC_ENDPOINT",
+      "name": "Area under curve endpoint",
+      "role": "endpoint",
+      "phrase_template": "{parameter} AUC",
+      "anchors": {
+        "produced_concept": "AreaUnderCurve"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
       ]
     },
     {
@@ -185,11 +321,24 @@
       "name": "Parameter",
       "role": "parameter",
       "phrase_template": "for {parameter}",
-      "configurations": [
-        "parameter"
-      ],
-      "referenceCategories": [
-        "ParameterDimension"
+      "anchors": {
+        "produced_concept": "Parameter"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true,
+          "concept_category": "ParameterDimension"
+        }
       ]
     },
     {
@@ -197,11 +346,24 @@
       "name": "Timepoint",
       "role": "timepoint",
       "phrase_template": "at {visit}",
-      "configurations": [
-        "visit"
-      ],
-      "referenceCategories": [
-        "VisitDimension"
+      "anchors": {
+        "produced_concept": "AnalysisVisit"
+      },
+      "placeholders": [
+        {
+          "name": "visit",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true,
+          "concept_category": "VisitDimension"
+        }
       ]
     },
     {
@@ -209,11 +371,24 @@
       "name": "Population",
       "role": "population",
       "phrase_template": "in the {population} population",
-      "configurations": [
-        "population"
-      ],
-      "references": [
-        "Population"
+      "anchors": {
+        "produced_concept": "Population"
+      },
+      "placeholders": [
+        {
+          "name": "population",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Population",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
       ]
     },
     {
@@ -221,11 +396,24 @@
       "name": "Treatment grouping",
       "role": "grouping",
       "phrase_template": "comparing {treatment} groups",
-      "configurations": [
-        "treatment"
-      ],
-      "references": [
-        "Treatment"
+      "anchors": {
+        "produced_concept": "Treatment"
+      },
+      "placeholders": [
+        {
+          "name": "treatment",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Treatment",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
       ]
     },
     {
@@ -233,59 +421,164 @@
       "name": "Stratification",
       "role": "grouping",
       "phrase_template": "stratified by {strata}",
-      "configurations": [
-        "strata"
-      ],
-      "references": []
+      "anchors": {},
+      "placeholders": [
+        {
+          "name": "strata",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": null,
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "label",
+          "required": true
+        }
+      ]
     },
     {
       "oid": "SP_METHOD_MMRM",
       "name": "MMRM method",
       "role": "method",
-      "phrase_template": "using mixed model repeated measures",
-      "configurations": [],
-      "references": [
-        "M.MMRM"
+      "phrase_template": "using {method}",
+      "anchors": {
+        "uses_method": "M.MMRM"
+      },
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "intent_constraint": "LongitudinalEstimate",
+          "value_source": "internal_catalogue",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name",
+          "required": true
+        }
       ]
     },
     {
       "oid": "SP_METHOD_ANCOVA",
       "name": "ANCOVA method",
       "role": "method",
-      "phrase_template": "using analysis of covariance",
-      "configurations": [],
-      "references": [
-        "M.ANCOVA"
+      "phrase_template": "using {method}",
+      "anchors": {
+        "uses_method": "M.ANCOVA"
+      },
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "intent_constraint": "GroupComparison",
+          "value_source": "internal_catalogue",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name",
+          "required": true
+        }
       ]
     },
     {
       "oid": "SP_METHOD_LOGRANK",
       "name": "Log-rank method",
       "role": "method",
-      "phrase_template": "using the log-rank test",
-      "configurations": [],
-      "references": [
-        "M.LogRankTest"
+      "phrase_template": "using the {method} test",
+      "anchors": {
+        "uses_method": "M.LogRankTest"
+      },
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "intent_constraint": "TimeToEventEstimate",
+          "value_source": "internal_catalogue",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "label",
+          "required": true
+        }
       ]
     },
     {
       "oid": "SP_METHOD_KM",
       "name": "Kaplan-Meier method",
       "role": "method",
-      "phrase_template": "using Kaplan-Meier estimation",
-      "configurations": [],
-      "references": [
-        "M.KaplanMeier"
+      "phrase_template": "using {method} estimation",
+      "anchors": {
+        "uses_method": "M.KaplanMeier"
+      },
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "intent_constraint": "TimeToEventEstimate",
+          "value_source": "internal_catalogue",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name",
+          "required": true
+        }
       ]
     },
     {
       "oid": "SP_METHOD_CHISQ",
       "name": "Chi-square method",
       "role": "method",
-      "phrase_template": "using the chi-square test",
-      "configurations": [],
-      "references": [
-        "M.ChiSquaredTest"
+      "phrase_template": "using the {method} test",
+      "anchors": {
+        "uses_method": "M.ChiSquaredTest"
+      },
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "intent_constraint": "GroupComparison",
+          "value_source": "internal_catalogue",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "label",
+          "required": true
+        }
+      ]
+    },
+    {
+      "oid": "SP_METHOD_DESCSTATS",
+      "name": "Descriptive statistics",
+      "role": "method",
+      "phrase_template": "summarised by {statistic}",
+      "anchors": {},
+      "placeholders": [
+        {
+          "name": "statistic",
+          "kind": "method_ref",
+          "intent_constraint": "DescriptiveSummary",
+          "value_source": "internal_catalogue",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "label",
+          "required": true
+        }
       ]
     },
     {
@@ -293,31 +586,65 @@
       "name": "Imputation qualifier",
       "role": "method_qualifier",
       "phrase_template": "with {imputation} imputation for missing data",
-      "configurations": [
-        "imputation"
-      ],
-      "references": []
+      "anchors": {},
+      "placeholders": [
+        {
+          "name": "imputation",
+          "kind": "method_ref",
+          "intent_constraint": "MissingDataHandling",
+          "value_source": "internal_catalogue",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "label",
+          "required": true
+        }
+      ]
     },
     {
       "oid": "SP_CONFIDENCE_LEVEL",
       "name": "Confidence level qualifier",
       "role": "method_qualifier",
       "phrase_template": "with {conf_level}% confidence intervals",
-      "configurations": [
-        "conf_level"
-      ],
-      "references": []
+      "anchors": {},
+      "placeholders": [
+        {
+          "name": "conf_level",
+          "kind": "value",
+          "datatype": "integer",
+          "constraint": {
+            "min": 0,
+            "max": 100
+          },
+          "required": true
+        }
+      ]
     },
     {
       "oid": "SP_COVARIATE_BASELINE",
       "name": "Baseline covariate",
       "role": "covariate",
       "phrase_template": "adjusting for baseline {parameter}",
-      "configurations": [
-        "parameter"
-      ],
-      "references": [
-        "Measure"
+      "anchors": {
+        "produced_concept": "Measure"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
       ]
     },
     {
@@ -325,8 +652,10 @@
       "name": "Site covariate",
       "role": "covariate",
       "phrase_template": "adjusting for site",
-      "configurations": [],
-      "references": []
+      "anchors": {
+        "produced_concept": "Site"
+      },
+      "placeholders": []
     }
   ],
   "transformations": [
