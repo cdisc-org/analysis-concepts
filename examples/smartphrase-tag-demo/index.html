@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>eSAP SmartPhrase Tag — authoring demo</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --panel: #ffffff;
+    --ink: #1c1c1c;
+    --muted: #6a6a6a;
+    --rule: #e2e2e2;
+    --accent: #2563eb;
+    --ok: #d1fae5;
+    --ok-ink: #065f46;
+    --warn: #fef3c7;
+    --warn-ink: #92400e;
+    --err: #fee2e2;
+    --err-ink: #991b1b;
+    --chip-bg: #eef2ff;
+    --chip-ink: #3730a3;
+    --code-bg: #0f172a;
+    --code-ink: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--panel);
+  }
+  header h1 { margin: 0; font-size: 18px; }
+  header p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+  header code { font-family: ui-monospace, "SF Mono", Menlo, monospace; background: #f1f5f9; padding: 1px 5px; border-radius: 3px; }
+
+  .toolbar {
+    display: flex; gap: 12px; align-items: center;
+    padding: 10px 24px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--panel);
+  }
+  .toolbar button {
+    font: inherit; padding: 6px 12px; border: 1px solid var(--rule);
+    background: var(--panel); border-radius: 6px; cursor: pointer;
+    color: var(--ink);
+  }
+  .toolbar button:hover { background: #f1f5f9; }
+  .toolbar button.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .toolbar button.primary:hover { filter: brightness(0.95); }
+  .toolbar .status { color: var(--muted); margin-left: auto; font-size: 12px; }
+
+  main {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+    background: var(--rule);
+    min-height: 480px;
+  }
+  .pane { background: var(--panel); padding: 16px 24px; overflow: auto; }
+  .pane h2 {
+    margin: 0 0 10px; font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted);
+  }
+  #editor {
+    width: 100%; min-height: 380px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 13px; line-height: 1.6;
+    border: 1px solid var(--rule); border-radius: 6px;
+    padding: 12px; resize: vertical;
+    color: var(--ink); background: #ffffff;
+  }
+  #preview {
+    min-height: 380px;
+    font-size: 14px; line-height: 1.7;
+    padding: 12px; border: 1px solid var(--rule); border-radius: 6px;
+    background: #fcfcfd;
+    white-space: pre-wrap;
+  }
+
+  /* Rendered preview reads as prose; slot values are bolded for emphasis.
+     Errors get a dotted underline; the raw tag + role + instance show on hover. */
+  .chip {
+    cursor: help;
+    border-bottom: 1px dotted transparent;
+  }
+  .chip:hover { border-bottom-color: var(--rule); }
+  .chip.err { color: var(--err-ink); border-bottom-color: var(--err-ink); }
+  .chip.warn { color: var(--warn-ink); border-bottom-color: var(--warn-ink); }
+  .chip .slot-value {
+    font-weight: 600;
+    color: var(--chip-ink);
+  }
+  .chip.err .slot-value { color: var(--err-ink); }
+  .chip.warn .slot-value { color: var(--warn-ink); }
+
+  .validation {
+    border-top: 1px solid var(--rule);
+    background: var(--panel);
+    padding: 12px 24px;
+    max-height: 240px;
+    overflow: auto;
+  }
+  .validation h2 {
+    margin: 0 0 8px; font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted);
+  }
+  .validation ul { list-style: none; padding: 0; margin: 0; }
+  .validation li {
+    padding: 4px 0; font-size: 13px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .validation li:last-child { border-bottom: none; }
+  .validation .badge {
+    display: inline-block; padding: 1px 6px; border-radius: 3px;
+    font-size: 11px; font-weight: 600; margin-right: 8px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .validation .badge.ok { background: var(--ok); color: var(--ok-ink); }
+  .validation .badge.err { background: var(--err); color: var(--err-ink); }
+  .validation .badge.warn { background: var(--warn); color: var(--warn-ink); }
+  .validation .where { color: var(--muted); font-family: ui-monospace, monospace; font-size: 11px; margin-left: 6px; }
+
+  #picker {
+    position: fixed; z-index: 100;
+    width: 480px; max-height: 60vh; overflow: hidden;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    display: flex; flex-direction: column;
+  }
+  /* The ID selector above out-specifies the UA `[hidden]{display:none}` rule,
+     so re-assert it explicitly — otherwise the picker is always visible. */
+  #picker[hidden] { display: none; }
+  #picker-backdrop {
+    position: fixed; inset: 0; z-index: 99;
+    background: rgba(15, 23, 42, 0.08);
+  }
+  #picker-backdrop[hidden] { display: none; }
+  #picker .tabs {
+    display: flex; border-bottom: 1px solid var(--rule); background: #fafafa;
+  }
+  #picker .tab {
+    flex: 1; padding: 8px 12px; font: inherit; border: 0; background: transparent;
+    color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent;
+  }
+  #picker .tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+  #picker .tab-body { overflow-y: auto; padding: 8px 0; }
+  .picker-group { padding: 4px 12px 8px; }
+  .picker-group-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); padding: 6px 0 4px;
+  }
+  .picker-item {
+    padding: 6px 8px; border-radius: 4px; cursor: pointer;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .picker-item:hover { background: #f1f5f9; }
+  .picker-item .text { flex: 1; }
+  .picker-item .oid {
+    font-family: ui-monospace, monospace;
+    font-size: 11px; color: var(--muted);
+  }
+  .picker-item .pi-id {
+    font-family: ui-monospace, monospace;
+    font-size: 11px; font-weight: 600; color: var(--accent);
+    min-width: 28px;
+  }
+  .picker-empty { padding: 12px; color: var(--muted); font-style: italic; }
+  .picker-form {
+    padding: 12px; border-top: 1px solid var(--rule);
+    background: #fcfcfd;
+  }
+  .picker-form h3 { margin: 0 0 8px; font-size: 13px; }
+  .picker-form label {
+    display: block; font-size: 11px; color: var(--muted);
+    margin-top: 8px;
+  }
+  .picker-form input, .picker-form select {
+    width: 100%; padding: 6px 8px; font: inherit; font-size: 13px;
+    border: 1px solid var(--rule); border-radius: 4px;
+    margin-top: 2px;
+  }
+  .picker-form .actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+  .picker-form .actions button { padding: 6px 12px; }
+
+  .help { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .help kbd {
+    font-family: ui-monospace, monospace; font-size: 11px;
+    background: #f1f5f9; padding: 1px 5px; border-radius: 3px;
+    border: 1px solid var(--rule);
+  }
+
+  /* ---- Analysis concepts (the next step) ---- */
+  .analysis-concepts {
+    border-top: 1px solid var(--rule); background: var(--panel);
+    padding: 12px 24px 32px;
+  }
+  .analysis-concepts h2 {
+    margin: 0 0 4px; font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted);
+  }
+  .ac-help { margin: 0 0 12px; font-size: 12px; color: var(--muted); }
+  .ac-help code { font-family: ui-monospace, monospace; background: #f1f5f9; padding: 1px 4px; border-radius: 3px; }
+  .ac-layout { display: grid; grid-template-columns: 240px 1fr; gap: 16px; align-items: start; }
+  .ac-list { display: flex; flex-direction: column; gap: 6px; }
+  .analysis-row {
+    text-align: left; font: inherit; cursor: pointer;
+    border: 1px solid var(--rule); border-radius: 6px; background: var(--panel);
+    padding: 8px 10px; display: flex; flex-direction: column; gap: 2px;
+  }
+  .analysis-row:hover { background: #f8fafc; }
+  .analysis-row.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .analysis-row .pi-id { font-family: ui-monospace, monospace; font-size: 11px; font-weight: 600; color: var(--accent); }
+  .analysis-row .text { font-size: 13px; }
+  .analysis-row .oid { font-family: ui-monospace, monospace; font-size: 10px; color: var(--muted); }
+  .analysis-row .oid.unresolved { color: var(--err-ink); }
+
+  .ac-detail { min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+  .concept-block { border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; }
+  .concept-block.authored { background: #f8fafc; border-color: #cbd5e1; }
+  .concept-block.inferred { background: #fffdf7; border: 1px dashed #d4b483; }
+  .block-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px;
+  }
+  .concept-block.inferred .block-label { color: var(--warn-ink); }
+  .tr-title { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .tr-title strong { font-size: 14px; }
+  .node-cid { font-family: ui-monospace, monospace; font-size: 11px; color: var(--muted); }
+  .prov-badge {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;
+    background: #e0e7ff; color: var(--chip-ink); padding: 1px 6px; border-radius: 999px;
+  }
+  .prov-inferred .prov-badge { background: #fde9c8; color: var(--warn-ink); }
+  .prov-authored .prov-badge { background: #dbeafe; color: #1e40af; }
+
+  .bindings { font-size: 12px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; }
+  .bind-label { color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; }
+  .bind code { font-family: ui-monospace, monospace; font-size: 11px; }
+  .bind code.bound { color: var(--ok-ink); font-weight: 600; }
+  .bind code.unbound { color: var(--muted); font-style: italic; }
+  .bind-src { color: var(--muted); font-size: 11px; }
+
+  /* twin DSD card */
+  .dsd { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; }
+  .dsd-side { flex: 1 1 220px; min-width: 200px; border: 1px solid var(--rule); border-radius: 6px; background: #fff; padding: 8px 10px; }
+  .dsd-title { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 6px; }
+  .dsd-arrow { align-self: center; color: var(--muted); font-size: 12px; }
+  .method-box { flex: 0 0 auto; align-self: center; border: 1px solid var(--accent); border-radius: 6px; background: #eef2ff; padding: 8px 10px; min-width: 130px; }
+  .method-id { font-family: ui-monospace, monospace; font-size: 12px; font-weight: 600; color: var(--chip-ink); }
+  .cfg { font-family: ui-monospace, monospace; font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .dims { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+  .dim { font-size: 11px; background: #f1f5f9; border-radius: 4px; padding: 1px 6px; display: inline-flex; align-items: center; gap: 4px; }
+  .dim.cat { background: #ecfeff; border: 1px solid #a5f3fc; }
+  .role-badge { font-size: 8px; text-transform: uppercase; letter-spacing: 0.04em; background: #c7d2fe; color: #3730a3; padding: 0 3px; border-radius: 3px; }
+  .meas { font-size: 11px; display: flex; gap: 6px; align-items: baseline; padding: 1px 0; }
+  .meas .slot { font-family: ui-monospace, monospace; color: var(--muted); min-width: 64px; }
+  .meas .concept { font-weight: 600; }
+  .meas .slice { color: #0369a1; font-size: 10px; }
+  .meas .vt { color: var(--muted); font-size: 10px; font-style: italic; }
+
+  /* inferred chain */
+  .chain-node { padding: 3px 0; border-left: 2px solid transparent; }
+  .chain-node.prov-inferred { border-left-color: #e7c98f; padding-left: 8px; }
+  .node-head { display: inline-flex; align-items: baseline; gap: 8px; cursor: pointer; }
+  .node-head.clickable:hover strong { text-decoration: underline; }
+  .node-method { font-family: ui-monospace, monospace; font-size: 10px; color: var(--accent); }
+  .node-via { font-size: 11px; color: var(--muted); font-style: italic; }
+  .node-leaf { font-size: 12px; color: #475569; }
+  .node-unresolved { font-size: 12px; color: var(--err-ink); }
+  .node-detail { margin: 6px 0 6px 8px; }
+  .node-marker { font-size: 11px; color: var(--muted); margin: 2px 0 2px 8px; }
+  .node-marker.warn { color: var(--warn-ink); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>eSAP SmartPhrase Tag — authoring demo</h1>
+  <p>Type a smartPhrase reference as <code>&lt;acdc:macro id="phrase" ref="SP_…" instance="…" of="…" slot="…"/&gt;</code>. Picker inserts; validator checks; preview renders.</p>
+</header>
+
+<div class="toolbar">
+  <button id="btn-pick" class="primary">+ Insert phrase tag</button>
+  <button id="btn-clear">Clear</button>
+  <button id="btn-load-example">Load example</button>
+  <span class="status" id="status">Loading library…</span>
+</div>
+
+<main>
+  <section class="pane">
+    <h2>Narrative — NarrativeContent.text</h2>
+    <textarea id="editor" spellcheck="false" placeholder="Write prose with smartPhrase tags. Type /sp at the cursor or click ‘Insert phrase tag’ to open the picker."></textarea>
+    <p class="help">Trigger picker: click <em>Insert phrase tag</em>, type <kbd>/sp</kbd> in the editor, or press <kbd>Ctrl/⌘ + Space</kbd>.</p>
+  </section>
+  <section class="pane">
+    <h2>Rendered preview</h2>
+    <div id="preview"></div>
+  </section>
+</main>
+
+<section class="validation">
+  <h2>Validation</h2>
+  <ul id="findings"><li><span class="badge ok">ok</span>No tags yet.</li></ul>
+</section>
+
+<section class="analysis-concepts">
+  <h2>Analysis concepts — detailed spec (the next step)</h2>
+  <p class="ac-help">Each authored <em>endpoint + method</em> resolves to an analysis transformation
+    (<strong>authored</strong>, from <code>validSmartPhrases[]</code>); its derivation pipeline is
+    <strong>inferred</strong> by the engine (concept-production matching) with the genuine seams marked.</p>
+  <div class="ac-layout">
+    <div id="analysis-list" class="ac-list"></div>
+    <div id="analysis-detail" class="ac-detail"></div>
+  </div>
+</section>
+
+<div id="picker-backdrop" hidden></div>
+<div id="picker" hidden>
+  <div class="tabs">
+    <button class="tab active" data-tab="instances">Phrase instances (study spec)</button>
+    <button class="tab" data-tab="templates">Library templates</button>
+  </div>
+  <div class="tab-body" id="picker-body"></div>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+ * Library load
+ * Library lives at ../../lib/transformations/ACDC_Transformation_Library_v07.json
+ * Served from repo root with `python3 -m http.server`, this fetches.
+ * ============================================================ */
+const LIBRARY_URL = '../../lib/transformations/ACDC_Transformation_Library_v07.json';
+
+let LIBRARY = null;        // { smartPhrases, roleDefinitions, configurationOptions, transformations }
+let SMARTPHRASES = {};     // oid -> phrase
+let ROLE_DEFS = {};        // role -> {label, contextSource}
+let ROLE_ORDER = [];       // canonical role display order
+let TRANSFORMATIONS = {};  // conceptId -> transformation
+let PRODUCERS = {};        // output concept -> [derivation conceptIds that produce it]
+
+// Mock "study spec" — what Transformation.hasPhraseInstance[] would contain
+// for one configured analysis. Used by the phrase-instance picker (Affordance 2).
+// Slot-value namespaces reflect WHERE the value comes from, not "concept":
+//   BC.*  a {parameter}/{event} value = the identifier of a Biomedical Concept
+//         (collected data), drawn from the study's user_codelist.
+//   M.*   a method id from the internal method catalogue.
+//   V.*   an AnalysisVisit (timepoint) dimension member.
+// A parameter is NOT a concept-model concept — it is a BC identifier.
+const MOCK_STUDY_INSTANCES = [
+  { id: 'E1', ref: 'SP_CFB_ENDPOINT', slots: { parameter: 'BC.PCR' }, of: null },
+  { id: 'A1', ref: 'SP_METHOD_MMRM', slots: { method: 'M.MMRM' }, of: 'E1' },
+  { id: 'A1q1', ref: 'SP_IMPUTATION', slots: { imputation: 'M.LOCF' }, of: 'A1' },
+  { id: 'E2', ref: 'SP_TTE_ENDPOINT', slots: { event: 'BC.DEATH' }, of: null },
+  { id: 'A2', ref: 'SP_METHOD_KM', slots: { method: 'M.KaplanMeier' }, of: 'E2' }
+];
+const STUDY_INSTANCE_MAP = new Map(MOCK_STUDY_INSTANCES.map(i => [i.id, i]));
+
+async function loadLibrary() {
+  try {
+    const r = await fetch(LIBRARY_URL);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    LIBRARY = await r.json();
+  } catch (e) {
+    setStatus('Library load failed: ' + e.message + ' — serve via `python3 -m http.server` from repo root.', 'err');
+    return false;
+  }
+  for (const p of LIBRARY.smartPhrases) SMARTPHRASES[p.oid] = p;
+  ROLE_DEFS = LIBRARY.roleDefinitions.roles;
+  ROLE_ORDER = LIBRARY.roleDefinitions.order;
+  // Index transformations and build the producer map (output concept ->
+  // derivations that produce it). The inferred-chain matcher walks this.
+  for (const t of (LIBRARY.transformations || [])) {
+    TRANSFORMATIONS[t.conceptId] = t;
+    if (t.transformationType === 'derivation') {
+      for (const m of (t.outputDataStructure?.measures || [])) {
+        (PRODUCERS[m.concept] ||= []).push(t.conceptId);
+      }
+    }
+  }
+  const nT = Object.keys(TRANSFORMATIONS).length;
+  setStatus(`Loaded ${LIBRARY.smartPhrases.length} smartPhrases + ${nT} transformations from v${LIBRARY.version}`, 'ok');
+  return true;
+}
+
+function setStatus(text, kind) {
+  const el = document.getElementById('status');
+  el.textContent = text;
+  el.style.color = kind === 'err' ? 'var(--err-ink)' : kind === 'ok' ? 'var(--ok-ink)' : 'var(--muted)';
+}
+
+/* ============================================================
+ * Parser — find <acdc:macro id="phrase" .../> tags in text
+ * Returns [{ raw, start, end, attrs: {...} }, ...]
+ * ============================================================ */
+const TAG_RE = /<acdc:macro\s+([^/>]+?)\s*\/>/g;
+const ATTR_RE = /(\w[\w-]*)\s*=\s*"([^"]*)"/g;
+
+function parseTags(text) {
+  const out = [];
+  let m;
+  TAG_RE.lastIndex = 0;
+  while ((m = TAG_RE.exec(text)) !== null) {
+    const attrs = {};
+    let am;
+    ATTR_RE.lastIndex = 0;
+    while ((am = ATTR_RE.exec(m[1])) !== null) attrs[am[1]] = am[2];
+    out.push({ raw: m[0], start: m.index, end: m.index + m[0].length, attrs });
+  }
+  return out;
+}
+
+/* ============================================================
+ * Validator — two-pass per plan §7
+ * Returns { findings: [...], tagStates: Map<index, 'ok'|'warn'|'err'> }
+ * ============================================================ */
+const RESERVED_ATTRS = new Set(['id', 'ref', 'instance', 'of', 'render']);
+
+function validate(tags) {
+  const findings = [];
+  const tagStates = new Map();
+  const instanceMap = new Map(); // instance -> tagIndex
+  const autoCount = new Map();   // oid -> running counter
+
+  // PASS 1 — per tag
+  tags.forEach((tag, i) => {
+    const errors = [];
+    const warnings = [];
+    const { attrs } = tag;
+
+    // (1.0) id="phrase" is the macro variant selector
+    if (attrs.id !== 'phrase') {
+      errors.push(`id must be "phrase" (got "${attrs.id || '<missing>'}")`);
+    }
+
+    // A tag is a SPEC-BOUND REFERENCE if its instance= points at a study-spec
+    // phrase instance (Transformation.hasPhraseInstance[]). Such a tag inherits
+    // its slots, role, and composition from the spec — the spec is authoritative,
+    // the narrative just renders it. A tag whose instance is NOT in the spec is a
+    // FREE-PROSE LITERAL that must carry its own slots and validates standalone.
+    const specInst = attrs.instance ? STUDY_INSTANCE_MAP.get(attrs.instance) : null;
+    const isSpecRef = !!specInst;
+
+    // (1.1) ref resolves. For a spec ref, the phrase comes from the spec
+    // instance, so a bare reference (no ref=) is valid; if ref= is present it
+    // must agree with the spec.
+    let phrase;
+    if (isSpecRef) {
+      phrase = SMARTPHRASES[specInst.ref];
+      if (attrs.ref && attrs.ref !== specInst.ref) {
+        errors.push(`ref="${attrs.ref}" disagrees with spec instance ${attrs.instance} (which is ${specInst.ref})`);
+      }
+    } else {
+      phrase = attrs.ref ? SMARTPHRASES[attrs.ref] : null;
+      if (!attrs.ref) errors.push('missing required attribute: ref');
+      else if (!phrase) errors.push(`unknown phrase ref: ${attrs.ref}`);
+    }
+
+    if (phrase) {
+      const role = phrase.role;
+      const ctxSource = ROLE_DEFS[role]?.contextSource;
+      const slotNames = new Set((phrase.placeholders || []).map(p => p.name));
+      const ownSlots = Object.keys(attrs).filter(a => slotNames.has(a));
+
+      // (1.3) no unknown attributes  [runs for both ref and literal]
+      for (const a of Object.keys(attrs)) {
+        if (RESERVED_ATTRS.has(a)) continue;
+        if (!slotNames.has(a)) errors.push(`unknown attribute: ${a}`);
+      }
+
+      if (isSpecRef) {
+        // Slots/role/composition come from the spec. The author may optionally
+        // re-state a slot; if it diverges from the spec that's SPEC DRIFT (warn,
+        // not error — the renderer follows the spec, per the authority direction).
+        for (const name of ownSlots) {
+          if (specInst.slots[name] !== undefined && attrs[name] !== specInst.slots[name]) {
+            warnings.push(`spec drift: ${name}="${attrs[name]}" overrides spec value "${specInst.slots[name]}" (renderer follows spec)`);
+          }
+        }
+      } else {
+        // (1.2) required placeholders bound
+        for (const p of (phrase.placeholders || [])) {
+          if (p.required && !(p.name in attrs)) {
+            errors.push(`missing required slot: ${p.name} (kind=${p.kind})`);
+          }
+        }
+
+        // (1.4) slot value shape
+        for (const p of (phrase.placeholders || [])) {
+          if (!(p.name in attrs)) continue;
+          const v = attrs[p.name];
+          if (p.kind === 'value') {
+            if (p.datatype === 'integer') {
+              const n = parseInt(v, 10);
+              if (Number.isNaN(n) || String(n) !== v.trim()) errors.push(`${p.name}: not an integer (got "${v}")`);
+              else if (p.constraint?.min != null && n < p.constraint.min) errors.push(`${p.name}: ${n} < min ${p.constraint.min}`);
+              else if (p.constraint?.max != null && n > p.constraint.max) errors.push(`${p.name}: ${n} > max ${p.constraint.max}`);
+            }
+          } else if (p.kind === 'concept_ref' || p.kind === 'method_ref') {
+            if (!v.trim()) errors.push(`${p.name}: empty value`);
+            // Deeper resolution (codelist/catalog membership) deferred to study-config.
+          }
+        }
+
+        // (1.7) of presence by role contextSource  [literals only — spec owns
+        // composition for references]
+        const isManualRole = ctxSource === 'manual';
+        if (isManualRole && !attrs.of) {
+          errors.push(`role "${role}" (contextSource=manual) requires of="<endpoint-instance>"`);
+        } else if (!isManualRole && attrs.of) {
+          errors.push(`role "${role}" (contextSource=endpoint) must not carry of=`);
+        }
+
+        // (1.6) instance recommended for endpoint role (auto-id assigned otherwise)
+        if (role === 'endpoint' && !attrs.instance) {
+          warnings.push(`endpoint phrase has no instance= (auto-id will be assigned, may break cross-refs if reordered)`);
+        }
+      }
+
+      // (1.5) render hint valid  [runs for both]
+      if (attrs.render) {
+        for (const pair of attrs.render.split(',')) {
+          const [slot, mode] = pair.split(':').map(s => s.trim());
+          if (!slot || !mode) { errors.push(`render: bad pair "${pair}"`); continue; }
+          const p = (phrase.placeholders || []).find(x => x.name === slot);
+          if (!p) errors.push(`render: unknown slot "${slot}"`);
+          else if (!p.render_options?.includes(mode))
+            errors.push(`render: ${slot} mode "${mode}" not in [${(p.render_options||[]).join('|')}]`);
+        }
+      }
+
+      // Resolve display slots. For a spec reference the SPEC WINS — the renderer
+      // ignores any divergent author-supplied value (that divergence is the
+      // drift warning above). For a literal the tag's own attributes are the slots.
+      const resolvedSlots = isSpecRef ? { ...specInst.slots } : attrs;
+
+      // Compute and register instance for pass 2
+      let instance = attrs.instance;
+      if (!instance && attrs.ref) {
+        autoCount.set(attrs.ref, (autoCount.get(attrs.ref) || 0) + 1);
+        instance = `${attrs.ref}_${autoCount.get(attrs.ref)}`;
+        tag._autoInstance = instance;
+      }
+      if (instance) {
+        const prior = instanceMap.get(instance);
+        // Only two free-prose LITERALS sharing an instance is a collision. A
+        // reference reusing a spec-instance id is the normal cross-ref case.
+        if (prior !== undefined && !isSpecRef && !tags[prior]._isSpecRef) {
+          errors.push(`duplicate instance "${instance}" (also at tag #${prior + 1})`);
+        } else if (prior === undefined) {
+          instanceMap.set(instance, i);
+        }
+      }
+      tag._instance = instance;
+      tag._role = role;
+      tag._phrase = phrase;
+      tag._resolvedSlots = resolvedSlots;
+      tag._isSpecRef = isSpecRef;
+      // Effective composition target: spec references inherit of= from the spec
+      // (it isn't restated in the bare tag); literals carry their own of=.
+      tag._of = isSpecRef ? (specInst.of || null) : (attrs.of || null);
+    }
+
+    tagStates.set(i, errors.length ? 'err' : warnings.length ? 'warn' : 'ok');
+    for (const e of errors) findings.push({ kind: 'err', tagIndex: i, message: e });
+    for (const w of warnings) findings.push({ kind: 'warn', tagIndex: i, message: w });
+  });
+
+  // PASS 2 — per document
+  tags.forEach((tag, i) => {
+    if (!tag.attrs.of) return;
+    const targetIdx = instanceMap.get(tag.attrs.of);
+    if (targetIdx === undefined) {
+      findings.push({ kind: 'err', tagIndex: i, message: `dangling of="${tag.attrs.of}" — no tag has instance="${tag.attrs.of}"` });
+      tagStates.set(i, 'err');
+      return;
+    }
+    const targetTag = tags[targetIdx];
+    const targetRole = targetTag._role;
+    const myRole = tag._role;
+    // role-compat: method→endpoint; method_qualifier→method; covariate→method; grouping→endpoint
+    const compat = {
+      method: ['endpoint'],
+      method_qualifier: ['method'],
+      covariate: ['method']
+    };
+    const allowed = compat[myRole];
+    if (allowed && !allowed.includes(targetRole)) {
+      findings.push({ kind: 'err', tagIndex: i, message: `of="${tag.attrs.of}" targets role "${targetRole}", but ${myRole} can only attach to [${allowed.join('|')}]` });
+      tagStates.set(i, 'err');
+    }
+  });
+
+  return { findings, tagStates };
+}
+
+/* ============================================================
+ * Renderer — turn a phrase + bound slots into resolved text
+ * ============================================================ */
+function renderSlotValue(value, p) {
+  // For the demo we strip the source namespace prefix (BC./M./V.) for
+  // readability. A real renderer would resolve the identifier:
+  //   - a {parameter}/{event} value (BC.*) -> look up the Biomedical Concept in
+  //     the study's parameter codelist and show its name/label,
+  //   - a method id (M.*) -> the method catalogue,
+  // and apply the chosen render mode (label | name | name_with_label).
+  if (typeof value !== 'string') return String(value);
+  return value.replace(/^[A-Za-z]+\./, '');
+}
+
+// Plain-string variant — used by the picker rows where we need a one-liner.
+function renderPhraseString(phrase, attrs) {
+  if (!phrase) return '?';
+  let text = phrase.phrase_template;
+  for (const p of (phrase.placeholders || [])) {
+    const v = attrs[p.name];
+    const display = v != null ? renderSlotValue(v, p) : `{${p.name}?}`;
+    text = text.replace(new RegExp('\\{' + p.name + '\\}', 'g'), display);
+  }
+  return text;
+}
+
+// DOM-node variant — splits the template so slot values can be wrapped in
+// <span class="slot-value"> for prose-style emphasis in the preview.
+function renderPhraseNodes(phrase, attrs) {
+  if (!phrase) return [document.createTextNode('?')];
+  const placeholders = (phrase.placeholders || []);
+  const phMap = Object.fromEntries(placeholders.map(p => [p.name, p]));
+  const parts = phrase.phrase_template.split(/(\{[^}]+\})/);
+  const out = [];
+  for (const part of parts) {
+    const m = part.match(/^\{(.+)\}$/);
+    if (m) {
+      const name = m[1];
+      const p = phMap[name];
+      const v = attrs[name];
+      const display = v != null ? renderSlotValue(v, p) : `{${name}?}`;
+      out.push(el('span', { class: 'slot-value', text: display }));
+    } else if (part) {
+      out.push(document.createTextNode(part));
+    }
+  }
+  return out;
+}
+
+/* ============================================================
+ * Preview rendering — chips for tags, text for everything else
+ * ============================================================ */
+function renderPreview(text, tags, tagStates) {
+  const preview = document.getElementById('preview');
+  preview.innerHTML = '';
+  let lastIdx = 0;
+  tags.forEach((tag, i) => {
+    if (tag.start > lastIdx) {
+      preview.appendChild(document.createTextNode(text.slice(lastIdx, tag.start)));
+    }
+    // Use the resolved phrase + slots the validator computed (a spec-bound
+    // reference renders from the spec instance, not from the bare tag).
+    const phrase = tag._phrase || SMARTPHRASES[tag.attrs.ref];
+    const slots = tag._resolvedSlots || tag.attrs;
+    const chip = document.createElement('span');
+    chip.className = 'chip ' + (tagStates.get(i) || 'ok');
+    const role = tag._role || phrase?.role || '?';
+    const instance = tag.attrs.instance || tag._autoInstance || '';
+    for (const n of renderPhraseNodes(phrase, slots)) chip.appendChild(n);
+    // Role + instance + ref-kind + raw XML only on hover, so the preview reads as prose.
+    const kind = tag._isSpecRef ? 'spec reference' : 'literal';
+    chip.title = `[${role}${instance ? ' · ' + instance : ''} · ${kind}]\n` + tag.raw
+      + (tag._autoInstance ? `\n(auto instance: ${tag._autoInstance})` : '');
+    preview.appendChild(chip);
+    lastIdx = tag.end;
+  });
+  if (lastIdx < text.length) preview.appendChild(document.createTextNode(text.slice(lastIdx)));
+}
+
+/* ============================================================
+ * Findings panel
+ * ============================================================ */
+function el(tag, opts = {}) {
+  const e = document.createElement(tag);
+  if (opts.class) e.className = opts.class;
+  if (opts.text != null) e.textContent = opts.text;
+  return e;
+}
+
+function renderFindings(findings, tags) {
+  const ul = document.getElementById('findings');
+  ul.innerHTML = '';
+  if (!tags.length) {
+    const li = el('li');
+    li.append(el('span', { class: 'badge ok', text: 'ok' }), 'No tags yet.');
+    ul.appendChild(li);
+    return;
+  }
+  if (!findings.length) {
+    const li = el('li');
+    li.append(
+      el('span', { class: 'badge ok', text: 'ok' }),
+      `All ${tags.length} tag${tags.length>1?'s':''} validate clean.`
+    );
+    ul.appendChild(li);
+    return;
+  }
+  for (const f of findings) {
+    const li = el('li');
+    const tag = tags[f.tagIndex];
+    const where = tag ? ` tag #${f.tagIndex+1} (ref=${tag.attrs.ref||'?'})` : '';
+    li.append(
+      el('span', { class: 'badge ' + f.kind, text: f.kind }),
+      f.message,
+      el('span', { class: 'where', text: where })
+    );
+    ul.appendChild(li);
+  }
+}
+
+/* ============================================================
+ * Analysis-concept resolution — THE NEXT STEP
+ * Two clearly-separated passes:
+ *   AUTHORED  endpoint+method tags -> analysis transformation, by intersecting
+ *             validSmartPhrases[]. Authoritative; comes straight from the tags.
+ *   INFERRED  the derivation pipeline, reconstructed by a concept-production
+ *             matcher walking PRODUCERS. NOT in the narrative — engine best-effort,
+ *             with the genuine seams (imputation insertion, slice propagation)
+ *             marked rather than hidden.
+ * ============================================================ */
+let selectedAnalysisKey = null;  // persists selection across refreshes
+
+// An analysis = an endpoint instance + a method instance whose of= points at it.
+function detectAnalyses(tags) {
+  const byInstance = new Map();
+  for (const t of tags) if (t._instance && t._phrase) byInstance.set(t._instance, t);
+  const out = [];
+  for (const t of tags) {
+    if (t._role !== 'method' || !t._of) continue;
+    const endpoint = byInstance.get(t._of);
+    if (!endpoint || endpoint._role !== 'endpoint') continue;
+    const attached = tags.filter(x => x._of === t._instance &&
+      (x._role === 'method_qualifier' || x._role === 'covariate'));
+    out.push({ key: `${endpoint._instance}+${t._instance}`, endpoint, method: t, attached });
+  }
+  return out;
+}
+
+// AUTHORED resolution.
+function resolveAnalysisTransformation(endpointRef, methodRef) {
+  for (const id in TRANSFORMATIONS) {
+    const tr = TRANSFORMATIONS[id];
+    if (tr.transformationType !== 'analysis') continue;
+    const vsp = tr.validSmartPhrases || [];
+    if (vsp.includes(endpointRef) && vsp.includes(methodRef)) return tr;
+  }
+  return null;
+}
+
+// INFERRED matcher helpers.
+function isBaselineSlice(transformation, sliceName) {
+  if (!sliceName) return false;
+  const slice = (transformation.inputDataStructure?.slices || []).find(s => s.name === sliceName);
+  return !!slice && (slice.constraints || []).some(c =>
+    typeof c.value === 'string' && c.value.includes('baseline'));
+}
+function collectedDataLeaf(concept, via) {
+  return { transformation: null, provenance: 'leaf', leafConcept: concept,
+           via: via || concept, markers: [], children: [] };
+}
+function inferChainForMeasure(measure, owner, ctx, depth) {
+  const concept = measure.concept;
+  const via = measure.input ? `${measure.input}: ${concept}` : concept;
+  if (concept === 'Measure') {
+    if (isBaselineSlice(owner, measure.slice)) {
+      const bs = TRANSFORMATIONS['T.BaselineSelection'];
+      return { transformation: bs, provenance: 'inferred', via: `${via} @baseline`,
+        markers: bs ? ['baseline record selected by this derivation'] : ['no BaselineSelection in library'],
+        children: bs ? [collectedDataLeaf('Measure')] : [] };
+    }
+    if (ctx.imputation && !ctx._imputeUsed) {
+      ctx._imputeUsed = true;
+      const locf = TRANSFORMATIONS['T.LOCF_Imputation'];
+      return { transformation: locf, provenance: 'inferred', via,
+        markers: ['⚠ insertion point inferred from method qualifier'],
+        children: locf ? [collectedDataLeaf('Measure')] : [] };
+    }
+    return collectedDataLeaf('Measure', via);
+  }
+  const producers = PRODUCERS[concept] || [];
+  if (producers.length === 1) return inferChainForTransformation(TRANSFORMATIONS[producers[0]], ctx, depth + 1, via);
+  if (producers.length === 0) return { transformation: null, provenance: 'inferred', via,
+    markers: [`⚠ no derivation produces ${concept}`], children: [] };
+  return { transformation: null, provenance: 'inferred', via,
+    markers: [`⚠ ambiguous: ${producers.length} producers of ${concept} (${producers.join(', ')})`], children: [] };
+}
+function inferChainForTransformation(tr, ctx, depth, via) {
+  if (!tr) return collectedDataLeaf('?', via);
+  if (depth > 8) return { transformation: tr, provenance: 'inferred', via, markers: ['depth limit'], children: [] };
+  const children = (tr.inputDataStructure?.measures || []).map(m => inferChainForMeasure(m, tr, ctx, depth));
+  const markers = [];
+  if ((tr.inputDataStructure?.slices || []).length)
+    markers.push('⚠ slice {parameter}/{visit} propagation into this subtree: open');
+  return { transformation: tr, provenance: 'inferred', via, markers, children };
+}
+
+// Build the full model for one analysis: authored root + inferred children.
+function buildAnalysisModel(analysis) {
+  const tr = resolveAnalysisTransformation(analysis.endpoint.attrs.ref, analysis.method.attrs.ref);
+  const imputation = analysis.attached.some(a => a.attrs.ref === 'SP_IMPUTATION');
+  let chain = null;
+  if (tr) {
+    const ctx = { imputation };
+    chain = { transformation: tr, provenance: 'authored', via: null,
+      markers: (tr.inputDataStructure?.slices || []).length ? ['⚠ slice {parameter}/{visit} propagation into chain: open'] : [],
+      children: (tr.inputDataStructure?.measures || []).map(m => inferChainForMeasure(m, tr, ctx, 0)) };
+  }
+  return { analysis, transformation: tr, imputation, chain };
+}
+
+/* ---- Analysis-concept rendering ---- */
+function dimChip(d) {
+  const name = d.concept || d.conceptCategory || '?';
+  const span = el('span', { class: 'dim' + (d.conceptCategory ? ' cat' : '') });
+  if (d.input) span.append(el('span', { class: 'role-badge', text: d.input }));
+  span.append(document.createTextNode(name));
+  return span;
+}
+function measRow(m) {
+  const row = el('div', { class: 'meas' });
+  const slot = m.input || m.output || '';
+  row.append(el('span', { class: 'slot', text: slot }));
+  row.append(el('span', { class: 'concept', text: m.concept }));
+  if (m.slice) row.append(el('span', { class: 'slice', text: '◫ ' + m.slice }));
+  if (m.requiredValueType) row.append(el('span', { class: 'vt', text: m.requiredValueType }));
+  return row;
+}
+function renderDSDCard(tr, opts = {}) {
+  const card = el('div', { class: 'dsd' });
+  const mk = (title, ds, isOutput) => {
+    const col = el('div', { class: 'dsd-side' });
+    col.append(el('div', { class: 'dsd-title', text: title }));
+    const dims = el('div', { class: 'dims' });
+    for (const d of (ds.dimensions || [])) dims.append(dimChip(d));
+    col.append(dims);
+    for (const m of (ds.measures || [])) col.append(measRow(m));
+    return col;
+  };
+  card.append(mk('INPUT cube', tr.inputDataStructure || {}, false));
+  const mid = el('div', { class: 'method-box' });
+  mid.append(el('div', { class: 'method-id', text: tr.usesMethod }));
+  for (const c of (tr.methodConfigurations || []))
+    mid.append(el('div', { class: 'cfg', text: `${c.configurationName} = ${c.value}` }));
+  card.append(el('div', { class: 'dsd-arrow', text: '▶' }));
+  card.append(mid);
+  card.append(el('div', { class: 'dsd-arrow', text: '▶' }));
+  card.append(mk('OUTPUT cube', tr.outputDataStructure || {}, true));
+  return card;
+}
+function renderBindings(tr, endpoint) {
+  const wrap = el('div', { class: 'bindings' });
+  wrap.append(el('span', { class: 'bind-label', text: 'slice bindings: ' }));
+  const slots = endpoint._resolvedSlots || endpoint.attrs;
+  for (const sk of (tr.sliceKeys || [])) {
+    // ParameterDimension <- endpoint's biomedicalConcept (the parameter slot = a BC id)
+    let val = '(unbound)';
+    if (sk.source === 'biomedicalConcept' && slots.parameter) val = slots.parameter;
+    else if (slots[sk.source]) val = slots[sk.source];
+    const b = el('span', { class: 'bind' });
+    b.append(el('code', { text: sk.dimension }), document.createTextNode(' ← '),
+             el('code', { class: val === '(unbound)' ? 'unbound' : 'bound', text: val }),
+             el('span', { class: 'bind-src', text: ` (via ${sk.source})` }));
+    wrap.append(b);
+  }
+  return wrap;
+}
+function renderChainNode(node, depth) {
+  const row = el('div', { class: 'chain-node prov-' + node.provenance });
+  row.style.marginLeft = (depth * 18) + 'px';
+  if (node.provenance === 'leaf') {
+    row.append(el('span', { class: 'node-leaf', text: '● collected data' }),
+               el('span', { class: 'node-via', text: node.via }));
+  } else if (node.transformation) {
+    const tr = node.transformation;
+    const head = el('span', { class: 'node-head clickable' });
+    head.append(el('span', { class: 'prov-badge', text: node.provenance }),
+                el('strong', { text: tr.shortLabel || tr.label }),
+                el('span', { class: 'node-cid', text: tr.conceptId }),
+                el('span', { class: 'node-method', text: tr.usesMethod }));
+    if (node.via) head.append(el('span', { class: 'node-via', text: '◂ ' + node.via }));
+    row.append(head);
+    // expandable mini DSD
+    const detail = el('div', { class: 'node-detail' });
+    detail.hidden = true;
+    detail.append(renderDSDCard(tr));
+    head.onclick = () => { detail.hidden = !detail.hidden; };
+    row.append(detail);
+  } else {
+    row.append(el('span', { class: 'node-unresolved', text: '○ unresolved' }),
+               el('span', { class: 'node-via', text: node.via }));
+  }
+  for (const mk of (node.markers || []))
+    row.append(el('div', { class: 'node-marker' + (mk.startsWith('⚠') ? ' warn' : ''), text: mk }));
+  const out = [row];
+  for (const c of (node.children || [])) out.push(...renderChainNode(c, depth + 1));
+  return out;
+}
+
+function renderAnalysisConcepts(tags) {
+  const listEl = document.getElementById('analysis-list');
+  const detailEl = document.getElementById('analysis-detail');
+  if (!listEl || !detailEl) return;
+  const analyses = detectAnalyses(tags);
+  listEl.innerHTML = '';
+  detailEl.innerHTML = '';
+  if (!analyses.length) {
+    listEl.append(el('div', { class: 'picker-empty', text: 'No analyses detected. Author an endpoint + a method with of="<endpoint>".' }));
+    return;
+  }
+  if (!analyses.some(a => a.key === selectedAnalysisKey)) selectedAnalysisKey = analyses[0].key;
+  for (const a of analyses) {
+    const ep = SMARTPHRASES[a.endpoint.attrs.ref], me = SMARTPHRASES[a.method.attrs.ref];
+    const tr = resolveAnalysisTransformation(a.endpoint.attrs.ref, a.method.attrs.ref);
+    const row = el('button', { class: 'analysis-row' + (a.key === selectedAnalysisKey ? ' active' : '') });
+    row.append(el('span', { class: 'pi-id', text: a.key }),
+               el('span', { class: 'text', text: tr ? (tr.shortLabel || tr.label) : `${ep?.name} + ${me?.name}` }),
+               el('span', { class: tr ? 'oid' : 'oid unresolved', text: tr ? tr.conceptId : 'no matching transformation' }));
+    row.onclick = () => { selectedAnalysisKey = a.key; renderAnalysisConcepts(tags); };
+    listEl.append(row);
+  }
+  const sel = analyses.find(a => a.key === selectedAnalysisKey);
+  const model = buildAnalysisModel(sel);
+  if (!model.transformation) {
+    detailEl.append(el('div', { class: 'picker-empty', text: `No analysis transformation has both ${sel.endpoint.attrs.ref} and ${sel.method.attrs.ref} in validSmartPhrases[]. (e.g. Kaplan-Meier has no analysis transformation in v07.)` }));
+    return;
+  }
+  // AUTHORED block
+  const authored = el('div', { class: 'concept-block authored' });
+  authored.append(el('div', { class: 'block-label', text: 'AUTHORED — resolved from the narrative' }));
+  const tr = model.transformation;
+  const title = el('div', { class: 'tr-title' });
+  title.append(el('strong', { text: tr.label }), el('span', { class: 'node-cid', text: tr.conceptId }),
+               el('span', { class: 'prov-badge', text: 'analysis' }));
+  authored.append(title);
+  authored.append(renderBindings(tr, sel.endpoint));
+  authored.append(renderDSDCard(tr));
+  detailEl.append(authored);
+  // INFERRED block
+  const inferred = el('div', { class: 'concept-block inferred' });
+  inferred.append(el('div', { class: 'block-label', text: 'INFERRED — derivation pipeline (engine, best-effort; click a node to expand)' }));
+  for (const child of (model.chain.children || []))
+    for (const n of renderChainNode(child, 0)) inferred.append(n);
+  for (const mk of (model.chain.markers || []))
+    inferred.append(el('div', { class: 'node-marker warn', text: mk }));
+  detailEl.append(inferred);
+}
+
+/* ============================================================
+ * Main render loop
+ * ============================================================ */
+function refresh() {
+  const text = document.getElementById('editor').value;
+  const tags = parseTags(text);
+  const { findings, tagStates } = validate(tags);
+  renderPreview(text, tags, tagStates);
+  renderFindings(findings, tags);
+  renderAnalysisConcepts(tags);
+}
+
+/* ============================================================
+ * Picker
+ * ============================================================ */
+const picker = document.getElementById('picker');
+const pickerBackdrop = document.getElementById('picker-backdrop');
+const pickerBody = document.getElementById('picker-body');
+let pickerTab = 'instances';
+let pickerInsertAt = null; // cursor index in editor where insertion happens
+
+function openPicker(atCursor) {
+  const editor = document.getElementById('editor');
+  pickerInsertAt = atCursor != null ? atCursor : editor.selectionStart;
+  pickerBackdrop.hidden = false;
+  picker.hidden = false;
+  positionPickerNearCursor();
+  renderPickerBody();
+}
+
+function closePicker() {
+  picker.hidden = true;
+  pickerBackdrop.hidden = true;
+  pickerInsertAt = null;
+}
+
+function positionPickerNearCursor() {
+  // Center horizontally over the main editor+preview area, anchored near its top.
+  const main = document.querySelector('main');
+  const rect = main.getBoundingClientRect();
+  const PICKER_W = 480;
+  const left = Math.max(16, rect.left + (rect.width - PICKER_W) / 2);
+  picker.style.left = left + 'px';
+  picker.style.top = (rect.top + 24) + 'px';
+}
+
+function renderPickerBody() {
+  pickerBody.innerHTML = '';
+  if (pickerTab === 'instances') renderInstancesTab();
+  else renderTemplatesTab();
+}
+
+function renderInstancesTab() {
+  // Group MOCK_STUDY_INSTANCES by role.
+  const byRole = {};
+  for (const inst of MOCK_STUDY_INSTANCES) {
+    const phrase = SMARTPHRASES[inst.ref];
+    const role = phrase?.role || 'unknown';
+    (byRole[role] ||= []).push({ inst, phrase });
+  }
+  if (!Object.keys(byRole).length) {
+    pickerBody.innerHTML = '<div class="picker-empty">No phrase instances in the (mock) study spec.</div>';
+    return;
+  }
+  for (const role of ROLE_ORDER) {
+    const items = byRole[role];
+    if (!items?.length) continue;
+    const group = document.createElement('div');
+    group.className = 'picker-group';
+    group.innerHTML = `<div class="picker-group-label">${ROLE_DEFS[role]?.label || role}</div>`;
+    for (const { inst, phrase } of items) {
+      const item = document.createElement('div');
+      item.className = 'picker-item';
+      item.innerHTML =
+        `<span class="pi-id">${inst.id}</span>` +
+        `<span class="text">${renderPhraseString(phrase, inst.slots)}${inst.of ? ` <em style="color:var(--muted)">of ${inst.of}</em>` : ''}</span>` +
+        `<span class="oid">${inst.ref}</span>`;
+      item.onclick = () => insertInstanceRef(inst);
+      group.appendChild(item);
+    }
+    pickerBody.appendChild(group);
+  }
+  const help = document.createElement('div');
+  help.className = 'help';
+  help.style.padding = '8px 12px 12px';
+  help.textContent = 'Inserting here writes a bare back-reference: <acdc:macro id="phrase" ref="…" instance="<existing id>"/>';
+  pickerBody.appendChild(help);
+}
+
+function renderTemplatesTab() {
+  // Group all SMARTPHRASES by role
+  const byRole = {};
+  for (const p of Object.values(SMARTPHRASES)) (byRole[p.role] ||= []).push(p);
+  for (const role of ROLE_ORDER) {
+    const items = byRole[role];
+    if (!items?.length) continue;
+    const group = document.createElement('div');
+    group.className = 'picker-group';
+    group.innerHTML = `<div class="picker-group-label">${ROLE_DEFS[role]?.label || role}</div>`;
+    for (const p of items) {
+      const item = document.createElement('div');
+      item.className = 'picker-item';
+      item.innerHTML =
+        `<span class="text">${p.phrase_template}</span>` +
+        `<span class="oid">${p.oid}</span>`;
+      item.onclick = () => insertTemplateSkeleton(p);
+      group.appendChild(item);
+    }
+    pickerBody.appendChild(group);
+  }
+}
+
+function insertInstanceRef(inst) {
+  // Bare back-reference: ref + instance (slots come from original tag).
+  const tag = `<acdc:macro id="phrase" ref="${inst.ref}" instance="${inst.id}"/>`;
+  insertAtCursor(tag);
+  closePicker();
+}
+
+function insertTemplateSkeleton(phrase) {
+  const ctxSource = ROLE_DEFS[phrase.role]?.contextSource;
+  const attrs = [`id="phrase"`, `ref="${phrase.oid}"`];
+  if (phrase.role === 'endpoint') attrs.push(`instance=""`);
+  if (ctxSource === 'manual') attrs.push(`of=""`);
+  for (const p of (phrase.placeholders || [])) {
+    if (p.required) attrs.push(`${p.name}=""`);
+  }
+  const tag = `<acdc:macro ${attrs.join(' ')}/>`;
+  insertAtCursor(tag);
+  closePicker();
+}
+
+function insertAtCursor(text) {
+  const editor = document.getElementById('editor');
+  const at = pickerInsertAt != null ? pickerInsertAt : editor.selectionStart;
+  const before = editor.value.slice(0, at);
+  const after = editor.value.slice(at);
+  editor.value = before + text + after;
+  editor.focus();
+  const caret = at + text.length;
+  editor.setSelectionRange(caret, caret);
+  refresh();
+}
+
+/* ============================================================
+ * Trigger: /sp in editor opens picker
+ * ============================================================ */
+function maybeTriggerPicker(e) {
+  const editor = document.getElementById('editor');
+  const at = editor.selectionStart;
+  const lookback = editor.value.slice(Math.max(0, at - 3), at);
+  if (lookback === '/sp') {
+    // Strip the /sp and open
+    editor.value = editor.value.slice(0, at - 3) + editor.value.slice(at);
+    editor.setSelectionRange(at - 3, at - 3);
+    openPicker(at - 3);
+  }
+}
+
+/* ============================================================
+ * Wire up
+ * ============================================================ */
+document.addEventListener('DOMContentLoaded', async () => {
+  const ok = await loadLibrary();
+  if (!ok) return;
+
+  const editor = document.getElementById('editor');
+  editor.addEventListener('input', e => { refresh(); maybeTriggerPicker(e); });
+  editor.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.code === 'Space') {
+      e.preventDefault();
+      openPicker();
+    }
+    if (e.key === 'Escape') closePicker();
+  });
+
+  document.getElementById('btn-pick').onclick = () => openPicker();
+  document.getElementById('btn-clear').onclick = () => { editor.value = ''; refresh(); };
+  document.getElementById('btn-load-example').onclick = () => {
+    // Primary flow: the spec is authoritative, so the narrative carries BARE
+    // SPEC REFERENCES (ref + instance, no slots) — slots, role and composition
+    // are inherited from the study spec's hasPhraseInstance[]. The last sentence
+    // shows a FREE-PROSE LITERAL (SP_PARAMETER with its own slot) for a passing
+    // mention that is not part of any analysis. The phrase templates supply their
+    // own connectors ("using {method}", "with {imputation}"), so the prose around
+    // them omits those words.
+    editor.value =
+      `The primary analysis evaluates `
+      + `<acdc:macro id="phrase" ref="SP_CFB_ENDPOINT" instance="E1"/> `
+      + `<acdc:macro id="phrase" ref="SP_METHOD_MMRM" instance="A1"/>, `
+      + `<acdc:macro id="phrase" ref="SP_IMPUTATION" instance="A1q1"/>.\n\n`
+      + `For the time-to-event analysis, `
+      + `<acdc:macro id="phrase" ref="SP_TTE_ENDPOINT" instance="E2"/> is estimated `
+      + `<acdc:macro id="phrase" ref="SP_METHOD_KM" instance="A2"/>.\n\n`
+      + `As supportive context we also tabulate `
+      + `<acdc:macro id="phrase" ref="SP_PARAMETER" instance="Z1" parameter="BC.SBP"/>.`;
+    refresh();
+  };
+
+  // Picker tab switching
+  picker.querySelectorAll('.tab').forEach(btn => {
+    btn.onclick = () => {
+      picker.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b === btn));
+      pickerTab = btn.dataset.tab;
+      renderPickerBody();
+    };
+  });
+
+  // Click outside picker closes it
+  document.addEventListener('mousedown', e => {
+    if (!picker.hidden && !picker.contains(e.target) && e.target.id !== 'btn-pick') closePicker();
+  });
+
+  refresh();
+});
+</script>
+</body>
+</html>
