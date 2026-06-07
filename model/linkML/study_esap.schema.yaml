@@ -666,7 +666,7 @@ $defs:
       source: usdm
       conformance: reference
     description: 'USDM: An event occurring after treatment initiation that affects interpretation or existence of measurements.
-      Carries a typed strategy code, a typed link to the per-event ScheduleTimeline, and a detection Transformation pointer.'
+      Carries a typed strategy code, a typed link to the per-event ScheduleTimeline, and an occurrence-ascertainment Transformation pointer.'
     type: object
     additionalProperties: true
     properties:
@@ -684,10 +684,12 @@ $defs:
         $ref: '#/$defs/ScheduleTimeline'
         description: Typed link to the per-event ScheduleTimeline detailing eligibility window via Timing instances, free-text
           trigger via entryCondition, and any response activities.
-      detectedBy:
+      ascertainedBy:
         $ref: '#/$defs/TransformationRef'
-        description: The Transformation that detects this ICE's occurrence in subject data. The Transformation's Method carries
-          the executable detection logic; inputs are concept bindings. Output is a per-subject boolean flag.
+        description: The Transformation that ascertains this ICE's occurrence in subject data. The Transformation's Method carries
+          the executable ascertainment logic; inputs are concept bindings. Output is a per-subject occurrence indicator (occurred,
+          and when). Strategy-independent — the same ascertainment is reused regardless of the handling strategy applied via
+          Estimand.handlesIntercurrentEvent.
     required:
     - id
     - name
@@ -710,7 +712,7 @@ $defs:
       entryCondition:
         type: string
         description: USDM free-text condition that triggers entry to this timeline (e.g. the human-readable ICE trigger).
-          Structured/machine-readable detection sits on the IntercurrentEvent via detectedBy.
+          Structured/machine-readable occurrence ascertainment sits on the IntercurrentEvent via ascertainedBy.
       mainTimeline:
         type: boolean
       plannedDuration:
