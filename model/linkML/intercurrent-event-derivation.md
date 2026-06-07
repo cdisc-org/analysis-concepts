@@ -22,7 +22,7 @@ Estimand
  ├─ intercurrentEvents[] → IntercurrentEvent
  │     ├─ name / text          "use of rescue medication"
  │     ├─ icheStrategy          Hypothetical            (study-default strategy)
- │     ├─ hasScheduleTimeline → ScheduleTimeline        (WHEN it is eligible to occur)
+ │     ├─ hasScheduleTimeline → ScheduleTimeline        (event-driven timeline, gated by entryCondition)
  │     └─ ascertainedBy       → TransformationRef       (Step 1: recognise occurrence)
  └─ handlesIntercurrentEvent[] → IceHandling
        ├─ forIntercurrentEvent → (that ICE)
@@ -36,6 +36,20 @@ Estimand
   handle it.
 - **`implementedBy`** points to the recipe(s) that produce the analysis value
   *given* occurrence, per the chosen strategy.
+
+**The event gate has two halves — one condition, two forms.** Per the USDM-IG
+"Unscheduled Visits" pattern, an event-driven timeline is gated by an
+`entryCondition` (a non-main timeline, `mainTimeline=false`). For an ICE that
+condition is expressed twice:
+
+- `ScheduleTimeline.entryCondition` — the **prose** gate, e.g.
+  *"Subject receives rescue medication"* (USDM-IG's own examples are
+  *"Adverse event"* / *"Lost contact with subject"*).
+- `IntercurrentEvent.ascertainedBy → Transformation` — the **executable** gate
+  that realises the same condition against data.
+
+They are the human-readable and machine-readable halves of one gate; the
+timeline's instances then detail the protocol's response steps once it fires.
 
 Keeping these separate means a sensitivity estimand that swaps
 `Treatment Policy → Hypothetical` only re-points `implementedBy`; the occurrence

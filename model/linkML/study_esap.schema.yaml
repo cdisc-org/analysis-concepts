@@ -682,8 +682,11 @@ $defs:
         description: Typed ICH E9(R1) study-default strategy for this ICE. Per-estimand overrides go on Estimand.handlesIntercurrentEvent.
       hasScheduleTimeline:
         $ref: '#/$defs/ScheduleTimeline'
-        description: Typed link to the per-event ScheduleTimeline detailing eligibility window via Timing instances, free-text
-          trigger via entryCondition, and any response activities.
+        description: Typed link to the event-driven ScheduleTimeline for this ICE — a non-main timeline (mainTimeline=false)
+          gated by entryCondition (the event that fires it, e.g. "Subject receives rescue medication") whose instances detail
+          the protocol-defined response steps taken once the event occurs. The human-readable gate (entryCondition) pairs with
+          the executable gate (IntercurrentEvent.ascertainedBy). Per USDM-IG, such timelines are owned by StudyDesign.scheduleTimelines;
+          nested here as a Model-B self-contained copy.
       ascertainedBy:
         $ref: '#/$defs/TransformationRef'
         description: The Transformation that ascertains this ICE's occurrence in subject data. The Transformation's Method carries
@@ -697,11 +700,14 @@ $defs:
     x-provenance:
       source: usdm
       conformance: reference
-    description: 'USDM: A chronological schedule of planned temporal events (USDM-IG §4.14). One MAIN timeline per StudyDesign;
-      additional timelines per anticipated intercurrent event. Attributes per USDM Timeline UML: id, name, label, description,
-      entryCondition (free-text trigger), mainTimeline (boolean), plannedDuration (Duration). Relationships: entry, instances,
-      exits, timings. Window bounds live on Timing.windowLower/Upper; direction on Timing.type. additionalProperties: true
-      for pass-through of the full USDM Timeline payload.'
+    description: 'USDM: A chronological schedule of planned temporal events (USDM-IG §4.14). A StudyDesign has one MAIN timeline
+      (mainTimeline=true) plus additional event-driven timelines, each gated by an entryCondition and detailing the steps taken
+      under those circumstances (USDM-IG "Unscheduled Visits" pattern — e.g. an "Adverse event" or "Lost contact with subject"
+      condition). An ICE timeline is one such event-driven timeline: mainTimeline=false, entryCondition naming the triggering
+      event. Attributes per USDM Timeline UML: id, name, label, description, entryCondition (free-text event gate), mainTimeline
+      (boolean), plannedDuration (Duration). Relationships: entry, instances, exits, timings. Window bounds live on
+      Timing.windowLower/Upper; direction on Timing.type. additionalProperties: true for pass-through of the full USDM Timeline
+      payload. USDM owns these on StudyDesign.scheduleTimelines; the eSAP nests the ICE-relevant one as a Model-B copy.'
     type: object
     additionalProperties: true
     properties:
@@ -711,10 +717,13 @@ $defs:
         type: string
       entryCondition:
         type: string
-        description: USDM free-text condition that triggers entry to this timeline (e.g. the human-readable ICE trigger).
-          Structured/machine-readable occurrence ascertainment sits on the IntercurrentEvent via ascertainedBy.
+        description: USDM free-text event gate that fires this timeline — the human-readable condition naming the event (e.g.
+          "Subject receives rescue medication", or USDM-IG's "Adverse event" / "Lost contact with subject"). Its structured/machine-readable
+          counterpart is IntercurrentEvent.ascertainedBy; the two are the prose and executable halves of one condition.
       mainTimeline:
         type: boolean
+        description: True for the StudyDesign's main SoA timeline; false for event-driven timelines (an ICE timeline is always
+          mainTimeline=false, gated by entryCondition).
       plannedDuration:
         type: string
     required:
