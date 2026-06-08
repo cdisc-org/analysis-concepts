@@ -1,6 +1,6 @@
 <mxfile host="Electron" background="#FFFFFF">
   <diagram name="eSAP schema" id="esap-schema">
-    <mxGraphModel dx="1378" dy="664" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3370" pageHeight="2384" background="#FFFFFF" math="0" shadow="0">
+    <mxGraphModel dx="804" dy="387" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3370" pageHeight="2384" background="#FFFFFF" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -282,12 +282,31 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="n-38" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=light-dark(#bfffbf, #25253b);strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;BiomedicalConcept&lt;br&gt;Ref&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1527" y="1778" as="geometry" />
+          <mxGeometry height="102" width="102" x="1412" y="1986" as="geometry" />
         </mxCell>
-        <mxCell id="e-46" edge="1" parent="1" source="n-9" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-38" value="ascertainedBy  [0..1] (collected)">
-          <mxGeometry relative="1" x="0.147" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
+        <mxCell id="e-46" edge="1" parent="1" source="n-9" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-39" value="ascertainedBy (collected, 1..*)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-39" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=light-dark(#bfffbf, #25253b);strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;OccurrenceCriterion&lt;/b&gt;" vertex="1">
+          <mxGeometry height="102" width="102" x="1666" y="1732" as="geometry" />
+        </mxCell>
+        <mxCell id="n-40" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=light-dark(#bfffbf, #25253b);strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;BiomedicalConcept&lt;br&gt;PropertyRef&lt;/b&gt;" vertex="1">
+          <mxGeometry height="102" width="102" x="1662" y="1923" as="geometry" />
+        </mxCell>
+        <mxCell id="n-41" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=light-dark(#bfffbf, #25253b);strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;ResponseCodeRef&lt;/b&gt;" vertex="1">
+          <mxGeometry height="102" width="102" x="1906" y="1984" as="geometry" />
+        </mxCell>
+        <mxCell id="e-48" edge="1" parent="1" source="n-39" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-40" value="property  [1]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-52" edge="1" parent="1" source="n-38" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-40" value="properties  [0..*]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-53" edge="1" parent="1" source="n-40" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-41" value="responseCodes  [0..*]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-51" edge="1" parent="1" source="n-39" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-10" value="context  [0..1]">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

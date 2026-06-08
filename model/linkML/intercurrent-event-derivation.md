@@ -23,18 +23,21 @@ Estimand
  │     ├─ name / text          "use of rescue medication"
  │     ├─ icheStrategy          Hypothetical            (study-default strategy)
  │     ├─ hasScheduleTimeline → ScheduleTimeline        (event-driven timeline, gated by entryCondition)
- │     └─ ascertainedBy       → BiomedicalConceptRef | TransformationRef   (Step 1: recognise occurrence)
+ │     └─ ascertainedBy       → OccurrenceCriterion(s) | TransformationRef   (Step 1: recognise occurrence)
+ │            └─ OccurrenceCriterion = executable USDM Condition: property (path-shaped, BC-headed) + operator + responseCodes|literal, context→timeline
  └─ handlesIntercurrentEvent[] → IceHandling
        ├─ forIntercurrentEvent → (that ICE)
        ├─ icheStrategy          Hypothetical | Composite | …  (per-estimand override)
        └─ implementedBy[]      → TransformationRef       (Step 2: derive the value)
 ```
 
-- **`ascertainedBy`** names the *source* of the per-subject *(occurred?, time)*
-  fact — a **Biomedical Concept** when the occurrence is collected, or a
-  **Transformation** when it must be derived (see "collected vs derived" below).
-  Either way it is **strategy-independent** — you recognise rescue-medication use
-  the same way regardless of how you later handle it.
+- **`ascertainedBy`** is how the per-subject *(occurred?, time)* fact is obtained:
+  **collected** → one or more `OccurrenceCriterion` (executable USDM `Condition`s,
+  each entering the `BC ▸ property ▸ code` path at the property via a path-shaped
+  ref); **derived** → a **Transformation**. The source Biomedical Concept is the
+  *head* of that path (encoded in the property id), named once. Either way it is
+  **strategy-independent** — you recognise rescue-medication use the same way
+  regardless of how you later handle it.
 - **`implementedBy`** points to the recipe(s) that produce the analysis value
   *given* occurrence, per the chosen strategy.
 
@@ -54,33 +57,78 @@ timeline's instances then detail the protocol's response steps once it fires.
 
 ### Collected vs. derived ascertainment
 
-The occurrence *(occurred?, time)* is **always a concept**; `ascertainedBy` only
-records how that concept is obtained:
+The occurrence is just data: per **`Subject`**, a **boolean indicator**
+(*occurred?*) plus a **`Timing`** (*when*). `ascertainedBy` records how that data
+is obtained:
 
 ```
-                         ICE-occurrence concept   (occurred?, time)   ← always a concept
+        ICE occurrence  =  boolean indicator + Timing, per Subject
                           ▲
         ┌─────────────────┴─────────────────┐
    COLLECTED                              DERIVED
-   ascertainedBy → BiomedicalConceptRef   ascertainedBy → TransformationRef
-   the occurrence IS a collected concept    consumes BiomedicalConcept(s) → emits
-   (no derivation)                          the occurrence concept
+   ascertainedBy → OccurrenceCriterion(s) ascertainedBy → TransformationRef
+   (USDM Condition: property=BC_x/Prop,    a Transformation computes it from
+    operator + responseCodes|literal);     input Biomedical Concept(s)
+   time = the head BC's Timing
 ```
 
-So the two arms are **not symmetric**: the derived arm always *contains*
-Biomedical Concepts as the transformation's inputs. "Both" isn't a third option —
-it is what the derived arm always is. Worked across the real ICE sources:
+So the two arms are **not symmetric**: the derived arm's Transformation consumes
+Biomedical Concepts as its inputs — so "both" isn't a third option, it is what the
+derived arm always is. Worked across the real ICE sources:
 
 | ICE source | Arm | `ascertainedBy` | How `(occurred?, time)` is obtained |
 | ---------- | --- | --------------- | ----------------------------------- |
-| Rescue medication (CM) | collected | `BiomedicalConceptRef` `BC_CM_001` | CM record present + `CMSTDTC` |
-| Treatment discontinuation (DS) | collected | `BiomedicalConceptRef` `BC_DS_001` | DS record present + `DSSTDTC` |
-| Death (DM/DS) | collected | `BiomedicalConceptRef` | death record present + date |
+| Rescue medication (CM) | collected | `OccurrenceCriterion` (property `BC_CM_001/Category`) | CM record present + its Timing |
+| Treatment discontinuation (DS) | collected | `OccurrenceCriterion` (property `BC_DS_001/…`) | DS record present + its Timing |
+| Death (DM/DS) | collected | `OccurrenceCriterion` (property of death BC, `exists`) | death record present + date |
 | Non-adherence (EX) | derived | `TransformationRef` | rule over EX (`EXDOSE < 0.75·planned`) → flag + time |
 
-`ascertainedBy` is therefore a union — `BiomedicalConceptRef | TransformationRef`
-— in the schema; collected ICEs take the concept arm, derived ICEs the
+`ascertainedBy` is therefore a union — **`OccurrenceCriterion(s) | TransformationRef`**
+— in the schema; collected ICEs take one or more Conditions (each naming its
+`BC ▸ property ▸ code` path via a path-shaped `property` ref), derived ICEs the
 transformation arm (whose inputs are themselves Biomedical Concepts).
+
+### The selection predicate — WHAT / WHICH / WHEN
+
+Naming the source concept (WHAT) is rarely enough: rescue medication is *one
+category* of CM, not all of it. So the collected arm of `ascertainedBy` is one or
+more `OccurrenceCriterion`, each pinning down WHICH instances count. An
+`OccurrenceCriterion` **is a refinement of the USDM `Condition` entity** (NCI
+C25457), made executable.
+
+`BiomedicalConcept ▸ Property ▸ ResponseCode` is **one USDM containment path** —
+a code is *of* a property *of* a BC, never an independent cross-product. So the
+criterion names that path **once**, entering it at the **property**:
+
+- `property` → a **path-shaped** `BiomedicalConceptPropertyRef`, e.g.
+  `BC_CM_001/Category`. The segment before the first `/` is the **head BC** —
+  read from the id, no traversal, so the BC is *not* a separate field. (This
+  satisfies USDM `Condition.appliesTo`, which is BC-level, via the path head.)
+- `responseCodes` → **leaves** of that same property, e.g. `BC_CM_001/Category/RESCUE`
+  — same path prefix, so they can't come from a different property or BC.
+- `operator` is the only eSAP-added part — the comparison USDM's free-text
+  `Condition.text` leaves implicit.
+- `context` → the scheduled activity / timeline (USDM `Condition.context`).
+
+Whether the value is a `ResponseCode` or a `literal` is **governed by the
+property's `datatype`**: a *coded* property carries `responseCodes[]` (→
+`responseCodes`); a *numeric/date/boolean* property has none (→ a `literal`
+threshold, e.g. dose < 0.75·planned). Never expressed over SDTM variables:
+
+| | Spec (path-shaped USDM refs + eSAP operator) | Execution projection (the instance example) |
+| --- | --- | --- |
+| path (WHAT/WHICH) | `property → BC_CM_001/Category`, `operator: in`, `responseCodes → [BC_CM_001/Category/RESCUE]` | `sourceConceptId: BC_CM_001`, `triggerField: CMCAT`, `triggerValue: "ANTICANCER THERAPY"` |
+| window (WHEN) | `hasScheduleTimeline` (entryCondition + Timing) | `timingCheck: "(CMSTDTC > RFXSTDTC) AND …"` |
+
+So an instance's `triggerField=CMCAT, triggerValue=ANTICANCER THERAPY` is the
+execution-layer *projection* of `property→Category (BiomedicalConceptProperty),
+operator=in, responseCodes→[the study's rescue ResponseCodes]`. `property` and
+`responseCodes` are USDM cross-references; only `operator` is eSAP-owned. Store /
+domain / variable resolution (`CMCAT`, `CMSTDTC`) stays in the execution layer and
+out of the spec. **WHEN never lives in the criterion** — it is the
+`ScheduleTimeline`. Criteria are AND-combined; empty criteria mean the concept's
+mere presence is the occurrence (e.g. death). The derived arm normally leaves
+criteria empty — its logic is inside the Transformation.
 
 Keeping these separate means a sensitivity estimand that swaps
 `Treatment Policy → Hypothetical` only re-points `implementedBy`; the occurrence
@@ -130,7 +178,7 @@ Two subjects, identical raw observations; only the ICE differs.
 | S-001   | 9.0      | 8.0   | **7.0**          | none |
 | S-002   | 9.0      | 8.0   | **7.5**          | rescue med at Wk 12 |
 
-**Step 1 — `ascertainedBy`** reads CM and emits per-subject *(occurred, time)*:
+**Step 1 — `ascertainedBy`** reads CM and yields per-subject *(occurred, time)*:
 
 - S-001 → `(No, —)`
 - S-002 → `(Yes, Wk 12)`

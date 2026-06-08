@@ -144,10 +144,9 @@ $defs:
       source: usdm
       conformance: cross-reference
     description: 'Reference to a USDM BiomedicalConcept — a collected clinical concept (e.g. Concomitant Medication, Disposition,
-      Exposure). Used where a fact is *read* from collected data rather than derived. For ICE ascertainment, the occurrence of
-      a collected ICE (rescue medication, treatment discontinuation, death) is a property of such a concept: presence answers
-      "occurred?", the concept''s timing variable answers "when". Contrast TransformationRef, which is used when occurrence must
-      be *derived* (the transformation then consumes BiomedicalConcept(s) as its inputs).'
+      Exposure). It is the HEAD of the BiomedicalConcept ▸ Property ▸ ResponseCode containment path: a BiomedicalConceptPropertyRef
+      and ResponseCodeRef both begin their path-shaped ids with this concept''s id. Not referenced directly by OccurrenceCriterion
+      (which enters the path at the property) — kept as the named path head.'
     type: object
     properties:
       biomedicalConceptId:
@@ -156,6 +155,36 @@ $defs:
           Matches the sourceConceptId used in study instance specifications.
     required:
     - biomedicalConceptId
+  BiomedicalConceptPropertyRef:
+    x-provenance:
+      source: usdm
+      conformance: cross-reference
+    description: 'Reference to a USDM BiomedicalConceptProperty — a property of a BiomedicalConcept (BiomedicalConcept.properties[]),
+      carrying a datatype and, for coded properties, a list of allowed ResponseCodes. Path-shaped id encodes its parent BC
+      (à la MethodOutputRef), so the head BC is readable without traversal and the whole path is self-contained.'
+    type: object
+    properties:
+      biomedicalConceptPropertyId:
+        type: string
+        description: Path-shaped identifier <biomedicalConceptId>/<property>, e.g. 'BC_CM_001/Category'. The segment before
+          the first '/' is the parent BiomedicalConcept (the path head); the remainder names the property.
+    required:
+    - biomedicalConceptPropertyId
+  ResponseCodeRef:
+    x-provenance:
+      source: usdm
+      conformance: cross-reference
+    description: 'Reference to a USDM ResponseCode — one of the allowed coded values of a BiomedicalConceptProperty
+      (BiomedicalConceptProperty.responseCodes[]); a LEAF of the BC ▸ Property ▸ ResponseCode path. Used as the compared-against
+      value in an OccurrenceCriterion over a coded property, so the value is drawn from the property''s declared codelist rather
+      than hardcoded. Path-shaped id encodes its property and head BC, keeping it on the same single path.'
+    type: object
+    properties:
+      responseCodeId:
+        type: string
+        description: Path-shaped identifier <biomedicalConceptId>/<property>/<responseCode>, e.g. 'BC_CM_001/Category/RESCUE'.
+    required:
+    - responseCodeId
   IchE9R1Strategy:
     x-provenance:
       source: esap
@@ -683,7 +712,8 @@ $defs:
       source: usdm
       conformance: reference
     description: 'USDM: An event occurring after treatment initiation that affects interpretation or existence of measurements.
-      Carries a typed strategy code, a typed link to the per-event ScheduleTimeline, and an occurrence-ascertainment Transformation pointer.'
+      Carries a typed strategy code, a typed link to the per-event ScheduleTimeline, and occurrence ascertainment (executable
+      USDM Conditions for collected ICEs, or a Transformation for derived ones) via ascertainedBy.'
     type: object
     additionalProperties: true
     properties:
@@ -705,20 +735,105 @@ $defs:
           the executable gate (IntercurrentEvent.ascertainedBy). Per USDM-IG, such timelines are owned by StudyDesign.scheduleTimelines;
           nested here as a Model-B self-contained copy.
       ascertainedBy:
+        description: 'How this ICE''s per-subject (occurred?, time) fact is obtained — per Subject, a boolean indicator plus a
+          Timing. COLLECTED (the common case) → one or more OccurrenceCriterion: each is an executable USDM Condition that enters
+          the BC ▸ property ▸ code path at a path-shaped property (its head segment is the source BiomedicalConcept); AND-combined
+          across the array. The source BC is the property''s path head — NOT named separately here. DERIVED → a TransformationRef:
+          a Transformation computes occurrence from input BiomedicalConcept(s). Either way the result is a per-subject occurrence
+          indicator (occurred, and when), strategy-independent — the same ascertainment is reused regardless of the handling
+          strategy applied via Estimand.handlesIntercurrentEvent. The WHEN (timing window) is the ICE''s hasScheduleTimeline; each
+          criterion''s own context is the scheduled activity where its concept is collected.'
         oneOf:
-        - $ref: '#/$defs/BiomedicalConceptRef'
+        - type: array
+          items:
+            $ref: '#/$defs/OccurrenceCriterion'
+          minItems: 1
+          description: Collected — one or more executable USDM Conditions (AND-combined); each names its BC ▸ property ▸ code path via a path-shaped property ref.
         - $ref: '#/$defs/TransformationRef'
-        description: 'The source of this ICE''s per-subject occurrence — a (occurred?, time) fact. Occurrence is always a concept;
-          this names how it is obtained. COLLECTED (the common case) → a BiomedicalConceptRef: the occurrence IS a property of
-          a collected concept (rescue medication, discontinuation, death) — presence gives "occurred?", the concept''s timing
-          variable gives "when"; no derivation. DERIVED → a TransformationRef: occurrence is computed (e.g. non-adherence from
-          dose records), and that Transformation consumes BiomedicalConcept(s) as its inputs and emits the occurrence concept
-          as its output. Either way the output is a per-subject occurrence indicator (occurred, and when), and it is
-          strategy-independent — the same ascertainment is reused regardless of the handling strategy applied via
-          Estimand.handlesIntercurrentEvent.'
     required:
     - id
     - name
+  OccurrenceCriterion:
+    x-provenance:
+      source: usdm
+      conformance: refinement
+    x-refines: Condition
+    description: 'A refinement of the USDM Condition entity (NCI C25457, "a state of being"), made machine-executable. Per the
+      USDM dictionary a Condition appliesTo a BiomedicalConcept, has context a ScheduledActivityInstance/Activity (here the
+      hasScheduleTimeline), and carries the condition as Condition.text ("an instance of structured text that represents the
+      condition"). This refinement supplies the executable form of that text. BC, property, and ResponseCode form ONE USDM
+      containment path (a code is of a property is of a BC — never a cross-product of independent picks), so the criterion
+      names that path ONCE: `property` is a path-shaped reference whose id carries its parent BC (the path HEAD, satisfying
+      USDM Condition.appliesTo without a separate field); `responseCodes` are LEAVES of that same property; `operator` (the one
+      eSAP-added part) gives the comparison USDM''s free-text Condition.text leaves implicit. The instance example''s
+      "triggerField=CMCAT, triggerValue=ANTICANCER THERAPY" is the execution-layer projection of property→BC_CM_001/Category,
+      operator=in, responseCodes→[the rescue codes]. Use `responseCodes` for coded properties; use `literal` for numeric/date
+      thresholds (e.g. dose < 0.75·planned), where no ResponseCode applies. Store/domain/variable resolution is an execution
+      concern and stays out of the spec.'
+    type: object
+    properties:
+      property:
+        $ref: '#/$defs/BiomedicalConceptPropertyRef'
+        description: 'The single entry into the USDM containment path tested — a BiomedicalConceptProperty whose path-shaped id
+          carries its parent BiomedicalConcept (e.g. ''BC_CM_001/Category''). The BC is the path HEAD (read from the id, no
+          traversal) — it is NOT referenced separately; the matched responseCodes are LEAVES of this same property. So BC,
+          property, and code are one path, named once here, never an independent cross-product. USDM Condition.appliesTo (which
+          is BC-level) is satisfied by this path''s head.'
+      context:
+        $ref: '#/$defs/ScheduleTimeline'
+        description: USDM Condition.context — the scheduled activity / timeline to which the condition belongs (where the
+          concept is collected). Distinct from the ICE's hasScheduleTimeline, which is the event-driven RESPONSE timeline.
+      operator:
+        type: string
+        enum:
+        - equals
+        - notEquals
+        - in
+        - notIn
+        - lessThan
+        - lessThanOrEqual
+        - greaterThan
+        - greaterThanOrEqual
+        - exists
+        - notExists
+        description: 'The executable comparison applied to the property. eSAP-owned — USDM expresses conditions as free text,
+          not structured operators. Value requirement by operator group: PRESENCE (exists, notExists) takes NO value — it tests
+          only whether the property is recorded, so neither responseCodes nor literal is given. SCALAR (equals, notEquals,
+          lessThan, lessThanOrEqual, greaterThan, greaterThanOrEqual) takes exactly one value — one responseCodes entry for a
+          coded property, or literal for a non-coded one. MEMBERSHIP (in, notIn) takes a set — responseCodes with 1..* entries
+          (coded properties only).'
+      responseCodes:
+        type: array
+        items:
+          $ref: '#/$defs/ResponseCodeRef'
+        description: 'Compared-against value(s) when the referenced property is CODED — i.e. its BiomedicalConceptProperty.datatype
+          is a coded type and it therefore carries responseCodes[]. References those USDM ResponseCodes (equals/notEquals/in/notIn),
+          so values come from the property''s declared codelist, not hardcoded. Used only when the property has response codes.'
+      literal:
+        type: string
+        description: 'Compared-against value when the referenced property is NON-CODED — a numeric/date/boolean BiomedicalConceptProperty
+          whose datatype carries no responseCodes[] (e.g. a dose or a date threshold for lessThan/greaterThan/…). A study data value.
+          Which value field applies is governed by the property''s datatype; responseCodes and literal are mutually exclusive.'
+    required:
+    - property
+    - operator
+    allOf:
+    - if:
+        properties:
+          operator:
+            enum:
+            - exists
+            - notExists
+        required:
+        - operator
+      then:
+        description: Presence operators take no value — neither responseCodes nor literal may be present.
+        not:
+          anyOf:
+          - required:
+            - responseCodes
+          - required:
+            - literal
   ScheduleTimeline:
     x-provenance:
       source: usdm
