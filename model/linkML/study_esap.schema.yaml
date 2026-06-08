@@ -83,11 +83,221 @@ properties:
               type: string
   study:
     $ref: '#/$defs/Study'
+  reportingEvents:
+    type: array
+    items:
+      $ref: '#/$defs/ReportingEvent'
+    description: The analysis-specification data — one or more CDISC ARS ReportingEvents (referenced, not reinvented). The SAP
+      defines a ReportingEvent per reporting requirement (e.g. an interim analysis, the final CSR), each with its own analyses
+      and derivations; all reference the one single-source USDM study structure under `study` (estimands/endpoints/ICEs are
+      shared, never copied per event).
 required:
 - model
 - version
 - study
 $defs:
+  ReportingEvent:
+    x-provenance:
+      source: ars
+      conformance: reference
+    description: 'CDISC ARS ReportingEvent — the analysis-specification data container for ONE reporting requirement (an interim,
+      the final CSR, a DSMB run). Referenced, not reinvented (cf. how Method and USDM are referenced). In ARS it holds
+      analysisSets, dataSubsets, methods, analyses, outputs and a listOfContents; those ARS-native members pass through
+      (additionalProperties). The SAP may define several ReportingEvents (root reportingEvents[]), each with its own analyses
+      and derivations, all referencing the one single-source USDM study definition. The eSAP populates `analyses` (ARS Analysis,
+      extended here with the USDM bridge addressesEstimand + AC/DC execution) and adds the AC/DC content ARS has no concept of —
+      `derivations`, `iceAscertainments`, `iceHandlings` — each referencing the single-source USDM by id. NB: ARS Analysis has
+      no native estimand/endpoint link, so that linkage is the eSAP''s bridge role; ARS expresses
+      MainEstimator/Sensitivity/Supplementary via an AnalysisOutputCategorization ("Estimand Analysis Type"), which is what
+      Analysis.analysisRole maps to.'
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: ARS ReportingEvent id.
+      name:
+        type: string
+      analyses:
+        type: array
+        items:
+          $ref: '#/$defs/Analysis'
+        description: ARS analyses for this reporting event, extended with the USDM bridge (Analysis.addressesEstimand) and
+          AC/DC execution (Transformation/cube).
+      derivations:
+        type: array
+        items:
+          $ref: '#/$defs/Derivation'
+        description: AC/DC-owned derivations (not ARS-native) scoped to this reporting event; each references the USDM Endpoint
+          it produces (Derivation.forEndpoint).
+      iceAscertainments:
+        type: array
+        items:
+          $ref: '#/$defs/IceAscertainment'
+        description: AC/DC-owned per-ICE ascertainment (not ARS-native); each references a USDM IntercurrentEvent.
+      iceHandlings:
+        type: array
+        items:
+          $ref: '#/$defs/IceHandling'
+        description: AC/DC-owned per-estimand ICE handling (not ARS-native); each references its USDM Estimand and IntercurrentEvent.
+      hypotheses:
+        type: array
+        items:
+          $ref: '#/$defs/Hypothesis'
+        description: Confirmatory statistical hypotheses for this reporting event (not ARS- or USDM-native). Present only for
+          confirmatory analyses; descriptive/exploratory estimands carry none. Each references the USDM Estimand under test.
+      multiplicityStrategy:
+        $ref: '#/$defs/MultiplicityStrategy'
+        description: How family-wise error is controlled across this reporting event's hypotheses (hierarchical / gatekeeping /
+          graphical). Per reporting event — interim looks carry their own (group-sequential alpha-spending across looks is the
+          orthogonal axis, handled by the looks being separate ReportingEvents).
+  Hypothesis:
+    x-provenance:
+      source: esap
+      conformance: owned
+    description: 'A confirmatory statistical hypothesis — the inferential bridge between an estimand (the effect) and the
+      analysis that tests it. eSAP-owned: neither USDM (design-level: Objective/Endpoint/Estimand) nor ARS (results-level)
+      models statistical hypotheses. The verbatim H0/H1 wording stays prose (`statement`, rendered into the SAP document); the
+      operative facts are typed. NB: the test level (alpha) is NOT on the hypothesis — it is allocated by the reporting event''s
+      MultiplicityStrategy (a function of the procedure and which higher hypotheses were rejected); a single-primary trial is the
+      degenerate strategy of one node at familyAlpha.'
+    type: object
+    properties:
+      id:
+        type: string
+        description: Study-local hypothesis id (referenced by MultiplicityStrategy.order / graph).
+      forEstimand:
+        type: string
+        description: ID of the USDM Estimand whose treatment effect this hypothesis tests. The eSAP-owned hypothesis owns this
+          reference into the single-source USDM Estimand.
+      hypothesisType:
+        type: string
+        enum:
+        - superiority
+        - nonInferiority
+        - equivalence
+        description: The inferential claim form.
+      margin:
+        type: number
+        description: Non-inferiority / equivalence margin on the estimand's summary-measure scale (omit for superiority).
+      statement:
+        type: string
+        description: PROSE — the verbatim null/alternative wording for the SAP document. Narrative, not machine-acted-on; can be
+          rendered from the typed fields (cf. SmartPhrases).
+      testedBy:
+        type: string
+        description: ID of the Analysis that tests this hypothesis — the MainEstimator (analysisRole) addressing the same estimand.
+    required:
+    - id
+    - forEstimand
+    - hypothesisType
+  MultiplicityStrategy:
+    x-provenance:
+      source: esap
+      conformance: owned
+    description: 'Family-wise error control across a reporting event''s hypotheses (the across-hypotheses multiplicity axis;
+      across-looks alpha-spending is handled by separate ReportingEvents). eSAP-owned — no CDISC data standard models multiplicity.
+      The canonical, general form is the Bretz-Maurer graphical approach (`graph`), which subsumes fixed-sequence, Holm, Hochberg,
+      fallback and serial/parallel gatekeeping; `order` is a shorthand for the common pure fixed-sequence (hierarchical) case.
+      Give `order` OR `graph` (graph wins if both present). `method` names the procedure for human readability and rendering.'
+    type: object
+    properties:
+      method:
+        type: string
+        enum:
+        - fixedSequence
+        - holm
+        - hochberg
+        - bonferroni
+        - fallback
+        - graphical
+        - gatekeeping
+        description: Named multiple-testing procedure (for readability / SAP rendering); the executable truth is order/graph.
+      familyAlpha:
+        type: number
+        description: The family-wise error budget (FWER), e.g. 0.025 one-sided or 0.05 two-sided.
+      order:
+        type: array
+        items:
+          type: string
+        description: 'Shorthand for fixedSequence: hypothesis ids in test order. Each is tested at familyAlpha only if all
+          earlier ones were rejected. Equivalent to the degenerate graph (weights [1,0,…], transitions chaining at weight 1).'
+      graph:
+        type: object
+        description: 'General Bretz-Maurer weighted graph. Per-node initial alpha weights (alpha_i = initialWeight x familyAlpha;
+          weights sum to 1) and directed transitions that reallocate a rejected node''s alpha to others (each node''s outgoing
+          weights sum to <= 1).'
+        properties:
+          nodes:
+            type: array
+            items:
+              type: object
+              properties:
+                hypothesis:
+                  type: string
+                  description: Hypothesis id.
+                initialWeight:
+                  type: number
+                  description: Fraction of familyAlpha initially allocated to this hypothesis.
+              required:
+              - hypothesis
+              - initialWeight
+          transitions:
+            type: array
+            items:
+              type: object
+              properties:
+                from:
+                  type: string
+                to:
+                  type: string
+                weight:
+                  type: number
+              required:
+              - from
+              - to
+              - weight
+    required:
+    - method
+    - familyAlpha
+  IceAscertainment:
+    x-provenance:
+      source: esap
+      conformance: owned
+    description: 'eSAP-owned ascertainment overlay for one USDM IntercurrentEvent. Carries what the eSAP adds for an ICE — the
+      study-default ICH E9(R1) strategy, the event-driven ScheduleTimeline, and the occurrence ascertainment — WITHOUT modifying
+      the locked USDM IntercurrentEvent: it references the ICE by id (forIntercurrentEvent).'
+    type: object
+    properties:
+      forIntercurrentEvent:
+        type: string
+        description: ID of the USDM IntercurrentEvent this ascertainment is for (matches an IntercurrentEvent.id).
+      icheStrategy:
+        $ref: '#/$defs/IchE9R1Strategy'
+        description: Typed ICH E9(R1) study-default strategy for this ICE. Per-estimand overrides go on IceHandling.icheStrategy.
+      hasScheduleTimeline:
+        $ref: '#/$defs/ScheduleTimeline'
+        description: Typed link to the event-driven ScheduleTimeline for this ICE — a non-main timeline (mainTimeline=false)
+          gated by entryCondition (the event that fires it, e.g. "Subject receives rescue medication") whose instances detail
+          the protocol-defined response steps. The human-readable gate (entryCondition) pairs with the executable gate
+          (ascertainedBy). Per USDM-IG these timelines are owned by StudyDesign.scheduleTimelines.
+      ascertainedBy:
+        description: 'How this ICE''s per-subject (occurred?, time) fact is obtained — per Subject, a boolean indicator plus a
+          Timing. COLLECTED (the common case) → one or more OccurrenceCriterion: each is an executable USDM Condition entering
+          the BC ▸ property ▸ code path at a path-shaped property (its head segment is the source BiomedicalConcept); AND-combined.
+          DERIVED → a TransformationRef: a Transformation computes occurrence from input BiomedicalConcept(s). Either way the
+          result is a per-subject occurrence indicator (occurred, and when), strategy-independent — reused regardless of the
+          handling strategy applied via IceHandling. The WHEN (timing window) is hasScheduleTimeline; each criterion''s own
+          context is the scheduled activity where its concept is collected.'
+        oneOf:
+        - type: array
+          items:
+            $ref: '#/$defs/OccurrenceCriterion'
+          minItems: 1
+          description: Collected — one or more executable USDM Conditions (AND-combined); each names its BC ▸ property ▸ code path via a path-shaped property ref.
+        - $ref: '#/$defs/TransformationRef'
+    required:
+    - forIntercurrentEvent
   TransformationRef:
     x-provenance:
       source: transformation_library
@@ -113,32 +323,6 @@ $defs:
         description: Identifier of the referenced SmartPhrase
     required:
     - smartPhraseId
-  ARSAnalysisRef:
-    x-provenance:
-      source: ars
-      conformance: cross-reference
-    description: Reference to an ARS Analysis. A study Analysis is-a ARS Analysis.
-    type: object
-    properties:
-      analysisId:
-        type: string
-        description: Identifier of the referenced ARS Analysis
-    required:
-    - analysisId
-  MethodOutputRef:
-    x-provenance:
-      source: transformation_library
-      conformance: cross-reference
-    description: 'Reference to a method output — the specific output (e.g. M.ANCOVA/output/contrasts_t) selected by an analysis
-      as its summary measure. v0.7+: resolves to an entry in the referenced method''s outputs[] array (file at lib/methods/{analyses,derivations}/M_<conceptId>.json).'
-    type: object
-    properties:
-      methodOutputId:
-        type: string
-        description: Identifier of the referenced method output (path-shaped, e.g. 'M.ANCOVA/output/contrasts_t'). The path
-          segments are <method.conceptId>/output/<outputs[].name>.
-    required:
-    - methodOutputId
   BiomedicalConceptRef:
     x-provenance:
       source: usdm
@@ -161,7 +345,7 @@ $defs:
       conformance: cross-reference
     description: 'Reference to a USDM BiomedicalConceptProperty — a property of a BiomedicalConcept (BiomedicalConcept.properties[]),
       carrying a datatype and, for coded properties, a list of allowed ResponseCodes. Path-shaped id encodes its parent BC
-      (à la MethodOutputRef), so the head BC is readable without traversal and the whole path is self-contained.'
+      (a slash-delimited path), so the head BC is readable without traversal and the whole path is self-contained.'
     type: object
     properties:
       biomedicalConceptPropertyId:
@@ -455,11 +639,16 @@ $defs:
     x-provenance:
       source: esap
       conformance: owned
-    description: Per-estimand ICE handling — a reified (Estimand, IntercurrentEvent, Strategy) triple. Use when an estimand's
-      strategy for an ICE differs from the study-default strategy on the ICE itself (e.g., primary estimand uses Hypothetical
-      while a sensitivity estimand uses TreatmentPolicy on the same ICE).
+    description: Per-estimand ICE handling — a reified (Estimand, IntercurrentEvent, Strategy) triple. Lives in
+      ReportingEvent.iceHandlings and references its Estimand and IntercurrentEvent by id (neither is modified). Use when
+      an estimand's strategy for an ICE differs from the study-default strategy carried on the ICE's IceAscertainment (e.g.,
+      primary estimand uses Hypothetical while a sensitivity estimand uses TreatmentPolicy on the same ICE).
     type: object
     properties:
+      forEstimand:
+        type: string
+        description: ID of the USDM Estimand whose ICE handling this is. The eSAP-owned handling owns this reference into the
+          locked USDM Estimand (which no longer nests handlings).
       forIntercurrentEvent:
         type: string
         description: ID of the IntercurrentEvent this handling pertains to (matches an IntercurrentEvent.id under the same
@@ -474,8 +663,8 @@ $defs:
           properties:
             transformationId:
               type: string
-              description: ID of the Transformation (typically a Derivation under the Endpoint's hasTransformation) that operationalises
-                this strategy
+              description: ID of the Transformation (typically a Derivation in ReportingEvent.derivations) that
+                operationalises this strategy
           required:
           - transformationId
         description: 'Transformation step(s) that operationalise this IceHandling''s strategy. Patterns: Composite → derivation
@@ -483,6 +672,7 @@ $defs:
           observed); WhileOnTreatment → censoring derivation; PrincipalStratum → population-subsetting derivation. Multi-valued
           — a single strategy may split across several steps. Optional — TreatmentPolicy has no implementing transformation.'
     required:
+    - forEstimand
     - forIntercurrentEvent
     - icheStrategy
   Transformation:
@@ -589,29 +779,48 @@ $defs:
     x-provenance:
       source: esap
       conformance: owned
-    description: A study-level derivation — instantiates a TransformationTemplate to derive a variable for an endpoint
-    allOf:
-    - $ref: '#/$defs/Transformation'
-  Analysis:
-    x-provenance:
-      source: esap
-      conformance: owned
-    description: A study-level analysis — instantiates a TransformationTemplate to produce statistical results. Is-a ARS Analysis.
+    description: A study-level derivation — instantiates a TransformationTemplate to derive a variable for an endpoint. Lives in
+      ReportingEvent.derivations and references the USDM Endpoint it produces (the Endpoint no longer nests derivations).
     allOf:
     - $ref: '#/$defs/Transformation'
     - type: object
       properties:
-        arsAnalysis:
-          $ref: '#/$defs/ARSAnalysisRef'
-          description: Link to the corresponding ARS Analysis definition
+        forEndpoint:
+          type: string
+          description: ID of the USDM Endpoint this derivation produces the analysis variable for. The eSAP-owned derivation
+            owns this reference into the locked USDM Endpoint.
+      required:
+      - forEndpoint
+  Analysis:
+    x-provenance:
+      source: esap
+      conformance: owned
+    description: 'A study-level analysis — an ARS Analysis (it lives in ReportingEvent.analyses, so it IS the ARS analysis, not
+      a pointer to one). It is-a Transformation (carries usesMethod, the cube DSDs, hasOutputConfig, …) and adds just the two
+      things ARS lacks: the USDM bridge (addressesEstimand) and the AC/DC summary-output pointer (summaryOutput).'
+    allOf:
+    - $ref: '#/$defs/Transformation'
+    - type: object
+      required:
+      - addressesEstimand
+      properties:
+        addressesEstimand:
+          type: string
+          description: ID of the USDM Estimand this analysis addresses. The eSAP-owned analysis owns this reference into the
+            locked USDM Estimand — the USDM↔ARS bridge link ARS itself does not carry. Exactly one analysis per estimand should
+            be the MainEstimator (via analysisRole).
         analysisRole:
           $ref: '#/$defs/AnalysisRole'
           description: The role this analysis plays for its Estimand per ICH E9(R1) — MainEstimator (exactly one per estimand),
-            SensitivityAnalysis, or SupplementaryAnalysis.
-        summarizedByOutputClass:
-          $ref: '#/$defs/MethodOutputRef'
-          description: Per-analysis pointer to the MethodOutput that realises this analysis's summary measure (ICH E9(R1)
-            attribute 5 implementation pointer).
+            SensitivityAnalysis, or SupplementaryAnalysis. These three are ICH-defined values, typed here for validation. ARS has
+            no built-in role enum — it supplies only a generic AnalysisOutputCategorization (implementer-defined categories), so
+            on ARS export this becomes Analysis.categoryIds → an "Estimand Analysis Type" AnalysisOutputCategorization whose
+            categories are these roles. ARS provides the envelope; ICH E9(R1) provides the values.
+        summaryOutput:
+          type: string
+          description: Which of the analysis's own method outputs is the summary measure — an outputs[].name within the method
+            referenced by Transformation.usesMethod (e.g. 'contrasts_t' when usesMethod is M.ANCOVA). The method is NOT restated
+            here; it is already on the parent Transformation (usesMethod). Resolves against that method's outputs[].
   StudyTitle:
     x-provenance:
       source: usdm
@@ -712,8 +921,9 @@ $defs:
       source: usdm
       conformance: reference
     description: 'USDM: An event occurring after treatment initiation that affects interpretation or existence of measurements.
-      Carries a typed strategy code, a typed link to the per-event ScheduleTimeline, and occurrence ascertainment (executable
-      USDM Conditions for collected ICEs, or a Transformation for derived ones) via ascertainedBy.'
+      Pure single-source USDM here (id, name, strategy). Everything the eSAP adds for an ICE — typed study-default strategy,
+      event-driven ScheduleTimeline, and occurrence ascertainment — lives in ReportingEvent.iceAscertainments, which
+      references this event by id; the ICE itself is never modified.'
     type: object
     additionalProperties: true
     properties:
@@ -723,33 +933,8 @@ $defs:
         type: string
       strategy:
         type: string
-        description: USDM free-text strategy field (per USDM-IG §4.17). Companion to the typed icheStrategy below; both coexist.
-      icheStrategy:
-        $ref: '#/$defs/IchE9R1Strategy'
-        description: Typed ICH E9(R1) study-default strategy for this ICE. Per-estimand overrides go on Estimand.handlesIntercurrentEvent.
-      hasScheduleTimeline:
-        $ref: '#/$defs/ScheduleTimeline'
-        description: Typed link to the event-driven ScheduleTimeline for this ICE — a non-main timeline (mainTimeline=false)
-          gated by entryCondition (the event that fires it, e.g. "Subject receives rescue medication") whose instances detail
-          the protocol-defined response steps taken once the event occurs. The human-readable gate (entryCondition) pairs with
-          the executable gate (IntercurrentEvent.ascertainedBy). Per USDM-IG, such timelines are owned by StudyDesign.scheduleTimelines;
-          nested here as a Model-B self-contained copy.
-      ascertainedBy:
-        description: 'How this ICE''s per-subject (occurred?, time) fact is obtained — per Subject, a boolean indicator plus a
-          Timing. COLLECTED (the common case) → one or more OccurrenceCriterion: each is an executable USDM Condition that enters
-          the BC ▸ property ▸ code path at a path-shaped property (its head segment is the source BiomedicalConcept); AND-combined
-          across the array. The source BC is the property''s path head — NOT named separately here. DERIVED → a TransformationRef:
-          a Transformation computes occurrence from input BiomedicalConcept(s). Either way the result is a per-subject occurrence
-          indicator (occurred, and when), strategy-independent — the same ascertainment is reused regardless of the handling
-          strategy applied via Estimand.handlesIntercurrentEvent. The WHEN (timing window) is the ICE''s hasScheduleTimeline; each
-          criterion''s own context is the scheduled activity where its concept is collected.'
-        oneOf:
-        - type: array
-          items:
-            $ref: '#/$defs/OccurrenceCriterion'
-          minItems: 1
-          description: Collected — one or more executable USDM Conditions (AND-combined); each names its BC ▸ property ▸ code path via a path-shaped property ref.
-        - $ref: '#/$defs/TransformationRef'
+        description: USDM free-text strategy field (per USDM-IG §4.17). The typed counterpart lives on
+          IceAscertainment.icheStrategy in the eSAP overlay.
     required:
     - id
     - name
@@ -949,11 +1134,6 @@ $defs:
         enum:
         - primary
         - secondary
-      hasTransformation:
-        type: array
-        items:
-          $ref: '#/$defs/Derivation'
-        description: Derivations that produce this endpoint's analysis variable (0..*)
     required:
     - id
     - name
@@ -1015,27 +1195,15 @@ $defs:
         type: array
         items:
           $ref: '#/$defs/IntercurrentEvent'
-        description: Intercurrent events declared at the estimand level (0..*). Carries study-default strategies via IntercurrentEvent.icheStrategy.
-      handlesIntercurrentEvent:
-        type: array
-        items:
-          $ref: '#/$defs/IceHandling'
-        description: Per-estimand ICE handling overrides (0..*). Use when this estimand's strategy for an ICE differs from
-          the study-default carried on the ICE itself.
-      hasTransformation:
-        type: array
-        items:
-          $ref: '#/$defs/Analysis'
-        minItems: 1
-        description: Analyses that address this estimand (1..*). Distinguish main estimator from sensitivity/supplementary
-          via Analysis.analysisRole.
+        description: 'USDM-native: intercurrent events declared at the estimand level (0..*). The eSAP''s study-default strategy,
+          timeline, and occurrence ascertainment for each are carried in ReportingEvent.iceAscertainments (referencing the
+          ICE), and per-estimand handling in ReportingEvent.iceHandlings — not on the estimand or the ICE.'
     required:
     - id
     - name
     - variableOfInterest
     - analysisPopulation
     - interventions
-    - hasTransformation
   StudyDesign:
     x-provenance:
       source: usdm

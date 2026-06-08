@@ -1,6 +1,6 @@
 <mxfile host="Electron" background="#FFFFFF">
   <diagram name="eSAP schema" id="esap-schema">
-    <mxGraphModel dx="804" dy="387" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3370" pageHeight="2384" background="#FFFFFF" math="0" shadow="0">
+    <mxGraphModel dx="1606" dy="664" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3370" pageHeight="2384" background="#FFFFFF" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -35,28 +35,28 @@
           <mxGeometry height="102" width="102" x="2719" y="575" as="geometry" />
         </mxCell>
         <mxCell id="n-3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;StudyDesign&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="2436" y="521" as="geometry" />
+          <mxGeometry height="102" width="102" x="2262" y="798" as="geometry" />
         </mxCell>
         <mxCell id="n-4" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Objective&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="2253" y="788" as="geometry" />
+          <mxGeometry height="102" width="102" x="2259" y="584" as="geometry" />
         </mxCell>
         <mxCell id="n-5" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Endpoint&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="2024" y="708" as="geometry" />
+          <mxGeometry height="102" width="102" x="2034" y="705" as="geometry" />
         </mxCell>
         <mxCell id="n-6" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Estimand&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="2021" y="967" as="geometry" />
+          <mxGeometry height="102" width="102" x="2026" y="961" as="geometry" />
         </mxCell>
         <mxCell id="n-7" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;AnalysisPopulation&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="2209" y="1215" as="geometry" />
+          <mxGeometry height="102" width="102" x="2216" y="1215" as="geometry" />
         </mxCell>
         <mxCell id="n-8" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;StudyIntervention&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="2058" y="1352" as="geometry" />
+          <mxGeometry height="102" width="102" x="2046" y="1266" as="geometry" />
         </mxCell>
         <mxCell id="n-9" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;IntercurrentEvent&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1608" y="1532" as="geometry" />
+          <mxGeometry height="102" width="102" x="1901" y="1386" as="geometry" />
         </mxCell>
         <mxCell id="n-10" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;ScheduleTimeline&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1338" y="1648" as="geometry" />
+          <mxGeometry height="102" width="102" x="1377" y="1719" as="geometry" />
         </mxCell>
         <mxCell id="n-11" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;StudyDefinition&lt;br&gt;Document&lt;/b&gt;" vertex="1">
           <mxGeometry height="102" width="102" x="2611" y="905" as="geometry" />
@@ -74,16 +74,16 @@
           <mxGeometry height="102" width="102" x="3118" y="1330" as="geometry" />
         </mxCell>
         <mxCell id="n-16" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE5B4;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Transformation&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1277" y="859" as="geometry" />
+          <mxGeometry height="102" width="102" x="1259" y="895" as="geometry" />
         </mxCell>
-        <mxCell id="n-17" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE5B4;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Derivation&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1704" y="571" as="geometry" />
+        <mxCell id="n-17" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE5B4;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Derivation&lt;br&gt;&lt;/b&gt;" vertex="1">
+          <mxGeometry height="102" width="102" x="1529" y="591" as="geometry" />
         </mxCell>
         <mxCell id="n-18" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE5B4;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Analysis&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1728" y="897" as="geometry" />
+          <mxGeometry height="102" width="102" x="1678" y="764" as="geometry" />
         </mxCell>
         <mxCell id="n-19" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE5B4;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;IceHandling&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1560" y="1313" as="geometry" />
+          <mxGeometry height="102" width="102" x="1709" y="1181" as="geometry" />
         </mxCell>
         <mxCell id="n-20" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE5B4;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;DataStructure&lt;/b&gt;" vertex="1">
           <mxGeometry height="102" width="102" x="908" y="705" as="geometry" />
@@ -110,7 +110,7 @@
           <mxGeometry height="102" width="102" x="917" y="923" as="geometry" />
         </mxCell>
         <mxCell id="n-28" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE5B4;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;PhraseInstance&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1033" y="1459" as="geometry" />
+          <mxGeometry height="102" width="102" x="1039" y="1430" as="geometry" />
         </mxCell>
         <mxCell id="n-29" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE5B4;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;ResolvedExpression&lt;/b&gt;" vertex="1">
           <mxGeometry height="102" width="102" x="957" y="1317" as="geometry" />
@@ -119,27 +119,21 @@
           <mxGeometry height="102" width="102" x="902" y="1141" as="geometry" />
         </mxCell>
         <mxCell id="n-31" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E5E5FF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;TransformationRef&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1192" y="1492" as="geometry" />
+          <mxGeometry height="102" width="102" x="1138" y="1610" as="geometry" />
         </mxCell>
         <mxCell id="n-32" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E5E5FF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;SmartPhraseRef&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="934" y="1610" as="geometry" />
-        </mxCell>
-        <mxCell id="n-33" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E5E5FF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;ARSAnalysisRef&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1531" y="1069" as="geometry" />
-        </mxCell>
-        <mxCell id="n-34" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E5E5FF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;MethodOutputRef&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1449" y="967" as="geometry" />
+          <mxGeometry height="102" width="102" x="910" y="1597" as="geometry" />
         </mxCell>
         <mxCell id="n-35" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E5E5FF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;IchE9R1Strategy&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1310" y="1317" as="geometry" />
+          <mxGeometry height="102" width="102" x="1495" y="1259" as="geometry" />
         </mxCell>
         <mxCell id="n-36" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E5E5FF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;AnalysisRole&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1680" y="1090" as="geometry" />
+          <mxGeometry height="102" width="102" x="1750" y="1021" as="geometry" />
         </mxCell>
         <mxCell id="e-0" edge="1" parent="1" source="n-0" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-1" value="versions  [1..*]">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-1" edge="1" parent="1" source="n-0" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-6" value="estimands  [0..*]">
+        <mxCell id="e-1" edge="1" parent="1" source="n-3" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-6" value="estimands  [0..*]">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e-2" edge="1" parent="1" source="n-0" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-11" value="documentedBy  [0..*]">
@@ -179,24 +173,6 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e-14" edge="1" parent="1" source="n-6" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-9" value="intercurrentEvents  [0..*]">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e-15" edge="1" parent="1" source="n-6" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-19" value="handlesIntercurrentEvent  [0..*]">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e-16" edge="1" parent="1" source="n-6" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-18" value="hasTransformation  [1..*]">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e-17" edge="1" parent="1" source="n-5" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-17" value="hasTransformation  [0..*]">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e-18" edge="1" parent="1" source="n-9" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-10" value="hasScheduleTimeline  [0..1]">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e-19" edge="1" parent="1" source="n-9" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-35" value="icheStrategy  [0..1]">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e-20" edge="1" parent="1" source="n-9" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-31" value="ascertainedBy  [0..1] (derived)">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e-21" edge="1" parent="1" source="n-19" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-9" value="forIntercurrentEvent  [1]">
@@ -257,20 +233,14 @@
         <mxCell id="e-38" edge="1" parent="1" source="n-23" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-24" value="constraints  [0..*]">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-39" edge="1" parent="1" source="n-18" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-33" value="arsAnalysis  [0..1]">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
         <mxCell id="e-40" edge="1" parent="1" source="n-18" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-36" value="analysisRole  [0..1]">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e-41" edge="1" parent="1" source="n-18" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-34" value="summarizedByOutputClass  [0..1]">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e-42" edge="1" parent="1" source="n-28" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-32" value="basedOn  [1]">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="n-37" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E5E5FF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Method&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1653" y="744" as="geometry" />
+          <mxGeometry height="102" width="102" x="1345" y="495" as="geometry" />
         </mxCell>
         <mxCell id="e-43" edge="1" parent="1" source="n-16" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-37" value="usesMethod  [1]">
           <mxGeometry relative="1" as="geometry" />
@@ -284,11 +254,8 @@
         <mxCell id="n-38" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=light-dark(#bfffbf, #25253b);strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;BiomedicalConcept&lt;br&gt;Ref&lt;/b&gt;" vertex="1">
           <mxGeometry height="102" width="102" x="1412" y="1986" as="geometry" />
         </mxCell>
-        <mxCell id="e-46" edge="1" parent="1" source="n-9" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-39" value="ascertainedBy (collected, 1..*)">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
         <mxCell id="n-39" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=light-dark(#bfffbf, #25253b);strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;OccurrenceCriterion&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1666" y="1732" as="geometry" />
+          <mxGeometry height="102" width="102" x="1675" y="1705" as="geometry" />
         </mxCell>
         <mxCell id="n-40" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=light-dark(#bfffbf, #25253b);strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;BiomedicalConcept&lt;br&gt;PropertyRef&lt;/b&gt;" vertex="1">
           <mxGeometry height="102" width="102" x="1662" y="1923" as="geometry" />
@@ -306,6 +273,71 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e-51" edge="1" parent="1" source="n-39" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-10" value="context  [0..1]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-42" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E5E5FF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;ReportingEvent&lt;br&gt;(ARS)&lt;/b&gt;" vertex="1">
+          <mxGeometry height="102" width="102" x="1310" y="1106" as="geometry" />
+        </mxCell>
+        <mxCell id="n-43" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE5B4;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;IceAscertainment&lt;/b&gt;" vertex="1">
+          <mxGeometry height="102" width="102" x="1398" y="1482" as="geometry" />
+        </mxCell>
+        <mxCell id="e-54" edge="1" parent="1" source="n-42" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-17" value="derivations  [0..*]">
+          <mxGeometry relative="1" x="0.3787" y="-18" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-55" edge="1" parent="1" source="n-42" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-18" value="analyses  [0..*]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-56" edge="1" parent="1" source="n-42" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-43" value="iceAscertainments  [0..*]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-57" edge="1" parent="1" source="n-42" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-19" value="iceHandlings  [0..*]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-58" edge="1" parent="1" source="n-18" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-6" value="addressesEstimand  [1]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-59" edge="1" parent="1" source="n-17" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-5" value="forEndpoint  [1]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-60" edge="1" parent="1" source="n-19" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-6" value="forEstimand  [1]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-61" edge="1" parent="1" source="n-43" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-9" value="forIntercurrentEvent  [1]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-62" edge="1" parent="1" source="n-43" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-35" value="icheStrategy  [0..1]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-63" edge="1" parent="1" source="n-43" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-10" value="hasScheduleTimeline  [0..1]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-64" edge="1" parent="1" source="n-43" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-39" value="ascertainedBy (collected, 1..*)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-65" edge="1" parent="1" source="n-43" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-31" value="ascertainedBy  [0..1] (derived)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-44" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE5B4;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Hypothesis&lt;/b&gt;" vertex="1">
+          <mxGeometry height="102" width="102" x="1909" y="755" as="geometry" />
+        </mxCell>
+        <mxCell id="n-45" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE5B4;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Multiplicity&lt;br&gt;Strategy&lt;/b&gt;" vertex="1">
+          <mxGeometry height="102" width="102" x="1764" y="493" as="geometry" />
+        </mxCell>
+        <mxCell id="e-66" edge="1" parent="1" source="n-42" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-44" value="hypotheses  [0..*]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-67" edge="1" parent="1" source="n-42" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-45" value="multiplicityStrategy  [0..1]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-68" edge="1" parent="1" source="n-44" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-6" value="forEstimand  [1]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-69" edge="1" parent="1" source="n-44" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-18" value="testedBy  [0..1]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-70" edge="1" parent="1" source="n-45" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-44" value="order / graph  [1..*]">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>

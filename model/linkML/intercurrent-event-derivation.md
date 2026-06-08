@@ -11,25 +11,39 @@ covers two things people routinely conflate:
 
 It is grounded in ICH E9(R1) and the CDISC USDM `IntercurrentEvent` entity (a
 `SyntaxTemplate` with a free-text `strategy`; it has no native detection or
-timeline link — those are AC/DC extensions).
+timeline link). Everything the eSAP adds for an ICE — the typed strategy, the
+timeline, and the occurrence ascertainment — lives on the eSAP-owned
+`IceAscertainment` (in the ARS `ReportingEvent` overlay), which *references* the
+USDM ICE by id rather than modifying it.
 
 ---
 
 ## 1. Two edges, two jobs
 
 ```
-Estimand
- ├─ intercurrentEvents[] → IntercurrentEvent
- │     ├─ name / text          "use of rescue medication"
- │     ├─ icheStrategy          Hypothetical            (study-default strategy)
- │     ├─ hasScheduleTimeline → ScheduleTimeline        (event-driven timeline, gated by entryCondition)
- │     └─ ascertainedBy       → OccurrenceCriterion(s) | TransformationRef   (Step 1: recognise occurrence)
- │            └─ OccurrenceCriterion = executable USDM Condition: property (path-shaped, BC-headed) + operator + responseCodes|literal, context→timeline
- └─ handlesIntercurrentEvent[] → IceHandling
-       ├─ forIntercurrentEvent → (that ICE)
-       ├─ icheStrategy          Hypothetical | Composite | …  (per-estimand override)
-       └─ implementedBy[]      → TransformationRef       (Step 2: derive the value)
+study  (USDM — single source)
+ └─ Estimand
+       ├─ intercurrentEvents[] → IntercurrentEvent   (pure USDM: id, name, strategy)
+       └─ variableOfInterest  → Endpoint
+
+reportingEvents[]  (ARS overlay — interim, CSR, …; references USDM by id)
+ └─ ReportingEvent
+       ├─ iceAscertainments[] → IceAscertainment            (Step 1: recognise occurrence)
+       │     ├─ forIntercurrentEvent → IntercurrentEvent     (USDM, by id)
+       │     ├─ icheStrategy           Hypothetical           (study-default strategy)
+       │     ├─ hasScheduleTimeline  → ScheduleTimeline       (event-driven timeline, gated by entryCondition)
+       │     └─ ascertainedBy        → OccurrenceCriterion(s) | TransformationRef
+       │            └─ OccurrenceCriterion = executable USDM Condition: property (path-shaped, BC-headed) + operator + responseCodes|literal, context→timeline
+       └─ iceHandlings[] → IceHandling                       (Step 2: derive the value)
+             ├─ forEstimand          → Estimand               (USDM, by id)
+             ├─ forIntercurrentEvent → IntercurrentEvent      (USDM, by id)
+             ├─ icheStrategy           Hypothetical | Composite | …  (per-estimand override)
+             └─ implementedBy[]      → TransformationRef
 ```
+
+Both `IceAscertainment` and `IceHandling` are eSAP-owned and live in the ARS
+`ReportingEvent` overlay; they **reference** the single-source USDM `Estimand` /
+`IntercurrentEvent` by id (the USDM entities carry no eSAP fields).
 
 - **`ascertainedBy`** is how the per-subject *(occurred?, time)* fact is obtained:
   **collected** → one or more `OccurrenceCriterion` (executable USDM `Condition`s,
@@ -49,7 +63,7 @@ condition is expressed twice:
 - `ScheduleTimeline.entryCondition` — the **prose** gate, e.g.
   *"Subject receives rescue medication"* (USDM-IG's own examples are
   *"Adverse event"* / *"Lost contact with subject"*).
-- `IntercurrentEvent.ascertainedBy` — the **executable** gate that realises the
+- `IceAscertainment.ascertainedBy` — the **executable** gate that realises the
   same condition against data (a Biomedical Concept, or a Transformation).
 
 They are the human-readable and machine-readable halves of one gate; the
@@ -118,7 +132,7 @@ threshold, e.g. dose < 0.75·planned). Never expressed over SDTM variables:
 | | Spec (path-shaped USDM refs + eSAP operator) | Execution projection (the instance example) |
 | --- | --- | --- |
 | path (WHAT/WHICH) | `property → BC_CM_001/Category`, `operator: in`, `responseCodes → [BC_CM_001/Category/RESCUE]` | `sourceConceptId: BC_CM_001`, `triggerField: CMCAT`, `triggerValue: "ANTICANCER THERAPY"` |
-| window (WHEN) | `hasScheduleTimeline` (entryCondition + Timing) | `timingCheck: "(CMSTDTC > RFXSTDTC) AND …"` |
+| window (WHEN) | `IceAscertainment.hasScheduleTimeline` (entryCondition + Timing) | `timingCheck: "(CMSTDTC > RFXSTDTC) AND …"` |
 
 So an instance's `triggerField=CMCAT, triggerValue=ANTICANCER THERAPY` is the
 execution-layer *projection* of `property→Category (BiomedicalConceptProperty),
@@ -147,12 +161,12 @@ plan; it never holds subject data or computed values.
 
 ```
 LAYER 1 — ESTIMAND DECLARATION   (the "what" / scientific intent)
-   IntercurrentEvent + icheStrategy        ← attribute 5 of the estimand
-   IceHandling.icheStrategy                ← per-estimand strategy (override)
+   IntercurrentEvent (USDM) + IceAscertainment.icheStrategy   ← attribute 5 of the estimand (study-default)
+   IceHandling.icheStrategy                                   ← per-estimand strategy (override)
 
 LAYER 2 — ESTIMATOR / OPERATIONAL SPEC    (the "how"; still planned, machine-executable)
-   IntercurrentEvent.ascertainedBy  → Transformation   (recipe: recognise occurrence)
-   IceHandling.implementedBy[]      → Transformation   (recipe: derive the value)
+   IceAscertainment.ascertainedBy  → Transformation   (recipe: recognise occurrence)
+   IceHandling.implementedBy[]     → Transformation   (recipe: derive the value)
        — both are *references to* recipes, not results —
 
 LAYER 3 — EXECUTION                        (the engine; the "actual")
@@ -197,9 +211,10 @@ fires. For S-002 the analysis value diverges — and that is exactly what
 | Principal Stratum   | Estimand only for "would-not-rescue" subjects  | —                | **excl.**| population-subsetting derivation |
 
 The same ascertained fact `(Yes, Wk 12)` feeds every row; only the handling —
-and therefore the number — changes. The handling derivations sit under the
-**Endpoint**'s `hasTransformation[]`, produce the analysis-ready CFB, which the
-**Analysis** (e.g. ANCOVA) then consumes.
+and therefore the number — changes. The handling derivations live in
+`ReportingEvent.derivations` (each `forEndpoint → Endpoint`), produce the
+analysis-ready CFB, which the **Analysis** (`ReportingEvent.analyses`, e.g. ANCOVA,
+`addressesEstimand`) then consumes.
 
 ---
 
