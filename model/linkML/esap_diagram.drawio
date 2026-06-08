@@ -1,6 +1,6 @@
 <mxfile host="Electron" background="#FFFFFF">
   <diagram name="eSAP schema" id="esap-schema">
-    <mxGraphModel dx="1158" dy="558" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3370" pageHeight="2384" background="#FFFFFF" math="0" shadow="0">
+    <mxGraphModel dx="1378" dy="664" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3370" pageHeight="2384" background="#FFFFFF" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -56,7 +56,7 @@
           <mxGeometry height="102" width="102" x="1608" y="1532" as="geometry" />
         </mxCell>
         <mxCell id="n-10" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;ScheduleTimeline&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1357" y="1625" as="geometry" />
+          <mxGeometry height="102" width="102" x="1338" y="1648" as="geometry" />
         </mxCell>
         <mxCell id="n-11" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;StudyDefinition&lt;br&gt;Document&lt;/b&gt;" vertex="1">
           <mxGeometry height="102" width="102" x="2611" y="905" as="geometry" />
@@ -119,7 +119,7 @@
           <mxGeometry height="102" width="102" x="902" y="1141" as="geometry" />
         </mxCell>
         <mxCell id="n-31" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E5E5FF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;TransformationRef&lt;/b&gt;" vertex="1">
-          <mxGeometry height="102" width="102" x="1196" y="1469" as="geometry" />
+          <mxGeometry height="102" width="102" x="1192" y="1492" as="geometry" />
         </mxCell>
         <mxCell id="n-32" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E5E5FF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;SmartPhraseRef&lt;/b&gt;" vertex="1">
           <mxGeometry height="102" width="102" x="934" y="1610" as="geometry" />
@@ -196,7 +196,7 @@
         <mxCell id="e-19" edge="1" parent="1" source="n-9" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-35" value="icheStrategy  [0..1]">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-20" edge="1" parent="1" source="n-9" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-31" value="ascertainedBy  [0..1]">
+        <mxCell id="e-20" edge="1" parent="1" source="n-9" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-31" value="ascertainedBy  [0..1] (derived)">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e-21" edge="1" parent="1" source="n-19" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-9" value="forIntercurrentEvent  [1]">
@@ -280,6 +280,14 @@
         </mxCell>
         <mxCell id="e-45" edge="1" parent="1" source="n-22" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-23" value="slice  [0..1]">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n-38" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=light-dark(#bfffbf, #25253b);strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;BiomedicalConcept&lt;br&gt;Ref&lt;/b&gt;" vertex="1">
+          <mxGeometry height="102" width="102" x="1527" y="1778" as="geometry" />
+        </mxCell>
+        <mxCell id="e-46" edge="1" parent="1" source="n-9" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=10;" target="n-38" value="ascertainedBy  [0..1] (collected)">
+          <mxGeometry relative="1" x="0.147" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

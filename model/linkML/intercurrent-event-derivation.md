@@ -23,17 +23,18 @@ Estimand
  │     ├─ name / text          "use of rescue medication"
  │     ├─ icheStrategy          Hypothetical            (study-default strategy)
  │     ├─ hasScheduleTimeline → ScheduleTimeline        (event-driven timeline, gated by entryCondition)
- │     └─ ascertainedBy       → TransformationRef       (Step 1: recognise occurrence)
+ │     └─ ascertainedBy       → BiomedicalConceptRef | TransformationRef   (Step 1: recognise occurrence)
  └─ handlesIntercurrentEvent[] → IceHandling
        ├─ forIntercurrentEvent → (that ICE)
        ├─ icheStrategy          Hypothetical | Composite | …  (per-estimand override)
        └─ implementedBy[]      → TransformationRef       (Step 2: derive the value)
 ```
 
-- **`ascertainedBy`** points to the recipe that reads collected data and emits,
-  per subject, *(occurred?, time)*. It is **strategy-independent** — you
-  recognise rescue-medication use the same way regardless of how you later
-  handle it.
+- **`ascertainedBy`** names the *source* of the per-subject *(occurred?, time)*
+  fact — a **Biomedical Concept** when the occurrence is collected, or a
+  **Transformation** when it must be derived (see "collected vs derived" below).
+  Either way it is **strategy-independent** — you recognise rescue-medication use
+  the same way regardless of how you later handle it.
 - **`implementedBy`** points to the recipe(s) that produce the analysis value
   *given* occurrence, per the chosen strategy.
 
@@ -45,11 +46,41 @@ condition is expressed twice:
 - `ScheduleTimeline.entryCondition` — the **prose** gate, e.g.
   *"Subject receives rescue medication"* (USDM-IG's own examples are
   *"Adverse event"* / *"Lost contact with subject"*).
-- `IntercurrentEvent.ascertainedBy → Transformation` — the **executable** gate
-  that realises the same condition against data.
+- `IntercurrentEvent.ascertainedBy` — the **executable** gate that realises the
+  same condition against data (a Biomedical Concept, or a Transformation).
 
 They are the human-readable and machine-readable halves of one gate; the
 timeline's instances then detail the protocol's response steps once it fires.
+
+### Collected vs. derived ascertainment
+
+The occurrence *(occurred?, time)* is **always a concept**; `ascertainedBy` only
+records how that concept is obtained:
+
+```
+                         ICE-occurrence concept   (occurred?, time)   ← always a concept
+                          ▲
+        ┌─────────────────┴─────────────────┐
+   COLLECTED                              DERIVED
+   ascertainedBy → BiomedicalConceptRef   ascertainedBy → TransformationRef
+   the occurrence IS a collected concept    consumes BiomedicalConcept(s) → emits
+   (no derivation)                          the occurrence concept
+```
+
+So the two arms are **not symmetric**: the derived arm always *contains*
+Biomedical Concepts as the transformation's inputs. "Both" isn't a third option —
+it is what the derived arm always is. Worked across the real ICE sources:
+
+| ICE source | Arm | `ascertainedBy` | How `(occurred?, time)` is obtained |
+| ---------- | --- | --------------- | ----------------------------------- |
+| Rescue medication (CM) | collected | `BiomedicalConceptRef` `BC_CM_001` | CM record present + `CMSTDTC` |
+| Treatment discontinuation (DS) | collected | `BiomedicalConceptRef` `BC_DS_001` | DS record present + `DSSTDTC` |
+| Death (DM/DS) | collected | `BiomedicalConceptRef` | death record present + date |
+| Non-adherence (EX) | derived | `TransformationRef` | rule over EX (`EXDOSE < 0.75·planned`) → flag + time |
+
+`ascertainedBy` is therefore a union — `BiomedicalConceptRef | TransformationRef`
+— in the schema; collected ICEs take the concept arm, derived ICEs the
+transformation arm (whose inputs are themselves Biomedical Concepts).
 
 Keeping these separate means a sensitivity estimand that swaps
 `Treatment Policy → Hypothetical` only re-points `implementedBy`; the occurrence

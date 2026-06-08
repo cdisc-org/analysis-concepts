@@ -139,6 +139,23 @@ $defs:
           segments are <method.conceptId>/output/<outputs[].name>.
     required:
     - methodOutputId
+  BiomedicalConceptRef:
+    x-provenance:
+      source: usdm
+      conformance: cross-reference
+    description: 'Reference to a USDM BiomedicalConcept — a collected clinical concept (e.g. Concomitant Medication, Disposition,
+      Exposure). Used where a fact is *read* from collected data rather than derived. For ICE ascertainment, the occurrence of
+      a collected ICE (rescue medication, treatment discontinuation, death) is a property of such a concept: presence answers
+      "occurred?", the concept''s timing variable answers "when". Contrast TransformationRef, which is used when occurrence must
+      be *derived* (the transformation then consumes BiomedicalConcept(s) as its inputs).'
+    type: object
+    properties:
+      biomedicalConceptId:
+        type: string
+        description: Identifier of the referenced Biomedical Concept (e.g. 'BC_CM_001' for the Concomitant Medication concept).
+          Matches the sourceConceptId used in study instance specifications.
+    required:
+    - biomedicalConceptId
   IchE9R1Strategy:
     x-provenance:
       source: esap
@@ -688,11 +705,17 @@ $defs:
           the executable gate (IntercurrentEvent.ascertainedBy). Per USDM-IG, such timelines are owned by StudyDesign.scheduleTimelines;
           nested here as a Model-B self-contained copy.
       ascertainedBy:
-        $ref: '#/$defs/TransformationRef'
-        description: The Transformation that ascertains this ICE's occurrence in subject data. The Transformation's Method carries
-          the executable ascertainment logic; inputs are concept bindings. Output is a per-subject occurrence indicator (occurred,
-          and when). Strategy-independent — the same ascertainment is reused regardless of the handling strategy applied via
-          Estimand.handlesIntercurrentEvent.
+        oneOf:
+        - $ref: '#/$defs/BiomedicalConceptRef'
+        - $ref: '#/$defs/TransformationRef'
+        description: 'The source of this ICE''s per-subject occurrence — a (occurred?, time) fact. Occurrence is always a concept;
+          this names how it is obtained. COLLECTED (the common case) → a BiomedicalConceptRef: the occurrence IS a property of
+          a collected concept (rescue medication, discontinuation, death) — presence gives "occurred?", the concept''s timing
+          variable gives "when"; no derivation. DERIVED → a TransformationRef: occurrence is computed (e.g. non-adherence from
+          dose records), and that Transformation consumes BiomedicalConcept(s) as its inputs and emits the occurrence concept
+          as its output. Either way the output is a per-subject occurrence indicator (occurred, and when), and it is
+          strategy-independent — the same ascertainment is reused regardless of the handling strategy applied via
+          Estimand.handlesIntercurrentEvent.'
     required:
     - id
     - name
