@@ -11,6 +11,57 @@
 
 ---
 
+## In plain terms
+
+*A non-technical orientation before the detailed comparison. Three artefacts come up repeatedly; here is what each one does, in everyday language.*
+
+### Three artefacts, three jobs
+
+- **The concept model** — a shared dictionary of the *building-block meanings* that analyses are made of: value concepts like `Change`, and dimensions like `Subject`, `Parameter`, and `Visit`. These are the reusable words, defined independent of any one study and any file format, and written once. A study analysis such as "change from baseline in systolic blood pressure" is a *sentence assembled from* this dictionary — a *transformation* that refers to the concept `Change`, applied to a *biomedical concept* (Systolic Blood Pressure, a collected observation) — not itself an entry in it. The dictionary holds the words; transformations and biomedical concepts are built from them and link back to them.
+- **The eSAP** — *one study's* analysis plan, written in terms of those shared meanings. It records the endpoints and analyses for that study and which concepts and methods each one uses. One eSAP per study.
+- **`define.yaml`** — *one study's* submission metadata. It describes the actual datasets and variables handed to the regulator: that `CHG` is a number of length 8, lives in domain `ADVS`, and was derived a certain way. One Define per study.
+
+A one-line way to hold them apart: the **concept model** says what things *mean*; the **eSAP** says what we *plan to analyse* for a study; **`define.yaml`** says what datasets we *delivered* for a study.
+
+### Why eSAP and `define.yaml` are the natural pair
+
+Both eSAP and `define.yaml` are *per-study* documents — one of each, per study — which is why this document treats them as the true 1:1 peers (not the concept library, which is cross-study and written once). The difference is which side of the meaning/data line they sit on:
+
+```text
+   PER STUDY        eSAP   ───────────────────────   define.yaml
+                the analysis PLAN                    the delivered DATASETS
+            (endpoints, methods, meanings)        (variables, types, values)
+               "what we intend to do"               "what we shipped"
+```
+
+eSAP describes the plan in terms of shared *meanings*; `define.yaml` describes the delivered *datasets*. Same study, opposite ends of the pipeline.
+
+### Why we need the concept model at all
+
+A regulator file format (SDTM, ADaM, Define) and an exchange/research format (OMOP, FHIR) each have their own way of *storing* a value whose meaning is the concept `Change`. If that meaning lives only inside each format, then connecting them means hand-mapping every format to every other — a tangle that grows with the square of the number of formats, and one that quietly drifts apart over time.
+
+The concept model breaks that tangle. Each format links *once* to the shared meaning and then stores it however it likes:
+
+```text
+                THE CONCEPT MODEL   ("what things mean" — written once)
+                       │   Change · Subject · Parameter · Visit …
+        ┌──────────┬───┴───────┬───────────┬──────────┐
+      SDTM       ADaM     define.yaml     OMOP       FHIR
+       (each format links UP to one shared meaning, then stores it its own way)
+```
+
+Now there is one definition of "Change" and *N* links to it — not *N×N* cross-mappings. Add a new format and you add one link, not a fresh mapping to every existing format.
+
+### Is the concept model "just" a semantic layer — or the spine of the whole flow?
+
+Stronger than a glossary: the same shared identities that pin down *meaning* are also the **join key the automated pipeline runs on**. The engine works on concept-keyed data, and every downstream file — SDTM, ADaM, Define, OMOP, FHIR — is a *projection* off those identities; lineage is traceable because every value carries a stable concept identity from collection through to result. So the concept model is fairly called the **spine of the digital data flow**: it is the backbone every artefact attaches to and the pipeline articulates around.
+
+This is the sharp contrast with `define.yaml`, which *also* carries concept-like material (`ReifiedConcept` / `ConceptProperty`) — so it is reasonable to ask whether Define already has a concept spine. It does not. Define's concepts are **inert annotations hung on variables**: nothing in a Define file is generated *from* a concept, and a variable is perfectly valid without one. They label the data after the fact; they do no work. The AC concept identities are the opposite — **load-bearing**: the engine reads them, derivations key off them, and the projections to each format are produced *from* them. A concept that is a decoration on a variable cannot be the spine; a concept the whole flow runs on can. That difference — does the concept *do work* or merely *describe* — is the heart of why this document treats Define as a projection target rather than a semantic layer.
+
+One honest qualification, so the claim is not oversold: a spine is a backbone, not the whole body. The concept model supplies the stable identities; it does not by itself *do* all the work. The **methods and transformations** are what operate on those identities, and the **execution layer** (the engine plus the data bindings) is what actually moves and projects data. The precise, defensible claim is therefore: the concept model is the spine *because it is the stable identity backbone that meaning, automation, and lineage all hang off* — remove it and the flow reverts to N×N hand-mapping with no end-to-end traceability — but it is the spine of the machine, not the entire machine.
+
+---
+
 ## 0. Executive summary
 
 ### 0.1 The structural argument — Specification Layer vs. Execution Layer
