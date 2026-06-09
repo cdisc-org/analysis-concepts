@@ -40,7 +40,37 @@ The architectural fit follows directly:
 
 The recommendation in §7-§8 thus reduces to: **build a projection generator** that emits Define-XML / Define-JSON from the engine's lineage record alongside the SDTM-tables / ADaM-tables / ARS / FHIR / OMOP generators. The generator picks up the ODM, PROV (library-element provenance), and schema-level USDM mappings the AC libraries don't carry (per §6.1), uses Define's class-level `exact_mappings` to satisfy LinkML→RDF tooling for free, and never feeds back into the Specification Layer.
 
-### 0.3 What this means for the rest of the document
+### 0.3 The semantic-layer lens — meaning definitions vs. data definitions
+
+§0.1 framed the contrast as Specification Layer vs. Execution Layer. The same boundary reads differently from the concept layer's side, and that reading answers a question reviewers keep asking: *isn't `define.yaml` the semantic layer that ties the models together?* It is not — and the reason is a fork in the word **"definition."**
+
+- A **data definition** describes a *physical dataset / variable*: `CHG` is `float`, length 8, codelist X, `origin: Derived`, in domain `ADVS`. This is precisely what Define-XML is — the file is named for it.
+- A **semantic (meaning) definition** describes *meaning* independent of any dataset: `Change` = "the arithmetic difference between two values of the same parameter," result a `NumericValue`, unit inherited.
+
+The AC concept layer (`lib/concepts/*`) is the second kind. Every physical representation links *up* to it for meaning ("this column carries `Change`"), then carries its own data definition for shape — `CHG: float(8)` (ADaM), `measurement.value_as_number` (OMOP), `Observation.valueQuantity.value` (FHIR), `Item.conceptProperty` (Define). Meaning is shared and authored once; shape is per-representation. This is what makes the concept the projection pivot of §0.2: *N* representations map to one concept (N×1), never to each other (N×N).
+
+`define.yaml` is **not** that semantic layer — the §0.1 boundary seen from this angle gives three reasons:
+
+1. **It defines data, not meaning.** Define's FK chains terminate at `Item` / `ItemGroup` (§0.1). Its concept material (`ReifiedConcept` / `ConceptProperty`) is an *optional annotation hung on `Item`s* — it tags the physical; it is not the meaning the model is built around. Nothing in Define is generated *from* a `ReifiedConcept`, and an `Item` is valid without one.
+2. **It is an instance, not a definitional layer.** `define.yaml` is a schema whose root `MetaDataVersion` carries `studyOID` — every usable instance is *one study's* submission metadata (§4.4.2: there is no library-vs-study split). A shared semantic referent must be study-invariant (`Change` is defined once for all studies); a per-study document cannot be the thing "all models link to," and Define has no cross-study container to host a shared concept catalogue.
+3. **It is a sibling, not a parent.** A layer everything links to must sit *above* the physical representations, implementation-agnostic. `define.yaml` *is* one of those representations (an ADaM / SDTM-shaped submission artefact). Asking OMOP or FHIR to "link to Define" means linking to a peer projection, not to shared meaning — which is exactly why the OMOP / FHIR projections route off the concept layer, not off Define (§4.2, §6.1).
+
+The steelman — *promote Define's `ReifiedConcept` sub-schema to be the semantic layer* — proves the same point. To make it serve, you would extract it from `MetaDataVersion` into a cross-study container, strip its dependence on `Item`, make it the projection pivot rather than an `Item` annotation, and add a library-vs-study split to host it. Those four moves reconstruct the AC concept layer. The only way to get a semantic layer out of Define is to rebuild the layer the AC stack already separated out.
+
+So the AC stack resolves into four tiers, of which the concept layer is the shared-meaning row that the physical row (Define included) projects from:
+
+| Tier | Owns | Examples |
+|---|---|---|
+| Terminology | what codes *mean* | NCIt, LOINC, SNOMED, UCUM |
+| Design semantics (USDM) | what was *planned / collected* | Objective, Endpoint, BiomedicalConcept, SoA |
+| Value / analysis semantics (AC concept layer) | what *values mean* + how they derive / analyse, + the dimensions they sit in | Measure, Change, LSMeans; Subject, Parameter, Visit |
+| Physical representations | how values are *stored / exchanged* | SDTM, ADaM, **Define**, OMOP, FHIR |
+
+In one line: **Define defines datasets; the concept layer defines meanings — and meanings are what the models share, datasets are what they each have.** This is the §0.1 Specification / Execution split restated in the concept layer's own terms: the Specification Layer is where *meaning* is defined, the Execution Layer (Define included) is where *data* is defined.
+
+---
+
+### 0.4 What this means for the rest of the document
 
 The two-walkthrough analysis (§2, §3), the gain/loss inventories (§5, §6), and the audit of standards mappings (§6.1) all sit *underneath* this structural argument. They explain *why* particular Define elements look attractive — but every "gain" in the §6 inventory is a gain *for the Execution Layer projection*, not for the Specification Layer. Read with that distinction in mind, several items in §6 are not gains over the dataContracts model upstream (most notably §6.4 — `Origin` is derivable from upstream metadata, not a primitive that needs storing).
 
@@ -608,12 +638,6 @@ eSAP is structured around three conformance categories (the schema's `x-provenan
 2. **eSAP carries strictly richer estimand / ICH E9(R1) framing than `define.yaml`.** Where `define.yaml` has `analysisReason` / `analysisPurpose` narrative slots, eSAP has typed `Estimand` (from USDM) with `intercurrentEvents`, the `IchE9R1Strategy` enum, the ICH-grounded `AnalysisRole` enum (MainEstimator / Sensitivity / Supplementary), and reified `IceHandling` (referencing its estimand). The `IceAscertainment.ascertainedBy` (occurrence) and `IceHandling.implementedBy → Transformation.id` (handling) linkages close the loop between ICH-E9(R1)-prescribed strategies and the actual derivations that operationalise them — *exactly the structural traceability auditors want and `define.yaml` doesn't carry*.
 3. **eSAP doesn't replicate `define.yaml`'s Execution-Layer surface.** No `Item`, no `ItemGroup`, no `Origin`, no `CodeList` references in eSAP. The implementation bindings live in `concept-variable-mappings.json` (projection rules) and are read by the projection generators at emission time. This keeps eSAP on the Specification-Layer side of the §0.1 line.
 4. **The full-copy model is what makes eSAP self-contained for regulatory reproducibility.** `define.yaml`'s `MetaDataVersion` is heavy because it inlines every `Method`, `Item`, `ItemGroup`, `CodeList` — bound to one specific physical realisation. eSAP is also self-contained, but at the Specification Layer: cube structure, slice templates, sliceKeys, methodConfigurations, and validSmartPhrases are *copied verbatim* from the library `TransformationTemplate` into the study Transformation; the study substitutes placeholders in-place; only `Method` (the algorithmic primitive) stays as a live cross-reference via `usesMethod`. Consumers can read the eSAP without re-resolving against the library at consumption time, and the eSAP remains valid against a *snapshot* of the library at study-spec time — important for audit traceability when the library evolves after a study is locked.
-
-#### 4.4.4 Open questions worth surfacing
-
-**ARS reference vs. library reference — resolved.** An earlier draft gave each study `Analysis` a separate `arsAnalysis → ARSAnalysisRef` *and* a `summarizedByOutputClass → MethodOutputRef`, raising a "dual reference" question. That is now resolved by referencing ARS directly: the eSAP's analyses live **inside** an ARS `ReportingEvent` (so an `Analysis` *is* the ARS analysis — no self-pointer), and `summaryOutput` is just an output name resolved against the analysis's own `usesMethod` (the method is not re-stated). The only cross-model link an `Analysis` carries is `addressesEstimand` — the USDM↔ARS bridge, since ARS `Analysis` has no native estimand link. See `model/linkML/esap-owning-the-link.md`.
-
-**Full-copy vs. reference — trade-off.** The v0.5.0 design copies the library template's structure into the study Transformation rather than referencing it. The benefit is **self-containment**: the eSAP can be consumed without resolving against the library, and remains valid against a snapshot of the library at study-spec time (important when a study is locked and the library evolves). The cost is **drift potential**: a sponsor can edit the copied template in the study Transformation without that edit being reflected back in the library — and conversely, an upstream library fix won't propagate into already-locked studies. Worth tooling for: a validator that detects when a study Transformation's copied structure diverges from its `basedOn` template (and flags whether the divergence is intentional study-level narrowing or accidental drift), and a re-derive-from-template operation for sponsors who want to refresh against a newer library version. Neither is in the schema yet; both are natural follow-ons.
 
 ---
 
