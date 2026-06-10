@@ -5,9 +5,11 @@
 | | |
 |---|---|
 | **Status** | Draft |
-| **Date** | 2026-06-01 |
+| **Date** | 2026-06-10 (originally drafted 2026-06-01) |
 | **Audience** | AC/DC working group; reviewers deciding whether to converge on `define.yaml` |
 | **Scope** | Method / Analysis / Transformation layer of the AC framework, compared against `define.yaml`. The Item / ItemGroup / Dataset / Dataflow parts of `define.yaml` are summarised but not compared in detail. |
+
+*Revision 2026-06-10 — added the plain-language orientation ("In plain terms"); the analysis-plan decoupling argument (§5.7); the §4.2 note that Define is a concept-mappable projection target; the §7.3 "inherit the shape, not the bindings" guardrail; reframed §7.3 as optional/conditional (not a planned step) with its two real costs surfaced; and a clearer §8 recommendation (bottom line stated up front).*
 
 ---
 
@@ -17,7 +19,7 @@
 
 ### Three artefacts, three jobs
 
-- **The concept model** — a shared dictionary of the *building-block meanings* that analyses are made of: value concepts like `Change`, and dimensions like `Subject`, `Parameter`, and `Visit`. These are the reusable words, defined independent of any one study and any file format, and written once. A study analysis such as "change from baseline in systolic blood pressure" is a *sentence assembled from* this dictionary — a *transformation* that refers to the concept `Change`, applied to a *biomedical concept* (Systolic Blood Pressure, a collected observation) — not itself an entry in it. The dictionary holds the words; transformations and biomedical concepts are built from them and link back to them.
+- **The concept model** — the shared **semantic (reference) model** that defines the *building-block meanings* analyses are made of: value concepts like `Change`, and dimensions like `Subject`, `Parameter`, and `Visit`. These are the reusable units of meaning, defined independent of any one study and any file format, and written once. A study analysis such as "change from baseline in systolic blood pressure" is *assembled from* them — a *transformation* that refers to the concept `Change`, applied to a *biomedical concept* (Systolic Blood Pressure, a collected observation) — not itself one of them. The model defines the meanings; transformations and biomedical concepts are built from those meanings and link back to them.
 - **The eSAP** — *one study's* analysis plan, written in terms of those shared meanings. It records the endpoints and analyses for that study and which concepts and methods each one uses. One eSAP per study.
 - **`define.yaml`** — *one study's* submission metadata. It describes the actual datasets and variables handed to the regulator: that `CHG` is a number of length 8, lives in domain `ADVS`, and was derived a certain way. One Define per study.
 
@@ -34,7 +36,16 @@ Both eSAP and `define.yaml` are *per-study* documents — one of each, per study
                "what we intend to do"               "what we shipped"
 ```
 
-eSAP describes the plan in terms of shared *meanings*; `define.yaml` describes the delivered *datasets*. Same study, opposite ends of the pipeline.
+eSAP describes the plan in terms of shared *meanings*; `define.yaml` describes the delivered *datasets*. They are peers in **scope** (one of each, per study) but not symmetric in **role**: eSAP sits at the *head* of a generative chain, while `define.yaml` *describes the tail*. The machinery in between is what actually makes the datasets:
+
+```text
+ eSAP + concepts ─┐
+ (WHAT to derive  │   method → code catalog       concept ↔ column bindings
+  / analyse)      ├─▶ (HOW to compute)       +    (WHERE to read / store)    ─▶ [ENGINE] ─▶ datasets ──▶ define.yaml
+ transformations ─┘   *_implementations.json       concept-variable-mappings.json           ADaM/SDTM/ARD   (DESCRIBES)
+```
+
+Two artefacts do the connecting, and they are the two Execution-Layer contact points of §0.1: a **code catalog** (`Code → Method` — e.g. `sas_implementations.json` / `r_implementations.json`, keyed by the abstract method, telling the engine *how to compute*) and the **concept ↔ column bindings** (`Data Binding → Concept` — `concept-variable-mappings.json`, telling it *where to read inputs and store outputs*). Feed those plus the data to the engine and the datasets fall out. `define.yaml` is a *projection of that output*, authored after the fact — which is why it can document how a value was derived (`Method.FormalExpression`, `Origin.sourceItems`) but cannot itself be the recipe that produced it: it carries no reusable, language-plural, concept-keyed code catalog, and the arrow runs *datasets → Define*, never the reverse.
 
 ### Why we need the concept model at all
 
@@ -59,6 +70,19 @@ Stronger than a glossary: the same shared identities that pin down *meaning* are
 This is the sharp contrast with `define.yaml`, which *also* carries concept-like material (`ReifiedConcept` / `ConceptProperty`) — so it is reasonable to ask whether Define already has a concept spine. It does not. Define's concepts are **inert annotations hung on variables**: nothing in a Define file is generated *from* a concept, and a variable is perfectly valid without one. They label the data after the fact; they do no work. The AC concept identities are the opposite — **load-bearing**: the engine reads them, derivations key off them, and the projections to each format are produced *from* them. A concept that is a decoration on a variable cannot be the spine; a concept the whole flow runs on can. That difference — does the concept *do work* or merely *describe* — is the heart of why this document treats Define as a projection target rather than a semantic layer.
 
 One honest qualification, so the claim is not oversold: a spine is a backbone, not the whole body. The concept model supplies the stable identities; it does not by itself *do* all the work. The **methods and transformations** are what operate on those identities, and the **execution layer** (the engine plus the data bindings) is what actually moves and projects data. The precise, defensible claim is therefore: the concept model is the spine *because it is the stable identity backbone that meaning, automation, and lineage all hang off* — remove it and the flow reverts to N×N hand-mapping with no end-to-end traceability — but it is the spine of the machine, not the entire machine.
+
+### Why not just bake the analysis into the ADaM/SDTM model?
+
+A natural question: if `define.yaml` already lists the ADaM/SDTM variables, why not write the analysis straight against those variables and skip the shared semantic model? You can — for a single study it is even simpler. But that shared model is what *decouples* the analysis plan from the physical files. Skip it and the plan gets welded to one version of one format:
+
+| | Keep meanings separate (the concept way) | Bake the analysis into ADaM/SDTM |
+|---|---|---|
+| The analysis plan refers to… | shared meanings (`Change`, "ANCOVA") | actual columns (`CHG` in domain `ADVS`, ADaM v1.3) |
+| A new SDTM/ADaM version comes out | update one link; **the plan is unchanged** | **rewrite the plan** |
+| You also want the data as OMOP / FHIR | add one more link | redo it for each format |
+| You reuse the analysis on the next study | reuse it as-is | re-bake it per study |
+
+The link from meaning to column is not busywork you could delete. It is the thing that keeps the analysis plan stable while the file formats — and their versions — churn underneath it. (The detailed version of this trade-off is §5.7; why even a *runnable* baked Define still pays it is §7.3.)
 
 ---
 
@@ -722,6 +746,14 @@ Authoring an analysis spec by typing *"change from baseline in {parameter} at {v
 
 `acdc_method.yaml` has 4 enums + 8 classes. `acdc_transformation.yaml` has 3 enums + 14 classes. Reviewers can hold each file in their head. `define.yaml` has ~30 enums and ~50 classes in one file; reviewers cannot.
 
+### 5.7 Decoupling of the analysis plan from the physical-standard version
+
+The eSAP references concepts (`Change`, `M.ANCOVA`), not columns. The meaning→column correspondence lives in the Execution Layer — `concept-variable-mappings.json` plus the `Standard` version binding the projection generator reads. The consequence is that a new SDTM/ADaM version — a renamed variable, a changed length, a new IG convention — is absorbed by updating the projection rules; **the eSAP never changes**, because nothing in it names a column or an IG version.
+
+Adopt `define.yaml` wholesale and the analysis spec instead references physical `Item`s (`CHG`, domain `ADVS`, `ADaMIG v1.3`) through `Item.method` + `FormalExpression.parameters[].items`. The meaning→column mapping is *not eliminated* by this — it is **inlined per study**, keyed to physical names. And that inlining is exactly what couples the spec to the standard *version*: a version bump now rewrites the `Item`s and the method bindings, so the analysis spec is re-authored, per study. The same coupling locks the spec to one *representation* (you cannot also emit OMOP/FHIR without re-baking) and to one *study* (the bound method is per-study, §5.2).
+
+So the concept↔column mapping is not removable overhead — it **is** the decoupling. "No concept↔column mapping" and "version-independent analysis plan" are two sides of one coin: whatever layer absorbs version / representation / study churn is precisely what keeps that churn out of the spec. Remove it and the churn has nowhere to land but in the spec itself. This is the §0.3 spine argument stated as a maintenance cost: the concept layer is the stable interface; the physical column is the volatile implementation; baking them together makes every implementation change ripple upward into the plan.
+
 ---
 
 ## 6. What you would gain by adopting `define.yaml` wholesale
@@ -845,9 +877,11 @@ Add a generator that emits Define-XML / Define-JSON from the DC + DP graph — o
 
 **Cost**: a generator with tests; ongoing maintenance when either schema evolves; explicit handling of the cases the dataContracts model exposes that Define-XML can't represent without extensions (e.g. value-set IDs that aren't NCI codes, FHIR-only types when projecting a study into the FHIR target).
 
-### 7.3 Migrate AC schemas to inherit from Define classes (longer-term)
+### 7.3 Migrate AC schemas to inherit from Define classes (optional — not required)
 
-Rewrite `acdc_method.yaml` and `acdc_transformation.yaml` so their root classes `is_a` Define classes. The twin-DSD shape makes the inheritance graph particularly clean:
+**This is not a planned step; it is a conditional consolidation.** 7.2 already delivers the entire practical outcome — valid, drift-free Define-XML/JSON for submission, plus qb/FHIR/OMOP interoperability — while leaving the AC schemas independent. Nothing in the regulatory or interoperability story *requires* 7.3. Pursue it only if a specific driver appears: **a decision to ratify the AC framework as a CDISC standard inside Define's model family** (one schema, one validator, reviewers who already speak Define — the §6.7 motivation). Absent that driver, **7.2 is the terminal state, not a stepping stone**, and this option should stay on the shelf.
+
+What it would mean: rewrite `acdc_method.yaml` and `acdc_transformation.yaml` so their root classes `is_a` Define classes. The twin-DSD shape makes the inheritance graph particularly clean:
 
 - `acdc_method.Method` (renamed something like `ACDCMethod`) `is_a: define.Method` with `implementsConcept` *removed* via `slot_usage`. (LinkML supports overriding a parent slot to be forbidden; the validator checks this.)
 - `acdc_method.MethodInput` `is_a: define.Parameter`.
@@ -860,22 +894,33 @@ Rewrite `acdc_method.yaml` and `acdc_transformation.yaml` so their root classes 
 
 **Gain**: one schema, one validator, AC-extracted qb / FHIR / OMOP mappings preserved across the layered enforcement. The twin-DSD shape inherits Define's mappings on `DataStructureDefinition` automatically.
 
-**Cost**: schema redesign, file regeneration, validator rewrite. The concept-free rule on `Method` is preserved by `slot_usage: { implementsConcept: { required: false, equals_string: "" } }` plus a build-time rule; that's a structural pattern Define currently doesn't use but LinkML supports. The `_w3c_alignment` block at the top of the transformation library file becomes redundant (the class-level Define mappings replace it).
+**Cost**: schema redesign, file regeneration, validator rewrite — plus two costs that bite the AC framework's most distinctive properties, so they must be weighed deliberately:
 
-A reasonable plan: do 7.2 immediately (low effort, immediate interoperability) and pre-commit to 7.3 only after the AC framework's own semantics (output decomposition, slice templates, smart phrases) are formalised enough that the inheritance map is clear.
+1. **It couples AC's evolution to Define's, and imports Define's complexity.** `is_a define.*` means every Define schema change can ripple into AC, and the ~50-class Define hierarchy now sits behind every AC class — eroding the "layered narrowness" of §5.6 (the reviewer who could hold `acdc_method.yaml`'s 8 classes in their head now has a Define parent behind each one).
+2. **It degrades the concept-free invariant from *absent slot* to *constrained slot*.** Today `acdc.Method` has **no** slot for a concept — §5.1's invariant is enforced by absence, with nothing to violate. Inheriting from `define.Method` *adds* `implementsConcept`, which must then be forcibly nulled via `slot_usage: { implementsConcept: { required: false, equals_string: "" } }` plus a build-time rule. The guarantee weakens from "the slot cannot exist" (unbreakable) to "the slot exists but is checked empty" (breakable, validation-time) — re-introducing, by choice, the exact §5.1 risk the AC schema was built to eliminate.
+
+(On the plus side, the `_w3c_alignment` block at the top of the transformation library file becomes redundant — the class-level Define mappings replace it.) Net: 7.3 does not *reduce* cost so much as *relocate* it — it deletes the 7.2 generator but pays in coupling, a weaker invariant, and `slot_usage` overrides + an inheritance map to maintain. That trade only clears the bar when the ratification driver above is real.
+
+**The trap to avoid — inherit the *shape*, do not bake the *bindings*.** This option is safe only when the inherited classes keep the concept-free `slot_usage` override *and* the separate binding layer (`concept-variable-mappings.json`) intact — i.e. you adopt Define's class *shape* while the concept indirection stays in front of it. The tempting shortcut is to go further: let the inherited `Method` bind directly to `Item`s and run the engine straight off Define, on the reasoning that "then no ADaM↔concept mapping is needed and Define produces the dataset it describes." That shortcut collapses the layering. It does not remove the mapping; it *inlines* it into every study's Define, keyed to physical names — which **version-locks the analysis spec to the physical standard** (a new SDTM/ADaM version forces a per-study spec re-author; OMOP/FHIR require re-baking), exactly the loss catalogued in §5.7. The mapping you would be deleting is the decoupling that keeps the spec version-, representation-, and study-independent. Inherit the classes; do not bake the bindings.
+
+A reasonable plan: do 7.2 immediately (low effort, immediate interoperability) and treat 7.3 as on-the-shelf — revisited *only* if the CDISC-ratification driver materialises, and even then only once the AC framework's own semantics (output decomposition, slice templates, smart phrases) are formalised enough that the inheritance map is clear.
 
 ---
 
 ## 8. Recommendation
 
-Adopt **Option 7.2** now and **plan for 7.3** once two AC-side designs settle:
+**Bottom line: keep the AC framework — concept-bound methods, transformations, and the eSAP — as the authoring layer, and emit `define.yaml` as one projection among SDTM / ADaM / ARS / FHIR / OMOP, never as a place anyone authors.** Author against concepts; let Define be *generated from* the concept layer, never the source of it. Everything below is the *how* and the *why*.
+
+Concretely: adopt **Option 7.2** now — it is the terminal state for the submission and interoperability job, not a stepping stone. **Option 7.3 (inherit from Define classes) is optional and not required**: revisit it only if the AC framework is to be ratified as a CDISC standard inside Define's model family, and weigh it against its two real costs — coupling AC to Define's complexity (§5.6) and degrading the concept-free invariant from an *absent* slot to a *constrained* one (§5.1). If 7.3 is ever pursued, two AC-side designs should settle first:
 
 1. **Output decomposition** (`output_class_templates.json`) is currently AC-only. If it stabilises, propose adding three axes (`OutputClass`, `OutputShape`, `Distribution` — they're already enums in `acdc_method.yaml`) into Define as `ReifiedConcept` categories so structured analysis outputs are typeable across both schemas.
 2. **Slice templates** (`{baseline_visit}` etc.) and `sliceKeys[].source` are also AC-only and have no Define analogue. Either:
    - propose them as a Define extension (e.g. a `Slice` class with `constraints: SliceConstraint[]` carrying templated values, parallel to AC), or
    - keep them as AC-private extensions of `WhereClause` and accept that AC artefacts round-trip through Define only with a `comments` field carrying the AC encoding.
 
-You are not missing anything material *for the current AC framework's job* by not having adopted Define. What you would gain is **publishability**: schema-level qb (≡ SDMX information model) / FHIR / OMOP / NCIt mappings already present in AC, plus the ODM, USDM, and library-element PROV mappings AC doesn't carry, a multilingual labelling story, full review/audit fields, and a path to express the AC library as a Define-JSON / Define-XML deliverable. What you would lose if you adopted Define naïvely (no extensions, no `slot_usage` overrides) is the very thing that makes the AC framework distinctive: the schema-enforced separation of *math* from *meaning*. The recommendation is to keep that separation as the authoring discipline, and to use Define as the publication and interoperability surface.
+When 7.3 is undertaken, observe the §7.3 guardrail: inherit Define's class *shape*, but keep the concept-free `slot_usage` override and the separate concept↔column binding layer (`concept-variable-mappings.json`) intact. Letting the inherited `Method` bind directly to `Item`s — running the engine off Define so "no mapping is needed" — re-fuses the two layers and forfeits exactly the decoupling below (§5.7). Inherit the shape; never bake the bindings.
+
+You are not missing anything material *for the current AC framework's job* by not having adopted Define. What you would gain is **publishability**: schema-level qb (≡ SDMX information model) / FHIR / OMOP / NCIt mappings already present in AC, plus the ODM, USDM, and library-element PROV mappings AC doesn't carry, a multilingual labelling story, full review/audit fields, and a path to express the AC library as a Define-JSON / Define-XML deliverable. What you would lose if you adopted Define naïvely (no extensions, no `slot_usage` overrides) is the pair of properties that make the AC framework distinctive: **(1)** the schema-enforced separation of *math* from *meaning* (§5.1–§5.2), and **(2)** the decoupling of the analysis plan from any one physical-standard version, representation, or study (§5.7). The second follows from the first — the concept layer is what absorbs version / representation / study churn, so removing it pushes that churn into the spec. Those two properties are precisely why the bottom line above holds: author against concepts, keep both properties as the authoring discipline, and let Define be the publication and interoperability surface rather than the source of truth.
 
 ---
 
