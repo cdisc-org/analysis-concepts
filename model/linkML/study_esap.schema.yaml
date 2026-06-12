@@ -779,36 +779,51 @@ $defs:
     x-provenance:
       source: esap
       conformance: owned
-    description: A study-level derivation — instantiates a TransformationTemplate to derive a variable for an endpoint. Lives in
-      ReportingEvent.derivations and references the USDM Endpoint it produces (the Endpoint no longer nests derivations).
+    description: A study-level derivation — instantiates a TransformationTemplate to derive a variable. Lives in
+      ReportingEvent.derivations and OPTIONALLY references the USDM Endpoint it produces (the Endpoint no longer nests
+      derivations). forEndpoint is 0..1 — a derivation may produce an analysis variable for an endpoint, or it may produce an
+      intermediate / collected-data summary that feeds other transformations and maps to no endpoint of its own.
     allOf:
     - $ref: '#/$defs/Transformation'
     - type: object
       properties:
         forEndpoint:
           type: string
-          description: ID of the USDM Endpoint this derivation produces the analysis variable for. The eSAP-owned derivation
-            owns this reference into the locked USDM Endpoint.
-      required:
-      - forEndpoint
+          description: ID of the USDM Endpoint this derivation produces the analysis variable for (0..1). The eSAP-owned
+            derivation owns this reference into the locked USDM Endpoint. Omit for endpoint-independent derivations (intermediate
+            or collected-data summaries).
   Analysis:
     x-provenance:
       source: esap
       conformance: owned
     description: 'A study-level analysis — an ARS Analysis (it lives in ReportingEvent.analyses, so it IS the ARS analysis, not
-      a pointer to one). It is-a Transformation (carries usesMethod, the cube DSDs, hasOutputConfig, …) and adds just the two
-      things ARS lacks: the USDM bridge (addressesEstimand) and the AC/DC summary-output pointer (summaryOutput).'
+      a pointer to one). It is-a Transformation (carries usesMethod, the cube DSDs, hasOutputConfig, …) and adds just the
+      things ARS lacks: the USDM bridge (addressesEstimand / addressesEndpoint / addressesObjective) and the AC/DC summary-output
+      pointer (summaryOutput). The bridge is OPTIONAL: an analysis anchors to the scientific-question spine
+      (Objective → Endpoint → Estimand) at whatever altitude fits — estimand (confirmatory), endpoint (descriptive), objective
+      (supportive), or nothing at all (operational outputs: disposition, demographics, exposure, deviations). Like native ARS,
+      an analysis is valid with no anchor; the anchors are roles it MAY play, not a tax every analysis pays.'
     allOf:
     - $ref: '#/$defs/Transformation'
     - type: object
-      required:
-      - addressesEstimand
       properties:
         addressesEstimand:
           type: string
-          description: ID of the USDM Estimand this analysis addresses. The eSAP-owned analysis owns this reference into the
-            locked USDM Estimand — the USDM↔ARS bridge link ARS itself does not carry. Exactly one analysis per estimand should
-            be the MainEstimator (via analysisRole).
+          description: ID of the USDM Estimand this analysis addresses (0..1). The eSAP-owned analysis owns this reference into
+            the locked USDM Estimand — the USDM↔ARS bridge link ARS itself does not carry. Present for estimand-framed
+            (typically confirmatory) analyses; for each estimand that has analyses, exactly one should be the MainEstimator (via
+            analysisRole). Omit for analyses that anchor lower on the spine (addressesEndpoint / addressesObjective) or not at all.
+        addressesEndpoint:
+          type: string
+          description: ID of the USDM Endpoint this analysis addresses (0..1) when it serves an endpoint but no specific estimand
+            (e.g. descriptive secondary-endpoint summaries). The eSAP-owned analysis owns this reference into the locked USDM
+            Endpoint. Mutually informative with addressesEstimand — an estimand-anchored analysis need not also set this.
+        addressesObjective:
+          type: string
+          description: ID of the USDM Objective this analysis addresses (0..1) when it serves a study goal but no specific
+            endpoint or estimand (e.g. supportive safety summaries). The eSAP-owned analysis owns this reference into the locked
+            USDM Objective. Operational/administrative outputs (disposition, demographics, exposure, protocol deviations) carry
+            none of the three anchors.
         analysisRole:
           $ref: '#/$defs/AnalysisRole'
           description: The role this analysis plays for its Estimand per ICH E9(R1) — MainEstimator (exactly one per estimand),
