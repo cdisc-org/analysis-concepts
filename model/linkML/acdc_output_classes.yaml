@@ -1,0 +1,161 @@
+id: https://cdisc.org/acdc/output_classes
+name: acdc_output_classes
+title: ACDC Output Class Vocabulary Schema
+description: >-
+  Governs the statistic terminology, the statistic sets, the output class
+  templates (set composition), the thin AC statistical-concept shape (term +
+  fhirValueType), and the AC result-pattern shape. Companion to acdc_method.yaml.
+  See docs/superpowers/specs/2026-06-11-output-class-statistic-sets-design.md.
+version: 0.1.0
+prefixes:
+  linkml: https://w3id.org/linkml/
+  acdc: https://cdisc.org/acdc/
+default_prefix: acdc
+default_range: string
+imports:
+  - linkml:types
+
+classes:
+
+  StatisticTerm:
+    description: >-
+      A statistic in the terminology layer (statistics_vocabulary.json). Carries
+      a primitive dataType ONLY — the FHIR datatype is a concept-side fact and
+      lives on ACStatisticalConcept, not here (D-layers).
+    attributes:
+      conceptId: { identifier: true }
+      name: {}
+      label: {}
+      ncitCode: {}
+      codings: { multivalued: true, inlined_as_list: true, range: Coding }
+      dataType: { required: true, description: Primitive type for formula/method typing. }
+      description: {}
+
+  Coding:
+    attributes:
+      system: {}
+      code: {}
+      display: {}
+
+  Any:
+    description: Wildcard class accepting any JSON value. Used for resolver/authoring metadata slots ($vocabulary, _authoring_notes) that are not domain content.
+    class_uri: linkml:Any
+
+  StatisticSet:
+    description: A named bundle of statistic terms (FKs into the terminology).
+    attributes:
+      conceptId: { identifier: true }
+      name: {}
+      label: {}
+      ncitCode: {}
+      codings: { multivalued: true, inlined_as_list: true, range: Coding }
+      description: {}
+      statistics:
+        multivalued: true
+        required: true
+        description: FK list into StatisticTerm.conceptId.
+
+  ACStatisticalConcept:
+    description: >-
+      Thin AC concept-side node: references a terminology term (single-leaf via
+      `term`, or multi-leaf via `leaves`) and overlays the FHIR datatype. Does
+      NOT re-state terminology facts (definition/statoMapping/dataType).
+    attributes:
+      label: {}
+      shortLabel: {}
+      term: { description: FK to StatisticTerm.conceptId (single-leaf concepts). }
+      leaves:
+        description: "Multi-leaf concepts (e.g. Range): one entry per FHIR leaf, each naming the terminology term that fills it."
+        multivalued: true
+        inlined_as_list: true
+        range: ConceptLeaf
+      fhirValueType: { required: true, description: FHIR value type (primitive or complex). }
+      unit:
+        required: true
+        description: >-
+          Symbolic unit policy (Option_B convention), not a concrete UCUM code:
+          inherited | dimensionless | none | "fixed: %" | "inherited or dimensionless"
+          | "inherited or specified". The concrete unit is bound at transformation time.
+      code: { inlined: true, description: The concept's own code (e.g. NCI). }
+    rules:
+      - description: exactly one of term / leaves is present.
+        postconditions:
+          exactly_one_of:
+            - slot_conditions: { term: { value_presence: PRESENT } }
+            - slot_conditions: { leaves: { value_presence: PRESENT } }
+
+  ConceptLeaf:
+    description: One FHIR leaf of a multi-leaf concept, mapped to the terminology term that populates it.
+    attributes:
+      fhirPath: { required: true, description: "FHIR element path within the datatype (e.g. low.value)." }
+      term: { required: true, description: FK to StatisticTerm.conceptId. }
+
+  StatisticSetLibrary:
+    tree_root: true
+    attributes:
+      version: {}
+      description: {}
+      $vocabulary:
+        description: Resolver hints (vocabulary name -> relative file path); metadata, not domain content.
+        range: Any
+      statistic_sets:
+        multivalued: true
+        inlined: true
+        range: StatisticSet
+
+  OutputClassTemplate:
+    description: >-
+      An output class. Abstract templates carry neither statistics_set nor
+      additional_statistics. Concrete templates carry at least one of them; their
+      produced statistics are the derived union of the referenced sets' atoms plus
+      additional_statistics.
+    attributes:
+      conceptId: { identifier: true }
+      name: {}
+      label: {}
+      ncitCode: {}
+      codings: { multivalued: true, inlined_as_list: true, range: Coding }
+      description: {}
+      abstract: { range: boolean }
+      broader: { description: SKOS parent (FK to another template). }
+      statistics_set: { multivalued: true, description: FK list into StatisticSet.conceptId. }
+      additional_statistics: { multivalued: true, description: Extra atoms not supplied by any set. }
+      optional_statistics: { multivalued: true, description: Members that may be absent at runtime. }
+    rules:
+      - description: A concrete template (abstract not true) has at least one of statistics_set/additional_statistics.
+        preconditions:
+          slot_conditions:
+            abstract: { value_presence: ABSENT }
+        postconditions:
+          any_of:
+            - slot_conditions: { statistics_set: { value_presence: PRESENT } }
+            - slot_conditions: { additional_statistics: { value_presence: PRESENT } }
+
+  OutputClassTemplateLibrary:
+    tree_root: true
+    attributes:
+      version: {}
+      description: {}
+      $vocabulary:
+        description: Resolver hints (vocabulary name -> relative file path); metadata, not domain content.
+        range: Any
+      _authoring_notes:
+        description: Free-form authoring/documentation notes (incl. _family_structure); metadata, not domain content.
+        range: Any
+      output_class_templates:
+        multivalued: true
+        inlined: true
+        range: OutputClassTemplate
+
+  ACResultPattern:
+    description: >-
+      AC concept-side molecule. References shared statistic_sets; constituents are
+      ACStatisticalConcepts whose terms cover the sets' terms. Adds dimensions (the
+      concept-side row structure that templates omit).
+    attributes:
+      definition: {}
+      statistics_set: { multivalued: true, description: FK list into StatisticSet.conceptId. }
+      additional_statistics: { multivalued: true, description: AC concept ids not covered by the sets. }
+      optional_statistics: { multivalued: true }
+      constituents: { multivalued: true, description: ACStatisticalConcept ids whose terms cover the sets' terms. }
+      dimensions: { multivalued: true }

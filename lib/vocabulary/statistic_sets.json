@@ -1,0 +1,85 @@
+{
+  "version": "0.1.0",
+  "$vocabulary": { "statistics": "./statistics_vocabulary.json" },
+  "description": "Reusable statistic sets (Sheet 2 'Statistic set classes') — terminology-layer groupings of statistic terms. Each set bundles terms from statistics_vocabulary.json. Cited by BOTH method-side output_class_templates (statistics_set[]) and AC concept-side result patterns; owned by neither.",
+  "statistic_sets": {
+    "hypothesis_test_F_distribution": {
+      "conceptId": "hypothesis_test_F_distribution",
+      "name": "F-distribution hypothesis test", "label": "F-test", "ncitCode": null, "codings": [],
+      "description": "Test statistics for an F-distributed omnibus/term test.",
+      "statistics": ["F_statistic", "p_value", "df_num", "df_den"]
+    },
+    "hypothesis_test_t_distribution": {
+      "conceptId": "hypothesis_test_t_distribution",
+      "name": "t-distribution hypothesis test", "label": "t-test", "ncitCode": null, "codings": [],
+      "description": "Test statistics for a t-distributed test.",
+      "statistics": ["t_statistic", "p_value", "df"]
+    },
+    "hypothesis_test_chi_squared": {
+      "conceptId": "hypothesis_test_chi_squared",
+      "name": "Chi-squared hypothesis test", "label": "Chi-squared test", "ncitCode": null, "codings": [],
+      "description": "Test statistics for a chi-squared test.",
+      "statistics": ["chi_squared", "p_value", "df"]
+    },
+    "hypothesis_test_normal": {
+      "conceptId": "hypothesis_test_normal",
+      "name": "Normal (z) hypothesis test", "label": "z-test", "ncitCode": null, "codings": [],
+      "description": "Test statistics for a normal-approximation (z) test.",
+      "statistics": ["z_statistic", "p_value"]
+    },
+    "hypothesis_test_p_value": {
+      "conceptId": "hypothesis_test_p_value",
+      "name": "P-value only test", "label": "Exact test", "ncitCode": null, "codings": [],
+      "description": "P-value-only result (e.g. exact tests).",
+      "statistics": ["p_value"]
+    },
+    "ci_estimate": {
+      "conceptId": "ci_estimate",
+      "name": "Estimate with confidence interval", "label": "Estimate + CI", "ncitCode": null, "codings": [],
+      "description": "A point estimate with its confidence interval bounds.",
+      "statistics": ["estimate", "CI_lower", "CI_upper"]
+    },
+    "ci_estimate_normal": {
+      "conceptId": "ci_estimate_normal",
+      "name": "Estimate with CI and SE (normal)", "label": "Estimate + CI + SE", "ncitCode": null, "codings": [],
+      "description": "Point estimate, CI bounds and standard error (normal-based inference).",
+      "statistics": ["estimate", "CI_lower", "CI_upper", "SE"]
+    },
+    "ci_estimate_t_distribution": {
+      "conceptId": "ci_estimate_t_distribution",
+      "name": "Estimate with CI, SE and df (t)", "label": "Estimate + CI + SE + df", "ncitCode": null, "codings": [],
+      "description": "Point estimate, CI bounds, standard error and degrees of freedom (t-based inference).",
+      "statistics": ["estimate", "CI_lower", "CI_upper", "SE", "df"]
+    },
+    "ci_estimate_odds_ratio": {
+      "conceptId": "ci_estimate_odds_ratio",
+      "name": "Odds ratio with CI", "label": "OR + CI", "ncitCode": null, "codings": [],
+      "description": "Odds ratio with confidence interval.",
+      "statistics": ["odds_ratio", "CI_lower", "CI_upper"]
+    },
+    "ci_estimate_hazard_ratio": {
+      "conceptId": "ci_estimate_hazard_ratio",
+      "name": "Hazard ratio with CI", "label": "HR + CI", "ncitCode": null, "codings": [],
+      "description": "Hazard ratio with confidence interval.",
+      "statistics": ["hazard_ratio", "CI_lower", "CI_upper"]
+    },
+    "point_estimate_SE": {
+      "conceptId": "point_estimate_SE",
+      "name": "Estimate with SE", "label": "Estimate + SE", "ncitCode": null, "codings": [],
+      "description": "A point estimate with its standard error.",
+      "statistics": ["estimate", "SE"]
+    },
+    "proportion_estimate": {
+      "conceptId": "proportion_estimate",
+      "name": "Proportion estimate", "label": "Proportion", "ncitCode": null, "codings": [],
+      "description": "A proportion expressed as numerator/denominator with proportion and percentage.",
+      "statistics": ["numerator", "denominator", "proportion", "pct"]
+    },
+    "computed_value": {
+      "conceptId": "computed_value",
+      "name": "Computed value", "label": "Computed value", "ncitCode": null, "codings": [],
+      "description": "A single computed/derived scalar value.",
+      "statistics": ["value"]
+    }
+  }
+}

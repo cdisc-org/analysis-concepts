@@ -14,12 +14,14 @@
   },
   "complexTypes": {
     "Quantity":        { "fhirDef": "Measured amount with unit", "usage": "Numeric clinical values (measurements, scores, durations)", "compatiblePrimitives": ["decimal", "integer"] },
+    "Range":           { "fhirDef": "Set of values bounded by low and high", "usage": "Confidence intervals (low/high are SimpleQuantity)", "compatiblePrimitives": ["decimal", "integer"] },
+    "Count":           { "fhirDef": "Non-negative integer count", "usage": "Subject/event counts (n at risk, events, censored)", "compatiblePrimitives": ["integer"] },
     "CodeableConcept": { "fhirDef": "Concept from code system(s)", "usage": "Categorical clinical values (treatment arms, visit categories, coded responses)", "compatiblePrimitives": ["code"] },
     "Identifier":      { "fhirDef": "Entity identifier with system", "usage": "Subject and record identifiers", "compatiblePrimitives": ["id"] }
   },
   "layerMapping": {
     "method_input_roles": "primitiveTypes",
-    "ac_concept_statistics": "primitiveTypes",
+    "ac_concept_statistics": "primitiveOrComplexTypes",
     "dc_concept_valueType": "complexTypes",
     "transformation_requiredValueType": "complexTypes"
   }

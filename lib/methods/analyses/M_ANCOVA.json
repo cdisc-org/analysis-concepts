@@ -95,10 +95,7 @@
     },
     {
       "name": "contrasts_t",
-      "output_type": "contrasts_t",
-      "indexed_by": [
-        "fixed_effect"
-      ]
+      "output_type": "contrasts_t"
     }
   ],
   "codings": [

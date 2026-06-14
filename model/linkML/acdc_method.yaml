@@ -31,7 +31,7 @@ description: >-
   statistical/derivational primitives that define their own input slots,
   output slots, and configuration options. Transformations bind methods to
   concepts and supply cube structure.
-version: 0.2.0
+version: 0.3.1
 license: https://creativecommons.org/licenses/by/4.0/
 
 prefixes:
@@ -134,57 +134,10 @@ enums:
   # the bound concept at transformation time via concept.result.valueType.
   # See §3.6 for the rationale.
 
-  # The three axes from §3.5 (analysis output decomposition).
-  # These are documented here for reference; the canonical vocabulary lives in
-  # lib/vocabulary/output_class_templates.json. Method files reference an
-  # output_type identifier that decomposes into a (class, shape, distribution)
-  # tuple in that vocab file.
-
-  OutputClass:
-    description: >-
-      §3.5.1 — the inferential ROLE of an analysis output (the "what is it
-      for"). Vocabulary anchor for output_class_templates.json values.
-    permissible_values:
-      ls_means:
-        description: Least-squares means / adjusted marginal means.
-      contrast_estimates:
-        description: Estimated contrasts between factor levels.
-      contrast_tests:
-        description: Hypothesis tests on contrasts (TStatistic + PValue).
-      type3_tests:
-        description: Type III omnibus tests of model terms.
-      parameter_estimates:
-        description: Solution for fixed effects (model coefficients).
-      parameter_tests:
-        description: Hypothesis tests on parameter estimates.
-      fit_statistics:
-        description: Overall model goodness-of-fit measures.
-      test_result:
-        description: A single overall test result (e.g. log-rank).
-      survival_table:
-        description: Life-table-style output (KM estimates).
-      computed_value:
-        description: A single derived scalar (e.g. mean, median, SD).
-
-  OutputShape:
-    description: §3.5.2 — the inferential PATTERN (the structure of the result).
-    permissible_values:
-      scalar:
-        description: A single value.
-      vector:
-        description: One row per factor level / per term.
-      matrix:
-        description: Two-dimensional table indexed by two factors.
-
-  Distribution:
-    description: §3.5.3 — the probabilistic basis of the test statistic.
-    permissible_values:
-      F:
-      t:
-      chi_squared:
-      normal:
-      none:
-        description: No test statistic (e.g. descriptive output).
+  # Output-class vocabulary now lives in lib/vocabulary/output_class_templates.json
+  # and is governed by model/linkML/acdc_output_classes.yaml. The former
+  # OutputClass/OutputShape/Distribution enums (the abandoned three-axis model)
+  # were removed 2026-06-13; methods reference an output_type identifier only.
 
 
 # ============================================================================
@@ -251,7 +204,7 @@ classes:
         multivalued: true
         inlined: true
         inlined_as_list: true
-        required: true
+        required: false  # a method may have zero inputs — e.g. constant producers like M.ImputedValue_Zero, whose value comes from configurations, not data
       outputs:
         description: §3.5/§3.6 — output slots. Slot names are transformation-binding FK targets (referenced by `output` on transformation outputDataStructure.measures[] bindings).
         range: MethodOutput

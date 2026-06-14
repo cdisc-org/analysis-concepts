@@ -1729,6 +1729,17 @@
           },
           {
             "concept": "Population"
+          },
+          {
+            "name": "contrast",
+            "concept": "Contrasts",
+            "contrastSpecification": {
+              "over": "Treatment",
+              "basis": "estimated_means",
+              "members": {
+                "generator": { "kind": "vs_reference", "reference": "{control_arm}" }
+              }
+            }
           }
         ],
         "measures": [

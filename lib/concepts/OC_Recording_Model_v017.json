@@ -1,0 +1,575 @@
+{
+  "model": "OC",
+  "version": "0.17",
+  "description": "Observation Concept model organised around the abstract 'Recording' tree. Generic, study-independent concepts are the node identities; SDTM variables are aliases bound via 'is a' relationships; FHIR R5 complex datatypes model the value branch; USDM Biomedical Concept properties resolve onto the nodes. Covers Findings, Events and Interventions.",
+
+  "fhirAlignment": {
+    "specVersion": "R5 (5.0.0)",
+    "reference": "https://build.fhir.org/datatypes.html"
+  },
+
+  "principleSource": {
+    "title": "Build Definitions — the abstract Recording structure",
+    "author": "data4knowledge ApS",
+    "event": "SCDM 2026 EMEA Conference, Copenhagen",
+    "principle": "An abstract 'Recording' tree (Topic, DateTime, Result→Quantity|Coded, qualifiers) is defined once; concrete definitions (Biomedical Concepts / SDTM dataset specializations) INHERIT it and CONSTRAIN it. Node concepts link to SDTM variables via 'is a' relationships."
+  },
+
+  "sourceGrounding": {
+    "_note": "Every binding in this model derives from CDISC source metadata, not hardcoded values.",
+    "sdtmModel": "model/SDTM_v2.0.csv — Class/Role backbone (Topic, Timing, Identifier, qualifier roles).",
+    "specializations": "model/cdisc_sdtm_dataset_specializations_latest.xlsx — relationship graph: sdtm_variable -[linking_phrase / predicate_term]-> Topic, carrying dec_id (cross-domain generic concept C-code).",
+    "fhir": "https://build.fhir.org/datatypes.html — Quantity, CodeableConcept, Identifier.",
+    "usdm": "USDM BiomedicalConcept.properties[].code.standardCode.code = dec_id; property name = SDTM variable alias; responseCodes = value-set constraint."
+  },
+
+  "valueTypes": {
+    "_note": "FHIR-aligned value type vocabulary. Complex types model observation values; primitive types model method constraints and statistical concepts.",
+    "primitiveTypes": {
+      "decimal": { "fhirType": "decimal", "definition": "Rational numbers — continuous measured values", "usage": "Continuous measurements (AVAL, lab results, scores, durations)" },
+      "integer": { "fhirType": "integer", "definition": "Signed 32-bit integers — discrete counts", "usage": "Discrete counts, ranks, toxicity grades" },
+      "code": { "fhirType": "code", "definition": "String value from a defined value set", "usage": "Categorical values" },
+      "string": { "fhirType": "string", "definition": "Unicode text — free-text values", "usage": "Free-text values, verbatim terms, comments" },
+      "boolean": { "fhirType": "boolean", "definition": "true | false", "usage": "Occurrence indicators, population flags" },
+      "date": { "fhirType": "date", "definition": "Date (YYYY-MM-DD)", "usage": "Analysis dates, event dates" },
+      "dateTime": { "fhirType": "dateTime", "definition": "Date + time + timezone", "usage": "Precise timestamps, collection times (--DTC)" },
+      "id": { "fhirType": "id", "definition": "Resource identifier", "usage": "Subject and record identifiers" }
+    },
+    "complexTypes": {
+      "Quantity": {
+        "fhirType": "Quantity",
+        "definition": "Measured amount with unit of measurement",
+        "usage": "Numeric clinical values — measurements, scores, durations, doses, concentrations",
+        "components": {
+          "value": { "type": "decimal or integer", "node": "value" },
+          "unit": { "type": "string", "node": "code(units).display" },
+          "system": { "type": "string", "note": "Unit coding system (e.g. UCUM)" },
+          "code": { "type": "code", "note": "Coded unit", "node": "code(units).code" }
+        },
+        "compatiblePrimitives": ["decimal", "integer"]
+      },
+      "CodeableConcept": {
+        "fhirType": "CodeableConcept",
+        "definition": "Concept defined by one or more code systems",
+        "usage": "Categorical clinical values — coded responses, treatment arms, severity grades",
+        "components": {
+          "coding": { "type": "array of {system, code, display}", "node": "code" },
+          "text": { "type": "string", "note": "Plain text representation" }
+        },
+        "compatiblePrimitives": ["code"]
+      },
+      "Identifier": {
+        "fhirType": "Identifier",
+        "definition": "Entity identifier with system context",
+        "usage": "Subject and record identifiers",
+        "components": { "system": { "type": "string" }, "value": { "type": "id" } },
+        "compatiblePrimitives": ["id"]
+      },
+      "Period": {
+        "fhirType": "Period",
+        "definition": "Time range defined by a start and end dateTime",
+        "usage": "Interval timing — the span of an event or intervention (--STDTC to --ENDTC)",
+        "components": {
+          "start": { "type": "dateTime", "node": "Timing.effective.period.start", "note": "--STDTC" },
+          "end": { "type": "dateTime", "node": "Timing.effective.period.end", "note": "--ENDTC" }
+        },
+        "compatiblePrimitives": ["dateTime"]
+      }
+    }
+  },
+
+  "Recording": {
+    "definition": "The atomic abstract act of recording one fact about a subject. Root of the observation tree. Every General Observation Class (Finding, Event, Intervention) inherits this spine.",
+    "tier": "Abstract",
+    "nodeBindingShape": {
+      "_note": "Every node may carry: valueType (FHIR), relationship + linkingPhrase + predicateTerm (xlsx graph), decConcepts (generic cross-domain C-codes), aliases (SDTM variable patterns — the 'is a' links), appliesToClass, and usdmBinding.",
+      "fields": ["conceptId", "definition", "valueType", "relationship", "linkingPhrase", "predicateTerm", "decConcepts", "aliases", "appliesToClass", "usdmBinding"]
+    },
+
+    "spine": {
+      "_note": "Truly universal across all General Observation Classes — every class has a Topic, a DateTime and the shared qualifiers.",
+
+      "Identity": {
+        "conceptId": "Identity",
+        "definition": "The identity of the record and its subject",
+        "relationship": "hasIdentity",
+        "cardinality": "1",
+        "appliesToClass": ["Finding", "Event", "Intervention"],
+        "dataDefinitions": {
+          "Sequence": {
+            "conceptId": "Sequence",
+            "definition": "Ordinal position distinguishing multiple records of the same topic for a subject",
+            "valueType": "integer",
+            "relationship": "hasSequence",
+            "cardinality": "0..1",
+            "aliases": ["--SEQ"],
+            "decConcepts": ["C70710"]
+          },
+          "GroupId": {
+            "conceptId": "GroupId",
+            "definition": "Identifier grouping related records for a subject within a domain",
+            "valueType": "string",
+            "relationship": "hasGroupId",
+            "cardinality": "0..1",
+            "aliases": ["--GRPID"],
+            "decConcepts": ["C170996"]
+          },
+          "ReferenceId": {
+            "conceptId": "ReferenceId",
+            "definition": "Identifier of a source of information (e.g. lab specimen ID, waveform UUID)",
+            "valueType": "string",
+            "relationship": "hasReferenceId",
+            "cardinality": "0..1",
+            "aliases": ["--REFID"],
+            "decConcepts": ["C82531"]
+          },
+          "LinkId": {
+            "conceptId": "LinkId",
+            "definition": "Identifier linking a record to one or more records in another domain",
+            "valueType": "string",
+            "relationship": "hasLinkId",
+            "cardinality": "0..*",
+            "aliases": ["--LNKID", "--LNKGRP"],
+            "decConcepts": ["C117050", "C117049"]
+          }
+        }
+      },
+
+      "Topic": {
+        "conceptId": "Topic",
+        "definition": "Core subject matter of the recording — a test (Finding), an event term (Event), or a treatment (Intervention).",
+        "valueType": "CodeableConcept",
+        "relationship": "hasTopic",
+        "cardinality": "1",
+        "appliesToClass": ["Finding", "Event", "Intervention"],
+        "aliases": ["--TESTCD", "--TERM", "--TRT", "--PARMCD"],
+        "_note": "The Topic role is universal across General Observation Classes; only the SDTM alias and the decode pair differ by class.",
+        "dataDefinitions": {
+          "TopicCode": {
+            "conceptId": "TopicCode",
+            "definition": "Short coded form of the topic",
+            "valueType": "code",
+            "relationship": "isCodeFor",
+            "linkingPhrase": "is the code for the value in",
+            "cardinality": "0..1",
+            "aliases": ["--TESTCD", "--TRT", "--PARMCD"]
+          },
+          "TopicDecode": {
+            "conceptId": "TopicDecode",
+            "definition": "Human-readable decode of the topic code",
+            "valueType": "code",
+            "relationship": "decodes",
+            "linkingPhrase": "decodes the value in",
+            "predicateTerm": "DECODES",
+            "cardinality": "0..1",
+            "aliases": ["--TEST", "--PARM", "--DECOD"]
+          },
+          "DictionaryCoding": {
+            "conceptId": "DictionaryCoding",
+            "definition": "Hierarchical coded-term mapping (MedDRA, WHODrug)",
+            "valueType": "CodeableConcept",
+            "relationship": "codedBy",
+            "cardinality": "0..1",
+            "dataDefinitions": {
+              "PreferredTerm": { "conceptId": "PreferredTerm", "definition": "Standardised dictionary term", "valueType": "CodeableConcept", "cardinality": "1", "aliases": ["--DECOD"] },
+              "HierarchyLevel": { "conceptId": "HierarchyLevel", "definition": "Level in dictionary tree (SOC, HLT, PT, LLT)", "valueType": "CodeableConcept", "cardinality": "1..*" }
+            }
+          }
+        }
+      },
+
+      "Timing": {
+        "conceptId": "Timing",
+        "definition": "When the recording occurred. Modelled as a FHIR effective[x] choice: an instant (point-in-time) or a period (interval). --DTC and --STDTC are the SAME occurrence/start concept (both carry dec_id C82515); only --ENDTC is distinct (the period end).",
+        "relationship": "hasTiming",
+        "predicateTerm": "IS_TIMING_FOR",
+        "decConcepts": ["C82515"],
+        "cardinality": "1",
+        "appliesToClass": ["Finding", "Event", "Intervention"],
+        "fhirAnalog": "effective[x] (effectiveDateTime | effectivePeriod)",
+        "dataDefinitions": {
+          "effective": {
+            "conceptId": "effective",
+            "definition": "The occurrence time — a choice of instant or period. The point-vs-interval split mirrors the class split (Finding = instant; Event/Intervention = period).",
+            "relationship": "occurredAt",
+            "linkingPhrase": "is the date of occurrence for",
+            "cardinality": "1",
+            "choice": {
+              "instant": {
+                "conceptId": "instant",
+                "definition": "Point-in-time occurrence (typical for Findings) — FHIR effectiveDateTime",
+                "valueType": "dateTime",
+                "aliases": ["--DTC"],
+                "decConcepts": ["C82515"],
+                "appliesToClass": ["Finding"],
+                "usdmBinding": { "resolvesBy": { "aliasPattern": "--DTC", "standardCode": "C82515" } }
+              },
+              "period": {
+                "conceptId": "period",
+                "definition": "Interval occurrence (typical for Events and Interventions) — FHIR effectivePeriod",
+                "valueType": "Period",
+                "appliesToClass": ["Event", "Intervention"],
+                "dataDefinitions": {
+                  "start": {
+                    "conceptId": "start", "definition": "Interval start", "valueType": "dateTime",
+                    "relationship": "startedAt", "linkingPhrase": "is the start date for",
+                    "decConcepts": ["C82515"], "aliases": ["--STDTC"]
+                  },
+                  "end": {
+                    "conceptId": "end", "definition": "Interval end", "valueType": "dateTime",
+                    "relationship": "endedAt", "linkingPhrase": "is the end date for",
+                    "aliases": ["--ENDTC"]
+                  }
+                }
+              }
+            }
+          },
+          "Duration": {
+            "conceptId": "Duration", "definition": "Elapsed time of the period (derived from start/end)",
+            "valueType": "Quantity", "relationship": "hasDuration",
+            "linkingPhrase": "is the duration for", "cardinality": "0..1", "aliases": ["--DUR"]
+          },
+          "StudyDay": {
+            "conceptId": "StudyDay", "definition": "Study day of the occurrence",
+            "valueType": "integer", "cardinality": "0..1", "aliases": ["--DY", "--STDY"],
+            "qualifiers": { "type": "ReferenceFrame", "values": { "Relative": "Day relative to reference event (--DY, ADY)", "Absolute": "Calendar date (--DTC, ADT)" } }
+          },
+          "RelativeTiming": {
+            "conceptId": "RelativeTiming", "definition": "Timing relative to a reference event or timepoint",
+            "valueType": "CodeableConcept", "cardinality": "0..*", "aliases": ["--ENRF", "--ENRTPT", "--ENTPT"],
+            "decConcepts": ["C82557", "C82558", "C82574"]
+          }
+        }
+      },
+
+      "sharedQualifiers": {
+        "_note": "Qualifier concepts whose linking_phrase recurs across multiple General Observation Classes. Each is the abstract identity for the SDTM variables listed as aliases.",
+
+        "Category": {
+          "conceptId": "Category", "definition": "Grouping of related recordings",
+          "valueType": "CodeableConcept", "relationship": "hasCategory",
+          "linkingPhrase": "groups values in", "predicateTerm": "GROUPS",
+          "decConcepts": ["C25372"], "aliases": ["--CAT"], "cardinality": "0..1",
+          "appliesToClass": ["Finding", "Event", "Intervention"],
+          "dataDefinitions": {
+            "Subcategory": {
+              "conceptId": "Subcategory", "definition": "Further sub-grouping within a category",
+              "valueType": "CodeableConcept", "relationship": "groupedBy",
+              "linkingPhrase": "values are grouped by", "decConcepts": ["C25692"],
+              "aliases": ["--SCAT"], "cardinality": "0..1"
+            }
+          }
+        },
+        "Method": {
+          "conceptId": "Method", "definition": "Instrument or technique used to perform the test",
+          "valueType": "CodeableConcept", "relationship": "performedVia",
+          "linkingPhrase": "is the method for the test in", "predicateTerm": "SPECIFIES",
+          "decConcepts": ["C82535"], "aliases": ["--METHOD"], "cardinality": "0..1",
+          "appliesToClass": ["Finding"]
+        },
+        "Location": {
+          "conceptId": "Location", "definition": "Anatomical site at which the observation was performed",
+          "valueType": "CodeableConcept", "relationship": "atLocation",
+          "linkingPhrase": "specifies the anatomical location of the performance of the test in",
+          "predicateTerm": "SPECIFIES", "decConcepts": ["C13717"], "aliases": ["--LOC"],
+          "cardinality": "0..1", "appliesToClass": ["Finding", "Intervention"],
+          "usdmBinding": { "resolvesBy": { "aliasPattern": "--LOC", "standardCode": "C13717" } },
+          "dataDefinitions": {
+            "Laterality": {
+              "conceptId": "Laterality", "definition": "Side of the body (left, right, bilateral)",
+              "valueType": "CodeableConcept", "relationship": "hasLaterality",
+              "linkingPhrase": "further specifies the anatomical location in",
+              "decConcepts": ["C25185"], "aliases": ["--LAT"], "cardinality": "0..1"
+            },
+            "Directionality": {
+              "conceptId": "Directionality", "definition": "Directional qualifier of the anatomical location",
+              "valueType": "CodeableConcept", "relationship": "hasDirectionality",
+              "linkingPhrase": "further specifies the anatomical location in",
+              "decConcepts": ["C54215"], "aliases": ["--DIR"], "cardinality": "0..1"
+            }
+          }
+        },
+        "Specimen": {
+          "conceptId": "Specimen", "definition": "Biological material tested",
+          "valueType": "CodeableConcept", "relationship": "testedSpecimen",
+          "linkingPhrase": "is the specimen tested in", "predicateTerm": "IS_SPECIMEN_TESTED_IN",
+          "decConcepts": ["C70713"], "aliases": ["--SPEC"], "cardinality": "0..1",
+          "appliesToClass": ["Finding"]
+        },
+        "EvaluatorRole": {
+          "conceptId": "EvaluatorRole", "definition": "Role of the assessor who performed the test",
+          "valueType": "CodeableConcept", "relationship": "assessedBy",
+          "linkingPhrase": "is the role of the assessor who performed the test in",
+          "predicateTerm": "PERFORMS", "decConcepts": ["C51824"], "aliases": ["--EVAL"],
+          "cardinality": "0..1", "appliesToClass": ["Finding"]
+        },
+        "Position": {
+          "conceptId": "Position", "definition": "Subject position during performance of the test",
+          "valueType": "CodeableConcept", "relationship": "inPosition",
+          "linkingPhrase": "was the subject position during performance of the test in",
+          "decConcepts": ["C62164", "C71150"], "aliases": ["--POS"], "cardinality": "0..1",
+          "appliesToClass": ["Finding"],
+          "usdmBinding": { "resolvesBy": { "aliasPattern": "--POS", "standardCode": "C62164" } }
+        },
+        "FastingStatus": {
+          "conceptId": "FastingStatus", "definition": "Subject's fasting status during the test",
+          "valueType": "CodeableConcept", "relationship": "hasFastingStatus",
+          "linkingPhrase": "is the subject's fasting status during the performance of the test in",
+          "aliases": ["--FAST"], "cardinality": "0..1", "appliesToClass": ["Finding"]
+        }
+      }
+    },
+
+    "valuePattern": {
+      "_note": "A reusable datatype shape the spine offers — NOT a universal slot. Class-specific characterizing nodes (Finding.Result, Intervention.Dose, Event.Severity) instantiate it.",
+      "ResultValue": {
+        "conceptId": "ResultValue",
+        "definition": "The observed value of a characterizing node. Resolves to a Quantity (numeric + unit) or a Coded value.",
+        "relationship": "hasValue",
+        "branches": {
+          "Quantity": {
+            "conceptId": "Quantity",
+            "definition": "Numeric value with a unit of measurement (FHIR Quantity)",
+            "valueType": "Quantity",
+            "dataDefinitions": {
+              "value": {
+                "conceptId": "value", "definition": "The numeric measured value",
+                "valueType": "decimal", "relationship": "isResultOf",
+                "linkingPhrase": "is the result of the test in", "predicateTerm": "IS_RESULT_OF",
+                "aliases": ["--ORRES", "--STRESN", "--STRESC"]
+              },
+              "code(units)": {
+                "conceptId": "code(units)", "definition": "Coded unit of measurement for the value",
+                "valueType": "code", "relationship": "isUnitFor",
+                "linkingPhrase": "is the unit for the value in", "predicateTerm": "IS_UNIT_FOR",
+                "decConcepts": ["C82586"], "aliases": ["--ORRESU", "--STRESU"],
+                "_note": "USDM may carry a more specific semantic unit code (e.g. C49669 'Unit of Pressure'); the --ORRESU alias still resolves the node."
+              }
+            }
+          },
+          "Coded": {
+            "conceptId": "Coded",
+            "definition": "Categorical value from a code system (FHIR CodeableConcept)",
+            "valueType": "CodeableConcept",
+            "dataDefinitions": {
+              "code": {
+                "conceptId": "code", "definition": "The coded categorical value",
+                "valueType": "code", "relationship": "isResultOf",
+                "linkingPhrase": "is the result of the test in", "predicateTerm": "IS_RESULT_OF",
+                "aliases": ["--ORRES", "--STRESC"]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "observationClasses": {
+    "_note": "Each General Observation Class inherits the Recording spine and binds its own characterizing node(s) to the ResultValue pattern. This is the hybrid of one polymorphic spine + class-specific value branches.",
+
+    "Finding": {
+      "definition": "A measurement, test or examination (lab, vital sign, ECG, questionnaire).",
+      "inherits": "Recording",
+      "topicAlias": "--TESTCD",
+      "characterizingNodes": {
+        "Result": {
+          "conceptId": "Result",
+          "definition": "The outcome of the test — answers the Topic question.",
+          "relationship": "hasResult",
+          "linkingPhrase": "is the result of the test in",
+          "predicateTerm": "IS_RESULT_OF",
+          "decConcepts": ["C70856", "C46126", "C91106"],
+          "aliases": ["--ORRES", "--STRESC", "--STRESN"],
+          "instantiates": "valuePattern.ResultValue",
+          "usdmBinding": { "resolvesBy": { "aliasPattern": "--ORRES", "standardCode": "C70856" } },
+          "dataDefinitions": {
+            "NormalRange": {
+              "conceptId": "NormalRange", "definition": "Expected range for healthy individuals",
+              "relationship": "hasNormalRange", "cardinality": "0..1",
+              "dataDefinitions": {
+                "Low": { "conceptId": "Low", "valueType": "Quantity", "cardinality": "0..1", "aliases": ["--ORNRLO", "--STNRLO"] },
+                "High": { "conceptId": "High", "valueType": "Quantity", "cardinality": "0..1", "aliases": ["--ORNRHI", "--STNRHI"] }
+              }
+            },
+            "Reference": {
+              "conceptId": "Reference", "definition": "Reference value for the result",
+              "valueType": "Quantity", "relationship": "hasReference",
+              "linkingPhrase": "is a reference range value for", "predicateTerm": "IS_REFERENCE_VALUE_FOR",
+              "cardinality": "0..1", "aliases": ["--ORREF", "--STREFP"]
+            }
+          }
+        }
+      }
+    },
+
+    "Event": {
+      "definition": "An occurrence or incident independent of planned study evaluations (adverse event, medical history, disposition).",
+      "inherits": "Recording",
+      "topicAlias": "--TERM",
+      "_note": "Events have NO --ORRES. The characterizing value is occurrence/severity/outcome — not a test result.",
+      "characterizingNodes": {
+        "Occurrence": {
+          "conceptId": "Occurrence", "definition": "Whether the (pre-specified) event occurred",
+          "valueType": "boolean", "relationship": "indicatesOccurrence",
+          "linkingPhrase": "indicates occurrence of the value in", "predicateTerm": "IS_INDICATOR_FOR",
+          "decConcepts": ["C127786"], "aliases": ["--OCCUR"], "cardinality": "0..1"
+        },
+        "PreSpecified": {
+          "conceptId": "PreSpecified", "definition": "Whether the event term was pre-specified on the CRF",
+          "valueType": "boolean", "relationship": "indicatesPreSpecification",
+          "linkingPhrase": "indicates pre-specification of the value in", "predicateTerm": "IS_INDICATOR_FOR",
+          "decConcepts": ["C171000"], "aliases": ["--PRESP"], "cardinality": "0..1"
+        },
+        "Severity": {
+          "conceptId": "Severity", "definition": "Intensity of the event",
+          "valueType": "CodeableConcept", "relationship": "assessesSeverity",
+          "linkingPhrase": "assesses the severity of", "predicateTerm": "ASSESSES",
+          "decConcepts": ["C53253"], "aliases": ["--SEV"], "cardinality": "0..1",
+          "instantiates": "valuePattern.ResultValue",
+          "dataDefinitions": {
+            "ToxicityGrade": { "conceptId": "ToxicityGrade", "definition": "Standardised grade (e.g. CTCAE 1-5)", "valueType": "integer", "relationship": "gradedAs", "aliases": ["--TOXGR"], "cardinality": "0..1" }
+          }
+        },
+        "Seriousness": {
+          "conceptId": "Seriousness", "definition": "Whether the event met seriousness criteria (SAE)",
+          "valueType": "CodeableConcept", "relationship": "assessesSeriousness",
+          "linkingPhrase": "assesses seriousness of", "predicateTerm": "ASSESSES",
+          "decConcepts": ["C53252"], "aliases": ["--SER"], "cardinality": "0..1"
+        },
+        "Outcome": {
+          "conceptId": "Outcome", "definition": "How the event resolved (recovered, ongoing, fatal)",
+          "valueType": "CodeableConcept", "relationship": "describesOutcome",
+          "linkingPhrase": "describes the outcome of", "predicateTerm": "DESCRIBES",
+          "decConcepts": ["C49489"], "aliases": ["--OUT"], "cardinality": "0..1"
+        },
+        "ActionTaken": {
+          "conceptId": "ActionTaken", "definition": "Action taken with study treatment due to the event",
+          "valueType": "CodeableConcept", "relationship": "describesAction",
+          "linkingPhrase": "describes actions taken", "predicateTerm": "DESCRIBES",
+          "decConcepts": ["C83013", "C83109"], "aliases": ["--ACN", "--ACNOTH"], "cardinality": "0..*"
+        }
+      }
+    },
+
+    "Intervention": {
+      "definition": "An investigational, therapeutic or other treatment intentionally administered (exposure, concomitant medication, procedure, substance use).",
+      "inherits": "Recording",
+      "topicAlias": "--TRT",
+      "_note": "Interventions have NO --ORRES. The characterizing value is the administered Dose — a Quantity (value + unit).",
+      "characterizingNodes": {
+        "Dose": {
+          "conceptId": "Dose", "definition": "Amount of treatment administered",
+          "valueType": "Quantity", "relationship": "hasDose",
+          "linkingPhrase": "is the administered amount of the treatment in", "predicateTerm": "QUALIFIES",
+          "decConcepts": ["C83221", "C83416", "C83041"], "aliases": ["--DOSE", "--DOSTXT"],
+          "cardinality": "0..1",
+          "instantiates": "valuePattern.ResultValue",
+          "dataDefinitions": {
+            "DoseUnit": {
+              "conceptId": "DoseUnit", "definition": "Unit for the administered amount",
+              "valueType": "code", "relationship": "isUnitFor",
+              "linkingPhrase": "is the unit for", "aliases": ["--DOSU"], "cardinality": "0..1"
+            },
+            "Frequency": {
+              "conceptId": "Frequency", "definition": "How often the amount is administered (QD, BID)",
+              "valueType": "CodeableConcept", "relationship": "atFrequency",
+              "linkingPhrase": "is the frequency of administration of the amount in",
+              "decConcepts": ["C83044", "C83042"], "aliases": ["--DOSFRQ"], "cardinality": "0..1"
+            },
+            "DoseForm": {
+              "conceptId": "DoseForm", "definition": "Physical form of the product (tablet, injection)",
+              "valueType": "CodeableConcept", "relationship": "inForm",
+              "linkingPhrase": "is the physical form of the product in", "aliases": ["--DOSFRM"], "cardinality": "0..1"
+            }
+          }
+        },
+        "Route": {
+          "conceptId": "Route", "definition": "Route / anatomical site of administration",
+          "valueType": "CodeableConcept", "relationship": "viaRoute",
+          "linkingPhrase": "is the part of the body through which is administered the treatment in",
+          "decConcepts": ["C83120"], "aliases": ["--ROUTE"], "cardinality": "0..1"
+        },
+        "Indication": {
+          "conceptId": "Indication", "definition": "Medical condition that is the reason for the treatment",
+          "valueType": "CodeableConcept", "relationship": "forIndication",
+          "linkingPhrase": "is the medical condition that is the reason for the treatment in",
+          "predicateTerm": "IS_REASON_FOR", "aliases": ["--INDC"], "cardinality": "0..1"
+        }
+      }
+    }
+  },
+
+  "sharedDimensions": {
+    "_note": "Cross-cutting context shared by all recordings, independent of class.",
+    "Subject": { "conceptId": "Subject", "valueType": "Identifier", "relationship": "aboutSubject", "cardinality": "1", "aliases": ["USUBJID", "SUBJID"] },
+    "Study": { "conceptId": "Study", "valueType": "Identifier", "relationship": "withinStudy", "cardinality": "1", "aliases": ["STUDYID"] },
+    "Site": { "conceptId": "Site", "valueType": "Identifier", "relationship": "atSite", "cardinality": "0..1", "aliases": ["SITEID"] },
+    "Visit": {
+      "conceptId": "Visit", "valueType": "CodeableConcept", "relationship": "atVisit", "cardinality": "0..1",
+      "aliases": ["VISIT", "VISITNUM"],
+      "qualifiers": { "type": "DerivationStatus", "values": { "Protocol": "Protocol-defined visit label", "Analysis": "Derived analysis visit (from windowing)" } }
+    },
+    "Timepoint": { "conceptId": "Timepoint", "valueType": "CodeableConcept", "relationship": "atTimepoint", "cardinality": "0..1", "aliases": ["--TPT", "--TPTNUM"], "_note": "Planned timepoint label; the actual occurrence time is Recording.spine.Timing." },
+    "Treatment": {
+      "conceptId": "Treatment", "valueType": "CodeableConcept", "relationship": "receivedTreatment", "cardinality": "0..1",
+      "qualifiers": { "type": "IntentType", "values": { "Planned": "Treatment assigned at randomisation", "Actual": "Treatment actually received" } }
+    },
+    "Population": { "conceptId": "Population", "valueType": "CodeableConcept", "relationship": "inPopulation", "cardinality": "0..*" }
+  },
+
+  "buildDefinition": {
+    "_note": "Tier 2. A BuildDefinition INHERITS the abstract Recording and CONSTRAINS it. A BuildDefinition IS a USDM BiomedicalConcept.",
+    "definition": "A concrete, study-independent concept (e.g. Systolic Blood Pressure) that inherits the Recording tree, selects a value branch, fixes value sets, and sets the Topic term.",
+    "inherits": "Recording",
+    "constraintOperations": {
+      "selectBranch": "Choose Quantity or Coded under a characterizing node; disable the other (the slide's red ✗).",
+      "fixValueSet": "Constrain a node's permissible values (responseCodes) — e.g. units {C,F}; sizes {small,medium,large}.",
+      "setTopic": "Bind the Topic term (e.g. SYSBP).",
+      "enableQualifiers": "Mark which inherited qualifier nodes are active (isEnabled)."
+    },
+    "usdmMapping": {
+      "_note": "How a USDM BiomedicalConcept resolves onto this model.",
+      "BiomedicalConcept.reference": "→ the BC concept C-code (e.g. /mdr/bc/biomedicalconcepts/C25298)",
+      "BiomedicalConcept.extensionAttributes[sdtm]": "→ the SDTM dataset specialization (the build definition link)",
+      "BiomedicalConcept.synonyms": "→ Topic term alias (e.g. SYSBP)",
+      "BiomedicalConceptProperty.name": "→ resolves to a node by SDTM alias pattern (e.g. VSLOC → --LOC → Location)",
+      "BiomedicalConceptProperty.code.standardCode.code": "→ resolves to a node by decConcepts (e.g. C13717 → Location)",
+      "BiomedicalConceptProperty.datatype": "→ corroborates the node valueType (decimal → Quantity.value)",
+      "BiomedicalConceptProperty.responseCodes": "→ the fixValueSet constraint on the node",
+      "resolutionRule": "A property binds to a node when its name matches the node alias pattern OR its standardCode matches the node decConcepts. The two keys cross-check."
+    },
+
+    "workedExample": {
+      "_note": "Real BC from model/NCT01797120-…json — Systolic Blood Pressure.",
+      "name": "Systolic Blood Pressure",
+      "reference": "/mdr/bc/biomedicalconcepts/C25298",
+      "sdtmSpecialization": "/mdr/specializations/sdtm/datasetspecializations/SYSBP",
+      "synonyms": ["SYSBP"],
+      "inherits": "Recording",
+      "class": "Finding",
+      "constraints": {
+        "Topic": { "setTopic": "SYSBP (Systolic Blood Pressure)", "alias": "VSTESTCD" },
+        "Result": {
+          "selectBranch": "Quantity",
+          "disabled": "Coded",
+          "resolvedProperties": {
+            "value": { "usdmProperty": "VSORRES", "datatype": "decimal", "standardCode": "C70856", "resolvesTo": "Recording.valuePattern.ResultValue.Quantity.value" },
+            "code(units)": { "usdmProperty": "VSORRESU", "datatype": "string", "standardCode": "C49669", "responseCodes": ["mmHg (C49670)"], "resolvesTo": "Recording.valuePattern.ResultValue.Quantity.code(units)", "_note": "USDM uses semantic unit code C49669 'Unit of Pressure'; the --ORRESU alias resolves the node." }
+          }
+        },
+        "Position": { "usdmProperty": "VSPOS", "standardCode": "C62164", "resolvesTo": "Recording.spine.sharedQualifiers.Position" },
+        "Location": { "usdmProperty": "VSLOC", "standardCode": "C13717", "resolvesTo": "Recording.spine.sharedQualifiers.Location", "_note": "C13717 confirmed independently by both the xlsx and the USDM BC." },
+        "Laterality": { "usdmProperty": "VSLAT", "resolvesTo": "Recording.spine.sharedQualifiers.Location.Laterality" }
+      }
+    }
+  },
+
+  "valueTypeUsageByLayer": {
+    "_note": "How layers of the CRAFT framework use the value type vocabulary.",
+    "observationDataDefinitions": { "level": "complexTypes", "examples": { "Result/value": "Quantity (numeric) or CodeableConcept (coded)", "Topic": "CodeableConcept", "Subject": "Identifier", "Dose": "Quantity", "Severity": "CodeableConcept" } },
+    "derivationDataDefinitions": { "level": "complexTypes", "examples": { "Change": "Quantity", "Flag": "boolean", "Category": "CodeableConcept", "TimeToEvent": "Quantity (time unit)" } },
+    "analysisDataDefinitions": { "level": "primitiveTypes", "examples": { "Estimate": "decimal", "PValue": "decimal", "NRisk": "integer", "NEvent": "integer" } },
+    "methodRoleConstraints": { "level": "primitiveTypes or complexTypes", "examples": { "M.MMRM.response": "Quantity", "M.ChiSquareTest.variable": "CodeableConcept", "M.LogRankTest.event": "boolean" } }
+  }
+}

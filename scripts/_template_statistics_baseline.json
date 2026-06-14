@@ -1,0 +1,295 @@
+{
+  "fit_statistics_basic": {
+    "statistics": [
+      "AIC",
+      "BIC",
+      "minus2LogL"
+    ],
+    "optional_statistics": []
+  },
+  "fit_statistics_linear": {
+    "statistics": [
+      "AIC",
+      "BIC",
+      "R_squared",
+      "minus2LogL"
+    ],
+    "optional_statistics": []
+  },
+  "fit_statistics_concordance": {
+    "statistics": [
+      "AIC",
+      "BIC",
+      "concordance",
+      "minus2LogL"
+    ],
+    "optional_statistics": []
+  },
+  "type3_tests_f": {
+    "statistics": [
+      "F_statistic",
+      "MS",
+      "SS",
+      "df_den",
+      "df_num",
+      "p_value"
+    ],
+    "optional_statistics": []
+  },
+  "type3_tests_mixed": {
+    "statistics": [
+      "F_statistic",
+      "df_den",
+      "df_num",
+      "p_value"
+    ],
+    "optional_statistics": []
+  },
+  "type3_tests_chi_squared": {
+    "statistics": [
+      "chi_squared",
+      "df",
+      "p_value"
+    ],
+    "optional_statistics": []
+  },
+  "chi_squared_test_result": {
+    "statistics": [
+      "chi_squared",
+      "df",
+      "p_value"
+    ],
+    "optional_statistics": []
+  },
+  "t_test_result": {
+    "statistics": [
+      "df",
+      "p_value",
+      "t_statistic"
+    ],
+    "optional_statistics": []
+  },
+  "exact_test_result": {
+    "statistics": [
+      "p_value"
+    ],
+    "optional_statistics": []
+  },
+  "homogeneity_test": {
+    "statistics": [
+      "chi_squared",
+      "df",
+      "p_value"
+    ],
+    "optional_statistics": []
+  },
+  "parameter_estimates_linear": {
+    "statistics": [
+      "CI_lower",
+      "CI_upper",
+      "SE",
+      "coefficient",
+      "df",
+      "p_value",
+      "t_statistic"
+    ],
+    "optional_statistics": []
+  },
+  "parameter_estimates_glm": {
+    "statistics": [
+      "CI_lower",
+      "CI_upper",
+      "SE",
+      "coefficient",
+      "odds_ratio",
+      "p_value",
+      "z_statistic"
+    ],
+    "optional_statistics": []
+  },
+  "parameter_estimates_cox": {
+    "statistics": [
+      "CI_lower",
+      "CI_upper",
+      "SE",
+      "coefficient",
+      "hazard_ratio",
+      "p_value",
+      "z_statistic"
+    ],
+    "optional_statistics": []
+  },
+  "covariance_parameters": {
+    "statistics": [
+      "SE",
+      "estimate"
+    ],
+    "optional_statistics": []
+  },
+  "contrasts_t": {
+    "statistics": [
+      "CI_lower",
+      "CI_upper",
+      "SE",
+      "df",
+      "estimate",
+      "p_value",
+      "p_value_adjusted",
+      "t_statistic"
+    ],
+    "optional_statistics": [
+      "p_value_adjusted"
+    ]
+  },
+  "contrasts_z": {
+    "statistics": [
+      "CI_lower",
+      "CI_upper",
+      "SE",
+      "estimate",
+      "p_value",
+      "p_value_adjusted",
+      "z_statistic"
+    ],
+    "optional_statistics": [
+      "p_value_adjusted"
+    ]
+  },
+  "odds_ratio_measures": {
+    "statistics": [
+      "CI_lower",
+      "CI_upper",
+      "odds_ratio"
+    ],
+    "optional_statistics": []
+  },
+  "ls_means": {
+    "statistics": [
+      "CI_lower",
+      "CI_upper",
+      "SE",
+      "df",
+      "estimate"
+    ],
+    "optional_statistics": []
+  },
+  "point_estimate": {
+    "statistics": [
+      "CI_lower",
+      "CI_upper",
+      "SE",
+      "estimate"
+    ],
+    "optional_statistics": []
+  },
+  "odds_ratio_estimates": {
+    "statistics": [
+      "CI_lower",
+      "CI_upper",
+      "odds_ratio"
+    ],
+    "optional_statistics": []
+  },
+  "hazard_ratio_estimates": {
+    "statistics": [
+      "CI_lower",
+      "CI_upper",
+      "hazard_ratio"
+    ],
+    "optional_statistics": []
+  },
+  "multivariate_tests": {
+    "statistics": [
+      "F_statistic",
+      "df_den",
+      "df_num",
+      "estimate",
+      "p_value"
+    ],
+    "optional_statistics": []
+  },
+  "global_tests": {
+    "statistics": [
+      "chi_squared",
+      "df",
+      "p_value"
+    ],
+    "optional_statistics": []
+  },
+  "survival_table": {
+    "statistics": [
+      "CI_lower",
+      "CI_upper",
+      "SE",
+      "n_censored",
+      "n_event",
+      "n_risk",
+      "survival_prob"
+    ],
+    "optional_statistics": []
+  },
+  "median_survival": {
+    "statistics": [
+      "CI_lower",
+      "CI_upper",
+      "median"
+    ],
+    "optional_statistics": []
+  },
+  "event_summary": {
+    "statistics": [
+      "n_censored",
+      "n_event",
+      "n_risk"
+    ],
+    "optional_statistics": []
+  },
+  "landmark_estimates": {
+    "statistics": [
+      "CI_lower",
+      "CI_upper",
+      "SE",
+      "survival_prob"
+    ],
+    "optional_statistics": []
+  },
+  "proportion_estimate": {
+    "statistics": [
+      "CI_lower",
+      "CI_upper",
+      "pct",
+      "proportion"
+    ],
+    "optional_statistics": [
+      "CI_lower",
+      "CI_upper"
+    ]
+  },
+  "frequency_table": {
+    "statistics": [
+      "frequency",
+      "n"
+    ],
+    "optional_statistics": []
+  },
+  "cumulative_frequency_table": {
+    "statistics": [
+      "cumulative_n",
+      "cumulative_pct"
+    ],
+    "optional_statistics": []
+  },
+  "quartile_estimates": {
+    "statistics": [
+      "Q1",
+      "Q3"
+    ],
+    "optional_statistics": []
+  },
+  "computed_value": {
+    "statistics": [
+      "value"
+    ],
+    "optional_statistics": []
+  }
+}

@@ -1,0 +1,777 @@
+{
+    "$defs": {
+        "ACResultPattern": {
+            "additionalProperties": false,
+            "description": "AC concept-side molecule. References shared statistic_sets; constituents are ACStatisticalConcepts whose terms cover the sets' terms. Adds dimensions (the concept-side row structure that templates omit).",
+            "properties": {
+                "additional_statistics": {
+                    "description": "AC concept ids not covered by the sets.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "constituents": {
+                    "description": "ACStatisticalConcept ids whose terms cover the sets' terms.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "definition": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "dimensions": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "optional_statistics": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "statistics_set": {
+                    "description": "FK list into StatisticSet.conceptId.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "title": "ACResultPattern",
+            "type": "object"
+        },
+        "ACStatisticalConcept": {
+            "additionalProperties": false,
+            "description": "Thin AC concept-side node: references a terminology term (single-leaf via `term`, or multi-leaf via `leaves`) and overlays the FHIR datatype. Does NOT re-state terminology facts (definition/statoMapping/dataType).",
+            "properties": {
+                "code": {
+                    "description": "The concept's own code (e.g. NCI).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "fhirValueType": {
+                    "description": "FHIR value type (primitive or complex).",
+                    "type": "string"
+                },
+                "label": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "leaves": {
+                    "description": "Multi-leaf concepts (e.g. Range): one entry per FHIR leaf, each naming the terminology term that fills it.",
+                    "items": {
+                        "$ref": "#/$defs/ConceptLeaf"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "shortLabel": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "term": {
+                    "description": "FK to StatisticTerm.conceptId (single-leaf concepts).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "unit": {
+                    "description": "Symbolic unit policy (Option_B convention), not a concrete UCUM code: inherited | dimensionless | none | \"fixed: %\" | \"inherited or dimensionless\" | \"inherited or specified\". The concrete unit is bound at transformation time.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "fhirValueType",
+                "unit"
+            ],
+            "then": {
+                "oneOf": [
+                    {
+                        "properties": {
+                            "term": {}
+                        },
+                        "required": [
+                            "term"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "leaves": {}
+                        },
+                        "required": [
+                            "leaves"
+                        ]
+                    }
+                ]
+            },
+            "title": "ACStatisticalConcept",
+            "type": "object"
+        },
+        "Any": {
+            "additionalProperties": true,
+            "description": "Wildcard class accepting any JSON value. Used for resolver/authoring metadata slots ($vocabulary, _authoring_notes) that are not domain content.",
+            "title": "Any",
+            "type": [
+                "null",
+                "boolean",
+                "object",
+                "number",
+                "string"
+            ]
+        },
+        "Coding": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "code": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "display": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "Coding",
+            "type": "object"
+        },
+        "ConceptLeaf": {
+            "additionalProperties": false,
+            "description": "One FHIR leaf of a multi-leaf concept, mapped to the terminology term that populates it.",
+            "properties": {
+                "fhirPath": {
+                    "description": "FHIR element path within the datatype (e.g. low.value).",
+                    "type": "string"
+                },
+                "term": {
+                    "description": "FK to StatisticTerm.conceptId.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "fhirPath",
+                "term"
+            ],
+            "title": "ConceptLeaf",
+            "type": "object"
+        },
+        "OutputClassTemplate": {
+            "additionalProperties": false,
+            "description": "An output class. Abstract templates carry neither statistics_set nor additional_statistics. Concrete templates carry at least one of them; their produced statistics are the derived union of the referenced sets' atoms plus additional_statistics.",
+            "if": {
+                "not": {
+                    "required": [
+                        "abstract"
+                    ]
+                },
+                "properties": {
+                    "abstract": {}
+                }
+            },
+            "properties": {
+                "abstract": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "additional_statistics": {
+                    "description": "Extra atoms not supplied by any set.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "broader": {
+                    "description": "SKOS parent (FK to another template).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "codings": {
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conceptId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "ncitCode": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "optional_statistics": {
+                    "description": "Members that may be absent at runtime.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "statistics_set": {
+                    "description": "FK list into StatisticSet.conceptId.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "conceptId"
+            ],
+            "then": {
+                "anyOf": [
+                    {
+                        "properties": {
+                            "statistics_set": {}
+                        },
+                        "required": [
+                            "statistics_set"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "additional_statistics": {}
+                        },
+                        "required": [
+                            "additional_statistics"
+                        ]
+                    }
+                ]
+            },
+            "title": "OutputClassTemplate",
+            "type": "object"
+        },
+        "OutputClassTemplateLibrary": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "$vocabulary": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Any"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Resolver hints (vocabulary name -> relative file path); metadata, not domain content."
+                },
+                "_authoring_notes": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Any"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Free-form authoring/documentation notes (incl. _family_structure); metadata, not domain content."
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "output_class_templates": {
+                    "additionalProperties": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/OutputClassTemplate__identifier_optional"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "type": [
+                        "object",
+                        "null"
+                    ]
+                },
+                "version": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "OutputClassTemplateLibrary",
+            "type": "object"
+        },
+        "OutputClassTemplate__identifier_optional": {
+            "additionalProperties": false,
+            "description": "An output class. Abstract templates carry neither statistics_set nor additional_statistics. Concrete templates carry at least one of them; their produced statistics are the derived union of the referenced sets' atoms plus additional_statistics.",
+            "if": {
+                "not": {
+                    "required": [
+                        "abstract"
+                    ]
+                },
+                "properties": {
+                    "abstract": {}
+                }
+            },
+            "properties": {
+                "abstract": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "additional_statistics": {
+                    "description": "Extra atoms not supplied by any set.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "broader": {
+                    "description": "SKOS parent (FK to another template).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "codings": {
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conceptId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "ncitCode": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "optional_statistics": {
+                    "description": "Members that may be absent at runtime.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "statistics_set": {
+                    "description": "FK list into StatisticSet.conceptId.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [],
+            "then": {
+                "anyOf": [
+                    {
+                        "properties": {
+                            "statistics_set": {}
+                        },
+                        "required": [
+                            "statistics_set"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "additional_statistics": {}
+                        },
+                        "required": [
+                            "additional_statistics"
+                        ]
+                    }
+                ]
+            },
+            "title": "OutputClassTemplate",
+            "type": "object"
+        },
+        "StatisticSet": {
+            "additionalProperties": false,
+            "description": "A named bundle of statistic terms (FKs into the terminology).",
+            "properties": {
+                "codings": {
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conceptId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "ncitCode": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "statistics": {
+                    "description": "FK list into StatisticTerm.conceptId.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "conceptId",
+                "statistics"
+            ],
+            "title": "StatisticSet",
+            "type": "object"
+        },
+        "StatisticSetLibrary": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "$vocabulary": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Any"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Resolver hints (vocabulary name -> relative file path); metadata, not domain content."
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "statistic_sets": {
+                    "additionalProperties": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/StatisticSet__identifier_optional"
+                            },
+                            {
+                                "description": "FK list into StatisticTerm.conceptId.",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "type": "array"
+                            }
+                        ]
+                    },
+                    "type": [
+                        "object",
+                        "null"
+                    ]
+                },
+                "version": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "StatisticSetLibrary",
+            "type": "object"
+        },
+        "StatisticSet__identifier_optional": {
+            "additionalProperties": false,
+            "description": "A named bundle of statistic terms (FKs into the terminology).",
+            "properties": {
+                "codings": {
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conceptId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "ncitCode": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "statistics": {
+                    "description": "FK list into StatisticTerm.conceptId.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "statistics"
+            ],
+            "title": "StatisticSet",
+            "type": "object"
+        },
+        "StatisticTerm": {
+            "additionalProperties": false,
+            "description": "A statistic in the terminology layer (statistics_vocabulary.json). Carries a primitive dataType ONLY \u2014 the FHIR datatype is a concept-side fact and lives on ACStatisticalConcept, not here (D-layers).",
+            "properties": {
+                "codings": {
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conceptId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "dataType": {
+                    "description": "Primitive type for formula/method typing.",
+                    "type": "string"
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "ncitCode": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "conceptId",
+                "dataType"
+            ],
+            "title": "StatisticTerm",
+            "type": "object"
+        }
+    },
+    "$id": "https://cdisc.org/acdc/output_classes",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "additionalProperties": true,
+    "description": "",
+    "metamodel_version": "1.7.0",
+    "properties": {
+        "$vocabulary": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/Any"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "description": "Resolver hints (vocabulary name -> relative file path); metadata, not domain content."
+        },
+        "description": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "statistic_sets": {
+            "additionalProperties": {
+                "anyOf": [
+                    {
+                        "$ref": "#/$defs/StatisticSet__identifier_optional"
+                    },
+                    {
+                        "description": "FK list into StatisticTerm.conceptId.",
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array"
+                    }
+                ]
+            },
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "version": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "title": "acdc_output_classes",
+    "type": "object",
+    "version": "0.1.0"
+}
+

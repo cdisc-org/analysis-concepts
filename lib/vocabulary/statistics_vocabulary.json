@@ -1,6 +1,6 @@
 {
-  "version": "0.5.0",
-  "description": "Reusable statistic definitions referenced by output classes across ACDC methods",
+  "version": "0.6.0",
+  "description": "SKOS-style terminology of statistic terms (the controlled vocabulary of statistics produced by ACDC methods). Owned by neither the method nor the concept layer: methods/sets/output-class templates cite these terms, and AC statistical concepts reference them (via term) and overlay the FHIR datatype. Terms carry a primitive dataType only.",
   "statistics": {
     "estimate": {
       "conceptId": "estimate",
@@ -733,6 +733,24 @@
       "codings": [],
       "dataType": "numeric",
       "description": "Percentage (0\u2013100 scale)"
+    },
+    "numerator": {
+      "conceptId": "numerator",
+      "name": "Numerator count",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
+      "dataType": "numeric",
+      "description": "Numerator count (events of interest) for a proportion"
+    },
+    "denominator": {
+      "conceptId": "denominator",
+      "name": "Denominator count",
+      "label": null,
+      "ncitCode": null,
+      "codings": [],
+      "dataType": "numeric",
+      "description": "Denominator count (population at risk) for a proportion"
     },
     "cumulative_n": {
       "conceptId": "cumulative_n",

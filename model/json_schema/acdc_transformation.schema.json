@@ -123,17 +123,241 @@
             "title": "ConfigurationDataType",
             "type": "string"
         },
-        "Distribution": {
-            "description": "\u00a73.5.3 \u2014 the probabilistic basis of the test statistic.",
+        "ContrastBasis": {
+            "description": "",
             "enum": [
-                "F",
-                "t",
-                "chi_squared",
-                "normal",
-                "none"
+                "estimated_means",
+                "model_coefficients"
             ],
-            "title": "Distribution",
+            "title": "ContrastBasis",
             "type": "string"
+        },
+        "ContrastCell": {
+            "additionalProperties": false,
+            "description": "A weighted cell mapping each relevant factor to a level.",
+            "properties": {
+                "cell": {
+                    "description": "Map of factor (concept term) -> level.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "weight": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "weight"
+            ],
+            "title": "ContrastCell",
+            "type": "object"
+        },
+        "ContrastCoding": {
+            "description": "",
+            "enum": [
+                "reference",
+                "cell_means"
+            ],
+            "title": "ContrastCoding",
+            "type": "string"
+        },
+        "ContrastGenerator": {
+            "additionalProperties": false,
+            "description": "Study-time generator resolved against `over`'s levels into explicit members (\u00a73.5).",
+            "properties": {
+                "kind": {
+                    "$ref": "#/$defs/ContrastGeneratorKind"
+                },
+                "reference": {
+                    "description": "Comparator level (often the {control_arm} sliceKey), for vs_reference.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "kind"
+            ],
+            "title": "ContrastGenerator",
+            "type": "object"
+        },
+        "ContrastGeneratorKind": {
+            "description": "",
+            "enum": [
+                "pairwise",
+                "vs_reference",
+                "trend",
+                "custom"
+            ],
+            "title": "ContrastGeneratorKind",
+            "type": "string"
+        },
+        "ContrastMember": {
+            "additionalProperties": false,
+            "description": "One row of L \u2014 a labelled set of weights (single-factor) or cells (multi-factor).",
+            "properties": {
+                "cells": {
+                    "description": "General multi-factor cells (interaction / difference-in-differences).",
+                    "items": {
+                        "$ref": "#/$defs/ContrastCell"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "type": "string"
+                },
+                "weights": {
+                    "description": "Single-factor shorthand \u2014 map of level -> weight (omitted = 0).",
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "label"
+            ],
+            "then": {
+                "anyOf": [
+                    {
+                        "properties": {
+                            "weights": {}
+                        },
+                        "required": [
+                            "weights"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "cells": {}
+                        },
+                        "required": [
+                            "cells"
+                        ]
+                    }
+                ]
+            },
+            "title": "ContrastMember",
+            "type": "object"
+        },
+        "ContrastMembers": {
+            "additionalProperties": false,
+            "description": "A contrast member-set \u2014 exactly one of generator (unresolved) or memberList (resolved).",
+            "properties": {
+                "generator": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ContrastGenerator"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "memberList": {
+                    "items": {
+                        "$ref": "#/$defs/ContrastMember"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "then": {
+                "oneOf": [
+                    {
+                        "properties": {
+                            "generator": {}
+                        },
+                        "required": [
+                            "generator"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "memberList": {}
+                        },
+                        "required": [
+                            "memberList"
+                        ]
+                    }
+                ]
+            },
+            "title": "ContrastMembers",
+            "type": "object"
+        },
+        "ContrastSpecification": {
+            "additionalProperties": false,
+            "description": "The coefficient matrix L defining a contrast dimension's members. `over` is expressed in concept terms (e.g. Treatment). estimated_means is the portable default; model_coefficients additionally pins coding (+reference) per \u00a74.3.",
+            "if": {
+                "properties": {
+                    "basis": {
+                        "const": "model_coefficients"
+                    }
+                },
+                "required": [
+                    "basis"
+                ]
+            },
+            "properties": {
+                "at": {
+                    "description": "Optional second factor; single-factor members are replicated across its levels (\u00a74.2).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "basis": {
+                    "$ref": "#/$defs/ContrastBasis",
+                    "description": "Column space of L."
+                },
+                "coding": {
+                    "$ref": "#/$defs/ContrastCoding",
+                    "description": "Required when basis = model_coefficients \u2014 the model parameterization."
+                },
+                "members": {
+                    "$ref": "#/$defs/ContrastMembers",
+                    "description": "Either a generator (template) or a resolved list of member rows."
+                },
+                "over": {
+                    "description": "The factor/dimension contrasted, in concept terms (e.g. \"Treatment\").",
+                    "type": "string"
+                },
+                "reference": {
+                    "description": "Required when basis = model_coefficients and coding = reference \u2014 the reference level.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "over",
+                "basis",
+                "members"
+            ],
+            "then": {
+                "properties": {
+                    "coding": {}
+                },
+                "required": [
+                    "coding"
+                ]
+            },
+            "title": "ContrastSpecification",
+            "type": "object"
         },
         "FHIRValueType": {
             "description": "Optional value-type constraint on an input measure binding. Mirrors acdc_method.FHIRValueType but listed here so the transformation schema is self-contained at validation time.",
@@ -571,16 +795,19 @@
                 "boolean",
                 "integer",
                 "id",
-                "date",
-                "Quantity"
+                "date"
             ],
             "title": "MethodInputDataType",
             "type": "string"
         },
         "MethodOutput": {
             "additionalProperties": false,
-            "description": "\u00a73.5/\u00a73.6 \u2014 an output slot definition within a Method's outputs[]. For analysis methods, `output_type` references an entry in output_class_templates.json (which decomposes into output_class + output_shape + distribution per \u00a73.5). For derivation methods, `value_type` and `unit_policy` give the direct value type (\u00a73.6). Per-output configurations were removed in the 2026-05-28 revision.",
+            "description": "\u00a73.5/\u00a73.6 \u2014 an output slot definition within a Method's outputs[]. For atomic outputs (descriptive analyses + derivations), `output_type` is `\"computed_value\"` and the structural primitive type is given by `dataType`. For structured analysis outputs, `output_type` references a multi-statistic template in output_class_templates.json (e.g. ls_means, type3_tests_f) and per-column types come from the template's statistics list. The FHIR complex datatype (Quantity, CodeableConcept, ...) is NOT carried here \u2014 it flows from the bound concept at transformation time via concept.result.valueType. Per-output configurations and value_type were removed in the 2026-05-28 revision.",
             "properties": {
+                "dataType": {
+                    "$ref": "#/$defs/MethodInputDataType",
+                    "description": "\u00a73.6 \u2014 structural primitive datatype the method produces in this output column. Parallels inputs[].dataType. Required for atomic outputs (output_type=computed_value); omitted for structured-table outputs (per-column types come from the template's statistics list via statistics_vocabulary.json). The FHIR complex datatype (Quantity, CodeableConcept, ...) is not on the method \u2014 it flows from the bound concept at transformation time. Validator checks compatibility at binding time (\u00a76.6 rule 10)."
+                },
                 "examples": {
                     "description": "Optional worked-example entries (free-form). Author / documentation scaffolding; not consumed by validators.",
                     "items": {
@@ -601,19 +828,12 @@
                         "null"
                     ]
                 },
-                "label": {
-                    "description": "Optional human-readable label for this output (e.g. \"Converted Value\" for M.UnitConversion's derived_value).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
                 "name": {
                     "description": "Slot identifier within outputs[]. Referenced from transformation outputDataStructure.measures[].output.",
                     "type": "string"
                 },
                 "output_type": {
-                    "description": "FK into lib/vocabulary/output_class_templates.json. Identifies a (class, shape, distribution) tuple per \u00a73.5. Typically used by analysis methods.",
+                    "description": "FK into lib/vocabulary/output_class_templates.json. For atomic outputs use `\"computed_value\"`; for structured analysis outputs use a multi-statistic template name (e.g. `\"ls_means\"`, `\"type3_tests_f\"`).",
                     "type": [
                         "string",
                         "null"
@@ -642,10 +862,6 @@
                 "unit_policy": {
                     "$ref": "#/$defs/UnitPolicy",
                     "description": "\u00a73.6.1 \u2014 per-output unit-handling policy for derivation outputs."
-                },
-                "value_type": {
-                    "$ref": "#/$defs/FHIRValueType",
-                    "description": "\u00a73.6 \u2014 FHIR value type for derivation outputs (e.g. fhir:Quantity)."
                 }
             },
             "required": [
@@ -695,23 +911,6 @@
             },
             "title": "OutputAttributeBinding",
             "type": "object"
-        },
-        "OutputClass": {
-            "description": "\u00a73.5.1 \u2014 the inferential ROLE of an analysis output (the \"what is it for\"). Vocabulary anchor for output_class_templates.json values.",
-            "enum": [
-                "ls_means",
-                "contrast_estimates",
-                "contrast_tests",
-                "type3_tests",
-                "parameter_estimates",
-                "parameter_tests",
-                "fit_statistics",
-                "test_result",
-                "survival_table",
-                "computed_value"
-            ],
-            "title": "OutputClass",
-            "type": "string"
         },
         "OutputDataStructure": {
             "additionalProperties": false,
@@ -774,6 +973,26 @@
                     }
                 },
                 {
+                    "if": {
+                        "properties": {
+                            "contrastSpecification": {}
+                        },
+                        "required": [
+                            "contrastSpecification"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "concept": {
+                                "const": "Contrasts"
+                            }
+                        },
+                        "required": [
+                            "concept"
+                        ]
+                    }
+                },
+                {
                     "then": {
                         "oneOf": [
                             {
@@ -796,7 +1015,7 @@
                     }
                 }
             ],
-            "description": "\u00a76.3 note 3 \u2014 a dimension on the output cube. input is rejected here.",
+            "description": "\u00a76.3 note 3 \u2014 a dimension on the output cube. input is rejected here. May instead be a derived contrast dimension carrying a contrastSpecification (contrast spec \u00a74.3); in that case it is named \"contrast\" and bound to the Contrasts concept.",
             "properties": {
                 "concept": {
                     "description": "\u00a76.3 \u2014 name of a concrete concept in Option_B_Clinical.json (for derivations) or AC_Concept_Model_v017.json (for analyses). Cross-file FK validated at build time.",
@@ -812,8 +1031,26 @@
                         "null"
                     ]
                 },
+                "contrastSpecification": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ContrastSpecification"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "The coefficient-matrix recipe defining the contrast dimension's members (contrast spec \u00a73\u2013\u00a74)."
+                },
                 "input": {
                     "description": "\u00a76.3 note 2 \u2014 when present, this dim fills a specific method input slot (bound dim). When absent, the dim is pure cube context.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Dimension name; \"contrast\" for a derived contrast dimension.",
                     "type": [
                         "string",
                         "null"
@@ -882,16 +1119,6 @@
             },
             "title": "OutputMeasureBinding",
             "type": "object"
-        },
-        "OutputShape": {
-            "description": "\u00a73.5.2 \u2014 the inferential PATTERN (the structure of the result).",
-            "enum": [
-                "scalar",
-                "vector",
-                "matrix"
-            ],
-            "title": "OutputShape",
-            "type": "string"
         },
         "Slice": {
             "additionalProperties": false,
@@ -1217,6 +1444,6 @@
     ],
     "title": "acdc_transformation",
     "type": "object",
-    "version": "0.1.0"
+    "version": "0.2.0"
 }
 

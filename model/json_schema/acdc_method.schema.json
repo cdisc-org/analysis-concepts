@@ -123,18 +123,6 @@
             "title": "ConfigurationDataType",
             "type": "string"
         },
-        "Distribution": {
-            "description": "\u00a73.5.3 \u2014 the probabilistic basis of the test statistic.",
-            "enum": [
-                "F",
-                "t",
-                "chi_squared",
-                "normal",
-                "none"
-            ],
-            "title": "Distribution",
-            "type": "string"
-        },
         "Formula": {
             "additionalProperties": false,
             "description": "\u00a73.4 \u2014 the formula contract. The generic_expression's <token> identifiers MUST appear in the parent method's inputs[].name (or outputs[].name for the LHS of a derivation assignment).",
@@ -239,7 +227,10 @@
                     "items": {
                         "$ref": "#/$defs/MethodInput"
                     },
-                    "type": "array"
+                    "type": [
+                        "array",
+                        "null"
+                    ]
                 },
                 "label": {
                     "description": "\u00a73.3 \u2014 short / acronym form (e.g. \"ANCOVA\", \"MMRM\", \"LOCF\"). Used for compact display and SmartPhrase rendering. May equal `name` for methods without a recognized acronym.",
@@ -276,7 +267,6 @@
                 "name",
                 "label",
                 "formula",
-                "inputs",
                 "outputs"
             ],
             "title": "Method",
@@ -401,33 +391,6 @@
             "title": "MethodOutput",
             "type": "object"
         },
-        "OutputClass": {
-            "description": "\u00a73.5.1 \u2014 the inferential ROLE of an analysis output (the \"what is it for\"). Vocabulary anchor for output_class_templates.json values.",
-            "enum": [
-                "ls_means",
-                "contrast_estimates",
-                "contrast_tests",
-                "type3_tests",
-                "parameter_estimates",
-                "parameter_tests",
-                "fit_statistics",
-                "test_result",
-                "survival_table",
-                "computed_value"
-            ],
-            "title": "OutputClass",
-            "type": "string"
-        },
-        "OutputShape": {
-            "description": "\u00a73.5.2 \u2014 the inferential PATTERN (the structure of the result).",
-            "enum": [
-                "scalar",
-                "vector",
-                "matrix"
-            ],
-            "title": "OutputShape",
-            "type": "string"
-        },
         "UnitPolicy": {
             "description": "How a derivation method handles units on its output. Per \u00a73.6.1, this is a per-output property (lives on MethodOutput, not Method).",
             "enum": [
@@ -508,7 +471,10 @@
             "items": {
                 "$ref": "#/$defs/MethodInput"
             },
-            "type": "array"
+            "type": [
+                "array",
+                "null"
+            ]
         },
         "label": {
             "description": "\u00a73.3 \u2014 short / acronym form (e.g. \"ANCOVA\", \"MMRM\", \"LOCF\"). Used for compact display and SmartPhrase rendering. May equal `name` for methods without a recognized acronym.",
@@ -545,11 +511,10 @@
         "name",
         "label",
         "formula",
-        "inputs",
         "outputs"
     ],
     "title": "acdc_method",
     "type": "object",
-    "version": "0.2.0"
+    "version": "0.3.1"
 }
 
