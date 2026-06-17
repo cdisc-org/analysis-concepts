@@ -1,0 +1,490 @@
+{
+  "studyId": "ONC-2024-002",
+  "studyTitle": "Phase 3 Study of Immunotherapy Agent Y vs Standard of Care in Advanced NSCLC",
+  "studyPhase": "PHASE_3",
+  
+  "objective": {
+    "id": "OBJ-PRIMARY-001",
+    "level": "PRIMARY",
+    "description": "To evaluate the efficacy of Agent Y compared to standard chemotherapy on progression-free survival in patients with advanced non-small cell lung cancer (NSCLC) with PD-L1 expression ≥50%",
+    "endpoints": ["EP-PFS-001"]
+  },
+
+  "endpoint": {
+    "id": "EP-PFS-001",
+    "name": "Progression-Free Survival (PFS)",
+    "description": "Time from randomization to first occurrence of disease progression per RECIST v1.1 or death from any cause",
+    "measure": "Time to progression or death",
+    "unit": "months",
+    "timeframe": "From randomization until progression or death (assessed up to 24 months)",
+    "derivation": "Time to event",
+    "direction": "LONGER_IS_BETTER",
+    "purpose": "EFFICACY",
+    "level": "PRIMARY",
+    "compositeDefinition": {
+      "isComposite": true,
+      "components": [
+        {
+          "component": "Disease progression by RECIST 1.1",
+          "precedence": 1,
+          "assessmentMethod": "Independent central radiological review"
+        },
+        {
+          "component": "Death from any cause",
+          "precedence": 2,
+          "assessmentMethod": "Vital status confirmation"
+        }
+      ]
+    }
+  },
+
+  "estimand": {
+    "id": "EST-PRIMARY-001",
+    "name": "Primary Efficacy Estimand - Hypothetical Strategy",
+    "description": "Effect of Agent Y on PFS in the hypothetical scenario where patients do not discontinue treatment due to adverse events or start subsequent anticancer therapy prior to progression",
+    "estimandRole": "PRIMARY",
+    "estimandType": "PRIMARY",
+    "clinicalQuestion": "What would be the effect of Agent Y compared to standard chemotherapy on progression-free survival if patients could tolerate treatment and did not receive subsequent anticancer therapy prior to documented progression?",
+    "decisionRationale": "Hypothetical strategy chosen to isolate the pharmacological effect of Agent Y by removing the confounding effects of treatment discontinuation due to AEs and subsequent therapy. This addresses the scientific question of drug efficacy under ideal adherence conditions. Supplementary estimand with treatment policy strategy will address real-world effectiveness.",
+    "alternativesConsidered": [
+      "Treatment policy - retained as supplementary estimand for regulatory submission",
+      "Composite strategy (including treatment discontinuation as event) - not chosen as may obscure true anti-tumor effect"
+    ],
+    "stakeholderInput": "EMA scientific advice emphasized importance of hypothetical estimand for understanding drug mechanism. FDA recommended treatment policy as co-primary or key secondary. Oncologists indicated clinical decision-making requires understanding both ideal efficacy and real-world effectiveness.",
+    "constructionDate": "2024-02-01",
+    
+    "attributes": {
+      "treatment": {
+        "id": "ATTR-TRT-001",
+        "condition": "Agent Y 200mg IV Q3W versus standard platinum-doublet chemotherapy",
+        "regimen": "Every 3 weeks intravenous administration",
+        "dose": "Agent Y: 200mg; Standard: carboplatin AUC 5 + pemetrexed 500mg/m²",
+        "frequency": "Q3W",
+        "administration": "Intravenous infusion over 30 minutes (Agent Y) or per standard protocol (chemotherapy)",
+        "backgroundTreatment": "Best supportive care allowed in both arms",
+        "includesDiscontinuation": false,
+        "includesAddlTreatment": false,
+        "description": "Agent Y as monotherapy in hypothetical scenario without treatment discontinuation or subsequent anticancer therapy"
+      },
+
+      "population": {
+        "id": "ATTR-POP-001",
+        "description": "Adults with advanced NSCLC, PD-L1 ≥50%, treatment-naive for metastatic disease",
+        "populationType": "FULL_ANALYSIS_SET",
+        "principalStratumDef": "Not applicable - hypothetical strategy does not use principal stratum",
+        "baselineSubgroup": "PD-L1 expression ≥50%",
+        "analysisSetFlag": "FASFL",
+        "definition": "All randomized patients",
+        "inclusionCriteria": "Adults ≥18 years with histologically/cytologically confirmed advanced NSCLC (Stage IIIB/IV or recurrent), PD-L1 tumor proportion score ≥50%, ECOG PS 0-1, no prior systemic therapy for metastatic disease",
+        "statoId": "STATO:0000372",
+        "statoLabel": "full analysis set"
+      },
+
+      "variable": {
+        "id": "ATTR-VAR-001",
+        "basedOnEndpoint": "EP-PFS-001",
+        "timeframe": "From randomization to progression or death",
+        "timepoint": "Event-driven (up to 24 months follow-up)",
+        "referenceTimepoint": "Randomization",
+        "derivation": "Time to event",
+        "paramcd": "PFS",
+        "includesComposite": true,
+        "compositeComponents": [
+          "Disease progression (RECIST 1.1)",
+          "Death from any cause"
+        ],
+        "compositeRules": "First occurrence of either component defines event. If both occur on same date, progression takes precedence."
+      },
+
+      "iceHandling": {
+        "id": "ATTR-ICE-001",
+        "summary": "Three intercurrent events defined with hypothetical strategy requiring imputation of counterfactual outcomes",
+        "strategyJustification": "Hypothetical strategy isolates pharmacological effect by considering outcomes in scenario where ICEs do not occur. This addresses the scientific question of treatment efficacy under ideal conditions while acknowledging real-world challenges captured in supplementary estimand.",
+        "dataImplications": "Requires imputation of counterfactual outcomes for patients experiencing ICEs. Multiple imputation under hypothetical scenario assumptions. Sensitivity analyses to assess robustness of assumptions.",
+        "numberOfICEs": 3,
+        
+        "intercurrentEvents": [
+          {
+            "id": "ICE-DISC-AE-001",
+            "name": "Treatment Discontinuation due to Adverse Event",
+            "description": "Permanent cessation of study treatment due to treatment-related adverse event",
+            "event": "Permanent discontinuation of randomized treatment",
+            "timing": "Any time after first dose until progression or death",
+            "timingCategory": "EARLY",
+            "reason": "Treatment-related adverse event (any grade requiring discontinuation per protocol or investigator discretion)",
+            "reasonCategory": "ADVERSE_EVENT",
+            "magnitude": "N/A - binary event",
+            "precedence": 1,
+            
+            "technicalSpecification": {
+              "id": "ICE-TECH-001",
+              "sourceConceptId": "BC_DS_001",
+              "sourceDomain": "DS",
+              "triggerField": "DSDECOD",
+              "triggerValue": "ADVERSE EVENT",
+              "timingCheck": "(DSSTDTC > RFXSTDTC) AND (DSSTDTC < PROGRESSIONDT OR PROGRESSIONDT IS NULL) AND (DSSTDTC < DEATHDT OR DEATHDT IS NULL)",
+              "primaryCategory": "TREATMENT_DISCONTINUATION",
+              "collectPostICE": true,
+              "programmingAgnostic": false,
+              "requiredFields": ["DSSTDTC", "DSDECOD", "DSTERM", "DSSTDY"]
+            },
+            
+            "strategy": {
+              "id": "ICE-STRAT-001",
+              "strategyType": "HYPOTHETICAL",
+              "rationale": "Aims to understand treatment effect if patients could tolerate therapy without discontinuation due to AEs, addressing the question of ideal pharmacological efficacy",
+              "hypotheticalScenario": "What would PFS be if the patient had continued study treatment despite the AE that led to discontinuation?",
+              "assumptions": {
+                "tested": [
+                  "Post-discontinuation outcomes are missing at random conditional on observed covariates",
+                  "Imputation model correctly specified"
+                ],
+                "untestable": [
+                  "Whether patients who discontinued would have same trajectory as similar patients who continued",
+                  "Relationship between AE severity and unobserved tumor progression dynamics"
+                ],
+                "implications": "Post-ICE progression/death events are censored. Multiple imputation used to impute counterfactual PFS assuming treatment continuation. Requires auxiliary variables predictive of PFS and related to ICE occurrence.",
+                "dataRequirements": "Collect tumor assessments after discontinuation to inform imputation model. Collect reasons for discontinuation and AE severity. Identify and collect strong auxiliary variables (baseline tumor burden, PD-L1 level, inflammatory markers)."
+              }
+            },
+            
+            "dataCollectionSpec": {
+              "id": "DATA-COLL-001",
+              "postICEBehavior": "CONTINUE_COLLECTION_MODIFIED",
+              "requiredConceptIds": ["BC_TU_001", "BC_VS_001", "BC_AE_001"],
+              "requiredActivityIds": ["ACT_TUMOR_ASSESSMENT", "ACT_SURVIVAL_FOLLOWUP"],
+              "conditionalLogic": "Continue tumor assessments per protocol schedule for ≥3 months post-discontinuation; maintain survival follow-up until death or study closure. Enhanced collection of auxiliary variables for imputation model.",
+              "mandatoryForStrategy": true
+            }
+          },
+          
+          {
+            "id": "ICE-SUBSEQ-TX-001",
+            "name": "Initiation of Subsequent Anticancer Therapy",
+            "description": "Start of any new systemic anticancer therapy prior to documented disease progression",
+            "event": "First dose of any subsequent anticancer therapy",
+            "timing": "Any time after randomization before documented progression",
+            "timingCategory": "RECURRING",
+            "reason": "Clinical decision for additional therapy (may be due to clinical progression without radiological confirmation, patient/physician preference, or access to new therapy)",
+            "reasonCategory": "LACK_OF_EFFICACY",
+            "magnitude": "Any subsequent therapy (chemotherapy, targeted therapy, immunotherapy, or combination)",
+            "precedence": 2,
+            
+            "technicalSpecification": {
+              "id": "ICE-TECH-002",
+              "sourceConceptId": "BC_CM_001",
+              "sourceDomain": "CM",
+              "triggerField": "CMCAT",
+              "triggerValue": "ANTICANCER THERAPY",
+              "timingCheck": "(CMSTDTC > RFXSTDTC) AND (CMSTDTC < PROGRESSIONDT OR PROGRESSIONDT IS NULL) AND (CMDECOD NOT IN ('AGENT Y', 'CARBOPLATIN', 'PEMETREXED'))",
+              "primaryCategory": "ADDITIONAL_TREATMENT",
+              "collectPostICE": true,
+              "programmingAgnostic": false,
+              "requiredFields": ["CMSTDTC", "CMDECOD", "CMCAT", "CMTRT"]
+            },
+            
+            "strategy": {
+              "id": "ICE-STRAT-002",
+              "strategyType": "HYPOTHETICAL",
+              "rationale": "Subsequent therapy confounds assessment of study treatment effect on tumor progression. Hypothetical scenario isolates effect of randomized treatment.",
+              "hypotheticalScenario": "What would PFS be if the patient had not started subsequent therapy prior to progression?",
+              "assumptions": {
+                "tested": [
+                  "Time to subsequent therapy is informative about unobserved progression risk",
+                  "Baseline and on-treatment covariates predict need for subsequent therapy"
+                ],
+                "untestable": [
+                  "Counterfactual progression time without subsequent therapy",
+                  "Whether subsequent therapy delays, advances, or has no effect on radiological progression"
+                ],
+                "implications": "Censor progression/death events occurring after subsequent therapy initiation. Use copy-reference or jump-to-reference imputation assuming outcomes similar to those who never started subsequent therapy. Explore tipping point sensitivity.",
+                "dataRequirements": "Detailed documentation of reason for subsequent therapy initiation. Continue tumor assessments after subsequent therapy start. Collect information on clinical progression signs."
+              }
+            },
+            
+            "dataCollectionSpec": {
+              "id": "DATA-COLL-002",
+              "postICEBehavior": "CONTINUE_COLLECTION",
+              "requiredConceptIds": ["BC_TU_001", "BC_CM_001"],
+              "requiredActivityIds": ["ACT_TUMOR_ASSESSMENT"],
+              "conditionalLogic": "Maintain tumor assessment schedule even after subsequent therapy; document subsequent therapy details including type, dose, duration",
+              "mandatoryForStrategy": true
+            }
+          },
+          
+          {
+            "id": "ICE-PROTOCOL-DEV-001",
+            "name": "Major Protocol Deviation - Treatment",
+            "description": "Major deviations from protocol-specified treatment schedule or dose that affect treatment exposure significantly",
+            "event": "Treatment held >14 consecutive days or dose reduced >25% for >2 cycles",
+            "timing": "Any time during treatment period",
+            "timingCategory": "RECURRING",
+            "reason": "AE management, patient preference, or clinical decision",
+            "reasonCategory": "TOLERABILITY",
+            "magnitude": "Dose reduction >25% or treatment interruption >14 days",
+            "precedence": 3,
+            
+            "technicalSpecification": {
+              "id": "ICE-TECH-003",
+              "sourceConceptId": "BC_EX_001",
+              "sourceDomain": "EX",
+              "triggerField": "EXDOSE",
+              "triggerValue": "DOSE_DEVIATION_DETECTED",
+              "timingCheck": "(EXDOSE < 0.75 * PLANNED_DOSE AND CYCLE_COUNT >= 2) OR (DAYS_HELD > 14)",
+              "primaryCategory": "DOSE_MODIFICATION",
+              "collectPostICE": false,
+              "programmingAgnostic": false,
+              "requiredFields": ["EXSTDTC", "EXDOSE", "EXDOSFRQ", "EXOCCUR"]
+            },
+            
+            "strategy": {
+              "id": "ICE-STRAT-003",
+              "strategyType": "HYPOTHETICAL",
+              "rationale": "Major dose modifications may reduce treatment efficacy. Hypothetical scenario considers outcomes with full protocol-compliant dosing.",
+              "hypotheticalScenario": "What would PFS be if the patient had received full protocol-specified dose without interruptions?",
+              "assumptions": {
+                "tested": [
+                  "Dose-response relationship exists",
+                  "Reasons for dose modification are captured and can be modeled"
+                ],
+                "untestable": [
+                  "Whether full dosing would have been tolerable",
+                  "Exact dose-response relationship in individuals"
+                ],
+                "implications": "This ICE is handled via sensitivity analysis rather than primary imputation. Main analysis may treat as treatment policy for this ICE while using hypothetical for others.",
+                "dataRequirements": "Detailed exposure data; reasons for dose modifications; correlation between dose intensity and outcomes"
+              }
+            },
+            
+            "dataCollectionSpec": {
+              "id": "DATA-COLL-003",
+              "postICEBehavior": "CONTINUE_COLLECTION",
+              "requiredConceptIds": ["BC_EX_001", "BC_TU_001", "BC_AE_001"],
+              "requiredActivityIds": ["ACT_DOSE_ADMIN", "ACT_TUMOR_ASSESSMENT"],
+              "conditionalLogic": "Maintain all assessments regardless of dose modifications",
+              "mandatoryForStrategy": false
+            }
+          }
+        ]
+      },
+
+      "populationSummary": {
+        "id": "ATTR-SUM-001",
+        "summaryType": "HAZARD_RATIO",
+        "statisticalMeasure": "Hazard ratio from Cox proportional hazards model",
+        "comparisonType": "Agent Y vs Standard Chemotherapy",
+        "statoId": "STATO:0000496",
+        "statoLabel": "hazard ratio"
+      }
+    }
+  },
+
+  "sensitivityAnalyses": [
+    {
+      "id": "SENS-001",
+      "name": "Tipping Point Analysis for Hypothetical Imputation",
+      "sensitivityType": "MISSING_DATA",
+      "purpose": "Assess robustness of primary analysis to departures from hypothetical scenario assumptions",
+      "assumptionTested": "Whether patients discontinuing due to AE would have same PFS as similar patients continuing treatment",
+      "description": "Vary assumptions about PFS in discontinuing patients from favorable (same as continuers) to unfavorable (worse than continuers) to identify tipping point where conclusion changes"
+    },
+    {
+      "id": "SENS-002",
+      "name": "Treatment Policy Estimand",
+      "sensitivityType": "ESTIMAND",
+      "purpose": "Evaluate treatment effect including real-world impact of ICEs (treatment discontinuation and subsequent therapy)",
+      "assumptionTested": "Whether hypothetical and treatment policy estimands lead to same conclusion",
+      "description": "Complete analysis using treatment policy strategy for all ICEs - all post-randomization data included regardless of ICE occurrence"
+    },
+    {
+      "id": "SENS-003",
+      "name": "While-on-Treatment Analysis",
+      "sensitivityType": "ESTIMAND",
+      "purpose": "Assess treatment effect during period of actual drug exposure",
+      "assumptionTested": "Direct pharmacological effect during treatment exposure",
+      "description": "Censor patients at treatment discontinuation to evaluate effect while actually receiving therapy"
+    }
+  ],
+
+  "mainAnalysisConcept": {
+    "id": "AC-PRIMARY-001",
+    "name": "Primary Efficacy Analysis - Cox Model with MI",
+    "version": "1.0",
+    "analysisRole": "MAIN",
+    "relatedEstimandId": "EST-PRIMARY-001",
+    "implementsAttributes": ["ATTR-TRT-001", "ATTR-POP-001", "ATTR-VAR-001", "ATTR-ICE-001", "ATTR-SUM-001"],
+    "programmingAgnostic": false,
+    
+    "inputSpec": {
+      "id": "INPUT-001",
+      "datasetName": "ADTTE",
+      "variables": ["AVAL", "CNSR", "TRT01P", "PD_L1_CAT", "ECOG_BASE", "TUMOR_BURDEN"],
+      "whereConditions": [
+        "FASFL = 'Y'",
+        "PARAMCD = 'PFS'"
+      ],
+      "iceFlags": [
+        "DISCAEFL",
+        "SUBSEQFL",
+        "PROTDEVFL"
+      ],
+      "analysisSet": "FAS",
+      "iceHandling": "Events after ICE-DISC-AE or ICE-SUBSEQ-TX are censored at ICE date; outcomes imputed via multiple imputation under hypothetical scenario"
+    },
+    
+    "computation": {
+      "id": "COMP-001",
+      "method": {
+        "methodType": "COX_PROPORTIONAL_HAZARDS",
+        "modelSpecification": "Surv(AVAL, 1-CNSR) ~ TRT01P + strata(PD_L1_CAT_STRAT) + strata(ECOG_STRAT)",
+        "covariates": ["Stratification: PD-L1 category (50-75% vs ≥75%)", "Stratification: ECOG PS (0 vs 1)"],
+        "estimation": "Partial Likelihood",
+        "tieHandling": "EFRON",
+        "statoCode": "STATO:0000496",
+        "statoLabel": "Cox proportional hazards regression model"
+      }
+    },
+    
+    "outputSpec": {
+      "id": "OUTPUT-001",
+      "outputStructure": "HAZARD_RATIO_WITH_CI",
+      "parameters": [
+        "HR",
+        "HR_CI_LOWER",
+        "HR_CI_UPPER",
+        "P_VALUE",
+        "MEDIAN_PFS_AGENTY",
+        "MEDIAN_PFS_CONTROL"
+      ],
+      "precision": "0.001",
+      "confidenceLevel": "95%",
+      "confidenceIntervals": ["TWO_SIDED"]
+    },
+    
+    "imputationMethod": {
+      "id": "IMPUTE-001",
+      "imputationType": "MULTIPLE_IMPUTATION_REFERENCE_BASED",
+      "numberOfImputations": 1000,
+      "imputationModel": "Copy-reference imputation: post-ICE outcomes imputed from distribution of patients in same arm who did not experience ICE",
+      "treatmentArmSpecific": true,
+      "marAssumption": "MAR_CONDITIONAL",
+      "assumptions": {
+        "missingnessType": "MAR_CONDITIONAL",
+        "auxiliaryVariables": [
+          "TUMOR_BURDEN_BASE",
+          "PD_L1_CONTINUOUS", 
+          "ECOG_PS",
+          "TUMOR_CHANGE_LAST",
+          "TIME_TO_ICE",
+          "NEUTROPHIL_LYMPHOCYTE_RATIO"
+        ],
+        "sensitivityParameters": {
+          "reference_arm": "SAME_ARM",
+          "matching_variables": ["PD_L1_CAT", "TUMOR_BURDEN_TERTILE"],
+          "imputation_method": "PREDICTIVE_MEAN_MATCHING"
+        }
+      }
+    }
+  },
+
+  "sensitivityAnalysisConcepts": [
+    {
+      "id": "AC-SENS-001",
+      "name": "Tipping Point Sensitivity Analysis",
+      "analysisRole": "SENSITIVITY",
+      "relatedEstimandId": "EST-PRIMARY-001",
+      "relatedSensitivityId": "SENS-001",
+      
+      "imputationMethod": {
+        "id": "IMPUTE-002",
+        "imputationType": "MULTIPLE_IMPUTATION_DELTA_ADJUSTED",
+        "numberOfImputations": 1000,
+        "imputationModel": "Reference-based imputation with delta adjustment varying from HR=0.8 to HR=1.5",
+        "treatmentArmSpecific": true,
+        "marAssumption": "MNAR_SENSITIVITY",
+        "assumptions": {
+          "missingnessType": "MNAR",
+          "auxiliaryVariables": ["TUMOR_BURDEN_BASE", "PD_L1_CONTINUOUS", "TIME_TO_ICE"],
+          "sensitivityParameters": {
+            "delta_values": [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5],
+            "delta_interpretation": "Hazard ratio for post-ICE vs non-ICE patients",
+            "tipping_point_criterion": "HR crosses 1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "AC-SENS-002",
+      "name": "Treatment Policy Analysis",
+      "analysisRole": "SENSITIVITY",
+      "relatedEstimandId": "EST-PRIMARY-001",
+      "relatedSensitivityId": "SENS-002",
+      
+      "inputSpec": {
+        "iceHandling": "Include all data regardless of ICE occurrence - no censoring at ICE"
+      },
+      
+      "imputationMethod": null
+    }
+  ],
+
+  "supplementaryEstimand": {
+    "id": "EST-SUPPL-001",
+    "name": "Supplementary Estimand - Treatment Policy",
+    "description": "Effect of Agent Y on PFS including real-world impact of treatment discontinuation and subsequent therapy",
+    "estimandRole": "SUPPLEMENTARY",
+    "estimandType": "SUPPLEMENTARY",
+    "clinicalQuestion": "What is the overall effect of Agent Y on PFS in a real-world setting where patients may discontinue treatment or start subsequent therapy?",
+    "note": "This estimand uses treatment policy strategy for all ICEs, contrasting with the hypothetical strategy in the primary estimand"
+  },
+
+  "studyDesignPopulation": {
+    "id": "STUDYPOP-001",
+    "name": "Advanced NSCLC with High PD-L1 Expression",
+    "plannedEnrollmentNumber": 600,
+    "eligibilityCriteria": {
+      "inclusion": [
+        "Age ≥18 years",
+        "Histologically or cytologically confirmed NSCLC",
+        "Stage IIIB/IV or recurrent disease not amenable to curative therapy",
+        "PD-L1 tumor proportion score ≥50% by validated IHC assay",
+        "ECOG performance status 0-1",
+        "Measurable disease per RECIST v1.1",
+        "No prior systemic therapy for metastatic disease",
+        "Adequate organ function"
+      ],
+      "exclusion": [
+        "EGFR mutation or ALK rearrangement (if known)",
+        "Active brain metastases",
+        "Active autoimmune disease requiring systemic therapy",
+        "Prior immunotherapy",
+        "Concurrent other malignancy"
+      ]
+    }
+  },
+
+  "analysisPopulations": [
+    {
+      "id": "ANPOP-FAS-001",
+      "name": "Full Analysis Set",
+      "description": "All randomized patients",
+      "condition": "RANDFL = 'Y'",
+      "label": "FAS",
+      "purpose": "Primary efficacy analysis population per ICH E9 ITT principle"
+    }
+  ],
+
+  "metadata": {
+    "version": "2.0",
+    "createdDate": "2024-02-01",
+    "createdBy": "Sarah Johnson, VP Biometrics",
+    "lastModifiedDate": "2024-04-15",
+    "lastModifiedBy": "Michael Chen, Principal Statistician",
+    "status": "FINAL",
+    "reviewStatus": "APPROVED",
+    "regulatoryMilestone": "Pre-NDA meeting with FDA; Scientific Advice from EMA received",
+    "protocolVersion": "Final Protocol v3.0",
+    "sapVersion": "Final SAP v2.1",
+    "notes": "Primary estimand uses hypothetical strategy per EMA scientific advice. Supplementary estimand with treatment policy strategy per FDA preference. Both estimands will be tested at alpha=0.025 (two-sided) using hierarchical testing procedure."
+  }
+}

@@ -1,0 +1,1631 @@
+import { appState, navigateTo, rebuildSpec } from '../app.js';
+import { getAllEndpoints, getVisitLabels } from '../utils/usdm-parser.js';
+import {
+  getFormalizedDescription, buildEstimandFrameworkHtml, buildEstimandDescription,
+  getTransformationByOid, getDerivationTransformationByOid,
+  buildFormalizedDescription
+} from './endpoint-spec.js';
+import { resolveNarrative } from '../utils/usdm-ref-resolver.js';
+import { getOutputMapping } from '../utils/transformation-linker.js';
+import { displayConcept } from '../utils/concept-display.js';
+import { loadMethod } from '../data-loader.js';
+import { renderFormulaExpression } from './transformation-config.js';
+import { buildEsapSpecification } from '../utils/instance-serializer.js';
+import { buildDefineXml } from '../utils/define-xml-generator.js';
+import { ESAP_SECTION_PREFIXES, ESAP_SECTION_LABELS } from '../utils/esap-constants.js';
+import { resolveTitle, buildResolverContext } from './template-resolver.js';
+
+// ===== Helper: build contentItemId → section mapping =====
+function buildNciToSectionMap(study) {
+  const map = new Map();
+  for (const sec of study.documentSections || []) {
+    if (sec.contentItemId) {
+      map.set(sec.contentItemId, {
+        sectionNumber: sec.sectionNumber,
+        sectionTitle: sec.sectionTitle
+      });
+    }
+  }
+  return map;
+}
+
+// ===== Helper: resolve prefixes/label for a template node id =====
+function resolvePrefixesForSection(sectionKey) {
+  const fromMap = appState.cptUsdmSectionMap?.nodes?.[sectionKey]?.usdmPrefixes;
+  if (Array.isArray(fromMap)) return fromMap;
+  // Fall back to legacy keys for backwards compatibility
+  return ESAP_SECTION_PREFIXES[sectionKey] || [];
+}
+
+function findTemplateNode(sections, id) {
+  for (const s of sections || []) {
+    if (s.id === id) return s;
+    const child = findTemplateNode(s.children, id);
+    if (child) return child;
+  }
+  return null;
+}
+
+function resolveSectionLabel(sectionKey, selectedEps) {
+  const tpl = appState.esapTemplate;
+  if (tpl) {
+    const node = findTemplateNode(tpl.sections, sectionKey);
+    if (node) {
+      const ctx = buildResolverContext(appState, selectedEps);
+      return `${node.number}. ${resolveTitle(node.title, ctx)}`;
+    }
+  }
+  return ESAP_SECTION_LABELS[sectionKey] || sectionKey;
+}
+
+// ===== Helper: group narratives for the picker =====
+function groupNarrativesForPicker(narratives, nciToSection, esapSectionKey) {
+  const prefixes = resolvePrefixesForSection(esapSectionKey);
+  const relevant = [];
+  const groups = {};
+  const other = [];
+
+  for (const [key, label] of Object.entries(ESAP_SECTION_LABELS)) {
+    if (key !== esapSectionKey) {
+      groups[key] = { label, items: [] };
+    }
+  }
+
+  for (const nc of narratives) {
+    const sec = nciToSection.get(nc.id);
+    if (!sec) {
+      other.push({ ...nc, sectionNumber: '', sectionTitle: nc.name });
+      continue;
+    }
+
+    const sNum = (sec.sectionNumber || '').replace(/\.\s*$/, '');
+    const item = { ...nc, sectionNumber: sNum, sectionTitle: sec.sectionTitle };
+
+    if (prefixes.some(p => sNum === p || sNum.startsWith(p + '.') || sNum.startsWith(p + ' '))) {
+      relevant.push(item);
+      continue;
+    }
+
+    let placed = false;
+    for (const [key, gPrefixes] of Object.entries(ESAP_SECTION_PREFIXES)) {
+      if (key === esapSectionKey) continue;
+      if (gPrefixes.some(p => sNum === p || sNum.startsWith(p + '.') || sNum.startsWith(p + ' '))) {
+        groups[key].items.push(item);
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) {
+      other.push(item);
+    }
+  }
+
+  return { relevant, groups, other };
+}
+
+// ===== Main render function =====
+
+export async function renderEsapBuilder(container) {
+  // Rebuild resolved spec so JSON export reflects latest state
+  rebuildSpec();
+
+  const study = appState.selectedStudy;
+  if (!study) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No study selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select a study in Step 1 first.</p></div>';
+    return;
+  }
+
+  const allEndpoints = getAllEndpoints(study);
+  const selectedEps = allEndpoints.filter(ep => appState.selectedEndpoints.includes(ep.id));
+
+  if (selectedEps.length === 0) {
+    container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No endpoints selected</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please select endpoints in Step 2 first.</p></div>';
+    return;
+  }
+
+  // Group selected endpoints by objective
+  const byObjective = {};
+  for (const ep of selectedEps) {
+    if (!byObjective[ep.objectiveId]) {
+      byObjective[ep.objectiveId] = {
+        objectiveName: ep.objectiveName,
+        objectiveText: ep.objectiveText,
+        objectiveLevel: ep.objectiveLevel,
+        endpoints: []
+      };
+    }
+    byObjective[ep.objectiveId].endpoints.push(ep);
+  }
+
+  // Load all methods used by configured analyses
+  const methodOids = new Set();
+  for (const ep of selectedEps) {
+    const spec = appState.endpointSpecs?.[ep.id];
+    for (const analysis of spec?.selectedAnalyses || []) {
+      const transform = getTransformationByOid(analysis.transformationOid);
+      if (transform?.usesMethod) methodOids.add(transform.usesMethod);
+    }
+  }
+  const loadedMethods = {};
+  for (const oid of methodOids) {
+    if (!appState.methodsCache[oid]) {
+      await loadMethod(appState, oid);
+    }
+    loadedMethods[oid] = appState.methodsCache[oid] || null;
+  }
+
+  container.innerHTML = `
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+      <div>
+        <h2 style="font-size:22px; font-weight:700;">Electronic Statistical Analysis Plan</h2>
+        <p style="color:var(--cdisc-text-secondary); font-size:13px; margin-top:4px;">${study.name}</p>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary esap-view-toggle active" data-view="document" style="font-size:11px; background:var(--cdisc-primary); color:#fff;">SAP Document</button>
+        <button class="btn btn-secondary esap-view-toggle" data-view="datasets" style="font-size:11px;">ADaM Datasets</button>
+        <button class="btn btn-secondary esap-view-toggle" data-view="adamspec" style="font-size:11px;">ADaM Spec</button>
+        <button class="btn btn-secondary esap-view-toggle" data-view="json" style="font-size:11px;">{ } JSON</button>
+        <button class="btn btn-secondary esap-view-toggle" data-view="define" style="font-size:11px;">Define-XML</button>
+        <button class="btn btn-secondary" id="btn-back-pipeline">&larr; Back to Pipeline</button>
+      </div>
+    </div>
+
+    <div class="esap-doc">
+      ${appState.esapTemplate
+        ? renderTemplateTree({
+            template: appState.esapTemplate,
+            sectionMap: appState.cptUsdmSectionMap,
+            study,
+            selectedEps,
+            byObjective,
+            loadedMethods,
+            resolverCtx: buildResolverContext(appState, selectedEps)
+          })
+        : renderLegacyFourteenSections(study, selectedEps, byObjective, loadedMethods)
+      }
+    </div>
+
+    <div id="esap-datasets-panel" style="display:none; margin-top:16px;">
+      ${renderDatasetsPanel(selectedEps, study)}
+    </div>
+
+    <div id="esap-adamspec-panel" style="display:none; margin-top:16px;">
+      ${renderAdamSpecPanel(selectedEps, study)}
+    </div>
+
+    <div id="esap-json-panel" style="display:none; margin-top:16px;">
+      <div class="card" style="padding:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <div style="font-weight:700; font-size:14px;">eSAP Specification (study_esap.schema.json)</div>
+          <button class="btn btn-sm btn-secondary" id="btn-copy-json" style="font-size:11px;">Copy to Clipboard</button>
+        </div>
+        <pre id="esap-json-content" style="max-height:600px; overflow:auto; padding:12px; background:#1e1e1e; color:#d4d4d4; border-radius:var(--radius); font-size:11px; line-height:1.5; white-space:pre-wrap; word-wrap:break-word;"></pre>
+      </div>
+    </div>
+
+    <div id="esap-define-panel" style="display:none; margin-top:16px;">
+      <div class="card" style="padding:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <div>
+            <div style="font-weight:700; font-size:14px;">Define-XML 2.1 + Analysis Results Metadata</div>
+            <p style="font-size:12px; color:var(--cdisc-text-secondary); margin-top:4px;">
+              Projected from the concept-keyed spec onto CDISC Define-XML 2.1 (ADaM) + the ARM v1.0 extension.
+              Fields with no source in the spec are marked <code>GAP</code> below and as <code>def:CommentDef</code> in the file.
+            </p>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <label style="font-size:11px; color:var(--cdisc-text-secondary);">Code:
+              <select id="define-lang" class="config-input" style="font-size:11px; padding:2px 6px; margin-left:4px;">
+                <option value="R">R</option>
+                <option value="SAS">SAS</option>
+              </select>
+            </label>
+            <button class="btn btn-sm btn-secondary" id="btn-define-view" style="font-size:11px;">View rendered &nearr;</button>
+            <button class="btn btn-sm btn-primary" id="btn-define-download" style="font-size:11px;">Download Define.xml</button>
+          </div>
+        </div>
+        <div id="esap-define-coverage" style="margin-top:12px;"></div>
+        <pre id="esap-define-content" style="max-height:480px; overflow:auto; margin-top:12px; padding:12px; background:#1e1e1e; color:#d4d4d4; border-radius:var(--radius); font-size:10px; line-height:1.45; white-space:pre; word-wrap:normal;"></pre>
+      </div>
+    </div>
+  `;
+
+  // ===== Wire event handlers =====
+
+  // Collapsible toggle
+  container.querySelectorAll('.collapsible-header').forEach(header => {
+    header.addEventListener('click', (e) => {
+      if (e.target.closest('.btn-link-usdm')) return;
+      header.parentElement.classList.toggle('open');
+    });
+  });
+
+  // Back button
+  container.querySelector('#btn-back-pipeline')?.addEventListener('click', () => navigateTo(6));
+
+  // Link USDM Content buttons
+  container.querySelectorAll('.btn-link-usdm').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showNarrativePicker(container, btn.dataset.section);
+    });
+  });
+
+  // Remove linked narrative buttons
+  container.querySelectorAll('.btn-remove-linked').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const section = btn.dataset.section;
+      const nciId = btn.dataset.nciId;
+      appState.esapLinkedNarratives[section] =
+        appState.esapLinkedNarratives[section].filter(id => id !== nciId);
+      renderEsapBuilder(container);
+    });
+  });
+
+  // Edit step buttons
+  container.querySelectorAll('.esap-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const step = parseInt(btn.dataset.step, 10);
+      if (!isNaN(step)) navigateTo(step);
+    });
+  });
+
+  // View toggle (Document / ADaM Datasets / ADaM Spec / JSON)
+  const panels = {
+    document: container.querySelector('.esap-doc'),
+    datasets: container.querySelector('#esap-datasets-panel'),
+    adamspec: container.querySelector('#esap-adamspec-panel'),
+    json: container.querySelector('#esap-json-panel'),
+    define: container.querySelector('#esap-define-panel')
+  };
+  const jsonContent = container.querySelector('#esap-json-content');
+  let defineGenerated = false;
+
+  container.querySelectorAll('.esap-view-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const view = btn.dataset.view;
+
+      // Toggle active button styling
+      container.querySelectorAll('.esap-view-toggle').forEach(b => {
+        b.classList.remove('active');
+        b.style.background = '';
+        b.style.color = '';
+      });
+      btn.classList.add('active');
+      btn.style.background = 'var(--cdisc-primary)';
+      btn.style.color = '#fff';
+
+      // Show/hide panels
+      for (const [key, panel] of Object.entries(panels)) {
+        if (panel) panel.style.display = key === view ? '' : 'none';
+      }
+
+      // Lazy-generate JSON — schema-aligned eSAP specification
+      if (view === 'json' && jsonContent) {
+        const esapSpec = buildEsapSpecification(appState);
+        jsonContent.textContent = JSON.stringify(esapSpec, null, 2);
+      }
+
+      // Lazy-generate Define-XML (async — touches CSV + resolved spec)
+      if (view === 'define' && !defineGenerated) {
+        defineGenerated = true;
+        generateDefinePanel(container, selectedEps, study);
+      }
+    });
+  });
+
+  // Copy JSON button
+  const copyBtn = container.querySelector('#btn-copy-json');
+  if (copyBtn && jsonContent) {
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(jsonContent.textContent).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy to Clipboard'; }, 2000);
+      });
+    });
+  }
+
+  // Dataset assignment handlers — persist PER transformation instance so an
+  // endpoint's variables can span datasets (e.g. derivations→ADQS, analysis
+  // results→ARSQS). targetDataset is kept as a back-compat default.
+  container.querySelectorAll('.dataset-assign-input').forEach(input => {
+    input.addEventListener('change', () => {
+      const epId = input.dataset.epId;
+      const key = input.dataset.instanceKey;
+      if (!epId) return;
+      if (!appState.endpointSpecs[epId]) appState.endpointSpecs[epId] = {};
+      const spec = appState.endpointSpecs[epId];
+      const val = input.value.trim().toUpperCase();
+      if (key) {
+        if (!spec.datasetAssignments) spec.datasetAssignments = {};
+        spec.datasetAssignments[key] = val;
+      }
+      spec.targetDataset = val;
+    });
+  });
+}
+
+/** Legacy 14-section render — used only when state.esapTemplate is unavailable. */
+function renderLegacyFourteenSections(study, selectedEps, byObjective, loadedMethods) {
+  return [
+    renderEsapSection('abbreviations', ESAP_SECTION_LABELS.abbreviations, renderPlaceholderSection('Link protocol abbreviations from USDM, or add manually.'), false),
+    renderEsapSection('introduction', ESAP_SECTION_LABELS.introduction, renderIntroductionSection(study), false),
+    renderEsapSection('objectives', ESAP_SECTION_LABELS.objectives, renderObjectivesSection(selectedEps, byObjective)),
+    renderEsapSection('studyDesign', ESAP_SECTION_LABELS.studyDesign, renderStudyDesignSection(study), false),
+    renderEsapSection('protocolChanges', ESAP_SECTION_LABELS.protocolChanges, renderPlaceholderSection('Link USDM content describing protocol amendments and their impact on planned analyses.'), false),
+    renderEsapSection('estimands', ESAP_SECTION_LABELS.estimands, renderEstimandsSection(selectedEps, study)),
+    renderEsapSection('endpoints', ESAP_SECTION_LABELS.endpoints, renderEndpointsSection(selectedEps, study)),
+    renderEsapSection('analysisSets', ESAP_SECTION_LABELS.analysisSets, renderAnalysisSetsSection(study)),
+    renderEsapSection('statMethods', ESAP_SECTION_LABELS.statMethods, renderStatMethodsSection(selectedEps, study, loadedMethods)),
+    renderEsapSection('statAnalysis', ESAP_SECTION_LABELS.statAnalysis, renderStatAnalysisSection(selectedEps, study)),
+    renderEsapSection('software', ESAP_SECTION_LABELS.software, renderPlaceholderSection('Specify statistical software (e.g., SAS 9.4, R 4.3).'), false),
+    renderEsapSection('references', ESAP_SECTION_LABELS.references, renderPlaceholderSection('Add references to ICH E9(R1), protocol, and relevant literature.'), false),
+    renderEsapSection('shells', ESAP_SECTION_LABELS.shells, renderPlaceholderSection('Table, figure, and listing shells will be appended.'), false),
+    renderEsapSection('appendices', ESAP_SECTION_LABELS.appendices, renderPlaceholderSection('Supplementary material.'), false)
+  ].join('');
+}
+
+// ===== Template-driven render (TransCelerate Core TEE) =====
+
+/**
+ * Walk the loaded SAP template tree and emit collapsible sections.
+ * Each node's body is dispatched via `cptUsdmSectionMap[node.id].fromSpec`
+ * to one of the existing AC/DC renderers (estimands, endpoints, etc.),
+ * or — when only `usdmPrefixes` is set — falls through to a USDM-link picker.
+ * The original CPT wizard prose is preserved as a collapsed <details> block
+ * so reviewers can see what the predecessor template would have prompted.
+ */
+function renderTemplateTree(args) {
+  const { template, sectionMap } = args;
+  if (!template?.sections?.length) {
+    return '<p style="color:var(--cdisc-text-secondary);">eSAP template not loaded.</p>';
+  }
+  return template.sections.map(node => renderTemplateNode(node, 1, args, sectionMap)).join('');
+}
+
+function renderTemplateNode(node, depth, args, sectionMap) {
+  const { resolverCtx } = args;
+  const mapping = sectionMap?.nodes?.[node.id] || {};
+  const resolvedTitle = resolveTitle(node.title, resolverCtx);
+  const fullTitle = `${node.number}. ${resolvedTitle}`;
+
+  const body = renderNodeBody(node, mapping, args);
+  const cptDetails = renderCptPrompts(node);
+  const childrenHtml = (node.children || [])
+    .map(child => renderTemplateNode(child, depth + 1, args, sectionMap))
+    .join('');
+
+  // Top-level (depth 1) starts collapsed; sub-sections are nested inside.
+  const startOpen = depth === 1 && hasContent(body, childrenHtml);
+
+  return renderEsapSection(
+    node.id,
+    fullTitle,
+    `${body}${cptDetails}${childrenHtml ? `<div style="margin-top:12px;">${childrenHtml}</div>` : ''}`,
+    startOpen,
+    depth
+  );
+}
+
+function hasContent(...parts) {
+  return parts.some(p => p && p.trim().length > 0);
+}
+
+function renderNodeBody(node, mapping, args) {
+  const { study, selectedEps, byObjective, loadedMethods } = args;
+  const fromSpec = mapping.fromSpec;
+
+  // Top-level dispatch first — fall back to USDM linker placeholder
+  if (fromSpec) {
+    return dispatchFromSpec(fromSpec, { node, study, selectedEps, byObjective, loadedMethods });
+  }
+  if (mapping.usdmPrefixes?.length) {
+    return ''; // body comes from the linked-narrative panel rendered by renderEsapSection
+  }
+  // No mapping at all (or leaf without explicit fromSpec) — leave empty so children can carry the content
+  return '';
+}
+
+function dispatchFromSpec(fromSpec, ctx) {
+  const { node, study, selectedEps, byObjective, loadedMethods } = ctx;
+  switch (fromSpec) {
+    case 'objectivesEndpointsEstimands':
+      return renderObjectivesSection(selectedEps, byObjective);
+    case 'decisionCriteria':
+      return renderPlaceholderSection('Decision criteria / statistical hypotheses are derived from the configured estimand frameworks. Use Step 4 (Endpoint How) to add hypotheses; link USDM content for textual context.');
+    case 'multiplicity':
+      return renderPlaceholderSection('Describe multiplicity adjustments (e.g., Hochberg, Holm) per primary endpoint family. Link USDM content if the protocol specifies.');
+    case 'intercurrentEventStrategies':
+      return renderIntercurrentEventsSection(selectedEps);
+    case 'missingDataHandling':
+      return renderPlaceholderSection('Describe handling of missing data (e.g., MMRM, multiple imputation). Link USDM content from the protocol.');
+    case 'analysisSets':
+      return renderAnalysisSetsSection(study);
+    case 'analyses.primary':
+      return renderEndpointLevelAnalysis(selectedEps, study, /Primary/i);
+    case 'analyses.primary.definition':
+      return renderEndpointDefinitions(selectedEps, study, /Primary/i);
+    case 'analyses.primary.main':
+      return renderMainAnalyses(selectedEps, study, /Primary/i);
+    case 'analyses.primary.sensitivity':
+      return renderPlaceholderSection('Sensitivity analyses for primary endpoint(s). Configure variants in Step 4 (Endpoint How) — flag analyses as "sensitivity" to surface here.');
+    case 'analyses.primary.supplementary':
+      return renderPlaceholderSection('Supplementary analyses for primary endpoint(s). Configure variants in Step 4.');
+    case 'analyses.secondary':
+      return renderEndpointLevelAnalysis(selectedEps, study, /Secondary/i);
+    case 'analyses.secondary.key':
+    case 'analyses.secondary.key.main':
+      return renderMainAnalyses(selectedEps, study, /Secondary/i);
+    case 'analyses.secondary.key.definition':
+      return renderEndpointDefinitions(selectedEps, study, /Secondary/i);
+    case 'analyses.secondary.key.sensitivity':
+      return renderPlaceholderSection('Sensitivity analyses for secondary endpoint(s).');
+    case 'analyses.secondary.key.supplementary':
+      return renderPlaceholderSection('Supplementary analyses for secondary endpoint(s).');
+    case 'analyses.secondary.supportive':
+      return renderPlaceholderSection('Supportive secondary endpoint analyses.');
+    case 'analyses.exploratory':
+      return renderEndpointLevelAnalysis(selectedEps, study, /Exploratory|Tertiary/i);
+    case 'analyses.safety':
+      return renderEndpointLevelAnalysis(selectedEps, study, /Safety/i);
+    case 'safety.exposure':
+      return renderPlaceholderSection('Extent of exposure analyses (treatment duration, total dose, compliance).');
+    case 'safety.adverseEvents':
+      return renderPlaceholderSection('Adverse event analyses (TEAE incidence, severity, relationship, SAEs).');
+    case 'safety.additional':
+      return renderPlaceholderSection('Additional safety assessments (vitals, ECG, labs, physical exam).');
+    case 'other':
+    case 'other.variables':
+      return renderPlaceholderSection('Other variables and parameters not covered by primary, secondary, or safety sections.');
+    case 'subgroup':
+      return renderPlaceholderSection('Subgroup analyses by demographic, baseline, or stratification factors.');
+    case 'interim':
+      return renderPlaceholderSection('Interim analyses, including stopping rules and information fractions.');
+    case 'protocolChanges':
+      return renderPlaceholderSection('Changes to the protocol-planned analyses since the protocol was finalized.');
+    case 'sampleSize':
+      return renderPlaceholderSection('Sample size determination — assumptions, effect size, power, drop-out adjustment.');
+    default:
+      return renderPlaceholderSection(`(${fromSpec}) — Link USDM content or configure in earlier steps.`);
+  }
+}
+
+/** Render the original CPT wizard prose as a collapsible details block — the demo callout. */
+function renderCptPrompts(node) {
+  const prompts = node.wizardPrompts || [];
+  if (!prompts.length) return '';
+  const blocks = prompts.map((p, i) => {
+    const label = p.kind === 'example' ? 'Example text' : 'Suggested text';
+    const lines = (p.lines || []).map(l => `<div>${escapeHtml(l)}</div>`).join('');
+    return `
+      <details style="margin-top:8px; padding:8px 12px; background:var(--cdisc-background); border-left:3px dashed var(--cdisc-border); border-radius:0 var(--radius) var(--radius) 0;">
+        <summary style="cursor:pointer; font-size:11px; color:var(--cdisc-text-secondary); font-style:italic;">
+          What the CPT wizard would have prompted here &mdash; ${label} ${prompts.length > 1 ? `(${i + 1}/${prompts.length})` : ''}
+        </summary>
+        <div style="font-size:11px; line-height:1.5; margin-top:6px; color:var(--cdisc-text-secondary);">${lines}</div>
+      </details>`;
+  });
+  return blocks.join('');
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/** Endpoint-level helpers used by the dispatcher. */
+function renderEndpointLevelAnalysis(selectedEps, study, levelRe) {
+  const eps = (selectedEps || []).filter(ep => levelRe.test(ep.level));
+  if (!eps.length) return renderPlaceholderSection(`No endpoints at this level configured for the active study.`);
+  const lib = appState.transformationLibrary;
+  return eps.map(ep => renderStatAnalysisCard(ep, study, lib)).join('') +
+    `<div style="margin-top:8px;"><button class="btn btn-sm btn-secondary esap-edit-btn" data-step="4">Edit in Endpoint How &rarr;</button></div>`;
+}
+
+function renderEndpointDefinitions(selectedEps, study, levelRe) {
+  const eps = (selectedEps || []).filter(ep => levelRe.test(ep.level));
+  if (!eps.length) return renderPlaceholderSection('No endpoints configured at this level.');
+  return eps.map(ep => renderEndpointCard(ep)).join('');
+}
+
+function renderMainAnalyses(selectedEps, study, levelRe) {
+  const eps = (selectedEps || []).filter(ep => levelRe.test(ep.level));
+  if (!eps.length) return renderPlaceholderSection('No analyses configured at this level.');
+  const lib = appState.transformationLibrary;
+  return eps.map(ep => renderStatAnalysisCard(ep, study, lib)).join('');
+}
+
+function renderIntercurrentEventsSection(selectedEps) {
+  const items = [];
+  for (const ep of selectedEps || []) {
+    const spec = appState.endpointSpecs?.[ep.id];
+    const ies = spec?.intercurrentEvents || [];
+    for (const ie of ies) {
+      items.push({ epName: ep.name, ...ie });
+    }
+  }
+  if (!items.length) {
+    return renderPlaceholderSection('Intercurrent event strategies are configured per endpoint in Step 4 (Endpoint How). None defined yet for the selected endpoints.');
+  }
+  return `
+    <table class="data-table" style="font-size:12px;">
+      <thead><tr><th>Endpoint</th><th>Event</th><th>Strategy</th><th>Rationale</th></tr></thead>
+      <tbody>
+        ${items.map(it => `
+          <tr>
+            <td>${escapeHtml(it.epName)}</td>
+            <td>${escapeHtml(it.event || it.name || '')}</td>
+            <td><span class="badge badge-blue">${escapeHtml(it.strategy || '')}</span></td>
+            <td>${escapeHtml(it.rationale || '')}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ===== Section Renderers — Front Matter (1-5) =====
+
+function renderPlaceholderSection(text) {
+  return `<p style="font-size:12px; color:var(--cdisc-text-secondary); font-style:italic;">${text}</p>`;
+}
+
+function renderIntroductionSection(study) {
+  return `
+    <table class="data-table">
+      <tbody>
+        <tr><td style="width:180px; font-weight:600;">Study Title</td><td>${study.name}</td></tr>
+        <tr><td style="font-weight:600;">Protocol Number</td><td>${study.identifiers.map(i => i.text).join(', ')}</td></tr>
+        <tr><td style="font-weight:600;">Phase</td><td>${study.phase}</td></tr>
+        <tr><td style="font-weight:600;">Therapeutic Area</td><td>${study.therapeuticAreas.map(t => t.decode).join(', ')}</td></tr>
+      </tbody>
+    </table>
+  `;
+}
+
+function renderObjectivesSection(selectedEps, byObjective) {
+  let html = '';
+  const levels = ['Primary', 'Secondary', 'Exploratory'];
+  for (const level of levels) {
+    const objs = Object.entries(byObjective).filter(([, obj]) => obj.objectiveLevel.includes(level));
+    if (objs.length === 0) continue;
+    const subNum = level === 'Primary' ? '3.1' : level === 'Secondary' ? '3.2' : '3.3';
+    html += `<div style="margin-bottom:16px;">
+      <div style="font-weight:600; font-size:13px; margin-bottom:8px;">${subNum} ${level} Objective(s)</div>
+      ${objs.map(([, obj]) => `
+        <div style="margin-bottom:12px; padding:8px 12px; background:var(--cdisc-background); border-radius:var(--radius);">
+          <strong>${obj.objectiveName}</strong>
+          <p style="font-size:12px; margin-top:4px; line-height:1.5;">${obj.objectiveText || ''}</p>
+          ${obj.endpoints.map(ep => `<div style="font-size:12px; margin-top:4px;"><span class="badge badge-blue">${ep.name}</span> ${ep.text || ''}</div>`).join('')}
+        </div>
+      `).join('')}
+    </div>`;
+  }
+  return html || '<p style="color:var(--cdisc-text-secondary);">No objectives configured.</p>';
+}
+
+function renderStudyDesignSection(study) {
+  return `
+    <div style="font-weight:600; font-size:13px; margin-bottom:8px;">4.1 General Design</div>
+    <table class="data-table" style="margin-bottom:16px;">
+      <tbody>
+        <tr><td style="width:180px; font-weight:600;">Study Type</td><td>${study.studyType || 'N/A'}</td></tr>
+        <tr><td style="font-weight:600;">Phase</td><td>${study.phase}</td></tr>
+        <tr><td style="font-weight:600;">Study Model</td><td>${study.studyModel || 'N/A'}</td></tr>
+        <tr><td style="font-weight:600;">Intent</td><td>${(study.intentTypes || []).join(', ') || 'N/A'}</td></tr>
+      </tbody>
+    </table>
+    <div style="font-weight:600; font-size:13px; margin-bottom:8px;">4.2 Randomization and Treatment Assignments</div>
+    <table class="data-table" style="margin-bottom:16px;">
+      <thead><tr><th>Arm</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        ${study.arms.map(arm => `
+          <tr>
+            <td style="font-weight:600;">${arm.name}</td>
+            <td><span class="badge badge-blue">${arm.type}</span></td>
+            <td>${arm.description || ''}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <div style="font-weight:600; font-size:13px; margin-bottom:8px;">4.3 Blinding/Unblinding</div>
+    <p style="font-size:12px;">${study.blindingSchema || '<span style="color:var(--cdisc-text-secondary); font-style:italic;">Not specified in USDM</span>'}</p>
+  `;
+}
+
+// ===== Section 6: Estimands =====
+
+function renderEstimandsSection(selectedEps, study) {
+  const primaryEps = selectedEps.filter(ep => ep.level.includes('Primary'));
+  const secondaryEps = selectedEps.filter(ep => ep.level.includes('Secondary'));
+  const otherEps = selectedEps.filter(ep => !ep.level.includes('Primary') && !ep.level.includes('Secondary'));
+
+  function renderEstimandGroup(label, eps) {
+    if (eps.length === 0) return '';
+    return `
+      <div style="margin-bottom:16px;">
+        <div style="font-weight:600; font-size:13px; margin-bottom:8px;">${label}</div>
+        ${eps.map(ep => {
+          const spec = appState.endpointSpecs?.[ep.id] || {};
+          const estimandDesc = buildEstimandDescription(ep, spec, study);
+          return `
+            <div style="margin-bottom:12px;">
+              <div style="font-size:12px; font-weight:600; margin-bottom:4px;">${ep.name}</div>
+              ${buildEstimandFrameworkHtml(ep, spec, study, estimandDesc)}
+            </div>`;
+        }).join('')}
+      </div>`;
+  }
+
+  let html = renderEstimandGroup('6.1 Primary Estimand(s)', primaryEps);
+  html += renderEstimandGroup('6.2 Secondary Estimand(s)', secondaryEps);
+  if (otherEps.length > 0) html += renderEstimandGroup('6.3 Other Estimand(s)', otherEps);
+
+  if (!html) html = '<p style="color:var(--cdisc-text-secondary);">Configure endpoints and analyses to auto-generate estimands.</p>';
+
+  html += `<div style="margin-top:8px;"><button class="btn btn-sm btn-secondary esap-edit-btn" data-step="4">Edit in Endpoint How &rarr;</button></div>`;
+  return html;
+}
+
+// ===== Section 7: Study Endpoints =====
+
+function renderEndpointsSection(selectedEps, study) {
+  const visitLabels = getVisitLabels(study);
+
+  let html = `
+    <div style="margin-bottom:16px;">
+      <div style="font-weight:600; font-size:13px; margin-bottom:8px;">7.2 Timepoint Definitions</div>
+      <div style="font-size:12px;">
+        ${visitLabels.length > 0
+          ? `<div style="display:flex; flex-wrap:wrap; gap:4px;">${visitLabels.map(v => `<span class="badge badge-teal">${v}</span>`).join('')}</div>`
+          : '<span style="color:var(--cdisc-text-secondary);">No timepoints defined in study.</span>'}
+      </div>
+    </div>`;
+
+  const groups = [
+    { label: '7.7 Primary Endpoint(s)', filter: ep => ep.level.includes('Primary') },
+    { label: '7.8 Secondary Endpoint(s)', filter: ep => ep.level.includes('Secondary') },
+    { label: '7.9 Exploratory Endpoint(s)', filter: ep => ep.level.includes('Exploratory') },
+    { label: '7.10 Safety Endpoints', filter: ep => ep.level.includes('Safety') }
+  ];
+
+  for (const group of groups) {
+    const eps = selectedEps.filter(group.filter);
+    if (eps.length === 0) continue;
+    html += `<div style="margin-bottom:16px;">
+      <div style="font-weight:600; font-size:13px; margin-bottom:8px;">${group.label}</div>
+      ${eps.map(ep => renderEndpointCard(ep)).join('')}
+    </div>`;
+  }
+
+  html += `<div style="margin-top:8px;"><button class="btn btn-sm btn-secondary esap-edit-btn" data-step="3">Edit in Endpoint What &rarr;</button></div>`;
+  return html;
+}
+
+function renderEndpointCard(ep) {
+  const study = appState.selectedStudy;
+  const formalized = study ? getFormalizedDescription(ep.id, study) : null;
+  const displayText = formalized || ep.text || '';
+  return `
+    <div style="padding:8px 12px; margin-bottom:6px; background:var(--cdisc-background); border-radius:var(--radius); font-size:12px;">
+      <strong>${ep.name}</strong>
+      <span class="badge ${ep.level.includes('Primary') ? 'badge-primary' : 'badge-secondary'}" style="margin-left:6px;">${ep.level}</span>
+      <div style="color:var(--cdisc-text-secondary); margin-top:4px; line-height:1.4;">${displayText}</div>
+      ${formalized ? '<div style="font-size:10px; color:var(--cdisc-primary); margin-top:2px; font-style:italic;">Formalized description</div>' : ''}
+    </div>
+  `;
+}
+
+// ===== Section 8: Analysis Sets =====
+
+function renderAnalysisSetsSection(study) {
+  const analysisPopulations = study.analysisPopulations || [];
+
+  if (analysisPopulations.length === 0) {
+    return '<p style="color:var(--cdisc-text-secondary);">No analysis sets defined in study.</p>';
+  }
+
+  return `
+    <table class="data-table">
+      <thead><tr><th>Analysis Set</th><th>Description</th></tr></thead>
+      <tbody>
+        ${analysisPopulations.map(ap => `
+          <tr>
+            <td style="font-weight:600;">${ap.name}</td>
+            <td>${ap.text || ap.description || ''}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ===== Section 9: Statistical Methods =====
+
+function renderStatMethodsSection(selectedEps, study, loadedMethods) {
+  const methodUsage = new Map();
+
+  for (const ep of selectedEps) {
+    const spec = appState.endpointSpecs?.[ep.id];
+    for (const analysis of spec?.selectedAnalyses || []) {
+      const transform = getTransformationByOid(analysis.transformationOid);
+      if (!transform?.usesMethod) continue;
+      const methodOid = transform.usesMethod;
+      if (!methodUsage.has(methodOid)) {
+        methodUsage.set(methodOid, {
+          method: loadedMethods[methodOid] || null,
+          methodOid,
+          transforms: [],
+          endpoints: []
+        });
+      }
+      const entry = methodUsage.get(methodOid);
+      if (!entry.transforms.find(t => t.oid === transform.oid)) entry.transforms.push(transform);
+      if (!entry.endpoints.find(e => e.id === ep.id)) entry.endpoints.push(ep);
+    }
+  }
+
+  if (methodUsage.size === 0) {
+    return '<p style="color:var(--cdisc-text-secondary);">No statistical methods configured. Select analyses in the Endpoint How step.</p>';
+  }
+
+  let html = '<div style="font-weight:600; font-size:13px; margin-bottom:12px;">9.1 General Methodology</div>';
+
+  for (const [oid, usage] of methodUsage) {
+    const m = usage.method;
+    html += `
+      <div class="card" style="margin-bottom:12px; padding:12px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <strong>${m?.name || oid}</strong>
+          <span class="badge badge-blue">${m?.type || ''}</span>
+          <span class="badge badge-secondary">${m?.class || ''}</span>
+        </div>
+        ${m?.description ? `<p style="font-size:12px; margin-bottom:8px;">${m.description}</p>` : ''}
+        ${m?.formula ? `<div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:4px;">Formula: <code>${m.formula.default_expression || ''}</code></div>` : ''}
+        <div style="font-size:11px; color:var(--cdisc-text-secondary);">
+          Used by: ${usage.endpoints.map(ep => `<span class="badge badge-teal">${ep.name}</span>`).join(' ')}
+        </div>
+        ${m?.input_roles ? `
+        <div style="margin-top:8px;">
+          <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; margin-bottom:4px;">Input Roles</div>
+          <table class="data-table" style="font-size:11px;">
+            <thead><tr><th>Role</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              ${m.input_roles.map(r => `<tr><td style="font-weight:600;">${r.name}</td><td>${r.dataType}</td><td>${r.required ? 'Yes' : 'No'}</td><td>${r.description || ''}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>` : ''}
+        ${m?.assumptions?.length > 0 ? `
+        <div style="margin-top:8px; font-size:11px;">
+          <strong>Assumptions:</strong> ${m.assumptions.join('; ')}
+        </div>` : ''}
+      </div>`;
+  }
+
+  html += `
+    <div style="font-weight:600; font-size:13px; margin-top:16px; margin-bottom:8px;">9.3 Handling of Dropouts or Missing Data</div>
+    <p style="font-size:12px; color:var(--cdisc-text-secondary); font-style:italic;">Link USDM content or describe imputation methods.</p>
+    <div style="font-weight:600; font-size:13px; margin-top:16px; margin-bottom:8px;">9.5 Multiple Comparisons/Multiplicity</div>
+    <p style="font-size:12px; color:var(--cdisc-text-secondary); font-style:italic;">Link USDM content describing multiplicity adjustments.</p>
+  `;
+
+  html += `<div style="margin-top:8px;"><button class="btn btn-sm btn-secondary esap-edit-btn" data-step="4">Edit in Endpoint How &rarr;</button></div>`;
+  return html;
+}
+
+// ===== Section 10: Statistical Analysis =====
+
+function renderStatAnalysisSection(selectedEps, study) {
+  const lib = appState.transformationLibrary;
+
+  const groups = [
+    { label: '10.5 Analysis of Primary Endpoint(s)', filter: ep => ep.level.includes('Primary') },
+    { label: '10.6 Analysis of Secondary Endpoint(s)', filter: ep => ep.level.includes('Secondary') },
+    { label: '10.7 Analysis of Exploratory Endpoint(s)', filter: ep => ep.level.includes('Exploratory') },
+    { label: '10.8 Analysis of Safety Endpoint(s)', filter: ep => ep.level.includes('Safety') }
+  ];
+
+  let html = '';
+
+  for (const group of groups) {
+    const eps = selectedEps.filter(group.filter);
+    if (eps.length === 0) continue;
+
+    html += `<div style="margin-bottom:20px;">
+      <div style="font-weight:600; font-size:13px; margin-bottom:12px;">${group.label}</div>
+      ${eps.map(ep => renderStatAnalysisCard(ep, study, lib)).join('')}
+    </div>`;
+  }
+
+  if (!html) {
+    html = '<p style="color:var(--cdisc-text-secondary);">No analyses configured. Use the Endpoint How step to add analyses.</p>';
+  }
+
+  html += `<div style="margin-top:8px; display:flex; gap:8px;">
+    <button class="btn btn-sm btn-secondary esap-edit-btn" data-step="4">Edit in Endpoint How &rarr;</button>
+    <button class="btn btn-sm btn-secondary esap-edit-btn" data-step="6">Edit Derivation Pipeline &rarr;</button>
+  </div>`;
+  return html;
+}
+
+function renderStatAnalysisCard(ep, study, lib) {
+  const spec = appState.endpointSpecs?.[ep.id] || {};
+  const analyses = spec.selectedAnalyses || [];
+  const formalized = buildFormalizedDescription(ep, spec, study);
+  const derivChain = spec.derivationChain || [];
+
+  // Derivation chain visualization
+  let derivHtml = '';
+  if (derivChain.length > 0) {
+    const derivations = lib?.derivationTransformations || [];
+    derivHtml = `<div style="margin-top:8px;">
+      <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; margin-bottom:4px;">Derivation Chain</div>
+      <div style="display:flex; flex-wrap:wrap; align-items:center; gap:4px;">
+        ${derivChain.map(entry => {
+          const d = derivations.find(x => x.oid === entry.derivationOid);
+          return d ? `<span class="badge badge-teal">${d.name}</span><span style="color:var(--cdisc-text-secondary);">&#9654;</span>` : '';
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Per-analysis detail
+  const analysisHtml = analyses.map(analysis => {
+    const transform = getTransformationByOid(analysis.transformationOid);
+    if (!transform) return '';
+
+    const method = appState.methodsCache?.[transform.usesMethod] || null;
+    const customBindings = analysis.resolvedBindings || [];
+    const outputSlots = getOutputMapping(transform, appState.acModel, method, customBindings, analysis.activeInteractions || [], analysis.outputConfig);
+
+    // Temporarily set selectedTransformation so renderFormulaExpression can resolve named slices
+    const prevTransform = appState.selectedTransformation;
+    appState.selectedTransformation = transform;
+    const formulaHtml = method?.formula ? renderFormulaExpression(customBindings, method, analysis.activeInteractions || []) : '';
+    appState.selectedTransformation = prevTransform;
+
+    const notationLabel = method?.formula?.notation === 'wilkinson_rogers' ? 'Wilkinson-Rogers'
+      : method?.formula?.notation === 'survival' ? 'Survival'
+      : method?.formula?.notation === 'assignment' ? 'Assignment'
+      : '';
+
+    return `
+      <div style="margin-top:8px; padding:8px 12px; border:1px solid var(--cdisc-border); border-radius:var(--radius);">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+          <strong style="font-size:12px;">${transform.name}</strong>
+          <span class="badge badge-blue">${transform.usesMethod}</span>
+        </div>
+        ${formulaHtml ? `
+        <div style="margin-bottom:8px;">
+          <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Model Expression${notationLabel ? ` <span style="font-weight:400; text-transform:none; letter-spacing:0;">(${notationLabel})</span>` : ''}</div>
+          <div class="formula-display" style="font-family:'SF Mono','Fira Code','Consolas',monospace; font-size:12px; background:var(--cdisc-background); padding:8px 12px; border-radius:var(--radius); border-left:3px solid var(--cdisc-primary); line-height:1.6;">${formulaHtml}</div>
+        </div>` : ''}
+        ${outputSlots.length > 0 ? `
+        <div style="margin-top:8px;">
+          <div style="font-size:10px; font-weight:600; color:var(--cdisc-text-secondary); text-transform:uppercase; margin-bottom:4px;">Outputs</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            ${outputSlots.map(slot => `
+              <div style="padding:4px 8px; border:1px solid var(--cdisc-border); border-radius:var(--radius); font-size:11px;">
+                <strong>${slot.patternName}</strong>
+                <div style="font-size:9px; color:var(--cdisc-text-secondary);">${slot.constituents.slice(0, 3).join(', ')}</div>
+                ${slot.dimensions.length > 0 ? `<div style="font-size:9px; color:var(--cdisc-primary);">Indexed by: ${slot.dimensions.map(id => {
+                  if (id.includes(':')) return id.split(':').map(p => displayConcept(p)).join(':');
+                  return displayConcept(id);
+                }).join(', ')}</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>` : ''}
+      </div>`;
+  }).join('');
+
+  return `
+    <details style="margin-bottom:12px; border:1px solid var(--cdisc-border); border-radius:var(--radius); overflow:hidden;">
+      <summary style="padding:10px 14px; cursor:pointer; background:var(--cdisc-background); font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;">
+        ${ep.name}
+        <span class="badge ${ep.level.includes('Primary') ? 'badge-primary' : 'badge-secondary'}">${ep.level}</span>
+        ${analyses.length > 0 ? `<span class="badge badge-blue">${analyses.length} analysis${analyses.length > 1 ? 'es' : ''}</span>` : '<span class="badge" style="background:var(--cdisc-background); color:var(--cdisc-text-secondary);">not configured</span>'}
+      </summary>
+      <div style="padding:12px 14px;">
+        ${formalized ? `<div style="font-size:12px; margin-bottom:8px; padding:8px 12px; background:var(--cdisc-primary-light); border-left:3px solid var(--cdisc-primary); border-radius:var(--radius);">${formalized}</div>` : ''}
+        ${derivHtml}
+        ${analysisHtml || '<p style="color:var(--cdisc-text-secondary); font-size:12px;">No analysis configured for this endpoint.</p>'}
+      </div>
+    </details>`;
+}
+
+// ===== ADaM Datasets Panel =====
+
+function renderDatasetsPanel(selectedEps, study) {
+  const lib = appState.transformationLibrary;
+  const derivations = lib?.derivationTransformations || [];
+
+  // Collect all transformation instances per endpoint (both derivations and analyses)
+  const allInstances = [];
+
+  for (const ep of selectedEps) {
+    const spec = appState.endpointSpecs?.[ep.id] || {};
+    const assignments = spec.datasetAssignments || {};
+    // Per-instance dataset: keyed `${epId}::type::oid`; falls back to the
+    // endpoint-level targetDataset for unmigrated specs.
+    const dsFor = (type, oid) => {
+      const k = `${ep.id}::${type}::${oid}`;
+      return (k in assignments) ? assignments[k] : (spec.targetDataset || '');
+    };
+
+    // Derivation chain entries
+    for (const entry of spec.derivationChain || []) {
+      const d = derivations.find(x => x.oid === entry.derivationOid);
+      if (d) {
+        allInstances.push({
+          epId: ep.id,
+          epName: ep.name,
+          epLevel: ep.level,
+          oid: d.oid,
+          name: d.name,
+          type: 'derivation',
+          method: d.usesMethod || '',
+          key: `${ep.id}::derivation::${d.oid}`,
+          dataset: dsFor('derivation', d.oid)
+        });
+      }
+    }
+
+    // Analysis entries
+    for (const analysis of spec.selectedAnalyses || []) {
+      const t = (lib?.analysisTransformations || []).find(x => x.oid === analysis.transformationOid);
+      if (t) {
+        allInstances.push({
+          epId: ep.id,
+          epName: ep.name,
+          epLevel: ep.level,
+          oid: t.oid,
+          name: t.name,
+          type: 'analysis',
+          method: t.usesMethod || '',
+          category: t.acCategory || '',
+          key: `${ep.id}::analysis::${t.oid}`,
+          dataset: dsFor('analysis', t.oid)
+        });
+      }
+    }
+  }
+
+  if (allInstances.length === 0) {
+    return `<div class="card" style="padding:24px; text-align:center;">
+      <p style="color:var(--cdisc-text-secondary);">No transformations configured. Configure endpoints and analyses first.</p>
+    </div>`;
+  }
+
+  // Group by dataset
+  const byDataset = {};
+  const unassigned = [];
+  for (const inst of allInstances) {
+    if (inst.dataset) {
+      if (!byDataset[inst.dataset]) byDataset[inst.dataset] = [];
+      byDataset[inst.dataset].push(inst);
+    } else {
+      unassigned.push(inst);
+    }
+  }
+
+  // Common ADaM datasets for suggestions
+  const commonDatasets = ['ADSL', 'ADQS', 'ADVS', 'ADLB', 'ADAE', 'ADTTE', 'ADEG', 'ADCM', 'ADMH', 'ADEFF'];
+
+  let html = `
+    <div class="card" style="padding:16px; margin-bottom:16px;">
+      <div style="font-weight:700; font-size:14px; margin-bottom:4px;">ADaM Dataset Assignment</div>
+      <p style="font-size:12px; color:var(--cdisc-text-secondary); margin-bottom:16px;">
+        Assign each endpoint's configured transformation instances to an ADaM dataset. The template is a generic recipe &mdash; the dataset is an implementation choice made per study instance.
+      </p>
+
+      <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:16px;">
+        <span style="font-size:11px; color:var(--cdisc-text-secondary); margin-right:4px;">Common datasets:</span>
+        ${commonDatasets.map(ds => {
+          const count = byDataset[ds]?.length || 0;
+          return `<span class="badge ${count > 0 ? 'badge-blue' : 'badge-secondary'}" style="font-size:10px;">${ds}${count > 0 ? ` (${count})` : ''}</span>`;
+        }).join('')}
+      </div>`;
+
+  // Unassigned section
+  if (unassigned.length > 0) {
+    html += `
+      <div style="margin-bottom:20px; padding:12px; border:2px dashed var(--cdisc-border); border-radius:var(--radius);">
+        <div style="font-weight:600; font-size:13px; margin-bottom:8px; color:var(--cdisc-warning, #d97706);">Unassigned (${unassigned.length})</div>
+        <table class="data-table" style="font-size:12px;">
+          <thead><tr><th>Endpoint (Instance)</th><th>Template</th><th>Type</th><th>Method</th><th style="width:100px;">ADaM Dataset</th></tr></thead>
+          <tbody>
+            ${unassigned.map(inst => `
+              <tr>
+                <td><span class="badge ${inst.epLevel.includes('Primary') ? 'badge-primary' : 'badge-secondary'}" style="font-size:9px;">${inst.epLevel}</span> ${inst.epName}</td>
+                <td style="font-weight:600;">${inst.name}</td>
+                <td><span class="badge ${inst.type === 'analysis' ? 'badge-blue' : 'badge-teal'}" style="font-size:9px;">${inst.type}</span></td>
+                <td>${inst.method}</td>
+                <td><input class="config-input dataset-assign-input" data-ep-id="${inst.epId}" data-instance-key="${inst.key}" value="" placeholder="e.g., ADQS" style="width:80px; font-size:11px; padding:2px 6px;"></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  // Assigned datasets
+  for (const [dataset, instances] of Object.entries(byDataset).sort(([a], [b]) => a.localeCompare(b))) {
+    html += `
+      <div style="margin-bottom:16px; padding:12px; border:1px solid var(--cdisc-border); border-radius:var(--radius);">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <strong style="font-size:14px;">${dataset}</strong>
+          <span class="badge badge-blue">${instances.length} transformation${instances.length > 1 ? 's' : ''}</span>
+        </div>
+        <table class="data-table" style="font-size:12px;">
+          <thead><tr><th>Endpoint (Instance)</th><th>Template</th><th>Type</th><th>Method</th><th style="width:100px;">ADaM Dataset</th></tr></thead>
+          <tbody>
+            ${instances.map(inst => `
+              <tr>
+                <td><span class="badge ${inst.epLevel.includes('Primary') ? 'badge-primary' : 'badge-secondary'}" style="font-size:9px;">${inst.epLevel}</span> ${inst.epName}</td>
+                <td style="font-weight:600;">${inst.name}</td>
+                <td><span class="badge ${inst.type === 'analysis' ? 'badge-blue' : 'badge-teal'}" style="font-size:9px;">${inst.type}</span></td>
+                <td>${inst.method}</td>
+                <td><input class="config-input dataset-assign-input" data-ep-id="${inst.epId}" data-instance-key="${inst.key}" value="${inst.dataset}" style="width:80px; font-size:11px; padding:2px 6px;"></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  html += '</div>';
+  return html;
+}
+
+// ===== eSAP Section Wrapper =====
+
+function renderEsapSection(sectionKey, title, bodyHtml, startOpen = true, depth = 1) {
+  const linkedCount = (appState.esapLinkedNarratives[sectionKey] || []).length;
+  const btnLabel = linkedCount > 0 ? `Linked (${linkedCount})` : 'Link USDM Content';
+  const btnClass = linkedCount > 0
+    ? 'btn btn-sm btn-primary btn-link-usdm'
+    : 'btn btn-sm btn-secondary btn-link-usdm';
+
+  // Visual hierarchy: top-level sections get the heaviest title, sub-sections lighter
+  const titleSize = depth === 1 ? '15px' : depth === 2 ? '13px' : '12px';
+  const titleWeight = depth <= 2 ? '700' : '600';
+  const wrapperMargin = depth === 1 ? '12px 0' : '6px 0';
+
+  return `
+    <div class="collapsible ${startOpen ? 'open' : ''}" data-depth="${depth}" style="margin:${wrapperMargin};">
+      <div class="collapsible-header" style="display:flex; align-items:center; justify-content:space-between; font-size:${titleSize}; font-weight:${titleWeight};">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="collapsible-arrow">&#9654;</span>
+          ${title}
+        </div>
+        <button class="${btnClass}" data-section="${sectionKey}"
+                style="font-size:11px; padding:2px 8px; white-space:nowrap;">
+          ${btnLabel}
+        </button>
+      </div>
+      <div class="collapsible-body">
+        ${bodyHtml}
+        ${renderLinkedNarratives(sectionKey)}
+      </div>
+    </div>
+  `;
+}
+
+function renderLinkedNarratives(sectionKey) {
+  const linkedIds = appState.esapLinkedNarratives[sectionKey] || [];
+  if (linkedIds.length === 0) return '';
+
+  const study = appState.selectedStudy;
+  const index = appState.usdmIndex;
+  if (!study || !index) return '';
+
+  const blocks = linkedIds.map(nciId => {
+    const nc = study.narrativeContent.find(n => n.id === nciId);
+    if (!nc) return '';
+    const resolved = resolveNarrative(nc, index);
+    return `
+      <div style="border-left:3px solid var(--cdisc-accent6); padding:8px 12px; margin-bottom:8px; background:var(--cdisc-primary-light); border-radius:0 var(--radius) var(--radius) 0;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+          <span style="font-size:11px; font-weight:600; color:var(--cdisc-accent6);">
+            Linked: ${nc.name} (${nc.id})
+          </span>
+          <button class="btn-remove-linked" data-section="${sectionKey}" data-nci-id="${nciId}"
+                  style="background:none; border:none; color:var(--cdisc-text-secondary); cursor:pointer; font-size:14px; padding:0 4px;" title="Remove">
+            &times;
+          </button>
+        </div>
+        <div style="font-size:12px; line-height:1.6;">${resolved}</div>
+      </div>
+    `;
+  });
+
+  return `
+    <div style="margin-top:16px;">
+      <div style="font-size:11px; font-weight:600; color:var(--cdisc-text-secondary); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">
+        Linked USDM Content
+      </div>
+      ${blocks.join('')}
+    </div>
+  `;
+}
+
+// ===== Narrative Picker (Master-Detail) =====
+
+function showNarrativePicker(container, sectionKey) {
+  container.querySelector('.narrative-picker-overlay')?.remove();
+
+  const study = appState.selectedStudy;
+  const index = appState.usdmIndex;
+  if (!study || !index) return;
+
+  const linked = new Set(appState.esapLinkedNarratives[sectionKey] || []);
+  const narratives = study.narrativeContent.filter(nc => nc.text && nc.text.length > 30);
+  const nciToSection = buildNciToSectionMap(study);
+  const { relevant, groups, other } = groupNarrativesForPicker(narratives, nciToSection, sectionKey);
+  const allEps = getAllEndpoints(study);
+  const selectedEps = allEps.filter(ep => appState.selectedEndpoints.includes(ep.id));
+  const sectionLabel = resolveSectionLabel(sectionKey, selectedEps);
+
+  const resolvedCache = new Map();
+  for (const nc of narratives) {
+    resolvedCache.set(nc.id, resolveNarrative(nc, index));
+  }
+
+  const plainTextCache = new Map();
+  for (const nc of narratives) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = resolvedCache.get(nc.id);
+    plainTextCache.set(nc.id, (tmp.textContent || '').toLowerCase());
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'narrative-picker-overlay';
+
+  overlay.innerHTML = `
+    <div class="narrative-picker-modal">
+      <div class="narrative-picker-header">
+        <div>
+          <h3>Link USDM Narrative &mdash; ${sectionLabel}</h3>
+          <div class="picker-subtitle">Select items to link, click to preview</div>
+        </div>
+        <button class="picker-close" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--cdisc-text-secondary);padding:4px;">&times;</button>
+      </div>
+      <div class="narrative-picker-search">
+        <input type="text" placeholder="Search by section title or content..." class="picker-search-input">
+      </div>
+      <div class="narrative-picker-panels">
+        <div class="narrative-picker-nav" id="picker-nav"></div>
+        <div class="narrative-picker-viewer" id="picker-viewer">
+          <div class="narrative-picker-viewer-empty">Click an item to preview its content</div>
+        </div>
+      </div>
+      <div class="narrative-picker-footer">
+        <button class="btn btn-secondary picker-cancel" style="font-size:12px;">Cancel</button>
+        <button class="btn btn-primary picker-apply" style="font-size:12px;">Apply</button>
+      </div>
+    </div>
+  `;
+
+  container.appendChild(overlay);
+
+  const nav = overlay.querySelector('#picker-nav');
+  const viewer = overlay.querySelector('#picker-viewer');
+  const applyBtn = overlay.querySelector('.picker-apply');
+  const searchInput = overlay.querySelector('.picker-search-input');
+  let activeItemId = null;
+
+  const checkedIds = new Set(linked);
+
+  function updateApplyBtn() {
+    const count = checkedIds.size;
+    applyBtn.textContent = count > 0 ? `Apply (${count} selected)` : 'Apply';
+  }
+
+  function renderNavItem(item, isActive) {
+    const isChecked = checkedIds.has(item.id);
+    return `
+      <div class="narrative-picker-item ${isActive ? 'active' : ''}" data-nci-id="${item.id}">
+        <input type="checkbox" ${isChecked ? 'checked' : ''} data-nci-id="${item.id}">
+        <div class="item-label">
+          ${item.sectionNumber ? `<span class="item-section-num">${item.sectionNumber}</span>` : ''}
+          <span class="item-title">${item.sectionTitle || item.name}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderGroup(key, label, items, expanded) {
+    if (items.length === 0) return '';
+    return `
+      <div class="narrative-picker-group ${expanded ? 'expanded' : ''}" data-group="${key}">
+        <div class="narrative-picker-group-header">
+          <div>
+            <span class="group-arrow">&#9654;</span>
+            ${label}
+            <span class="group-count">(${items.length})</span>
+          </div>
+        </div>
+        <div class="narrative-picker-group-items">
+          ${items.map(item => renderNavItem(item, item.id === activeItemId)).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderNav(filter) {
+    const filterLower = (filter || '').toLowerCase().trim();
+
+    function matchesFilter(item) {
+      if (!filterLower) return true;
+      const titleMatch = (item.sectionTitle || item.name || '').toLowerCase().includes(filterLower);
+      const numMatch = (item.sectionNumber || '').toLowerCase().includes(filterLower);
+      const textMatch = (plainTextCache.get(item.id) || '').includes(filterLower);
+      return titleMatch || numMatch || textMatch;
+    }
+
+    const filteredRelevant = relevant.filter(matchesFilter);
+    const filteredOther = other.filter(matchesFilter);
+
+    let html = '';
+    html += renderGroup('relevant', `Relevant to ${sectionLabel}`, filteredRelevant, true);
+
+    for (const [key, group] of Object.entries(groups)) {
+      const filtered = group.items.filter(matchesFilter);
+      html += renderGroup(key, group.label, filtered, false);
+    }
+
+    html += renderGroup('other', 'Other', filteredOther, false);
+
+    nav.innerHTML = html;
+
+    nav.querySelectorAll('.narrative-picker-group-header').forEach(header => {
+      header.addEventListener('click', () => {
+        header.parentElement.classList.toggle('expanded');
+      });
+    });
+
+    nav.querySelectorAll('.narrative-picker-item').forEach(el => {
+      el.addEventListener('click', (e) => {
+        if (e.target.tagName === 'INPUT') return;
+        showPreview(el.dataset.nciId);
+      });
+    });
+
+    nav.querySelectorAll('.narrative-picker-item input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const nciId = cb.dataset.nciId;
+        if (cb.checked) checkedIds.add(nciId);
+        else checkedIds.delete(nciId);
+        updateApplyBtn();
+      });
+    });
+  }
+
+  function showPreview(nciId) {
+    activeItemId = nciId;
+    const nc = narratives.find(n => n.id === nciId);
+    if (!nc) return;
+
+    const sec = nciToSection.get(nc.id);
+    const sectionNum = sec ? sec.sectionNumber.replace(/\.\s*$/, '') : '';
+    const sectionTitle = sec ? sec.sectionTitle : nc.name;
+    const resolved = resolvedCache.get(nc.id) || '';
+
+    viewer.innerHTML = `
+      <div class="narrative-picker-viewer-header">${sectionNum ? sectionNum + '. ' : ''}${sectionTitle}</div>
+      <div class="narrative-picker-viewer-subtitle">${nc.name} (${nc.id})</div>
+      <div class="narrative-content">${resolved}</div>
+    `;
+
+    nav.querySelectorAll('.narrative-picker-item').forEach(el => {
+      el.classList.toggle('active', el.dataset.nciId === nciId);
+    });
+  }
+
+  renderNav('');
+  updateApplyBtn();
+
+  if (relevant.length > 0) {
+    showPreview(relevant[0].id);
+  }
+
+  searchInput.addEventListener('input', () => {
+    renderNav(searchInput.value);
+  });
+
+  const close = () => overlay.remove();
+  overlay.querySelector('.picker-close').addEventListener('click', close);
+  overlay.querySelector('.picker-cancel').addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+  applyBtn.addEventListener('click', () => {
+    appState.esapLinkedNarratives[sectionKey] = [...checkedIds];
+    close();
+    renderEsapBuilder(container);
+  });
+
+  searchInput.focus();
+}
+
+// ===== Define-XML Panel =====
+//
+// Generates the Define-XML 2.1 + ARM projection, shows a coverage report of
+// every GAP, and wires Download / View-rendered (browser-native XSLT via the
+// bundled CDISC stylesheet).
+
+async function generateDefinePanel(container, selectedEps, study) {
+  const coverage = container.querySelector('#esap-define-coverage');
+  const content = container.querySelector('#esap-define-content');
+  const dlBtn = container.querySelector('#btn-define-download');
+  const viewBtn = container.querySelector('#btn-define-view');
+  const langSel = container.querySelector('#define-lang');
+  // Regenerate when the implementation language changes (MethodDef + ARM code).
+  if (langSel && !langSel._bound) {
+    langSel._bound = true;
+    langSel.addEventListener('change', () => generateDefinePanel(container, selectedEps, study));
+  }
+  if (coverage) coverage.innerHTML = '<p style="font-size:12px; color:var(--cdisc-text-secondary);">Generating Define-XML…</p>';
+
+  let result;
+  try {
+    result = await buildDefineXml(appState, selectedEps, study, { language: langSel?.value || 'R' });
+  } catch (err) {
+    console.error('[Define-XML] generation failed:', err);
+    if (coverage) coverage.innerHTML = `<p style="font-size:12px; color:var(--cdisc-danger,#dc2626);">Generation failed: ${escapeHtml(err.message)}</p>`;
+    return;
+  }
+  const { xml, gaps } = result;
+  if (content) content.textContent = xml;
+
+  // Coverage report — group gaps by category.
+  const byCat = {};
+  for (const g of gaps) (byCat[g.category] = byCat[g.category] || []).push(g);
+  const catOrder = ['global', 'dataset', 'variable', 'codelist', 'method', 'arm'];
+  const cats = Object.keys(byCat).sort((a, b) => catOrder.indexOf(a) - catOrder.indexOf(b));
+  if (coverage) {
+    coverage.innerHTML = `
+      <div class="card" style="padding:12px; background:var(--cdisc-primary-light); border:1px solid var(--cdisc-border);">
+        <div style="font-weight:700; font-size:13px; margin-bottom:6px;">Coverage report &mdash; ${gaps.length} gap${gaps.length === 1 ? '' : 's'} flagged</div>
+        <p style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:8px;">
+          Everything not listed here is generated from the spec. Each gap below is also a <code>def:CommentDef</code> in the file.
+        </p>
+        ${cats.map(cat => `
+          <details style="margin-bottom:4px;" ${cat === 'arm' || cat === 'global' ? 'open' : ''}>
+            <summary style="cursor:pointer; font-weight:600; font-size:12px; text-transform:capitalize;">${cat} (${byCat[cat].length})</summary>
+            <ul style="margin:4px 0 8px 18px; font-size:11px; color:var(--cdisc-text-secondary);">
+              ${byCat[cat].map(g => `<li><code>${escapeHtml(g.field)}</code> &mdash; ${escapeHtml(g.reason)}</li>`).join('')}
+            </ul>
+          </details>`).join('')}
+      </div>`;
+  }
+
+  // Download / View — share one Blob factory (PI embedded by the generator).
+  const slug = (study?.name || 'study').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
+  const makeUrl = () => URL.createObjectURL(new Blob([xml], { type: 'application/xml' }));
+  if (dlBtn) dlBtn.onclick = () => {
+    const a = document.createElement('a');
+    a.href = makeUrl();
+    a.download = `${slug}.define.xml`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+  if (viewBtn) viewBtn.onclick = () => {
+    // Browser-native XSLT 1.0: opening the blob applies the same-origin stylesheet.
+    window.open(makeUrl(), '_blank');
+  };
+}
+
+// ===== ADaM Specification Panel =====
+//
+// Renders a traditional ADaM-spec view for each endpoint: dataset name,
+// variable rows (name + type + concept + source/method), and a methods
+// reference. All metadata is already in the spec — we just project it
+// through the ADaM store mappings. The same projection would work for
+// SDTM, OMOP, etc. — concept-keyed bindings make the rendering
+// store-agnostic.
+
+function renderAdamSpecPanel(selectedEps, study) {
+  const adam = appState.conceptMappings?.adam || {};
+  const lib = appState.transformationLibrary;
+  const derivationsLib = lib?.derivationTransformations || [];
+  const analysesLib = lib?.analysisTransformations || [];
+
+  const adamVarLabel = (storeVar) => {
+    if (!storeVar) return '';
+    // Multi-token mapping ("TRTA/TRTP" etc.) — take the first token
+    return String(storeVar).split('/')[0];
+  };
+
+  const adamVarType = (entry, dtype) => {
+    if (!entry) return '';
+    const t = (dtype || '').toLowerCase();
+    if (['decimal', 'integer'].includes(t)) return 'Num';
+    return 'Char';
+  };
+
+  // Walk a binding → produce a row { variable, type, concept, source, slice }
+  const rowFromBinding = (binding, derivedConceptSet, role_to_chainCol) => {
+    const concept = (binding.concept || '').replace(/@.*/, '');
+    if (!concept) return null;
+
+    // Resolve the variable name + type. Honor baseline slice (BASE not AVAL).
+    const sliceIsBaseline = !!(binding.slice && /baseline/i.test(binding.slice));
+    const conceptEntry = adam.concepts?.[concept] || adam.dimensions?.[concept];
+    let variable = null;
+    let dataType = (binding.requiredValueType || '').toLowerCase();
+    if (conceptEntry?.byDataType) {
+      if (sliceIsBaseline && conceptEntry.byDataType.baseline) {
+        variable = conceptEntry.byDataType.baseline;
+      } else {
+        for (const k of ['decimal', 'integer', 'string', 'code', 'id']) {
+          if (conceptEntry.byDataType[k]) { variable = conceptEntry.byDataType[k]; dataType = dataType || k; break; }
+        }
+      }
+    }
+    if (!variable && conceptEntry?.variable) variable = conceptEntry.variable;
+    variable = adamVarLabel(variable);
+    if (!variable) return null;
+
+    // Determine source: was this concept produced by a derivation in the
+    // chain, or read in from the source dataset?
+    const isDerived = derivedConceptSet.has(concept);
+    let source = '';
+    if (isDerived) {
+      // Find the chain step that produced this concept (sliced match for baseline)
+      const epSpec = derivedConceptSet._epSpec;
+      let producingMethodOid = '';
+      for (const entry of (epSpec?.derivationChain || [])) {
+        const d = derivationsLib.find(x => x.oid === entry.derivationOid);
+        if (!d) continue;
+        const out = (d.bindings || []).find(b => b.direction === 'output');
+        const outConcept = (out?.concept || '').replace(/@.*/, '');
+        if (outConcept === concept) {
+          producingMethodOid = d.usesMethod || '';
+          break;
+        }
+      }
+      source = producingMethodOid
+        ? `Derived via <code style="font-size:11px;">${producingMethodOid}</code>${sliceIsBaseline ? ' (Baseline slice)' : ''}`
+        : (sliceIsBaseline ? 'Baseline slice of AVAL' : 'Computed (chain output)');
+    } else {
+      // Ingested from store column — look up the SDTM source for reference
+      const sdtm = appState.conceptMappings?.sdtm || {};
+      const sdtmEntry = sdtm.concepts?.[concept] || sdtm.dimensions?.[concept];
+      let sdtmVar = '';
+      if (sdtmEntry?.byDataType) {
+        for (const k of ['string', 'code', 'decimal', 'integer', 'id']) {
+          if (sdtmEntry.byDataType[k]) { sdtmVar = sdtmEntry.byDataType[k]; break; }
+        }
+      }
+      sdtmVar = adamVarLabel(sdtmVar || sdtmEntry?.variable || '');
+      source = sdtmVar ? `From SDTM <code style="font-size:11px;">${sdtmVar}</code>` : 'Source dataset';
+    }
+
+    return { variable, type: adamVarType(conceptEntry, dataType), concept, source, slice: binding.slice || '' };
+  };
+
+  // Per-endpoint render
+  const sections = selectedEps.map(ep => {
+    const spec = appState.endpointSpecs?.[ep.id] || {};
+    const resolvedEp = appState.resolvedSpec?.endpoints?.find(r => r.id === ep.id);
+    const analysis = resolvedEp?.analyses?.[0];
+    if (!analysis) return '';
+
+    // Dataset name: prefer explicit targetDataset, fallback to ADxxx by parameter
+    const dataset = (spec.targetDataset || resolvedEp?.targetDataset || '').toUpperCase()
+      || 'AD' + ((spec.dimensionValues?.Parameter || ep.name || 'DATA').replace(/[^A-Za-z]/g, '').slice(0, 6).toUpperCase());
+
+    // Which concepts come from the derivation chain?
+    const derivedConcepts = new Set();
+    for (const entry of (spec.derivationChain || [])) {
+      const d = derivationsLib.find(x => x.oid === entry.derivationOid);
+      const out = d?.bindings?.find(b => b.direction === 'output');
+      const outConcept = (out?.concept || '').replace(/@.*/, '');
+      if (outConcept) derivedConcepts.add(outConcept);
+    }
+    // The analysis transform's response output is also "derived"
+    const analysisTx = analysesLib.find(t => t.oid === spec.selectedTransformationOid);
+    for (const b of (analysisTx?.bindings || [])) {
+      if (b.direction === 'output') {
+        const c = (b.concept || '').replace(/@.*/, '');
+        if (c) derivedConcepts.add(c);
+      }
+    }
+    derivedConcepts._epSpec = spec;
+
+    // Variable rows from resolvedBindings + de-dup on variable name
+    const seenVars = new Set();
+    const rows = [];
+    for (const b of (analysis.resolvedBindings || [])) {
+      if (b.direction === 'output') continue;
+      const row = rowFromBinding(b, derivedConcepts);
+      if (!row) continue;
+      if (seenVars.has(row.variable)) continue;
+      seenVars.add(row.variable);
+      rows.push(row);
+    }
+
+    // Methods used in this endpoint (derivation chain + analysis)
+    const methodOids = new Set();
+    for (const entry of (spec.derivationChain || [])) {
+      const d = derivationsLib.find(x => x.oid === entry.derivationOid);
+      if (d?.usesMethod) methodOids.add(d.usesMethod);
+    }
+    if (analysisTx?.usesMethod) methodOids.add(analysisTx.usesMethod);
+    const methodsList = [...methodOids].map(oid => {
+      const m = appState.methodsCache?.[oid];
+      return { oid, name: m?.name || oid, description: m?.description || '' };
+    });
+
+    return `
+      <details class="card" style="padding:16px; margin-bottom:14px;" open>
+        <summary style="cursor:pointer; display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+          <strong style="font-size:15px;">${dataset}</strong>
+          <span class="badge ${ep.level.includes('Primary') ? 'badge-primary' : 'badge-secondary'}" style="font-size:10px;">${ep.level}</span>
+          <span style="font-size:12px; color:var(--cdisc-text-secondary);">${ep.name}</span>
+        </summary>
+
+        <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:8px;">
+          <strong>Variables</strong> &mdash; projected from concept bindings via the ADaM concept-mapping. The same bindings would project to a different ADaM realization under a different mapping; the concepts are the source of truth.
+        </div>
+        <table class="data-table" style="font-size:12px; margin-bottom:14px;">
+          <thead><tr>
+            <th style="width:90px;">Variable</th>
+            <th style="width:50px;">Type</th>
+            <th>Concept</th>
+            <th>Source / Method</th>
+            <th style="width:120px;">Slice</th>
+          </tr></thead>
+          <tbody>
+            ${rows.map(r => `
+              <tr>
+                <td><code style="font-weight:600;">${r.variable}</code></td>
+                <td>${r.type}</td>
+                <td>${r.concept}</td>
+                <td>${r.source}</td>
+                <td>${r.slice || '&mdash;'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        ${methodsList.length > 0 ? `
+        <div style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:8px;">
+          <strong>Methods</strong> &mdash; transformations referenced by this dataset's variables.
+        </div>
+        <table class="data-table" style="font-size:12px;">
+          <thead><tr>
+            <th style="width:160px;">Method OID</th>
+            <th style="width:200px;">Name</th>
+            <th>Description</th>
+          </tr></thead>
+          <tbody>
+            ${methodsList.map(m => `
+              <tr>
+                <td><code>${m.oid}</code></td>
+                <td>${m.name}</td>
+                <td style="font-size:11px; color:var(--cdisc-text-secondary);">${escapeHtml(m.description || '')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>` : ''}
+      </details>`;
+  }).filter(Boolean).join('');
+
+  if (!sections) {
+    return `<div class="card" style="padding:24px; text-align:center;">
+      <p style="color:var(--cdisc-text-secondary);">No endpoint specifications yet. Configure endpoints first (Step 3 onward).</p>
+    </div>`;
+  }
+
+  return `
+    <div class="card" style="padding:16px; margin-bottom:12px;">
+      <div style="font-weight:700; font-size:14px;">ADaM Specification</div>
+      <p style="font-size:12px; color:var(--cdisc-text-secondary); margin-top:4px;">
+        Dataset-by-dataset spec rendered from the concept-keyed metadata.
+        Variable names, types, and derivation methods are projected through the ADaM mapping.
+        The concepts are the source of truth &mdash; the same bindings produce a different ADaM realization under a different mapping.
+      </p>
+    </div>
+    ${sections}`;
+}

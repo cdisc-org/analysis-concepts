@@ -1,0 +1,67 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.8.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.Rounding",
+  "name": "Rounding",
+  "type": "derivation",
+  "class": "Arithmetic",
+  "intent": [
+    "PrecisionAdjustment"
+  ],
+  "description": "Rounds numeric value to specified precision",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := ROUND(value, decimals)",
+    "generic_expression": "result := ROUND(<value>, <decimals>)"
+  },
+  "configurations": [
+    {
+      "name": "decimals",
+      "dataType": "decimal",
+      "defaultValue": "",
+      "description": "Number of decimal places"
+    },
+    {
+      "name": "method",
+      "dataType": "enum",
+      "defaultValue": "half_up",
+      "enumValues": [
+        "half_up",
+        "half_even",
+        "half_down",
+        "floor",
+        "ceiling"
+      ],
+      "description": "Rounding method for tie-breaking"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "result",
+        "dataType": "decimal",
+        "description": "The rounded value",
+        "statistics": [
+          "value"
+        ],
+        "dimensions": null
+      }
+    ]
+  },
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "value",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Value to round"
+    }
+  ]
+}

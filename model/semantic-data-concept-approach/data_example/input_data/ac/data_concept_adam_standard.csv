@@ -1,9 +1,0 @@
-data_concept,ADaM_standard_var
-subject,USUBJID
-treatment,TRTP
-site,SITEID
-change_value,CHG
-baseline_value,BASE
-parameter,PARAM
-timepoint,AVISIT
-population_flag,EFFFL

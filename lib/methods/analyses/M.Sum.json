@@ -1,0 +1,57 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.8.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.Sum",
+  "name": "Sum",
+  "type": "analysis",
+  "class": "Extremes",
+  "intent": [
+    "DescriptiveSummary"
+  ],
+  "codings": [],
+  "description": "Computes the sum of all values of a numeric variable",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := SUM(response) OVER (group)",
+    "generic_expression": "result := SUM(<response>) OVER (<group>*)"
+  },
+  "configurations": [],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "description": "The computed statistic per group",
+        "dimensions": [
+          "group"
+        ],
+        "statistics": [
+          "sum"
+        ]
+      }
+    ]
+  },
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "response",
+      "statisticalRole": "response",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The variable to summarize"
+    },
+    {
+      "name": "group",
+      "statisticalRole": "fixed_effect",
+      "dataType": "code",
+      "required": false,
+      "cardinality": "single_or_multiple",
+      "description": "Optional grouping variable(s)"
+    }
+  ]
+}

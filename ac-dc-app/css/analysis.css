@@ -1,0 +1,306 @@
+/* ===== Formula / Expression Builder ===== */
+.formula-display {
+  background: var(--cdisc-background);
+  border-left: 3px solid var(--cdisc-primary);
+  padding: 12px 18px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--cdisc-text);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.formula-term-response {
+  color: var(--cdisc-primary);
+  font-weight: 600;
+}
+
+.formula-term-covariate {
+  color: var(--cdisc-accent3);
+  font-weight: 600;
+}
+
+.formula-term-fixed-effect {
+  color: #8B6914;
+  font-weight: 600;
+}
+
+.formula-term-repeated {
+  color: #2D7A6F;
+  font-weight: 600;
+}
+
+.formula-term-strata {
+  color: var(--cdisc-accent5);
+  font-weight: 600;
+}
+
+.formula-operator {
+  color: var(--cdisc-text-secondary);
+  font-weight: 400;
+  padding: 0 2px;
+}
+
+/* ===== Transformation Detail ===== */
+.transform-section {
+  margin-bottom: 20px;
+}
+
+.transform-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--cdisc-text-secondary);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--cdisc-border);
+}
+
+/* ===== Output Slot Mapping ===== */
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.slot-card {
+  background: var(--cdisc-background);
+  border-radius: var(--radius);
+  padding: 10px;
+}
+
+.slot-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cdisc-primary);
+  margin-bottom: 5px;
+}
+
+.slot-card-stats {
+  font-size: 11px;
+  color: var(--cdisc-text-secondary);
+  line-height: 1.5;
+}
+
+/* ===== Interactive Bindings ===== */
+.binding-role-group {
+  margin-bottom: 18px;
+}
+
+.binding-role-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.binding-role-name {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--cdisc-text);
+}
+
+.binding-role-cardinality {
+  font-size: 11px;
+  color: var(--cdisc-text-secondary);
+  font-weight: 400;
+}
+
+.binding-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--cdisc-border);
+  border-radius: var(--radius);
+  margin-bottom: 5px;
+  background: var(--cdisc-surface);
+  transition: border-color 0.15s;
+}
+
+.binding-row:hover {
+  border-color: var(--cdisc-primary);
+}
+
+.binding-row-custom {
+  border-left: 3px solid var(--cdisc-primary);
+}
+
+.binding-row .binding-concept {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--cdisc-text);
+  flex: 1;
+}
+
+.binding-row .binding-concept code {
+  background: var(--cdisc-primary-light);
+  color: var(--cdisc-primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.binding-row .binding-desc {
+  font-size: 12px;
+  color: var(--cdisc-text-secondary);
+}
+
+.binding-row .binding-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+.binding-row .binding-remove {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--cdisc-border);
+  background: var(--cdisc-surface);
+  color: var(--cdisc-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.binding-row .binding-remove:hover {
+  background: var(--cdisc-error);
+  border-color: var(--cdisc-error);
+  color: var(--cdisc-surface);
+}
+
+.binding-add-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border: 1px dashed var(--cdisc-border);
+  border-radius: var(--radius);
+  margin-top: 5px;
+  transition: border-color 0.15s;
+}
+
+.binding-add-row:hover {
+  border-color: var(--cdisc-primary);
+}
+
+.binding-add-row .binding-add-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cdisc-primary);
+  white-space: nowrap;
+}
+
+.binding-add-row select {
+  flex: 1;
+  padding: 5px 10px;
+  border: 1px solid var(--cdisc-border);
+  border-radius: var(--radius);
+  font-family: var(--font-family);
+  font-size: 12px;
+  color: var(--cdisc-text);
+  background: var(--cdisc-surface);
+  max-width: 300px;
+}
+
+.binding-add-row select:focus {
+  outline: none;
+  border-color: var(--cdisc-primary);
+  box-shadow: 0 0 0 2px rgba(19, 70, 120, 0.1);
+}
+
+/* ===== Interaction Checkboxes ===== */
+.interaction-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.interaction-list label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  color: var(--cdisc-text);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  transition: background 0.15s;
+}
+
+.interaction-list label:hover {
+  background: var(--cdisc-background);
+}
+
+.interaction-list input[type="checkbox"] {
+  accent-color: var(--cdisc-primary);
+  width: 15px;
+  height: 15px;
+}
+
+/* ===== Configured Analysis Card ===== */
+.analysis-configured {
+  border: 1px solid var(--cdisc-success);
+  border-radius: var(--radius);
+  padding: 14px;
+  background: #F0FAF8;
+}
+
+.analysis-configured .analysis-phrase {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--cdisc-text);
+  margin-bottom: 6px;
+}
+
+.analysis-configured .analysis-method {
+  font-size: 12px;
+  color: #2D7A6F;
+  font-weight: 600;
+}
+
+/* ===== USDM Ref Resolution ===== */
+.usdm-ref-resolved {
+  cursor: help;
+}
+
+.usdm-ref-unresolved {
+  color: var(--cdisc-warning);
+  font-style: italic;
+  cursor: help;
+}
+
+/* ===== Coming Soon Card ===== */
+.coming-soon {
+  opacity: 0.5;
+  pointer-events: none;
+  position: relative;
+}
+
+.coming-soon::after {
+  content: 'Coming Soon';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--cdisc-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}

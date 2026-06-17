@@ -1,0 +1,636 @@
+{
+  "schema_version": "0.4.0",
+  "description": "Registry of all ACDC method definitions",
+  "methods": [
+    {
+      "oid": "M.Subtraction",
+      "name": "Subtraction",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M.Subtraction.json"
+    },
+    {
+      "oid": "M.Division",
+      "name": "Division",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M.Division.json"
+    },
+    {
+      "oid": "M.PercentChange",
+      "name": "Percent Change",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M.PercentChange.json"
+    },
+    {
+      "oid": "M.DateDifference",
+      "name": "Date Difference",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M.DateDifference.json"
+    },
+    {
+      "oid": "M.Aggregation",
+      "name": "Aggregation",
+      "type": "derivation",
+      "class": "Summary",
+      "path": "derivations/M.Aggregation.json"
+    },
+    {
+      "oid": "M.Categorization",
+      "name": "Categorization",
+      "type": "derivation",
+      "class": "Classification",
+      "path": "derivations/M.Categorization.json"
+    },
+    {
+      "oid": "M.ThresholdCompare",
+      "name": "Threshold Comparison",
+      "type": "derivation",
+      "class": "Classification",
+      "path": "derivations/M.ThresholdCompare.json"
+    },
+    {
+      "oid": "M.WindowedVisitAssignment",
+      "name": "Windowed Visit Assignment",
+      "type": "derivation",
+      "class": "Classification",
+      "path": "derivations/M.WindowedVisitAssignment.json"
+    },
+    {
+      "oid": "M.Imputation",
+      "name": "Apply Imputation",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.Imputation.json"
+    },
+    {
+      "oid": "M.ImputedValue_LOCF",
+      "name": "Last Observation Carried Forward",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.ImputedValue_LOCF.json"
+    },
+    {
+      "oid": "M.ImputedValue_BOCF",
+      "name": "Baseline Observation Carried Forward",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.ImputedValue_BOCF.json"
+    },
+    {
+      "oid": "M.ImputedValue_WOCF",
+      "name": "Worst Observation Carried Forward",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.ImputedValue_WOCF.json"
+    },
+    {
+      "oid": "M.ImputedValue_Mean",
+      "name": "Mean Imputation",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.ImputedValue_Mean.json"
+    },
+    {
+      "oid": "M.ImputedValue_Median",
+      "name": "Median Imputation",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.ImputedValue_Median.json"
+    },
+    {
+      "oid": "M.ImputedValue_Zero",
+      "name": "Zero Imputation",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.ImputedValue_Zero.json"
+    },
+    {
+      "oid": "M.WindowLookup",
+      "name": "Window Lookup",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.WindowLookup.json"
+    },
+    {
+      "oid": "M.Rounding",
+      "name": "Rounding",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M.Rounding.json"
+    },
+    {
+      "oid": "M.UnitConversion",
+      "name": "Unit Conversion",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M.UnitConversion.json"
+    },
+    {
+      "oid": "M.ConditionalValue",
+      "name": "Conditional Value",
+      "type": "derivation",
+      "class": "Data Handling",
+      "path": "derivations/M.ConditionalValue.json"
+    },
+    {
+      "oid": "M.AffineTransform",
+      "name": "Affine Transform",
+      "type": "derivation",
+      "class": "Arithmetic",
+      "path": "derivations/M.AffineTransform.json"
+    },
+    {
+      "oid": "M.OneSampleTTest",
+      "name": "One-sample t-test",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M.OneSampleTTest.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000302",
+          "display": "one sample t-test"
+        }
+      ]
+    },
+    {
+      "oid": "M.PairedTTest",
+      "name": "Paired t-test",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M.PairedTTest.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000095",
+          "display": "paired t-test"
+        }
+      ]
+    },
+    {
+      "oid": "M.TwoSampleTTest",
+      "name": "Two-sample t-test",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M.TwoSampleTTest.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000304",
+          "display": "two sample t-test"
+        }
+      ]
+    },
+    {
+      "oid": "M.ANOVA",
+      "name": "ANOVA",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M.ANOVA.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000048",
+          "display": "ANOVA"
+        }
+      ]
+    },
+    {
+      "oid": "M.ANCOVA",
+      "name": "ANCOVA",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M.ANCOVA.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000179",
+          "display": "ANCOVA"
+        }
+      ]
+    },
+    {
+      "oid": "M.MMRM",
+      "name": "Mixed Model for Repeated Measures",
+      "type": "analysis",
+      "class": "Repeated Measures",
+      "path": "analyses/M.MMRM.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000189",
+          "display": "MMRM"
+        }
+      ]
+    },
+    {
+      "oid": "M.ChiSquaredTest",
+      "name": "Chi-squared Test",
+      "type": "analysis",
+      "class": "Categorical Data Analysis",
+      "path": "analyses/M.ChiSquaredTest.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000081",
+          "display": "Pearson's Chi square test of independence between categorical variables"
+        }
+      ]
+    },
+    {
+      "oid": "M.CMH",
+      "name": "Cochran-Mantel-Haenszel Test",
+      "type": "analysis",
+      "class": "Categorical Data Analysis",
+      "path": "analyses/M.CMH.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000074",
+          "display": "Cochran-Mantel-Haenzel test for repeated tests of independence"
+        }
+      ]
+    },
+    {
+      "oid": "M.FisherExactTest",
+      "name": "Fisher's Exact Test",
+      "type": "analysis",
+      "class": "Categorical Data Analysis",
+      "path": "analyses/M.FisherExactTest.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000073",
+          "display": "Fisher's exact test"
+        }
+      ]
+    },
+    {
+      "oid": "M.LogisticRegression",
+      "name": "Logistic Regression",
+      "type": "analysis",
+      "class": "Generalized Linear Models",
+      "path": "analyses/M.LogisticRegression.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000149",
+          "display": "binomial logistic regression for analysis of dichotomous dependent variable"
+        }
+      ]
+    },
+    {
+      "oid": "M.KaplanMeier",
+      "name": "Kaplan-Meier Estimator",
+      "type": "analysis",
+      "class": "Survival Models",
+      "path": "analyses/M.KaplanMeier.json"
+    },
+    {
+      "oid": "M.LogRankTest",
+      "name": "Log-rank Test",
+      "type": "analysis",
+      "class": "Survival Models",
+      "path": "analyses/M.LogRankTest.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000640",
+          "display": "log-rank test"
+        }
+      ]
+    },
+    {
+      "oid": "M.CoxPH",
+      "name": "Cox Proportional Hazards",
+      "type": "analysis",
+      "class": "Survival Models",
+      "path": "analyses/M.CoxPH.json"
+    },
+    {
+      "oid": "M.MANOVA",
+      "name": "Multivariate Analysis of Variance",
+      "type": "analysis",
+      "class": "General Linear Models",
+      "path": "analyses/M.MANOVA.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000454",
+          "display": "multivariate analysis of variance"
+        }
+      ]
+    },
+    {
+      "oid": "M.Mean",
+      "name": "Arithmetic Mean",
+      "type": "analysis",
+      "class": "Central Tendency",
+      "path": "analyses/M.Mean.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000573",
+          "display": "average value"
+        }
+      ]
+    },
+    {
+      "oid": "M.GeometricMean",
+      "name": "Geometric Mean",
+      "type": "analysis",
+      "class": "Central Tendency",
+      "path": "analyses/M.GeometricMean.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000396",
+          "display": "geometric mean"
+        }
+      ]
+    },
+    {
+      "oid": "M.HarmonicMean",
+      "name": "Harmonic Mean",
+      "type": "analysis",
+      "class": "Central Tendency",
+      "path": "analyses/M.HarmonicMean.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000397",
+          "display": "harmonic mean"
+        }
+      ]
+    },
+    {
+      "oid": "M.TrimmedMean",
+      "name": "Trimmed Mean",
+      "type": "analysis",
+      "class": "Central Tendency",
+      "path": "analyses/M.TrimmedMean.json"
+    },
+    {
+      "oid": "M.WinsorizedMean",
+      "name": "Winsorized Mean",
+      "type": "analysis",
+      "class": "Central Tendency",
+      "path": "analyses/M.WinsorizedMean.json"
+    },
+    {
+      "oid": "M.Median",
+      "name": "Median",
+      "type": "analysis",
+      "class": "Central Tendency",
+      "path": "analyses/M.Median.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000574",
+          "display": "center value"
+        }
+      ]
+    },
+    {
+      "oid": "M.Mode",
+      "name": "Mode",
+      "type": "analysis",
+      "class": "Central Tendency",
+      "path": "analyses/M.Mode.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000033",
+          "display": "mode"
+        }
+      ]
+    },
+    {
+      "oid": "M.StandardDeviation",
+      "name": "Standard Deviation",
+      "type": "analysis",
+      "class": "Dispersion",
+      "path": "analyses/M.StandardDeviation.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000237",
+          "display": "standard deviation"
+        }
+      ]
+    },
+    {
+      "oid": "M.Variance",
+      "name": "Variance",
+      "type": "analysis",
+      "class": "Dispersion",
+      "path": "analyses/M.Variance.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000113",
+          "display": "variance"
+        }
+      ]
+    },
+    {
+      "oid": "M.CoefficientOfVariation",
+      "name": "Coefficient of Variation",
+      "type": "analysis",
+      "class": "Dispersion",
+      "path": "analyses/M.CoefficientOfVariation.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000236",
+          "display": "coefficient of variation"
+        }
+      ]
+    },
+    {
+      "oid": "M.GeometricCV",
+      "name": "Geometric Coefficient of Variation",
+      "type": "analysis",
+      "class": "Dispersion",
+      "path": "analyses/M.GeometricCV.json"
+    },
+    {
+      "oid": "M.Range",
+      "name": "Range",
+      "type": "analysis",
+      "class": "Dispersion",
+      "path": "analyses/M.Range.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000035",
+          "display": "range"
+        }
+      ]
+    },
+    {
+      "oid": "M.InterquartileRange",
+      "name": "Interquartile Range",
+      "type": "analysis",
+      "class": "Dispersion",
+      "path": "analyses/M.InterquartileRange.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000164",
+          "display": "inter quartile range"
+        }
+      ]
+    },
+    {
+      "oid": "M.Percentile",
+      "name": "Percentile",
+      "type": "analysis",
+      "class": "Quantile",
+      "path": "analyses/M.Percentile.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000293",
+          "display": "percentile"
+        }
+      ]
+    },
+    {
+      "oid": "M.Quartile",
+      "name": "Quartile",
+      "type": "analysis",
+      "class": "Quantile",
+      "path": "analyses/M.Quartile.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000152",
+          "display": "quartile"
+        }
+      ]
+    },
+    {
+      "oid": "M.Skewness",
+      "name": "Skewness",
+      "type": "analysis",
+      "class": "Shape",
+      "path": "analyses/M.Skewness.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000068",
+          "display": "skewness"
+        }
+      ]
+    },
+    {
+      "oid": "M.Kurtosis",
+      "name": "Kurtosis",
+      "type": "analysis",
+      "class": "Shape",
+      "path": "analyses/M.Kurtosis.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000178",
+          "display": "kurtosis"
+        }
+      ]
+    },
+    {
+      "oid": "M.Count",
+      "name": "Count",
+      "type": "analysis",
+      "class": "Counting",
+      "path": "analyses/M.Count.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000047",
+          "display": "count"
+        }
+      ]
+    },
+    {
+      "oid": "M.Frequency",
+      "name": "Frequency",
+      "type": "analysis",
+      "class": "Counting",
+      "path": "analyses/M.Frequency.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000674",
+          "display": "frequency"
+        }
+      ]
+    },
+    {
+      "oid": "M.Proportion",
+      "name": "Proportion",
+      "type": "analysis",
+      "class": "Counting",
+      "path": "analyses/M.Proportion.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000607",
+          "display": "proportion"
+        }
+      ]
+    },
+    {
+      "oid": "M.CumulativeCount",
+      "name": "Cumulative Count",
+      "type": "analysis",
+      "class": "Counting",
+      "path": "analyses/M.CumulativeCount.json"
+    },
+    {
+      "oid": "M.CumulativeFrequency",
+      "name": "Cumulative Frequency",
+      "type": "analysis",
+      "class": "Counting",
+      "path": "analyses/M.CumulativeFrequency.json"
+    },
+    {
+      "oid": "M.Minimum",
+      "name": "Minimum",
+      "type": "analysis",
+      "class": "Extremes",
+      "path": "analyses/M.Minimum.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000150",
+          "display": "minimum observed value"
+        }
+      ]
+    },
+    {
+      "oid": "M.Maximum",
+      "name": "Maximum",
+      "type": "analysis",
+      "class": "Extremes",
+      "path": "analyses/M.Maximum.json",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000151",
+          "display": "maximum observed value"
+        }
+      ]
+    },
+    {
+      "oid": "M.Sum",
+      "name": "Sum",
+      "type": "analysis",
+      "class": "Extremes",
+      "path": "analyses/M.Sum.json"
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.8.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.WindowedVisitAssignment",
+  "name": "Windowed Visit Assignment",
+  "type": "derivation",
+  "class": "Classification",
+  "intent": [
+    "ValueClassification"
+  ],
+  "description": "Assign each observation to a scheduled analysis visit using day-windows and a target-day tie-break. SAP-style AVISIT derivation. Consumes a pre-computed study day (SDTM --DY) relative to the randomization anchor; no date subtraction inside the method.",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "analysisVisit := window.label WHERE day ∈ [window.dayMin, window.dayMax], tie-break closest(|day-targetDay|) then min(visitNumber)",
+    "generic_expression": "analysisVisit := FIND WINDOW(<windows>) MATCHING <day>"
+  },
+  "configurations": [
+    {
+      "name": "referenceBC",
+      "dataType": "code",
+      "description": "Identifier of the BC that provides the randomization anchor (e.g. BiomedicalConcept_216 'Subject is Randomized'). Documents the SAP's day-zero; not consumed at runtime because --DY is already relative to this anchor."
+    },
+    {
+      "name": "windows",
+      "dataType": "object[]",
+      "description": "Scheduled visit windows: array of { label, visitNumber, dayMin, dayMax, targetDay }. dayMin/dayMax=null means unbounded."
+    },
+    {
+      "name": "tieBreak",
+      "dataType": "code",
+      "defaultValue": "closest-to-target-then-earliest",
+      "description": "Tie-break rule when multiple windows match the day."
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "analysisVisit",
+        "dataType": "code",
+        "description": "Scheduled visit label (e.g. 'Baseline', 'Week 8').",
+        "statistics": [
+          "value"
+        ],
+        "dimensions": null
+      },
+      {
+        "class": "computed_value",
+        "role_name": "analysisVisitNumber",
+        "dataType": "decimal",
+        "description": "Scheduled visit number (e.g. 3, 8).",
+        "statistics": [
+          "value"
+        ],
+        "dimensions": null
+      },
+      {
+        "class": "computed_value",
+        "role_name": "analysisDay",
+        "dataType": "decimal",
+        "description": "Observation day relative to the reference date.",
+        "statistics": [
+          "value"
+        ],
+        "dimensions": null
+      }
+    ]
+  },
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "day",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "Pre-computed study day (SDTM --DY column) relative to the randomization anchor. Positive = after anchor, zero/negative = at/before anchor."
+    },
+    {
+      "name": "partition",
+      "dataType": "code",
+      "required": false,
+      "cardinality": "multiple",
+      "description": "Subject-level partitioning. Not used by the default template (assignment is row-wise on day)."
+    }
+  ]
+}

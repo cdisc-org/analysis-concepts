@@ -1,0 +1,32 @@
+{
+  "model": "PhraseRoleAppConfig",
+  "version": "0.1.0",
+  "description": "App-local runtime configuration for ac-dc-app's SmartPhrase palette (Step 5). Currently holds declarative triggers describing when each SmartPhrase role is implicitly satisfied by the current Step 3 endpoint spec. These triggers are app dynamics — they reference endpoint-spec runtime state (dimensionValues, linkedBCIds, conceptCategory, parameterName) — so they live outside the transformation library, which is reserved for metadata about concepts, methods, and transformations. The non-trigger role metadata (role name, label, contextSource, display order) remains in lib/transformations/ACDC_Transformation_Library_v06.json::roleDefinitions because it describes the role itself and is not app-specific runtime state. Consumed by ac-dc-app/js/utils/phrase-engine.js::deriveImplicitPhraseOids via ac-dc-app/js/utils/phrase-engine.js::evaluateTrigger.",
+  "triggers": {
+    "endpoint": {
+      "kind": "conceptCategoryInReferences"
+    },
+    "parameter": {
+      "kind": "anyOf",
+      "checks": [
+        { "kind": "hasLinkedBCs" },
+        { "kind": "hasParameterName" }
+      ]
+    },
+    "timepoint": {
+      "kind": "dimensionHasValue",
+      "dimension": "AnalysisVisit"
+    },
+    "population": {
+      "kind": "dimensionHasValue",
+      "dimension": "Population"
+    },
+    "grouping": {
+      "kind": "all",
+      "checks": [
+        { "kind": "referencesInclude", "value": "Treatment" },
+        { "kind": "dimensionHasValue", "dimension": "Treatment" }
+      ]
+    }
+  }
+}

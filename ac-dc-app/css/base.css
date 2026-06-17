@@ -1,0 +1,22 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font-family);
+  font-size: 14px;
+  color: var(--cdisc-text);
+  background: var(--cdisc-background);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--cdisc-link);
+}
+
+a:visited {
+  color: var(--cdisc-link-visited);
+}

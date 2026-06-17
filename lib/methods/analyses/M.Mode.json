@@ -1,0 +1,63 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.8.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.Mode",
+  "name": "Mode",
+  "type": "analysis",
+  "class": "Central Tendency",
+  "intent": [
+    "DescriptiveSummary"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000033",
+      "display": "mode"
+    }
+  ],
+  "description": "Determines the most frequently occurring value",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := MODE(response) OVER (group)",
+    "generic_expression": "result := MODE(<response>) OVER (<group>*)"
+  },
+  "configurations": [],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "description": "Mode of the variable",
+        "dimensions": [
+          "group"
+        ],
+        "statistics": [
+          "mode"
+        ]
+      }
+    ]
+  },
+  "assumptions": [],
+  "input_roles": [
+    {
+      "name": "response",
+      "statisticalRole": "response",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The variable to summarize"
+    },
+    {
+      "name": "group",
+      "statisticalRole": "fixed_effect",
+      "dataType": "code",
+      "required": false,
+      "cardinality": "single_or_multiple",
+      "description": "Optional grouping variable(s)"
+    }
+  ]
+}

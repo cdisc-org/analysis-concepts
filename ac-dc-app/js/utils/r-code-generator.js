@@ -1,0 +1,473 @@
+/**
+ * Execution Payload Generator for AC/DC Analysis Specifications.
+ *
+ * Instead of generating hardcoded R code, this module serializes the
+ * endpoint's resolved specification and concept-variable mappings as JSON.
+ * A generic R engine (acdc_engine.R) reads these JSONs and executes.
+ */
+
+/**
+ * Generate the execution payload: spec JSON + mapping JSON + bootstrap R code.
+ *
+ * @param {Object} endpointResolvedSpec - The resolved endpoint object from appState.resolvedSpec.endpoints[]
+ * @param {Object} conceptMappings     - concept-variable-mappings.json (full object)
+ * @param {Object} [overrides]         - User variable overrides { concept: adamVar }
+ * @returns {{ specJson: string, mappingJson: string, bootstrapCode: string }}
+ */
+export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, overrides,
+                                          methodDef, rImplementation,
+                                          derivations, unitConversions, rImplCatalog,
+                                          availableDatasets, conceptCategories,
+                                          presentationStore) {
+  const adam = conceptMappings?.adam || {};
+
+  // Strip $ui fields for clean spec
+  const { $ui, ...cleanSpec } = endpointResolvedSpec || {};
+
+  const specJson = JSON.stringify(cleanSpec, null, 2);
+  const mappingJson = JSON.stringify(conceptMappings, null, 2);
+  const methodJson = methodDef ? JSON.stringify(methodDef, null, 2) : 'null';
+  const rImplJson = rImplementation ? JSON.stringify(rImplementation) : 'null';
+  const overridesJson = overrides && Object.keys(overrides).length > 0
+    ? JSON.stringify(overrides) : 'NULL';
+  const derivationsJson = derivations && derivations.length > 0
+    ? JSON.stringify(derivations, null, 2) : 'null';
+  const unitConversionsJson = unitConversions
+    ? JSON.stringify(unitConversions) : 'null';
+  const rImplsJson = rImplCatalog
+    ? JSON.stringify(rImplCatalog) : 'null';
+  const conceptCategoriesJson = conceptCategories
+    ? JSON.stringify(conceptCategories) : 'null';
+
+  const datasetName = (cleanSpec.targetDataset || 'addata').toLowerCase();
+
+  const bootstrapCode = [
+    `# ═══════════════════════════════════════════════════════════════`,
+    `# AC/DC Execution Bootstrap`,
+    `# Passes specification + implementation metadata to the engine`,
+    `# ═══════════════════════════════════════════════════════════════`,
+    ``,
+    `# Parse metadata from JSON`,
+    `spec <- jsonlite::fromJSON(spec_json, simplifyVector = FALSE)`,
+    `all_mappings <- jsonlite::fromJSON(mapping_json, simplifyVector = FALSE)`,
+    `method_def <- jsonlite::fromJSON(method_json, simplifyVector = FALSE)`,
+    `r_impl <- jsonlite::fromJSON(r_impl_json, simplifyVector = FALSE)`,
+    ``,
+    `# Extract target store mappings (default: adam for backward compatibility)`,
+    `target_store <- spec$targetStore`,
+    `if (is.null(target_store)) target_store <- "adam"`,
+    `mappings <- all_mappings[[target_store]]`,
+    `if (is.null(mappings)) mappings <- all_mappings$adam`,
+    ``,
+    `# Parse derivation chain and unit conversions (if present)`,
+    `derivations <- if (exists("derivations_json")) jsonlite::fromJSON(derivations_json, simplifyVector = FALSE) else NULL`,
+    `unit_conversions <- if (exists("unit_conversions_json")) jsonlite::fromJSON(unit_conversions_json, simplifyVector = FALSE) else NULL`,
+    `r_impls <- if (exists("r_impls_json")) jsonlite::fromJSON(r_impls_json, simplifyVector = FALSE) else NULL`,
+    `concept_categories <- if (exists("concept_categories_json")) jsonlite::fromJSON(concept_categories_json, simplifyVector = FALSE) else NULL`,
+    ``,
+    `# User variable overrides (selected in UI)`,
+    overridesJson === 'NULL'
+      ? `overrides <- NULL`
+      : `overrides <- jsonlite::fromJSON(overrides_json, simplifyVector = FALSE)`,
+    ``,
+    `# Load the analysis dataset`,
+    `dataset <- get("${datasetName}")`,
+    `cat("Dataset: ${datasetName},", nrow(dataset), "rows\\n")`,
+    ``,
+    `# Available datasets for dimension enrichment (all uploaded XPTs)`,
+    `available_datasets <- c(${(availableDatasets || []).map(d => `"${d}"`).join(', ')})`,
+    ``,
+    `# Presentation store for the Derived Data Preview panel (UI toggle).`,
+    `presentation_store <- ${presentationStore ? `"${presentationStore}"` : 'NULL'}`,
+    ``,
+    `# Execute using the generic AC/DC engine (capture console output for diagnostics)`,
+    `console_log <- capture.output({`,
+    `  result <- tryCatch(`,
+    `    acdc_execute(spec, mappings, dataset, overrides, method_def, r_impl,`,
+    `                 derivations, unit_conversions, r_impls, all_mappings, available_datasets,`,
+    `                 concept_categories, presentation_store = presentation_store),`,
+    `    error = function(e) list(engine_error = e$message)`,
+    `  )`,
+    `})`,
+    `result$console <- paste(console_log, collapse = "\\n")`,
+    ``,
+    `# Return results as JSON`,
+    `jsonlite::toJSON(result, auto_unbox = TRUE, pretty = TRUE)`,
+  ].join('\n');
+
+  return { specJson, mappingJson, methodJson, rImplJson, overridesJson,
+           derivationsJson, unitConversionsJson, rImplsJson,
+           conceptCategoriesJson, bootstrapCode };
+}
+
+/**
+ * Title-case normalize a facet value: "result.value" → "Result.Value"
+ * Matches the canonical form used by ingest_to_concepts in the R engine.
+ */
+function normalizeFacetCase(facetValue) {
+  return facetValue.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('.');
+}
+
+/**
+ * Resolve <role> and <config> placeholders in a callTemplate, producing standalone code.
+ * This mirrors the R engine's resolve_call_template() but runs client-side,
+ * enabling resolved code display for languages without a browser engine (e.g. SAS).
+ *
+ * In concept-keyed mode, role placeholders resolve to concept keys (e.g.,
+ * Measure.Result.Value, Treatment) which are the internal column names.
+ *
+ * @param {Object} impl              - Implementation entry (with callTemplate)
+ * @param {Array}  bindings          - resolvedBindings from the analysis
+ * @param {Object} overrides         - User variable overrides { conceptKey: varName }
+ * @param {Object} adam              - The adam section of concept-variable-mappings.json (kept for compat)
+ * @param {Object} configs           - Method configurations (e.g. { alpha: 0.05, ss_type: 'III' })
+ * @param {string} [datasetName]     - Target dataset name (default: 'analysis_data')
+ * @param {Array}  [outputConfiguration] - StudyOutputClassConfig[] for dimension narrowing
+ * @returns {string} Resolved code with all placeholders substituted
+ */
+export function resolveCallTemplate(impl, bindings, overrides, adam, configs, datasetName, outputConfiguration) {
+  if (!impl?.callTemplate) return '';
+  let code = narrowTemplateForOutputConfig(impl.callTemplate, outputConfiguration, bindings, overrides, adam);
+
+  // Build role → concept key(s) map from bindings.
+  // A role can have multiple bindings (e.g. multiple fixed_effects), so we
+  // accumulate arrays — mirroring the R engine's build_concept_var_map().
+  const roleMap = {};
+  for (const b of (bindings || [])) {
+    if (b.direction === 'output') continue;
+    const concept = (b.concept || '').replace(/@.*/, '');
+    const role = b.methodRole;
+    if (!role) continue;
+
+    // Build concept key from concept + qualifier (matching R engine logic)
+    let conceptKey;
+    if (b.qualifierType === 'facet' && b.qualifierValue) {
+      conceptKey = `${concept}.${normalizeFacetCase(b.qualifierValue)}`;
+    } else {
+      // No facet qualifier — check if concept has facets in mappings
+      // and resolve based on dataStructureRole (measure → Result.Value, attribute → Result.Unit)
+      const entry = adam?.concepts?.[concept];
+      if (entry?.facets) {
+        const targetFacet = b.dataStructureRole === 'measure' ? 'Result.Value'
+          : b.dataStructureRole === 'attribute' ? 'Result.Unit' : null;
+        conceptKey = (targetFacet && entry.facets[targetFacet])
+          ? `${concept}.${targetFacet}` : concept;
+      } else {
+        conceptKey = concept;
+      }
+    }
+
+    // User override takes precedence over concept key
+    const varName = overrides?.[conceptKey] || overrides?.[concept] || conceptKey;
+    if (roleMap[role]) {
+      roleMap[role].push(varName);
+    } else {
+      roleMap[role] = [varName];
+    }
+  }
+
+  // Expand <role> placeholders. Templates mark identifier-position
+  // placeholders by wrapping with backticks (e.g. `lm(\`<response>\` ~ ...)`)
+  // and string-position placeholders without (`concept_data[["<x>"]]`).
+  // Backticked occurrences get per-term backticks via the inner separator;
+  // bare occurrences use the plain separator. SAS doesn't use backticks.
+  const isRSyntax = (impl.language || '').toUpperCase() === 'R';
+  const plainSep = impl.roleSeparator || (isRSyntax ? ' + ' : ' ');
+  const roles = Object.keys(roleMap).sort((a, b) => b.length - a.length);
+  for (const role of roles) {
+    const ph = `<${role}>`;
+    const terms = roleMap[role];
+    if (isRSyntax) {
+      const backtickedPh = '`' + ph + '`';
+      const backtickedValue = '`' + terms.join('` + `') + '`';
+      code = code.replaceAll(backtickedPh, backtickedValue);
+    }
+    code = code.replaceAll(ph, terms.join(plainSep));
+  }
+
+  // Substitute <config> placeholders, applying language-specific mappings if available.
+  // E.g., SAS needs alternative "two.sided" → "2", ss_type "III" → "3"
+  const implConfigs = impl.configurations || {};
+  for (const [key, val] of Object.entries(configs || {})) {
+    const mapping = implConfigs[`${key}_mapping`];
+    const mapped = (mapping && mapping[String(val)] != null) ? mapping[String(val)] : val;
+    code = code.replaceAll(`<${key}>`, String(mapped));
+  }
+
+  // Substitute <dataset>
+  code = code.replaceAll('<dataset>', datasetName || 'analysis_data');
+
+  return code;
+}
+
+/**
+ * Resolve a derivation step's callTemplate to standalone runnable code.
+ *
+ * The analysis resolver above skips output bindings (`<difference>` /
+ * `<quotient>` / etc.) — derivations rely on those for the column being
+ * written. We also honour chain-lookup overrides on the entry:
+ *   • `entry.outputColumn` renames the primary output column to a unique
+ *     `__col_*` name so sibling derivations producing the same concept don't
+ *     collide on merge.
+ *   • `entry.inputColumns[role]` redirects an input role to an upstream
+ *     chain-output column (e.g. M.Subtraction's `minuend` points at the
+ *     ADAS-Cog (11) Total Score chain column).
+ *
+ * Returns null when there's no R implementation for the method.
+ *
+ * @param {Object} entry      - One element of endpointSpec.derivationChain,
+ *                              augmented with outputColumn + inputColumns
+ *                              (see transformation-linker.computeColumnMap).
+ * @param {Object} transform  - The transformation definition (library entry).
+ * @param {Object} impl       - The R implementation entry (callTemplate + role spec).
+ * @param {Object} adam       - conceptMappings.adam (for facet inference).
+ */
+export function resolveDerivationCallTemplate(entry, transform, impl, adam, categoryPicks, categoriesMap) {
+  if (!impl?.callTemplate) return null;
+  let code = impl.callTemplate;
+  const isR = (impl.language || '').toUpperCase() === 'R';
+
+  // Resolve a binding to a concrete concept name. The library authors
+  // sometimes use `conceptCategory` (e.g. ParameterDimension) for dimension
+  // bindings — those need to be projected through the endpoint's
+  // dimensionCategoryPicks to find the concrete dim (Parameter / AnalysisVisit
+  // / etc.). Falls back to the category's first member.
+  const resolveBindingConcept = (b) => {
+    const direct = (b.concept || '').replace(/@.*/, '');
+    if (direct) return direct;
+    const cat = b.conceptCategory;
+    if (!cat) return '';
+    if (categoryPicks?.[cat]) return categoryPicks[cat];
+    const members = categoriesMap?.[cat]?.members;
+    if (members?.[0]?.concept) return members[0].concept;
+    return cat; // last-ditch placeholder so the user can see what was unresolved
+  };
+
+  // Build role → column[s] map. Both inputs AND outputs are considered;
+  // chain-lookup overrides win, otherwise we synthesise a concept-keyed name
+  // (Measure → Measure.Result.Value, etc.).
+  const roleMap = {};
+  const bindings = entry.resolvedBindings || transform.bindings || [];
+  for (const b of bindings) {
+    const role = b.methodRole;
+    if (!role) continue;
+    const concept = resolveBindingConcept(b);
+    if (!concept) continue;
+
+    let col;
+    if (b.direction === 'output') {
+      // Primary output → chain-lookup outputColumn; companions keep their
+      // concept-keyed name (units, labels) since they don't collide.
+      col = (b.dataStructureRole === 'measure' && entry.outputColumn)
+        ? entry.outputColumn
+        : concept;
+    } else if (entry.inputColumns?.[role]) {
+      col = entry.inputColumns[role];
+    } else if (b.qualifierType === 'facet' && b.qualifierValue) {
+      col = `${concept}.${normalizeFacetCase(b.qualifierValue)}`;
+    } else {
+      const cEntry = adam?.concepts?.[concept];
+      if (cEntry?.facets && b.dataStructureRole === 'measure') {
+        col = `${concept}.Result.Value`;
+      } else if (cEntry?.facets && b.dataStructureRole === 'attribute') {
+        col = `${concept}.Result.Unit`;
+      } else {
+        col = concept;
+      }
+    }
+    if (!roleMap[role]) roleMap[role] = [];
+    roleMap[role].push(col);
+  }
+
+  // Substitute <role> placeholders. Backticked positions get per-term
+  // backticking; bare positions use the role separator. Sort roles by
+  // length-desc so e.g. `<minuend>` matches before `<min>` would.
+  const sep = impl.roleSeparator || (isR ? ' + ' : ' ');
+  const roles = Object.keys(roleMap).sort((a, b) => b.length - a.length);
+  for (const role of roles) {
+    const ph = `<${role}>`;
+    const terms = roleMap[role];
+    if (isR) {
+      const back = '`' + ph + '`';
+      const backVal = '`' + terms.join('` + `') + '`';
+      code = code.replaceAll(back, backVal);
+    }
+    code = code.replaceAll(ph, terms.join(sep));
+  }
+
+  // Substitute <config> placeholders from entry.configurationValues. Values
+  // go in BARE — templates already include any surrounding quotes the host
+  // language needs (e.g. `switch("<agg_func>", …)` → `switch("sum", …)`).
+  // Quoting here would double-wrap and break the resolved code.
+  const configs = {};
+  for (const cv of (entry.configurationValues || [])) configs[cv.name] = cv.value;
+  for (const [name, val] of Object.entries(configs)) {
+    if (val == null) continue;
+    code = code.replaceAll(`<${name}>`, String(val));
+  }
+
+  return code;
+}
+
+/**
+ * Narrow <fixed_effect> in post-hoc lines of a callTemplate based on
+ * outputConfiguration.  The model formula keeps ALL fixed effects, but
+ * post-hoc lines (emmeans, LSMEANS, etc.) use only the selected ones.
+ *
+ * In concept-keyed mode, selected dimensions are already concept keys
+ * (e.g., "Treatment", "AnalysisVisit") which are the column names.
+ *
+ * @param {string} template - The raw callTemplate string
+ * @param {Array}  outputConfiguration - StudyOutputClassConfig[] from the resolved spec
+ * @param {Array}  bindings - resolvedBindings (kept for compat)
+ * @param {Object} overrides - User variable overrides
+ * @param {Object} adam - Concept-variable mappings (kept for compat)
+ * @returns {string} Template with narrowed <fixed_effect> in post-hoc lines
+ */
+function narrowTemplateForOutputConfig(template, outputConfiguration, bindings, overrides, adam) {
+  if (!outputConfiguration?.length || !template.includes('<fixed_effect>')) return template;
+
+  // Find the first output class with a dimension selection
+  const oc = outputConfiguration.find(c => c.selectedDimensions?.length > 0);
+  if (!oc) return template;
+
+  // In concept-keyed mode, selected dimensions ARE the column names (concept keys)
+  const selectedVars = [];
+  for (const concept of oc.selectedDimensions) {
+    if (concept.includes(':')) continue; // Skip interactions for formula factors
+    const override = overrides?.[concept];
+    selectedVars.push(override || concept);
+  }
+  if (selectedVars.length === 0) return template;
+
+  const narrowed = selectedVars.join(' + ');
+
+  // Narrow <fixed_effect> only in POST-HOC lines (after the model formula).
+  const lines = template.split('\n');
+  const modelLineIdx = lines.findIndex(l => l.includes('<response>'));
+  return lines.map((line, i) => {
+    if (i > modelLineIdx && line.includes('<fixed_effect>')) {
+      return line.replaceAll('<fixed_effect>', narrowed);
+    }
+    return line;
+  }).join('\n');
+}
+
+/** Data type keys that are numeric (compatible with Quantity/NumericValue) */
+const NUMERIC_TYPES = new Set(['decimal', 'integer', 'baseline']);
+/** Data type keys that are categorical (compatible with CodeableConcept) */
+const CATEGORICAL_TYPES = new Set(['code', 'string', 'id']);
+
+/**
+ * Get the available ADaM variable options for a concept, filtered by value type.
+ *
+ * @param {string} concept       - Concept name (e.g., "Change", "Treatment", "Parameter")
+ * @param {Object} adam          - The adam section of concept-variable-mappings.json
+ * @param {string} [valueType]   - Required value type from binding (e.g., "Quantity", "NumericValue", "CodeableConcept")
+ * @param {string} [structRole]  - dataStructureRole ("measure" or "dimension")
+ * @returns {string[]} Unique ADaM variable names compatible with the value type
+ */
+export function getVariableOptions(concept, adam, valueType, structRole) {
+  const entry = adam?.concepts?.[concept] || adam?.dimensions?.[concept];
+  if (!entry?.byDataType) return [];
+
+  // Collect every (typeKey, varName) pair declared anywhere in the entry:
+  //   - byDataType (canonical default)
+  //   - intentType / other nested qualifier objects
+  //   - alternativeVariables (loose list — typeKey unknown, treated as compatible with any branch)
+  const typedPairs = []; // [{ type, varName }]
+  const looseVars = [];  // variables with no declared type
+
+  for (const [type, val] of Object.entries(entry.byDataType)) {
+    if (typeof val === 'string') typedPairs.push({ type, varName: val });
+  }
+  // Skip non-variable-list keys. `facets` is per-facet binding (e.g. Result.Unit→AVALU)
+  // and must NOT be flattened into the bare-concept dropdown — AVALU is for the
+  // Measure.Result.Unit binding only, never an alternative for Measure itself.
+  const NON_VARIABLE_KEYS = new Set(['byDataType', 'variable', 'notes', 'alternativeVariables', 'facets']);
+  for (const [key, val] of Object.entries(entry)) {
+    if (NON_VARIABLE_KEYS.has(key)) continue;
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+      for (const sub of Object.values(val)) {
+        if (typeof sub === 'string') {
+          looseVars.push(sub);
+        } else if (sub && typeof sub === 'object') {
+          for (const [innerType, innerVal] of Object.entries(sub)) {
+            if (typeof innerVal === 'string') typedPairs.push({ type: innerType, varName: innerVal });
+          }
+        }
+      }
+    }
+  }
+  if (Array.isArray(entry.alternativeVariables)) {
+    looseVars.push(...entry.alternativeVariables.filter(v => typeof v === 'string'));
+  }
+
+  const filterByTypes = (typeSet) => {
+    const matching = typedPairs.filter(p => typeSet.has(p.type)).map(p => p.varName);
+    return [...new Set([...matching, ...looseVars])];
+  };
+
+  // If a numeric value type is required, only show numeric-compatible variables (+ loose alternatives)
+  if (valueType && /quantity|numeric/i.test(valueType)) {
+    const filtered = filterByTypes(NUMERIC_TYPES);
+    if (filtered.length > 0) return filtered;
+  }
+
+  // If a categorical value type is required, only show categorical variables (+ loose alternatives)
+  if (valueType && /code|categor/i.test(valueType)) {
+    const filtered = filterByTypes(CATEGORICAL_TYPES);
+    if (filtered.length > 0) return filtered;
+  }
+
+  // If structRole is measure, prefer numeric; if dimension, prefer categorical
+  if (structRole === 'measure') {
+    const numeric = filterByTypes(NUMERIC_TYPES);
+    if (numeric.length > 0) return numeric;
+  }
+  if (structRole === 'dimension') {
+    const categorical = filterByTypes(CATEGORICAL_TYPES);
+    if (categorical.length > 0) return categorical;
+  }
+
+  // Fallback: union of all known variables
+  return [...new Set([...typedPairs.map(p => p.varName), ...looseVars])];
+}
+
+/**
+ * Get the default ADaM variable for a concept + dataStructureRole.
+ */
+export function getDefaultVariable(concept, dataStructureRole, adam, binding) {
+  const entry = adam?.concepts?.[concept] || adam?.dimensions?.[concept];
+  // No mapping in this data store → return null. The previous fallback
+  // (concept.toUpperCase()) made unmapped OC concepts look like real ADaM
+  // columns (e.g. "OBSERVATION.IDENTIFICATION.TOPIC"), masking the fact that
+  // the user picked an OC-layer concept against an ADaM dataset (or vice
+  // versa). Caller should render "—" or a layer-mismatch warning.
+  if (!entry?.byDataType) return null;
+
+  // Honor binding qualifiers when present. The mapping declares qualifier-specific
+  // sub-tables (e.g. Treatment.intentType.Planned.code = "TRTP"); when a binding
+  // says qualifierType="IntentType", qualifierValue="Planned", the default must
+  // come from that sub-table, not the canonical byDataType (which represents the
+  // unqualified default — TRTA = Actual treatment for Treatment).
+  if (binding?.qualifierType && binding?.qualifierValue) {
+    // Convention: top-level qualifier sub-tables are keyed by lowercased qualifier
+    // type (intentType) with values keyed by qualifierValue (Planned / Actual).
+    const qualifierTypeKey = binding.qualifierType.charAt(0).toLowerCase() + binding.qualifierType.slice(1);
+    const qualifierTable = entry[qualifierTypeKey];
+    const subTable = qualifierTable?.[binding.qualifierValue];
+    if (subTable && typeof subTable === 'object') {
+      const pick = dataStructureRole === 'measure'
+        ? (subTable.decimal || subTable.code || subTable.string || Object.values(subTable)[0])
+        : (subTable.code || subTable.string || subTable.decimal || Object.values(subTable)[0]);
+      if (pick) return pick;
+    }
+  }
+
+  const bt = entry.byDataType;
+  if (dataStructureRole === 'measure') {
+    return bt.decimal || bt.code || bt.string || Object.values(bt)[0];
+  }
+  return bt.code || bt.string || bt.decimal || Object.values(bt)[0];
+}

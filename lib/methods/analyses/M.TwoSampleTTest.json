@@ -1,0 +1,118 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.8.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json",
+    "configuration_concepts": "../../model/method/configuration_concepts.json"
+  },
+  "oid": "M.TwoSampleTTest",
+  "name": "Two-sample t-test",
+  "type": "analysis",
+  "class": "General Linear Models",
+  "intent": [
+    "GroupComparison"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000304",
+      "display": "two sample t-test"
+    }
+  ],
+  "description": "Tests whether means of two independent samples differ significantly",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ fixed_effect",
+    "generic_expression": "<response> ~ <fixed_effect>",
+    "notes": "Single factor with exactly two levels"
+  },
+  "configurations": [
+    {
+      "name": "var_equal",
+      "dataType": "boolean",
+      "defaultValue": false,
+      "description": "Assume equal variances (true=pooled, false=Welch)"
+    },
+    {
+      "name": "alternative",
+      "dataType": "enum",
+      "defaultValue": "two_sided",
+      "enumValues": [
+        "two_sided",
+        "less",
+        "greater"
+      ],
+      "description": "Direction of alternative hypothesis"
+    },
+    {
+      "name": "conf_level",
+      "conforms_to": "conf_level"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "test_result",
+        "description": "Two-sample t-test result",
+        "dimensions": null,
+        "statistics": [
+          "t_statistic",
+          "p_value",
+          "df"
+        ]
+      },
+      {
+        "class": "ls_means",
+        "description": "Group means",
+        "dimensions": [
+          "fixed_effect"
+        ],
+        "statistics": [
+          "mean",
+          "SE",
+          "CI_lower",
+          "CI_upper"
+        ]
+      },
+      {
+        "class": "contrasts",
+        "description": "Difference between group means",
+        "dimensions": null,
+        "statistics": [
+          "estimate",
+          "SE",
+          "CI_lower",
+          "CI_upper",
+          "t_statistic",
+          "p_value",
+          "df"
+        ]
+      }
+    ]
+  },
+  "assumptions": [
+    "Normality within groups",
+    "Independence of observations",
+    "Equal variances (if var_equal=true)"
+  ],
+  "input_roles": [
+    {
+      "name": "response",
+      "statisticalRole": "response",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The response variable"
+    },
+    {
+      "name": "fixed_effect",
+      "statisticalRole": "fixed_effect",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "single",
+      "description": "Grouping variable (exactly two levels)"
+    }
+  ]
+}

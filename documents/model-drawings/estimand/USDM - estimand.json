@@ -1,0 +1,878 @@
+{
+  "style": {
+    "font-family": "sans-serif",
+    "background-color": "#ffffff",
+    "background-image": "",
+    "background-size": "100%",
+    "node-color": "#ffffff",
+    "border-width": 4,
+    "border-color": "#000000",
+    "radius": 50,
+    "node-padding": 5,
+    "node-margin": 2,
+    "outside-position": "auto",
+    "node-icon-image": "",
+    "node-background-image": "",
+    "icon-position": "inside",
+    "icon-size": 64,
+    "caption-position": "inside",
+    "caption-max-width": 200,
+    "caption-color": "#000000",
+    "caption-font-size": 50,
+    "caption-font-weight": "normal",
+    "label-position": "inside",
+    "label-display": "pill",
+    "label-color": "#000000",
+    "label-background-color": "#ffffff",
+    "label-border-color": "#000000",
+    "label-border-width": 4,
+    "label-font-size": 40,
+    "label-padding": 5,
+    "label-margin": 4,
+    "directionality": "directed",
+    "detail-position": "inline",
+    "detail-orientation": "parallel",
+    "arrow-width": 5,
+    "arrow-color": "#000000",
+    "margin-start": 5,
+    "margin-end": 5,
+    "margin-peer": 20,
+    "attachment-start": "normal",
+    "attachment-end": "normal",
+    "relationship-icon-image": "",
+    "type-color": "#000000",
+    "type-background-color": "#ffffff",
+    "type-border-color": "#000000",
+    "type-border-width": 0,
+    "type-font-size": 16,
+    "type-padding": 5,
+    "property-position": "outside",
+    "property-alignment": "colon",
+    "property-color": "#000000",
+    "property-font-size": 16,
+    "property-font-weight": "normal"
+  },
+  "nodes": [
+    {
+      "id": "n0",
+      "position": {
+        "x": 719.4216249108753,
+        "y": 136.3253833795037
+      },
+      "caption": "StudyDesign",
+      "labels": [
+        "USDM"
+      ],
+      "properties": {},
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n1",
+      "position": {
+        "x": 299.8981504411197,
+        "y": -105.88660753697675
+      },
+      "caption": "Objective",
+      "labels": [
+        "USDM"
+      ],
+      "properties": {
+        "objectiveId": "string",
+        "level": "enum[PRIMARY|SECONDARY|EXPLORATORY]",
+        "description": "string (high-level objective statement)"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n2",
+      "position": {
+        "x": 1250.1334450789457,
+        "y": -691.293794588918
+      },
+      "caption": "Estimand",
+      "labels": [
+        "USDM",
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "estimandId": "string",
+        "name": "string",
+        "description": "string",
+        "representationFormat": "enum[STRUCTURED|DCO|HYBRID]",
+        "clinicalQuestion": "string (optional: natural language question bridging objective to structured attributes)",
+        "clinicalQuestionRationale": "string (optional)",
+        "dcoText": "string (optional: prose description including all 5 attributes with objective context)",
+        "note": "DCO and clinicalQuestion are alternative communication formats for the same estimand. STRUCTURED uses clinicalQuestion+5 attributes; DCO uses dcoText; HYBRID has both."
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#FF6B6B",
+        "border-width": 6,
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n3",
+      "position": {
+        "x": 1911.6843655047871,
+        "y": -330.05148664235946
+      },
+      "caption": "Treatment",
+      "labels": [
+        "USDM",
+        "EstimandAttribute",
+        "Attribute 1",
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "condition": "string (e.g. Drug X 10mg vs Placebo)",
+        "regimen": "string",
+        "administration": "string",
+        "backgroundTreatment": "string",
+        "includesDiscontinuation": "boolean",
+        "includesAddlTreatment": "boolean",
+        "description": "string"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n4",
+      "position": {
+        "x": 1172.7595333883198,
+        "y": 136.3253833795037
+      },
+      "caption": "Population",
+      "labels": [
+        "USDM",
+        "EstimandAttribute",
+        "Attribute 2",
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "name": "string",
+        "definition": "string",
+        "inclusionCriteria": "string",
+        "principalStratum": "string (if applicable)",
+        "analysisSetFlag": "string (e.g. FASFL)",
+        "statoId": "string (optional)"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n5",
+      "position": {
+        "x": -185.98573756166758,
+        "y": -23.186169152131303
+      },
+      "caption": "Endpoint",
+      "labels": [
+        "USDM"
+      ],
+      "properties": {
+        "endpointId": "string",
+        "name": "string",
+        "description": "string",
+        "measure": "string",
+        "unit": "string",
+        "direction": "enum[higher is better|lower is better|specific target]",
+        "category": "enum[efficacy|safety|pharmacokinetic|biomarker]"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n6",
+      "position": {
+        "x": 227.82748159195324,
+        "y": -570.4496074978293
+      },
+      "caption": "Variable",
+      "labels": [
+        "USDM",
+        "EstimandAttribute",
+        "Attribute 3",
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "basedOnEndpoint": "string (endpointId reference)",
+        "timeframe": "string",
+        "timepoint": "string",
+        "derivation": "string",
+        "paramcd": "string",
+        "includesComposite": "boolean",
+        "compositeComponents": "array (if composite)"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n7",
+      "position": {
+        "x": 980.8294411415943,
+        "y": 569.8938359041567
+      },
+      "caption": "ICE Handling",
+      "labels": [
+        "USDM",
+        "EstimandAttribute",
+        "Attribute 4",
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "summary": "string (list of ICEs and their strategies)"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n8",
+      "position": {
+        "x": 868.0803967225767,
+        "y": 293.32925794300786
+      },
+      "caption": "Population Summary",
+      "labels": [
+        "USDM",
+        "EstimandAttribute",
+        "Attribute 5",
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "type": "enum[difference in means|ratio|risk difference|hazard ratio|odds ratio]",
+        "statisticalMeasure": "string",
+        "comparison": "string",
+        "statoId": "string (optional)"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#4CAF50",
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n9",
+      "position": {
+        "x": 906.0957101833621,
+        "y": 919.8821602034346
+      },
+      "caption": "ICE Definition",
+      "labels": [
+        "USDM",
+        "Metadata",
+        "High-Level"
+      ],
+      "properties": {
+        "iceId": "string",
+        "name": "string",
+        "description": "string",
+        "event": "string (what happens)",
+        "timing": "string (when can it occur)",
+        "timingCategory": "enum[early|late|recurring]",
+        "reason": "string (why it occurs)",
+        "reasonCategory": "enum[AE|LoE|Logistical|PatientChoice|Death|Other]",
+        "magnitude": "string (if relevant)",
+        "precedence": "integer"
+      },
+      "style": {
+        "node-color": "#D8BFD8",
+        "border-color": "#8B008B",
+        "property-color": "#8B008B"
+      }
+    },
+    {
+      "id": "n10",
+      "position": {
+        "x": 299.8981504411197,
+        "y": 569.8938359041567
+      },
+      "caption": "ICE Type",
+      "labels": [
+        "Metadata",
+        "Technical Spec"
+      ],
+      "properties": {
+        "iceTypeId": "string",
+        "name": "string",
+        "detectionCriteria": {
+          "sourceBC": "string (BC_ID reference)",
+          "sourceDomain": "enum[DS,CM,AE,EX,PR]",
+          "triggerField": "string",
+          "triggerValue": "string/regex",
+          "timingCheck": "expression"
+        },
+        "categorization": {
+          "primaryCategory": "enum[TxDiscontinuation|AddTreatment|DoseChange|Death|ClinicalEvent]",
+          "reasonCategory": "enum[AE|LoE|Logistical|PatientChoice|Death|Other]"
+        },
+        "dataRequirements": {
+          "collectPostICE": "boolean",
+          "requiredFields": "array[field]",
+          "followUpDuration": "duration"
+        },
+        "precedenceRules": {
+          "priority": "integer",
+          "overrides": "array[iceTypeId]"
+        }
+      },
+      "style": {
+        "node-color": "#D8BFD8",
+        "border-color": "#8B008B",
+        "property-color": "#8B008B"
+      }
+    },
+    {
+      "id": "n11",
+      "position": {
+        "x": 2162.7044329103264,
+        "y": 523.1401291485286
+      },
+      "caption": "Strategy",
+      "labels": [
+        "ICH E9(R1)"
+      ],
+      "properties": {
+        "strategyId": "string",
+        "type": "enum[Treatment Policy|Hypothetical|Composite|While on Treatment|Principal Stratum]",
+        "appliesTo": "string (iceId reference)",
+        "rationale": "string",
+        "hypotheticalScenario": "string (if Hypothetical)",
+        "compositeDefinition": "string (if Composite)",
+        "timeRestriction": "string (if While on Treatment)",
+        "stratumDefinition": "string (if Principal Stratum)"
+      },
+      "style": {
+        "node-color": "#FFE5B4",
+        "border-color": "#FFA500",
+        "property-color": "#FFA500"
+      }
+    },
+    {
+      "id": "n12",
+      "position": {
+        "x": 1614.1607252107426,
+        "y": -46.13492482855986
+      },
+      "caption": "Analysis Concept",
+      "labels": [
+        "Metadata",
+        "Estimator",
+        "Executable"
+      ],
+      "properties": {
+        "analysisId": "string",
+        "name": "string",
+        "description": "string",
+        "version": "string"
+      },
+      "style": {
+        "node-color": "#E6E6FA",
+        "border-color": "#9370DB",
+        "property-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n13",
+      "position": {
+        "x": 1840.7909074320391,
+        "y": 148.66224372642887
+      },
+      "caption": "inputSpec",
+      "labels": [
+        "AC Property"
+      ],
+      "properties": {
+        "dataset": "string",
+        "variables": "array",
+        "filters": "array",
+        "analysisSet": "string",
+        "iceHandling": "string"
+      },
+      "style": {
+        "node-color": "#E6E6FA",
+        "border-color": "#9370DB",
+        "property-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n14",
+      "position": {
+        "x": 1641.6247546965024,
+        "y": 393.1284200576083
+      },
+      "caption": "Computation",
+      "labels": [
+        "AC Property"
+      ],
+      "properties": {
+        "method": "string (e.g. ANCOVA, Cox, MMRM)",
+        "model": "string",
+        "covariates": "array",
+        "statoId": "string"
+      },
+      "style": {
+        "node-color": "#E6E6FA",
+        "border-color": "#9370DB",
+        "property-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n15",
+      "position": {
+        "x": 1336.2701122474602,
+        "y": 465.2283643261107
+      },
+      "caption": "outputSpec",
+      "labels": [
+        "AC Property"
+      ],
+      "properties": {
+        "structure": "string",
+        "fields": "array",
+        "precision": "string"
+      },
+      "style": {
+        "node-color": "#E6E6FA",
+        "border-color": "#9370DB",
+        "property-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n16",
+      "position": {
+        "x": 1672.9261945920343,
+        "y": 893.7678180525004
+      },
+      "caption": "Analysis Data",
+      "labels": [
+        "ActualValues",
+        "MainEstimate",
+        "DataNode"
+      ],
+      "properties": {
+        "estimate": "numeric",
+        "SE": "numeric",
+        "CI_lower": "numeric",
+        "CI_upper": "numeric",
+        "p_value": "numeric"
+      },
+      "style": {
+        "node-color": "#F0F8FF",
+        "border-color": "#4682B4",
+        "property-color": "#4682B4"
+      }
+    },
+    {
+      "id": "n17",
+      "position": {
+        "x": 62.92690989467319,
+        "y": 261.18506234661237
+      },
+      "caption": "BC",
+      "labels": [
+        "USDM",
+        "BiomedicalConcept"
+      ],
+      "properties": {
+        "bcId": "string",
+        "concept": "string",
+        "code": "string",
+        "codeSystem": "string",
+        "domain": "string",
+        "iceDetection": "boolean",
+        "detectsICE": "array[iceId]"
+      },
+      "style": {
+        "node-color": "#BFFFBF",
+        "border-color": "#228B22",
+        "border-width": 5,
+        "property-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n18",
+      "position": {
+        "x": 1393.6696352540455,
+        "y": 1132.0194740088893
+      },
+      "caption": "ICE Occurrence",
+      "labels": [
+        "DataNode",
+        "Instance"
+      ],
+      "properties": {
+        "usubjid": "string",
+        "iceDefId": "reference→ICE Definition",
+        "astdt": "date",
+        "aendt": "date",
+        "actualReason": "string",
+        "appliedStrategy": "enum"
+      },
+      "style": {
+        "node-color": "#FFE4E1",
+        "border-color": "#DC143C",
+        "property-color": "#DC143C"
+      }
+    },
+    {
+      "id": "n19",
+      "position": {
+        "x": 2071.5454669010765,
+        "y": 893.7678180525004
+      },
+      "caption": "Impact Assessment",
+      "labels": [
+        "Process",
+        "Executable"
+      ],
+      "properties": {
+        "assessmentId": "string",
+        "assessmentRule": "if BC triggers ICE, apply strategy",
+        "strategyApplication": "strategy→dataHandling",
+        "precedenceLogic": "if multiple ICEs, apply precedence rules",
+        "outputFlags": "array[ICE flags for datasets]"
+      },
+      "style": {
+        "node-color": "#E0FFFF",
+        "border-color": "#008B8B",
+        "property-color": "#008B8B"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "id": "n0",
+      "fromId": "n0",
+      "toId": "n1",
+      "type": "HAS_OBJECTIVE",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n1",
+      "fromId": "n0",
+      "toId": "n2",
+      "type": "HAS_ESTIMAND",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n2",
+      "fromId": "n1",
+      "toId": "n2",
+      "type": "DEFINES_ESTIMAND",
+      "properties": {
+        "description": "Objective defines estimand (estimand contains clinicalQuestion or dcoText as properties)"
+      },
+      "style": {
+        "arrow-color": "#FF6B6B"
+      }
+    },
+    {
+      "id": "n3",
+      "fromId": "n1",
+      "toId": "n5",
+      "type": "HAS_ENDPOINT",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n4",
+      "fromId": "n6",
+      "toId": "n5",
+      "type": "BASED_ON",
+      "properties": {
+        "description": "Variable (estimand attribute) is based on/derived from Endpoint"
+      },
+      "style": {
+        "arrow-color": "#4CAF50"
+      }
+    },
+    {
+      "id": "n5",
+      "fromId": "n2",
+      "toId": "n3",
+      "type": "ATTR_1_TREATMENT",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FF0000"
+      }
+    },
+    {
+      "id": "n6",
+      "fromId": "n2",
+      "toId": "n4",
+      "type": "ATTR_2_POPULATION",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FF0000"
+      }
+    },
+    {
+      "id": "n7",
+      "fromId": "n2",
+      "toId": "n6",
+      "type": "ATTR_3_VARIABLE",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FF0000"
+      }
+    },
+    {
+      "id": "n8",
+      "fromId": "n2",
+      "toId": "n7",
+      "type": "ATTR_4_ICE_HANDLING",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FF0000"
+      }
+    },
+    {
+      "id": "n9",
+      "fromId": "n2",
+      "toId": "n8",
+      "type": "ATTR_5_POP_SUMMARY",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FF0000"
+      }
+    },
+    {
+      "id": "n10",
+      "fromId": "n7",
+      "toId": "n9",
+      "type": "SPECIFIES_ICE",
+      "properties": {},
+      "style": {
+        "arrow-color": "#8B008B"
+      }
+    },
+    {
+      "id": "n11",
+      "fromId": "n9",
+      "toId": "n10",
+      "type": "TECHNICAL_SPEC",
+      "properties": {
+        "description": "High-level ICE definition links to technical detection specification"
+      },
+      "style": {
+        "arrow-color": "#8B008B"
+      }
+    },
+    {
+      "id": "n12",
+      "fromId": "n9",
+      "toId": "n11",
+      "type": "HANDLED_BY",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FFA500"
+      }
+    },
+    {
+      "id": "n13",
+      "fromId": "n2",
+      "toId": "n12",
+      "type": "ESTIMATED_BY",
+      "properties": {
+        "description": "Estimand estimated by main estimator (Analysis Concept)"
+      },
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n14",
+      "fromId": "n6",
+      "toId": "n13",
+      "type": "INFORMS_INPUT",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n15",
+      "fromId": "n3",
+      "toId": "n13",
+      "type": "INFORMS_INPUT",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n16",
+      "fromId": "n11",
+      "toId": "n13",
+      "type": "DEFINES_DATA_HANDLING",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FFA500"
+      }
+    },
+    {
+      "id": "n17",
+      "fromId": "n4",
+      "toId": "n13",
+      "type": "INFORMS_INPUT",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n18",
+      "fromId": "n12",
+      "toId": "n13",
+      "type": "HAS_INPUT_SPEC",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n19",
+      "fromId": "n12",
+      "toId": "n14",
+      "type": "HAS_COMPUTATION",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n20",
+      "fromId": "n12",
+      "toId": "n15",
+      "type": "HAS_OUTPUT_SPEC",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n21",
+      "fromId": "n8",
+      "toId": "n15",
+      "type": "DETERMINES_OUTPUT",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n22",
+      "fromId": "n14",
+      "toId": "n16",
+      "type": "PRODUCES",
+      "properties": {},
+      "style": {
+        "arrow-color": "#4682B4"
+      }
+    },
+    {
+      "id": "n23",
+      "fromId": "n15",
+      "toId": "n16",
+      "type": "DEFINES_STRUCTURE",
+      "properties": {},
+      "style": {
+        "arrow-color": "#9370DB"
+      }
+    },
+    {
+      "id": "n24",
+      "fromId": "n0",
+      "toId": "n17",
+      "type": "HAS_BC",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n25",
+      "fromId": "n9",
+      "toId": "n18",
+      "type": "INSTANTIATES",
+      "properties": {},
+      "style": {
+        "arrow-color": "#8B008B"
+      }
+    },
+    {
+      "id": "n26",
+      "fromId": "n18",
+      "toId": "n19",
+      "type": "ASSESSED_BY",
+      "properties": {},
+      "style": {
+        "arrow-color": "#008B8B"
+      }
+    },
+    {
+      "id": "n27",
+      "fromId": "n19",
+      "toId": "n16",
+      "type": "IMPACTS",
+      "properties": {},
+      "style": {
+        "arrow-color": "#DC143C"
+      }
+    },
+    {
+      "id": "n28",
+      "fromId": "n11",
+      "toId": "n19",
+      "type": "APPLIED_IN",
+      "properties": {},
+      "style": {
+        "arrow-color": "#FFA500"
+      }
+    },
+    {
+      "id": "n29",
+      "fromId": "n19",
+      "toId": "n13",
+      "type": "INFORMS_DATA_SELECTION",
+      "properties": {},
+      "style": {
+        "arrow-color": "#008B8B"
+      }
+    },
+    {
+      "id": "n30",
+      "fromId": "n10",
+      "toId": "n17",
+      "type": "DETECTED_VIA",
+      "properties": {},
+      "style": {
+        "arrow-color": "#228B22"
+      }
+    }
+  ]
+}

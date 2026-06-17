@@ -1,0 +1,660 @@
+{
+  "templateId": "sap_core_tee_v005",
+  "title": "TransCelerate Core TEE SAP Template v005",
+  "source": "https://www.transceleratebiopharmainc.com/assets/clinical-content-reuse-solutions/",
+  "description": "Extracted from SAP_CoreTEE_v005.docx via scripts/extract_sap_template.py. Drives the eSAP renderer; CPT-style wizard prose is preserved for demo callouts while USDM narrative + AC/DC metadata fills the actual section bodies.",
+  "sections": [
+    {
+      "id": "1",
+      "number": "1",
+      "level": 1,
+      "title": "Introduction",
+      "alternatives": [],
+      "wizardPrompts": [
+        {
+          "kind": "example",
+          "lines": [
+            "Changes to the protocol-planned analyses are described in Section 10.",
+            "OR",
+            "There are no changes to the analyses described in the protocol."
+          ]
+        }
+      ],
+      "placeholders": [],
+      "children": [
+        {
+          "id": "1.1",
+          "number": "1.1",
+          "level": 2,
+          "title": "Objectives, Endpoints, and Estimands",
+          "alternatives": [],
+          "wizardPrompts": [
+            {
+              "kind": "suggested",
+              "lines": [
+                "Objectives and Endpoints",
+                "Objectives",
+                "Endpoints",
+                "Primary",
+                "Please use wizard",
+                "Secondary",
+                "Please use wizard",
+                "[Tertiary/Exploratory/Other]",
+                "Please use wizard",
+                "Estimand(s) for Primary Objective(s)",
+                "[Primary estimand / coprimary estimands / Multiple estimands]",
+                "Supplementary Estimand(s)",
+                "Estimands for Secondary Objective(s)",
+                "Secondary estimand(s) for Secondary Objective(s) [label]",
+                "Supplementary Estimand(s)",
+                "Estimands for [Tertiary/Exploratory/Other] Objective(s)",
+                "[Tertiary/Exploratory/Other] Estimand(s) [label]",
+                "Supplementary Estimand(s)"
+              ]
+            }
+          ],
+          "placeholders": [],
+          "children": []
+        },
+        {
+          "id": "1.2",
+          "number": "1.2",
+          "level": 2,
+          "title": "Study Design",
+          "alternatives": [],
+          "wizardPrompts": [],
+          "placeholders": [
+            {
+              "kind": "placeholder",
+              "text": "Enter Study Design"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "number": "2",
+      "level": 1,
+      "title": "General Considerations",
+      "alternatives": [],
+      "wizardPrompts": [],
+      "placeholders": [
+        {
+          "kind": "body",
+          "text": "The information should be copied directly from the protocol (Section 9.1). Additional general considerations may be added."
+        }
+      ],
+      "children": [
+        {
+          "id": "2.1",
+          "number": "2.1",
+          "level": 2,
+          "title": "[Decision Criteria/Statistical Hypotheses]",
+          "alternatives": [
+            {
+              "token": "[Decision Criteria/Statistical Hypotheses]",
+              "options": [
+                "Decision Criteria",
+                "Statistical Hypotheses"
+              ]
+            }
+          ],
+          "wizardPrompts": [],
+          "placeholders": [],
+          "children": []
+        },
+        {
+          "id": "2.2",
+          "number": "2.2",
+          "level": 2,
+          "title": "Multiplicity Adjustment",
+          "alternatives": [],
+          "wizardPrompts": [],
+          "placeholders": [
+            {
+              "kind": "placeholder",
+              "text": "Enter Multiplicity Adjustment"
+            }
+          ],
+          "children": []
+        },
+        {
+          "id": "2.3",
+          "number": "2.3",
+          "level": 2,
+          "title": "Impact of Intercurrent Events Strategies",
+          "alternatives": [],
+          "wizardPrompts": [],
+          "placeholders": [
+            {
+              "kind": "placeholder",
+              "text": "Enter Impact of Intercurrent Events Strategies"
+            }
+          ],
+          "children": []
+        },
+        {
+          "id": "2.4",
+          "number": "2.4",
+          "level": 2,
+          "title": "Handling of Missing Data",
+          "alternatives": [],
+          "wizardPrompts": [],
+          "placeholders": [
+            {
+              "kind": "placeholder",
+              "text": "Enter Handling of Missing Data"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "number": "3",
+      "level": 1,
+      "title": "Analysis Sets",
+      "alternatives": [],
+      "wizardPrompts": [
+        {
+          "kind": "example",
+          "lines": [
+            "Example 1:",
+            "For the purposes of analysis, the following analysis sets are defined:",
+            "Participant Analysis Set",
+            "Description",
+            "Full analysis set (FAS)",
+            "All randomized participants.",
+            "Safety analysis set (SAS)",
+            "All participants who are exposed to investigational intervention.",
+            "The full analysis set will be used to analyze endpoints related to the efficacy objectives and the safety analysis set will be used to analyze the endpoints and assessments related to safety.",
+            "For the efficacy analyses, participants will be included in the analyses according to the planned investigational intervention; whereas for safety analyses, participants will be included in the analyses according to the investigational intervention they actually received.",
+            "Example 2:",
+            "The following analysis data sets are defined to estimate the estimands defined in the protocol and to address safety.",
+            "Analysis Data Sets",
+            "Description",
+            "Analysis data set 1:",
+            "for the primary estimand and for the secondary estimand for the secondary objective 1",
+            "PAS1: All randomized participants.",
+            "All data points obtained at or after randomization up to the earliest date of discontinuation of investigational intervention or administration of rescue therapy.",
+            "Analysis data set 2:",
+            "for the supplementary estimand for the primary objective",
+            "PAS1",
+            "All data points obtained at or after randomization up to the [end of study] visit.",
+            "Analysis data set 3:",
+            "for safety assessments with a long lag-time",
+            "PAS2: All participants who are exposed to investigational intervention.",
+            "All observed data.",
+            "Analysis data set 4:",
+            "for safety assessments with an acute onset",
+            "PAS2",
+            "All data points obtained at or after randomization until discontinuation of investigational intervention.",
+            "PAS = participant analysis set",
+            "For the efficacy analyses, participants will be included in the analyses according to the planned investigational intervention; whereas for safety analyses, participants will be included in the analyses according to the investigational intervention they actually received.",
+            "Example 3:",
+            "The following participant analysis sets are defined:",
+            "Participant Analysis Set",
+            "Description",
+            "Full analysis set (FAS)",
+            "All randomized participants.",
+            "Safety analysis set (SAS)",
+            "All participants who are exposed to investigational intervention.",
+            "The following data points sets are defined:",
+            "Data Points Sets",
+            "Description",
+            "DPS1",
+            "All data points obtained at or after randomization up to the earliest date of discontinuation of investigational intervention or administration of rescue therapy.",
+            "DPS2",
+            "All data points obtained at or after randomization up to the [end of study] visit.",
+            "DPS3",
+            "All observed data.",
+            "DPS4",
+            "All data points obtained at or after randomization until discontinuation of investigational intervention.",
+            "DPS: Data Points Set",
+            "FAS and DPS1 will be used to estimate the primary estimand and the secondary estimand for secondary objective 1.",
+            "FAS and DPS2 will be used to estimate the supplementary estimand for the primary objective.",
+            "SAS and DPS3 will be used to present safety data with a long lag-time.",
+            "SAS and DPS4 will be used to present safety data with an acute onset.",
+            "For the efficacy analyses, participants will be included in the analyses according to the planned investigational intervention; whereas for safety analyses, participants will be included in the analyses according to the investigational intervention they actually received."
+          ]
+        }
+      ],
+      "placeholders": [],
+      "children": []
+    },
+    {
+      "id": "4",
+      "number": "4",
+      "level": 1,
+      "title": "Analyses Supporting Primary Objective(s)",
+      "alternatives": [],
+      "wizardPrompts": [],
+      "placeholders": [],
+      "children": [
+        {
+          "id": "4.1",
+          "number": "4.1",
+          "level": 2,
+          "title": "Primary [Endpoint(s)/Estimand(s)]",
+          "alternatives": [
+            {
+              "token": "[Endpoint(s)/Estimand(s)]",
+              "options": [
+                "Endpoint(s)",
+                "Estimand(s)"
+              ]
+            }
+          ],
+          "wizardPrompts": [],
+          "placeholders": [
+            {
+              "kind": "placeholder",
+              "text": "Enter Primary Endpoint Analysis"
+            }
+          ],
+          "children": [
+            {
+              "id": "4.1.1",
+              "number": "4.1.1",
+              "level": 3,
+              "title": "Definition of Endpoint(s)",
+              "alternatives": [],
+              "wizardPrompts": [],
+              "placeholders": [],
+              "children": []
+            },
+            {
+              "id": "4.1.2",
+              "number": "4.1.2",
+              "level": 3,
+              "title": "Main Analytical Approach",
+              "alternatives": [],
+              "wizardPrompts": [],
+              "placeholders": [],
+              "children": []
+            },
+            {
+              "id": "4.1.3",
+              "number": "4.1.3",
+              "level": 3,
+              "title": "Sensitivity [Analysis/Analyses]",
+              "alternatives": [
+                {
+                  "token": "[Analysis/Analyses]",
+                  "options": [
+                    "Analysis",
+                    "Analyses"
+                  ]
+                }
+              ],
+              "wizardPrompts": [],
+              "placeholders": [],
+              "children": []
+            },
+            {
+              "id": "4.1.4",
+              "number": "4.1.4",
+              "level": 3,
+              "title": "Supplementary [Analysis/Analyses]",
+              "alternatives": [
+                {
+                  "token": "[Analysis/Analyses]",
+                  "options": [
+                    "Analysis",
+                    "Analyses"
+                  ]
+                }
+              ],
+              "wizardPrompts": [],
+              "placeholders": [],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "number": "5",
+      "level": 1,
+      "title": "Analyses Supporting Secondary Objective(s)",
+      "alternatives": [],
+      "wizardPrompts": [],
+      "placeholders": [],
+      "children": [
+        {
+          "id": "5.1",
+          "number": "5.1",
+          "level": 2,
+          "title": "Analyses Supporting Secondary Objective [label]",
+          "alternatives": [],
+          "wizardPrompts": [],
+          "placeholders": [
+            {
+              "kind": "placeholder",
+              "text": "Enter Secondary Endpoint Analysis"
+            }
+          ],
+          "children": [
+            {
+              "id": "5.1.1",
+              "number": "5.1.1",
+              "level": 3,
+              "title": "[Key/Confirmatory] Secondary [Endpoint(s)/Estimand(s)]",
+              "alternatives": [
+                {
+                  "token": "[Key/Confirmatory]",
+                  "options": [
+                    "Key",
+                    "Confirmatory"
+                  ]
+                },
+                {
+                  "token": "[Endpoint(s)/Estimand(s)]",
+                  "options": [
+                    "Endpoint(s)",
+                    "Estimand(s)"
+                  ]
+                }
+              ],
+              "wizardPrompts": [],
+              "placeholders": [],
+              "children": [
+                {
+                  "id": "5.1.1.1",
+                  "number": "5.1.1.1",
+                  "level": 4,
+                  "title": "Definition of Endpoint(s)",
+                  "alternatives": [],
+                  "wizardPrompts": [],
+                  "placeholders": [],
+                  "children": []
+                },
+                {
+                  "id": "5.1.1.2",
+                  "number": "5.1.1.2",
+                  "level": 4,
+                  "title": "Main Analytical Approach",
+                  "alternatives": [],
+                  "wizardPrompts": [],
+                  "placeholders": [],
+                  "children": []
+                },
+                {
+                  "id": "5.1.1.3",
+                  "number": "5.1.1.3",
+                  "level": 4,
+                  "title": "Sensitivity [Analysis/Analyses]",
+                  "alternatives": [
+                    {
+                      "token": "[Analysis/Analyses]",
+                      "options": [
+                        "Analysis",
+                        "Analyses"
+                      ]
+                    }
+                  ],
+                  "wizardPrompts": [],
+                  "placeholders": [],
+                  "children": []
+                },
+                {
+                  "id": "5.1.1.4",
+                  "number": "5.1.1.4",
+                  "level": 4,
+                  "title": "Supplementary [Analysis/Analyses]",
+                  "alternatives": [
+                    {
+                      "token": "[Analysis/Analyses]",
+                      "options": [
+                        "Analysis",
+                        "Analyses"
+                      ]
+                    }
+                  ],
+                  "wizardPrompts": [],
+                  "placeholders": [],
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "5.1.2",
+              "number": "5.1.2",
+              "level": 3,
+              "title": "Supportive Secondary [Endpoint(s)/Estimand(s)]",
+              "alternatives": [
+                {
+                  "token": "[Endpoint(s)/Estimand(s)]",
+                  "options": [
+                    "Endpoint(s)",
+                    "Estimand(s)"
+                  ]
+                }
+              ],
+              "wizardPrompts": [],
+              "placeholders": [],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "6",
+      "number": "6",
+      "level": 1,
+      "title": "Analyses Supporting [Tertiary/Exploratory/Other] Objective(s)",
+      "alternatives": [
+        {
+          "token": "[Tertiary/Exploratory/Other]",
+          "options": [
+            "Tertiary",
+            "Exploratory",
+            "Other"
+          ]
+        }
+      ],
+      "wizardPrompts": [],
+      "placeholders": [
+        {
+          "kind": "placeholder",
+          "text": "Enter Tertiary Endpoint Analysis"
+        }
+      ],
+      "children": []
+    },
+    {
+      "id": "7",
+      "number": "7",
+      "level": 1,
+      "title": "[Other] Safety Analyses",
+      "alternatives": [],
+      "wizardPrompts": [],
+      "placeholders": [
+        {
+          "kind": "placeholder",
+          "text": "Enter Other Safety Analysis"
+        }
+      ],
+      "children": [
+        {
+          "id": "7.1",
+          "number": "7.1",
+          "level": 2,
+          "title": "Extent of Exposure",
+          "alternatives": [],
+          "wizardPrompts": [],
+          "placeholders": [],
+          "children": []
+        },
+        {
+          "id": "7.2",
+          "number": "7.2",
+          "level": 2,
+          "title": "Adverse Events",
+          "alternatives": [],
+          "wizardPrompts": [],
+          "placeholders": [],
+          "children": []
+        },
+        {
+          "id": "7.3",
+          "number": "7.3",
+          "level": 2,
+          "title": "Additional Safety Assessments",
+          "alternatives": [],
+          "wizardPrompts": [],
+          "placeholders": [],
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "8",
+      "number": "8",
+      "level": 1,
+      "title": "Other Analyses",
+      "alternatives": [],
+      "wizardPrompts": [],
+      "placeholders": [
+        {
+          "kind": "placeholder",
+          "text": "Enter Other Analyses"
+        }
+      ],
+      "children": [
+        {
+          "id": "8.1",
+          "number": "8.1",
+          "level": 2,
+          "title": "Other Variables and/or Parameters",
+          "alternatives": [],
+          "wizardPrompts": [],
+          "placeholders": [
+            {
+              "kind": "placeholder",
+              "text": "Enter Other Variables and or Parameters"
+            }
+          ],
+          "children": []
+        },
+        {
+          "id": "8.2",
+          "number": "8.2",
+          "level": 2,
+          "title": "Subgroup [Analysis/Analyses]",
+          "alternatives": [
+            {
+              "token": "[Analysis/Analyses]",
+              "options": [
+                "Analysis",
+                "Analyses"
+              ]
+            }
+          ],
+          "wizardPrompts": [],
+          "placeholders": [
+            {
+              "kind": "placeholder",
+              "text": "- Describe how results will be presented. It is recommended to focus on estimates and confidence intervals rather than p-values. It is often useful to display the results in a forest plot."
+            },
+            {
+              "kind": "placeholder",
+              "text": "Enter Subgroup Analysis/Analyses"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "9",
+      "number": "9",
+      "level": 1,
+      "title": "Interim [Analysis/Analyses]",
+      "alternatives": [
+        {
+          "token": "[Analysis/Analyses]",
+          "options": [
+            "Analysis",
+            "Analyses"
+          ]
+        }
+      ],
+      "wizardPrompts": [],
+      "placeholders": [
+        {
+          "kind": "placeholder",
+          "text": "Enter Interim Analyses"
+        }
+      ],
+      "children": []
+    },
+    {
+      "id": "10",
+      "number": "10",
+      "level": 1,
+      "title": "Changes to Protocol-planned Analyses",
+      "alternatives": [],
+      "wizardPrompts": [],
+      "placeholders": [
+        {
+          "kind": "placeholder",
+          "text": "Click or tap here to enter text."
+        }
+      ],
+      "children": []
+    },
+    {
+      "id": "11",
+      "number": "11",
+      "level": 1,
+      "title": "Sample Size Determination",
+      "alternatives": [],
+      "wizardPrompts": [],
+      "placeholders": [
+        {
+          "kind": "placeholder",
+          "text": "Enter Sample Size Determination"
+        }
+      ],
+      "children": []
+    },
+    {
+      "id": "12",
+      "number": "12",
+      "level": 1,
+      "title": "Supporting Documentation",
+      "alternatives": [],
+      "wizardPrompts": [],
+      "placeholders": [
+        {
+          "kind": "placeholder",
+          "text": "Click or tap here to enter text."
+        }
+      ],
+      "children": []
+    },
+    {
+      "id": "13",
+      "number": "13",
+      "level": 1,
+      "title": "References",
+      "alternatives": [],
+      "wizardPrompts": [
+        {
+          "kind": "example",
+          "lines": [
+            "Hatcher RA, Trussell J, Nelson AL, Cates W Jr, Stewart F, Kowal D, eds. Contraceptive technology. 19th edition. New York: Ardent Media, 2007(a): 24. Table 3-2."
+          ]
+        }
+      ],
+      "placeholders": [],
+      "children": []
+    }
+  ]
+}

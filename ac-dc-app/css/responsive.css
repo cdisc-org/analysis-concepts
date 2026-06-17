@@ -1,0 +1,26 @@
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  #app-sidebar {
+    display: none;
+  }
+  #app-main {
+    margin-left: 0;
+    max-width: 100%;
+  }
+  .sp-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1024px) {
+  .ep-split-layout {
+    grid-template-columns: 1fr;
+  }
+  .ep-library-panel {
+    position: static;
+    max-height: none;
+  }
+  .ep-summary-comparison {
+    grid-template-columns: 1fr;
+  }
+}

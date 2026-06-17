@@ -1,0 +1,93 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.8.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json",
+    "configuration_concepts": "../../model/method/configuration_concepts.json"
+  },
+  "oid": "M.OneSampleTTest",
+  "name": "One-sample t-test",
+  "type": "analysis",
+  "class": "General Linear Models",
+  "intent": [
+    "GroupComparison"
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000302",
+      "display": "one sample t-test"
+    }
+  ],
+  "description": "Tests whether the mean of a single sample differs from a hypothesized value",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ 1",
+    "generic_expression": "<response> ~ 1",
+    "notes": "Intercept-only model; the test is against the hypothesized mu"
+  },
+  "configurations": [
+    {
+      "name": "mu",
+      "dataType": "decimal",
+      "defaultValue": 0,
+      "description": "Hypothesized population mean"
+    },
+    {
+      "name": "alternative",
+      "dataType": "enum",
+      "defaultValue": "two_sided",
+      "enumValues": [
+        "two_sided",
+        "less",
+        "greater"
+      ],
+      "description": "Direction of alternative hypothesis"
+    },
+    {
+      "name": "conf_level",
+      "conforms_to": "conf_level"
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "test_result",
+        "description": "Overall one-sample t-test result",
+        "dimensions": null,
+        "statistics": [
+          "t_statistic",
+          "p_value",
+          "df"
+        ]
+      },
+      {
+        "class": "point_estimate",
+        "description": "Estimated mean with inference",
+        "dimensions": null,
+        "statistics": [
+          "mean",
+          "SE",
+          "CI_lower",
+          "CI_upper"
+        ]
+      }
+    ]
+  },
+  "assumptions": [
+    "Normality of data (or large sample size)",
+    "Independence of observations"
+  ],
+  "input_roles": [
+    {
+      "name": "response",
+      "statisticalRole": "response",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The sample data"
+    }
+  ]
+}

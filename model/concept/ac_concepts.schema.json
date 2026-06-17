@@ -1,0 +1,173 @@
+{
+  "$id": "https://cdisc.org/acdc/ac_concepts",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "title": "ac_concepts",
+  "description": "Analysis Concept model schema: 3-level SKOS-inspired hierarchy of Statistical Concepts (atoms), Result Patterns (molecules), and Categories (groupings). Validates AC vocabulary files.",
+  "version": "0.16",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "model": {
+      "type": "string",
+      "const": "AC",
+      "description": "Model identifier (SKOS: inScheme)"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of the AC concept model"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Human-readable description of the model (SKOS: skos:note)"
+    },
+    "$vocabulary": {
+      "type": "object",
+      "description": "References to external vocabulary files",
+      "properties": {
+        "valueTypes": {
+          "type": "string",
+          "description": "Relative path to the shared FHIR value type vocabulary"
+        }
+      }
+    },
+    "designPrinciples": {
+      "type": ["array", "null"],
+      "items": { "type": "string" },
+      "description": "Guiding design principles for this concept model"
+    },
+    "qualifierTypes": {
+      "type": "object",
+      "description": "Reference to CDDM shared qualifier types",
+      "properties": {
+        "note": { "type": ["string", "null"] },
+        "$ref": { "type": "string" }
+      }
+    },
+    "sharedStatisticsVocabulary": {
+      "type": "object",
+      "description": "Level 1 Statistical Concepts — the atomic building blocks. Both methods and result patterns reference them.",
+      "properties": {
+        "note": { "type": ["string", "null"] },
+        "concepts": {
+          "type": "object",
+          "description": "Map of concept name (SKOS: prefLabel) to StatisticalConcept definition",
+          "additionalProperties": {
+            "$ref": "#/$defs/StatisticalConcept"
+          }
+        }
+      },
+      "required": ["concepts"]
+    },
+    "resultPatterns": {
+      "type": "object",
+      "description": "Level 2 Result Patterns — groups of statistical concepts with identifying dimensions (SKOS: narrower than Category)",
+      "properties": {
+        "note": { "type": ["string", "null"] }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/ResultPattern"
+      }
+    },
+    "categories": {
+      "type": "object",
+      "description": "Level 3 Categories — groups of result patterns that typically appear together (SKOS: broadest concepts)",
+      "properties": {
+        "note": { "type": ["string", "null"] }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/Category"
+      }
+    },
+    "methodOutputSlotMapping": {
+      "type": "object",
+      "description": "Maps method OIDs to their output slot → result pattern name mappings. Bridges the method layer to the AC concept layer.",
+      "properties": {
+        "note": { "type": ["string", "null"] }
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": { "type": "string" },
+        "description": "Map of method output slot name to result pattern name"
+      }
+    }
+  },
+  "required": ["model", "version", "sharedStatisticsVocabulary", "resultPatterns", "categories"],
+  "$defs": {
+    "Cardinality": {
+      "description": "Multiplicity of a relationship between concept levels",
+      "enum": ["0..1", "1", "0..*", "1..*"],
+      "title": "Cardinality",
+      "type": "string"
+    },
+    "FHIRPrimitiveType": {
+      "description": "FHIR R5 primitive data types used for statistical concept values",
+      "enum": ["decimal", "integer", "code", "string", "boolean", "date", "dateTime", "id"],
+      "title": "FHIRPrimitiveType",
+      "type": "string"
+    },
+    "StatisticalConcept": {
+      "additionalProperties": false,
+      "description": "Level 1 atom: an individual statistical data point with its own identity. SKOS: skos:Concept within the AC ConceptScheme.",
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "description": "Human-readable definition of this statistical concept (SKOS: skos:definition)"
+        },
+        "dataType": {
+          "$ref": "#/$defs/FHIRPrimitiveType",
+          "description": "FHIR primitive data type of values for this concept"
+        },
+        "statoMapping": {
+          "type": ["string", "null"],
+          "description": "STATO ontology code for this concept, e.g. STATO:0000599 (SKOS: skos:notation / skos:exactMatch)"
+        }
+      },
+      "required": ["definition", "dataType"]
+    },
+    "ResultPattern": {
+      "additionalProperties": false,
+      "description": "Level 2 molecule: a named group of statistical concepts that belong together and should be interpreted together. Defines the identifying dimensions for each instance. SKOS: skos:Concept, narrower than its Category.",
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "description": "Human-readable definition of this result pattern (SKOS: skos:definition)"
+        },
+        "constituents": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Names of statistical concepts that compose this pattern (references sharedStatisticsVocabulary keys)"
+        },
+        "dimensions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Dimension names that identify each instance of this pattern (e.g. group, visit, term, contrast)"
+        }
+      },
+      "required": ["definition", "constituents", "dimensions"]
+    },
+    "Category": {
+      "additionalProperties": false,
+      "description": "Level 3 grouping: groups result patterns that typically appear together in the same kind of analysis. SKOS: skos:Collection or broadest skos:Concept.",
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "description": "Human-readable definition of this analysis category (SKOS: skos:definition)"
+        },
+        "typicallyInvolves": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Result pattern names typically produced by analyses in this category (SKOS: skos:narrower)"
+        },
+        "typicalMethods": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Method OIDs typically used in this category"
+        }
+      },
+      "required": ["definition", "typicallyInvolves"]
+    }
+  }
+}

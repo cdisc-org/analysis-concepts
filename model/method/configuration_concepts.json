@@ -1,0 +1,161 @@
+{
+  "$schema": "./configuration_concepts.schema.json",
+  "model": "ConfigurationConceptRegistry",
+  "version": "0.3.0",
+  "description": "Registry of reusable configuration concepts shared across analysis and derivation methods. A library Configuration declares conforms_to = <concept_id> to reference a concept defined here; the expander (Python/JS) fills in dataType, defaultValue, description, enumValues, and codings from the registry at load time. For enum-typed concepts that carry per-value scope metadata (e.g., multiplicity_adjustment), the library Configuration also declares applicable_scopes, and the expander filters the catalog down to values whose scope matches. This design keeps the canonical definition in one place and prevents library drift.",
+  "concepts": {
+    "alpha": {
+      "description": "Significance level (Type I error rate) for hypothesis tests. Method-invariant: applies to any hypothesis test.",
+      "dataType": "decimal",
+      "typical_default": 0.05,
+      "valid_placement": ["method"],
+      "constraints": {
+        "minimum_exclusive": 0,
+        "maximum_exclusive": 1
+      },
+      "notes": "Always equals (1 - conf_level) by convention, but the two are kept as separate configurations because tests and interval estimates may be parameterised independently."
+    },
+    "conf_level": {
+      "description": "Confidence level for interval estimates. Method-invariant: applies to any interval estimate.",
+      "dataType": "decimal",
+      "typical_default": 0.95,
+      "valid_placement": ["method"],
+      "constraints": {
+        "minimum_exclusive": 0,
+        "maximum_exclusive": 1
+      },
+      "notes": "Always equals (1 - alpha) by convention. Kept separate from alpha for parameterisation flexibility."
+    },
+    "multiplicity_adjustment": {
+      "description": "Catalog of multiplicity adjustment procedures. Each procedure declares its own scope of statistical validity. A library Configuration referencing this concept also declares applicable_scopes (a list of scope ids from this concept's scopes dictionary); the expander filters the catalog down to values whose scope is in that list. This keeps methodologically incorrect combinations impossible by construction — e.g., a Cox model with applicable_scopes = ['universal'] cannot surface Tukey HSD in its enumValues, because Tukey's scope is 'anova_pairwise_means' and the resolver never includes it. Multiplicity adjustment is a per-output-class post-processor (R's emmeans::pairs(adjust=...), SAS's LSMEANS ... adjust=...); valid_placement is ['output_class'] only, enforced by the expander to prevent method-level misuse.",
+      "dataType": "enum",
+      "typical_default": "None",
+      "valid_placement": ["output_class"],
+      "scopes": {
+        "universal": {
+          "description": "Applies to any collection of p-values with Uniform(0,1) nulls. Operates on the sorted p-value vector via combinatorial or order-statistic rules; does NOT reference the test statistics' distributions. Its error-rate guarantee (FWER or FDR) is invariant to the underlying test.",
+          "valid_for": [
+            "Cox proportional hazards (hazard ratio Wald tests)",
+            "logistic regression (log-odds Wald tests)",
+            "GLM Wald tests in general",
+            "MMRM fixed-effects F-tests",
+            "survival log-rank tests",
+            "any correctly-computed p-value across endpoints or families"
+          ]
+        },
+        "anova_pairwise_means": {
+          "description": "Pairwise comparisons of group means in ANOVA-style linear models. Critical values derive from the joint distribution of pairwise contrasts assuming normal errors, homogeneous variances, and independent observations.",
+          "valid_for": [
+            "ANOVA all-pairwise means",
+            "ANCOVA LSMeans all-pairwise contrasts",
+            "MMRM LSMeans all-pairwise contrasts (within a fixed effect)"
+          ],
+          "invalid_for": [
+            "Cox hazard ratio pairwise contrasts (wrong reference distribution)",
+            "logistic log-odds pairwise contrasts",
+            "GLM contrasts from non-linear models"
+          ]
+        },
+        "anova_many_to_one": {
+          "description": "Many-to-one comparisons (all treatments vs a single control) in ANOVA-style linear models. Critical values derive from a multivariate-t with an equicorrelated structure (correlation 1/2 in the balanced case) arising from the shared control group's sampling variation.",
+          "valid_for": [
+            "ANOVA treatment-vs-control",
+            "ANCOVA LSMeans treatment-vs-control",
+            "MMRM LSMeans treatment-vs-control"
+          ],
+          "invalid_for": [
+            "Cox hazard ratio treatment-vs-control",
+            "logistic log-odds treatment-vs-control",
+            "any many-to-one comparison not coming from a linear model with homogeneous variances"
+          ]
+        },
+        "linear_contrasts": {
+          "description": "Arbitrary linear contrasts in linear models with homoscedastic normal errors. Critical values from the F-distribution.",
+          "valid_for": [
+            "ANOVA arbitrary linear contrasts",
+            "ANCOVA arbitrary linear contrasts"
+          ]
+        }
+      },
+      "values": {
+        "None": {
+          "scope": "universal",
+          "description": "No multiplicity adjustment. p-values are reported as computed by the base test."
+        },
+        "Bonferroni": {
+          "scope": "universal",
+          "description": "Family-wise error rate (FWER) control via the Bonferroni inequality. Multiply each p-value by the number of tests. Simplest upper bound; makes no dependence assumptions; conservative.",
+          "codings": [
+            { "system": "http://purl.obolibrary.org/obo/stato", "code": "STATO_0000067", "display": "Bonferroni correction" }
+          ]
+        },
+        "Holm": {
+          "scope": "universal",
+          "description": "FWER control via Holm's step-down procedure. Uniformly more powerful than Bonferroni; makes no dependence assumptions.",
+          "codings": [
+            { "system": "http://purl.obolibrary.org/obo/stato", "code": "STATO_0000068", "display": "Holm-Bonferroni method" }
+          ]
+        },
+        "Hochberg": {
+          "scope": "universal",
+          "description": "FWER control via Hochberg's step-up procedure. Assumes independence or positive regression dependence of p-values."
+        },
+        "Hommel": {
+          "scope": "universal",
+          "description": "FWER control via Hommel's closed-testing procedure. More powerful than Hochberg under the same dependence assumptions; more computationally intensive."
+        },
+        "Sidak": {
+          "scope": "universal",
+          "description": "FWER control via Sidak's correction. Slightly more powerful than Bonferroni but assumes independence of p-values."
+        },
+        "BH": {
+          "scope": "universal",
+          "description": "False Discovery Rate (FDR) control via Benjamini-Hochberg step-up procedure. Assumes independence or positive regression dependence of p-values."
+        },
+        "BY": {
+          "scope": "universal",
+          "description": "FDR control via Benjamini-Yekutieli. Valid under arbitrary dependence structure; more conservative than BH."
+        },
+        "Tukey": {
+          "scope": "anova_pairwise_means",
+          "description": "Tukey Honestly Significant Difference. Critical values from the studentized range distribution, derived under ANOVA assumptions: normal errors, homogeneous variances, independent observations, all-pairwise comparison of group means in a balanced (or Tukey-Kramer unbalanced) linear model. Not valid outside that setting — applying it to Cox hazard ratios, logistic log-odds, or GLM contrasts from non-linear models gives critical values that don't correspond to the true contrast distribution, so the claimed FWER does not hold.",
+          "codings": [
+            { "system": "http://purl.obolibrary.org/obo/stato", "code": "STATO_0000182", "display": "Tukey HSD" }
+          ]
+        },
+        "Dunnett": {
+          "scope": "anova_many_to_one",
+          "description": "Dunnett's test for many-to-one comparisons (all treatments vs a single control). Critical values from a multivariate t-distribution with an equicorrelated structure (correlation 1/2 in the balanced case) arising from shared control-group sampling variation. The correlation structure is a property of ANOVA-style mean comparisons in a linear model; it does not hold for Cox hazard ratios, logistic log-odds, or GLM contrasts from non-linear models.",
+          "codings": [
+            { "system": "http://purl.obolibrary.org/obo/stato", "code": "STATO_0000183", "display": "Dunnett's test" }
+          ]
+        },
+        "Scheffe": {
+          "scope": "linear_contrasts",
+          "description": "Scheffé's method for arbitrary linear contrasts in linear models. Critical values come from the F-distribution and assume homoscedasticity and normality of residuals within a single linear model. Not applicable outside that setting."
+        },
+        "NewmanKeuls": {
+          "scope": "anova_pairwise_means",
+          "description": "Newman-Keuls sequential range test for ANOVA all-pairwise comparisons. Known FWER inflation issues beyond three groups; ANOVA-specific."
+        },
+        "REGWQ": {
+          "scope": "anova_pairwise_means",
+          "description": "Ryan-Einot-Gabriel-Welsch Q: range-based ANOVA all-pairwise procedure. Same structural assumptions as Tukey."
+        }
+      }
+    }
+  },
+  "conformance_rules": {
+    "description": "Rules the load-time expander applies when resolving a library Configuration that declares conforms_to. These rules make the registry the single source of truth; library method files cannot drift.",
+    "rules": [
+      "If Configuration.conforms_to == <concept_id>, the expander fills in missing fields on the Configuration from concepts[<concept_id>]: name (defaults to concept_id), dataType (from concept.dataType), description (from concept.description), defaultValue (from concept.typical_default).",
+      "Local Configuration fields always override inherited ones: a library method may set its own defaultValue or description without losing the conforms_to link.",
+      "For enum concepts with a 'values' catalog, the Configuration MUST also declare applicable_scopes (array of scope ids from concept.scopes). Missing applicable_scopes defaults to ['universal'] if that scope exists, else errors.",
+      "The expander computes enumValues = [value_name for value_name, value_def in concept.values.items() if value_def.scope in applicable_scopes], preserving the order defined in concept.values.",
+      "The expander computes codings = union of concept.values[v].codings for every v in the filtered enumValues.",
+      "If Configuration.conforms_to references a concept_id not in this registry, the expander raises an error at load time.",
+      "If Configuration.applicable_scopes references a scope_id not in the concept's scopes dictionary, the expander raises an error at load time.",
+      "The expander runs BEFORE schema validation. The schema sees fully-populated Configurations; library files can be minimal."
+    ]
+  }
+}

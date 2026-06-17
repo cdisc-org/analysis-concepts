@@ -1,0 +1,332 @@
+{
+  "$id": "https://cdisc.org/acdc/oc_concepts",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "title": "oc_concepts",
+  "description": "Observation Concept instance model schema: defines the atomic unit of clinical data (Observation) with FHIR R5 value types, recursive data definitions, shared dimensions, and observation subtypes. Validates OC vocabulary files.",
+  "version": "0.16",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "model": {
+      "type": "string",
+      "const": "OC",
+      "description": "Model identifier"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of the OC concept model"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Human-readable description of the model"
+    },
+    "fhirAlignment": {
+      "$ref": "#/$defs/FHIRAlignment"
+    },
+    "valueTypes": {
+      "$ref": "#/$defs/ValueTypes"
+    },
+    "Observation": {
+      "type": "object",
+      "description": "The central Observation entity: a single collected fact about a subject. The atomic unit of clinical data collection.",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "description": "Human-readable definition of Observation"
+        },
+        "instanceStructure": {
+          "type": "object",
+          "description": "Named property groups of the observation (Identification, Result, CollectionMethod, etc.), keyed by group name",
+          "additionalProperties": {
+            "$ref": "#/$defs/DataDefinition"
+          }
+        },
+        "sharedDimensions": {
+          "type": "object",
+          "description": "Contextual dimensions shared across observations (Subject, Study, Visit, Timing, Treatment, Population, Site)",
+          "additionalProperties": {
+            "$ref": "#/$defs/ObservationDimension"
+          }
+        },
+        "observationCategories": {
+          "type": "object",
+          "description": "Observation subtypes (EventObservation, InterventionObservation, FindingObservation, FindingAboutObservation)",
+          "additionalProperties": {
+            "$ref": "#/$defs/ObservationCategory"
+          }
+        }
+      },
+      "required": ["definition", "instanceStructure", "sharedDimensions", "observationCategories"]
+    },
+    "valueTypeUsageByLayer": {
+      "type": "object",
+      "description": "How different CRAFT framework layers use the value type vocabulary",
+      "properties": {
+        "_note": { "type": ["string", "null"] }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/ValueTypeUsageExample"
+      }
+    }
+  },
+  "required": ["model", "version", "valueTypes", "Observation"],
+  "$defs": {
+    "Cardinality": {
+      "description": "Multiplicity of a relationship or property",
+      "enum": ["0..1", "1", "0..*", "1..*"],
+      "title": "Cardinality",
+      "type": "string"
+    },
+    "FHIRAlignment": {
+      "additionalProperties": false,
+      "description": "FHIR specification alignment metadata",
+      "type": "object",
+      "properties": {
+        "specVersion": {
+          "type": "string",
+          "description": "FHIR specification version (e.g. R5 (5.0.0))"
+        },
+        "reference": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the FHIR data types specification"
+        }
+      },
+      "required": ["specVersion", "reference"]
+    },
+    "PrimitiveType": {
+      "additionalProperties": false,
+      "description": "Definition of a FHIR R5 primitive data type",
+      "type": "object",
+      "properties": {
+        "fhirType": {
+          "type": "string",
+          "description": "Corresponding FHIR primitive type name"
+        },
+        "definition": {
+          "type": "string",
+          "description": "Human-readable definition"
+        },
+        "usage": {
+          "type": "string",
+          "description": "Typical usage in clinical data"
+        }
+      },
+      "required": ["fhirType", "definition", "usage"]
+    },
+    "ComplexTypeComponent": {
+      "additionalProperties": false,
+      "description": "A component within a FHIR complex type (e.g., Quantity.value, CodeableConcept.coding)",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Data type of this component"
+        },
+        "note": {
+          "type": ["string", "null"],
+          "description": "Additional notes about this component"
+        }
+      },
+      "required": ["type"]
+    },
+    "ComplexType": {
+      "additionalProperties": false,
+      "description": "Definition of a FHIR R5 complex data type (Quantity, CodeableConcept, Identifier)",
+      "type": "object",
+      "properties": {
+        "fhirType": {
+          "type": "string",
+          "description": "Corresponding FHIR complex type name"
+        },
+        "definition": {
+          "type": "string",
+          "description": "Human-readable definition"
+        },
+        "usage": {
+          "type": "string",
+          "description": "Typical usage in clinical data"
+        },
+        "components": {
+          "type": "object",
+          "description": "Named components of this complex type",
+          "additionalProperties": {
+            "$ref": "#/$defs/ComplexTypeComponent"
+          }
+        },
+        "compatiblePrimitives": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Primitive types compatible with this complex type"
+        }
+      },
+      "required": ["fhirType", "definition", "usage"]
+    },
+    "ValueTypes": {
+      "additionalProperties": false,
+      "description": "FHIR-aligned value type vocabulary containing both primitive and complex types",
+      "type": "object",
+      "properties": {
+        "_note": {
+          "type": ["string", "null"],
+          "description": "Explanatory note about value types"
+        },
+        "primitiveTypes": {
+          "type": "object",
+          "description": "FHIR R5 primitive types keyed by type name",
+          "additionalProperties": {
+            "$ref": "#/$defs/PrimitiveType"
+          }
+        },
+        "complexTypes": {
+          "type": "object",
+          "description": "FHIR R5 complex types keyed by type name",
+          "additionalProperties": {
+            "$ref": "#/$defs/ComplexType"
+          }
+        }
+      },
+      "required": ["primitiveTypes", "complexTypes"]
+    },
+    "QualifierSpec": {
+      "additionalProperties": false,
+      "description": "Qualifier metadata on a dimension or data definition — defines the qualifier type and its allowed values (from CDDM_Shared_QualifierTypes)",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Qualifier type name (e.g. IntentType, DerivationStatus, ReferenceFrame)"
+        },
+        "values": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Map of qualifier value name to its human-readable description"
+        }
+      },
+      "required": ["type", "values"]
+    },
+    "DataDefinition": {
+      "additionalProperties": false,
+      "description": "Recursive building block for observation properties. Each data definition describes a single property with its value type, cardinality, and named relationship. May contain nested dataDefinitions for composite properties (e.g., NormalRange → Low/High, GenomicContext → Gene/Variant/Chromosome).",
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "description": "Human-readable definition of this data definition"
+        },
+        "valueType": {
+          "type": ["string", "null"],
+          "description": "Value type name: FHIR complex type (Quantity, CodeableConcept, Identifier), primitive type (integer, string, boolean, dateTime), or union (Quantity | CodeableConcept)"
+        },
+        "cardinality": {
+          "$ref": "#/$defs/Cardinality",
+          "description": "How many instances of this property are allowed"
+        },
+        "relationship": {
+          "type": ["string", "null"],
+          "description": "Named relationship this definition represents (e.g. hasTopic, hasValue, codedBy)"
+        },
+        "_note": {
+          "type": ["string", "null"],
+          "description": "Design notes or clarifications"
+        },
+        "qualifiers": {
+          "oneOf": [
+            { "$ref": "#/$defs/QualifierSpec" },
+            { "type": "null" }
+          ],
+          "description": "Qualifier specification if applicable (from CDDM shared types)"
+        },
+        "dataDefinitions": {
+          "type": ["object", "null"],
+          "additionalProperties": {
+            "$ref": "#/$defs/DataDefinition"
+          },
+          "description": "Nested child data definitions (recursive). Enables composite properties like Identification → Topic → DictionaryCoding → PreferredTerm."
+        }
+      },
+      "required": ["cardinality"]
+    },
+    "ObservationDimension": {
+      "additionalProperties": false,
+      "description": "A shared contextual dimension on the Observation (e.g., Subject, Study, Visit, Timing, Treatment, Population, Site). Defines the context in which an observation exists.",
+      "type": "object",
+      "properties": {
+        "valueType": {
+          "type": ["string", "null"],
+          "description": "Value type for this dimension (FHIR type)"
+        },
+        "relationship": {
+          "type": "string",
+          "description": "Named relationship (e.g. aboutSubject, withinStudy, atVisit)"
+        },
+        "cardinality": {
+          "$ref": "#/$defs/Cardinality",
+          "description": "How many instances of this dimension apply"
+        },
+        "_note": {
+          "type": ["string", "null"],
+          "description": "Design notes"
+        },
+        "qualifiers": {
+          "oneOf": [
+            { "$ref": "#/$defs/QualifierSpec" },
+            { "type": "null" }
+          ],
+          "description": "Qualifier specification (e.g. IntentType on Treatment, DerivationStatus on Visit)"
+        },
+        "dataDefinitions": {
+          "type": ["object", "null"],
+          "additionalProperties": {
+            "$ref": "#/$defs/DataDefinition"
+          },
+          "description": "Nested data definitions within this dimension (e.g. Timing → StartDate, EndDate, Duration, StudyDay)"
+        }
+      },
+      "required": ["relationship", "cardinality"]
+    },
+    "ObservationCategory": {
+      "additionalProperties": false,
+      "description": "An observation subtype (EventObservation, InterventionObservation, FindingObservation, FindingAboutObservation). Inherits from Observation and may add domain-specific properties.",
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "description": "Human-readable definition of this observation subtype"
+        },
+        "isA": {
+          "type": "string",
+          "description": "Parent type — always 'Observation' (is-a inheritance relationship)"
+        },
+        "_note": {
+          "type": ["string", "null"],
+          "description": "Design notes"
+        },
+        "additionalDefinitions": {
+          "type": ["object", "null"],
+          "additionalProperties": {
+            "$ref": "#/$defs/DataDefinition"
+          },
+          "description": "Subtype-specific data definitions (e.g., EventObservation adds Severity, Causality, Outcome; InterventionObservation adds Dose, Route)"
+        }
+      },
+      "required": ["definition", "isA"]
+    },
+    "ValueTypeUsageExample": {
+      "additionalProperties": true,
+      "description": "Example of how a CRAFT framework layer uses the value type vocabulary",
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "string",
+          "description": "Which value type level this layer primarily uses (primitiveTypes or complexTypes)"
+        },
+        "examples": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Map of concept path to value type usage example"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,494 @@
+id: https://cdisc.org/acdc/method
+name: acdc_methods
+version: "0.8.0"
+title: ACDC Method Model
+description: >-
+  Schema for ACDC (Analysis Concepts / Derivation Concepts) method definitions.
+  Covers statistical analysis methods (e.g., ANCOVA, Cox PH) and derivation
+  methods (e.g., Subtraction, LOCF imputation). Methods are the reusable
+  building blocks that AC and DC definitions reference.
+
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  acdc: https://cdisc.org/acdc/
+  linkml: https://w3id.org/linkml/
+  STATO: http://purl.obolibrary.org/obo/STATO_
+
+default_prefix: acdc
+default_range: string
+
+imports:
+  - linkml:types
+
+# External vocabulary references
+settings:
+  valueTypes: "../shared/fhir_value_types.json"
+  statistics: "./statistics_vocabulary.json"
+  output_classes: "./output_class_templates.json"
+  formula_grammar: "./formula_grammar.json"
+  configuration_concepts: "./configuration_concepts.json"
+
+# ──────────────────────────────────────────────
+# Classes
+# ──────────────────────────────────────────────
+
+classes:
+
+  Method:
+    description: >-
+      A reusable statistical or derivation method definition.
+      Distinguished by type (analysis vs derivation) and formula notation.
+    tree_root: true
+    attributes:
+      oid:
+        description: Unique method identifier, e.g., M.ANCOVA, M.Subtraction
+        identifier: true
+        required: true
+        pattern: "^M\\..+$"
+      schema_version:
+        description: Version of the ACDC method schema this definition conforms to
+        required: true
+      name:
+        description: Human-readable method name
+        required: true
+      type:
+        description: Whether this is an analysis or derivation method
+        range: MethodType
+        required: true
+      class:
+        description: Method category, e.g., General Linear Models, Arithmetic, Data Handling
+        required: true
+      intent:
+        description: Semantic purpose tags for the method
+        multivalued: true
+        range: Intent
+      description:
+        description: Free-text explanation of what the method does
+      formula:
+        description: Formula specification including notation and expressions
+        range: FormulaSpec
+        required: true
+      configurations:
+        description: Configurable parameters for the method
+        multivalued: true
+        range: Configuration
+        inlined_as_list: true
+      assumptions:
+        description: Key assumptions required for the method to be valid
+        multivalued: true
+      input_roles:
+        description: Input data specifications with statistical roles
+        multivalued: true
+        range: InputRole
+        inlined_as_list: true
+      output_specification:
+        description: What outputs the method produces
+        range: OutputSpecification
+        required: true
+        inlined: true
+      codings:
+        description: Mappings to external terminology or ontology codes
+        multivalued: true
+        range: Coding
+        inlined_as_list: true
+      notes:
+        description: Free-text design notes, rationale for architectural choices, or authoring comments. Not used by the engine; purely documentation.
+      stato_r_implementation:
+        description: "DEPRECATED (v0.7.0): Use method_implementation_catalog instead. R command or function reference from STATO ontology."
+        deprecated: "Use method_implementation_catalog instead"
+
+  Coding:
+    description: A reference to a code in a terminology or ontology
+    attributes:
+      system:
+        description: URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/stato)
+        required: true
+        range: uri
+      code:
+        description: The code value within the system (e.g., STATO_0000179)
+        required: true
+      display:
+        description: Human-readable label for the code
+
+  FormulaSpec:
+    description: Specifies the formula notation and expressions for a method
+    attributes:
+      notation:
+        description: The formula notation system used
+        range: FormulaNotation
+        required: true
+      default_expression:
+        description: Concrete example expression with default variable names
+        required: true
+      generic_expression:
+        description: Template expression with role-tagged placeholders, e.g., <response> ~ <covariate>
+        required: true
+      notes:
+        description: Additional notes on formula interpretation
+
+  InputRole:
+    description: Specification of one input to a method
+    attributes:
+      name:
+        description: Role name used in the formula, e.g., response, covariate, partition
+        identifier: true
+        required: true
+      statisticalRole:
+        description: The statistical role of this input in the model
+        range: StatisticalRole
+      dataType:
+        description: Expected data type
+        range: DataType
+        required: true
+      required:
+        description: Whether this input is mandatory
+        range: boolean
+      cardinality:
+        description: How many variables can fill this role
+        range: Cardinality
+      description:
+        description: Explanation of this input role
+
+  InputBinding:
+    description: >-
+      A concrete binding of a concept to a method role within a transformation
+      template. Aligned with W3C Data Cube RoleBinding semantics: each binding
+      declares direction (input/output) and dataStructureRole
+      (measure/dimension/attribute). Named slices at the transformation level
+      replace per-binding dimensionConstraints.
+    attributes:
+      concept:
+        description: The bound concept (e.g., C.Measure, C.Change, Treatment)
+        required: true
+      methodRole:
+        description: The method role this binding fills (e.g., response, covariate, fixed_effect, minuend, difference)
+        required: true
+      direction:
+        description: Whether this binding is an input to or output from the transformation
+        range: BindingDirection
+        required: true
+      dataStructureRole:
+        description: "W3C Data Cube role: measure (observed/computed value), dimension (identifies/locates observation), or attribute (metadata)"
+        range: DataStructureRole
+        required: true
+      slice:
+        description: Reference to a named slice defined in the transformation's namedSlices. Replaces inline dimensionConstraints.
+      qualifierType:
+        description: Qualifier type (e.g., IntentType, DerivationStatus, ReferenceFrame)
+      qualifierValue:
+        description: Qualifier value (e.g., Planned, Analysis, Relative)
+      requiredValueType:
+        description: FHIR value type constraint (e.g., Quantity, CodeableConcept, Identifier)
+      description:
+        description: Human-readable description of what this binding represents
+      note:
+        description: Additional context or clarification for this binding
+
+  Configuration:
+    description: >-
+      A configurable parameter for a method. A Configuration has two legitimate
+      shapes: (1) LONG FORM — declares name + dataType locally, plus any of
+      description, defaultValue, enumValues, codings; used when the Configuration
+      is method-specific and owns its definition directly. (2) SHORT FORM —
+      declares conforms_to pointing at a concept id in
+      model/method/configuration_concepts.json (e.g., multiplicity_adjustment,
+      alpha, conf_level); used when the Configuration inherits its definition
+      from a shared registry concept. The choice is a per-Configuration design
+      decision made in the method file. A load-time expander resolves conforms_to
+      references to populate missing fields from the registry; local fields
+      always override inherited ones.
+    any_of:
+      - description: Short form — references a registry concept.
+        slot_conditions:
+          conforms_to:
+            required: true
+      - description: Long form — self-contained name and dataType.
+        slot_conditions:
+          name:
+            required: true
+          dataType:
+            required: true
+    attributes:
+      name:
+        description: Configuration parameter name
+      dataType:
+        description: Data type of the configuration value
+        range: DataType
+      defaultValue:
+        description: Default value if not specified. May be string, number, boolean, or null (no default).
+        any_of:
+          - range: string
+          - range: integer
+          - range: float
+          - range: boolean
+          - range: None
+      enumValues:
+        description: Allowed values when dataType is enum
+        multivalued: true
+      description:
+        description: Explanation of this configuration parameter
+      codings:
+        description: >-
+          Mappings from configuration values (or from the configuration itself)
+          to external terminology or ontology codes, e.g., STATO codes for
+          statistical methods. When dataType is enum, each Coding.display is
+          expected to match one entry in enumValues.
+        multivalued: true
+        range: Coding
+        inlined_as_list: true
+      conforms_to:
+        description: >-
+          Reference to a configuration concept id in
+          model/method/configuration_concepts.json (e.g., multiplicity_adjustment,
+          alpha, conf_level). When set, the load-time expander fills in missing
+          Configuration fields (name, dataType, description, defaultValue,
+          enumValues, codings) from the registry. Local fields override inherited
+          ones. For enum concepts with a values catalog, applicable_scopes MUST
+          also be set to filter the catalog by scope. Expansion runs BEFORE schema
+          validation, so library files can be minimal.
+      applicable_scopes:
+        description: >-
+          List of scope ids (from concept.scopes) that filter the enum catalog
+          when conforms_to references a concept with per-value scope metadata.
+          Each scope declares which classes of methods it is statistically valid
+          for. The expander computes enumValues = values whose scope is in this
+          list, preserving catalog order. Required for enum concepts with a
+          scopes dictionary; ignored for simple decimal concepts like alpha or
+          conf_level. Example: a Cox model's multiplicity_adjustment configuration
+          declares applicable_scopes [universal], which filters out Tukey,
+          Dunnett, and other linear-model-specific procedures.
+        multivalued: true
+        range: string
+
+  OutputSpecification:
+    description: Container for the output classes a method produces
+    attributes:
+      output_classes:
+        description: The output class definitions
+        multivalued: true
+        range: OutputClass
+        inlined_as_list: true
+
+  OutputClass:
+    description: >-
+      One class of output from a method. References output_class_templates
+      by the class field and statistics_vocabulary by the statistics field.
+    attributes:
+      class:
+        description: Name of the output class template, e.g., fit_statistics, computed_value
+        required: true
+      configurations:
+        description: >-
+          Configurations attached to this output class. Used when a
+          configuration is per-family rather than global to the method — e.g.,
+          multiplicity_adjustment attaches to the contrasts output_class
+          because adjustment is bound to the p-value family it produces, not
+          to the model fit. Expands via conforms_to the same way as
+          method-level Configuration entries.
+        multivalued: true
+        range: Configuration
+        inlined_as_list: true
+      role_name:
+        description: Output variable name (for derivation methods)
+      dataType:
+        description: Data type of the output
+      description:
+        description: What this output class represents
+      cardinality:
+        description: "DEPRECATED (v0.6.0): How many rows this output class produces. Use dimensions + class for machine resolution instead."
+        deprecated: "Use dimensions + class for machine resolution instead"
+      dimensions:
+        description: Dimensions (role names from input_roles) that index the output rows — defines the structural axes of this output class
+        multivalued: true
+      statistics:
+        description: Statistic names from statistics_vocabulary
+        multivalued: true
+      sub_types:
+        description: Optional sub-type variants of this output class
+        multivalued: true
+        range: OutputClassSubType
+        inlined_as_list: true
+      template_ref:
+        description: Explicit reference to output class template (alternative to class)
+      examples:
+        description: Example values for the dimensions (may be of any scalar type — string, integer, decimal, boolean)
+        multivalued: true
+      test_types:
+        description: Specific test types available (for multivariate_tests)
+        multivalued: true
+
+  OutputClassSubType:
+    description: A sub-type variant of an output class (e.g., contrasts at different levels)
+    attributes:
+      name:
+        description: Sub-type identifier
+        identifier: true
+        required: true
+      dimensions:
+        description: Dimensions for this sub-type
+        multivalued: true
+      description:
+        description: What this sub-type represents
+      statistics:
+        description: Statistics available for this sub-type
+        multivalued: true
+
+  Statistic:
+    description: A reusable statistic/measure definition in the vocabulary
+    attributes:
+      name:
+        description: Statistic identifier, e.g., estimate, p_value, F_statistic
+        identifier: true
+        required: true
+      dataType:
+        description: Data type of the statistic value
+        range: DataType
+        required: true
+      description:
+        description: What this statistic measures
+      codings:
+        description: Mappings to external terminology or ontology codes
+        multivalued: true
+        range: Coding
+        inlined_as_list: true
+
+  OutputClassTemplate:
+    description: A reusable output structure pattern
+    attributes:
+      name:
+        description: Template identifier, e.g., fit_statistics, contrasts
+        identifier: true
+        required: true
+      description:
+        description: Purpose of this output class
+      cardinality:
+        description: How many output rows this class produces
+      dimensions:
+        description: Dimensions that index the output rows
+        multivalued: true
+      statistics:
+        description: Statistic names from the vocabulary that this template includes
+        multivalued: true
+
+# ──────────────────────────────────────────────
+# Enums
+# ──────────────────────────────────────────────
+
+enums:
+
+  MethodType:
+    description: Whether a method is an analysis or derivation
+    permissible_values:
+      derivation:
+        description: Creates new subject-level data from existing data
+      analysis:
+        description: Performs statistical analysis producing aggregated results
+
+  FormulaNotation:
+    description: The notation system used for formulas
+    permissible_values:
+      assignment:
+        description: "Derivation notation: output_var := expression"
+      wilkinson_rogers:
+        description: "Analysis notation: response ~ predictor1 + predictor2"
+      survival:
+        description: "Survival analysis notation: Surv(time, event) ~ predictors"
+
+  StatisticalRole:
+    description: The statistical role of an input variable
+    permissible_values:
+      response:
+        description: Dependent/outcome variable
+      covariate:
+        description: Continuous adjustment variable
+      fixed_effect:
+        description: Categorical factor variable
+      repeated_factor:
+        description: Within-subject repeated dimension (e.g., visit)
+      repeated_subject:
+        description: Subject identifier for repeated measures
+      strata:
+        description: Stratification variable
+      offset:
+        description: Offset term in the model
+
+  DataType:
+    description: FHIR primitive data types for method inputs and outputs
+    permissible_values:
+      decimal:
+        description: Decimal number (FHIR decimal)
+      integer:
+        description: Integer number (FHIR integer)
+      code:
+        description: Coded value from a controlled vocabulary (FHIR code)
+      string:
+        description: Character/text (FHIR string)
+      boolean:
+        description: True/false (FHIR boolean)
+      date:
+        description: Date value (FHIR date)
+      dateTime:
+        description: Date-time value (FHIR dateTime)
+      id:
+        description: Identifier value (FHIR id)
+      enum:
+        description: Enumerated set of allowed values
+
+  Cardinality:
+    description: How many variables can fill an input role
+    permissible_values:
+      single:
+        description: Exactly one variable
+      multiple:
+        description: One or more variables
+      single_or_multiple:
+        description: One or more variables (flexible)
+
+  BindingDirection:
+    description: Whether a binding supplies input to or captures output from a method
+    permissible_values:
+      input:
+        description: Supplies data to the method
+      output:
+        description: Captures results from the method
+
+  DataStructureRole:
+    description: W3C Data Cube structural role for a binding
+    permissible_values:
+      measure:
+        description: Observed or computed value
+      dimension:
+        description: Identifies or locates an observation (grouping/partitioning axis)
+      attribute:
+        description: Metadata about the observation
+
+  Intent:
+    description: Semantic purpose tags for methods
+    permissible_values:
+      ChangeComputation:
+        description: Computing differences or changes
+      RatioComputation:
+        description: Computing ratios or proportions
+      DataAggregation:
+        description: Aggregating data within groups
+      ValueClassification:
+        description: Classifying values into categories
+      MissingDataHandling:
+        description: Imputation or handling of missing data
+      ValueRetrieval:
+        description: Looking up values from other rows
+      PrecisionAdjustment:
+        description: Adjusting numeric precision
+      GroupComparison:
+        description: Comparing outcomes across groups
+      LongitudinalEstimate:
+        description: Modeling longitudinal/repeated measures data
+      CategoricalAssociation:
+        description: Testing association between categorical variables
+      OutcomeModeling:
+        description: Modeling binary or other outcomes
+      TimeToEventEstimate:
+        description: Estimating survival/time-to-event outcomes
+      DescriptiveSummary:
+        description: Summarizing data with descriptive statistics

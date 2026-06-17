@@ -1,0 +1,68 @@
+{
+  "description": "Maps USDM BiomedicalConceptProperty standard codes to OC Instance Model facets",
+  "version": "0.1.0",
+  "ocModelVersion": "0.16",
+  "mappings": {
+    "Result.Value": {
+      "role": "result",
+      "definition": "The primary measured/observed value",
+      "matchesCodes": ["C70856"],
+      "matchesDecodes": ["Observation Result"]
+    },
+    "Result.Unit": {
+      "role": "unit",
+      "definition": "Unit of measurement for the result",
+      "matchesCodes": ["C44276", "C48208", "C168688", "C49669", "C48207", "C64571", "C25709", "C44279", "C69174", "C48570", "C64567", "C67391", "C67365", "C73688", "C42574", "C42575", "C68667", "C50400"],
+      "matchesDecodePattern": "^Unit of "
+    },
+    "Location": {
+      "role": "qualifier",
+      "definition": "Anatomical site of observation",
+      "matchesCodes": ["C13717"],
+      "matchesDecodes": ["Anatomic Site"]
+    },
+    "Location.Laterality": {
+      "role": "qualifier",
+      "definition": "Left, right, bilateral",
+      "matchesCodes": ["C25185"],
+      "matchesDecodes": ["Laterality"]
+    },
+    "Timing.CollectionDateTime": {
+      "role": "context",
+      "definition": "When the observation was collected",
+      "matchesCodes": ["C82515"],
+      "matchesDecodes": ["Collection Date Time"]
+    },
+    "CollectionMethod": {
+      "role": "qualifier",
+      "definition": "Instrument or technique used",
+      "matchesCodes": ["C82535"]
+    },
+    "Specimen": {
+      "role": "qualifier",
+      "definition": "Biological material collected for testing",
+      "matchesCodes": ["C70713"],
+      "matchesDecodes": ["Biospecimen Type"]
+    },
+    "BodyPosition": {
+      "role": "condition",
+      "definition": "Position of subject during measurement",
+      "matchesCodes": ["C62164"],
+      "matchesDecodes": ["Body Position"]
+    },
+    "Identification.Topic": {
+      "role": "identity",
+      "definition": "The test code or term identifying what is being observed",
+      "isDefault": true,
+      "_note": "BC properties that don't match any other facet are classified as Topic"
+    }
+  },
+
+  "eventObservationFacets": {
+    "Severity": { "matchesCodes": ["C53253"], "role": "qualifier" },
+    "Causality": { "matchesCodes": ["C41358"], "role": "qualifier" },
+    "Outcome": { "matchesCodes": ["C49489"], "role": "qualifier" },
+    "SeriousnessCriteria": { "matchesCodes": ["C48275", "C84266", "C113380", "C83117", "C83052", "C83053"], "role": "qualifier" },
+    "ActionTaken": { "matchesCodes": ["C83013"], "role": "qualifier" }
+  }
+}

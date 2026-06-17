@@ -1,0 +1,129 @@
+/* ===== SmartPhrase Chips ===== */
+.phrase-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+}
+
+.sp-palette .phrase-chip:hover {
+  filter: brightness(0.95);
+}
+
+.sp-palette .phrase-chip.selected {
+  box-shadow: 0 0 0 2px var(--cdisc-primary);
+  font-weight: 600;
+}
+
+.sp-palette .phrase-chip.selected::before {
+  content: '\2713 ';
+  font-size: 11px;
+}
+
+.phrase-chip[data-role="endpoint"] {
+  background: var(--cdisc-primary-light);
+  color: var(--cdisc-primary);
+  border-color: rgba(19, 70, 120, 0.2);
+}
+
+.phrase-chip[data-role="parameter"],
+.phrase-chip[data-role="timepoint"],
+.phrase-chip[data-role="population"] {
+  background: #E8F5F3;
+  color: #2D7A6F;
+  border-color: rgba(161, 208, 202, 0.4);
+}
+
+.phrase-chip[data-role="grouping"] {
+  background: #FFF8E6;
+  color: #8B6914;
+  border-color: rgba(237, 170, 0, 0.3);
+}
+
+.phrase-chip[data-role="method"] {
+  background: #F3EDF9;
+  color: var(--cdisc-accent5);
+  border-color: rgba(85, 50, 120, 0.2);
+}
+
+.phrase-chip[data-role="method_qualifier"],
+.phrase-chip[data-role="covariate"] {
+  background: #FDECEC;
+  color: #9A3432;
+  border-color: rgba(201, 69, 67, 0.2);
+}
+
+.phrase-chip .chip-remove {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+  opacity: 0.6;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.phrase-chip .chip-remove:hover {
+  opacity: 1;
+}
+
+/* ===== Composition Display Zone ===== */
+.drop-zone {
+  min-height: 56px;
+  border: 1px solid var(--cdisc-border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  background: var(--cdisc-background);
+}
+
+.drop-zone-placeholder {
+  color: var(--cdisc-text-secondary);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* ===== SmartPhrase Builder Layout ===== */
+.sp-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.sp-palette {
+  position: sticky;
+  top: calc(var(--header-height) + 28px);
+}
+
+.sp-palette-group {
+  margin-bottom: 14px;
+}
+
+.sp-palette-group-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--cdisc-text-secondary);
+  padding: 0 0 5px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--cdisc-border);
+}
+
+.sp-palette .phrase-chip {
+  margin: 0 4px 5px 0;
+}
