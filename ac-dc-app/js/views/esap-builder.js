@@ -11,6 +11,7 @@ import { displayConcept } from '../utils/concept-display.js';
 import { loadMethod } from '../data-loader.js';
 import { renderFormulaExpression } from './transformation-config.js';
 import { buildEsapSpecification } from '../utils/instance-serializer.js';
+import { buildDefineXml } from '../utils/define-xml-generator.js';
 import { ESAP_SECTION_PREFIXES, ESAP_SECTION_LABELS } from '../utils/esap-constants.js';
 import { resolveTitle, buildResolverContext } from './template-resolver.js';
 
@@ -164,6 +165,7 @@ export async function renderEsapBuilder(container) {
         <button class="btn btn-secondary esap-view-toggle" data-view="datasets" style="font-size:11px;">ADaM Datasets</button>
         <button class="btn btn-secondary esap-view-toggle" data-view="adamspec" style="font-size:11px;">ADaM Spec</button>
         <button class="btn btn-secondary esap-view-toggle" data-view="json" style="font-size:11px;">{ } JSON</button>
+        <button class="btn btn-secondary esap-view-toggle" data-view="define" style="font-size:11px;">Define-XML</button>
         <button class="btn btn-secondary" id="btn-back-pipeline">&larr; Back to Pipeline</button>
       </div>
     </div>
@@ -198,6 +200,32 @@ export async function renderEsapBuilder(container) {
           <button class="btn btn-sm btn-secondary" id="btn-copy-json" style="font-size:11px;">Copy to Clipboard</button>
         </div>
         <pre id="esap-json-content" style="max-height:600px; overflow:auto; padding:12px; background:#1e1e1e; color:#d4d4d4; border-radius:var(--radius); font-size:11px; line-height:1.5; white-space:pre-wrap; word-wrap:break-word;"></pre>
+      </div>
+    </div>
+
+    <div id="esap-define-panel" style="display:none; margin-top:16px;">
+      <div class="card" style="padding:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <div>
+            <div style="font-weight:700; font-size:14px;">Define-XML 2.1 + Analysis Results Metadata</div>
+            <p style="font-size:12px; color:var(--cdisc-text-secondary); margin-top:4px;">
+              Projected from the concept-keyed spec onto CDISC Define-XML 2.1 (ADaM) + the ARM v1.0 extension.
+              Fields with no source in the spec are marked <code>GAP</code> below and as <code>def:CommentDef</code> in the file.
+            </p>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <label style="font-size:11px; color:var(--cdisc-text-secondary);">Code:
+              <select id="define-lang" class="config-input" style="font-size:11px; padding:2px 6px; margin-left:4px;">
+                <option value="R">R</option>
+                <option value="SAS">SAS</option>
+              </select>
+            </label>
+            <button class="btn btn-sm btn-secondary" id="btn-define-view" style="font-size:11px;">View rendered &nearr;</button>
+            <button class="btn btn-sm btn-primary" id="btn-define-download" style="font-size:11px;">Download Define.xml</button>
+          </div>
+        </div>
+        <div id="esap-define-coverage" style="margin-top:12px;"></div>
+        <pre id="esap-define-content" style="max-height:480px; overflow:auto; margin-top:12px; padding:12px; background:#1e1e1e; color:#d4d4d4; border-radius:var(--radius); font-size:10px; line-height:1.45; white-space:pre; word-wrap:normal;"></pre>
       </div>
     </div>
   `;
@@ -247,9 +275,11 @@ export async function renderEsapBuilder(container) {
     document: container.querySelector('.esap-doc'),
     datasets: container.querySelector('#esap-datasets-panel'),
     adamspec: container.querySelector('#esap-adamspec-panel'),
-    json: container.querySelector('#esap-json-panel')
+    json: container.querySelector('#esap-json-panel'),
+    define: container.querySelector('#esap-define-panel')
   };
   const jsonContent = container.querySelector('#esap-json-content');
+  let defineGenerated = false;
 
   container.querySelectorAll('.esap-view-toggle').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -275,6 +305,12 @@ export async function renderEsapBuilder(container) {
         const esapSpec = buildEsapSpecification(appState);
         jsonContent.textContent = JSON.stringify(esapSpec, null, 2);
       }
+
+      // Lazy-generate Define-XML (async — touches CSV + resolved spec)
+      if (view === 'define' && !defineGenerated) {
+        defineGenerated = true;
+        generateDefinePanel(container, selectedEps, study);
+      }
     });
   });
 
@@ -289,14 +325,22 @@ export async function renderEsapBuilder(container) {
     });
   }
 
-  // Dataset assignment handlers
+  // Dataset assignment handlers — persist PER transformation instance so an
+  // endpoint's variables can span datasets (e.g. derivations→ADQS, analysis
+  // results→ARSQS). targetDataset is kept as a back-compat default.
   container.querySelectorAll('.dataset-assign-input').forEach(input => {
     input.addEventListener('change', () => {
       const epId = input.dataset.epId;
+      const key = input.dataset.instanceKey;
       if (!epId) return;
       if (!appState.endpointSpecs[epId]) appState.endpointSpecs[epId] = {};
-      appState.endpointSpecs[epId].targetDataset = input.value.trim().toUpperCase();
-      // Also update the endpoint-how input if visible
+      const spec = appState.endpointSpecs[epId];
+      const val = input.value.trim().toUpperCase();
+      if (key) {
+        if (!spec.datasetAssignments) spec.datasetAssignments = {};
+        spec.datasetAssignments[key] = val;
+      }
+      spec.targetDataset = val;
     });
   });
 }
@@ -900,7 +944,13 @@ function renderDatasetsPanel(selectedEps, study) {
 
   for (const ep of selectedEps) {
     const spec = appState.endpointSpecs?.[ep.id] || {};
-    const currentDataset = spec.targetDataset || '';
+    const assignments = spec.datasetAssignments || {};
+    // Per-instance dataset: keyed `${epId}::type::oid`; falls back to the
+    // endpoint-level targetDataset for unmigrated specs.
+    const dsFor = (type, oid) => {
+      const k = `${ep.id}::${type}::${oid}`;
+      return (k in assignments) ? assignments[k] : (spec.targetDataset || '');
+    };
 
     // Derivation chain entries
     for (const entry of spec.derivationChain || []) {
@@ -914,7 +964,8 @@ function renderDatasetsPanel(selectedEps, study) {
           name: d.name,
           type: 'derivation',
           method: d.usesMethod || '',
-          dataset: currentDataset
+          key: `${ep.id}::derivation::${d.oid}`,
+          dataset: dsFor('derivation', d.oid)
         });
       }
     }
@@ -932,7 +983,8 @@ function renderDatasetsPanel(selectedEps, study) {
           type: 'analysis',
           method: t.usesMethod || '',
           category: t.acCategory || '',
-          dataset: currentDataset
+          key: `${ep.id}::analysis::${t.oid}`,
+          dataset: dsFor('analysis', t.oid)
         });
       }
     }
@@ -988,7 +1040,7 @@ function renderDatasetsPanel(selectedEps, study) {
                 <td style="font-weight:600;">${inst.name}</td>
                 <td><span class="badge ${inst.type === 'analysis' ? 'badge-blue' : 'badge-teal'}" style="font-size:9px;">${inst.type}</span></td>
                 <td>${inst.method}</td>
-                <td><input class="config-input dataset-assign-input" data-ep-id="${inst.epId}" value="" placeholder="e.g., ADQS" style="width:80px; font-size:11px; padding:2px 6px;"></td>
+                <td><input class="config-input dataset-assign-input" data-ep-id="${inst.epId}" data-instance-key="${inst.key}" value="" placeholder="e.g., ADQS" style="width:80px; font-size:11px; padding:2px 6px;"></td>
               </tr>
             `).join('')}
           </tbody>
@@ -1013,7 +1065,7 @@ function renderDatasetsPanel(selectedEps, study) {
                 <td style="font-weight:600;">${inst.name}</td>
                 <td><span class="badge ${inst.type === 'analysis' ? 'badge-blue' : 'badge-teal'}" style="font-size:9px;">${inst.type}</span></td>
                 <td>${inst.method}</td>
-                <td><input class="config-input dataset-assign-input" data-ep-id="${inst.epId}" value="${inst.dataset}" style="width:80px; font-size:11px; padding:2px 6px;"></td>
+                <td><input class="config-input dataset-assign-input" data-ep-id="${inst.epId}" data-instance-key="${inst.key}" value="${inst.dataset}" style="width:80px; font-size:11px; padding:2px 6px;"></td>
               </tr>
             `).join('')}
           </tbody>
@@ -1293,6 +1345,74 @@ function showNarrativePicker(container, sectionKey) {
   });
 
   searchInput.focus();
+}
+
+// ===== Define-XML Panel =====
+//
+// Generates the Define-XML 2.1 + ARM projection, shows a coverage report of
+// every GAP, and wires Download / View-rendered (browser-native XSLT via the
+// bundled CDISC stylesheet).
+
+async function generateDefinePanel(container, selectedEps, study) {
+  const coverage = container.querySelector('#esap-define-coverage');
+  const content = container.querySelector('#esap-define-content');
+  const dlBtn = container.querySelector('#btn-define-download');
+  const viewBtn = container.querySelector('#btn-define-view');
+  const langSel = container.querySelector('#define-lang');
+  // Regenerate when the implementation language changes (MethodDef + ARM code).
+  if (langSel && !langSel._bound) {
+    langSel._bound = true;
+    langSel.addEventListener('change', () => generateDefinePanel(container, selectedEps, study));
+  }
+  if (coverage) coverage.innerHTML = '<p style="font-size:12px; color:var(--cdisc-text-secondary);">Generating Define-XML…</p>';
+
+  let result;
+  try {
+    result = await buildDefineXml(appState, selectedEps, study, { language: langSel?.value || 'R' });
+  } catch (err) {
+    console.error('[Define-XML] generation failed:', err);
+    if (coverage) coverage.innerHTML = `<p style="font-size:12px; color:var(--cdisc-danger,#dc2626);">Generation failed: ${escapeHtml(err.message)}</p>`;
+    return;
+  }
+  const { xml, gaps } = result;
+  if (content) content.textContent = xml;
+
+  // Coverage report — group gaps by category.
+  const byCat = {};
+  for (const g of gaps) (byCat[g.category] = byCat[g.category] || []).push(g);
+  const catOrder = ['global', 'dataset', 'variable', 'codelist', 'method', 'arm'];
+  const cats = Object.keys(byCat).sort((a, b) => catOrder.indexOf(a) - catOrder.indexOf(b));
+  if (coverage) {
+    coverage.innerHTML = `
+      <div class="card" style="padding:12px; background:var(--cdisc-primary-light); border:1px solid var(--cdisc-border);">
+        <div style="font-weight:700; font-size:13px; margin-bottom:6px;">Coverage report &mdash; ${gaps.length} gap${gaps.length === 1 ? '' : 's'} flagged</div>
+        <p style="font-size:11px; color:var(--cdisc-text-secondary); margin-bottom:8px;">
+          Everything not listed here is generated from the spec. Each gap below is also a <code>def:CommentDef</code> in the file.
+        </p>
+        ${cats.map(cat => `
+          <details style="margin-bottom:4px;" ${cat === 'arm' || cat === 'global' ? 'open' : ''}>
+            <summary style="cursor:pointer; font-weight:600; font-size:12px; text-transform:capitalize;">${cat} (${byCat[cat].length})</summary>
+            <ul style="margin:4px 0 8px 18px; font-size:11px; color:var(--cdisc-text-secondary);">
+              ${byCat[cat].map(g => `<li><code>${escapeHtml(g.field)}</code> &mdash; ${escapeHtml(g.reason)}</li>`).join('')}
+            </ul>
+          </details>`).join('')}
+      </div>`;
+  }
+
+  // Download / View — share one Blob factory (PI embedded by the generator).
+  const slug = (study?.name || 'study').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
+  const makeUrl = () => URL.createObjectURL(new Blob([xml], { type: 'application/xml' }));
+  if (dlBtn) dlBtn.onclick = () => {
+    const a = document.createElement('a');
+    a.href = makeUrl();
+    a.download = `${slug}.define.xml`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+  if (viewBtn) viewBtn.onclick = () => {
+    // Browser-native XSLT 1.0: opening the blob applies the same-origin stylesheet.
+    window.open(makeUrl(), '_blank');
+  };
 }
 
 // ===== ADaM Specification Panel =====

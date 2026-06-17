@@ -21,7 +21,7 @@ python3 ac-dc-app/serve.py
 
 Open <http://localhost:8080/ac-dc-app/index.html>.
 
-On **Step 1 (Select Study)** you'll see four study cards. The one labelled **"CDISC PILOT - LZZT - SoA (enriched)"** has a teal **SoA-ready** badge — pick it to drive the Study SoA views.
+On **Step 1 (Select Study)** you'll see the study card(s) listed in `ac-dc-app/data/usdm/studies.json`. A study whose USDM carries the SDTM-specialization extension shows a teal **SoA-ready** badge and can drive the Study SoA views; if the bundled study isn't enriched yet, run the enrichment script first (see section 2).
 
 Left sidebar includes:
 - **Workflow Steps 1–8** — the existing eSAP builder (study selection, endpoint specification, derivation pipeline, execute-via-WebR).
@@ -75,7 +75,7 @@ To tweak the walkthrough, edit the `caption('…')` strings and `beat(ms)` pause
 
 | File / directory | Source | Committed? |
 |---|---|---|
-| `ac-dc-app/data/usdm/CDISC_Pilot_Study_soa_enriched.json` | `scripts/enrich_usdm_for_soa.py --write` | **yes** — app entry point |
+| `ac-dc-app/data/usdm/CDISC_Pilot_Study_soa_enriched.json` | `scripts/enrich_usdm_for_soa.py --write` | **yes** — SoA-enriched study (reference it from `studies.json` to load it) |
 | `ac-dc-app/data/cdisc-library/_index.json` | enrichment script | **yes** — BC↔spec lookup |
 | `ac-dc-app/data/cdisc-library/bcs/*.json` | enrichment script | **yes** — parent BC payloads |
 | `ac-dc-app/data/cdisc-library/sdtm-specs/*.json` | enrichment script | **yes** — spec variable lists |
@@ -94,7 +94,7 @@ The 12 MB of CDISC Library cache is committed so teammates who clone the repo ca
 | Port 8080 already in use | Another dev server is running. Stop it or change `PORT = 8080` in `ac-dc-app/serve.py`. |
 | Detailed SoA drill-in says "No cached payload" for a spec | Enrichment hasn't been run or missed that spec — re-run `python3 scripts/enrich_usdm_for_soa.py --write --deep-siblings`. |
 | Glucose drill-in shows only 1 candidate | Needs the deep-siblings pass: `python3 scripts/enrich_usdm_for_soa.py --write --deep-siblings`. |
-| SoA sidebar items show a "run enrichment script" placeholder | `ac-dc-app/data/usdm/CDISC_Pilot_Study_soa_enriched.json` is missing — run `--write` (see section 2). |
+| SoA sidebar items show a "run enrichment script" placeholder | The selected study isn't SoA-enriched — run `--write` (section 2) and make sure `studies.json` references the enriched file. |
 | Demo script hangs on "waiting for selector" | Make sure `python3 ac-dc-app/serve.py` is running first; the script reaches out to `http://localhost:8080`. |
 
 ## Where the Study SoA code lives
