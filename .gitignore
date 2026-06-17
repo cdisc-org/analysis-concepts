@@ -28,3 +28,6 @@ build/
 node_modules/
 package-lock.json
 demo-output/
+
+# CDISC Library cache — regenerable via scripts/enrich_usdm_for_soa.py (needs API key); not committed
+ac-dc-app/data/cdisc-library/

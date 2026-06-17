@@ -31,7 +31,7 @@ Click any BC row in either SoA to open a drill-in panel. Use the search box at t
 
 ## 2. Refresh CDISC Library data (optional)
 
-The repo ships with a cached snapshot under `ac-dc-app/data/cdisc-library/`, so the SoA views work out of the box. You only need to re-run enrichment if you want to pick up a newer CDISC Library package release.
+The CDISC Library cache under `ac-dc-app/data/cdisc-library/` is **not committed** (it's gitignored and fully regenerable). Run the enrichment below to build it locally before using the Detailed SoA drill-ins; re-run it to pick up a newer CDISC Library package release.
 
 ```bash
 # Put your key into .env at the repo root (gitignored)
@@ -76,15 +76,15 @@ To tweak the walkthrough, edit the `caption('…')` strings and `beat(ms)` pause
 | File / directory | Source | Committed? |
 |---|---|---|
 | `ac-dc-app/data/usdm/CDISC_Pilot_Study_soa_enriched.json` | `scripts/enrich_usdm_for_soa.py --write` | **yes** — SoA-enriched study (reference it from `studies.json` to load it) |
-| `ac-dc-app/data/cdisc-library/_index.json` | enrichment script | **yes** — BC↔spec lookup |
-| `ac-dc-app/data/cdisc-library/bcs/*.json` | enrichment script | **yes** — parent BC payloads |
-| `ac-dc-app/data/cdisc-library/sdtm-specs/*.json` | enrichment script | **yes** — spec variable lists |
-| `ac-dc-app/data/cdisc-library/_packages/*.json` | enrichment script | **yes** — package listings |
+| `ac-dc-app/data/cdisc-library/_index.json` | enrichment script | **no** — gitignored; BC↔spec lookup (regenerate locally) |
+| `ac-dc-app/data/cdisc-library/bcs/*.json` | enrichment script | **no** — gitignored; parent BC payloads |
+| `ac-dc-app/data/cdisc-library/sdtm-specs/*.json` | enrichment script | **no** — gitignored; spec variable lists |
+| `ac-dc-app/data/cdisc-library/_packages/*.json` | enrichment script | **no** — gitignored; package listings |
 | `.env` | you | **no** — gitignored |
 | `node_modules/` | `npm install` | **no** — gitignored |
 | `demo-output/*.webm` | `node scripts/demo_soa.mjs` | **no** — gitignored |
 
-The 12 MB of CDISC Library cache is committed so teammates who clone the repo can run the SoA feature immediately without needing their own API key. If your licensing requires otherwise, see `.gitignore` for an easy opt-out.
+The ~12 MB CDISC Library cache is **gitignored, not committed** — each developer regenerates it locally with their own API key via the enrichment script above. This avoids redistributing CDISC Library content; the app itself boots fine without the cache (the Detailed SoA drill-ins just show "No cached payload" until it's built).
 
 ## Troubleshooting
 
