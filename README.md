@@ -6,7 +6,7 @@ The AC/DC (Analysis Concepts / Derivation Concepts) Framework provides a metadat
 
 ![Analysis Concepts](./images/analysis-concepts.png)
 
-> 🚀 **New here?** See [`GETTING_STARTED.md`](GETTING_STARTED.md) for a short clone → run → demo walkthrough (covers the Study SoA feature + CDISC Library enrichment + recording a demo video). The rest of this document is the framework reference.
+> 🚀 **New here?** See [`GETTING_STARTED.md`](GETTING_STARTED.md) for a short clone → run walkthrough (covers running the app, the Study SoA feature, and CDISC Library enrichment). The rest of this document is the framework reference.
 
 ---
 
