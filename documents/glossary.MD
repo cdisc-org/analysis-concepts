@@ -1,5 +1,7 @@
 # Glossary
 
+![Analysis Concepts Framework with its high level components](glossary.png)
+
 ### Analysis Concepts Framework
 
 The complete framework. Consists of two layers: [Specification Layer](#specification-layer) and [Execution Layer](#execution-layer). High level components include [Method](#method), [Transformation](#transformation), [Concept](#concept), [Code](#code) and [Data Binding](#data-binding).
@@ -14,7 +16,7 @@ Has meaning in the real world. Concept is part of the [Specification Layer](#spe
 
 ### Data Binding
 
-Implementation of a [Concept](#concept) in data and data standards. Data Binding is part of the [Execution Layer](#execution-layer) and is therefore dependent of data and data standards.
+Implementation of a [Concept](#concept) in data and data standards. Data Binding is part of the [Execution Layer](#execution-layer) and is therefore dependent of data and data standards. One [Concept](#concept) can be referred to by many Data Bindings in different data standards.
 
 ### Execution Layer
 
