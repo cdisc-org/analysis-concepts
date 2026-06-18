@@ -392,6 +392,52 @@ cross is `at_level` (one row per visit), which is built into the method. So toda
 `contrasts_t: indexed_by ["fixed_effect"]` is misleading and should be dropped:
 the contrast axis comes from the members; `at_level` (if any) is the cross.
 
+### 3.6.1 How it fits with `indexed_by` — the field → axis map
+
+`indexed_by` and a `contrastSpecification` are **two mechanisms for declaring the
+rows of an output table**, applied to *different* outputs and drawing rows from
+*different* sources — they do not combine on the same output.
+
+- A method's **non-contrast** outputs use `indexed_by`: the rows are the
+  cross-product of input-slot levels, derived mechanically from the inputs with no
+  study/contrast knowledge. E.g. `ls_means: indexed_by ["fixed_effect"]` → one row
+  per treatment arm.
+- The **contrast** output does not: its rows are an *explicitly enumerated set*
+  (Drug−Placebo, High−Low, …), so the `contrast` axis comes from
+  `contrastSpecification.members`, never from `indexed_by`. Writing
+  `contrasts_t: indexed_by ["fixed_effect"]` is wrong because it implies one row
+  *per treatment level*, when the treatment levels are the matrix **columns** (the
+  weights) collapsed into each contrast row — hence the §3.6 cleanup.
+
+How each `contrastSpecification` field maps onto the output cube's axes:
+
+| field | what it is | relation to `indexed_by` |
+|-------|-----------|--------------------------|
+| `over` | the factor whose levels are the **columns** of `L` (the things weighted) | **Not an index.** `over` is *consumed/collapsed* into the contrast — the `contrasts_*` measure is **not** indexed by it (e.g. Treatment disappears from the contrast's index). |
+| `members` | define the **`contrast`** row axis (one row per member) | **Replaces** `indexed_by` for the contrast axis — an explicit set, not a mechanical cross. |
+| `at` | replicate each single-factor (weights-only) member across every level of this second factor → the **`at_level`** axis | **The one `indexed_by`-style cross a contrast output has.** It lives in the `contrastSpecification` (not method `indexed_by`) because *which* concrete factor is a study/transformation choice, and because only weights-only members are replicated — members with explicit multi-factor `cells` fix those factors themselves and are **not** replicated. |
+| `basis` | the column space (`estimated_means` vs `model_coefficients`) | unrelated to row indexing (it selects template/scale, §3.7). |
+
+So the `contrasts_t` output cube is indexed by:
+
+```text
+contrast  ×  at_level (only if `at` is set)  ×  [shared context dims: parameter, population, …]
+   ▲ from members          ▲ from `at`
+```
+
+with `over`'s levels **absent** from the contrast measure's index (collapsed into
+the weights). Worked against the §4.2 MMRM example:
+
+- the replicated `Drug − Placebo` member → `contrast` × `at_level` (one row per visit);
+- the explicit-`cells` difference-in-differences member → a single `contrast` row
+  spanning visits (it fixes the visits itself, so `at` does not replicate it);
+- `Treatment` (the `over` factor) does **not** appear on the `contrasts_t` index.
+
+On the **method file**, therefore, a `contrasts_t` output carries **no
+`indexed_by` for the contrast axis**; it keeps an `at_level` cross only when the
+method intrinsically produces contrasts along that factor (e.g. MMRM by visit),
+and even then the concrete factor is bound at the transformation via `at`.
+
 ### 3.7 Impact on the output-class spec (what changes there)
 
 The companion spec `2026-06-11-output-class-statistic-sets-design.md` owns the
