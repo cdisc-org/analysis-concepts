@@ -116,6 +116,68 @@ Both concretes carry just `covariance`; they differ only in what the two index a
 ```
 So `Cov(θ_i, θ_j)` is the `covariance` value at `(row=i, col=j)`. The contrast method reads the long table as its `covariance` input and assembles Σ; `basis` guarantees `estimates`, `coefficients` (L) and `covariance` share the same index space (cells or parameters).
 
+#### (e′) The complex case — pairwise contrasts and a treatment×visit interaction
+
+The simple binding above has a *single-factor* cell (`Treatment`), so each covariance axis is one sub-dimension. The moment the model carries a **treatment×visit interaction** (MMRM is the standard case), the LS-mean cell is the **crossed** pair `(Treatment, Visit)` — so `θ` is a vector over all `Treatment × Visit` cells, and `Σ` is the covariance over that crossed set. Nothing about `M.LinearContrast`, the `lsmeans_covariance` template, or the `Covariance` concept changes; only the **transformation binding** grows, because each long-table axis (`cell_row`/`cell_col`) must now span the *whole composite cell*. Each axis expands into **two** sub-dimensions, giving Σ a four-key index `(trt_row, vis_row, trt_col, vis_col)`:
+
+```jsonc
+// Step-1 (analysis) output: LS-means covariance over the crossed Treatment×Visit cells.
+// Each axis of the long table is a (Treatment, Visit) pair → 4 dimensions total.
+"dimensions": [ /* context: parameter, population */,
+  { "name": "trt_row", "concept": "Treatment" }, { "name": "vis_row", "conceptCategory": "VisitDimension" },
+  { "name": "trt_col", "concept": "Treatment" }, { "name": "vis_col", "conceptCategory": "VisitDimension" } ],
+"measures":   [ { "output": "lsmeans_covariance", "concept": "LSMeansCovariance" } ]
+// Cov( θ[trt_row,vis_row] , θ[trt_col,vis_col] ) = the `covariance` value at that 4-tuple.
+// (This is the §2.1d `#row`/`#col` doubling made concrete: cell = fixed_effect × repeated_factor.)
+```
+
+That **one** Σ feeds two very different contrast steps — the method is identical; only the `contrastSpecification` on the contrast step differs:
+
+**(i) Pairwise contrasts, replicated within each visit (`at`).** "Drug − Placebo at every visit" (and all-pairwise among three arms, per visit). The members are *weights-only* over `Treatment`; `at: VisitDimension` replicates them across visits, producing the `at_level` axis (§3.4/§4 of the contrast spec). The method picks, for each (member, visit), the within-visit sub-block of Σ — i.e. only `(trt_i, v) , (trt_j, v)` entries with `vis_row = vis_col = v`:
+
+```jsonc
+// contrast step — output `contrast` dimension
+{
+  "name": "contrast", "concept": "Contrasts",
+  "contrastSpecification": {
+    "over": "Treatment",
+    "basis": "estimated_means",
+    "at": "VisitDimension",                                  // ← replicate each member across visits
+    "members": { "generator": { "kind": "pairwise" } }       // all pairwise among Treatment's levels
+  }
+}
+// output index: contrast (from members) × at_level (the visit) × [parameter, population]
+// Treatment is collapsed (it is `over`); Visit survives only as the at_level cross.
+```
+
+**(ii) Treatment×visit *interaction* — difference-in-differences.** "Is the Drug−Placebo gap at Week 12 different from the gap at baseline?" This is a single contrast whose cells fix **both** factors, so it is **not** an `at`-replication — each member enumerates a multi-factor `cells` list (§3.4), and the method reads the four corresponding cells of the *same* Σ (now genuinely cross-visit, exercising the off-diagonal `vis_row ≠ vis_col` entries the simple case never touched):
+
+```jsonc
+{
+  "name": "contrast", "concept": "Contrasts",
+  "contrastSpecification": {
+    "over": ["Treatment", "VisitDimension"],                 // the contrast spans both factors
+    "basis": "estimated_means",
+    "members": [
+      { "label": "Δ(Drug−PBO): W12 vs W0",
+        "cells": [
+          { "cell": { "Treatment": "DRUG", "VisitDimension": "W12" }, "weight":  1 },
+          { "cell": { "Treatment": "PBO",  "VisitDimension": "W12" }, "weight": -1 },
+          { "cell": { "Treatment": "DRUG", "VisitDimension": "W0"  }, "weight": -1 },
+          { "cell": { "Treatment": "PBO",  "VisitDimension": "W0"  }, "weight":  1 } ] }
+    ]
+  }
+}
+// output index: contrast (one row per diff-in-diff member) × [parameter, population]
+// BOTH Treatment and Visit are collapsed into the contrast — neither survives as a context dim.
+```
+
+> **Why (i) is a generator but (ii) is explicit `cells`** — not arbitrary. A generator (`pairwise`/`vs_reference`/`trend`, contrast spec §3.5) is a *single-factor* pattern, mechanically derivable from one factor's level list; `at` then only **replicates** it across a second factor independently — it cannot subtract one visit's contrast from another's. A difference-in-differences **couples two factors in one row**, so neither `at` nor any single-factor generator produces it; it falls into the spec's `custom` kind, which *is* the explicit multi-factor `cells` form (§3.4). The rule: regular function of one factor (± `at` faceting) → generator; bespoke combination coupling ≥2 factors → explicit `cells`. (A regular interaction — e.g. *every post-baseline visit vs baseline* — could be templated by a future multi-factor generator; none is defined yet, so `cells` is the general fallback.)
+
+**Why this matters for the covariance binding (the whole point of e′):** case (ii) is exactly where a per-visit (block-diagonal) covariance would give the **wrong** SE — `Var` of a difference-in-differences needs the cross-visit covariance `Cov(θ[·,W12], θ[·,W0])`. Because Σ is bound as the *full* crossed `(trt,vis)×(trt,vis)` long table, both contrast shapes draw from one object: (i) uses its within-visit blocks, (ii) uses its cross-visit blocks. The method's `coefficients` input (`L`) is still resolved entirely from the `contrastSpecification` — the only thing the analysis step had to do extra was expose the covariance over the crossed cell rather than a single factor.
+
+> `model_coefficients` basis variant: the same two shapes work, but the axes are the fitted parameters (`parameter_covariance`/COVB), and an interaction contrast references the interaction *dummies* (`treatment:DRUG:visit:W12`, …) — see contrast spec §3.3/§3.4. `estimated_means` is preferred precisely because it stays at cell level regardless of how many interaction terms the model carries.
+
 ### 2.2 Degrees of freedom (df)
 
 `df` is **already a terminology term** (`df`, plus `df_num`/`df_den`) and `DF` is **already an AC concept** — so only an output class + pattern + the wiring are new.
@@ -254,6 +316,81 @@ C: T.Coef_Logistic  ▶ T.Contrast (M.LinearContrast, scale=exp)                
 One method; Case C produces the odds ratio **directly** via `scale=exp` — no separate `exp` step.
 
 **The take-away:** Case A is identical in all three. **Option 1 vs Option 3** differ only in Case C (a separate `exp` transformation vs a `scale` config inside the method). **Option 2** differs from both only by splitting the t and z paths into **two** method files instead of one.
+
+## 3.3 Worked `model_coefficients` example — logistic log-odds (COVB basis)
+
+§3 worked the `estimated_means` basis end-to-end. The other basis from the 2026-06-11 spec (§3.3) — `model_coefficients` — routes through the **same** `M.LinearContrast`; only the transformation changes. Here is the parallel worked pair: a logistic regression whose **fitted coefficients β** are contrasted to a log-odds-ratio, with the model's **COVB** as the covariance. This is also Case B from §3.2 (logistic → no `df` → `contrasts_z`); the natural-scale odds ratio is the downstream `exp` step (Case C).
+
+```text
+T.Coef_Logistic (M.LogisticRegression)  ─▶  parameter_estimates (ParameterEstimates) + parameter_covariance (ParameterCovariance / COVB)
+        │   (concept-keyed: the next step reads those concepts — no df produced → z inference)
+        ▼
+T.Contrast_LogOR_Logistic (M.LinearContrast)  ─▶  contrasts_z   (log-odds-ratio on the link scale)
+        │   (Option 1: natural-scale OR is a separate exp step)
+        ▼
+T.Exp_OR (M.AffineTransform / exp)  ─▶  odds_ratio_estimates
+```
+
+**Step 1 — logistic analysis exposes coefficients + COVB** (no `df`): output measures bind `parameter_estimates → ParameterEstimates` and `parameter_covariance → ParameterCovariance` (the `term_row`/`term_col` axes from §2.1e, ranging over the **fitted parameters**, not factor cells).
+
+**Step 2 — the contrast transformation:**
+```jsonc
+{
+  "conceptId": "T.Contrast_LogOR_Logistic",
+  "label": "Log-odds-ratio: Drug vs Placebo (logistic, model-coefficient basis)",
+  "transformationType": "analysis",
+  "usesMethod": "M.LinearContrast",
+  "methodConfigurations": [ { "configurationName": "confidence_level", "value": 0.95 } ],
+  "inputDataStructure": {
+    "dimensions": [
+      { "conceptCategory": "ModelTerm" },                  // ← fitted parameters β (NOT Treatment cells)
+      { "conceptCategory": "ParameterDimension" },
+      { "concept": "Population" }
+    ],
+    "measures": [
+      { "input": "estimates",  "concept": "ParameterEstimates" },   // ← β, the fitted coefficients
+      { "input": "covariance", "concept": "ParameterCovariance" }   // ← COVB (param × param)
+      // no `df` measure bound → method emits contrasts_z (link-scale log-OR)
+    ]
+  },
+  "outputDataStructure": {
+    "dimensions": [
+      { "conceptCategory": "ParameterDimension" },
+      { "concept": "Population" },
+      {
+        "name": "contrast", "concept": "Contrasts",
+        "contrastSpecification": {                          // this IS L — but keyed to model parameters
+          "over": "Treatment",                             // expressed in concept terms (spec §3.3)
+          "basis": "model_coefficients",                   // ← columns are fitted β, not LS-mean cells
+          "coding": "reference",                           // model-bound: coding + reference are required
+          "reference": "{control_arm}",                    // PBO has no parameter (folded into intercept)
+          "members": [
+            { "label": "log-OR Drug vs Placebo", "weights": { "treatment:DRUG": 1 } }
+            // sparse, parameter-keyed (omitted = 0); the reference arm never appears.
+            // Contrast HiDose−LoDose would be { "treatment:HIDOSE": 1, "treatment:LODOSE": -1 } (spec §3.3).
+          ]
+        }
+      }
+    ],
+    "measures": [ { "output": "contrast_estimates", "concept": "Contrasts" } ]
+  },
+  "sliceKeys": [ { "dimension": "Treatment", "value": "{control_arm}" } ]
+}
+```
+
+### What changed vs the `estimated_means` example (§3) — and what did not
+
+| | §3 `estimated_means` | §3.3 `model_coefficients` |
+|--|----------------------|---------------------------|
+| `estimates` input ← | `LSMeans` | `ParameterEstimates` (fitted β) |
+| `covariance` input ← | `LSMeansCovariance` (`LSMEANS/COV`) | `ParameterCovariance` (COVB) |
+| input cube index | `Treatment` cells | fitted parameters (`ModelTerm`) |
+| `members` weights keyed by | **factor levels** (`{DRUG:1, PBO:-1}`, symmetric) | **parameter names** (`{treatment:DRUG:1}`, sparse) |
+| extra `contrastSpecification` fields | none | `coding`, `reference` (model-bound, spec §3.3) |
+| **method bound** | **`M.LinearContrast`** | **`M.LinearContrast` (identical)** |
+| **formula executed** | **`L·θ`, `L·Σ·Lᵀ`** | **`L·θ`, `L·Σ·Lᵀ` (identical)** |
+
+So the entire basis difference is **transformation-side**: which result concepts the inputs bind to, and how `L`'s weights are keyed (levels vs parameters, plus `coding`/`reference`). `M.LinearContrast` is byte-for-byte the same operation — which is exactly the §1 invariant ("the method is the matrix algebra, concept-free") holding across both bases. Per the 2026-06-11 spec §3.3, `estimated_means` remains the default because its columns live in the concept layer and stay at cell level under interactions; `model_coefficients` is the model-bound case you reach for when the contrast *is* a coefficient (log-OR / log-HR).
 
 ## 4. Option 1 — one generic method (df-driven t/z; OR/HR via downstream exp)
 Single `M.LinearContrast` (§1.1). t vs z chosen by presence of `df` (`contrasts_t`/`contrasts_z`). Natural-scale OR/HR = a separate exp step: `T.Contrast_LogOR (no df → contrasts_z) ▶ T.Exp_OR (M.AffineTransform/exp) ▶ odds_ratio_estimates`. **Pros:** algebra once; t/z is data; OR/HR reuses an existing transform. **Cons:** output template resolved at binding; 2-step OR/HR.
