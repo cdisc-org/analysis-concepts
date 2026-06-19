@@ -17,12 +17,14 @@
     "Range":           { "fhirDef": "Set of values bounded by low and high", "usage": "Confidence intervals (low/high are SimpleQuantity)", "compatiblePrimitives": ["decimal", "integer"] },
     "Count":           { "fhirDef": "Non-negative integer count", "usage": "Subject/event counts (n at risk, events, censored)", "compatiblePrimitives": ["integer"] },
     "CodeableConcept": { "fhirDef": "Concept from code system(s)", "usage": "Categorical clinical values (treatment arms, visit categories, coded responses)", "compatiblePrimitives": ["code"] },
-    "Identifier":      { "fhirDef": "Entity identifier with system", "usage": "Subject and record identifiers", "compatiblePrimitives": ["id"] }
+    "Identifier":      { "fhirDef": "Entity identifier with system", "usage": "Subject and record identifiers", "compatiblePrimitives": ["id"] },
+    "Period":          { "fhirDef": "Time range bounded by start and end", "usage": "Interval occurrences (FHIR effectivePeriod for events/interventions)", "compatiblePrimitives": ["dateTime"] }
   },
   "layerMapping": {
     "method_input_roles": "primitiveTypes",
     "ac_concept_statistics": "primitiveOrComplexTypes",
     "dc_concept_valueType": "complexTypes",
-    "transformation_requiredValueType": "complexTypes"
+    "transformation_requiredValueType": "complexTypes",
+    "_note": "complexTypes for measured/coded values; boolean (primitive) is also permitted for binary-indicator concepts such as Flag and for transformation slots bound to them."
   }
 }

@@ -193,6 +193,65 @@ if ALLM_PATH.exists():
     check("statisticSets" in allm, "[F1] AllMethods missing statisticSets section")
     check(set(allm.get("statisticSets", {})) == EXPECTED_SETS, "[F1] AllMethods statisticSets stale")
 
+# ---- G1: cross-layer value-type compatibility (transformation <-> method) -
+# A transformation input measure's requiredValueType (FHIR complex/primitive)
+# must be (a) allowed by the bound DC concept's result.valueType, and
+# (b) reachable to the bound method input's primitive dataType via the
+# fhir_value_types.json `compatiblePrimitives` bridge.
+TLIB_PATH = ROOT / "lib" / "transformations" / "ACDC_Transformation_Library_v07.json"
+check(TLIB_PATH.exists(), "[G1] transformation library missing")
+if TLIB_PATH.exists():
+    tlib = load(TLIB_PATH)
+    complexTypes = fvt["complexTypes"]
+    primTypes = set(fvt["primitiveTypes"])
+
+    def compat_primitives(rvt):
+        if rvt in complexTypes:
+            return set(complexTypes[rvt].get("compatiblePrimitives", []))
+        if rvt in primTypes:
+            return {rvt}
+        return set()  # unknown value type
+
+    # method input dataTypes by method id (analyses + derivations)
+    method_inputs = {}
+    for f in glob.glob(str(ROOT/'lib'/'methods'/'analyses'/'*.json')) + \
+             glob.glob(str(ROOT/'lib'/'methods'/'derivations'/'*.json')):
+        mm = load(f)
+        method_inputs[mm["conceptId"]] = {i["name"]: i.get("dataType") for i in mm.get("inputs", [])}
+
+    # DC concept -> allowed result.valueType set
+    dc_model = load(ROOT / "lib" / "concepts" / "Option_B_Clinical.json")
+    dc_valuetypes = {}
+    for cat in dc_model.get("categories", {}).values():
+        for cid, c in cat.get("concepts", {}).items():
+            vt = c.get("result", {}).get("valueType")
+            dc_valuetypes[cid] = set(vt) if isinstance(vt, list) else ({vt} if vt else set())
+
+    for t in tlib.get("transformations", []):
+        tid = t["conceptId"]
+        um = t.get("usesMethod")
+        minputs = method_inputs.get(um)
+        check(um is None or minputs is not None,
+              f"[G1] {tid}: usesMethod {um!r} not found among method files")
+        for m in t.get("inputDataStructure", {}).get("measures", []):
+            rvt = m.get("requiredValueType")
+            if rvt is None:
+                continue
+            slot = m.get("input")
+            concept = m.get("concept")
+            # (a) concept-side: requiredValueType allowed by the bound DC concept
+            if concept in dc_valuetypes:
+                check(rvt in dc_valuetypes[concept],
+                      f"[G1] {tid} measure {slot!r}: requiredValueType {rvt!r} not in "
+                      f"concept {concept!r} valueType {sorted(dc_valuetypes[concept])}")
+            # (b) method-side: method input primitive reachable from requiredValueType
+            if minputs and slot in minputs:
+                prim = minputs[slot]
+                check(prim in compat_primitives(rvt),
+                      f"[G1] {tid} measure {slot!r}: method {um} input dataType {prim!r} "
+                      f"not compatible with requiredValueType {rvt!r} "
+                      f"(compatiblePrimitives={sorted(compat_primitives(rvt))})")
+
 def main():
     if failures:
         print(f"FAIL ({len(failures)} issue(s)):")

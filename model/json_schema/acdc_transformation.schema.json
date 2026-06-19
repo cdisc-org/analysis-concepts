@@ -368,10 +368,7 @@
                 "string",
                 "decimal",
                 "integer",
-                "boolean",
-                "NumericValue",
-                "CharacterValue",
-                "CodedResponse"
+                "boolean"
             ],
             "title": "FHIRValueType",
             "type": "string"

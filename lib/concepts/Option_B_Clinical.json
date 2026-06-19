@@ -90,7 +90,7 @@
     "description": "Maps app-level pseudo-categories (like 'Observation') to a DC concept that should stand in for them during transformation-matching lookups. The proxy is chosen so that its result.valueType matches the pseudo-category's expected output shape.",
     "Observation": {
       "proxyConcept": "Measure",
-      "rationale": "Observation results and Measure outputs share NumericValue; analyses that accept Measure inputs accept observation results."
+      "rationale": "Observation results and Measure outputs share the Quantity value type; analyses that accept Measure inputs accept observation results."
     }
   },
   "categories": {
@@ -112,9 +112,9 @@
           ],
           "result": {
             "valueType": [
-              "NumericValue",
-              "CharacterValue",
-              "CodedResponse"
+              "Quantity",
+              "string",
+              "CodeableConcept"
             ],
             "unit": "inherited or specified"
           },
@@ -139,7 +139,7 @@
             "difference between duplicate measurements"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "inherited"
           },
           "code": {
@@ -158,7 +158,7 @@
             "relative change in eGFR"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "fixed: %"
           },
           "code": {
@@ -175,7 +175,7 @@
             "post/pre treatment ratio"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "dimensionless"
           },
           "code": {
@@ -192,7 +192,7 @@
             "log-ratio of drug concentrations"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "dimensionless"
           },
           "code": {
@@ -209,7 +209,7 @@
             "severity worsening from baseline"
           ],
           "result": {
-            "valueType": "CodedResponse",
+            "valueType": "CodeableConcept",
             "unit": "none"
           },
           "code": {
@@ -233,7 +233,7 @@
             "highest recorded SBP"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "inherited"
           },
           "code": {
@@ -251,7 +251,7 @@
             "minimum platelet count"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "inherited"
           },
           "code": {
@@ -267,7 +267,7 @@
             "Tmax"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "time unit"
           },
           "code": {
@@ -283,7 +283,7 @@
             "time to nadir"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "time unit"
           },
           "code": {
@@ -303,7 +303,7 @@
             "glucose AUC during OGTT"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "source_unit \u00d7 time_unit"
           },
           "code": {
@@ -320,7 +320,7 @@
             "cumulative exposure"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "inherited"
           },
           "code": {
@@ -338,7 +338,7 @@
             "rate of decline in FEV1"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "source_unit / time_unit"
           },
           "code": {
@@ -355,7 +355,7 @@
             "antibody half-life"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "time unit"
           },
           "code": {
@@ -372,7 +372,7 @@
             "end-of-study value"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "inherited"
           },
           "code": {
@@ -389,7 +389,7 @@
             "initial measurement"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "inherited"
           },
           "code": {
@@ -407,7 +407,7 @@
             "time in hypoglycemia"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "time unit"
           },
           "code": {
@@ -424,7 +424,7 @@
             "time to normalization"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "time unit"
           },
           "code": {
@@ -441,7 +441,7 @@
             "PK concentration range"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "inherited"
           },
           "code": {
@@ -467,7 +467,7 @@
             "number of exacerbations"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Count",
             "unit": "none"
           },
           "code": {
@@ -486,7 +486,7 @@
             "AE rate per patient-year"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "events / time_unit"
           },
           "code": {
@@ -506,7 +506,7 @@
             "progression-free survival"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "time unit"
           },
           "code": {
@@ -523,7 +523,7 @@
             "inter-exacerbation interval"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "time unit"
           },
           "code": {
@@ -547,7 +547,7 @@
             "responder flag"
           ],
           "result": {
-            "valueType": "CodedResponse",
+            "valueType": ["CodeableConcept", "boolean"],
             "unit": "none"
           },
           "code": {
@@ -565,7 +565,7 @@
             "renal impairment stage"
           ],
           "result": {
-            "valueType": "CodedResponse",
+            "valueType": "CodeableConcept",
             "unit": "none"
           },
           "code": {
@@ -583,7 +583,7 @@
             "Week 24 (Visit 12)"
           ],
           "result": {
-            "valueType": "CodedResponse",
+            "valueType": "CodeableConcept",
             "unit": "none"
           },
           "code": {
@@ -600,7 +600,7 @@
             "severity ranking"
           ],
           "result": {
-            "valueType": "NumericValue",
+            "valueType": "Quantity",
             "unit": "none"
           },
           "code": {
@@ -617,7 +617,7 @@
             "baseline severity tertile"
           ],
           "result": {
-            "valueType": "CodedResponse",
+            "valueType": "CodeableConcept",
             "unit": "none"
           },
           "code": {

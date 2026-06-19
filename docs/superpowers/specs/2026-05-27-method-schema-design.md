@@ -607,7 +607,7 @@ The transformation declares two `qb:DataStructureDefinition`s — one for the cu
 | `output` | items in `outputDataStructure.measures[]` (required) | FK to method's `outputs[].name` |
 | `concept` | any | Single clinical/analysis concept (e.g. `Subject`, `Measure`, `Flag`) |
 | `conceptCategory` | any | Concept category — user picks a member at study-spec time (e.g. `ParameterDimension`); exclusive with `concept` |
-| `requiredValueType` | `inputDataStructure.measures[]` | Optional: constrain the value type accepted (e.g. `NumericValue`) |
+| `requiredValueType` | `inputDataStructure.measures[]` | Optional: constrain the value type accepted (e.g. `Quantity`) |
 | `slice` | `inputDataStructure.measures[]` | Optional: name of a slice from `inputDataStructure.slices[]` that pre-filters this input cube |
 
 **Semantic notes:**
@@ -726,8 +726,8 @@ The schema (and a JSON-Schema-based validator) enforce:
 8. **Mutual exclusion.** `concept` XOR `conceptCategory` on each binding item (never both).
 9. **Twin-DSD consistency advisory (non-blocking).** The validator emits a warning when a dim appears on one side and not the other without a documented reason (e.g. an aggregation that legitimately drops Timing). This catches drift between the two `dimensions[]` lists without forbidding the legitimate diverge-case.
 10. **Output-type compatibility (atomic outputs).** For each `outputDataStructure.measures[]` item whose bound method-output has `output_type: "computed_value"` (atomic): the method-output's `dataType` (`decimal` | `integer` | `code` | `boolean` | `date`) must be compatible with the bound concept's `result.valueType`. Compatibility table:
-    - `decimal` / `integer` → compatible with FHIR `Quantity`, `Count`, `Duration`, and Option_B `NumericValue`.
-    - `code` → compatible with FHIR `CodeableConcept`, `Coding`, and Option_B `CodedResponse`.
+    - `decimal` / `integer` → compatible with FHIR `Quantity`, `Count`, `Duration`.
+    - `code` → compatible with FHIR `CodeableConcept`, `Coding`.
     - `boolean` → compatible with `boolean`.
     - `date` → compatible with FHIR `date`, `dateTime`.
     - Mismatched bindings (e.g. method emits `code`, concept requires `Quantity`) are rejected.

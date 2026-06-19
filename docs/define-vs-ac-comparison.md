@@ -120,7 +120,7 @@ The recommendation in §7-§8 thus reduces to: **build a projection generator** 
 §0.1 framed the contrast as Specification Layer vs. Execution Layer. The same boundary reads differently from the concept layer's side, and that reading answers a question reviewers keep asking: *isn't `define.yaml` the semantic layer that ties the models together?* It is not — and the reason is a fork in the word **"definition."**
 
 - A **data definition** describes a *physical dataset / variable*: `CHG` is `float`, length 8, codelist X, `origin: Derived`, in domain `ADVS`. This is precisely what Define-XML is — the file is named for it.
-- A **semantic (meaning) definition** describes *meaning* independent of any dataset: `Change` = "the arithmetic difference between two values of the same parameter," result a `NumericValue`, unit inherited.
+- A **semantic (meaning) definition** describes *meaning* independent of any dataset: `Change` = "the arithmetic difference between two values of the same parameter," result a `Quantity`, unit inherited.
 
 The AC concept layer (`lib/concepts/*`) is the second kind. Every physical representation links *up* to it for meaning ("this column carries `Change`"), then carries its own data definition for shape — `CHG: float(8)` (ADaM), `measurement.value_as_number` (OMOP), `Observation.valueQuantity.value` (FHIR), `Item.conceptProperty` (Define). Meaning is shared and authored once; shape is per-representation. This is what makes the concept the projection pivot of §0.2: *N* representations map to one concept (N×1), never to each other (N×N).
 
@@ -277,7 +277,7 @@ The two slices `endpoint` and `parameter_baseline` are the only place "baseline"
 "Change": {
   "definition": "The arithmetic difference between two values of the same parameter.",
   "math": "x − x_ref",
-  "result": { "valueType": "NumericValue", "unit": "inherited" }
+  "result": { "valueType": "Quantity", "unit": "inherited" }
 }
 ```
 
