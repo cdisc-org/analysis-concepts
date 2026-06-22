@@ -73,7 +73,7 @@
                         "null"
                     ]
                 },
-                "fhirValueType": {
+                "valueType": {
                     "description": "FHIR value type (primitive or complex).",
                     "type": "string"
                 },
@@ -106,14 +106,14 @@
                         "null"
                     ]
                 },
-                "unit": {
-                    "description": "Symbolic unit policy (Option_B convention), not a concrete UCUM code: inherited | dimensionless | none | \"fixed: %\" | \"inherited or dimensionless\" | \"inherited or specified\". The concrete unit is bound at transformation time.",
+                "unitRule": {
+                    "description": "Symbolic unit rule (concept convention), not a concrete UCUM code: inherited | derived | fixed | unitless | none. When unitRule is \"fixed\", the literal unit is carried in fixedUnit. The concrete unit is bound at transformation time.",
                     "type": "string"
                 }
             },
             "required": [
-                "fhirValueType",
-                "unit"
+                "valueType",
+                "unitRule"
             ],
             "then": {
                 "oneOf": [

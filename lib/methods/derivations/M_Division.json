@@ -36,7 +36,6 @@
     {
       "output_type": "computed_value",
       "name": "result",
-      "unit_policy": "computed",
       "dataType": "decimal"
     }
   ]

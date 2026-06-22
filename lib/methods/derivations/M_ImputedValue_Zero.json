@@ -30,7 +30,6 @@
     {
       "output_type": "computed_value",
       "name": "imputed_value",
-      "unit_policy": "preserved",
       "dataType": "decimal"
     }
   ]

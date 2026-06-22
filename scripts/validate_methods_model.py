@@ -104,8 +104,30 @@ ac = load(ROOT / "lib" / "concepts" / "AC_Concept_Model_v017.json")
 ac_concepts = ac["sharedStatisticsVocabulary"]["concepts"]
 ALLOWED_FHIR = {"decimal","integer","code","string","boolean","date","dateTime","id",
                 "Quantity","Range","Count","CodeableConcept","Identifier"}
-ALLOWED_UNIT = {"inherited","dimensionless","none","fixed: %",
-                "inherited or dimensionless","inherited or specified"}
+
+# Units are a concept property (single source of truth). `unitRule` says HOW the
+# result unit is determined; the concrete unit (e.g. mg/L/week) is instance data.
+# The valueType <-> unitRule pairing is constrained by this coherence table.
+# Note: `unitless` (NOT `dimensionless`) — "dimension" is reserved for cube axes.
+UNIT_RULES = {"inherited", "derived", "fixed", "unitless", "none"}
+UNITRULE_BY_VALUETYPE = {
+    "Quantity":        {"inherited", "derived", "fixed", "unitless"},
+    "Range":           {"inherited", "derived", "fixed", "unitless"},
+    "Count":           {"unitless", "none"},
+    "decimal":         {"unitless", "none"},
+    "integer":         {"unitless", "none"},
+    "CodeableConcept": {"none"},
+    "boolean":         {"none"},
+    "string":          {"none"},
+    "id":              {"none"},
+}
+def unitrule_coherent(valueType, unitRule):
+    """valueType may be a str or a union list; coherent if unitRule is allowed by any member."""
+    vts = valueType if isinstance(valueType, list) else [valueType]
+    allowed = set()
+    for vt in vts:
+        allowed |= UNITRULE_BY_VALUETYPE.get(vt, set())
+    return unitRule in allowed
 
 # AC concept -> set of terminology terms it covers (single-leaf via `term`,
 # multi-leaf via each leaf's `term`, e.g. ConfidenceInterval -> CI_lower/CI_upper).
@@ -125,10 +147,14 @@ for cid, c in ac_concepts.items():
           f"[C1] AC concept {cid} must have exactly one of term / leaves")
     for t in concept_terms(c):
         check(t in stats, f"[C1] AC concept {cid} references unknown term {t!r}")
-    check(c.get("fhirValueType") in ALLOWED_FHIR,
-          f"[C1] AC concept {cid} fhirValueType {c.get('fhirValueType')!r} missing/invalid")
-    check(c.get("unit") in ALLOWED_UNIT,
-          f"[C1] AC concept {cid} unit {c.get('unit')!r} missing/invalid")
+    vt = c.get("valueType")
+    ur = c.get("unitRule")
+    check(vt in ALLOWED_FHIR,
+          f"[C1] AC concept {cid} valueType {vt!r} missing/invalid")
+    check(ur in UNIT_RULES,
+          f"[C1] AC concept {cid} unitRule {ur!r} missing/invalid")
+    check(unitrule_coherent(vt, ur),
+          f"[C1] AC concept {cid}: unitRule {ur!r} incoherent with valueType {vt!r}")
     for forbidden in ("statoMapping", "definition", "dataType"):
         check(forbidden not in c,
               f"[C1] AC concept {cid} must not re-state {forbidden} (single source = terminology)")
@@ -251,6 +277,50 @@ if TLIB_PATH.exists():
                       f"[G1] {tid} measure {slot!r}: method {um} input dataType {prim!r} "
                       f"not compatible with requiredValueType {rvt!r} "
                       f"(compatiblePrimitives={sorted(compat_primitives(rvt))})")
+
+# ---- G2: cross-layer unit coherence (concept = single source of truth) -----
+# Units live on the concept as (valueType, unitRule). (1) every DC + AC concept's
+# pair must be coherent, fixedUnit present iff unitRule=='fixed', and any
+# inheritsFrom/inputUnitRelation must be valid. (2) a transformation whose OUTPUT
+# concept requires uniform input units must bind its unit-bearing input measures
+# to a single concept (same unit by construction). AC concept coherence is in C1.
+_dc = load(ROOT / "lib" / "concepts" / "Option_B_Clinical.json")
+_shared_dims = set(_dc.get("sharedDimensions", {})) - {"note"}
+_dc_results = {}
+for _cat in _dc.get("categories", {}).values():
+    for _cid, _c in _cat.get("concepts", {}).items():
+        _dc_results[_cid] = _c.get("result", {})
+_known_targets = _shared_dims | set(_dc_results)
+_unitbearing = {"Quantity", "Range", "Count"}
+
+# (1) DC concept coherence
+for cid, res in _dc_results.items():
+    vt = res.get("valueType")
+    ur = res.get("unitRule")
+    check(ur in UNIT_RULES, f"[G2] DC concept {cid}: unitRule {ur!r} missing/invalid")
+    check(unitrule_coherent(vt, ur),
+          f"[G2] DC concept {cid}: unitRule {ur!r} incoherent with valueType {vt!r}")
+    check(("fixedUnit" in res) == (ur == "fixed"),
+          f"[G2] DC concept {cid}: fixedUnit must be present iff unitRule=='fixed' (unitRule={ur!r})")
+    if "inheritsFrom" in res:
+        check(res["inheritsFrom"] in _known_targets,
+              f"[G2] DC concept {cid}: inheritsFrom {res['inheritsFrom']!r} not a known dimension/concept")
+    if "inputUnitRelation" in res:
+        check(res["inputUnitRelation"] in {"uniform", "heterogeneous"},
+              f"[G2] DC concept {cid}: inputUnitRelation {res['inputUnitRelation']!r} invalid")
+
+# (2) cross-layer: uniform-output transformations bind unit-bearing inputs to one concept
+if TLIB_PATH.exists():
+    for t in tlib.get("transformations", []):
+        tid = t["conceptId"]
+        out_concepts = {m.get("concept") for m in t.get("outputDataStructure", {}).get("measures", [])}
+        if not any(_dc_results.get(oc, {}).get("inputUnitRelation") == "uniform" for oc in out_concepts):
+            continue
+        in_concepts = {m.get("concept") for m in t.get("inputDataStructure", {}).get("measures", [])
+                       if m.get("requiredValueType") in _unitbearing}
+        check(len(in_concepts) <= 1,
+              f"[G2] {tid}: output requires uniform input units but unit-bearing inputs "
+              f"bind to different concepts {sorted(in_concepts)}")
 
 def main():
     if failures:

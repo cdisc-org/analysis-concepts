@@ -369,8 +369,8 @@ def build_dc(data):
                 props.append(f"math: {conspec['math']}")
             if vt:
                 props.append(f"valueType: {vt}")
-            if res.get("unit"):
-                props.append(f"unit: {res['unit']}")
+            if res.get("unitRule"):
+                props.append(f"unitRule: {res['unitRule']}")
             d.add(Node(coid, con, DC_FILL_CONCEPT, props=props, parent=cid))
             d.edge(cid, coid, "")
 
@@ -410,10 +410,10 @@ def build_ac(data):
             return sid
         spec = stats.get(name, {})
         props = []
-        if spec.get("fhirValueType"):
-            props.append(f"fhir: {spec['fhirValueType']}")
-        if spec.get("unit"):
-            props.append(f"unit: {spec['unit']}")
+        if spec.get("valueType"):
+            props.append(f"valueType: {spec['valueType']}")
+        if spec.get("unitRule"):
+            props.append(f"unitRule: {spec['unitRule']}")
         if spec.get("term"):
             props.append(f"term: {spec['term']}")
         d.add(Node(sid, name, AC_FILL_STAT, props=props))   # parent set on first link

@@ -411,7 +411,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "dimensionless",
           "dataType": "decimal"
         }
       ],
@@ -466,7 +465,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "dimensionless",
           "dataType": "integer"
         }
       ],
@@ -629,7 +627,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "dimensionless",
           "dataType": "integer"
         }
       ],
@@ -677,7 +674,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "dimensionless",
           "dataType": "decimal"
         }
       ],
@@ -800,7 +796,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "dimensionless",
           "dataType": "decimal"
         }
       ],
@@ -848,7 +843,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "dimensionless",
           "dataType": "decimal"
         }
       ],
@@ -903,7 +897,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -958,7 +951,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -1013,7 +1005,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -1159,7 +1150,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "dimensionless",
           "dataType": "decimal"
         }
       ],
@@ -1771,7 +1761,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -1826,7 +1815,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -1881,7 +1869,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -1936,7 +1923,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -1991,7 +1977,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -2205,7 +2190,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -2281,7 +2265,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "dimensionless",
           "dataType": "decimal"
         }
       ],
@@ -2336,7 +2319,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -2391,7 +2373,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -2446,7 +2427,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "dimensionless",
           "dataType": "decimal"
         }
       ],
@@ -2501,7 +2481,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -2549,7 +2528,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -2605,7 +2583,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -2746,7 +2723,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "computed",
           "dataType": "decimal"
         }
       ],
@@ -2802,7 +2778,6 @@
           "indexed_by": [
             "group"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -2854,7 +2829,6 @@
         {
           "output_type": "computed_value",
           "name": "result",
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -2920,7 +2894,6 @@
           "indexed_by": [
             "partition"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -3027,7 +3000,6 @@
         {
           "output_type": "computed_value",
           "name": "result",
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -3086,7 +3058,6 @@
         {
           "output_type": "computed_value",
           "name": "result",
-          "unit_policy": "computed",
           "dataType": "decimal"
         }
       ],
@@ -3131,7 +3102,6 @@
         {
           "output_type": "computed_value",
           "name": "result",
-          "unit_policy": "computed",
           "dataType": "decimal"
         }
       ],
@@ -3176,7 +3146,6 @@
         {
           "output_type": "computed_value",
           "name": "result",
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -3225,7 +3194,6 @@
           "indexed_by": [
             "partition"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -3282,7 +3250,6 @@
             "partition",
             "time_order"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -3331,7 +3298,6 @@
           "indexed_by": [
             "group_partition"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -3380,7 +3346,6 @@
           "indexed_by": [
             "group_partition"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -3451,7 +3416,6 @@
           "indexed_by": [
             "partition"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -3490,7 +3454,6 @@
         {
           "output_type": "computed_value",
           "name": "imputed_value",
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -3535,7 +3498,6 @@
         {
           "output_type": "computed_value",
           "name": "result",
-          "unit_policy": "dimensionless",
           "dataType": "decimal"
         }
       ],
@@ -3700,7 +3662,6 @@
         {
           "output_type": "computed_value",
           "name": "result",
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -3745,7 +3706,6 @@
         {
           "output_type": "computed_value",
           "name": "result",
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],
@@ -3817,7 +3777,6 @@
         {
           "output_type": "computed_value",
           "name": "result",
-          "unit_policy": "preserved",
           "dataType": "code"
         }
       ],
@@ -3894,7 +3853,6 @@
         {
           "name": "result",
           "output_type": "computed_value",
-          "unit_policy": "configured",
           "dataType": "decimal"
         }
       ],
@@ -3967,7 +3925,6 @@
           "indexed_by": [
             "partition"
           ],
-          "unit_policy": "preserved",
           "dataType": "decimal"
         }
       ],

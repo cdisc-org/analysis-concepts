@@ -116,7 +116,7 @@
               "string",
               "CodeableConcept"
             ],
-            "unit": "inherited or specified"
+            "unitRule": "inherited"
           },
           "code": {
             "system": "NCI",
@@ -140,7 +140,8 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "inherited"
+            "unitRule": "inherited",
+            "inputUnitRelation": "uniform"
           },
           "code": {
             "system": "NCI",
@@ -159,7 +160,9 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "fixed: %"
+            "unitRule": "fixed",
+            "fixedUnit": "%",
+            "inputUnitRelation": "uniform"
           },
           "code": {
             "system": "NCI",
@@ -176,7 +179,8 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "dimensionless"
+            "unitRule": "unitless",
+            "inputUnitRelation": "uniform"
           },
           "code": {
             "system": "NCI",
@@ -193,7 +197,8 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "dimensionless"
+            "unitRule": "unitless",
+            "inputUnitRelation": "uniform"
           },
           "code": {
             "system": "NCI",
@@ -210,7 +215,8 @@
           ],
           "result": {
             "valueType": "CodeableConcept",
-            "unit": "none"
+            "unitRule": "none",
+            "inputUnitRelation": "uniform"
           },
           "code": {
             "system": "NCI",
@@ -234,7 +240,7 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "inherited"
+            "unitRule": "inherited"
           },
           "code": {
             "system": "NCI",
@@ -252,7 +258,7 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "inherited"
+            "unitRule": "inherited"
           },
           "code": {
             "system": "NCI",
@@ -268,7 +274,8 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "time unit"
+            "unitRule": "inherited",
+            "inheritsFrom": "Timing"
           },
           "code": {
             "system": "NCI",
@@ -284,7 +291,8 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "time unit"
+            "unitRule": "inherited",
+            "inheritsFrom": "Timing"
           },
           "code": {
             "system": "NCI",
@@ -304,7 +312,8 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "source_unit \u00d7 time_unit"
+            "unitRule": "derived",
+            "inputUnitRelation": "heterogeneous"
           },
           "code": {
             "system": "NCI",
@@ -321,7 +330,7 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "inherited"
+            "unitRule": "inherited"
           },
           "code": {
             "system": "NCI",
@@ -339,7 +348,8 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "source_unit / time_unit"
+            "unitRule": "derived",
+            "inputUnitRelation": "heterogeneous"
           },
           "code": {
             "system": "NCI",
@@ -356,7 +366,8 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "time unit"
+            "unitRule": "inherited",
+            "inheritsFrom": "Timing"
           },
           "code": {
             "system": "NCI",
@@ -373,7 +384,7 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "inherited"
+            "unitRule": "inherited"
           },
           "code": {
             "system": "NCI",
@@ -390,7 +401,7 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "inherited"
+            "unitRule": "inherited"
           },
           "code": {
             "system": "NCI",
@@ -408,7 +419,8 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "time unit"
+            "unitRule": "inherited",
+            "inheritsFrom": "Timing"
           },
           "code": {
             "system": "NCI",
@@ -425,7 +437,8 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "time unit"
+            "unitRule": "inherited",
+            "inheritsFrom": "Timing"
           },
           "code": {
             "system": "NCI",
@@ -442,7 +455,7 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "inherited"
+            "unitRule": "inherited"
           },
           "code": {
             "system": "NCI",
@@ -468,7 +481,7 @@
           ],
           "result": {
             "valueType": "Count",
-            "unit": "none"
+            "unitRule": "none"
           },
           "code": {
             "system": "NCI",
@@ -487,7 +500,8 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "events / time_unit"
+            "unitRule": "derived",
+            "inputUnitRelation": "heterogeneous"
           },
           "code": {
             "system": "NCI",
@@ -507,7 +521,8 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "time unit"
+            "unitRule": "inherited",
+            "inheritsFrom": "Timing"
           },
           "code": {
             "system": "NCI",
@@ -524,7 +539,8 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "time unit"
+            "unitRule": "inherited",
+            "inheritsFrom": "Timing"
           },
           "code": {
             "system": "NCI",
@@ -548,7 +564,7 @@
           ],
           "result": {
             "valueType": ["CodeableConcept", "boolean"],
-            "unit": "none"
+            "unitRule": "none"
           },
           "code": {
             "system": "NCI",
@@ -566,7 +582,7 @@
           ],
           "result": {
             "valueType": "CodeableConcept",
-            "unit": "none"
+            "unitRule": "none"
           },
           "code": {
             "system": "NCI",
@@ -584,7 +600,7 @@
           ],
           "result": {
             "valueType": "CodeableConcept",
-            "unit": "none"
+            "unitRule": "none"
           },
           "code": {
             "system": "NCI",
@@ -601,7 +617,7 @@
           ],
           "result": {
             "valueType": "Quantity",
-            "unit": "none"
+            "unitRule": "unitless"
           },
           "code": {
             "system": "NCI",
@@ -618,7 +634,7 @@
           ],
           "result": {
             "valueType": "CodeableConcept",
-            "unit": "none"
+            "unitRule": "none"
           },
           "code": {
             "system": "NCI",

@@ -46,7 +46,6 @@
       "indexed_by": [
         "group"
       ],
-      "unit_policy": "preserved",
       "dataType": "decimal"
     }
   ]

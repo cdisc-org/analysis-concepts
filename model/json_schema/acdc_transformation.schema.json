@@ -855,10 +855,6 @@
                         "array",
                         "null"
                     ]
-                },
-                "unit_policy": {
-                    "$ref": "#/$defs/UnitPolicy",
-                    "description": "\u00a73.6.1 \u2014 per-output unit-handling policy for derivation outputs."
                 }
             },
             "required": [
@@ -1317,20 +1313,6 @@
                 "analysis"
             ],
             "title": "TransformationType",
-            "type": "string"
-        },
-        "UnitPolicy": {
-            "description": "How a derivation method handles units on its output. Per \u00a73.6.1, this is a per-output property (lives on MethodOutput, not Method).",
-            "enum": [
-                "preserved",
-                "inherited",
-                "dimensionless",
-                "fixed",
-                "derived",
-                "computed",
-                "configured"
-            ],
-            "title": "UnitPolicy",
             "type": "string"
         }
     },

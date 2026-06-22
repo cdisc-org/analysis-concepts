@@ -109,26 +109,6 @@ enums:
       multiple:
         description: One or more bindings required (includes the n=1 case).
 
-  UnitPolicy:
-    description: >-
-      How a derivation method handles units on its output. Per §3.6.1, this is
-      a per-output property (lives on MethodOutput, not Method).
-    permissible_values:
-      preserved:
-        description: Output carries the source value's unit unchanged.
-      inherited:
-        description: Output inherits unit from the primary input.
-      dimensionless:
-        description: Output is unitless (e.g. ratios, fractions).
-      fixed:
-        description: Output has a fixed unit specified per-method (e.g. "%").
-      derived:
-        description: Output unit is computed from input units (e.g. source_unit × time_unit).
-      computed:
-        description: Output unit is computed (synonym for `derived` used by some existing files; reconcile during vocabulary cleanup).
-      configured:
-        description: Output unit is whatever the transformation supplies via configuration (e.g. M.UnitConversion's target_unit). Reconcile during vocabulary cleanup.
-
   # FHIRValueType enum removed 2026-05-28: methods no longer carry FHIR complex
   # datatypes (Quantity, CodeableConcept, ...) — the FHIR datatype flows from
   # the bound concept at transformation time via concept.result.valueType.
@@ -332,9 +312,6 @@ classes:
           use a multi-statistic template name (e.g. `"ls_means"`,
           `"type3_tests_f"`).
         range: string
-      unit_policy:
-        description: §3.6.1 — per-output unit-handling policy for derivation outputs.
-        range: UnitPolicy
       indexed_by:
         description: >-
           For multi-row outputs (e.g. one row per factor level), the input

@@ -208,7 +208,7 @@ Three artefacts collaborate:
   "inputs":  [{ "name": "minuend", "dataType": "decimal", "cardinality": "single" },
               { "name": "subtrahend", "dataType": "decimal", "cardinality": "single" }],
   "outputs": [{ "name": "result", "output_type": "computed_value",
-                "dataType": "decimal", "unit_policy": "preserved" }]
+                "dataType": "decimal" }]
 }
 ```
 

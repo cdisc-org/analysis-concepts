@@ -40,7 +40,6 @@
       "indexed_by": [
         "partition"
       ],
-      "unit_policy": "preserved",
       "dataType": "decimal"
     }
   ]

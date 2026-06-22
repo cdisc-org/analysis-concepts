@@ -26,8 +26,8 @@
         "label": "Point estimate",
         "shortLabel": "est",
         "term": "estimate",
-        "fhirValueType": "Quantity",
-        "unit": "inherited",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
         "code": {
           "system": "NCI",
           "value": null
@@ -37,8 +37,8 @@
         "label": "Standard error",
         "shortLabel": "SE",
         "term": "SE",
-        "fhirValueType": "Quantity",
-        "unit": "inherited",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
         "code": {
           "system": "NCI",
           "value": null
@@ -47,8 +47,8 @@
       "ConfidenceInterval": {
         "label": "Confidence interval",
         "shortLabel": "CI",
-        "fhirValueType": "Range",
-        "unit": "inherited",
+        "valueType": "Range",
+        "unitRule": "inherited",
         "leaves": [
           { "fhirPath": "low.value",  "term": "CI_lower" },
           { "fhirPath": "high.value", "term": "CI_upper" }
@@ -62,8 +62,8 @@
         "label": "Degrees of freedom",
         "shortLabel": "DF",
         "term": "df",
-        "fhirValueType": "decimal",
-        "unit": "dimensionless",
+        "valueType": "decimal",
+        "unitRule": "unitless",
         "code": {
           "system": "NCI",
           "value": null
@@ -73,8 +73,8 @@
         "label": "P-value",
         "shortLabel": "p",
         "term": "p_value",
-        "fhirValueType": "decimal",
-        "unit": "dimensionless",
+        "valueType": "decimal",
+        "unitRule": "unitless",
         "code": {
           "system": "NCI",
           "value": null
@@ -84,8 +84,8 @@
         "label": "t statistic",
         "shortLabel": "t",
         "term": "t_statistic",
-        "fhirValueType": "decimal",
-        "unit": "dimensionless",
+        "valueType": "decimal",
+        "unitRule": "unitless",
         "code": {
           "system": "NCI",
           "value": null
@@ -95,8 +95,8 @@
         "label": "F statistic",
         "shortLabel": "F",
         "term": "F_statistic",
-        "fhirValueType": "decimal",
-        "unit": "dimensionless",
+        "valueType": "decimal",
+        "unitRule": "unitless",
         "code": {
           "system": "NCI",
           "value": null
@@ -106,8 +106,8 @@
         "label": "Chi-squared statistic",
         "shortLabel": "χ²",
         "term": "chi_squared",
-        "fhirValueType": "decimal",
-        "unit": "dimensionless",
+        "valueType": "decimal",
+        "unitRule": "unitless",
         "code": {
           "system": "NCI",
           "value": null
@@ -117,8 +117,8 @@
         "label": "Model coefficient",
         "shortLabel": "coef",
         "term": "coefficient",
-        "fhirValueType": "Quantity",
-        "unit": "inherited or dimensionless",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
         "code": {
           "system": "NCI",
           "value": null
@@ -128,8 +128,8 @@
         "label": "Hazard ratio",
         "shortLabel": "HR",
         "term": "hazard_ratio",
-        "fhirValueType": "decimal",
-        "unit": "dimensionless",
+        "valueType": "decimal",
+        "unitRule": "unitless",
         "code": {
           "system": "NCI",
           "value": null
@@ -139,8 +139,8 @@
         "label": "Odds ratio",
         "shortLabel": "OR",
         "term": "odds_ratio",
-        "fhirValueType": "decimal",
-        "unit": "dimensionless",
+        "valueType": "decimal",
+        "unitRule": "unitless",
         "code": {
           "system": "NCI",
           "value": null
@@ -150,8 +150,8 @@
         "label": "Survival probability",
         "shortLabel": "S(t)",
         "term": "survival_prob",
-        "fhirValueType": "decimal",
-        "unit": "dimensionless",
+        "valueType": "decimal",
+        "unitRule": "unitless",
         "code": {
           "system": "NCI",
           "value": null
@@ -160,8 +160,8 @@
       "Median": {
         "label": "Median",
         "term": "median",
-        "fhirValueType": "Quantity",
-        "unit": "inherited",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
         "code": {
           "system": "NCI",
           "value": null
@@ -170,8 +170,8 @@
       "Mean": {
         "label": "Mean",
         "term": "mean",
-        "fhirValueType": "Quantity",
-        "unit": "inherited",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
         "code": {
           "system": "NCI",
           "value": null
@@ -181,8 +181,8 @@
         "label": "Number at risk",
         "shortLabel": "n at risk",
         "term": "n_risk",
-        "fhirValueType": "Count",
-        "unit": "none",
+        "valueType": "Count",
+        "unitRule": "none",
         "code": {
           "system": "NCI",
           "value": null
@@ -192,8 +192,8 @@
         "label": "Number of events",
         "shortLabel": "n events",
         "term": "n_event",
-        "fhirValueType": "Count",
-        "unit": "none",
+        "valueType": "Count",
+        "unitRule": "none",
         "code": {
           "system": "NCI",
           "value": null
@@ -203,8 +203,8 @@
         "label": "Number censored",
         "shortLabel": "n cens",
         "term": "n_censored",
-        "fhirValueType": "Count",
-        "unit": "none",
+        "valueType": "Count",
+        "unitRule": "none",
         "code": {
           "system": "NCI",
           "value": null
@@ -214,8 +214,8 @@
         "label": "Akaike Information Criterion",
         "shortLabel": "AIC",
         "term": "AIC",
-        "fhirValueType": "decimal",
-        "unit": "dimensionless",
+        "valueType": "decimal",
+        "unitRule": "unitless",
         "code": {
           "system": "NCI",
           "value": null
@@ -225,8 +225,8 @@
         "label": "Bayesian Information Criterion",
         "shortLabel": "BIC",
         "term": "BIC",
-        "fhirValueType": "decimal",
-        "unit": "dimensionless",
+        "valueType": "decimal",
+        "unitRule": "unitless",
         "code": {
           "system": "NCI",
           "value": null
@@ -236,8 +236,8 @@
         "label": "−2 log likelihood",
         "shortLabel": "−2LL",
         "term": "minus2LogL",
-        "fhirValueType": "decimal",
-        "unit": "dimensionless",
+        "valueType": "decimal",
+        "unitRule": "unitless",
         "code": {
           "system": "NCI",
           "value": null
@@ -247,8 +247,8 @@
         "label": "Numerator degrees of freedom",
         "shortLabel": "DF (num)",
         "term": "df_num",
-        "fhirValueType": "decimal",
-        "unit": "dimensionless",
+        "valueType": "decimal",
+        "unitRule": "unitless",
         "code": {
           "system": "NCI",
           "value": null
@@ -258,8 +258,8 @@
         "label": "Denominator degrees of freedom",
         "shortLabel": "DF (den)",
         "term": "df_den",
-        "fhirValueType": "decimal",
-        "unit": "dimensionless",
+        "valueType": "decimal",
+        "unitRule": "unitless",
         "code": {
           "system": "NCI",
           "value": null
@@ -268,8 +268,8 @@
       "Value": {
         "label": "Value",
         "term": "value",
-        "fhirValueType": "Quantity",
-        "unit": "inherited or specified",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
         "code": {
           "system": "NCI",
           "value": null

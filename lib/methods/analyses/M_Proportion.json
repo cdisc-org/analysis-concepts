@@ -67,7 +67,6 @@
       "indexed_by": [
         "group"
       ],
-      "unit_policy": "dimensionless",
       "dataType": "decimal"
     }
   ]

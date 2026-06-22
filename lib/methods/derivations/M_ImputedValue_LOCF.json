@@ -48,7 +48,6 @@
         "partition",
         "time_order"
       ],
-      "unit_policy": "preserved",
       "dataType": "decimal"
     }
   ]

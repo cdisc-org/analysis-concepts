@@ -672,7 +672,7 @@
         <mxCell id="DC:concept/PeakValue" parent="kIfXFKZTCG0ZOep8SdF2-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;PeakValue&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1043" y="613" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/PeakValue__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;PeakValue&lt;/b&gt;&#xa;math: sup{yᵢ}&#xa;valueType: Quantity&#xa;unit: inherited" vertex="1">
+        <mxCell id="DC:concept/PeakValue__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;PeakValue&lt;/b&gt;&#xa;math: sup{yᵢ}&#xa;valueType: Quantity&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" x="1243" y="546" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/PeakValue__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-2" source="DC:concept/PeakValue" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/PeakValue__props">
@@ -681,7 +681,7 @@
         <mxCell id="DC:concept/TroughValue" parent="kIfXFKZTCG0ZOep8SdF2-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;TroughValue&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="249" y="790" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/TroughValue__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;TroughValue&lt;/b&gt;&#xa;math: inf{yᵢ}&#xa;valueType: Quantity&#xa;unit: inherited" vertex="1">
+        <mxCell id="DC:concept/TroughValue__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;TroughValue&lt;/b&gt;&#xa;math: inf{yᵢ}&#xa;valueType: Quantity&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" x="57" y="794" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/TroughValue__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-2" source="DC:concept/TroughValue" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/TroughValue__props">
@@ -690,7 +690,7 @@
         <mxCell id="DC:concept/TimeToPeak" parent="kIfXFKZTCG0ZOep8SdF2-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;TimeToPeak&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="665" y="313" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/TimeToPeak__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;TimeToPeak&lt;/b&gt;&#xa;math: argmax_t{yᵢ}&#xa;valueType: Quantity&#xa;unit: time unit" vertex="1">
+        <mxCell id="DC:concept/TimeToPeak__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;TimeToPeak&lt;/b&gt;&#xa;math: argmax_t{yᵢ}&#xa;valueType: Quantity&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" x="680" y="92" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/TimeToPeak__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-2" source="DC:concept/TimeToPeak" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/TimeToPeak__props">
@@ -699,7 +699,7 @@
         <mxCell id="DC:concept/TimeToTrough" parent="kIfXFKZTCG0ZOep8SdF2-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;TimeToTrough&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1065" y="767" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/TimeToTrough__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;TimeToTrough&lt;/b&gt;&#xa;math: argmin_t{yᵢ}&#xa;valueType: Quantity&#xa;unit: time unit" vertex="1">
+        <mxCell id="DC:concept/TimeToTrough__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;TimeToTrough&lt;/b&gt;&#xa;math: argmin_t{yᵢ}&#xa;valueType: Quantity&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" x="1270" y="769" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/TimeToTrough__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-2" source="DC:concept/TimeToTrough" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/TimeToTrough__props">
@@ -708,7 +708,7 @@
         <mxCell id="DC:concept/AreaUnderCurve" parent="kIfXFKZTCG0ZOep8SdF2-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;AreaUnderCurve&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="277" y="396" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/AreaUnderCurve__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;AreaUnderCurve&lt;/b&gt;&#xa;math: ∫y dt&#xa;valueType: Quantity&#xa;unit: source_unit × time_unit" vertex="1">
+        <mxCell id="DC:concept/AreaUnderCurve__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;AreaUnderCurve&lt;/b&gt;&#xa;math: ∫y dt&#xa;valueType: Quantity&#xa;unitRule: derived" vertex="1">
           <mxGeometry height="49" width="165" x="115" y="227" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/AreaUnderCurve__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-2" source="DC:concept/AreaUnderCurve" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/AreaUnderCurve__props">
@@ -717,7 +717,7 @@
         <mxCell id="DC:concept/CumulativeTotal" parent="kIfXFKZTCG0ZOep8SdF2-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;CumulativeTotal&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="883" y="397" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/CumulativeTotal__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;CumulativeTotal&lt;/b&gt;&#xa;math: Σyᵢ for i ≤ k&#xa;valueType: Quantity&#xa;unit: inherited" vertex="1">
+        <mxCell id="DC:concept/CumulativeTotal__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;CumulativeTotal&lt;/b&gt;&#xa;math: Σyᵢ for i ≤ k&#xa;valueType: Quantity&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" x="1013" y="226" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/CumulativeTotal__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-2" source="DC:concept/CumulativeTotal" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/CumulativeTotal__props">
@@ -726,7 +726,7 @@
         <mxCell id="DC:concept/RateOfChange" parent="kIfXFKZTCG0ZOep8SdF2-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;RateOfChange&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="704" y="1020" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/RateOfChange__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;RateOfChange&lt;/b&gt;&#xa;math: Δy/Δt&#xa;valueType: Quantity&#xa;unit: source_unit / time_unit" vertex="1">
+        <mxCell id="DC:concept/RateOfChange__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;RateOfChange&lt;/b&gt;&#xa;math: Δy/Δt&#xa;valueType: Quantity&#xa;unitRule: derived" vertex="1">
           <mxGeometry height="49" width="165" x="777" y="1176" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/RateOfChange__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-2" source="DC:concept/RateOfChange" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/RateOfChange__props">
@@ -735,7 +735,7 @@
         <mxCell id="DC:concept/HalfLife" parent="kIfXFKZTCG0ZOep8SdF2-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;HalfLife&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="534" y="230" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/HalfLife__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;HalfLife&lt;/b&gt;&#xa;math: ln(2) / λ&#xa;valueType: Quantity&#xa;unit: time unit" vertex="1">
+        <mxCell id="DC:concept/HalfLife__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;HalfLife&lt;/b&gt;&#xa;math: ln(2) / λ&#xa;valueType: Quantity&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" x="494" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/HalfLife__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-2" source="DC:concept/HalfLife" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/HalfLife__props">
@@ -744,7 +744,7 @@
         <mxCell id="DC:concept/LastValue" parent="kIfXFKZTCG0ZOep8SdF2-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;LastValue&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1021" y="462" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/LastValue__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;LastValue&lt;/b&gt;&#xa;math: yₙ&#xa;valueType: Quantity&#xa;unit: inherited" vertex="1">
+        <mxCell id="DC:concept/LastValue__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;LastValue&lt;/b&gt;&#xa;math: yₙ&#xa;valueType: Quantity&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" x="1195" y="328" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/LastValue__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-2" source="DC:concept/LastValue" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/LastValue__props">
@@ -753,7 +753,7 @@
         <mxCell id="DC:concept/FirstValue" parent="kIfXFKZTCG0ZOep8SdF2-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;FirstValue&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="196" y="548" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/FirstValue__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;FirstValue&lt;/b&gt;&#xa;math: y₁&#xa;valueType: Quantity&#xa;unit: inherited" vertex="1">
+        <mxCell id="DC:concept/FirstValue__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;FirstValue&lt;/b&gt;&#xa;math: y₁&#xa;valueType: Quantity&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" y="447" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/FirstValue__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-2" source="DC:concept/FirstValue" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/FirstValue__props">
@@ -762,7 +762,7 @@
         <mxCell id="DC:concept/TimeInState" parent="kIfXFKZTCG0ZOep8SdF2-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;TimeInState&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="809" y="264" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/TimeInState__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;TimeInState&lt;/b&gt;&#xa;math: measure({t : y(t) &gt; θ})&#xa;valueType: Quantity&#xa;unit: time unit" vertex="1">
+        <mxCell id="DC:concept/TimeInState__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;TimeInState&lt;/b&gt;&#xa;math: measure({t : y(t) &gt; θ})&#xa;valueType: Quantity&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" x="890" y="46" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/TimeInState__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-2" source="DC:concept/TimeInState" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/TimeInState__props">
@@ -771,7 +771,7 @@
         <mxCell id="DC:concept/TimeToThreshold" parent="kIfXFKZTCG0ZOep8SdF2-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;TimeToThreshold&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="977" y="933" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/TimeToThreshold__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;TimeToThreshold&lt;/b&gt;&#xa;math: inf{t : y(t) = θ}&#xa;valueType: Quantity&#xa;unit: time unit" vertex="1">
+        <mxCell id="DC:concept/TimeToThreshold__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;TimeToThreshold&lt;/b&gt;&#xa;math: inf{t : y(t) = θ}&#xa;valueType: Quantity&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" x="1148" y="1013" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/TimeToThreshold__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-2" source="DC:concept/TimeToThreshold" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/TimeToThreshold__props">
@@ -780,7 +780,7 @@
         <mxCell id="DC:concept/Range" parent="kIfXFKZTCG0ZOep8SdF2-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;Range&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="403" y="311" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/Range__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;Range&lt;/b&gt;&#xa;math: sup{yᵢ} − inf{yᵢ}&#xa;valueType: Quantity&#xa;unit: inherited" vertex="1">
+        <mxCell id="DC:concept/Range__props" parent="kIfXFKZTCG0ZOep8SdF2-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;Range&lt;/b&gt;&#xa;math: sup{yᵢ} − inf{yᵢ}&#xa;valueType: Quantity&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" x="299" y="104" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/Range__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-2" source="DC:concept/Range" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/Range__props">
@@ -948,7 +948,7 @@
         <mxCell id="DC:concept/Change" parent="kIfXFKZTCG0ZOep8SdF2-4" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Change&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="306" y="651" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/Change__props" parent="kIfXFKZTCG0ZOep8SdF2-4" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Change&lt;/b&gt;&#xa;math: x − x_ref&#xa;valueType: Quantity&#xa;unit: inherited" vertex="1">
+        <mxCell id="DC:concept/Change__props" parent="kIfXFKZTCG0ZOep8SdF2-4" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Change&lt;/b&gt;&#xa;math: x − x_ref&#xa;valueType: Quantity&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" x="86" y="701" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/Change__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-4" source="DC:concept/Change" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/Change__props">
@@ -957,7 +957,7 @@
         <mxCell id="DC:concept/PercentChange" parent="kIfXFKZTCG0ZOep8SdF2-4" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;PercentChange&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="285" y="318" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/PercentChange__props" parent="kIfXFKZTCG0ZOep8SdF2-4" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;PercentChange&lt;/b&gt;&#xa;math: (x − x_ref) / x_ref&#xa;valueType: Quantity&#xa;unit: fixed: %" vertex="1">
+        <mxCell id="DC:concept/PercentChange__props" parent="kIfXFKZTCG0ZOep8SdF2-4" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;PercentChange&lt;/b&gt;&#xa;math: (x − x_ref) / x_ref&#xa;valueType: Quantity&#xa;unitRule: fixed" vertex="1">
           <mxGeometry height="49" width="165" x="61" y="226" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/PercentChange__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-4" source="DC:concept/PercentChange" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/PercentChange__props">
@@ -966,7 +966,7 @@
         <mxCell id="DC:concept/Ratio" parent="kIfXFKZTCG0ZOep8SdF2-4" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Ratio&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="593" y="168" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/Ratio__props" parent="kIfXFKZTCG0ZOep8SdF2-4" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Ratio&lt;/b&gt;&#xa;math: x / x_ref&#xa;valueType: Quantity&#xa;unit: dimensionless" vertex="1">
+        <mxCell id="DC:concept/Ratio__props" parent="kIfXFKZTCG0ZOep8SdF2-4" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Ratio&lt;/b&gt;&#xa;math: x / x_ref&#xa;valueType: Quantity&#xa;unitRule: unitless" vertex="1">
           <mxGeometry height="49" width="165" x="498" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/Ratio__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-4" source="DC:concept/Ratio" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/Ratio__props">
@@ -975,7 +975,7 @@
         <mxCell id="DC:concept/LogRatio" parent="kIfXFKZTCG0ZOep8SdF2-4" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;LogRatio&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="244" y="478" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/LogRatio__props" parent="kIfXFKZTCG0ZOep8SdF2-4" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;LogRatio&lt;/b&gt;&#xa;math: ln(x / x_ref)&#xa;valueType: Quantity&#xa;unit: dimensionless" vertex="1">
+        <mxCell id="DC:concept/LogRatio__props" parent="kIfXFKZTCG0ZOep8SdF2-4" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;LogRatio&lt;/b&gt;&#xa;math: ln(x / x_ref)&#xa;valueType: Quantity&#xa;unitRule: unitless" vertex="1">
           <mxGeometry height="49" width="165" y="456" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/LogRatio__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-4" source="DC:concept/LogRatio" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/LogRatio__props">
@@ -984,7 +984,7 @@
         <mxCell id="DC:concept/Shift" parent="kIfXFKZTCG0ZOep8SdF2-4" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Shift&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="403" y="200" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/Shift__props" parent="kIfXFKZTCG0ZOep8SdF2-4" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Shift&lt;/b&gt;&#xa;math: class(x) vs class(x_ref)&#xa;valueType: CodeableConcept&#xa;unit: none" vertex="1">
+        <mxCell id="DC:concept/Shift__props" parent="kIfXFKZTCG0ZOep8SdF2-4" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Shift&lt;/b&gt;&#xa;math: class(x) vs class(x_ref)&#xa;valueType: CodeableConcept&#xa;unitRule: none" vertex="1">
           <mxGeometry height="49" width="165" x="230" y="52" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/Shift__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-4" source="DC:concept/Shift" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/Shift__props">
@@ -1008,7 +1008,7 @@
         <mxCell id="DC:cat/PointComputation" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#C9C9FF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;PointComputation&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1203" y="1399" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/Measure__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Measure&lt;/b&gt;&#xa;math: f(x₁, …, xₙ)&#xa;valueType: Quantity, string, CodeableConcept&#xa;unit: inherited or specified" vertex="1">
+        <mxCell id="DC:concept/Measure__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Measure&lt;/b&gt;&#xa;math: f(x₁, …, xₙ)&#xa;valueType: Quantity, string, CodeableConcept&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" x="1080" y="1749" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/Measure__props_l" edge="1" parent="1" source="DC:concept/Measure" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/Measure__props">
@@ -1026,7 +1026,7 @@
         <mxCell id="DC:concept/EventCount" parent="kIfXFKZTCG0ZOep8SdF2-7" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;EventCount&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="451" y="490" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/EventCount__props" parent="kIfXFKZTCG0ZOep8SdF2-7" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;EventCount&lt;/b&gt;&#xa;math: |{events}|&#xa;valueType: Count&#xa;unit: none" vertex="1">
+        <mxCell id="DC:concept/EventCount__props" parent="kIfXFKZTCG0ZOep8SdF2-7" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;EventCount&lt;/b&gt;&#xa;math: |{events}|&#xa;valueType: Count&#xa;unitRule: none" vertex="1">
           <mxGeometry height="49" width="165" x="427" y="729" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/EventCount__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-7" source="DC:concept/EventCount" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/EventCount__props">
@@ -1035,7 +1035,7 @@
         <mxCell id="DC:concept/EventRate" parent="kIfXFKZTCG0ZOep8SdF2-7" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;EventRate&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="151" y="329" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/EventRate__props" parent="kIfXFKZTCG0ZOep8SdF2-7" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;EventRate&lt;/b&gt;&#xa;math: |{events}| / T&#xa;valueType: Quantity&#xa;unit: events / time_unit" vertex="1">
+        <mxCell id="DC:concept/EventRate__props" parent="kIfXFKZTCG0ZOep8SdF2-7" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;EventRate&lt;/b&gt;&#xa;math: |{events}| / T&#xa;valueType: Quantity&#xa;unitRule: derived" vertex="1">
           <mxGeometry height="49" width="165" y="508" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/EventRate__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-7" source="DC:concept/EventRate" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/EventRate__props">
@@ -1044,7 +1044,7 @@
         <mxCell id="DC:concept/TimeToEvent" parent="kIfXFKZTCG0ZOep8SdF2-7" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;TimeToEvent&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="619" y="396" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/TimeToEvent__props" parent="kIfXFKZTCG0ZOep8SdF2-7" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;TimeToEvent&lt;/b&gt;&#xa;math: inf{tᵢ}&#xa;valueType: Quantity&#xa;unit: time unit" vertex="1">
+        <mxCell id="DC:concept/TimeToEvent__props" parent="kIfXFKZTCG0ZOep8SdF2-7" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;TimeToEvent&lt;/b&gt;&#xa;math: inf{tᵢ}&#xa;valueType: Quantity&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" x="664" y="602" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/TimeToEvent__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-7" source="DC:concept/TimeToEvent" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/TimeToEvent__props">
@@ -1053,7 +1053,7 @@
         <mxCell id="DC:concept/TimeBetweenEvents" parent="kIfXFKZTCG0ZOep8SdF2-7" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;TimeBetweenEvents&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="280" y="463" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/TimeBetweenEvents__props" parent="kIfXFKZTCG0ZOep8SdF2-7" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;TimeBetweenEvents&lt;/b&gt;&#xa;math: t_{i+1} − tᵢ&#xa;valueType: Quantity&#xa;unit: time unit" vertex="1">
+        <mxCell id="DC:concept/TimeBetweenEvents__props" parent="kIfXFKZTCG0ZOep8SdF2-7" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;TimeBetweenEvents&lt;/b&gt;&#xa;math: t_{i+1} − tᵢ&#xa;valueType: Quantity&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="49" width="165" x="183" y="691" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/TimeBetweenEvents__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-7" source="DC:concept/TimeBetweenEvents" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/TimeBetweenEvents__props">
@@ -1083,7 +1083,7 @@
         <mxCell id="DC:concept/Flag" parent="kIfXFKZTCG0ZOep8SdF2-8" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Flag&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="246" y="189" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/Flag__props" parent="kIfXFKZTCG0ZOep8SdF2-8" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Flag&lt;/b&gt;&#xa;math: I(criterion)&#xa;valueType: CodeableConcept, boolean&#xa;unit: none" vertex="1">
+        <mxCell id="DC:concept/Flag__props" parent="kIfXFKZTCG0ZOep8SdF2-8" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Flag&lt;/b&gt;&#xa;math: I(criterion)&#xa;valueType: CodeableConcept, boolean&#xa;unitRule: none" vertex="1">
           <mxGeometry height="49" width="165" y="245" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/Flag__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-8" source="DC:concept/Flag" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/Flag__props">
@@ -1092,7 +1092,7 @@
         <mxCell id="DC:concept/Category" parent="kIfXFKZTCG0ZOep8SdF2-8" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Category&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="300" y="15" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/Category__props" parent="kIfXFKZTCG0ZOep8SdF2-8" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Category&lt;/b&gt;&#xa;math: f(x) → {c₁, c₂, …}&#xa;valueType: CodeableConcept&#xa;unit: none" vertex="1">
+        <mxCell id="DC:concept/Category__props" parent="kIfXFKZTCG0ZOep8SdF2-8" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Category&lt;/b&gt;&#xa;math: f(x) → {c₁, c₂, …}&#xa;valueType: CodeableConcept&#xa;unitRule: none" vertex="1">
           <mxGeometry height="49" width="165" x="72" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/Category__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-8" source="DC:concept/Category" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/Category__props">
@@ -1101,7 +1101,7 @@
         <mxCell id="DC:concept/AnalysisVisit" parent="kIfXFKZTCG0ZOep8SdF2-8" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;AnalysisVisit&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="565" y="532" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/AnalysisVisit__props" parent="kIfXFKZTCG0ZOep8SdF2-8" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;AnalysisVisit&lt;/b&gt;&#xa;math: f(day) → {visit_label, visit_number}&#xa;valueType: CodeableConcept&#xa;unit: none" vertex="1">
+        <mxCell id="DC:concept/AnalysisVisit__props" parent="kIfXFKZTCG0ZOep8SdF2-8" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;AnalysisVisit&lt;/b&gt;&#xa;math: f(day) → {visit_label, visit_number}&#xa;valueType: CodeableConcept&#xa;unitRule: none" vertex="1">
           <mxGeometry height="49" width="165" x="452" y="737" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/AnalysisVisit__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-8" source="DC:concept/AnalysisVisit" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/AnalysisVisit__props">
@@ -1110,7 +1110,7 @@
         <mxCell id="DC:concept/Rank" parent="kIfXFKZTCG0ZOep8SdF2-8" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Rank&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="395" y="474" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/Rank__props" parent="kIfXFKZTCG0ZOep8SdF2-8" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Rank&lt;/b&gt;&#xa;math: rank(x) within group&#xa;valueType: Quantity&#xa;unit: none" vertex="1">
+        <mxCell id="DC:concept/Rank__props" parent="kIfXFKZTCG0ZOep8SdF2-8" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Rank&lt;/b&gt;&#xa;math: rank(x) within group&#xa;valueType: Quantity&#xa;unitRule: none" vertex="1">
           <mxGeometry height="49" width="165" x="214" y="653" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/Rank__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-8" source="DC:concept/Rank" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/Rank__props">
@@ -1119,7 +1119,7 @@
         <mxCell id="DC:concept/QuantileGroup" parent="kIfXFKZTCG0ZOep8SdF2-8" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;QuantileGroup&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="290" y="348" as="geometry" />
         </mxCell>
-        <mxCell id="DC:concept/QuantileGroup__props" parent="kIfXFKZTCG0ZOep8SdF2-8" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;QuantileGroup&lt;/b&gt;&#xa;math: Qₖ where F(x) in bin k&#xa;valueType: CodeableConcept&#xa;unit: none" vertex="1">
+        <mxCell id="DC:concept/QuantileGroup__props" parent="kIfXFKZTCG0ZOep8SdF2-8" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;QuantileGroup&lt;/b&gt;&#xa;math: Qₖ where F(x) in bin k&#xa;valueType: CodeableConcept&#xa;unitRule: none" vertex="1">
           <mxGeometry height="49" width="165" x="64" y="472" as="geometry" />
         </mxCell>
         <mxCell id="DC:concept/QuantileGroup__props_l" edge="1" parent="kIfXFKZTCG0ZOep8SdF2-8" source="DC:concept/QuantileGroup" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="DC:concept/QuantileGroup__props">
@@ -1244,7 +1244,7 @@
         <mxCell id="AC:stat/NRisk" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;NRisk&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1349" y="434" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/NRisk__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;NRisk&lt;/b&gt;&#xa;fhir: Count&#xa;unit: none&#xa;term: n_risk" vertex="1">
+        <mxCell id="AC:stat/NRisk__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;NRisk&lt;/b&gt;&#xa;valueType: Count&#xa;unitRule: none&#xa;term: n_risk" vertex="1">
           <mxGeometry height="49" width="165" x="1406" y="249" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/NRisk__props_l" edge="1" parent="1" source="AC:stat/NRisk" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/NRisk__props">
@@ -1253,13 +1253,13 @@
         <mxCell id="AC:stat/NEvent" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;NEvent&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1504" y="438" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/NEvent__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;NEvent&lt;/b&gt;&#xa;fhir: Count&#xa;unit: none&#xa;term: n_event" vertex="1">
+        <mxCell id="AC:stat/NEvent__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;NEvent&lt;/b&gt;&#xa;valueType: Count&#xa;unitRule: none&#xa;term: n_event" vertex="1">
           <mxGeometry height="49" width="165" x="1562" y="313" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/NEvent__props_l" edge="1" parent="1" source="AC:stat/NEvent" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/NEvent__props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/NCensored__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;NCensored&lt;/b&gt;&#xa;fhir: Count&#xa;unit: none&#xa;term: n_censored" vertex="1">
+        <mxCell id="AC:stat/NCensored__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;NCensored&lt;/b&gt;&#xa;valueType: Count&#xa;unitRule: none&#xa;term: n_censored" vertex="1">
           <mxGeometry height="49" width="165" x="1784" y="341" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/NCensored__props_l" edge="1" parent="1" source="AC:stat/NCensored" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/NCensored__props">
@@ -1268,7 +1268,7 @@
         <mxCell id="AC:stat/SurvivalProb" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;SurvivalProb&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1680" y="617" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/SurvivalProb__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;SurvivalProb&lt;/b&gt;&#xa;fhir: decimal&#xa;unit: dimensionless&#xa;term: survival_prob" vertex="1">
+        <mxCell id="AC:stat/SurvivalProb__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;SurvivalProb&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: survival_prob" vertex="1">
           <mxGeometry height="49" width="165" x="1843" y="597" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/SurvivalProb__props_l" edge="1" parent="1" source="AC:stat/SurvivalProb" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/SurvivalProb__props">
@@ -1283,7 +1283,7 @@
         <mxCell id="AC:stat/Median" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Median&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="664" y="402" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/Median__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Median&lt;/b&gt;&#xa;fhir: Quantity&#xa;unit: inherited&#xa;term: median" vertex="1">
+        <mxCell id="AC:stat/Median__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Median&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: median" vertex="1">
           <mxGeometry height="49" width="165" x="507" y="515.5" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Median__props_l" edge="1" parent="1" source="AC:stat/Median" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Median__props">
@@ -1379,7 +1379,7 @@
         <mxCell id="AC:stat/Estimate" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Estimate&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="2251" y="1305" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/Estimate__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Estimate&lt;/b&gt;&#xa;fhir: Quantity&#xa;unit: inherited&#xa;term: estimate" vertex="1">
+        <mxCell id="AC:stat/Estimate__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Estimate&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: estimate" vertex="1">
           <mxGeometry height="49" width="165" x="2381" y="1412" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Estimate__props_l" edge="1" parent="1" source="AC:stat/Estimate" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Estimate__props">
@@ -1388,7 +1388,7 @@
         <mxCell id="AC:stat/SE" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;SE&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1921" y="823" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/SE__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;SE&lt;/b&gt;&#xa;fhir: Quantity&#xa;unit: inherited&#xa;term: SE" vertex="1">
+        <mxCell id="AC:stat/SE__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;SE&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: SE" vertex="1">
           <mxGeometry height="49" width="165" x="2074" y="743" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/SE__props_l" edge="1" parent="1" source="AC:stat/SE" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/SE__props">
@@ -1397,7 +1397,7 @@
         <mxCell id="AC:stat/ConfidenceInterval" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;ConfidenceInterval&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1667" y="809" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/ConfidenceInterval__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;ConfidenceInterval&lt;/b&gt;&#xa;fhir: Range&#xa;unit: inherited" vertex="1">
+        <mxCell id="AC:stat/ConfidenceInterval__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;ConfidenceInterval&lt;/b&gt;&#xa;valueType: Range&#xa;unitRule: inherited" vertex="1">
           <mxGeometry height="38" width="165" x="1416" y="771" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/ConfidenceInterval__props_l" edge="1" parent="1" source="AC:stat/ConfidenceInterval" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/ConfidenceInterval__props">
@@ -1406,7 +1406,7 @@
         <mxCell id="AC:stat/DF" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;DF&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1502" y="959" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/DF__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;DF&lt;/b&gt;&#xa;fhir: decimal&#xa;unit: dimensionless&#xa;term: df" vertex="1">
+        <mxCell id="AC:stat/DF__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;DF&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: df" vertex="1">
           <mxGeometry height="49" width="165" x="1302" y="1040" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/DF__props_l" edge="1" parent="1" source="AC:stat/DF" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/DF__props">
@@ -1415,7 +1415,7 @@
         <mxCell id="AC:stat/TStatistic" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;TStatistic&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1961" y="1625" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/TStatistic__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;TStatistic&lt;/b&gt;&#xa;fhir: decimal&#xa;unit: dimensionless&#xa;term: t_statistic" vertex="1">
+        <mxCell id="AC:stat/TStatistic__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;TStatistic&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: t_statistic" vertex="1">
           <mxGeometry height="49" width="165" x="2115" y="1857" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/TStatistic__props_l" edge="1" parent="1" source="AC:stat/TStatistic" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/TStatistic__props">
@@ -1424,7 +1424,7 @@
         <mxCell id="AC:stat/PValue" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;PValue&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1202" y="1415" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/PValue__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;PValue&lt;/b&gt;&#xa;fhir: decimal&#xa;unit: dimensionless&#xa;term: p_value" vertex="1">
+        <mxCell id="AC:stat/PValue__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;PValue&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: p_value" vertex="1">
           <mxGeometry height="49" width="165" x="1053" y="1340" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/PValue__props_l" edge="1" parent="1" source="AC:stat/PValue" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/PValue__props">
@@ -1451,7 +1451,7 @@
         <mxCell id="AC:stat/FStatistic" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;FStatistic&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="952" y="1825" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/FStatistic__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;FStatistic&lt;/b&gt;&#xa;fhir: decimal&#xa;unit: dimensionless&#xa;term: F_statistic" vertex="1">
+        <mxCell id="AC:stat/FStatistic__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;FStatistic&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: F_statistic" vertex="1">
           <mxGeometry height="49" width="165" x="734" y="1785" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/FStatistic__props_l" edge="1" parent="1" source="AC:stat/FStatistic" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/FStatistic__props">
@@ -1460,7 +1460,7 @@
         <mxCell id="AC:stat/DF_Num" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;DF_Num&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1039.5" y="2004" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/DF_Num__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;DF_Num&lt;/b&gt;&#xa;fhir: decimal&#xa;unit: dimensionless&#xa;term: df_num" vertex="1">
+        <mxCell id="AC:stat/DF_Num__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;DF_Num&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: df_num" vertex="1">
           <mxGeometry height="49" width="165" x="827" y="2062" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/DF_Num__props_l" edge="1" parent="1" source="AC:stat/DF_Num" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/DF_Num__props">
@@ -1469,7 +1469,7 @@
         <mxCell id="AC:stat/DF_Den" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;DF_Den&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="887" y="1932" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/DF_Den__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;DF_Den&lt;/b&gt;&#xa;fhir: decimal&#xa;unit: dimensionless&#xa;term: df_den" vertex="1">
+        <mxCell id="AC:stat/DF_Den__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;DF_Den&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: df_den" vertex="1">
           <mxGeometry height="49" width="165" x="672" y="1913" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/DF_Den__props_l" edge="1" parent="1" source="AC:stat/DF_Den" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/DF_Den__props">
@@ -1487,7 +1487,7 @@
         <mxCell id="AC:stat/Coefficient" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Coefficient&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="2257" y="1665" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/Coefficient__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Coefficient&lt;/b&gt;&#xa;fhir: Quantity&#xa;unit: inherited or dimensionless&#xa;term: coefficient" vertex="1">
+        <mxCell id="AC:stat/Coefficient__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Coefficient&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: coefficient" vertex="1">
           <mxGeometry height="49" width="165" x="2434" y="1825" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Coefficient__props_l" edge="1" parent="1" source="AC:stat/Coefficient" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Coefficient__props">
@@ -1499,7 +1499,7 @@
         <mxCell id="AC:stat/AIC" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;AIC&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1624" y="2164" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/AIC__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;AIC&lt;/b&gt;&#xa;fhir: decimal&#xa;unit: dimensionless&#xa;term: AIC" vertex="1">
+        <mxCell id="AC:stat/AIC__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;AIC&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: AIC" vertex="1">
           <mxGeometry height="49" width="165" x="1587" y="2289" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/AIC__props_l" edge="1" parent="1" source="AC:stat/AIC" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/AIC__props">
@@ -1508,7 +1508,7 @@
         <mxCell id="AC:stat/BIC" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;BIC&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1472" y="2182" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/BIC__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;BIC&lt;/b&gt;&#xa;fhir: decimal&#xa;unit: dimensionless&#xa;term: BIC" vertex="1">
+        <mxCell id="AC:stat/BIC__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;BIC&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: BIC" vertex="1">
           <mxGeometry height="49" width="165" x="1285" y="2260" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/BIC__props_l" edge="1" parent="1" source="AC:stat/BIC" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/BIC__props">
@@ -1517,7 +1517,7 @@
         <mxCell id="AC:stat/Minus2LogL" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Minus2LogL&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1326" y="2092" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/Minus2LogL__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Minus2LogL&lt;/b&gt;&#xa;fhir: decimal&#xa;unit: dimensionless&#xa;term: minus2LogL" vertex="1">
+        <mxCell id="AC:stat/Minus2LogL__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Minus2LogL&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: minus2LogL" vertex="1">
           <mxGeometry height="49" width="165" x="1130.5" y="2168" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Minus2LogL__props_l" edge="1" parent="1" source="AC:stat/Minus2LogL" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Minus2LogL__props">
@@ -1538,7 +1538,7 @@
         <mxCell id="AC:stat/ChiSquared" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;ChiSquared&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="906" y="809" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/ChiSquared__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;ChiSquared&lt;/b&gt;&#xa;fhir: decimal&#xa;unit: dimensionless&#xa;term: chi_squared" vertex="1">
+        <mxCell id="AC:stat/ChiSquared__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;ChiSquared&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: chi_squared" vertex="1">
           <mxGeometry height="49" width="165" x="716" y="858" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/ChiSquared__props_l" edge="1" parent="1" source="AC:stat/ChiSquared" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/ChiSquared__props">
@@ -1556,7 +1556,7 @@
         <mxCell id="AC:stat/HazardRatio" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;HazardRatio&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="937" y="944" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/HazardRatio__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;HazardRatio&lt;/b&gt;&#xa;fhir: decimal&#xa;unit: dimensionless&#xa;term: hazard_ratio" vertex="1">
+        <mxCell id="AC:stat/HazardRatio__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;HazardRatio&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: hazard_ratio" vertex="1">
           <mxGeometry height="49" width="165" x="737.5" y="925" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/HazardRatio__props_l" edge="1" parent="1" source="AC:stat/HazardRatio" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/HazardRatio__props">
@@ -1586,7 +1586,7 @@
         <mxCell id="AC:stat/OddsRatio" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;OddsRatio&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="2287" y="608" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/OddsRatio__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;OddsRatio&lt;/b&gt;&#xa;fhir: decimal&#xa;unit: dimensionless&#xa;term: odds_ratio" vertex="1">
+        <mxCell id="AC:stat/OddsRatio__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;OddsRatio&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: odds_ratio" vertex="1">
           <mxGeometry height="49" width="165" x="2480" y="582" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/OddsRatio__props_l" edge="1" parent="1" source="AC:stat/OddsRatio" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/OddsRatio__props">

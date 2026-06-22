@@ -4,7 +4,7 @@ title: ACDC Output Class Vocabulary Schema
 description: >-
   Governs the statistic terminology, the statistic sets, the output class
   templates (set composition), the thin AC statistical-concept shape (term +
-  fhirValueType), and the AC result-pattern shape. Companion to acdc_method.yaml.
+  valueType), and the AC result-pattern shape. Companion to acdc_method.yaml.
   See docs/superpowers/specs/2026-06-11-output-class-statistic-sets-design.md.
 version: 0.1.0
 prefixes:
@@ -69,13 +69,13 @@ classes:
         multivalued: true
         inlined_as_list: true
         range: ConceptLeaf
-      fhirValueType: { required: true, description: FHIR value type (primitive or complex). }
-      unit:
+      valueType: { required: true, description: FHIR value type (primitive or complex). }
+      unitRule:
         required: true
         description: >-
-          Symbolic unit policy (Option_B convention), not a concrete UCUM code:
-          inherited | dimensionless | none | "fixed: %" | "inherited or dimensionless"
-          | "inherited or specified". The concrete unit is bound at transformation time.
+          Symbolic unit rule (concept convention), not a concrete UCUM code:
+          inherited | derived | fixed | unitless | none. When unitRule is "fixed",
+          the literal unit is carried in fixedUnit. Concrete unit bound at transformation time.
       code: { inlined: true, description: The concept's own code (e.g. NCI). }
     rules:
       - description: exactly one of term / leaves is present.

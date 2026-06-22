@@ -44,7 +44,6 @@
     {
       "output_type": "computed_value",
       "name": "result",
-      "unit_policy": "preserved",
       "dataType": "decimal"
     }
   ]
