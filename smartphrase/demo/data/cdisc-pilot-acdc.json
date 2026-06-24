@@ -1,0 +1,191 @@
+{
+  "meta": {
+    "study": "CDISCPILOT01",
+    "title": "CDISC Pilot Study — Safety and Efficacy of Xanomeline in Alzheimer's Disease",
+    "description": "Hand-authored AC/DC model fragment backing the smartphrase resolve demo. Scoped to the primary efficacy analysis. Identifiers are grounded in USDM / ARS / AC/DC LinkML / STATO where those standards cover the entity; IRIs marked 'illustrative' are plausible placeholders pending the authoritative mapping.",
+    "source_library": "ACDC_Transformation_Library (role + smartphrase definitions reproduced from v0.6.0)"
+  },
+
+  "prefixes": {
+    "acdc":  "https://w3id.org/cdisc/ac-dc/",
+    "usdm":  "https://ddf.cdisc.org/usdm/v3/",
+    "ars":   "https://www.cdisc.org/standards/foundational/ars/1-0/",
+    "stato": "http://purl.obolibrary.org/obo/",
+    "ncit":  "http://purl.obolibrary.org/obo/NCIT_",
+    "qb":    "http://purl.org/linked-data/cube#"
+  },
+
+  "roleOrder": ["endpoint", "parameter", "timepoint", "population", "grouping", "method", "method_qualifier", "covariate"],
+
+  "smartPhrases": {
+    "SP_CFB_ENDPOINT": {
+      "role": "endpoint",
+      "name": "Change from baseline endpoint",
+      "phrase_template": "change from baseline in {parameter}",
+      "placeholders": [
+        { "name": "parameter", "kind": "concept_ref", "render_options": ["short", "long", "long_with_short"], "default_render": "long_with_short", "required": true }
+      ]
+    },
+    "SP_TIMEPOINT": {
+      "role": "timepoint",
+      "name": "Analysis timepoint",
+      "phrase_template": "at {visit}",
+      "placeholders": [
+        { "name": "visit", "kind": "concept_ref", "render_options": ["short", "long"], "default_render": "short", "required": true }
+      ]
+    },
+    "SP_POPULATION": {
+      "role": "population",
+      "name": "Analysis population",
+      "phrase_template": "in the {population} population",
+      "placeholders": [
+        { "name": "population", "kind": "concept_ref", "render_options": ["short", "long"], "default_render": "long", "required": true }
+      ]
+    },
+    "SP_GROUPING": {
+      "role": "grouping",
+      "name": "Treatment-group comparison",
+      "phrase_template": "comparing {treatment} groups",
+      "placeholders": [
+        { "name": "treatment", "kind": "concept_ref", "render_options": ["short", "long"], "default_render": "short", "required": true }
+      ]
+    },
+    "SP_METHOD_ANCOVA": {
+      "role": "method",
+      "name": "ANCOVA method",
+      "phrase_template": "using {method}",
+      "placeholders": [
+        { "name": "method", "kind": "concept_ref", "render_options": ["short", "long"], "default_render": "short", "required": true }
+      ]
+    },
+    "SP_CONFIDENCE_LEVEL": {
+      "role": "method_qualifier",
+      "name": "Confidence level",
+      "phrase_template": "with {conf_level}% confidence intervals",
+      "placeholders": [
+        { "name": "conf_level", "kind": "literal", "render_options": ["short"], "default_render": "short", "required": true }
+      ]
+    },
+    "SP_COVARIATE_BASELINE": {
+      "role": "covariate",
+      "name": "Baseline covariate adjustment",
+      "phrase_template": "adjusting for baseline {parameter}",
+      "placeholders": [
+        { "name": "parameter", "kind": "concept_ref", "render_options": ["short", "long"], "default_render": "short", "required": true }
+      ]
+    },
+    "SP_COVARIATE_SITE": {
+      "role": "covariate",
+      "name": "Site covariate adjustment",
+      "phrase_template": "adjusting for site",
+      "placeholders": []
+    }
+  },
+
+  "concepts": {
+    "PARAM.ADASCOG11": {
+      "kind": "Parameter",
+      "short": "ADAS-Cog(11)",
+      "long": "Alzheimer's Disease Assessment Scale - Cognitive Subscale (11 items)",
+      "iri": "ncit:C168804",
+      "iri_status": "illustrative",
+      "conceptClass": "SharedDimension"
+    },
+    "PARAM.CIBIC": {
+      "kind": "Parameter",
+      "short": "CIBIC+",
+      "long": "Clinician's Interview-Based Impression of Change (plus caregiver input)",
+      "iri": "ncit:C168805",
+      "iri_status": "illustrative",
+      "conceptClass": "SharedDimension"
+    },
+    "VISIT.WK24": {
+      "kind": "Timepoint",
+      "short": "Week 24",
+      "long": "Week 24 (end of double-blind treatment period)",
+      "iri": "usdm:ScheduledActivityInstance/SAI-WK24",
+      "iri_status": "illustrative"
+    },
+    "VISIT.WK8": {
+      "kind": "Timepoint",
+      "short": "Week 8",
+      "long": "Week 8",
+      "iri": "usdm:ScheduledActivityInstance/SAI-WK8",
+      "iri_status": "illustrative"
+    },
+    "POP.EFFICACY": {
+      "kind": "Population",
+      "short": "ITT",
+      "long": "efficacy (intent-to-treat)",
+      "iri": "usdm:AnalysisPopulation/POP-EFF",
+      "iri_status": "illustrative",
+      "usdm_type": "usdm:AnalysisPopulation"
+    },
+    "POP.SAFETY": {
+      "kind": "Population",
+      "short": "SAF",
+      "long": "safety",
+      "iri": "usdm:AnalysisPopulation/POP-SAF",
+      "iri_status": "illustrative",
+      "usdm_type": "usdm:AnalysisPopulation"
+    },
+    "POP.PP": {
+      "kind": "Population",
+      "short": "PP",
+      "long": "per-protocol",
+      "iri": "usdm:AnalysisPopulation/POP-PP",
+      "iri_status": "illustrative",
+      "usdm_type": "usdm:AnalysisPopulation"
+    },
+    "TRT.ALL": {
+      "kind": "Grouping",
+      "short": "treatment",
+      "long": "Placebo, Xanomeline Low Dose and Xanomeline High Dose",
+      "iri": "usdm:StudyArm/ARM-SET-ALL",
+      "iri_status": "illustrative"
+    },
+    "M.ANCOVA": {
+      "kind": "Method",
+      "short": "ANCOVA",
+      "long": "analysis of covariance",
+      "formula": "CHG ~ TRTP + BASE + SITEGR1",
+      "iri": "stato:STATO_0000176",
+      "iri_status": "illustrative",
+      "ars_type": "ars:AnalysisMethod",
+      "ars_id": "ars:method/MTH-ANCOVA-CFB"
+    },
+    "M.MMRM": {
+      "kind": "Method",
+      "short": "MMRM",
+      "long": "mixed model for repeated measures",
+      "formula": "CHG ~ TRTP + BASE + AVISIT + TRTP*AVISIT",
+      "iri": "stato:STATO_0000466",
+      "iri_status": "illustrative",
+      "ars_type": "ars:AnalysisMethod",
+      "ars_id": "ars:method/MTH-MMRM-CFB"
+    }
+  },
+
+  "analyses": {
+    "AC.PRIMARY.ADASCOG": {
+      "type": "primary",
+      "label": "Primary efficacy analysis — change from baseline in ADAS-Cog(11) at Week 24",
+      "template": "T.CFB_ANCOVA",
+      "acCategory": "TreatmentComparison",
+      "usesMethod": "M.ANCOVA",
+      "usdm_objective": "usdm:Objective/OBJ-PRIM-1",
+      "ars_analysis": "ars:analysis/AN-PRIM-ADASCOG-WK24",
+      "iri": "acdc:instance/AC-PRIMARY-ADASCOG",
+      "sentence": [
+        { "sp": "SP_CFB_ENDPOINT",     "role": "endpoint",         "bindings": { "parameter":  { "conceptId": "PARAM.ADASCOG11", "render": "long_with_short" } } },
+        { "sp": "SP_TIMEPOINT",         "role": "timepoint",        "bindings": { "visit":      { "conceptId": "VISIT.WK24",     "render": "short" } } },
+        { "sp": "SP_POPULATION",        "role": "population",       "bindings": { "population": { "conceptId": "POP.EFFICACY",   "render": "long" } } },
+        { "sp": "SP_GROUPING",          "role": "grouping",         "bindings": { "treatment":  { "conceptId": "TRT.ALL",        "render": "short" } } },
+        { "sp": "SP_METHOD_ANCOVA",     "role": "method",           "bindings": { "method":     { "conceptId": "M.ANCOVA",       "render": "short" } } },
+        { "sp": "SP_CONFIDENCE_LEVEL",  "role": "method_qualifier", "bindings": { "conf_level": { "value": "95" } } },
+        { "sp": "SP_COVARIATE_BASELINE","role": "covariate",        "bindings": { "parameter":  { "conceptId": "PARAM.ADASCOG11", "render": "short" } } }
+      ],
+      "trailing_prose": "will be assessed as the primary analysis."
+    }
+  }
+}
