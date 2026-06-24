@@ -1,6 +1,6 @@
 <mxfile host="Electron" background="#FFFFFF" pages="3">
   <diagram name="Observation Model" id="Observation_Model">
-    <mxGraphModel dx="2052" dy="1185" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3370" pageHeight="2384" background="#FFFFFF" math="0" shadow="0">
+    <mxGraphModel dx="2462" dy="1412" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3370" pageHeight="2384" background="#FFFFFF" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -17,36 +17,15 @@
           <mxGeometry height="84" width="120" x="1542" y="2177" as="geometry" />
         </mxCell>
         <mxCell id="OC:Observation/Identification/Topic__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Topic&lt;/b&gt;&#xa;valueType: CodeableConcept" vertex="1">
-          <mxGeometry height="27" width="165" x="1324" y="2149" as="geometry" />
+          <mxGeometry height="27" width="165" x="1298" y="2205.5" as="geometry" />
         </mxCell>
         <mxCell id="OC:Observation/Identification/Topic__props_l" edge="1" parent="1" source="OC:Observation/Identification/Topic" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="OC:Observation/Identification/Topic__props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;DictionaryCoding&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="790" y="1963" as="geometry" />
-        </mxCell>
-        <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;DictionaryCoding&lt;/b&gt;&#xa;valueType: CodeableConcept" vertex="1">
-          <mxGeometry height="27" width="165" x="594" y="1943" as="geometry" />
+          <mxGeometry height="84" width="120" x="1152" y="2063" as="geometry" />
         </mxCell>
         <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding__props_l" edge="1" parent="1" source="OC:Observation/Identification/Topic/DictionaryCoding" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="OC:Observation/Identification/Topic/DictionaryCoding__props">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding/PreferredTerm" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;PreferredTerm&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="310" y="1962" as="geometry" />
-        </mxCell>
-        <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding/PreferredTerm__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;PreferredTerm&lt;/b&gt;&#xa;valueType: CodeableConcept" vertex="1">
-          <mxGeometry height="27" width="165" x="80" y="1985" as="geometry" />
-        </mxCell>
-        <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding/PreferredTerm__props_l" edge="1" parent="1" source="OC:Observation/Identification/Topic/DictionaryCoding/PreferredTerm" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="OC:Observation/Identification/Topic/DictionaryCoding/PreferredTerm__props">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding/HierarchyLevel" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;HierarchyLevel&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="374" y="1714" as="geometry" />
-        </mxCell>
-        <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding/HierarchyLevel__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;HierarchyLevel&lt;/b&gt;&#xa;valueType: CodeableConcept" vertex="1">
-          <mxGeometry height="27" width="165" x="170" y="1640" as="geometry" />
-        </mxCell>
-        <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding/HierarchyLevel__props_l" edge="1" parent="1" source="OC:Observation/Identification/Topic/DictionaryCoding/HierarchyLevel" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="OC:Observation/Identification/Topic/DictionaryCoding/HierarchyLevel__props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="OC:Observation/Identification/ObservationCategory" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;ObservationCategory&lt;/b&gt;" vertex="1">
@@ -320,16 +299,16 @@
           <mxGeometry height="84" width="120" x="5253" y="1781" as="geometry" />
         </mxCell>
         <mxCell id="OC:cat/EventObservation/Severity__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Severity&lt;/b&gt;&#xa;valueType: CodeableConcept" vertex="1">
-          <mxGeometry height="27" width="165" x="5437" y="1715" as="geometry" />
+          <mxGeometry height="27" width="165" x="5443" y="1838" as="geometry" />
         </mxCell>
         <mxCell id="OC:cat/EventObservation/Severity__props_l" edge="1" parent="1" source="OC:cat/EventObservation/Severity" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="OC:cat/EventObservation/Severity__props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="OC:cat/EventObservation/Severity/ToxicityGrade" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#A9DFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;ToxicityGrade&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="5723" y="1530" as="geometry" />
+          <mxGeometry height="84" width="120" x="5389" y="1622" as="geometry" />
         </mxCell>
         <mxCell id="OC:cat/EventObservation/Severity/ToxicityGrade__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;ToxicityGrade&lt;/b&gt;&#xa;valueType: integer" vertex="1">
-          <mxGeometry height="27" width="165" x="5895" y="1453" as="geometry" />
+          <mxGeometry height="27" width="165" x="5366.5" y="1520" as="geometry" />
         </mxCell>
         <mxCell id="OC:cat/EventObservation/Severity/ToxicityGrade__props_l" edge="1" parent="1" source="OC:cat/EventObservation/Severity/ToxicityGrade" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="OC:cat/EventObservation/Severity/ToxicityGrade__props">
           <mxGeometry relative="1" as="geometry" />
@@ -592,44 +571,68 @@
         <mxCell id="e53" edge="1" parent="1" source="OC:cat/FindingAboutObservation" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="OC:cat/FindingAboutObservation/ObjectOfObservation" value="about  [1]">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="OC:valuetypes" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="Value Type Vocabulary (FHIR R5)&#xa;complexTypes:&#xa;  • Quantity&#xa;  • CodeableConcept&#xa;  • Identifier&#xa;primitiveTypes:&#xa;  • decimal&#xa;  • integer&#xa;  • code&#xa;  • string&#xa;  • boolean&#xa;  • date&#xa;  • dateTime&#xa;  • id" vertex="1">
-          <mxGeometry height="200" width="240" x="40" y="1900" as="geometry" />
-        </mxCell>
         <mxCell id="legend_frame_Observation_Model" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;dashed=0;verticalAlign=top;" vertex="1">
-          <mxGeometry x="40" y="4784" width="426" height="242" as="geometry" />
+          <mxGeometry height="242" width="426" x="40" y="4784" as="geometry" />
         </mxCell>
         <mxCell id="legend_title_Observation_Model" parent="1" style="text;align=left;fontSize=15;fontStyle=1;fontColor=#000000;html=1;" value="Legend" vertex="1">
-          <mxGeometry x="54" y="4792" width="200" height="26" as="geometry" />
+          <mxGeometry height="26" width="200" x="54" y="4792" as="geometry" />
         </mxCell>
         <mxCell id="legend_sw_Observation_Model_0" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;" vertex="1">
-          <mxGeometry x="54" y="4832" width="46" height="28" as="geometry" />
+          <mxGeometry height="28" width="46" x="54" y="4832" as="geometry" />
         </mxCell>
         <mxCell id="legend_lb_Observation_Model_0" parent="1" style="text;align=left;fontSize=13;verticalAlign=middle;fontColor=#000000;html=1;" value="Observation (root entity)" vertex="1">
-          <mxGeometry x="112" y="4832" width="340" height="28" as="geometry" />
+          <mxGeometry height="28" width="340" x="112" y="4832" as="geometry" />
         </mxCell>
         <mxCell id="legend_sw_Observation_Model_1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#222222;" vertex="1">
-          <mxGeometry x="54" y="4868" width="46" height="28" as="geometry" />
+          <mxGeometry height="28" width="46" x="54" y="4868" as="geometry" />
         </mxCell>
         <mxCell id="legend_lb_Observation_Model_1" parent="1" style="text;align=left;fontSize=13;verticalAlign=middle;fontColor=#000000;html=1;" value="Instance-structure data definition" vertex="1">
-          <mxGeometry x="112" y="4868" width="340" height="28" as="geometry" />
+          <mxGeometry height="28" width="340" x="112" y="4868" as="geometry" />
         </mxCell>
         <mxCell id="legend_sw_Observation_Model_2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE5B4;strokeColor=#222222;" vertex="1">
-          <mxGeometry x="54" y="4904" width="46" height="28" as="geometry" />
+          <mxGeometry height="28" width="46" x="54" y="4904" as="geometry" />
         </mxCell>
         <mxCell id="legend_lb_Observation_Model_2" parent="1" style="text;align=left;fontSize=13;verticalAlign=middle;fontColor=#000000;html=1;" value="Shared dimension" vertex="1">
-          <mxGeometry x="112" y="4904" width="340" height="28" as="geometry" />
+          <mxGeometry height="28" width="340" x="112" y="4904" as="geometry" />
         </mxCell>
         <mxCell id="legend_sw_Observation_Model_3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#A9DFBF;strokeColor=#222222;" vertex="1">
-          <mxGeometry x="54" y="4940" width="46" height="28" as="geometry" />
+          <mxGeometry height="28" width="46" x="54" y="4940" as="geometry" />
         </mxCell>
         <mxCell id="legend_lb_Observation_Model_3" parent="1" style="text;align=left;fontSize=13;verticalAlign=middle;fontColor=#000000;html=1;" value="Observation category (is-a)" vertex="1">
-          <mxGeometry x="112" y="4940" width="340" height="28" as="geometry" />
+          <mxGeometry height="28" width="340" x="112" y="4940" as="geometry" />
         </mxCell>
         <mxCell id="legend_sw_Observation_Model_4" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;html=1;fillColor=#FFFFFF;strokeColor=#222222;" vertex="1">
-          <mxGeometry x="54" y="4976" width="46" height="28" as="geometry" />
+          <mxGeometry height="28" width="46" x="54" y="4976" as="geometry" />
         </mxCell>
         <mxCell id="legend_lb_Observation_Model_4" parent="1" style="text;align=left;fontSize=13;verticalAlign=middle;fontColor=#000000;html=1;" value="Properties / value-type vocabulary" vertex="1">
-          <mxGeometry x="112" y="4976" width="340" height="28" as="geometry" />
+          <mxGeometry height="28" width="340" x="112" y="4976" as="geometry" />
+        </mxCell>
+        <mxCell id="-RcXjp8aAjIAZSFjh2Cc-1" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="460" width="719" x="612" y="1768" as="geometry" />
+        </mxCell>
+        <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding__props" parent="-RcXjp8aAjIAZSFjh2Cc-1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;DictionaryCoding&lt;/b&gt;&#xa;valueType: CodeableConcept" vertex="1">
+          <mxGeometry height="27" width="165" x="554" y="303" as="geometry" />
+        </mxCell>
+        <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding/PreferredTerm" parent="-RcXjp8aAjIAZSFjh2Cc-1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;PreferredTerm&lt;/b&gt;" vertex="1">
+          <mxGeometry height="84" width="120" x="270" y="322" as="geometry" />
+        </mxCell>
+        <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding/PreferredTerm__props" parent="-RcXjp8aAjIAZSFjh2Cc-1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;PreferredTerm&lt;/b&gt;&#xa;valueType: CodeableConcept" vertex="1">
+          <mxGeometry height="27" width="165" x="40" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding/PreferredTerm__props_l" edge="1" parent="-RcXjp8aAjIAZSFjh2Cc-1" source="OC:Observation/Identification/Topic/DictionaryCoding/PreferredTerm" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="OC:Observation/Identification/Topic/DictionaryCoding/PreferredTerm__props">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding/HierarchyLevel" parent="-RcXjp8aAjIAZSFjh2Cc-1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;HierarchyLevel&lt;/b&gt;" vertex="1">
+          <mxGeometry height="84" width="120" x="334" y="74" as="geometry" />
+        </mxCell>
+        <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding/HierarchyLevel__props" parent="-RcXjp8aAjIAZSFjh2Cc-1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;HierarchyLevel&lt;/b&gt;&#xa;valueType: CodeableConcept" vertex="1">
+          <mxGeometry height="27" width="165" x="130" as="geometry" />
+        </mxCell>
+        <mxCell id="OC:Observation/Identification/Topic/DictionaryCoding/HierarchyLevel__props_l" edge="1" parent="-RcXjp8aAjIAZSFjh2Cc-1" source="OC:Observation/Identification/Topic/DictionaryCoding/HierarchyLevel" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="OC:Observation/Identification/Topic/DictionaryCoding/HierarchyLevel__props">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OC:valuetypes" parent="-RcXjp8aAjIAZSFjh2Cc-1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="Value Type Vocabulary (FHIR R5)&#xa;complexTypes:&#xa;  • Quantity&#xa;  • CodeableConcept&#xa;  • Identifier&#xa;primitiveTypes:&#xa;  • decimal&#xa;  • integer&#xa;  • code&#xa;  • string&#xa;  • boolean&#xa;  • date&#xa;  • dateTime&#xa;  • id" vertex="1">
+          <mxGeometry height="200" width="240" y="260" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
@@ -1180,7 +1183,7 @@
     </mxGraphModel>
   </diagram>
   <diagram name="Analysis Model" id="Analysis_Model">
-    <mxGraphModel dx="2052" dy="1185" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3370" pageHeight="2384" background="#FFFFFF" math="0" shadow="0">
+    <mxGraphModel dx="1448" dy="831" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3370" pageHeight="2384" background="#FFFFFF" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1275,7 +1278,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:pat/MedianSurvival__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;MedianSurvival&lt;/b&gt;&#xa;dims: group&#xa;stat_set: ci_estimate" vertex="1">
-          <mxGeometry height="38" width="165" x="675" y="591" as="geometry" />
+          <mxGeometry height="49" width="165" x="634" y="593" as="geometry" />
         </mxCell>
         <mxCell id="AC:pat/MedianSurvival__props_l" edge="1" parent="1" source="AC:pat/MedianSurvival" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:pat/MedianSurvival__props">
           <mxGeometry relative="1" as="geometry" />
@@ -1346,18 +1349,6 @@
         <mxCell id="e74" edge="1" parent="1" source="AC:method/M.KaplanMeier" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:pat/EventSummary" value="event_summary">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="DKIFmDEAy2g9PskvmjIf-2" connectable="0" parent="1" style="group" value="" vertex="1">
-          <mxGeometry height="130" width="290" x="2111" y="385.5" as="geometry" />
-        </mxCell>
-        <mxCell id="AC:cat/DescriptiveSummary" parent="DKIFmDEAy2g9PskvmjIf-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFD9B3;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;DescriptiveSummary&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" as="geometry" />
-        </mxCell>
-        <mxCell id="AC:cat/DescriptiveSummary__props" parent="DKIFmDEAy2g9PskvmjIf-2" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;DescriptiveSummary&lt;/b&gt;&#xa;methods:&#xa;  • M.Mean&#xa;  • M.Quartile&#xa;  • M.Skewness&#xa;  • M.Sum&#xa;  • M.WinsorizedMean" vertex="1">
-          <mxGeometry height="82" width="165" x="125" y="48" as="geometry" />
-        </mxCell>
-        <mxCell id="AC:cat/DescriptiveSummary__props_l" edge="1" parent="DKIFmDEAy2g9PskvmjIf-2" source="AC:cat/DescriptiveSummary" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:cat/DescriptiveSummary__props">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
         <mxCell id="AC:cat/TreatmentComparison" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFD9B3;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;TreatmentComparison&lt;/b&gt;" vertex="1">
           <mxGeometry height="84" width="120" x="1645" y="1654" as="geometry" />
         </mxCell>
@@ -1371,7 +1362,7 @@
           <mxGeometry height="84" width="120" x="1479" y="1192" as="geometry" />
         </mxCell>
         <mxCell id="AC:pat/Contrasts__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Contrasts&lt;/b&gt;&#xa;dims: contrast, at_level&#xa;stat_set: ci_estimate_t_distribution, hypothesis_test_t_distribution" vertex="1">
-          <mxGeometry height="38" width="165" x="1295.5" y="1131" as="geometry" />
+          <mxGeometry height="59" width="165" x="1295.5" y="1131" as="geometry" />
         </mxCell>
         <mxCell id="AC:pat/Contrasts__props_l" edge="1" parent="1" source="AC:pat/Contrasts" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:pat/Contrasts__props">
           <mxGeometry relative="1" as="geometry" />
@@ -1548,16 +1539,16 @@
           <mxGeometry height="84" width="120" x="1124" y="1018" as="geometry" />
         </mxCell>
         <mxCell id="AC:pat/HazardRatioEstimates__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;HazardRatioEstimates&lt;/b&gt;&#xa;dims: term, level&#xa;stat_set: ci_estimate_hazard_ratio" vertex="1">
-          <mxGeometry height="38" width="165" x="1035" y="867" as="geometry" />
+          <mxGeometry height="38" width="165" x="992" y="1125" as="geometry" />
         </mxCell>
         <mxCell id="AC:pat/HazardRatioEstimates__props_l" edge="1" parent="1" source="AC:pat/HazardRatioEstimates" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:pat/HazardRatioEstimates__props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/HazardRatio" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;HazardRatio&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="937" y="944" as="geometry" />
+          <mxGeometry height="84" width="120" x="933" y="1002" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/HazardRatio__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;HazardRatio&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: hazard_ratio" vertex="1">
-          <mxGeometry height="49" width="165" x="737.5" y="925" as="geometry" />
+          <mxGeometry height="49" width="165" x="713" y="1030" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/HazardRatio__props_l" edge="1" parent="1" source="AC:stat/HazardRatio" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/HazardRatio__props">
           <mxGeometry relative="1" as="geometry" />
@@ -1584,10 +1575,10 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/OddsRatio" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;OddsRatio&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="2287" y="608" as="geometry" />
+          <mxGeometry height="84" width="120" x="1985" y="397" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/OddsRatio__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;OddsRatio&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: odds_ratio" vertex="1">
-          <mxGeometry height="49" width="165" x="2480" y="582" as="geometry" />
+          <mxGeometry height="49" width="165" x="1936" y="237" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/OddsRatio__props_l" edge="1" parent="1" source="AC:stat/OddsRatio" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/OddsRatio__props">
           <mxGeometry relative="1" as="geometry" />
@@ -1793,164 +1784,216 @@
         <mxCell id="e42" edge="1" parent="1" source="AC:cat/SurvivalAnalysis" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:pat/MedianSurvival" value="involves">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AC:descr-cluster__bg" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#9C27B0;dashed=1;dashPattern=6 6;" vertex="1">
-          <mxGeometry x="520" y="2460" width="900" height="980" as="geometry" />
+        <mxCell id="AC:stat/Mean__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/Mean__d" value="">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AC:descr-cluster__title" parent="1" style="text;html=1;fillColor=#F3E5F5;strokeColor=#9C27B0;align=center;verticalAlign=middle;fontSize=11;" value="&lt;b&gt;AC Level-1 statistics — descriptive · proportion · z (added 2026-06-23, under DescriptiveSummary)&lt;/b&gt;" vertex="1">
-          <mxGeometry x="520" y="2460" width="900" height="34" as="geometry" />
+        <mxCell id="AC:stat/Min__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/Min__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:stat/Max__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/Max__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:stat/Sum__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/Sum__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:stat/Mode__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/Mode__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:stat/Range__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/Range__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:stat/StandardDeviation__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/StandardDeviation__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:stat/Q1__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/Q1__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:stat/Q3__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/Q3__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:stat/IQR__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/IQR__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:stat/Percentile__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/Percentile__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:stat/Variance__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/Variance__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:stat/Skewness__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/Skewness__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:stat/Kurtosis__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/Kurtosis__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:stat/ZStatistic__d_ds" edge="1" parent="1" source="AC:pat/TestResult" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/ZStatistic__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:stat/Proportion__d_ds" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/Proportion__d" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:cat/DescriptiveSummary" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFD9B3;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;container=0;" value="&lt;b&gt;DescriptiveSummary&lt;/b&gt;" vertex="1">
+          <mxGeometry height="84" width="120" x="2156" y="431" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:cat/DescriptiveSummary__props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;container=0;" value="&lt;b&gt;DescriptiveSummary&lt;/b&gt;&#xa;methods:&#xa;  • M.Mean&#xa;  • M.Quartile&#xa;  • M.Skewness&#xa;  • M.Sum&#xa;  • M.WinsorizedMean" vertex="1">
+          <mxGeometry height="82" width="165" x="2190.5" y="227" as="geometry" />
+        </mxCell>
+        <mxCell id="AC:cat/DescriptiveSummary__props_l" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:cat/DescriptiveSummary__props">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Mean__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Mean&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="582" y="2520" as="geometry" />
+          <mxGeometry height="84" width="120" x="2531" y="295.5" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Mean__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Mean&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: mean" vertex="1">
-          <mxGeometry height="49" width="165" x="560" y="2614" as="geometry" />
+          <mxGeometry height="49" width="165" x="2405" y="220" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Mean__d_l" edge="1" parent="1" source="AC:stat/Mean__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Mean__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AC:stat/Value__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Value&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="787" y="2520" as="geometry" />
-        </mxCell>
-        <mxCell id="AC:stat/Value__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Value&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: value" vertex="1">
-          <mxGeometry height="49" width="165" x="765" y="2614" as="geometry" />
-        </mxCell>
-        <mxCell id="AC:stat/Value__d_l" edge="1" parent="1" source="AC:stat/Value__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Value__d_props">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
         <mxCell id="AC:stat/Min__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Min&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="992" y="2520" as="geometry" />
+          <mxGeometry height="84" width="120" x="2898" y="323.5" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Min__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Min&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: min" vertex="1">
-          <mxGeometry height="49" width="165" x="970" y="2614" as="geometry" />
+          <mxGeometry height="49" width="165" x="2848" y="428" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Min__d_l" edge="1" parent="1" source="AC:stat/Min__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Min__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Max__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Max&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="1197" y="2520" as="geometry" />
+          <mxGeometry height="84" width="120" x="3146" y="344" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Max__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Max&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: max" vertex="1">
-          <mxGeometry height="49" width="165" x="1175" y="2614" as="geometry" />
+          <mxGeometry height="49" width="165" x="3124" y="436" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Max__d_l" edge="1" parent="1" source="AC:stat/Max__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Max__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Sum__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Sum&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="582" y="2703" as="geometry" />
+          <mxGeometry height="84" width="120" x="2576" y="509" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Sum__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Sum&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: sum" vertex="1">
-          <mxGeometry height="49" width="165" x="560" y="2797" as="geometry" />
+          <mxGeometry height="49" width="165" x="2554" y="601" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Sum__d_l" edge="1" parent="1" source="AC:stat/Sum__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Sum__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Mode__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Mode&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="787" y="2703" as="geometry" />
+          <mxGeometry height="84" width="120" x="2766" y="509" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Mode__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Mode&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: mode" vertex="1">
-          <mxGeometry height="49" width="165" x="765" y="2797" as="geometry" />
+          <mxGeometry height="49" width="165" x="2744" y="601" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Mode__d_l" edge="1" parent="1" source="AC:stat/Mode__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Mode__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Range__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Range&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="992" y="2703" as="geometry" />
+          <mxGeometry height="84" width="120" x="2956" y="509" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Range__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Range&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: range" vertex="1">
-          <mxGeometry height="49" width="165" x="970" y="2797" as="geometry" />
+          <mxGeometry height="49" width="165" x="2934" y="601" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Range__d_l" edge="1" parent="1" source="AC:stat/Range__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Range__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/StandardDeviation__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;StandardDeviation&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="1197" y="2703" as="geometry" />
+          <mxGeometry height="84" width="120" x="3146" y="509" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/StandardDeviation__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;StandardDeviation&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: sd" vertex="1">
-          <mxGeometry height="49" width="165" x="1175" y="2797" as="geometry" />
+          <mxGeometry height="49" width="165" x="3124" y="601" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/StandardDeviation__d_l" edge="1" parent="1" source="AC:stat/StandardDeviation__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/StandardDeviation__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Q1__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Q1&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="582" y="2886" as="geometry" />
+          <mxGeometry height="84" width="120" x="2576" y="674" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Q1__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Q1&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: Q1" vertex="1">
-          <mxGeometry height="49" width="165" x="560" y="2980" as="geometry" />
+          <mxGeometry height="49" width="165" x="2554" y="766" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Q1__d_l" edge="1" parent="1" source="AC:stat/Q1__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Q1__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Q3__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Q3&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="787" y="2886" as="geometry" />
+          <mxGeometry height="84" width="120" x="2766" y="674" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Q3__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Q3&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: Q3" vertex="1">
-          <mxGeometry height="49" width="165" x="765" y="2980" as="geometry" />
+          <mxGeometry height="49" width="165" x="2744" y="766" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Q3__d_l" edge="1" parent="1" source="AC:stat/Q3__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Q3__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/IQR__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;IQR&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="992" y="2886" as="geometry" />
+          <mxGeometry height="84" width="120" x="2956" y="674" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/IQR__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;IQR&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: iqr" vertex="1">
-          <mxGeometry height="49" width="165" x="970" y="2980" as="geometry" />
+          <mxGeometry height="49" width="165" x="2934" y="766" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/IQR__d_l" edge="1" parent="1" source="AC:stat/IQR__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/IQR__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Percentile__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Percentile&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="1197" y="2886" as="geometry" />
+          <mxGeometry height="84" width="120" x="3146" y="674" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Percentile__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Percentile&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: inherited&#xa;term: percentile" vertex="1">
-          <mxGeometry height="49" width="165" x="1175" y="2980" as="geometry" />
+          <mxGeometry height="49" width="165" x="3124" y="766" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Percentile__d_l" edge="1" parent="1" source="AC:stat/Percentile__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Percentile__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Variance__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Variance&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="582" y="3069" as="geometry" />
+          <mxGeometry height="84" width="120" x="2576" y="839" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Variance__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Variance&lt;/b&gt;&#xa;valueType: Quantity&#xa;unitRule: derived&#xa;term: variance" vertex="1">
-          <mxGeometry height="49" width="165" x="560" y="3163" as="geometry" />
+          <mxGeometry height="49" width="165" x="2554" y="931" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Variance__d_l" edge="1" parent="1" source="AC:stat/Variance__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Variance__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Skewness__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Skewness&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="787" y="3069" as="geometry" />
+          <mxGeometry height="84" width="120" x="2766" y="839" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Skewness__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Skewness&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: skewness" vertex="1">
-          <mxGeometry height="49" width="165" x="765" y="3163" as="geometry" />
+          <mxGeometry height="49" width="165" x="2744" y="931" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Skewness__d_l" edge="1" parent="1" source="AC:stat/Skewness__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Skewness__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Kurtosis__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Kurtosis&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="992" y="3069" as="geometry" />
+          <mxGeometry height="84" width="120" x="2956" y="839" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Kurtosis__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Kurtosis&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: kurtosis" vertex="1">
-          <mxGeometry height="49" width="165" x="970" y="3163" as="geometry" />
+          <mxGeometry height="49" width="165" x="2934" y="931" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Kurtosis__d_l" edge="1" parent="1" source="AC:stat/Kurtosis__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Kurtosis__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/ZStatistic__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;ZStatistic&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="1197" y="3069" as="geometry" />
+          <mxGeometry height="84" width="120" x="919.5" y="901" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/ZStatistic__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;ZStatistic&lt;/b&gt;&#xa;valueType: decimal&#xa;unitRule: unitless&#xa;term: z_statistic" vertex="1">
-          <mxGeometry height="49" width="165" x="1175" y="3163" as="geometry" />
+          <mxGeometry height="49" width="165" x="713" y="934" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/ZStatistic__d_l" edge="1" parent="1" source="AC:stat/ZStatistic__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/ZStatistic__d_props">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Proportion__d" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#BFFFBF;strokeColor=#222222;fontSize=10;fontColor=#000000;verticalAlign=middle;align=center;" value="&lt;b&gt;Proportion&lt;/b&gt;" vertex="1">
-          <mxGeometry height="84" width="120" x="582" y="3252" as="geometry" />
+          <mxGeometry height="84" width="120" x="3134" y="847" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Proportion__d_props" parent="1" style="rounded=0;dashed=1;dashPattern=4 4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#222222;fontSize=8;align=left;verticalAlign=top;spacingLeft=5;spacingTop=3;fontColor=#000000;" value="&lt;b&gt;Proportion&lt;/b&gt;&#xa;valueType: Ratio&#xa;unitRule: unitless&#xa;term: proportion&#xa;  • numerator&#xa;  • denominator" vertex="1">
-          <mxGeometry height="49" width="165" x="560" y="3346" as="geometry" />
+          <mxGeometry height="79" width="165" x="3142" y="946" as="geometry" />
         </mxCell>
         <mxCell id="AC:stat/Proportion__d_l" edge="1" parent="1" source="AC:stat/Proportion__d" style="endArrow=none;dashed=1;dashPattern=4 4;html=1;strokeColor=#888888;" target="AC:stat/Proportion__d_props">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="T_wcDWDNj9buHq1cF5GA-3" edge="1" parent="1" source="AC:cat/DescriptiveSummary" style="rounded=0;endArrow=open;endSize=12;html=1;strokeColor=#555555;fontSize=9;" target="AC:stat/Median" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1725" y="175" />
+              <mxPoint x="1191" y="124" />
+            </Array>
+            <mxPoint x="2349" y="515" as="sourcePoint" />
+            <mxPoint x="2618" y="418" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

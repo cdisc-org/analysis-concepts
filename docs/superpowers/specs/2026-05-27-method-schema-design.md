@@ -14,7 +14,7 @@ ACDC currently carries the description of each "method" (an analysis like ANCOVA
 | Location | Status | Notes |
 |---|---|---|
 | `lib/methods/AllMethods.json` | Legacy single file | Uses `inputRoles`/`outputSpecifications`/`category`; carries `statisticalRole` and a populated `ncitCode` (e.g. `C00001_NEW`); missing `label`/`shortLabel`. Identifier field is `conceptId`. |
-| `lib/methods/{analyses,derivations}/M_*.json` | Current per-file form | Uses `methodInput`/`methodOutput`/`class`/`label`/`shortLabel`/`unit_policy`; per-output `configurations`; `code.value` is `null`; identifier field is `name`; `statisticalRole` was dropped. |
+| `lib/methods/{analyses,derivations}/M_*.json` | Current per-file form | Uses `methodInput`/`methodOutput`/`class`/`label`/`shortLabel`; carries no unit information (units live on the bound concept via `unitRule`); per-output `configurations`; `code.value` is `null`; identifier field is `name`; `statisticalRole` was dropped. |
 | `lib/methods/_index.json` | Lightweight registry | Has `name`/`label`/`type`/`class`/`path` only. |
 
 In parallel, the output-side vocabulary has its own pressure: `lib/vocabulary/output_class_templates.json` uses a SKOS family/concrete-template hierarchy where children differ only by distribution (`type3_tests_f` vs `type3_tests_mixed` vs `type3_tests_chi_squared`) or mash *estimates with CI* together with *tests with p-values* (`parameter_estimates_linear`). A colleague's proposal in `lib/methods/Analysis Methods.xlsx` (column "Suggested structure") decomposes each output into orthogonal axes (`output_class`, `statistics_type`, `distribution`, `additional statistics`) and splits the conflated templates.
@@ -233,7 +233,6 @@ Combined with `shape`, the four axes uniquely determine the column set of the ou
     "name":         "result",                   // matches the formula's LHS (§3.4)
     "output_type":  "computed_value",           // FK to output_class_templates (atomic-value family)
     "dataType":     "decimal",                  // structural primitive — parallel to inputs[].dataType
-    "unit_policy":  "preserved",                // method-side behavior (§3.6.1)
     "indexed_by":   ["partition"]               // method-side row indexing
   }
 ]
@@ -244,7 +243,7 @@ The keys consolidated by this revision:
 - **`value_type` (FHIR complex type) removed from method outputs.** Was previously a FHIR-type string (`fhir:Quantity`, `fhir:CodeableConcept`, ...) on each atomic output. The FHIR complex datatype now flows from the bound concept's `result.valueType` field at transformation time. Methods stay type-agnostic, consistent with "methods are concept-free, reusable" (§3.6.2).
 - **`dataType` (structural primitive) added to method outputs.** Parallels `inputs[].dataType`. Carries the computational shape the method's formula produces (`decimal` for numeric methods, `integer` for counts, `code` for flags/categories, `boolean`, `date`). This is intrinsic method-side knowledge — M.Mean computes a decimal regardless of what concept it's bound to; M.RecordSelection emits a code regardless of which flag concept it's bound to. At transformation binding time the validator checks that the method-output `dataType` is compatible with the bound concept's `result.valueType` (§6.6 rule 10).
 - **`output_class` / `shape` / `distribution` collapsed into a single `output_type` FK.** The atomic-output template `computed_value` is the only entry needed for derivations and descriptive analyses; the structured-table templates (`ls_means`, `type3_tests_f`, ...) remain the entries used by modelling analyses. One field name (`output_type`), one FK target file (`output_class_templates.json`), uniform across all 60 methods.
-- **`unit_policy` stays on the method.** Behavior (how units flow from input to output) is per-method: `M.Mean` preserves units from input; `M.PercentChange` is always dimensionless; `M.UnitConversion` reads the unit from a configuration. Pinning it onto the template would force a fan-out into `computed_quantity_preserved` / `computed_quantity_dimensionless` / `computed_quantity_configured` and buy nothing.
+- **No unit information lives on the method.** Per the 2026-06-22/23 decision, the *concept* is the single source of truth for units and methods are fully unit-agnostic. How units flow from input to output is a property of the bound concept via `unitRule` (`inherited | derived | fixed | unitless | none`), with optional `inputUnitRelation` (`uniform | heterogeneous`), `fixedUnit` (when `unitRule = fixed`), and `inheritsFrom`. The concrete unit (e.g. `mg/dL`) is instance data on the FHIR `Quantity`, resolved at execution by dimensional arithmetic over the method's `formula`. This mirrors the decision that the FHIR datatype lives on the concept, not the method — the same templates (`computed_value`) serve every unit behaviour, so no fan-out into per-policy templates is needed.
 - **For structured outputs (modelling analyses)**: no per-output `dataType` field. The template's `statistics[]` list (FK into `statistics_vocabulary.json`) carries the per-column dataType — different columns have different types and a single field on the output entry doesn't fit. See §6.6 rule 11 for the binding-time validation.
 
 The `output_class_templates.json` `computed_value` entry:
@@ -258,9 +257,9 @@ The `output_class_templates.json` `computed_value` entry:
 }
 ```
 
-#### 3.6.1 `unit_policy` lives on the method
+#### 3.6.1 Units live on the concept, not the method
 
-`unit_policy` is per-output and per-method (it characterizes how the method's computation propagates units). For analysis methods with value-bearing outputs (e.g. `ls_means`, `point_estimate`, `parameter_estimates`), it MAY also be set per-output; on pure inferential outputs (`type3_tests`, `test_result`) it is omitted.
+Methods carry no unit information. How a value-bearing output's unit is determined is a property of the *bound concept* via `unitRule` (`inherited | derived | fixed | unitless | none`), resolved at execution by dimensional arithmetic over the method's `formula`. The same method output (e.g. `ls_means`, `point_estimate`, `parameter_estimates`) can therefore serve concepts with different unit behaviours without change. Pure inferential outputs (`type3_tests`, `test_result`) bind to concepts whose `unitRule` is `unitless` or `none`. See `docs/units-model.md` for the full resolution model.
 
 #### 3.6.2 Derivation outputs do NOT reference clinical concepts
 
@@ -383,8 +382,7 @@ A new JSON-Schema file lands at `model/method/acdc_methods.schema.json` (current
       "output_class": "parameter_estimates",
       "shape":        "estimate_with_ci",
       "distribution": "studentT_scaled",
-      "indexed_by":   ["covariate","fixed_effect","fixed_effect:fixed_effect","covariate:fixed_effect"],
-      "unit_policy":  "preserved"
+      "indexed_by":   ["covariate","fixed_effect","fixed_effect:fixed_effect","covariate:fixed_effect"]
     },
     {
       "name":         "parameter_tests",
@@ -398,16 +396,14 @@ A new JSON-Schema file lands at `model/method/acdc_methods.schema.json` (current
       "output_class": "ls_means",
       "shape":        "estimate_with_ci",
       "distribution": "studentT_scaled",
-      "indexed_by":   ["fixed_effect"],
-      "unit_policy":  "preserved"
+      "indexed_by":   ["fixed_effect"]
     },
     {
       "name":         "contrast_estimates",
       "output_class": "contrast_estimates",
       "shape":        "estimate_with_ci",
       "distribution": "studentT_scaled",
-      "indexed_by":   ["fixed_effect"],
-      "unit_policy":  "preserved"
+      "indexed_by":   ["fixed_effect"]
     },
     {
       "name":         "contrast_tests",
@@ -432,7 +428,7 @@ What changed:
 - `outputs[].output_type` (single key into the SKOS catalogue) → four explicit axes (`output_class`, `shape`, `distribution`, optional `additional_statistics`).
 - The output split: one `parameter_estimates_linear` becomes `parameter_estimates` + `parameter_tests`; one `contrasts_t` becomes `contrast_estimates` + `contrast_tests`.
 - Per-output `multiplicity_adjustment` configurations dropped (out of scope, §3.5.5; confirmed during the 2026-05-28 peer review — outputs do not carry their own configurations).
-- `unit_policy` lifted from method-level to per-output, only on value-bearing outputs.
+- All unit information removed from the method: outputs carry no unit field. Units are a property of the bound concept (`unitRule`), resolved at execution over the method's `formula` (per the 2026-06-22/23 decision).
 - The slot-level `name` field on each `inputs[i]` / `outputs[i]` stays as the role token transformations bind to via `input` / `output` FKs.
 
 ### 4.2 M.PercentChange — before / after
@@ -448,7 +444,6 @@ What changed:
     "default_expression": "result := 100 * (post - pre) / pre",
     "generic_expression": "result := 100 * (<post> - <pre>) / <pre>"
   },
-  "unit_policy": "dimensionless",
   "methodInput": [
     { "name": "pre",  "dataType": "decimal", "required": true, "cardinality": "single" },
     { "name": "post", "dataType": "decimal", "required": true, "cardinality": "single" }
@@ -482,8 +477,7 @@ What changed:
   "outputs": [
     {
       "name":         "result",                // matches the formula's LHS (§3.4)
-      "output_type":  "computed_value",        // FK to output_class_templates (§3.6)
-      "unit_policy":  "dimensionless"
+      "output_type":  "computed_value"         // FK to output_class_templates (§3.6)
     }
   ]
 }
@@ -496,7 +490,7 @@ What changed (same revisions as §4.1, applied to a derivation):
 - `type`, `class`, `intent`, `assumptions` removed.
 - `methodInput[]` → `inputs[]`; `methodOutput[]` → `outputs[]`.
 - Output `name` aligned to the formula's LHS: `derived_value` → `result`.
-- Atomic-output four-axis form (`output_class` + `shape` + `distribution` + `value_type`) collapsed to a single `output_type: "computed_value"` FK; the FHIR datatype now flows from the bound concept at transformation time, not the method (per §3.6 revision 2026-05-28). `unit_policy` stays on the method.
+- Atomic-output four-axis form (`output_class` + `shape` + `distribution` + `valueType`) collapsed to a single `output_type: "computed_value"` FK; the FHIR datatype now flows from the bound concept at transformation time, not the method (per §3.6 revision 2026-05-28). No unit information is carried on the method — the result's unit comes from the bound concept's `unitRule` (here `PercentChange` declares `unitRule: fixed`, `fixedUnit: "%"`), resolved at execution over the method's `formula` (per the 2026-06-22/23 decision).
 
 The transformation that *uses* this method binds the output to the `PercentChange` clinical concept (in §6 terms: `outputDataStructure.measures[].output: "result"`, `concept: "PercentChange"`), and the `Quantity` datatype propagates from `PercentChange.result.valueType` in `Option_B_Clinical.json`. The method itself stays concept-free.
 
@@ -508,8 +502,8 @@ In order, each step landable on its own:
 2. **Write `output_class_vocabulary.json`, `output_shape_vocabulary.json`, `distribution_vocabulary.json`** under `lib/vocabulary/`. (Pre-existing inconsistency: per-file `$vocabulary` blocks reference `../../model/method/…`, but the actual files live in `lib/vocabulary/`. Pick one location during this migration and update the references in every method file accordingly. Recommendation: keep `lib/vocabulary/` since the files are already there.)
 3. **Harvest `ncitCode` placeholders** from `AllMethods.json` into per-file `code.value`. Mechanical pass keyed on `name`.
 4. **Rewrite per-file `output` blocks** from `output_type` → 4-axis. Most are mechanical: the current `output_class_templates.json` carries enough info (template family + statistics) to derive `(output_class, shape, distribution, additional_statistics)`. The splits (parameter_estimates → +parameter_tests, contrasts → +contrast_estimates/contrast_tests) need a manual one-time choice.
-5. **Add per-output `unit_policy`** on value-bearing outputs of every analysis method; remove method-level `unit_policy` from analysis methods (keep it on derivations only as a fallback, or remove entirely once outputs all carry it).
-6. **Migrate derivation + descriptive-stat `outputs[]`** (~46 methods) to the §3.6 form (revised 2026-05-28): single `output_type: "computed_value"` FK referencing the new template in `output_class_templates.json`. The FHIR datatype is no longer carried on the method — it flows from the bound concept's `result.valueType` at transformation time. `unit_policy` stays on the method.
+5. **Strip all unit information from methods.** Remove any legacy unit-policy field (method-level or per-output) from every analysis and derivation method. Units are now a property of the bound concept (`unitRule`), resolved at execution over the method's `formula` (per the 2026-06-22/23 decision); ensure each value-bearing output's bound concept carries the right `unitRule` / `inputUnitRelation` / `fixedUnit` instead.
+6. **Migrate derivation + descriptive-stat `outputs[]`** (~46 methods) to the §3.6 form (revised 2026-05-28): single `output_type: "computed_value"` FK referencing the new template in `output_class_templates.json`. The FHIR datatype is no longer carried on the method — it flows from the bound concept's `result.valueType` at transformation time, and the unit flows from the bound concept's `unitRule`.
 7. **Generate `_index.json`** from per-file fields; mark the file as generated.
 8. **Delete `AllMethods.json`** and the old `output_class_templates.json`.
 9. **Update validators / app code** that read the old shape (search for `outputSpecifications`, `inputRoles`, `outputClass`, `indexedBy` in `lib/`, `model/`, and `ac-dc-app/`).
@@ -1218,7 +1212,7 @@ What we accepted: dimension duplication for the carry-forward case (~3–4 entri
 
 ## 7. Open questions
 
-- **`unit_policy` on inferential outputs.** Decision is "omit it." If a downstream consumer needs it (e.g. to render a contrast estimate with units), it can read the policy from the *companion* value-bearing output of the same method. Confirm this is acceptable.
+- **Units on inferential outputs.** *Resolved 2026-06-22/23: methods carry no unit information at all.* Units are a property of the bound concept via `unitRule`; inferential outputs (`type3_tests`, `test_result`) bind to concepts whose `unitRule` is `unitless` or `none`. If a downstream consumer needs the unit of a value-bearing companion output (e.g. to render a contrast estimate with units), it reads that companion output's bound concept.
 - **`assumptions[]` semantics.** Currently a free-text list (`"Pre value is non-zero"`). Should these be machine-readable predicates? Out of scope here but worth noting.
 - **Multiplicity-adjustment configurations.** Deferred (§3.5.5). When revisited, decide whether they live per-output or as a method-level configuration that applies to all p-value-bearing outputs.
 - **Code-list authoring workflow for the new vocabularies.** Three new SKOS-shaped files appear; need to decide whether to author them by hand, generate from the migration, or anchor them in NCI EVS / STATO where possible.

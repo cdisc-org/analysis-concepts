@@ -14,10 +14,10 @@ The pivotal rule: the method references a *term*, the AC concept also references
 **Tech Stack:** JSON data files; linkML YAML schemas compiled with `gen-json-schema` (in `.venv/bin`); `linkml-validate` for instance validation; Python 3.13 (`.venv/bin/python`) for the validator and the `AllMethods.json` builder. No JS/app changes.
 
 **Decisions locked with the user (2026-06-13):**
-- **D-layers (overrides spec D6/D7 framing):** statistic terms are a **terminology** layer cited by both method and concept; the **FHIR datatype lives only on the AC concept** (NOT on the terminology atom — that would leak a concept-level/data-definition fact into the terminology the method reads, and contradicts `acdc_method.yaml`'s "FHIR type flows from the bound concept at transformation time"). AC statistical concepts become **thin**: a `term` reference (→ terminology id) + `fhirValueType` (+ display label); they no longer re-state `definition`/`statoMapping`/`dataType` (single source = terminology). The crosswalk is **concept → terminology** (`skos:exactMatch` semantics), build-validated; the method never appears in it.
+- **D-layers (overrides spec D6/D7 framing):** statistic terms are a **terminology** layer cited by both method and concept; the **FHIR datatype lives only on the AC concept** (NOT on the terminology atom — that would leak a concept-level/data-definition fact into the terminology the method reads, and contradicts `acdc_method.yaml`'s "FHIR type flows from the bound concept at transformation time"). AC statistical concepts become **thin**: a `term` reference (→ terminology id) + `valueType` (+ display label); they no longer re-state `definition`/`statoMapping`/`dataType` (single source = terminology). The crosswalk is **concept → terminology** (`skos:exactMatch` semantics), build-validated; the method never appears in it.
 - **D-home:** terminology stays in `lib/vocabulary/` (it *is* terminology, not concepts — so it correctly lives with the vocabulary, not in `lib/concepts/`). AC's dangling `../shared/fhir_value_types.json` ref is repointed to `../vocabulary/fhir_value_types.json`.
 - **D-point:** reuse generic-point sets — a set's `estimate` slot specializes to `coefficient`/`survival_prob`/`median` (§3.2.2 `→*` as written).
-- **D-prop:** add `numerator`+`denominator` terms; `proportion_estimate` set produces `[numerator, denominator, proportion, pct]` (a documented expansion beyond the template's prior statistics; CI bounds optional).
+- **D-prop:** add `numerator`+`denominator` terms; `proportion_estimate` set produces `[numerator, denominator, proportion, pct]` (a documented expansion beyond the template's prior statistics; CI bounds optional). On the AC concept side this is modelled as ONE `Proportion` concept (`valueType: Ratio`, `unitRule: unitless`) whose `numerator`/`denominator` are its `leaves` (`numerator.value`→term `numerator`, `denominator.value`→term `denominator`) — exactly as `ConfidenceInterval` uses `leaves` over a `Range`; `pct` is a presentation rendering (×100 of the proportion), not a stored leaf.
 - **D-basis:** `acdc_transformation` `contrastSpecification` supports BOTH bases; `coding`/`reference` required only for `model_coefficients`.
 
 **Conventions:**
@@ -38,10 +38,10 @@ The pivotal rule: the method references a *term*, the AC concept also references
 - `scripts/build_all_methods.py` — regenerates `lib/methods/AllMethods.json` by bundling per-file methods + vocab sections.
 
 **Modified:**
-- `lib/vocabulary/statistics_vocabulary.json` — add `numerator`/`denominator` terms; reframe header as the SKOS terminology layer (owned by neither, cited by both). **No `fhirValueType`** here (terminology stays primitive). Version `0.5.0`→`0.6.0`.
+- `lib/vocabulary/statistics_vocabulary.json` — add `numerator`/`denominator` terms; reframe header as the SKOS terminology layer (owned by neither, cited by both). **No `valueType`** here (terminology stays primitive). Version `0.5.0`→`0.6.0`.
 - `lib/vocabulary/output_class_templates.json` — concrete templates replace flat `statistics` with `statistics_set`/`additional_statistics`/`optional_statistics`; version `0.6.0`→`0.7.0`.
 - `lib/vocabulary/fhir_value_types.json` — add `Range`+`Count` to `complexTypes`; relax `layerMapping.ac_concept_statistics` (AC concepts may carry complex FHIR types).
-- `lib/concepts/AC_Concept_Model_v017.json` — repoint `$vocabulary`; make shared statistical concepts **thin** (`term` → terminology id, `fhirValueType`, `unit` policy; drop duplicated `definition`/`statoMapping`/`dataType`); introduce `ConfidenceInterval` (Range, two leaves → `CI_lower`/`CI_upper`); `resultPatterns` reference shared sets + derive constituents; repair `methodOutputSlotMapping`; version `0.17`→`0.18`.
+- `lib/concepts/AC_Concept_Model_v017.json` — repoint `$vocabulary`; make shared statistical concepts **thin** (`term` → terminology id, `valueType`, `unitRule` policy; drop duplicated `definition`/`statoMapping`/`dataType`); introduce `ConfidenceInterval` (Range, two leaves → `CI_lower`/`CI_upper`) and `Proportion` (Ratio, two leaves → `numerator`/`denominator`); `resultPatterns` reference shared sets + derive constituents; repair `methodOutputSlotMapping`; version `0.17`→`0.18`.
 - `model/linkML/acdc_method.yaml` — remove orphan `OutputClass`/`OutputShape`/`Distribution` enums; version `0.2.0`→`0.3.0`.
 - `model/json_schema/acdc_method.schema.json` — regenerated.
 - `model/linkML/acdc_transformation.yaml` — add contrast variant to `OutputDimensionBinding` + `ContrastSpecification`/`ContrastMember`/`ContrastGenerator`/`ContrastCell` classes; version `0.1.0`→`0.2.0`.
@@ -88,8 +88,8 @@ stats = load(VOCAB / "statistics_vocabulary.json")["statistics"]
 
 for aid, a in stats.items():
     check("dataType" in a, f"[A1] term {aid} missing primitive dataType")
-    check("fhirValueType" not in a,
-          f"[A1] term {aid} must NOT carry fhirValueType — FHIR datatype is a concept-side fact (D-layers)")
+    check("valueType" not in a,
+          f"[A1] term {aid} must NOT carry valueType — FHIR datatype is a concept-side fact (D-layers)")
 
 # A2: numerator/denominator terms exist (needed by proportion_estimate set)
 for needed in ("numerator", "denominator"):
@@ -109,7 +109,7 @@ if __name__ == "__main__":
 - [ ] **Step 2: Run it to verify it fails**
 
 Run: `.venv/bin/python scripts/validate_methods_model.py`
-Expected: FAIL — `term numerator not yet defined` / `term denominator not yet defined`. (The current atoms carry no `fhirValueType`, so the A1 absence-check already passes for them.)
+Expected: FAIL — `term numerator not yet defined` / `term denominator not yet defined`. (The current atoms carry no `valueType`, so the A1 absence-check already passes for them.)
 
 - [ ] **Step 3: Commit the scaffold**
 
@@ -315,7 +315,7 @@ git add lib/vocabulary/statistic_sets.json scripts/validate_methods_model.py
 
 ---
 
-### Task A4: `fhir_value_types.json` — add `Range`/`Count`, relax `layerMapping`
+### Task A4: `fhir_value_types.json` — add `Range`/`Count`/`Ratio`, relax `layerMapping`
 
 **Files:**
 - Modify: `lib/vocabulary/fhir_value_types.json`
@@ -328,7 +328,7 @@ Append after the set checks:
 ```python
 # ---- FHIR value types -----------------------------------------------------
 fvt = load(VOCAB / "fhir_value_types.json")
-for ct in ("Range", "Count"):
+for ct in ("Range", "Count", "Ratio"):
     check(ct in fvt["complexTypes"], f"[A4] complexType {ct} missing from fhir_value_types.json")
 check(fvt["layerMapping"]["ac_concept_statistics"] != "primitiveTypes",
       "[A4] layerMapping.ac_concept_statistics still restricted to primitiveTypes")
@@ -337,7 +337,7 @@ check(fvt["layerMapping"]["ac_concept_statistics"] != "primitiveTypes",
 - [ ] **Step 2: Run validator to confirm it fails**
 
 Run: `.venv/bin/python scripts/validate_methods_model.py`
-Expected: FAIL — `Range`/`Count` missing; `ac_concept_statistics` still `primitiveTypes`.
+Expected: FAIL — `Range`/`Count`/`Ratio` missing; `ac_concept_statistics` still `primitiveTypes`.
 
 - [ ] **Step 3: Edit `fhir_value_types.json`**
 
@@ -346,6 +346,7 @@ In `complexTypes`, add after `Quantity`:
 ```json
     "Range":           { "fhirDef": "Set of values bounded by low and high", "usage": "Confidence intervals (low/high are SimpleQuantity)", "compatiblePrimitives": ["decimal", "integer"] },
     "Count":           { "fhirDef": "Non-negative integer count", "usage": "Subject/event counts (n at risk, events, censored)", "compatiblePrimitives": ["integer"] },
+    "Ratio":           { "fhirDef": "Relationship of two Quantity values (numerator/denominator)", "usage": "Proportions (numerator/denominator leaves; unitRule = unitless)", "compatiblePrimitives": ["decimal"] },
 ```
 
 Change the `layerMapping` entry:
@@ -595,12 +596,12 @@ Append to the validator:
 ac = load(ROOT / "lib" / "concepts" / "AC_Concept_Model_v017.json")
 ac_concepts = ac["sharedStatisticsVocabulary"]["concepts"]
 ALLOWED_FHIR = {"decimal","integer","code","string","boolean","date","dateTime","id",
-                "Quantity","Range","Count","CodeableConcept","Identifier"}
-ALLOWED_UNIT = {"inherited","dimensionless","none","fixed: %",
-                "inherited or dimensionless","inherited or specified"}
+                "Quantity","Range","Ratio","Count","CodeableConcept","Identifier"}
+ALLOWED_UNIT = {"inherited","derived","fixed","unitless","none"}
 
 # AC concept -> set of terminology terms it covers (single-leaf via `term`,
-# multi-leaf via each leaf's `term`, e.g. ConfidenceInterval -> CI_lower/CI_upper).
+# multi-leaf via each leaf's `term`, e.g. ConfidenceInterval -> CI_lower/CI_upper,
+# Proportion -> numerator/denominator).
 def concept_terms(c):
     if "term" in c:
         return {c["term"]}
@@ -610,17 +611,17 @@ def concept_terms(c):
 COVER = {cid: concept_terms(c) for cid, c in ac_concepts.items()}
 
 # C1: each AC statistical concept is THIN — references terminology (term/leaves
-#     resolving to real terms) + carries a valid fhirValueType, and does NOT
+#     resolving to real terms) + carries a valid valueType, and does NOT
 #     re-state terminology-owned facts (single source).
 for cid, c in ac_concepts.items():
     check(("term" in c) ^ ("leaves" in c),
           f"[C1] AC concept {cid} must have exactly one of term / leaves")
     for t in concept_terms(c):
         check(t in stats, f"[C1] AC concept {cid} references unknown term {t!r}")
-    check(c.get("fhirValueType") in ALLOWED_FHIR,
-          f"[C1] AC concept {cid} fhirValueType {c.get('fhirValueType')!r} missing/invalid")
-    check(c.get("unit") in ALLOWED_UNIT,
-          f"[C1] AC concept {cid} unit {c.get('unit')!r} missing/invalid")
+    check(c.get("valueType") in ALLOWED_FHIR,
+          f"[C1] AC concept {cid} valueType {c.get('valueType')!r} missing/invalid")
+    check(c.get("unitRule") in ALLOWED_UNIT,
+          f"[C1] AC concept {cid} unitRule {c.get('unitRule')!r} missing/invalid")
     for forbidden in ("statoMapping", "definition", "dataType"):
         check(forbidden not in c,
               f"[C1] AC concept {cid} must not re-state {forbidden} (single source = terminology)")
@@ -672,7 +673,7 @@ _PATTERN_TO_TEMPLATE = {
 - [ ] **Step 2: Run validator to confirm it fails**
 
 Run: `.venv/bin/python scripts/validate_methods_model.py`
-Expected: FAIL — AC concepts have no `term`/`leaves`, still re-state `definition`/`statoMapping`/`dataType`, and lack `fhirValueType`/`unit`; patterns missing `statistics_set`; mapping pointing at `ComputedValue`.
+Expected: FAIL — AC concepts have no `term`/`leaves`, still re-state `definition`/`statoMapping`/`dataType`, and lack `valueType`/`unitRule`; patterns missing `statistics_set`; mapping pointing at `ComputedValue`.
 
 - [ ] **Step 3: Repoint `$vocabulary`**
 
@@ -705,51 +706,51 @@ git add lib/concepts/AC_Concept_Model_v017.json scripts/validate_methods_model.p
 
 ---
 
-### Task C2: Make AC statistical concepts thin (`term` + `fhirValueType`); add `ConfidenceInterval`
+### Task C2: Make AC statistical concepts thin (`term` + `valueType`); add `ConfidenceInterval`
 
 **Files:**
 - Modify: `lib/concepts/AC_Concept_Model_v017.json`
 
-Each concept becomes a thin reference: keep `label`/`shortLabel` (display) and `code` (the concept's own NCI identity); add `term` (→ the snake_case terminology id), `fhirValueType`, and `unit` (the unit *policy*, matching the Option_B `result.unit` convention — a symbolic policy, not a concrete UCUM code; the concrete unit is bound at transformation time); **delete** `definition`, `statoMapping`, and `dataType` (these are terminology-owned — single source, enforced by the C1 check). `term` is `skos:exactMatch` semantics: the concept *represents* the term, it is not identical to it.
+Each concept becomes a thin reference: keep `label`/`shortLabel` (display) and `code` (the concept's own NCI identity); add `term` (→ the snake_case terminology id), `valueType`, and `unitRule` (the unit *policy* — a symbolic rule, not a concrete UCUM code; the concrete unit is bound at transformation time, plus the optional `fixedUnit`/`inheritsFrom`/`inputUnitRelation` fields where relevant); **delete** `definition`, `statoMapping`, and `dataType` (these are terminology-owned — single source, enforced by the C1 check). `term` is `skos:exactMatch` semantics: the concept *represents* the term, it is not identical to it.
 
-The `unit` vocabulary (Option_B's): `inherited` (carries the analyte's unit), `dimensionless` (ratios/probabilities/criteria), `none` (counts), `fixed: %`, and the disjunctive `inherited or dimensionless` / `inherited or specified` where the unit depends on the model/context. Note the consistency with `fhirValueType`: `Quantity` concepts carry a real unit (`inherited`/`fixed: %`/disjunctive), `decimal`/`Count` concepts are `dimensionless`/`none`.
+The `unitRule` enum (`inherited | derived | fixed | unitless | none`): `inherited` (carries the analyte's unit), `unitless` (ratios/probabilities/test statistics — unit = 1; named `unitless` rather than `dimensionless` because "dimension" is reserved for the cube axes), `none` (not a quantity at all — counts/codes/flags), `fixed` (a literal constant unit, supplied via `fixedUnit`, e.g. `%`), `derived` (a compound unit built from input units). Note the coherence with `valueType`: `Quantity`/`Range` concepts allow `inherited`/`derived`/`fixed`/`unitless`; `Ratio` allows `unitless` (like-unit ratios/proportions) or `derived` (unlike-unit rates); `decimal`/`Count` concepts are `unitless`/`none`.
 
-| AC concept | `term` | `fhirValueType` | `unit` |
+| AC concept | `term` | `valueType` | `unitRule` |
 |------------|--------|------------------|--------|
 | `Estimate` | `"estimate"` | `Quantity` | `inherited` |
 | `SE` | `"SE"` | `Quantity` | `inherited` |
-| `DF` | `"df"` | `decimal` | `dimensionless` |
-| `PValue` | `"p_value"` | `decimal` | `dimensionless` |
-| `TStatistic` | `"t_statistic"` | `decimal` | `dimensionless` |
-| `FStatistic` | `"F_statistic"` | `decimal` | `dimensionless` |
-| `ChiSquared` | `"chi_squared"` | `decimal` | `dimensionless` |
-| `Coefficient` | `"coefficient"` | `Quantity` | `inherited or dimensionless` |
-| `HazardRatio` | `"hazard_ratio"` | `decimal` | `dimensionless` |
-| `OddsRatio` | `"odds_ratio"` | `decimal` | `dimensionless` |
-| `SurvivalProb` | `"survival_prob"` | `decimal` | `dimensionless` |
+| `DF` | `"df"` | `decimal` | `unitless` |
+| `PValue` | `"p_value"` | `decimal` | `unitless` |
+| `TStatistic` | `"t_statistic"` | `decimal` | `unitless` |
+| `FStatistic` | `"F_statistic"` | `decimal` | `unitless` |
+| `ChiSquared` | `"chi_squared"` | `decimal` | `unitless` |
+| `Coefficient` | `"coefficient"` | `Quantity` | `inherited` |
+| `HazardRatio` | `"hazard_ratio"` | `decimal` | `unitless` |
+| `OddsRatio` | `"odds_ratio"` | `decimal` | `unitless` |
+| `SurvivalProb` | `"survival_prob"` | `decimal` | `unitless` |
 | `Median` | `"median"` | `Quantity` | `inherited` |
 | `Mean` | `"mean"` | `Quantity` | `inherited` |
 | `NRisk` | `"n_risk"` | `Count` | `none` |
 | `NEvent` | `"n_event"` | `Count` | `none` |
 | `NCensored` | `"n_censored"` | `Count` | `none` |
-| `AIC` | `"AIC"` | `decimal` | `dimensionless` |
-| `BIC` | `"BIC"` | `decimal` | `dimensionless` |
-| `Minus2LogL` | `"minus2LogL"` | `decimal` | `dimensionless` |
-| `DF_Num` | `"df_num"` | `decimal` | `dimensionless` |
-| `DF_Den` | `"df_den"` | `decimal` | `dimensionless` |
-| `Value` | `"value"` | `Quantity` | `inherited or specified` |
+| `AIC` | `"AIC"` | `decimal` | `unitless` |
+| `BIC` | `"BIC"` | `decimal` | `unitless` |
+| `Minus2LogL` | `"minus2LogL"` | `decimal` | `unitless` |
+| `DF_Num` | `"df_num"` | `decimal` | `unitless` |
+| `DF_Den` | `"df_den"` | `decimal` | `unitless` |
+| `Value` | `"value"` | `Quantity` | `inherited` |
 
-(`Coefficient` is typed `Quantity` rather than `decimal` so its `inherited` branch — linear-model coefficients carry analyte units — is type-valid; the GLM/Cox log-scale branch is then a `Quantity` with a unity/dimensionless unit. This is the one type bumped from the earlier decimal assignment.)
+(`Coefficient` is typed `Quantity` rather than `decimal` so its `inherited` branch — linear-model coefficients carry analyte units — is type-valid; the GLM/Cox log-scale branch is then a `Quantity` with a unity/unitless unit. This is the one type bumped from the earlier decimal assignment.)
 
-- [ ] **Step 1: Rewrite each concept above to the thin form.** Example (`Estimate`) — note `definition`/`statoMapping`/`dataType` are gone, `term`/`fhirValueType`/`unit` added:
+- [ ] **Step 1: Rewrite each concept above to the thin form.** Example (`Estimate`) — note `definition`/`statoMapping`/`dataType` are gone, `term`/`valueType`/`unitRule` added:
 
 ```json
       "Estimate": {
         "label": "Point estimate",
         "shortLabel": "est",
         "term": "estimate",
-        "fhirValueType": "Quantity",
-        "unit": "inherited",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
         "code": { "system": "NCI", "value": null }
       },
 ```
@@ -762,8 +763,8 @@ Delete the `CI_Lower` and `CI_Upper` concept entries. Add a multi-leaf concept (
       "ConfidenceInterval": {
         "label": "Confidence interval",
         "shortLabel": "CI",
-        "fhirValueType": "Range",
-        "unit": "inherited",
+        "valueType": "Range",
+        "unitRule": "inherited",
         "leaves": [
           { "fhirPath": "low.value",  "term": "CI_lower" },
           { "fhirPath": "high.value", "term": "CI_upper" }
@@ -772,7 +773,25 @@ Delete the `CI_Lower` and `CI_Upper` concept entries. Add a multi-leaf concept (
       },
 ```
 
-Each leaf is a self-describing object: `fhirPath` is the FHIR R5 `Range` element path; `term` is the explicit terminology FK (same key single-leaf concepts use). The validator's `concept_terms` reads each `leaf["term"]` — so `ConfidenceInterval` covers `CI_lower`+`CI_upper`. The single `unit: "inherited"` applies to both bounds — realising spec §4.1's shared unit (the CI carries the same analyte unit as `Estimate`).
+Each leaf is a self-describing object: `fhirPath` is the FHIR R5 `Range` element path; `term` is the explicit terminology FK (same key single-leaf concepts use). The validator's `concept_terms` reads each `leaf["term"]` — so `ConfidenceInterval` covers `CI_lower`+`CI_upper`. The single `unitRule: "inherited"` applies to both bounds — realising spec §4.1's shared unit (the CI carries the same analyte unit as `Estimate`).
+
+The same multi-leaf shape models the proportion (D-prop). There is ONE `Proportion` concept of FHIR `Ratio` datatype whose two leaves are its numerator/denominator; it is `unitless` (the ratio's unit is 1), and `Ratio` is a registered `valueType` with the coherence `Ratio → {unitless, derived}`:
+
+```json
+      "Proportion": {
+        "label": "Proportion",
+        "shortLabel": "prop",
+        "valueType": "Ratio",
+        "unitRule": "unitless",
+        "leaves": [
+          { "fhirPath": "numerator.value",   "term": "numerator" },
+          { "fhirPath": "denominator.value", "term": "denominator" }
+        ],
+        "code": { "system": "NCI", "value": null }
+      },
+```
+
+So `numerator`/`denominator` are FHIR `Ratio` datatype elements (leaves of `Proportion`), not four separate standalone concepts. `proportion` is the ratio's computed value and `pct` is a presentation rendering (×100 of the proportion), not a stored concept/leaf.
 
 - [ ] **Step 3: Run validator (C1 should pass; C2/C3 still red until C3 task).**
 
@@ -783,7 +802,7 @@ Expected: the `[C1]` failures clear. `[C2]`/`[C3]` remain until Task C3.
 
 ```bash
 git add lib/concepts/AC_Concept_Model_v017.json
-# "AC model: thin statistical concepts (term + FHIR type); CI becomes one Range concept"
+# "AC model: thin statistical concepts (term + FHIR type); CI becomes one Range concept, Proportion one Ratio concept"
 ```
 
 ---
@@ -956,7 +975,7 @@ title: ACDC Output Class Vocabulary Schema
 description: >-
   Governs the statistic terminology, the statistic sets, the output class
   templates (set composition), the thin AC statistical-concept shape (term +
-  fhirValueType), and the AC result-pattern shape. Companion to acdc_method.yaml.
+  valueType), and the AC result-pattern shape. Companion to acdc_method.yaml.
   See docs/superpowers/specs/2026-06-11-output-class-statistic-sets-design.md.
 version: 0.1.0
 prefixes:
@@ -1017,13 +1036,16 @@ classes:
         multivalued: true
         inlined_as_list: true
         range: ConceptLeaf
-      fhirValueType: { required: true, description: FHIR value type (primitive or complex). }
-      unit:
+      valueType: { required: true, description: FHIR value type (primitive or complex). }
+      unitRule:
         required: true
         description: >-
-          Symbolic unit policy (Option_B convention), not a concrete UCUM code:
-          inherited | dimensionless | none | "fixed: %" | "inherited or dimensionless"
-          | "inherited or specified". The concrete unit is bound at transformation time.
+          Symbolic unit rule, not a concrete UCUM code:
+          inherited | derived | fixed | unitless | none. The concrete unit is bound
+          at transformation time; `fixedUnit` supplies the literal when unitRule = fixed.
+      fixedUnit: { description: "Literal unit, required only when unitRule = fixed (e.g. \"%\")." }
+      inheritsFrom: { description: "OPTIONAL: names the source concept when unitRule = inherited and the source is not the obvious single value input." }
+      inputUnitRelation: { description: "OPTIONAL: uniform | heterogeneous — only when >=2 unit-bearing inputs." }
       code: { inlined: true, description: The concept's own code (e.g. NCI). }
     rules:
       - description: exactly one of term / leaves is present.
@@ -1564,7 +1586,7 @@ git add -A model/json_schema/ lib/
 
 **Spec coverage — output-class spec (`2026-06-11-output-class-statistic-sets-design.md`):**
 - §3.1 statistic_sets → Task A3. §3.1 numerator/denominator terms → A2. §3.2/§3.2.2 template rewrite → B2 (mapping validated, all 32 OK). §3.2.1 invariant → B1 check. §4 FHIR datatypes → **on AC concepts only** (C2); Range/Count + layerMapping → A4; CI as one Range concept → C2. §5 unification (concept→terminology `term` crosswalk, shared sets, dimensions kept, methodOutputSlotMapping repair) → C1–C3. §6.1 acdc_method enum cleanup → D1. §6.2 acdc_output_classes.yaml → D2. §6.3 acdc_transformation (no change for stat-sets) → confirmed; contrast addition handled in D3. §7 library/aggregate changes → A2/A3/A4, B2, C, F. §7.6 AllMethods rebuild → F1.
-- **D-layers deliberately revises the spec** (recorded with the user): spec **D6** put `fhirValueType` on the shared atom — the plan instead keeps terminology primitive and homes `fhirValueType` only on the AC concept (consistent with `acdc_method.yaml`'s "FHIR type flows from the concept at transformation time"). Spec **D7**'s "shared vocabulary owned by neither" is kept and sharpened: it is the **terminology** layer; the method cites terminology, the concept cites terminology + overlays FHIR; the two are bridged only by the transformation (`Method ← Transformation → Concept`), so the method never references a concept.
+- **D-layers deliberately revises the spec** (recorded with the user): spec **D6** put `valueType` on the shared atom — the plan instead keeps terminology primitive and homes `valueType` only on the AC concept (consistent with `acdc_method.yaml`'s "FHIR type flows from the concept at transformation time"). Spec **D7**'s "shared vocabulary owned by neither" is kept and sharpened: it is the **terminology** layer; the method cites terminology, the concept cites terminology + overlays FHIR; the two are bridged only by the transformation (`Method ← Transformation → Concept`), so the method never references a concept.
 - Open items: Q1 (D-point), Q2 (D-prop), Q3 (AllMethods build step = F1), Q4 (D-home = `lib/vocabulary`, as terminology) — all resolved with the user.
 
 **Spec coverage — contrast spec (`2026-06-11-contrast-specification-design.md`):**

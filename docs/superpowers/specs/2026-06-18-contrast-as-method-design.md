@@ -86,7 +86,7 @@ Both concretes carry just `covariance`; they differ only in what the two index a
 **(c) AC concept + patterns** in `AC_Concept_Model_v017.json`:
 ```jsonc
 "Covariance": { "label": "Covariance", "shortLabel": "cov", "term": "covariance",
-                "fhirValueType": "decimal", "unit": "inherited", "code": { "system": "NCI", "value": null } }   // (estimate unit)²
+                "valueType": "decimal", "unitRule": "inherited", "code": { "system": "NCI", "value": null } }   // (estimate unit)²
 
 "LSMeansCovariance":   { "definition": "Covariance of the LS-means, long form (one value per ordered cell pair).",
                          "statistics_set": [], "additional_statistics": ["Covariance"], "constituents": ["Covariance"],

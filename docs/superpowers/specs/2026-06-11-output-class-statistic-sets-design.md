@@ -29,7 +29,7 @@ recorded in §2.
 | D3 | Migration scope | **Full at the vocab + concept + schema layer** (new `statistic_sets`, rewritten `output_class_templates`, unified AC concept model, new vocab linkML). **Method files need no structural edit** — `indexed_by` is unchanged and `output_type`/`name` FKs are stable. |
 | D4 | Vocab gets its own linkML schema | **Yes** — new `model/linkML/acdc_output_classes.yaml`. |
 | D5 | Sheet-2 `point_estimate` vs existing atom `estimate` | **Map to existing `estimate`** (keeps its STATO code); `point_estimate` is a display alias. |
-| D6 | FHIR datatypes on AC concepts | **AC statistical concepts carry proper FHIR `valueType`s**, like the other concept files — dimensionless → `decimal`, single measured value → `Quantity`, counts → `Count`, the **confidence interval → one `Range` concept** (`low`/`high`). General rule: a method atom is a FHIR *leaf value*; the AC concept wraps one or more leaves (§4.1). Lifts the `layerMapping.ac_concept_statistics → primitiveTypes` restriction. **Method side stays primitive** (sets/templates keep `CI_lower`/`CI_upper` as two leaf atoms; §3.2.1 invariant intact). See §4. |
+| D6 | FHIR datatypes on AC concepts | **AC statistical concepts carry proper FHIR `valueType`s**, like the other concept files — unitless → `decimal`, single measured value → `Quantity`, counts → `Count`, the **confidence interval → one `Range` concept** (`low`/`high`). General rule: a method atom is a FHIR *leaf value*; the AC concept wraps one or more leaves (§4.1). Lifts the `layerMapping.ac_concept_statistics → primitiveTypes` restriction. **Method side stays primitive** (sets/templates keep `CI_lower`/`CI_upper` as two leaf atoms; §3.2.1 invariant intact). See §4. |
 | D7 | Reconcile `AC_Concept_Model_v017.json` with the output classes | **Single source of truth + crosswalk, both namings kept.** One shared `statistic_sets` (and the shared statistic atoms) are authoritative, referenced by **both** sides. **Method layer keeps snake_case** (FK-stable machine ids: `estimate`, `ls_means`); **AC keeps PascalCase `conceptId`s** aligned with sibling concept files (OC, Option_B): `Estimate`, `LSMeans`. The two are bound by an explicit, **build-validated** `sameAs` crosswalk — not hand-synced copies. `methodOutputSlotMapping` repaired. AC model is **in scope** for 1.0. See §5. |
 
 ## 3. The three-layer vocabulary stack
@@ -180,7 +180,7 @@ So each AC statistical concept declares its real FHIR `valueType`:
 
 | AC statistic(s) | FHIR `valueType` |
 |-----------------|------------------|
-| p_value, df, df_num, df_den, F/t/z/χ² statistics, odds_ratio, hazard_ratio (dimensionless) | `decimal` |
+| p_value, df, df_num, df_den, F/t/z/χ² statistics, odds_ratio, hazard_ratio (unitless) | `decimal` |
 | estimate, SE, survival_prob, median, mean (single measured value, carries a unit) | `Quantity` (= `value` + `unit`; unit bound at transformation time) |
 | n_risk, n_event, n_censored (counts) | `Count` |
 | the confidence interval (`CI_lower` + `CI_upper`) | `Range` (= `low` + `high`, each a `SimpleQuantity`) |
@@ -199,6 +199,7 @@ the two layers is:
 | `Estimate` | `Quantity` | `value` ← `estimate` |
 | `SE` | `Quantity` | `value` ← `SE` |
 | `ConfidenceInterval` | `Range` | `low.value` ← `CI_lower`; `high.value` ← `CI_upper` |
+| `Proportion` | `Ratio` (`unitRule: unitless`) | `numerator.value` ← `numerator`; `denominator.value` ← `denominator` |
 | `PValue` | `decimal` | (the value itself) ← `p_value` |
 | `NRisk` | `Count` | `value` ← `n_risk` |
 
@@ -216,6 +217,14 @@ bound concept) across the estimate and its confidence interval — i.e. across
 method side still emits only the bare decimal leaves; the unit is supplied once
 at transformation time.
 
+The same leaves-over-a-complex-type pattern covers proportions. The current model
+has **one** `Proportion` AC concept typed `valueType: Ratio` (the FHIR `Ratio`
+datatype, a registered valueType) with `unitRule: unitless`; its `numerator` and
+`denominator` are its two `leaves` (`numerator.value` / `denominator.value`),
+exactly as `ConfidenceInterval` carries `CI_lower`/`CI_upper` as leaves over a
+`Range`. `pct` is a rendering of that ratio, not a separate measured leaf. The
+method side still emits the decomposed atoms (`numerator`, `denominator`).
+
 What this does and does not touch:
 
 - **Method side unaffected.** `statistic_sets` and `output_class_templates` keep
@@ -223,14 +232,14 @@ What this does and does not touch:
   §3.2.1 invariant holds.
 - **Single source of truth (D7).** The shared statistic atom carries **both** a
   primitive `dataType` (read by the method / sets / templates) **and** a
-  `fhirValueType` (read by the AC concept layer and the recording layer). One
+  `valueType` (read by the AC concept layer and the recording layer). One
   record, two typed views — exactly what `layerMapping` anticipates.
 - **Crosswalk is leaf-aware, not strictly 1:1.** A `Range`/`Quantity`-with-
   multiple-leaves concept maps to >1 atom via its leaves (see §5.2). For all
   single-leaf types it stays effectively 1:1.
 - **Vocab change.** Add `Range` and `Count` to `fhir_value_types.json`
   `complexTypes`; relax `layerMapping.ac_concept_statistics` to resolve to the
-  atom's `fhirValueType` rather than `primitiveTypes` only.
+  atom's `valueType` rather than `primitiveTypes` only.
 
 ## 5. Unifying `AC_Concept_Model_v017.json` with the output classes (D7)
 
@@ -363,14 +372,14 @@ preserved). Bump version note only if regenerated.
    is unaffected — no output structure in it.)
 7. `lib/vocabulary/fhir_value_types.json` (§4) — add `Range` and `Count` to
    `complexTypes`; **relax `layerMapping.ac_concept_statistics`** to allow
-   complex types (resolve to the atom's `fhirValueType`, not `primitiveTypes`
+   complex types (resolve to the atom's `valueType`, not `primitiveTypes`
    only).
-8. Shared statistic atoms (§4, §5) — each atom gains a `fhirValueType` (e.g.
+8. Shared statistic atoms (§4, §5) — each atom gains a `valueType` (e.g.
    `estimate → Quantity`, `p_value → decimal`, `n_risk → Count`) alongside its
    existing primitive `dataType`. Lives wherever the shared spine lands (§8 Q4).
 9. `lib/concepts/AC_Concept_Model_v017.json` (§5) — `sharedStatisticsVocabulary`
    concepts gain `sameAs` crosswalk to the shared atoms (and surface the
-   `fhirValueType`) and stop redefining semantics; `resultPatterns` reference the
+   `valueType`) and stop redefining semantics; `resultPatterns` reference the
    shared `statistic_sets` (constituents derived/validated) and keep `dimensions`;
    `methodOutputSlotMapping` repaired to real slot names + patterns; version bump.
 
@@ -386,8 +395,11 @@ edited (no `output_type`/`indexed_by`/`statistics` references in it).
 2. **`proportion_estimate` atoms**: Sheet 2 lists `numerator, denominator,
    proportion, pct`; the current `proportion_estimate` template lists
    `proportion, pct, CI_lower, CI_upper`. The set covers numerator/denominator;
-   CI bounds remain `optional_statistics`. Confirm numerator/denominator are
-   wanted as first-class atoms.
+   CI bounds remain `optional_statistics`. On the AC side these resolve to a
+   single `Proportion` concept (`valueType: Ratio`, `unitRule: unitless`) whose
+   `leaves` are `numerator`/`denominator` and whose `pct` is a rendering (§4.1) —
+   so `numerator`/`denominator` are method-side leaf atoms, not standalone AC
+   concepts. Confirm the set keeps them as decomposed leaf atoms on the method side.
 3. **`AllMethods.json` regeneration**: confirm there is (or we add) a build step;
    otherwise it is rebuilt by bundling the source files during implementation.
 4. **Physical home of the shared spine** (§5.2): whether the authoritative
