@@ -1,16 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8"/>
-    <title>AC/DC Smartphrase Demos</title>
-  </head>
-  <body>
-    <h1>AC/DC Smartphrase — Proof of Concept Demos</h1>
-    <ul>
-      <li><a href="hover-demo.html">Hover / Tooltip</a> — reveal AC/DC metadata for a tagged smartphrase</li>
-      <li><a href="resolve-demo.html">Resolve</a> — populate smartphrase placeholders with study-specific values</li>
-      <li><a href="trace-demo.html">Trace</a> — display the full resolution chain from DataConcept to physical dataset</li>
-    </ul>
-    <!-- To be completed as part of issue #9 -->
-  </body>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AC/DC Smartphrase — Proof of Concept Demos</title>
+<style>
+  :root { --bg:#f7f8fa; --panel:#fff; --ink:#1c2330; --muted:#5b6b82; --line:#dde3ec; --accent:#2f6df6; --sap:#7a3df6; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:26px 24px 20px; border-bottom:1px solid var(--line); background:var(--panel); }
+  header h1 { margin:0 0 6px; font-size:22px; }
+  header p { margin:0; color:var(--muted); max-width:720px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; padding:22px 24px; max-width:1040px; }
+  a.card { display:block; text-decoration:none; color:inherit; background:var(--panel); border:1px solid var(--line);
+     border-radius:12px; padding:18px; transition:border-color .12s, transform .12s, box-shadow .12s; }
+  a.card:hover { border-color:var(--sap); transform:translateY(-2px); box-shadow:0 6px 20px rgba(122,61,246,.10); }
+  .card .mode { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:#fff; background:var(--sap); padding:2px 9px; border-radius:20px; }
+  .card h2 { margin:12px 0 6px; font-size:17px; }
+  .card p { margin:0; color:var(--muted); font-size:13.5px; }
+  .card .q { margin-top:11px; font-size:13px; color:var(--sap); font-weight:600; }
+  .meta { padding:0 24px 28px; max-width:1040px; color:var(--muted); font-size:12.5px; }
+  .meta code { background:#eef1f6; padding:1px 5px; border-radius:4px; }
+  .meta a { color:var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>AC/DC Smartphrase — Proof-of-Concept Demos</h1>
+  <p>Three interaction modes over a single worked example: the CDISC Pilot primary efficacy analysis
+     (change from baseline in ADAS-Cog(11) at Week 24, ANCOVA). Each demo is self-contained — open it
+     directly in a browser, no server required.</p>
+</header>
+
+<div class="cards">
+  <a class="card" href="hover-demo.html">
+    <span class="mode">Hover</span>
+    <h2>Inspect</h2>
+    <p>Hover any smartphrase in a finished SAP passage to reveal the AC/DC metadata behind it — sp-oid, role, bound concepts and grounding IRIs. Read-only.</p>
+    <div class="q">“What is this phrase linked to?”</div>
+  </a>
+  <a class="card" href="resolve-demo.html">
+    <span class="mode">Resolve</span>
+    <h2>Author &amp; bind</h2>
+    <p>Edit the AC/DC instance and watch the SAP prose resolve live; the model metadata is rebuilt from the same bindings. The bidirectional authoring surface.</p>
+    <div class="q">“Model ⇄ SAP, both directions.”</div>
+  </a>
+  <a class="card" href="trace-demo.html">
+    <span class="mode">Trace</span>
+    <h2>Provenance</h2>
+    <p>Click a smartphrase to follow its resolution chain down to the data: DataConcept → ADaM Class Variable → study variable → physical dataset.</p>
+    <div class="q">“Where does this number come from?”</div>
+  </a>
+</div>
+
+<p class="meta">
+  All three demos share one model fragment — <a href="data/cdisc-pilot-acdc.json">data/cdisc-pilot-acdc.json</a>
+  (authored as <code>data/acdc-data.js</code>; resolution helpers in <code>data/acdc-render.js</code>).
+  Smartphrase and role definitions are reproduced from <code>ACDC_Transformation_Library v0.6.0</code>;
+  identifiers ground in USDM / ARS / STATO / AC-DC LinkML IRIs. See
+  <code>spec/smartphrase-spec.md</code> and <code>spec/sap-tags.md</code> for the namespace specifications.
+</p>
+</body>
 </html>

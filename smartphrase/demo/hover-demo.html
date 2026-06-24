@@ -1,12 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8"/>
-    <title>Smartphrase Demo — Hover / Tooltip</title>
-  </head>
-  <body>
-    <h1>Hover / Tooltip Demo</h1>
-    <p>Hover over a smartphrase tag to reveal the underlying AC/DC metadata.</p>
-    <!-- To be completed as part of issue #9 -->
-  </body>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Smartphrase Demo — Hover / Tooltip</title>
+<style>
+  :root {
+    --bg:#f7f8fa; --panel:#fff; --ink:#1c2330; --muted:#5b6b82; --line:#dde3ec;
+    --accent:#2f6df6; --sap:#7a3df6; --sap-soft:#f1ebff; --warn:#b25b00; --ok:#0a7d52;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:18px 24px; border-bottom:1px solid var(--line); background:var(--panel); }
+  header h1 { margin:0 0 4px; font-size:19px; }
+  header p { margin:0; color:var(--muted); font-size:13px; }
+  header a { color:var(--accent); text-decoration:none; }
+  .wrap { display:grid; grid-template-columns:1fr 340px; gap:18px; padding:18px 24px; align-items:start; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; }
+  .panel > h2 { margin:0; padding:11px 16px; font-size:13px; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid var(--line); color:var(--sap); background:var(--sap-soft); border-radius:10px 10px 0 0; }
+  .body { padding:18px; }
+
+  .analysis-chip { display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--muted);
+     border:1px dashed var(--sap); background:var(--sap-soft); border-radius:7px; padding:5px 10px; margin-bottom:14px; cursor:help; }
+  .analysis-chip b { color:var(--sap); }
+
+  .sap-prose { font-size:18px; line-height:1.85; }
+  .sap-prose .sp { background:var(--sap-soft); border-bottom:2px solid var(--sap); border-radius:3px 3px 0 0;
+     padding:1px 3px; cursor:help; transition:background .12s; outline:none; }
+  .sap-prose .sp:hover, .sap-prose .sp:focus, .sap-prose .sp.active { background:#ffe9a8; }
+  .sap-prose .sp.err { background:#ffe1d6; border-bottom-color:var(--warn); }
+
+  /* inspector */
+  .inspector { position:sticky; top:18px; }
+  .insp-empty { color:var(--muted); font-size:13px; }
+  .kv { font-size:13px; margin:0 0 9px; }
+  .kv .k { font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); display:block; }
+  .kv .v { font-weight:600; }
+  .mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .tmpl { font-family:ui-monospace,monospace; font-size:12px; background:#f0f2f7; padding:1px 6px; border-radius:4px; }
+  .bind-card { border:1px solid var(--line); border-radius:8px; padding:9px 11px; margin-top:9px; }
+  .bind-card .nm { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  .iri { font-family:ui-monospace,monospace; font-size:11px; color:var(--accent); word-break:break-all; }
+  .badge { font-size:10px; background:#fff3df; color:var(--warn); border:1px solid #f0d9b0; padding:0 5px; border-radius:4px; margin-left:5px; }
+  .role-tag { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:#fff; background:var(--sap); padding:1px 7px; border-radius:20px; }
+  .footnote { padding:0 24px 24px; color:var(--muted); font-size:12px; }
+  .footnote code { background:#eef1f6; padding:1px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Smartphrase Hover Demo — inspect the model behind the prose</h1>
+  <p>A finished SAP passage. Hover (or keyboard-focus) any highlighted smartphrase to reveal the AC/DC
+     metadata it resolves from — nothing is edited. CDISC Pilot primary efficacy analysis.
+     · <a href="index.html">← all demos</a></p>
+</header>
+
+<div class="wrap">
+  <section class="panel">
+    <h2>SAP § 4.1.2 — Main Analytical Approach</h2>
+    <div class="body">
+      <span class="analysis-chip" id="analysisChip" tabindex="0"></span>
+      <div class="sap-prose" id="prose"></div>
+    </div>
+  </section>
+
+  <aside class="inspector">
+    <section class="panel">
+      <h2>AC/DC metadata</h2>
+      <div class="body" id="inspector">
+        <p class="insp-empty">Hover a highlighted phrase to inspect its smartphrase definition and bound concepts.</p>
+      </div>
+    </section>
+  </aside>
+</div>
+
+<p class="footnote">
+  Each highlight is a <code>smartphrase:phrase</code>; the dashed chip is the section-level
+  <code>smartphrase:analysis</code>. The inspector shows the <code>sp-oid</code>, role, phrase template and
+  every <code>smartphrase:binding</code> with its resolved short/long labels and grounding IRI
+  (<span class="badge">illustrative</span> = placeholder pending the authoritative USDM/ARS/STATO mapping).
+</p>
+
+<script src="data/acdc-data.js"></script>
+<script src="data/acdc-render.js"></script>
+<script>
+"use strict";
+const MODEL = window.ACDC;
+const R = window.ACDCRender;
+const A = MODEL.analyses["AC.PRIMARY.ADASCOG"];
+
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ---- section-level analysis chip ---- */
+const chip = document.getElementById("analysisChip");
+chip.innerHTML = '<b>smartphrase:analysis</b> ac-id=' + A.id + ' · ' + A.type;
+chip.onmouseenter = chip.onfocus = function(){
+  const m = MODEL.concepts[A.usesMethod];
+  document.getElementById("inspector").innerHTML =
+    '<div class="kv"><span class="k">element</span><span class="v">smartphrase:analysis</span></div>' +
+    kv("ac-id", A.id) +
+    kv("instance of template", A.template) +
+    kv("type", A.type) +
+    kv("uses method", m.short + " — " + m.long) +
+    kvMono("method formula", m.formula) +
+    kvIri("addresses objective (USDM)", A.usdm_objective) +
+    kvIri("ARS analysis", A.ars_analysis) +
+    kvIri("instance IRI", A.iri);
+  setActive(null);
+};
+
+function kv(k,v){ return '<div class="kv"><span class="k">'+esc(k)+'</span><span class="v">'+esc(v)+'</span></div>'; }
+function kvMono(k,v){ return '<div class="kv"><span class="k">'+esc(k)+'</span><span class="v mono">'+esc(v)+'</span></div>'; }
+function kvIri(k,v){ return '<div class="kv"><span class="k">'+esc(k)+'</span><span class="iri">'+esc(v)+'</span></div>'; }
+
+/* ---- render the resolved prose with hoverable spans ---- */
+const prose = document.getElementById("prose");
+const parts = R.resolveSentence(MODEL, A);
+parts.forEach(function(p, idx){
+  const span = document.createElement("span");
+  span.className = "sp" + (p.err ? " err" : "");
+  span.tabIndex = 0;
+  let txt = p.text;
+  if (idx === 0) txt = R.capitalise(txt);
+  span.textContent = txt;
+  span.dataset.idx = idx;
+  span.onmouseenter = span.onfocus = function(){ showPhrase(p, span); };
+  prose.appendChild(span);
+  prose.appendChild(document.createTextNode(" "));
+});
+prose.appendChild(document.createTextNode(A.trailing_prose));
+
+function setActive(span){
+  document.querySelectorAll(".sp.active").forEach(function(s){ s.classList.remove("active"); });
+  if (span) span.classList.add("active");
+}
+
+function showPhrase(p, span){
+  setActive(span);
+  const sp = MODEL.smartPhrases[p.sp];
+  let html =
+    '<div class="kv"><span class="k">role</span><span class="role-tag">'+esc(sp.role)+'</span></div>' +
+    kv("sp-oid", p.sp) +
+    kv("name", sp.name) +
+    '<div class="kv"><span class="k">phrase template</span><span class="tmpl">'+esc(sp.phrase_template)+'</span></div>' +
+    kv("resolves to", "“" + p.text + "”");
+  if (p.err) html += '<div class="kv"><span class="k">resolution</span><span class="v" style="color:var(--warn)">'+esc(p.err)+'</span></div>';
+
+  const binds = Object.entries(p.item.bindings);
+  if (binds.length){
+    binds.forEach(function(pair){
+      const name = pair[0], b = pair[1];
+      let card = '<div class="bind-card"><div class="nm">binding · '+esc(name)+'</div>';
+      if (b.conceptId){
+        const c = MODEL.concepts[b.conceptId];
+        card += kv("concept-id", b.conceptId);
+        if (c){
+          card += kv("short", c.short) + kv("long", c.long) + kv("render", b.render || "—");
+          card += '<div class="kv"><span class="k">grounding IRI</span><span class="iri">'+esc(c.iri)+'</span>'+
+                  (c.iri_status==="illustrative"?'<span class="badge">illustrative</span>':'')+'</div>';
+        } else {
+          card += '<div class="kv"><span class="v" style="color:var(--warn)">unresolved concept</span></div>';
+        }
+      } else {
+        card += kv("literal value", b.value);
+      }
+      card += '</div>';
+      html += card;
+    });
+  } else {
+    html += '<div class="bind-card"><div class="nm">no placeholders — fixed phrase</div></div>';
+  }
+  document.getElementById("inspector").innerHTML = html;
+}
+</script>
+</body>
 </html>
