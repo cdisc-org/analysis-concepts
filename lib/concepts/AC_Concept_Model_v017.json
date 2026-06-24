@@ -327,6 +327,72 @@
           "value": null
         }
       },
+      "GeometricMean": {
+        "label": "Geometric mean",
+        "shortLabel": "geo mean",
+        "term": "geometric_mean",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "HarmonicMean": {
+        "label": "Harmonic mean",
+        "shortLabel": "harm mean",
+        "term": "harmonic_mean",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "TrimmedMean": {
+        "label": "Trimmed mean",
+        "shortLabel": "trim mean",
+        "term": "trimmed_mean",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "WinsorizedMean": {
+        "label": "Winsorized mean",
+        "shortLabel": "wins mean",
+        "term": "winsorized_mean",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "CoefficientOfVariation": {
+        "label": "Coefficient of variation",
+        "shortLabel": "CV",
+        "term": "cv",
+        "valueType": "decimal",
+        "unitRule": "unitless",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "GeometricCV": {
+        "label": "Geometric coefficient of variation",
+        "shortLabel": "geo CV",
+        "term": "geometric_cv",
+        "valueType": "decimal",
+        "unitRule": "unitless",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
       "NRisk": {
         "label": "Number at risk",
         "shortLabel": "n at risk",

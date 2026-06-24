@@ -407,33 +407,6 @@
       "dataType": "numeric",
       "description": "Count of non-missing observations"
     },
-    "n_obs": {
-      "conceptId": "n_obs",
-      "name": "Total number of observations",
-      "label": null,
-      "ncitCode": null,
-      "codings": [],
-      "dataType": "numeric",
-      "description": "Total number of observations (non-missing + missing)"
-    },
-    "n_missing": {
-      "conceptId": "n_missing",
-      "name": "Count of missing observations",
-      "label": null,
-      "ncitCode": null,
-      "codings": [],
-      "dataType": "numeric",
-      "description": "Count of missing observations"
-    },
-    "pct_missing": {
-      "conceptId": "pct_missing",
-      "name": "Percentage of missing observations",
-      "label": null,
-      "ncitCode": null,
-      "codings": [],
-      "dataType": "numeric",
-      "description": "Percentage of missing observations"
-    },
     "geometric_mean": {
       "conceptId": "geometric_mean",
       "name": "Geometric mean",
