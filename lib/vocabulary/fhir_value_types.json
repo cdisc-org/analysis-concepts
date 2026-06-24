@@ -16,6 +16,7 @@
     "Quantity":        { "fhirDef": "Measured amount with unit", "usage": "Numeric clinical values (measurements, scores, durations)", "compatiblePrimitives": ["decimal", "integer"] },
     "Range":           { "fhirDef": "Set of values bounded by low and high", "usage": "Confidence intervals (low/high are SimpleQuantity)", "compatiblePrimitives": ["decimal", "integer"] },
     "Count":           { "fhirDef": "Non-negative integer count", "usage": "Subject/event counts (n at risk, events, censored)", "compatiblePrimitives": ["integer"] },
+    "Ratio":           { "fhirDef": "Relationship between two Quantities (numerator/denominator)", "usage": "Proportions and rates (n/N response rates, count ratios); preserves both components rather than the quotient", "compatiblePrimitives": ["decimal"] },
     "CodeableConcept": { "fhirDef": "Concept from code system(s)", "usage": "Categorical clinical values (treatment arms, visit categories, coded responses)", "compatiblePrimitives": ["code"] },
     "Identifier":      { "fhirDef": "Entity identifier with system", "usage": "Subject and record identifiers", "compatiblePrimitives": ["id"] },
     "Period":          { "fhirDef": "Time range bounded by start and end", "usage": "Interval occurrences (FHIR effectivePeriod for events/interventions)", "compatiblePrimitives": ["dateTime"] }

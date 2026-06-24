@@ -113,6 +113,17 @@
           "value": null
         }
       },
+      "ZStatistic": {
+        "label": "Z statistic",
+        "shortLabel": "z",
+        "term": "z_statistic",
+        "valueType": "decimal",
+        "unitRule": "unitless",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
       "Coefficient": {
         "label": "Model coefficient",
         "shortLabel": "coef",
@@ -177,6 +188,145 @@
           "value": null
         }
       },
+      "Min": {
+        "label": "Minimum",
+        "shortLabel": "min",
+        "term": "min",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Max": {
+        "label": "Maximum",
+        "shortLabel": "max",
+        "term": "max",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Sum": {
+        "label": "Sum",
+        "term": "sum",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Mode": {
+        "label": "Mode",
+        "term": "mode",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Range": {
+        "label": "Range",
+        "shortLabel": "range",
+        "term": "range",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "StandardDeviation": {
+        "label": "Standard deviation",
+        "shortLabel": "SD",
+        "term": "sd",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Variance": {
+        "label": "Variance",
+        "shortLabel": "var",
+        "term": "variance",
+        "valueType": "Quantity",
+        "unitRule": "derived",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Q1": {
+        "label": "First quartile",
+        "shortLabel": "Q1",
+        "term": "Q1",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Q3": {
+        "label": "Third quartile",
+        "shortLabel": "Q3",
+        "term": "Q3",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "IQR": {
+        "label": "Interquartile range",
+        "shortLabel": "IQR",
+        "term": "iqr",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Percentile": {
+        "label": "Percentile",
+        "shortLabel": "pctl",
+        "term": "percentile",
+        "valueType": "Quantity",
+        "unitRule": "inherited",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Skewness": {
+        "label": "Skewness",
+        "term": "skewness",
+        "valueType": "decimal",
+        "unitRule": "unitless",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Kurtosis": {
+        "label": "Kurtosis",
+        "term": "kurtosis",
+        "valueType": "decimal",
+        "unitRule": "unitless",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
       "NRisk": {
         "label": "Number at risk",
         "shortLabel": "n at risk",
@@ -205,6 +355,27 @@
         "term": "n_censored",
         "valueType": "Count",
         "unitRule": "none",
+        "code": {
+          "system": "NCI",
+          "value": null
+        }
+      },
+      "Proportion": {
+        "label": "Proportion",
+        "shortLabel": "n/N",
+        "term": "proportion",
+        "valueType": "Ratio",
+        "unitRule": "unitless",
+        "leaves": [
+          {
+            "fhirPath": "numerator.value",
+            "term": "numerator"
+          },
+          {
+            "fhirPath": "denominator.value",
+            "term": "denominator"
+          }
+        ],
         "code": {
           "system": "NCI",
           "value": null

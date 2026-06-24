@@ -178,7 +178,7 @@
             "post/pre treatment ratio"
           ],
           "result": {
-            "valueType": "Quantity",
+            "valueType": "Ratio",
             "unitRule": "unitless",
             "inputUnitRelation": "uniform"
           },

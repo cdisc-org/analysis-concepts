@@ -25,7 +25,7 @@ A concept's `result` is fully described by two small fields (plus three optional
 
 ```jsonc
 "result": {
-  "valueType": "Quantity",            // FHIR datatype: Quantity | Range | Count | CodeableConcept | boolean | decimal
+  "valueType": "Quantity",            // FHIR datatype: Quantity | Range | Count | Ratio | CodeableConcept | boolean | decimal
   "unitRule": "derived",              // inherited | derived | fixed | unitless | none
   "fixedUnit": "%",                   // ONLY when unitRule = fixed
   "inheritsFrom": "Timing",           // OPTIONAL: names the source when it isn't the obvious single value input
@@ -57,6 +57,7 @@ which needs like operands, and `RateOfChange`, which needs value-over-time):
 | `valueType` | allowed `unitRule` |
 |---|---|
 | `Quantity`, `Range` | `inherited`, `derived`, `fixed`, `unitless` |
+| `Ratio` | `unitless` (proportions, like-unit ratios), `derived` (unlike-unit rates) |
 | `Count`, `decimal`, `integer` | `unitless`, `none` |
 | `CodeableConcept`, `boolean`, `string` | `none` |
 

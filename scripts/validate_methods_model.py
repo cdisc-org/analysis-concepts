@@ -52,7 +52,7 @@ else:
 
 # ---- FHIR value types -----------------------------------------------------
 fvt = load(VOCAB / "fhir_value_types.json")
-for ct in ("Range", "Count"):
+for ct in ("Range", "Count", "Ratio"):
     check(ct in fvt["complexTypes"], f"[A4] complexType {ct} missing from fhir_value_types.json")
 check(fvt["layerMapping"]["ac_concept_statistics"] != "primitiveTypes",
       "[A4] layerMapping.ac_concept_statistics still restricted to primitiveTypes")
@@ -103,7 +103,7 @@ for tid, tpl in templates.items():
 ac = load(ROOT / "lib" / "concepts" / "AC_Concept_Model_v017.json")
 ac_concepts = ac["sharedStatisticsVocabulary"]["concepts"]
 ALLOWED_FHIR = {"decimal","integer","code","string","boolean","date","dateTime","id",
-                "Quantity","Range","Count","CodeableConcept","Identifier"}
+                "Quantity","Range","Count","Ratio","CodeableConcept","Identifier"}
 
 # Units are a concept property (single source of truth). `unitRule` says HOW the
 # result unit is determined; the concrete unit (e.g. mg/L/week) is instance data.
@@ -114,6 +114,7 @@ UNITRULE_BY_VALUETYPE = {
     "Quantity":        {"inherited", "derived", "fixed", "unitless"},
     "Range":           {"inherited", "derived", "fixed", "unitless"},
     "Count":           {"unitless", "none"},
+    "Ratio":           {"unitless", "derived"},
     "decimal":         {"unitless", "none"},
     "integer":         {"unitless", "none"},
     "CodeableConcept": {"none"},
@@ -129,22 +130,25 @@ def unitrule_coherent(valueType, unitRule):
         allowed |= UNITRULE_BY_VALUETYPE.get(vt, set())
     return unitRule in allowed
 
-# AC concept -> set of terminology terms it covers (single-leaf via `term`,
-# multi-leaf via each leaf's `term`, e.g. ConfidenceInterval -> CI_lower/CI_upper).
+# AC concept -> set of terminology terms it covers. A concept may carry an
+# identity `term` (its own statistic, e.g. Proportion->proportion), component
+# `leaves` keyed to FHIR paths (e.g. ConfidenceInterval->CI_lower/CI_upper at
+# low.value/high.value, Proportion->numerator/denominator), or BOTH.
 def concept_terms(c):
+    terms = set()
     if "term" in c:
-        return {c["term"]}
+        terms.add(c["term"])
     if "leaves" in c:
-        return {leaf["term"] for leaf in c["leaves"]}
-    return set()
+        terms |= {leaf["term"] for leaf in c["leaves"]}
+    return terms
 COVER = {cid: concept_terms(c) for cid, c in ac_concepts.items()}
 
 # C1: each AC statistical concept is THIN — references terminology (term/leaves
 #     resolving to real terms) + carries a valid fhirValueType + unit, and does
 #     NOT re-state terminology-owned facts (single source).
 for cid, c in ac_concepts.items():
-    check(("term" in c) ^ ("leaves" in c),
-          f"[C1] AC concept {cid} must have exactly one of term / leaves")
+    check(("term" in c) or ("leaves" in c),
+          f"[C1] AC concept {cid} must have at least one of term / leaves")
     for t in concept_terms(c):
         check(t in stats, f"[C1] AC concept {cid} references unknown term {t!r}")
     vt = c.get("valueType")
