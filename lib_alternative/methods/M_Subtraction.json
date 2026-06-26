@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "conceptId": "M.Subtraction",
+  "name": "Subtraction",
+  "label": "Subtraction",
+  "ncitCode": null,
+  "description": "Computes the difference between two numeric values",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := minuend - subtrahend",
+    "generic_expression": "result := <minuend> - <subtrahend>"
+  },
+  "inputs": [
+    {
+      "name": "minuend",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The value to subtract from"
+    },
+    {
+      "name": "subtrahend",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The value to subtract"
+    }
+  ],
+  "outputs": [
+    {
+      "output_type": "computed_value",
+      "name": "result",
+      "dataType": "decimal"
+    }
+  ]
+}

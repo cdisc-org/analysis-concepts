@@ -1,0 +1,21 @@
+{
+  "transformations": [
+    {
+      "conceptId": "T.ChangeFromBaseline",
+      "usesMethod": "M.Subtraction",
+      "outputConcept": "Change",
+      "operandSlices": [
+        {"operand": "value",     "slice": "endpoint"},
+        {"operand": "reference", "slice": "parameter_baseline"}
+      ],
+      "slices": [
+        {"name": "endpoint",
+         "constraints": [{"dimension": "Parameter", "value": "{parameter}"},
+                         {"dimension": "Visit", "value": "{visit}"}]},
+        {"name": "parameter_baseline",
+         "constraints": [{"dimension": "Parameter", "value": "{parameter}"},
+                         {"dimension": "Visit", "value": "{baseline_visit}"}]}
+      ]
+    }
+  ]
+}

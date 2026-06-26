@@ -1,0 +1,117 @@
+{
+  "model": "Unified",
+  "version": "0.1",
+  "description": "SPIKE unified concept library spanning OC (collected) / DC (derived) / AC (analysis). One ConceptLibrary; layer is role+provenance metadata, not a file split. Conforms to model_alternative/linkML/acdc_concept.yaml.",
+  "concepts": [
+    {
+      "conceptId": "ObservationResult", "name": "Observation Result",
+      "category": "Finding", "role": "collected", "axis": "measure",
+      "result": {"valueType": "Quantity", "unitRule": "inherited"},
+      "provenance": [{"layer": "OC", "variable": "--ORRES", "sdtmTopic": "--TESTCD"}]
+    },
+
+    {
+      "conceptId": "Measure", "name": "Measure",
+      "category": "PointComputation", "role": "derived", "axis": "measure",
+      "result": {"valueType": "Quantity", "unitRule": "inherited"},
+      "provenance": [{"layer": "DC", "variable": "--STRESN"}],
+      "algebraicDefinition": {
+        "operands": [{"name": "source", "produces": {"valueType": "Quantity", "unitFamily": "*"}}],
+        "identity": "result = source"
+      }
+    },
+    {
+      "conceptId": "Change", "name": "Change",
+      "category": "Comparison", "role": "derived", "axis": "measure",
+      "result": {"valueType": "Quantity", "unitRule": "inherited", "inputUnitRelation": "uniform"},
+      "provenance": [{"layer": "DC", "variable": "CHG"}],
+      "algebraicDefinition": {
+        "operands": [
+          {"name": "value",     "produces": {"valueType": "Quantity", "unitFamily": "*"}},
+          {"name": "reference", "produces": {"valueType": "Quantity", "unitFamily": "*"}}
+        ],
+        "identity": "result = value - reference"
+      }
+    },
+    {
+      "conceptId": "AreaUnderCurve", "name": "Area Under Curve",
+      "category": "SequenceAggregate", "role": "derived", "axis": "measure",
+      "result": {"valueType": "Quantity", "unitRule": "derived"},
+      "provenance": [{"layer": "DC", "variable": "AUC"}],
+      "algebraicDefinition": {
+        "operands": [{"name": "series", "produces": {"valueType": "Quantity", "unitFamily": "*"}}],
+        "identity": "result = integral(series, time)"
+      }
+    },
+    {
+      "conceptId": "EventCount", "name": "Event Count",
+      "category": "EventAggregate", "role": "derived", "axis": "measure",
+      "result": {"valueType": "Count", "unitRule": "unitless"},
+      "provenance": [{"layer": "DC", "variable": "AVAL"}],
+      "algebraicDefinition": {
+        "operands": [{"name": "events", "produces": {"valueType": "boolean"}}],
+        "identity": "result = cardinality(events)"
+      }
+    },
+
+    {
+      "conceptId": "Parameter", "name": "Parameter",
+      "role": "collected", "axis": "dimension",
+      "result": {"valueType": "Identifier"},
+      "provenance": [
+        {"layer": "OC", "variable": "--TEST", "sdtmTopic": "--TESTCD"},
+        {"layer": "DC", "variable": "PARAM"}
+      ]
+    },
+    {
+      "conceptId": "Visit", "name": "Visit",
+      "role": "collected", "axis": "dimension",
+      "result": {"valueType": "CodeableConcept"},
+      "provenance": [{"layer": "OC", "variable": "VISIT"}]
+    },
+    {
+      "conceptId": "AnalysisVisit", "name": "Analysis Visit",
+      "category": "Classification", "role": "derived", "axis": "dimension",
+      "result": {"valueType": "CodeableConcept"},
+      "provenance": [{"layer": "DC", "variable": "AVISIT"}],
+      "algebraicDefinition": {
+        "operands": [{"name": "collected_visit", "produces": {"valueType": "CodeableConcept"}}],
+        "identity": "result = window(collected_visit)"
+      }
+    },
+
+    {
+      "conceptId": "LSMeans", "name": "Least-Squares Means",
+      "category": "TreatmentComparison", "role": "analysis", "axis": "measure",
+      "result": {"valueType": "Quantity", "unitRule": "inherited"},
+      "provenance": [{"layer": "AC", "variable": "LSMEAN"}],
+      "estimandDefinition": {
+        "constituents": ["Estimate", "SE", "ConfidenceInterval", "DF"],
+        "dimensions": ["factor", "level"],
+        "requiresModelClass": "GeneralLinearModel"
+      }
+    },
+    {
+      "conceptId": "MedianSurvival", "name": "Median Survival",
+      "category": "SurvivalAnalysis", "role": "analysis", "axis": "measure",
+      "result": {"valueType": "Quantity", "unitRule": "inherited"},
+      "provenance": [{"layer": "AC", "variable": "AVAL"}],
+      "estimandDefinition": {
+        "constituents": ["Estimate", "ConfidenceInterval"],
+        "dimensions": ["stratum"],
+        "requiresModelClass": "KaplanMeier"
+      }
+    },
+    {
+      "conceptId": "DescriptiveStatistics", "name": "Descriptive Statistics",
+      "category": "DescriptiveSummary", "role": "analysis", "axis": "measure",
+      "result": {"valueType": "Quantity", "unitRule": "inherited"},
+      "provenance": [{"layer": "AC", "variable": "AVAL"}],
+      "estimandDefinition": {
+        "constituents": ["Mean", "SD", "Min", "Max", "N"],
+        "dimensions": ["group"],
+        "requiresModelClass": "none"
+      }
+    }
+  ]
+}

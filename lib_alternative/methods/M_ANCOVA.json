@@ -1,0 +1,108 @@
+{
+  "$schema": "../../../model/json_schema/acdc_method.schema.json",
+  "schema_version": "0.9.1",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "conceptId": "M.ANCOVA",
+  "name": "Analysis of Covariance",
+  "label": "ANCOVA",
+  "ncitCode": null,
+  "description": "Analysis of Covariance - ANOVA with continuous covariate adjustment",
+  "formula": {
+    "notation": "wilkinson_rogers",
+    "default_expression": "response ~ covariate + fixed_effect",
+    "generic_expression": "<response> ~ <covariate>* + <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)* + (<covariate>:<fixed_effect>)*",
+    "notes": "Covariates adjust the group comparison. Adding covariate:fixed_effect interaction tests homogeneity of regression slopes. Multiple covariates and factors are supported."
+  },
+  "configurations": [
+    {
+      "name": "ss_type",
+      "dataType": "enum",
+      "defaultValue": "III",
+      "enumValues": [
+        "I",
+        "II",
+        "III",
+        "IV"
+      ],
+      "description": "Sum of squares type"
+    },
+    {
+      "name": "alpha",
+      "conforms_to": "alpha",
+      "dataType": "decimal",
+      "defaultValue": 0.05,
+      "description": "Type I error rate for confidence intervals; 1-alpha is the confidence level."
+    }
+  ],
+  "inputs": [
+    {
+      "name": "response",
+      "dataType": "decimal",
+      "required": true,
+      "cardinality": "single",
+      "description": "The response/dependent variable"
+    },
+    {
+      "name": "covariate",
+      "dataType": "decimal",
+      "required": false,
+      "cardinality": "multiple",
+      "description": "Continuous covariate(s) for adjustment (e.g., baseline value, age)"
+    },
+    {
+      "name": "fixed_effect",
+      "dataType": "code",
+      "required": true,
+      "cardinality": "multiple",
+      "description": "Grouping/factor variable(s) (e.g., treatment arm, region)"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "fit_statistics_linear",
+      "output_type": "fit_statistics_linear"
+    },
+    {
+      "name": "type3_tests_f",
+      "output_type": "type3_tests_f",
+      "indexed_by": [
+        "covariate",
+        "fixed_effect",
+        "fixed_effect:fixed_effect",
+        "covariate:fixed_effect"
+      ]
+    },
+    {
+      "name": "parameter_estimates_linear",
+      "output_type": "parameter_estimates_linear",
+      "indexed_by": [
+        "covariate",
+        "fixed_effect",
+        "fixed_effect:fixed_effect",
+        "covariate:fixed_effect"
+      ]
+    },
+    {
+      "name": "ls_means",
+      "output_type": "ls_means",
+      "indexed_by": [
+        "fixed_effect"
+      ]
+    },
+    {
+      "name": "contrasts_t",
+      "output_type": "contrasts_t"
+    }
+  ],
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000179",
+      "display": "ANCOVA"
+    }
+  ]
+}

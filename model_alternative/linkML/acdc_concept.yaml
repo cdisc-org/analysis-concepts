@@ -1,0 +1,165 @@
+id: https://cdisc.org/acdc/concept
+name: acdc_concept
+title: ACDC Unified Concept Schema (SPIKE)
+description: >-
+  Sandbox-only unified concept model spanning OC (collected) / DC (derived) /
+  AC (analysis). Concepts own their meaning: collected leaves have no definition,
+  derived concepts carry an algebraic identity, analysis concepts carry an
+  estimand contract. Layer is metadata (role + provenance), not a partition.
+  Throwaway spike — supersedes the three production concept libraries if adopted.
+version: 0.0.1
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  acdc:   https://cdisc.org/acdc/
+  skos:   http://www.w3.org/2004/02/skos/core#
+  fhir:   http://hl7.org/fhir/
+
+default_prefix: acdc
+default_range:  string
+
+imports:
+  - linkml:types
+
+
+# ============================================================================
+# Enums
+# ============================================================================
+
+enums:
+
+  ConceptRole:
+    description: Which definitional form a concept takes (the layer it plays).
+    permissible_values:
+      collected:
+        description: An observed/recorded leaf (OC). No definition.
+      derived:
+        description: A computed concept (DC). Carries an algebraic identity.
+      analysis:
+        description: A statistical concept (AC). Carries an estimand contract.
+
+  ConceptAxis:
+    description: Whether the concept is a measured value or a dimensional context.
+    permissible_values:
+      measure:
+      dimension:
+
+  ProvenanceLayer:
+    description: The standard layer a provenance binding renders the concept in.
+    permissible_values:
+      OC:
+      DC:
+      AC:
+
+  UnitRule:
+    description: How the result's unit is determined.
+    permissible_values:
+      inherited:
+      derived:
+      fixed:
+      unitless:
+      none:
+
+  FHIRValueType:
+    description: The FHIR-ish value type a concept produces.
+    permissible_values:
+      Quantity:
+      CodeableConcept:
+      Identifier:
+      Range:
+      Count:
+      Ratio:
+      decimal:
+      integer:
+      boolean:
+      string:
+
+
+# ============================================================================
+# Classes
+# ============================================================================
+
+classes:
+
+  ResultContract:
+    description: What a concept PRODUCES — the structural type an operand matches against.
+    attributes:
+      valueType: {range: FHIRValueType, required: true}
+      unitRule: {range: UnitRule}
+      unitFamily: {range: string}
+      fixedUnit: {range: string}
+      inputUnitRelation: {range: string}
+
+  Operand:
+    description: A named role in an algebraic identity, typed by what it must PRODUCE (not by a layer class).
+    attributes:
+      name: {key: true}
+      produces: {range: ResultContract, required: true, inlined: true}
+
+  AlgebraicIdentity:
+    description: DC closed-form definition. Pure algebra over operands.
+    attributes:
+      operands: {range: Operand, multivalued: true, inlined_as_list: true, required: true}
+      identity: {range: string, required: true}
+
+  EstimandContract:
+    description: AC structural definition — an estimand, not an equation.
+    attributes:
+      constituents: {range: string, multivalued: true, required: true}
+      dimensions:   {range: string, multivalued: true}
+      requiresModelClass: {range: string}
+
+  ProvenanceBinding:
+    description: Per-layer rendering of one concept (OC --TEST, DC PARAM, etc.).
+    attributes:
+      layer:    {range: ProvenanceLayer, required: true}
+      variable: {range: string}
+      sdtmTopic: {range: string}
+
+  Concept:
+    description: A node in the unified concept DAG. Collected leaves have no definition.
+    attributes:
+      conceptId: {identifier: true}
+      name:
+      label:
+      category: {range: string, description: "Abstract supertype name, e.g. Comparison."}
+      role: {range: ConceptRole, required: true}
+      axis: {range: ConceptAxis}
+      result: {range: ResultContract, inlined: true}
+      provenance: {range: ProvenanceBinding, multivalued: true, inlined_as_list: true}
+      algebraicDefinition: {range: AlgebraicIdentity, inlined: true}
+      estimandDefinition:  {range: EstimandContract, inlined: true}
+    rules:
+      - description: Collected => no definition.
+        preconditions:
+          slot_conditions:
+            role: {equals_string: collected}
+        postconditions:
+          slot_conditions:
+            algebraicDefinition: {value_presence: ABSENT}
+            estimandDefinition: {value_presence: ABSENT}
+      - description: Derived => algebraic identity, no estimand.
+        preconditions:
+          slot_conditions:
+            role: {equals_string: derived}
+        postconditions:
+          slot_conditions:
+            algebraicDefinition: {value_presence: PRESENT}
+            estimandDefinition: {value_presence: ABSENT}
+      - description: Analysis => estimand, no algebraic identity.
+        preconditions:
+          slot_conditions:
+            role: {equals_string: analysis}
+        postconditions:
+          slot_conditions:
+            estimandDefinition: {value_presence: PRESENT}
+            algebraicDefinition: {value_presence: ABSENT}
+
+  ConceptLibrary:
+    tree_root: true
+    attributes:
+      model: {range: string, description: "Library identifier, e.g. Unified."}
+      version: {range: string}
+      description: {range: string}
+      concepts: {range: Concept, multivalued: true, inlined_as_list: true}
