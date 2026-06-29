@@ -189,6 +189,8 @@ A model written as `response ~ covariate + fixed_effect` has, on its right-hand 
 
 The discrete/continuous split is read from the input's `dataType`, so it is derived, not hand-authored.
 
+**Descriptive summaries use the same notation.** A method like `M.Mean` has no `~` formula, but its by-group inputs (`group`, `partition` — all `code`-typed) are discrete components in exactly the same sense: `M.Mean` indexed at `level` over its discrete `group` is "one mean per group." So `component`/`level` covers both the modeling analyses *and* the descriptive/derivation methods that group by a factor — together ~41 methods carry `indexed_by` today.
+
 An output is indexed at one of three granularities along this structure:
 
 | granularity | one row per … | example |
@@ -328,7 +330,7 @@ The validator checks a set of **cross-layer invariants** (consistency rules that
 
 - **`statistics_vocabulary.json`**: add `dec_id`, rename `name`→`preferredTerm` (or keep `name`), **remove `dataType`**. ~60 terms.
 - **AC concept atoms**: add `dec_id`; keep `term` as bridge; ensure no CT restating (`[C1]`, §5).
-- **Methods with `indexed_by`** (the modeling analyses — ANCOVA, MMRM, CoxPH, KaplanMeier, logistic, …): reshape the `indexed_by` field to the §3.8 notation. `output_type` and `computed_value` stay. Descriptive and derivation methods are otherwise untouched.
+- **Methods with `indexed_by` (~41 files)** — modeling analyses (ANCOVA, MMRM, CoxPH, …) *and* descriptive/derivation methods that group by a factor (Mean, Count, Frequency, Quartile, ImputedValue_*, …): reshape the `indexed_by` field to the §3.8 notation (`["group"]` → `{ "granularity": "level", "components": "discrete" }`, etc.). `output_type` and `computed_value` stay. Methods without `indexed_by` are untouched.
 - **AC concept model**: **delete `methodOutputSlotMapping`**.
 - **Transformations**: already carry slot→concept bindings; verify every analysis transformation does (most do). No new per-statistic content.
 - **`output_class_templates.json`**: **unchanged** (`computed_value` retained).
