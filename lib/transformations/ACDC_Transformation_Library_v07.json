@@ -1525,6 +1525,22 @@
             "description": "Baseline value of the endpoint parameter."
           }
         ],
+        "modelInteractions": [
+          {
+            "role": "primary",
+            "label": "Treatment × AnalysisVisit",
+            "operands": [
+              {
+                "input": "fixed_effect",
+                "concept": "Treatment"
+              },
+              {
+                "input": "repeated_factor",
+                "conceptCategory": "VisitDimension"
+              }
+            ]
+          }
+        ],
         "slices": [
           {
             "name": "endpoint",
@@ -1672,6 +1688,22 @@
             "requiredValueType": "Quantity",
             "slice": "parameter_baseline",
             "description": "Baseline value of the endpoint parameter."
+          }
+        ],
+        "modelInteractions": [
+          {
+            "role": "slope_homogeneity_test",
+            "label": "Baseline × Treatment (homogeneity-of-slopes test)",
+            "operands": [
+              {
+                "input": "covariate",
+                "concept": "Measure"
+              },
+              {
+                "input": "fixed_effect",
+                "concept": "Treatment"
+              }
+            ]
           }
         ],
         "slices": [

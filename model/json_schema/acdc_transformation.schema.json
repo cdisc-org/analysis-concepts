@@ -490,6 +490,16 @@
                         "null"
                     ]
                 },
+                "modelInteractions": {
+                    "description": "\u00a76.3 \u2014 interaction terms selected into the model RHS for this use (e.g. a treatment-by-visit interaction). Each interaction references already-bound input roles via its operands; it binds no new data. Main effects are NOT listed here \u2014 they are implied by the dimensions[]/measures[] input bindings. Empty/absent = main effects only. Validated against usesMethod's formula grammar (an interaction's operand-role multiset must match an allowed interaction production in the method's generic_expression). Input-side only (model specification is about the RHS the cube feeds), so it lives here and not on OutputDataStructure.",
+                    "items": {
+                        "$ref": "#/$defs/ModelInteraction"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
                 "slices": {
                     "description": "\u00a76.4 \u2014 slice templates that pre-filter cubes derived from this DSD.",
                     "items": {
@@ -618,6 +628,55 @@
                 ]
             },
             "title": "InputMeasureBinding",
+            "type": "object"
+        },
+        "InteractionOperand": {
+            "additionalProperties": false,
+            "description": "\u00a76.3 \u2014 one operand of a ModelInteraction. Identifies an existing input binding by the SAME identity it uses in dimensions[]/measures[]: its input role plus its concept (or conceptCategory). `input` alone is insufficient because `multiple`-cardinality roles (e.g. fixed_effect bound to both Treatment and Region) would be ambiguous \u2014 so the concept disambiguates which binding the operand refers to.",
+            "properties": {
+                "concept": {
+                    "description": "\u00a76.3 \u2014 name of a concrete concept in Option_B_Clinical.json (for derivations) or AC_Concept_Model_v017.json (for analyses). Cross-file FK validated at build time.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "conceptCategory": {
+                    "description": "\u00a76.3 \u2014 name of a concept category (e.g. ParameterDimension, VisitDimension). User picks a concrete member at study-spec time.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "input": {
+                    "description": "FK to Method.inputs[].name \u2014 the role this operand fills.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "input"
+            ],
+            "then": {
+                "oneOf": [
+                    {
+                        "properties": {
+                            "concept": {}
+                        },
+                        "required": [
+                            "concept"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "conceptCategory": {}
+                        },
+                        "required": [
+                            "conceptCategory"
+                        ]
+                    }
+                ]
+            },
+            "title": "InteractionOperand",
             "type": "object"
         },
         "Method": {
@@ -861,6 +920,38 @@
                 "name"
             ],
             "title": "MethodOutput",
+            "type": "object"
+        },
+        "ModelInteraction": {
+            "additionalProperties": false,
+            "description": "\u00a76.3 \u2014 one interaction term on the model RHS, selected for this use and composed from already-bound input roles (its operands). The interaction (the `:` operator) is the only composite term selectable across the current method library; nesting/stratification (the `|` partition) is method-intrinsic, not a per-use choice, so it is not modelled here. There is therefore no `kind` discriminator: a ModelInteraction IS an interaction. If the formula grammar later gains a second selectable composition production (e.g. random effects `(slope | group)`), that is a new, separately-named construct \u2014 not a `kind` added here. The eSAP renders the model statement from these structured interactions rather than parsing a formula string.",
+            "properties": {
+                "label": {
+                    "description": "Optional human-readable label (e.g. \"Treatment \u00d7 AnalysisVisit\").",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "operands": {
+                    "description": "The two-or-more interacting factors/covariates, each a reference to an existing dimensions[]/measures[] input binding. Order is not significant (a:b == b:a).",
+                    "items": {
+                        "$ref": "#/$defs/InteractionOperand"
+                    },
+                    "type": "array"
+                },
+                "role": {
+                    "description": "Optional role marker for the interaction, e.g. \"primary\" for the treatment-by-visit term of primary interest in an MMRM.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "operands"
+            ],
+            "title": "ModelInteraction",
             "type": "object"
         },
         "OutputAttributeBinding": {
@@ -1425,4 +1516,3 @@
     "type": "object",
     "version": "0.2.0"
 }
-

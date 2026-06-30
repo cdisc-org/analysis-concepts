@@ -23,7 +23,7 @@ description: >-
   Method with clinical/analysis concepts and declares the cube structure
   (input and output qb:DataStructureDefinitions) the method operates on.
   Strict twin-DSD shape per §6.3 / §6.10 Option B.
-version: 0.2.0
+version: 0.3.0
 license: https://creativecommons.org/licenses/by/4.0/
 
 prefixes:
@@ -246,6 +246,23 @@ classes:
         range: InputMeasureBinding
       attributes_:
         range: InputAttributeBinding
+    attributes:
+      modelInteractions:
+        description: >-
+          §6.3 — interaction terms selected into the model RHS for this use
+          (e.g. a treatment-by-visit interaction). Each interaction references
+          already-bound input roles via its operands; it binds no new data.
+          Main effects are NOT listed here — they are implied by the
+          dimensions[]/measures[] input bindings. Empty/absent = main effects
+          only. Validated against usesMethod's formula grammar (an
+          interaction's operand-role multiset must match an allowed interaction
+          production in the method's generic_expression). Input-side only (model
+          specification is about the RHS the cube feeds), so it lives here and
+          not on OutputDataStructure.
+        range: ModelInteraction
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
 
   OutputDataStructure:
     description: >-
@@ -394,6 +411,56 @@ classes:
     description: Reserved (§6.3 — Attributes). qb:attribute on the output cube.
     is_a: ConceptReference
     class_uri: qb:ComponentSpecification
+
+  # --- Model interactions -----------------------------------------------------
+
+  ModelInteraction:
+    description: >-
+      §6.3 — one interaction term on the model RHS, selected for this use and
+      composed from already-bound input roles (its operands). The interaction
+      (the `:` operator) is the only composite term selectable across the
+      current method library; nesting/stratification (the `|` partition) is
+      method-intrinsic, not a per-use choice, so it is not modelled here. There
+      is therefore no `kind` discriminator: a ModelInteraction IS an
+      interaction. If the formula grammar later gains a second selectable
+      composition production (e.g. random effects `(slope | group)`), that is a
+      new, separately-named construct — not a `kind` added here. The eSAP
+      renders the model statement from these structured interactions rather than
+      parsing a formula string.
+    attributes:
+      operands:
+        description: >-
+          The two-or-more interacting factors/covariates, each a reference to an
+          existing dimensions[]/measures[] input binding. Order is not
+          significant (a:b == b:a).
+        range: InteractionOperand
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        required: true
+      label:
+        description: Optional human-readable label (e.g. "Treatment × AnalysisVisit").
+        range: string
+      role:
+        description: >-
+          Optional role marker for the interaction, e.g. "primary" for the
+          treatment-by-visit term of primary interest in an MMRM.
+        range: string
+
+  InteractionOperand:
+    description: >-
+      §6.3 — one operand of a ModelInteraction. Identifies an existing input
+      binding by the SAME identity it uses in dimensions[]/measures[]: its input
+      role plus its concept (or conceptCategory). `input` alone is insufficient
+      because `multiple`-cardinality roles (e.g. fixed_effect bound to both
+      Treatment and Region) would be ambiguous — so the concept disambiguates
+      which binding the operand refers to.
+    is_a: ConceptReference  # inherits concept-XOR-conceptCategory (§6.6 #8)
+    attributes:
+      input:
+        description: FK to Method.inputs[].name — the role this operand fills.
+        range: string
+        required: true
 
   # --- Slices -----------------------------------------------------------------
 
@@ -570,6 +637,13 @@ classes:
 #            files declared in $references.
 #   §6.6 #9  Twin-DSD consistency advisory — warn (non-blocking) when a dim
 #            appears on one side and not the other without comment.
+#   §6.6 #10 modelInteractions[]: each InteractionOperand (input,
+#            concept|conceptCategory) must match an existing inputDataStructure
+#            dimensions[]/measures[] binding (no dangling operands); and each
+#            interaction's operand-role multiset must match an allowed
+#            interaction production in usesMethod's formula.generic_expression
+#            (e.g. fixed_effect:repeated_factor is legal for M.MMRM,
+#            repeated_factor:covariate is not).
 #
 # The XOR rule from §6.6 #8 (concept XOR conceptCategory) IS expressible in
 # LinkML and is encoded on ConceptReference above.
