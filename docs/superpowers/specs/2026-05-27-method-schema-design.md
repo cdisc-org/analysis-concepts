@@ -59,9 +59,7 @@ This design settles the method schema, drops the legacy file, and adopts a decom
   "schema_version": "0.10.0",
   "$vocabulary": {
     "statistics":     "../../model/method/statistics_vocabulary.json",
-    "output_classes": "../../model/method/output_class_vocabulary.json",
-    "shapes":         "../../model/method/output_shape_vocabulary.json",
-    "distributions":  "../../model/method/distribution_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
     "formula_grammar":"../../model/method/formula_grammar.json"
   },
 
@@ -120,7 +118,7 @@ The names in `inputs[]`, `outputs[]`, and `configurations[]` are **role tokens**
 1. **Formula bracket-token contract.** Every `<x>` in `formula.generic_expression` MUST resolve to an `inputs[i].name`, an `outputs[i].name`, OR a `configurations[i].name`. Cardinality suffixes (`*`, `+`, `?`) come from the formula grammar; the role token by itself names the slot. *(Extension added 2026-05-28: configurations are legal bracket-tokens. This formalizes a convention already used by many derivations — e.g. M.Aggregation's `<agg_func>` is a configuration, M.AffineTransform's `<scale>`/`<offset>` are configurations.)*
 2. **Formula LHS contract** *(assignment notation only)*. For derivation formulas of the form `<lhs> := <expression>`, the bare LHS identifier MUST equal an `outputs[i].name`. The output's name is the formula's "what does this compute" — choose it to read naturally on the LHS (e.g. `result := ...`, `imputed_value := ...`, `analysisVisit := ...`). The previous one-size-fits-all `derived_value` convention was retired 2026-05-28; outputs now name themselves after the formula token they implement.
 3. **Transformation binding contract.** A transformation measure binding's `input` / `output` FK MUST equal an `inputs[i].name` / `outputs[i].name`. (Example: `M.RecordSelection` declares `inputs[].name = "value"`; `T.BaselineSelection` binds `input: "value"`.)
-4. **Indexing contract.** Strings in `outputs[i].indexed_by` MUST be input role names (or `role:role` interaction shorthand).
+4. **Indexing contract.** `outputs[i].indexed_by` is a structured object (`granularity` / `components` / optional `axis`) describing the output's row structure along the model — see §3.5.2 (full semantics in consolidation spec §3.8). It no longer carries raw role tokens. Where an output references model *terms* by role — in `sub_types[].formula_term_kinds` — those strings MUST be input role names (or, for an interaction, a set of them forming an allowed production).
 
 Implications:
 
@@ -130,7 +128,7 @@ Implications:
   - Every `<token>` in `generic_expression` exists as an input, output, or configuration name.
   - For assignment formulas, the bare LHS identifier exists as an output name.
   - Every transformation `input` / `output` FK resolves to the method's `inputs[].name` / `outputs[].name`.
-  - `indexed_by` entries reference input names (or `<input>:<input>` interactions).
+  - `indexed_by` is a structured object (§3.5.2); `sub_types[].formula_term_kinds` reference input role names.
 
 `inputs[]` item shape:
 
@@ -166,84 +164,65 @@ A model is specified across **three layers**, not the formula alone:
 
 These would most naturally land on a new `M.LinearMixedModel` / `M.GLMM` rather than retrofitting MMRM, whose identity *is* "R-side, no random effects."
 
-### 3.5 Analysis output type — three-axis decomposition
+### 3.5 Analysis output type — output class + model indexing
 
-Each `outputs[i]` for an analysis method is a TABLE described by four axes plus an optional escape hatch:
+*(Rewritten 2026-06-30 to match the shipped design. An earlier draft of this section proposed a three-axis `output_class` / `shape` / `distribution` decomposition backed by new `output_class_vocabulary.json` / `output_shape_vocabulary.json` / `distribution_vocabulary.json` files. That was **not** adopted — team review kept the existing template model and reshaped `indexed_by` instead (see 2026-06-26 statistics-concept-consolidation spec §3.1). The three vocab files were never created. The authoritative output-model design is that consolidation spec §3.1–§3.8; this section now summarises the method-side shape that actually shipped.)*
 
-```json
+Each `outputs[i]` for an analysis method is a TABLE, described by **what its columns are** (an output-class template) and **how its rows are indexed** (along the model structure):
+
+```jsonc
 {
-  "name":          "type3_tests",            // slot name (unique within this method)
-  "output_class":  "type3_tests",            // role of the table (vocabulary term)
-  "shape":         "test_with_pvalue",       // inferential pattern (vocabulary term)
-  "distribution":  "F",                      // probabilistic basis (vocabulary term, or "none")
-  "indexed_by":    ["covariate", "fixed_effect",
-                    "fixed_effect:fixed_effect", "covariate:fixed_effect"],
-  "additional_statistics": ["SS", "MS"]      // optional; columns beyond shape's canonical set
+  "name":        "type3_tests_mixed",     // slot name, unique within this method
+  "output_type": "type3_tests_mixed",     // FK → output_class_templates.json (the column template)
+  "indexed_by":  { "granularity": "component", "components": "all" }  // the row structure
 }
 ```
 
-#### 3.5.1 Vocabulary `output_class_vocabulary.json` (the role)
+An output may optionally carry `sub_types[]` / `test_types[]` — named specialisations that reuse the same column template but pin a particular slice of the model structure (§3.5.3).
 
-A flat SKOS scheme with ~12 concrete classes organised under a small family taxonomy. Concrete classes used in methods:
+#### 3.5.1 Columns — `output_type` → templates → statistic sets → terms
+
+`output_type` is a single FK into `lib/vocabulary/output_class_templates.json`. The column set is resolved through a three-link chain, NOT three parallel fields on the output:
 
 ```
-fit_statistics
-type3_tests
-test_result
-parameter_estimates       parameter_tests
-contrast_estimates        contrast_tests
-ls_means                  point_estimate
-odds_ratio_estimates      hazard_ratio_estimates      odds_ratio_measures
-multivariate_tests        global_tests                homogeneity_test
-survival_table            median_survival             event_summary       landmark_estimates
-proportion_estimate       frequency_table             cumulative_frequency_table       quartile_estimates
-scalar_value              categorical_value           flag                datetime_value      count_value
+method.outputs[].output_type
+  → output_class_templates.json   role of the table: statistics_set + additional/optional_statistics; abstract→concrete `broader` SKOS parent
+     → statistic_sets.json        a named bundle of statistic terms (e.g. hypothesis_test_F_distribution = [F_statistic, p_value, df_num, df_den])
+        → statistics_vocabulary.json   the atomic statistic terms (estimate, SE, CI_lower, CI_upper, df, p_value, …)
 ```
 
-Each entry declares `label`, `description`, optional `broader` (SKOS family). Templates DO NOT declare statistics — that's now the `shape`'s job.
+So `columns(output) = ⋃(statistic_sets the template references, expanded to terms) ∪ additional_statistics`. E.g. `type3_tests_mixed` → set `hypothesis_test_F_distribution` → `{F_statistic, p_value, df_num, df_den}`; `ls_means` → `ci_estimate_t_distribution` → `{estimate, SE, CI_lower, CI_upper, df}`.
 
-#### 3.5.2 Vocabulary `output_shape_vocabulary.json` (the inferential pattern)
+The **distribution distinction** the old draft tried to carry as a separate `distribution` axis is now encoded by *which statistic set a template references* and by the template's place in the `broader` taxonomy: `type3_tests_f`, `type3_tests_mixed`, and `type3_tests_chi_squared` are sibling concrete templates under a shared `broader: type3_tests`, differing only in the statistic set (F vs F-for-mixed vs chi-squared). No `distribution` field is needed.
 
-A small enum that declares the **canonical statistics** the shape produces, drawn from `statistics_vocabulary.json`. Distribution-dependent inferential columns (`df`, `df_num`, `df_den`) are not in the canonical set — they're added by the distribution.
+For **atomic outputs** (descriptive analyses + derivations) `output_type` is the single template `computed_value`, and the structural primitive is given by `dataType` (§3.6).
 
-| shape | canonical statistics | typical use |
+#### 3.5.2 Rows — `indexed_by` along the model structure
+
+`indexed_by` is a **structured object**, not a raw token list. It declares how many rows the table has by reference to the statistical model (consolidation spec §3.8):
+
+| field | values | meaning |
 |---|---|---|
-| `estimate_with_ci` | `estimate`, `SE`, `CI_lower`, `CI_upper` | LS-means, parameter estimates, contrasts, odds-ratio estimates |
-| `test_with_pvalue` | `statistic`, `p_value` (`statistic` is filled by distribution) | Type III tests, omnibus tests |
-| `computed_value` | `value` | descriptive statistics, derived values |
-| `pvalue_only` | `p_value` | Fisher exact test result |
-| `count_with_denominator` | `n`, `n_total`, `proportion`, `pct` | proportion tables, frequency tables |
+| `granularity` | `scalar` / `component` / `level` | one row per: the whole model / each model term / each level of each discrete component |
+| `components` | `all` / `discrete` / `continuous` | which components participate (omit for `scalar`) |
+| `axis` | `time` / `cov_param` / `response` | for the few outputs indexed by something *other* than model terms (survival time grid, covariance parameters, MANOVA response) |
 
-(Exact set finalised during migration; the key invariant is that `shape` declares the canonical column set, not the `output_class`.)
+```jsonc
+"fit_statistics_linear": { "indexed_by": { "granularity": "scalar" } }
+"type3_tests_f":         { "indexed_by": { "granularity": "component", "components": "all" } }
+"ls_means":              { "indexed_by": { "granularity": "level",     "components": "discrete" } }
+"covariance_parameters": { "indexed_by": { "granularity": "component", "components": "discrete", "axis": "cov_param" } }
+```
 
-#### 3.5.3 Vocabulary `distribution_vocabulary.json` (the probabilistic basis)
+The discrete/continuous nature of each component is **derived** from the bound input's `dataType` (`code` = discrete, `decimal` = continuous), not hand-authored. The concrete *level values* (Drug A / Placebo) come from the bound concept's coded value set at transformation time, not from the method. Full semantics: consolidation spec §3.8.
 
-Declares which `statistic` column the `shape:test_with_pvalue` produces and which auxiliary columns (`df`, `df_num`, `df_den`) are present.
+#### 3.5.3 Sub-types and `formula_term_kinds`
 
-| distribution | statistic column | aux columns | typical use |
-|---|---|---|---|
-| `F` | `F_statistic` | `df_num`, `df_den` | Type III F-tests, multivariate tests |
-| `chi_squared` | `chi_squared` | `df` | Wald/LR tests, chi-squared tests |
-| `studentT_scaled` | `t_statistic` | `SE`, `df` | linear-model coefficients, LS-mean differences |
-| `studentT_standard` | `t_statistic` | `df` | linear-model term tests |
-| `normal_scaled` | `z_statistic` | `SE` | GLM coefficients, Wald CIs |
-| `lognormal_scaled` | — | `SE` | hazard ratios / odds-ratio CIs |
-| `none` | — | — | non-parametric (Kaplan-Meier table, median survival CI by Brookmeyer-Crowley, Fisher OR) |
+A single output may break down into named sub-types that share the column template but correspond to different slices of the model structure. Each `sub_types[]` entry names the `formula_term_kinds` (input roles) whose crossing it indexes — e.g. M.MMRM's `ls_means` has `ls_means_by_group_time` (`["fixed_effect","repeated_factor"]`), `ls_means_by_group` (`["fixed_effect"]`), and `ls_means_by_time` (`["repeated_factor"]`). When a sub-type's `formula_term_kinds` form an interaction, the corresponding term should be present in the transformation's `modelInteractions[]` (§6.6 #13).
 
-Combined with `shape`, the four axes uniquely determine the column set of the output table:
+#### 3.5.4 Out of scope for this revision
 
-> columns = shape.canonical_statistics ∪ distribution.aux ∪ additional_statistics
-> distribution.statistic_column replaces the placeholder `statistic` in `test_with_pvalue`
-
-#### 3.5.4 Splits we adopt
-
-- `parameter_estimates` → `parameter_estimates` (shape `estimate_with_ci`) + `parameter_tests` (shape `test_with_pvalue`).
-- `contrasts` → `contrast_estimates` (shape `estimate_with_ci`) + `contrast_tests` (shape `test_with_pvalue`).
-- `type3_tests_f` / `type3_tests_mixed` / `type3_tests_chi_squared` collapse to one `output_class: "type3_tests"` with different `distribution`.
-
-#### 3.5.5 Out of scope for this revision
-
-- Per-output `configurations` for multiplicity adjustment (already present on some ANCOVA outputs). Drop these during migration; we'll revisit when an MCC design is settled.
+- Per-output `configurations` for multiplicity adjustment (present on some legacy ANCOVA outputs) were dropped during migration; revisit when a multiple-comparison-control design is settled.
 
 ### 3.6 Derivation output type — same shape, type flows from concept
 
@@ -255,7 +234,7 @@ Combined with `shape`, the four axes uniquely determine the column set of the ou
     "name":         "result",                   // matches the formula's LHS (§3.4)
     "output_type":  "computed_value",           // FK to output_class_templates (atomic-value family)
     "dataType":     "decimal",                  // structural primitive — parallel to inputs[].dataType
-    "indexed_by":   ["partition"]               // method-side row indexing
+    "indexed_by":   { "granularity": "level", "components": "discrete" }   // method-side row structure (§3.5.2); a value per group. Row-wise derivations (e.g. M.Subtraction) omit indexed_by.
   }
 ]
 ```
@@ -302,7 +281,7 @@ This is the asymmetry that makes the library work: ~60 reusable methods × N con
 | File | Role | Status |
 |---|---|---|
 | `lib/vocabulary/statistics_vocabulary.json` | Column-level semantic vocabulary (the "Semantic Statistical Definitions" layer in the architecture diagram). Each entry has dataType, description, and (where available) STATO codings. | Keep as-is; this is the reference. |
-| `lib/vocabulary/output_class_templates.json` | Current SKOS family/concrete-template hierarchy. | **Replace** with three new files (§3.5.1–§3.5.3): `output_class_vocabulary.json`, `output_shape_vocabulary.json`, `distribution_vocabulary.json`. Keep the old file during migration; delete when all methods are migrated. |
+| `lib/vocabulary/output_class_templates.json` | SKOS family/concrete-template hierarchy; each template carries `statistics_set` (FK → `statistic_sets.json`) + `additional_statistics` + `broader`. | **Kept** (with `statistic_sets.json` and `statistics_vocabulary.json`). *~~The earlier plan to replace it with three new vocab files was not adopted — see §3.5 banner and 2026-06-26 consolidation §3.1.~~* |
 | `lib/vocabulary/formula_grammar.json` | BNF for the formula DSL. | Update the `<role_tag>` enum's purpose: it lists *conventional* role names useful across analysis methods, but the validator enforces `<token>` resolution against the method's own `inputs[]`/`outputs[]` `name` values, not against this enum. |
 | `lib/vocabulary/fhir_value_types.json` | FHIR datatype enum. | No longer referenced from methods (per §3.6 revision 2026-05-28, methods don't carry `value_type` — it flows from concepts). Still referenced from `lib/concepts/*.json` where each concept's `result.valueType` is constrained by this enum. |
 
@@ -384,59 +363,19 @@ A new JSON-Schema file lands at `model/method/acdc_methods.schema.json` (current
     { "name": "fixed_effect", "dataType": "code",    "required": true,  "cardinality": "multiple" }
   ],
   "outputs": [
-    {
-      "name":         "fit_statistics",
-      "output_class": "fit_statistics",
-      "shape":        "computed_value",
-      "distribution": "none",
-      "additional_statistics": ["AIC","BIC","minus2LogL","R_squared"]
-    },
-    {
-      "name":         "type3_tests",
-      "output_class": "type3_tests",
-      "shape":        "test_with_pvalue",
-      "distribution": "F",
-      "indexed_by":   ["covariate","fixed_effect","fixed_effect:fixed_effect","covariate:fixed_effect"],
-      "additional_statistics": ["SS","MS"]
-    },
-    {
-      "name":         "parameter_estimates",
-      "output_class": "parameter_estimates",
-      "shape":        "estimate_with_ci",
-      "distribution": "studentT_scaled",
-      "indexed_by":   ["covariate","fixed_effect","fixed_effect:fixed_effect","covariate:fixed_effect"]
-    },
-    {
-      "name":         "parameter_tests",
-      "output_class": "parameter_tests",
-      "shape":        "test_with_pvalue",
-      "distribution": "studentT_standard",
-      "indexed_by":   ["covariate","fixed_effect","fixed_effect:fixed_effect","covariate:fixed_effect"]
-    },
-    {
-      "name":         "ls_means",
-      "output_class": "ls_means",
-      "shape":        "estimate_with_ci",
-      "distribution": "studentT_scaled",
-      "indexed_by":   ["fixed_effect"]
-    },
-    {
-      "name":         "contrast_estimates",
-      "output_class": "contrast_estimates",
-      "shape":        "estimate_with_ci",
-      "distribution": "studentT_scaled",
-      "indexed_by":   ["fixed_effect"]
-    },
-    {
-      "name":         "contrast_tests",
-      "output_class": "contrast_tests",
-      "shape":        "test_with_pvalue",
-      "distribution": "studentT_standard",
-      "indexed_by":   ["fixed_effect"]
-    }
+    { "name": "fit_statistics_linear",     "output_type": "fit_statistics_linear" },
+    { "name": "type3_tests_f",             "output_type": "type3_tests_f",
+      "indexed_by": { "granularity": "component", "components": "all" } },
+    { "name": "parameter_estimates_linear","output_type": "parameter_estimates_linear",
+      "indexed_by": { "granularity": "level", "components": "all" } },
+    { "name": "ls_means",                  "output_type": "ls_means",
+      "indexed_by": { "granularity": "level", "components": "discrete" } },
+    { "name": "contrasts_t",               "output_type": "contrasts_t" }
   ]
 }
 ```
+
+This output block is the **actual shipped `M_ANCOVA.json`** (not the earlier `output_class`/`shape`/`distribution` proposal): a single `output_type` FK per output plus a structured `indexed_by` (§3.5). The distribution split (`type3_tests_f` vs `_mixed` vs `_chi_squared`) is carried by the chosen template under a shared `broader: type3_tests`, not by a `distribution` field; per-output multiplicity `configurations` were dropped (§3.5.4).
 
 What changed:
 
@@ -521,7 +460,7 @@ The transformation that *uses* this method binds the output to the `PercentChang
 In order, each step landable on its own:
 
 1. **Write `model/method/acdc_methods.schema.json`** (currently missing). Encode §3.2 + §3.4 validation rules.
-2. **Write `output_class_vocabulary.json`, `output_shape_vocabulary.json`, `distribution_vocabulary.json`** under `lib/vocabulary/`. (Pre-existing inconsistency: per-file `$vocabulary` blocks reference `../../model/method/…`, but the actual files live in `lib/vocabulary/`. Pick one location during this migration and update the references in every method file accordingly. Recommendation: keep `lib/vocabulary/` since the files are already there.)
+2. ~~**Write `output_class_vocabulary.json`, `output_shape_vocabulary.json`, `distribution_vocabulary.json`.**~~ **Superseded** — the three-vocab split was not adopted; `output_class_templates.json` + `statistic_sets.json` + `statistics_vocabulary.json` were kept and `indexed_by` reshaped instead (§3.5, consolidation §3.1–§3.8). *(Still-relevant pre-existing inconsistency: per-file `$vocabulary` blocks reference `../../model/method/…`, but the actual vocab files live in `lib/vocabulary/`. The path references in the method files should be reconciled to `lib/vocabulary/`.)*
 3. **Harvest `ncitCode` placeholders** from `AllMethods.json` into per-file `code.value`. Mechanical pass keyed on `name`.
 4. **Rewrite per-file `output` blocks** from `output_type` → 4-axis. Most are mechanical: the current `output_class_templates.json` carries enough info (template family + statistics) to derive `(output_class, shape, distribution, additional_statistics)`. The splits (parameter_estimates → +parameter_tests, contrasts → +contrast_estimates/contrast_tests) need a manual one-time choice.
 5. **Strip all unit information from methods.** Remove any legacy unit-policy field (method-level or per-output) from every analysis and derivation method. Units are now a property of the bound concept (`unitRule`), resolved at execution over the method's `formula` (per the 2026-06-22/23 decision); ensure each value-bearing output's bound concept carries the right `unitRule` / `inputUnitRelation` / `fixedUnit` instead.
@@ -750,12 +689,14 @@ The schema (and a JSON-Schema-based validator) enforce:
 11. **Output-type compatibility (structured outputs).** For each `outputDataStructure.measures[]` item whose bound method-output has `output_type` referencing a structured-table template (e.g. `ls_means`, `type3_tests_f`, `contrasts_t`, ...):
     - **Constituents alignment.** The template's `statistics[]` list MUST be the same set as the bound AC concept's `constituents[]` list (modulo the case/naming reconciliation in §3.7).
     - **Per-statistic dataType.** Each statistic's dataType in `statistics_vocabulary.json` MUST equal the corresponding AC atomic concept's dataType in `AC_Concept_Model_v017.json.sharedStatisticsVocabulary`.
-    - **Dimension chain-resolution.** The bound AC concept's `dimensions[]` (e.g. `["factor", "level"]`) describes a *semantic* dimensional shape — concepts know nothing about methods. The actual identity of each dimension is resolved at validation time by walking the transformation's existing bindings:
-        1. Read the method-output's `indexed_by` (e.g. `["fixed_effect"]`).
-        2. For each input slot named in `indexed_by`, look up its binding in `inputDataStructure.measures[]` or `inputDataStructure.dimensions[]` within the same transformation. That binding's `concept` (or `conceptCategory`) is the identity of the corresponding AC `factor`-class dimension (e.g. `Treatment`).
-        3. The AC concept's `level`-class dimension is implicit: the runtime values of the resolved concept (e.g. `Drug A`, `Drug B`, `Placebo` from the bound Treatment column).
-    - **Multi-factor outputs** (e.g. M.MMRM's `ls_means` with `indexed_by: ["fixed_effect", "repeated_factor"]`): the chain resolves each `indexed_by` slot independently, producing N (factor, level) pairs. The AC concept's flat `dimensions` field is interpreted as "this many factor/level pairs per row" — the concept stays generic; the transformation chain fills in the specifics.
-    - **No `dimension_bindings` block is added to transformations.** The information is already present through the input bindings; the validator/resolver walks it.
+    - **Dimension chain-resolution.** The bound AC concept's `dimensions[]` (e.g. `["factor", "level"]`) describes a *semantic* dimensional shape — concepts know nothing about methods. The actual identity of each dimension is resolved by reading the output's structured `indexed_by` (§3.5.2) together with the transformation's bindings:
+        1. From `indexed_by`, take the **discrete model components** that index the rows. For `granularity: level` (or `component`) over `components: discrete`/`all`, these are the formula's `code`-typed inputs; for a named breakdown they are the roles in the output's relevant `sub_types[].formula_term_kinds` (e.g. `fixed_effect`). The discrete/continuous split is read from each input's `dataType`, not hand-authored.
+        2. For each such input role, look up its binding in `inputDataStructure.dimensions[]` / `measures[]` within the same transformation. That binding's `concept` (or `conceptCategory`) is the identity of the corresponding AC `factor`-class dimension (e.g. `Treatment`).
+        3. The AC concept's `level`-class dimension is implicit: the runtime coded values of the resolved concept (e.g. `Drug A`, `Drug B`, `Placebo` from the bound `Treatment` column). `indexed_by` declares *that* the output is at level granularity; the bound concept's value set supplies *which* levels.
+    - **Multi-factor outputs** (e.g. M.MMRM's `ls_means_by_group_time` sub-type over `formula_term_kinds: ["fixed_effect", "repeated_factor"]`): the chain resolves each role independently, producing N (factor, level) pairs. The AC concept's flat `dimensions` field is read as "this many factor/level pairs per row" — the concept stays generic; the transformation chain fills in the specifics.
+    - **Non-model axes.** When `indexed_by` carries an `axis` (`time` / `cov_param` / `response`, §3.5.2), that index is *not* a model factor: it resolves to the corresponding non-model dimension (the outcome's follow-up time grid, the variance/covariance parameters, or the multivariate response), not to a bound concept via the factor chain above.
+    - **No `dimension_bindings` block is added to transformations.** The information is already present through the input bindings; the resolver walks it.
+    - **Enforcement status.** The validator currently enforces that every `indexed_by` is the object form (`[M1]`) and that `contrasts_*` outputs carry none — their rows are contrast-member-defined, not model-indexed (`[E1]`, contrast spec §3.6). The full factor→concept chain-resolution above is a documented contract for the resolver, not yet enforced code.
 12. **`modelInteractions` resolution and legality.** For each `inputDataStructure.modelInteractions[]` item (the per-use interaction terms selected onto the model RHS):
     - Each `operands[]` `(input, concept | conceptCategory)` triple MUST match an existing `inputDataStructure.dimensions[]` / `measures[]` binding — same `input` role AND same `concept` / `conceptCategory`. No dangling operands. (`operands[]` reuses the input-slot-name FK from rule 2, so an operand that names a role the method does not declare already fails there; this rule additionally pins it to a *concrete binding*, disambiguating `multiple`-cardinality roles such as `fixed_effect` bound to both `Treatment` and `Region`.)
     - The multiset of operand `input` roles MUST match an allowed interaction production in `usesMethod`'s `formula.generic_expression` (parsed against `lib/vocabulary/formula_grammar.json`). E.g. `{fixed_effect, repeated_factor}` is legal for `M.MMRM`; `{repeated_factor, covariate}` is not.
