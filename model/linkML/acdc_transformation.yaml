@@ -637,13 +637,20 @@ classes:
 #            files declared in $references.
 #   §6.6 #9  Twin-DSD consistency advisory — warn (non-blocking) when a dim
 #            appears on one side and not the other without comment.
-#   §6.6 #10 modelInteractions[]: each InteractionOperand (input,
+#   §6.6 #12 modelInteractions[]: each InteractionOperand (input,
 #            concept|conceptCategory) must match an existing inputDataStructure
 #            dimensions[]/measures[] binding (no dangling operands); and each
 #            interaction's operand-role multiset must match an allowed
 #            interaction production in usesMethod's formula.generic_expression
 #            (e.g. fixed_effect:repeated_factor is legal for M.MMRM,
-#            repeated_factor:covariate is not).
+#            repeated_factor:covariate is not). operands count >= 2.
+#   §6.6 #13 Interaction / output-term coherence (advisory, non-blocking) —
+#            when a bound method-output sub_type's multi-kind formula_term_kinds
+#            forms an allowed interaction production but that interaction is
+#            absent from modelInteractions[], warn (the by-cell breakdown
+#            presupposes an interaction the model does not fit; crossed-factor
+#            results collapse to additive). Blocking only if the method sets
+#            sub_types[].requires_interaction: true.
 #
 # The XOR rule from §6.6 #8 (concept XOR conceptCategory) IS expressible in
 # LinkML and is encoded on ConceptReference above.
