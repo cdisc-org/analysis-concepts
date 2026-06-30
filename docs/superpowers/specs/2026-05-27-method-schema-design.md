@@ -144,6 +144,28 @@ Implications:
 }
 ```
 
+#### 3.4.1 Model-specification scope — fixed effects + R-side covariance; G-side random effects deferred *(2026-06-30)*
+
+A model is specified across **three layers**, not the formula alone:
+
+- **Formula RHS + roles** — the structural design: the fixed-effects terms (`fixed_effect` = a *categorical* fixed effect / class variable; `covariate` = a *continuous* fixed effect), their interactions (selected per-use as `inputDataStructure.modelInteractions[]`, see §6.6 #12), the repeated structure (`repeated_subject` / `repeated_factor`), and stratification (`strata`).
+- **Configurations** — the *parameterization* of that design: the **R-side residual covariance** (`covariance_structure`: UN/CS/AR1/TOEP/…), estimation (`estimation_method`: REML/ML), degrees of freedom (`df_method`: KR/Satterthwaite/…), and inference options (`ss_type`, `alpha`, `ties`, `link`, …). This mirrors how statisticians actually specify models — a *menu choice* of covariance type (SAS `TYPE=`, R `corStruct`), not a hand-written matrix.
+- **Concept bindings** (transformation side) — which clinical/analysis concept fills each role.
+
+**What is in scope.** Fixed-effects models (ANOVA, ANCOVA, logistic, …), survival (Cox, log-rank), stratified tests (CMH, stratified Cox), and **R-side** longitudinal models — MMRM and MANOVA, where the within-subject correlation is carried entirely by the residual covariance `R` (the `covariance_structure` config), with **no** random effects.
+
+**What is out of scope (deliberate deferral).** **G-side random effects** — random intercepts/slopes (`γ ~ N(0, G)`): random centre/site effects in multi-centre trials, cluster- or group-randomised designs, hierarchical sampling units (eyes/lesions within subject), random-coefficient / subject-slope estimands (e.g. progression-rate or eGFR-slope analyses), and random-effects meta-analysis / MRCT region effects. The current `<role_tag>` enum has no grouping role and `formula_grammar.json` has no random-effects production (`(terms | group)`); the `|` partition is the R-side repeated/strata structure only. This is a scope choice, not an oversight: R-side MMRM is the regulatory default for change-from-baseline, and a random *intercept* (G-side) is in any case equivalent to a CS residual structure (R-side) that MMRM already supports and generalises.
+
+**Naming.** `fixed_effect` is retained (not renamed to `factor`) precisely so it sits opposite a future `random_effect` role; `covariate` is its continuous counterpart. The current roles populate the *fixed* column of a `(categorical | continuous) × (fixed | random)` grid whose random column is intentionally empty.
+
+**Extension path, if/when G-side is added.** It is a bounded, *additive* change — most of the machinery already exists:
+- a new structural grouping role (e.g. `random_group`) and a distinct `<random_spec>` grammar production — kept **separate** from the existing repeated `|` partition (as SAS/`nlme` separate `RANDOM` from `REPEATED`/`correlation=`), random slopes referencing an existing `covariate`/`repeated_factor`;
+- a transformation-side construct in the partition region (parallel to but distinct from `modelInteractions[]` — variance-component semantics, not an RHS term);
+- **scoping** the covariance config via the existing-but-unused `Configuration.applicable_scopes` field (e.g. `["residual"]` vs `["random"]`) so the R-side and G-side covariances can coexist — today's single `covariance_structure` implicitly means residual-side;
+- the estimation / df / inference configs already apply unchanged.
+
+These would most naturally land on a new `M.LinearMixedModel` / `M.GLMM` rather than retrofitting MMRM, whose identity *is* "R-side, no random effects."
+
 ### 3.5 Analysis output type — three-axis decomposition
 
 Each `outputs[i]` for an analysis method is a TABLE described by four axes plus an optional escape hatch:
