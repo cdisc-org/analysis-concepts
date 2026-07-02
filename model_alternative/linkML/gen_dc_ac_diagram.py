@@ -38,6 +38,8 @@ def _atom_props(a):
     ur = a.get("unitRule")
     if vt:
         p.append(f"valueType: {vt}" + (f" / {ur}" if ur else ""))
+    if "dec_id" in a:
+        p.append(f"dec_id: {json.dumps(a['dec_id'])}")
     if a.get("leaves"):
         p.append("leaves: " + ", ".join(l["term"] for l in a["leaves"]))
     return p

@@ -15,7 +15,7 @@
     "notation": "assignment",
     "default_expression": "imputed_value := baseline_value",
     "generic_expression": "imputed_value := <baseline_value> OVER (<partition>+)",
-    "notes": "The baseline value is propagated to all rows within the partition. This is a lookup, not a carry-forward \u2014 the imputed value is the same regardless of when the observation is missing."
+    "notes": "The baseline value is propagated to all rows within the partition. This is a lookup, not a carry-forward — the imputed value is the same regardless of when the observation is missing."
   },
   "inputs": [
     {
@@ -37,9 +37,10 @@
     {
       "output_type": "computed_value",
       "name": "imputed_value",
-      "indexed_by": [
-        "partition"
-      ],
+      "indexed_by": {
+        "granularity": "level",
+        "components": "discrete"
+      },
       "dataType": "decimal"
     }
   ]

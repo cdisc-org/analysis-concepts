@@ -2,7 +2,7 @@
 """Cross-layer invariant validator for the ACDC method/output-class/AC model.
 Run: .venv/bin/python scripts/validate_methods_model.py
 Exit 0 = all checks pass; exit 1 = one or more failures (printed)."""
-import json, sys, pathlib
+import json, sys, pathlib, glob
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 VOCAB = ROOT / "lib" / "vocabulary"
@@ -16,18 +16,24 @@ def load(p):
     return json.load(open(p))
 
 # ---- Terminology (statistic terms) ----------------------------------------
-# statistics_vocabulary.json is the SKOS terminology layer: terms carry a
-# primitive dataType ONLY. FHIR datatypes live on the AC concept side (D-layers).
+# statistics_vocabulary.json is the SKOS terminology layer: pure controlled terminology.
+# Structural type (valueType) lives on the AC concept side (D-layers), NOT on terms.
 stats = load(VOCAB / "statistics_vocabulary.json")["statistics"]
 
 for aid, a in stats.items():
-    check("dataType" in a, f"[A1] term {aid} missing primitive dataType")
+    check("dataType" not in a, f"[A1] term {aid} must NOT carry dataType — structural type lives on the concept's valueType")
     check("fhirValueType" not in a,
           f"[A1] term {aid} must NOT carry fhirValueType — FHIR datatype is a concept-side fact (D-layers)")
 
 # A2: numerator/denominator terms exist (needed by proportion_estimate set)
 for needed in ("numerator", "denominator"):
-    check(needed in stats, f"[A1] term {needed} not yet defined")
+    check(needed in stats, f"[A2] term {needed} not yet defined")
+
+# ---- [ID1] identity coverage: every term carries a dec_id slot --------------
+for tid, t in stats.items():
+    check("dec_id" in t, f"[ID1] term {tid} missing dec_id slot (use null until NCI code is registered)")
+    if t.get("dec_id") is None:
+        print(f"[ID1] note: term {tid} dec_id unregistered — using term-id as interim key")
 
 # ---- Statistic sets -------------------------------------------------------
 SETS_PATH = VOCAB / "statistic_sets.json"
@@ -141,8 +147,6 @@ def concept_terms(c):
     if "leaves" in c:
         terms |= {leaf["term"] for leaf in c["leaves"]}
     return terms
-COVER = {cid: concept_terms(c) for cid, c in ac_concepts.items()}
-
 # C1: each AC statistical concept is THIN — references terminology (term/leaves
 #     resolving to real terms) + carries a valid fhirValueType + unit, and does
 #     NOT re-state terminology-owned facts (single source).
@@ -163,6 +167,26 @@ for cid, c in ac_concepts.items():
         check(forbidden not in c,
               f"[C1] AC concept {cid} must not re-state {forbidden} (single source = terminology)")
 
+def _all_concept_ids(model):
+    """Collect every concept id from a concept model (AC or DC)."""
+    ids = set()
+    ids |= set(model.get("resultPatterns", {}))
+    ids |= set(model.get("sharedStatisticsVocabulary", {}).get("concepts", {}))
+    for cat in model.get("categories", {}).values():
+        if isinstance(cat, dict):
+            ids |= set(cat.get("concepts", {}))
+    return ids
+
+def term_code(term_id):
+    """Canonical key for a terminology term: dec_id if registered, else the term id."""
+    t = stats.get(term_id, {})
+    return t.get("dec_id") or term_id
+
+def concept_code(cid, ac_concepts):
+    """Canonical key for an AC atom: its dec_id if set, else its bridged term id."""
+    c = ac_concepts.get(cid, {})
+    return c.get("dec_id") or c.get("term") or cid
+
 # C2: result patterns reference shared sets; constituents' terms cover the
 #     union of those sets' terms (leaf-aware, §4.1/§5.2 item 6).
 patterns = ac["resultPatterns"]
@@ -177,38 +201,64 @@ for pid, p in patterns.items():
     refsets = p.get("statistics_set", [])
     for sid in refsets:
         check(sid in sets, f"[C2] pattern {pid} references unknown set {sid}")
-    required_atoms = set()
-    for sid in refsets:
-        required_atoms |= set(sets.get(sid, {}).get("statistics", []))
-    for cid in p.get("additional_statistics", []):
-        required_atoms |= COVER.get(cid, {cid})
+    required = {term_code(t) for sid in p.get("statistics_set", []) for t in sets.get(sid, {}).get("statistics", [])}
+    spec = ESTIMATE_SPECIALIZATION.get(_PATTERN_TO_TEMPLATE.get(pid))
+    if spec and term_code("estimate") in required:
+        required = (required - {term_code("estimate")}) | {term_code(spec)}
     covered = set()
     for cid in p.get("constituents", []):
         check(cid in ac_concepts, f"[C2] pattern {pid} constituent {cid} not a known AC concept")
-        covered |= COVER.get(cid, set())
-    spec = ESTIMATE_SPECIALIZATION.get(_PATTERN_TO_TEMPLATE.get(pid))
-    if spec and "estimate" in required_atoms:
-        required_atoms = (required_atoms - {"estimate"}) | {spec}
-    opt = set(p.get("optional_statistics", []))
-    check(covered == (required_atoms | opt) or covered == required_atoms,
-          f"[C2] pattern {pid}: constituent terms {sorted(covered)} != set terms {sorted(required_atoms)}")
+        c = ac_concepts.get(cid, {})
+        if c.get("leaves"):
+            covered |= {term_code(leaf["term"]) for leaf in c["leaves"]}
+        elif c.get("term"):
+            covered.add(term_code(c["term"]))
+        covered.add(concept_code(cid, ac_concepts))
+    check(required <= covered,
+          f"[C2] pattern {pid}: constituent codes do not cover set codes (missing {sorted(required - covered)})")
 
-# C3: methodOutputSlotMapping resolves to real patterns
-for m, slots in ac["methodOutputSlotMapping"].items():
-    if m == "note":
-        continue
-    for slot, pat in slots.items():
-        check(pat in patterns, f"[C3] methodOutputSlotMapping {m}.{slot} -> unknown pattern {pat}")
+# C3': every transformation output reference resolves to a real method slot,
+#      and its bound concept exists in the concept layer.
+_tlib_path = ROOT / "lib" / "transformations" / "ACDC_Transformation_Library_v07.json"
+if _tlib_path.exists():
+    _tlib_data = load(_tlib_path)["transformations"]
+    _methods = {}
+    for _mp in glob.glob(str(ROOT / "lib" / "methods" / "*" / "M_*.json")):
+        _m = load(_mp)
+        _methods[_m["conceptId"]] = {o["name"] for o in _m.get("outputs", [])}
+    _dc_concepts = set()
+    for _cp in [ROOT / "lib" / "concepts" / "Option_B_Clinical.json",
+                ROOT / "lib" / "concepts" / "AC_Concept_Model_v017.json"]:
+        _dc_concepts |= _all_concept_ids(load(_cp))
+    for _tr in _tlib_data:
+        _mid = _tr.get("usesMethod")
+        _slots = _methods.get(_mid, set())
+        for _meas in _tr.get("outputDataStructure", {}).get("measures", []):
+            _out = _meas.get("output")
+            check(_mid is None or _out in _slots,
+                  f"[C3'] transformation {_tr['conceptId']} output {_out!r} is not a slot of {_mid}")
+            _con = _meas.get("concept")
+            check(_con in _dc_concepts,
+                  f"[C3'] transformation {_tr['conceptId']} binds unknown concept {_con!r}")
 
 # ---- Contrast spec §3.6: contrasts_* outputs carry no contrast-row indexed_by
-import glob
+# [E1] contrast-as-method: a contrasts_* output is member-defined, not model-indexed
 for f in glob.glob(str(ROOT / "lib" / "methods" / "analyses" / "*.json")):
     m = load(f)
     for o in m.get("outputs", []):
         if o.get("output_type") in ("contrasts_t", "contrasts_z"):
-            ib = o.get("indexed_by", [])
-            check("fixed_effect" not in ib,
-                  f"[E1] {pathlib.Path(f).name}: contrasts output still has indexed_by 'fixed_effect' (contrast rows are member-defined)")
+            check(o.get("indexed_by") is None,
+                  f"[E1] {pathlib.Path(f).name}: contrasts output {o.get('name')} must not carry indexed_by (rows are contrast-member-defined)")
+
+# ---- [M1] every indexed_by is the object form (§3.8) ----------------------
+for mp in glob.glob(str(ROOT / "lib" / "methods" / "*" / "M_*.json")):
+    m = load(mp)
+    for o in m.get("outputs", []):
+        ib = o.get("indexed_by")
+        if ib is None:
+            continue
+        check(isinstance(ib, dict) and "granularity" in ib,
+              f"[M1] {m['conceptId']}.{o.get('name')} indexed_by must be the object form, got {type(ib).__name__}")
 
 # ---- AllMethods.json aggregate is complete & current ----------------------
 ALLM_PATH = ROOT / "lib" / "methods" / "AllMethods.json"

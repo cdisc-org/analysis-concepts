@@ -14,8 +14,8 @@
           "display": "point estimate"
         }
       ],
-      "dataType": "numeric",
-      "description": "Point estimate of the quantity"
+      "description": "Point estimate of the quantity",
+      "dec_id": null
     },
     "SE": {
       "conceptId": "SE",
@@ -29,8 +29,8 @@
           "display": "standard error of estimate"
         }
       ],
-      "dataType": "numeric",
-      "description": "Standard error of the estimate"
+      "description": "Standard error of the estimate",
+      "dec_id": null
     },
     "CI_lower": {
       "conceptId": "CI_lower",
@@ -44,8 +44,8 @@
           "display": "lower confidence limit"
         }
       ],
-      "dataType": "numeric",
-      "description": "Lower bound of confidence interval"
+      "description": "Lower bound of confidence interval",
+      "dec_id": null
     },
     "CI_upper": {
       "conceptId": "CI_upper",
@@ -59,8 +59,8 @@
           "display": "upper confidence limit"
         }
       ],
-      "dataType": "numeric",
-      "description": "Upper bound of confidence interval"
+      "description": "Upper bound of confidence interval",
+      "dec_id": null
     },
     "df": {
       "conceptId": "df",
@@ -74,8 +74,8 @@
           "display": "number of degrees of freedom"
         }
       ],
-      "dataType": "numeric",
-      "description": "Degrees of freedom"
+      "description": "Degrees of freedom",
+      "dec_id": null
     },
     "df_num": {
       "conceptId": "df_num",
@@ -89,8 +89,8 @@
           "display": "numerator degrees of freedom"
         }
       ],
-      "dataType": "numeric",
-      "description": "Numerator degrees of freedom"
+      "description": "Numerator degrees of freedom",
+      "dec_id": null
     },
     "df_den": {
       "conceptId": "df_den",
@@ -104,8 +104,8 @@
           "display": "denominator degrees of freedom"
         }
       ],
-      "dataType": "numeric",
-      "description": "Denominator degrees of freedom"
+      "description": "Denominator degrees of freedom",
+      "dec_id": null
     },
     "t_statistic": {
       "conceptId": "t_statistic",
@@ -119,8 +119,8 @@
           "display": "t-statistic"
         }
       ],
-      "dataType": "numeric",
-      "description": "t test statistic"
+      "description": "t test statistic",
+      "dec_id": null
     },
     "F_statistic": {
       "conceptId": "F_statistic",
@@ -134,8 +134,8 @@
           "display": "F-statistic"
         }
       ],
-      "dataType": "numeric",
-      "description": "F test statistic"
+      "description": "F test statistic",
+      "dec_id": null
     },
     "z_statistic": {
       "conceptId": "z_statistic",
@@ -149,8 +149,8 @@
           "display": "Z-statistic"
         }
       ],
-      "dataType": "numeric",
-      "description": "z test statistic"
+      "description": "z test statistic",
+      "dec_id": null
     },
     "chi_squared": {
       "conceptId": "chi_squared",
@@ -164,8 +164,8 @@
           "display": "Chi-Squared statistic"
         }
       ],
-      "dataType": "numeric",
-      "description": "Chi-squared test statistic"
+      "description": "Chi-squared test statistic",
+      "dec_id": null
     },
     "p_value": {
       "conceptId": "p_value",
@@ -179,8 +179,8 @@
           "display": "p-value"
         }
       ],
-      "dataType": "numeric",
-      "description": "P-value for the test"
+      "description": "P-value for the test",
+      "dec_id": null
     },
     "p_value_adjusted": {
       "conceptId": "p_value_adjusted",
@@ -188,8 +188,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "P-value after multiplicity adjustment (Bonferroni, Tukey, Holm, BH, etc.). Reported alongside the unadjusted p-value when an adjustment procedure has been applied."
+      "description": "P-value after multiplicity adjustment (Bonferroni, Tukey, Holm, BH, etc.). Reported alongside the unadjusted p-value when an adjustment procedure has been applied.",
+      "dec_id": null
     },
     "SS": {
       "conceptId": "SS",
@@ -197,8 +197,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Sum of squares"
+      "description": "Sum of squares",
+      "dec_id": null
     },
     "MS": {
       "conceptId": "MS",
@@ -212,8 +212,8 @@
           "display": "residual mean square"
         }
       ],
-      "dataType": "numeric",
-      "description": "Mean square"
+      "description": "Mean square",
+      "dec_id": null
     },
     "odds_ratio": {
       "conceptId": "odds_ratio",
@@ -227,8 +227,8 @@
           "display": "odds ratio"
         }
       ],
-      "dataType": "numeric",
-      "description": "Odds ratio (exp of log-odds coefficient)"
+      "description": "Odds ratio (exp of log-odds coefficient)",
+      "dec_id": null
     },
     "hazard_ratio": {
       "conceptId": "hazard_ratio",
@@ -242,8 +242,8 @@
           "display": "hazard ratio"
         }
       ],
-      "dataType": "numeric",
-      "description": "Hazard ratio (exp of Cox coefficient)"
+      "description": "Hazard ratio (exp of Cox coefficient)",
+      "dec_id": null
     },
     "coefficient": {
       "conceptId": "coefficient",
@@ -251,8 +251,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Model coefficient (log scale for GLMs)"
+      "description": "Model coefficient (log scale for GLMs)",
+      "dec_id": null
     },
     "n_risk": {
       "conceptId": "n_risk",
@@ -260,8 +260,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Number at risk"
+      "description": "Number at risk",
+      "dec_id": null
     },
     "n_event": {
       "conceptId": "n_event",
@@ -269,8 +269,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Number of events"
+      "description": "Number of events",
+      "dec_id": null
     },
     "n_censored": {
       "conceptId": "n_censored",
@@ -278,8 +278,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Number censored"
+      "description": "Number censored",
+      "dec_id": null
     },
     "survival_prob": {
       "conceptId": "survival_prob",
@@ -287,8 +287,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Estimated survival probability"
+      "description": "Estimated survival probability",
+      "dec_id": null
     },
     "median": {
       "conceptId": "median",
@@ -302,8 +302,8 @@
           "display": "center value"
         }
       ],
-      "dataType": "numeric",
-      "description": "Median estimate"
+      "description": "Median estimate",
+      "dec_id": null
     },
     "mean": {
       "conceptId": "mean",
@@ -317,8 +317,8 @@
           "display": "average value"
         }
       ],
-      "dataType": "numeric",
-      "description": "Mean estimate"
+      "description": "Mean estimate",
+      "dec_id": null
     },
     "AIC": {
       "conceptId": "AIC",
@@ -332,8 +332,8 @@
           "display": "Akaike information criterion"
         }
       ],
-      "dataType": "numeric",
-      "description": "Akaike Information Criterion"
+      "description": "Akaike Information Criterion",
+      "dec_id": null
     },
     "BIC": {
       "conceptId": "BIC",
@@ -347,8 +347,8 @@
           "display": "Bayesian information criterion"
         }
       ],
-      "dataType": "numeric",
-      "description": "Bayesian Information Criterion"
+      "description": "Bayesian Information Criterion",
+      "dec_id": null
     },
     "minus2LogL": {
       "conceptId": "minus2LogL",
@@ -356,8 +356,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "-2 Log Likelihood"
+      "description": "-2 Log Likelihood",
+      "dec_id": null
     },
     "R_squared": {
       "conceptId": "R_squared",
@@ -371,8 +371,8 @@
           "display": "coefficient of determination"
         }
       ],
-      "dataType": "numeric",
-      "description": "Coefficient of determination"
+      "description": "Coefficient of determination",
+      "dec_id": null
     },
     "concordance": {
       "conceptId": "concordance",
@@ -380,8 +380,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Concordance statistic (C-index)"
+      "description": "Concordance statistic (C-index)",
+      "dec_id": null
     },
     "value": {
       "conceptId": "value",
@@ -389,8 +389,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "The computed/derived value"
+      "description": "The computed/derived value",
+      "dec_id": null
     },
     "n": {
       "conceptId": "n",
@@ -404,8 +404,8 @@
           "display": "count"
         }
       ],
-      "dataType": "numeric",
-      "description": "Count of non-missing observations"
+      "description": "Count of non-missing observations",
+      "dec_id": null
     },
     "geometric_mean": {
       "conceptId": "geometric_mean",
@@ -419,8 +419,8 @@
           "display": "geometric mean"
         }
       ],
-      "dataType": "numeric",
-      "description": "Geometric mean (exp of mean of log values)"
+      "description": "Geometric mean (exp of mean of log values)",
+      "dec_id": null
     },
     "harmonic_mean": {
       "conceptId": "harmonic_mean",
@@ -434,8 +434,8 @@
           "display": "harmonic mean"
         }
       ],
-      "dataType": "numeric",
-      "description": "Harmonic mean (reciprocal of mean of reciprocals)"
+      "description": "Harmonic mean (reciprocal of mean of reciprocals)",
+      "dec_id": null
     },
     "trimmed_mean": {
       "conceptId": "trimmed_mean",
@@ -443,8 +443,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Trimmed mean (mean after removing extreme values from each tail)"
+      "description": "Trimmed mean (mean after removing extreme values from each tail)",
+      "dec_id": null
     },
     "winsorized_mean": {
       "conceptId": "winsorized_mean",
@@ -452,8 +452,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Winsorized mean (mean after replacing extreme values with boundary values)"
+      "description": "Winsorized mean (mean after replacing extreme values with boundary values)",
+      "dec_id": null
     },
     "mode": {
       "conceptId": "mode",
@@ -467,8 +467,8 @@
           "display": "mode"
         }
       ],
-      "dataType": "numeric",
-      "description": "Most frequently occurring value"
+      "description": "Most frequently occurring value",
+      "dec_id": null
     },
     "sd": {
       "conceptId": "sd",
@@ -482,8 +482,8 @@
           "display": "standard deviation"
         }
       ],
-      "dataType": "numeric",
-      "description": "Standard deviation"
+      "description": "Standard deviation",
+      "dec_id": null
     },
     "variance": {
       "conceptId": "variance",
@@ -497,8 +497,8 @@
           "display": "variance"
         }
       ],
-      "dataType": "numeric",
-      "description": "Variance"
+      "description": "Variance",
+      "dec_id": null
     },
     "cv": {
       "conceptId": "cv",
@@ -512,8 +512,8 @@
           "display": "coefficient of variation"
         }
       ],
-      "dataType": "numeric",
-      "description": "Coefficient of variation (SD/mean \u00d7 100)"
+      "description": "Coefficient of variation (SD/mean × 100)",
+      "dec_id": null
     },
     "geometric_cv": {
       "conceptId": "geometric_cv",
@@ -521,8 +521,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Geometric coefficient of variation"
+      "description": "Geometric coefficient of variation",
+      "dec_id": null
     },
     "range": {
       "conceptId": "range",
@@ -536,8 +536,8 @@
           "display": "range"
         }
       ],
-      "dataType": "numeric",
-      "description": "Range (max \u2212 min)"
+      "description": "Range (max − min)",
+      "dec_id": null
     },
     "min": {
       "conceptId": "min",
@@ -551,8 +551,8 @@
           "display": "minimum observed value"
         }
       ],
-      "dataType": "numeric",
-      "description": "Minimum observed value"
+      "description": "Minimum observed value",
+      "dec_id": null
     },
     "max": {
       "conceptId": "max",
@@ -566,8 +566,8 @@
           "display": "maximum observed value"
         }
       ],
-      "dataType": "numeric",
-      "description": "Maximum observed value"
+      "description": "Maximum observed value",
+      "dec_id": null
     },
     "iqr": {
       "conceptId": "iqr",
@@ -581,8 +581,8 @@
           "display": "inter quartile range"
         }
       ],
-      "dataType": "numeric",
-      "description": "Interquartile range (Q3 \u2212 Q1)"
+      "description": "Interquartile range (Q3 − Q1)",
+      "dec_id": null
     },
     "sum": {
       "conceptId": "sum",
@@ -590,8 +590,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Sum of all values"
+      "description": "Sum of all values",
+      "dec_id": null
     },
     "Q1": {
       "conceptId": "Q1",
@@ -605,8 +605,8 @@
           "display": "first quartile"
         }
       ],
-      "dataType": "numeric",
-      "description": "First quartile (25th percentile)"
+      "description": "First quartile (25th percentile)",
+      "dec_id": null
     },
     "Q3": {
       "conceptId": "Q3",
@@ -620,8 +620,8 @@
           "display": "third quartile"
         }
       ],
-      "dataType": "numeric",
-      "description": "Third quartile (75th percentile)"
+      "description": "Third quartile (75th percentile)",
+      "dec_id": null
     },
     "percentile": {
       "conceptId": "percentile",
@@ -635,8 +635,8 @@
           "display": "percentile"
         }
       ],
-      "dataType": "numeric",
-      "description": "Percentile value at a specified rank"
+      "description": "Percentile value at a specified rank",
+      "dec_id": null
     },
     "skewness": {
       "conceptId": "skewness",
@@ -650,8 +650,8 @@
           "display": "skewness"
         }
       ],
-      "dataType": "numeric",
-      "description": "Skewness (measure of asymmetry of the distribution)"
+      "description": "Skewness (measure of asymmetry of the distribution)",
+      "dec_id": null
     },
     "kurtosis": {
       "conceptId": "kurtosis",
@@ -665,8 +665,8 @@
           "display": "kurtosis"
         }
       ],
-      "dataType": "numeric",
-      "description": "Kurtosis (measure of tailedness of the distribution)"
+      "description": "Kurtosis (measure of tailedness of the distribution)",
+      "dec_id": null
     },
     "frequency": {
       "conceptId": "frequency",
@@ -680,8 +680,8 @@
           "display": "frequency"
         }
       ],
-      "dataType": "numeric",
-      "description": "Frequency count per category"
+      "description": "Frequency count per category",
+      "dec_id": null
     },
     "proportion": {
       "conceptId": "proportion",
@@ -695,8 +695,8 @@
           "display": "proportion"
         }
       ],
-      "dataType": "numeric",
-      "description": "Proportion (0\u20131 scale)"
+      "description": "Proportion (0–1 scale)",
+      "dec_id": null
     },
     "pct": {
       "conceptId": "pct",
@@ -704,8 +704,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Percentage (0\u2013100 scale)"
+      "description": "Percentage (0–100 scale)",
+      "dec_id": null
     },
     "numerator": {
       "conceptId": "numerator",
@@ -713,8 +713,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Numerator count (events of interest) for a proportion"
+      "description": "Numerator count (events of interest) for a proportion",
+      "dec_id": null
     },
     "denominator": {
       "conceptId": "denominator",
@@ -722,8 +722,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Denominator count (population at risk) for a proportion"
+      "description": "Denominator count (population at risk) for a proportion",
+      "dec_id": null
     },
     "cumulative_n": {
       "conceptId": "cumulative_n",
@@ -731,8 +731,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Cumulative count"
+      "description": "Cumulative count",
+      "dec_id": null
     },
     "cumulative_pct": {
       "conceptId": "cumulative_pct",
@@ -740,8 +740,8 @@
       "label": null,
       "ncitCode": null,
       "codings": [],
-      "dataType": "numeric",
-      "description": "Cumulative percentage"
+      "description": "Cumulative percentage",
+      "dec_id": null
     }
   }
 }

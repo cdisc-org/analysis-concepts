@@ -44,10 +44,10 @@
     {
       "output_type": "computed_value",
       "name": "imputed_value",
-      "indexed_by": [
-        "partition",
-        "time_order"
-      ],
+      "indexed_by": {
+        "granularity": "level",
+        "components": "discrete"
+      },
       "dataType": "decimal"
     }
   ]

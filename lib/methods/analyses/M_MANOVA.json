@@ -101,18 +101,20 @@
     {
       "name": "type3_tests_mixed",
       "output_type": "type3_tests_mixed",
-      "indexed_by": [
-        "response",
-        "fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "component",
+        "components": "all",
+        "axis": "response"
+      }
     },
     {
       "name": "parameter_estimates_linear",
       "output_type": "parameter_estimates_linear",
-      "indexed_by": [
-        "response",
-        "fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "level",
+        "components": "all",
+        "axis": "response"
+      }
     }
   ]
 }

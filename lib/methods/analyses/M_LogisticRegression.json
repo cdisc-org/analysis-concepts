@@ -69,32 +69,26 @@
     {
       "name": "type3_tests_chi_squared",
       "output_type": "type3_tests_chi_squared",
-      "indexed_by": [
-        "covariate",
-        "fixed_effect",
-        "covariate:fixed_effect",
-        "fixed_effect:fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "component",
+        "components": "all"
+      }
     },
     {
       "name": "parameter_estimates_glm",
       "output_type": "parameter_estimates_glm",
-      "indexed_by": [
-        "covariate",
-        "fixed_effect",
-        "covariate:fixed_effect",
-        "fixed_effect:fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "level",
+        "components": "all"
+      }
     },
     {
       "name": "odds_ratio_estimates",
       "output_type": "odds_ratio_estimates",
-      "indexed_by": [
-        "covariate",
-        "fixed_effect",
-        "covariate:fixed_effect",
-        "fixed_effect:fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "level",
+        "components": "all"
+      }
     }
   ]
 }

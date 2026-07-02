@@ -213,10 +213,11 @@ The **level values** themselves (Drug A / B / Placebo) are not written on the ou
 
 - `time` — a survival table has one row per follow-up time point: the time axis of the *outcome*, not a model term.
 - `cov_param` — a repeated-measures model also estimates the parameters of its variance/covariance structure; these are indexed separately from the model's terms.
+- `response` — a MANOVA output (type3_tests_mixed, parameter_estimates_linear) is crossed by the multivariate left-hand side; each response variable is a separate index dimension, not a model term on the right-hand side.
 
 (A `contrast` — a defined comparison of levels, e.g. "Drug A − Placebo" — is treated as the `level` granularity of a *constructed* discrete component, so it needs no separate axis.)
 
-So the indexing vocabulary is two small families: the **model-structure granularities** (`scalar` / `component` / `level`, derived from the formula and the input types) and **two explicit non-model axes** (`time`, `cov_param`).
+So the indexing vocabulary is two small families: the **model-structure granularities** (`scalar` / `component` / `level`, derived from the formula and the input types) and **three explicit non-model axes** (`time`, `cov_param`, `response`).
 
 **Gap (flagged, not solved here).** A `level` granularity only resolves to concrete values once the bound dimension concept (e.g. `Treatment`) exposes its coded value set; most dimension concepts do not yet. Recorded here; tied to `project_cube_model_gaps` / `project_dimension_categories`.
 
@@ -271,8 +272,7 @@ So `M.Subtraction(A, B)` is a `Change` only because *this* transformation pairs 
 ```jsonc
 // lib/methods/analyses/M_ANCOVA.json (outputs only)
 "outputs": [
-  { "name": "fit_statistics_linear",      "output_type": "fit_statistics_linear",
-    "indexed_by": { "granularity": "scalar" } },
+  { "name": "fit_statistics_linear",      "output_type": "fit_statistics_linear" },
   { "name": "type3_tests_f",              "output_type": "type3_tests_f",
     "indexed_by": { "granularity": "component", "components": "all" } },
   { "name": "parameter_estimates_linear", "output_type": "parameter_estimates_linear",
@@ -348,7 +348,7 @@ The validator checks a set of **cross-layer invariants** (consistency rules that
 
 **Settled:**
 - **Keep** the four artefacts and the method-side `output_type` (§0, §3.1).
-- **Reshape `indexed_by`** (§3.8) to a model-grounded notation: `scalar` / `component` / `level` granularity over the model's components (discrete vs continuous derived from input `dataType`), plus two explicit non-model axes (`time`, `cov_param`). Level *values* come from the bound dimension concept's value set — flagged as a gap.
+- **Reshape `indexed_by`** (§3.8) to a model-grounded notation: `scalar` / `component` / `level` granularity over the model's components (discrete vs continuous derived from input `dataType`), plus three explicit non-model axes (`time`, `cov_param`, `response`). Level *values* come from the bound dimension concept's value set — flagged as a gap.
 - **One fact, one home** (§2.1): CT in the vocabulary; modeling detail in the concept; composition in sets/output-classes; binding in the transformation. **`[C1]` kept** (§5).
 - **Identity = NCI `dec_id`** shared by term + concept; resolution by code; term-id is the flagged interim bridge (§2.2).
 - **Drop `methodOutputSlotMapping`** (§3.6); slot→concept binding lives in the transformation, uniform for AC + DC.

@@ -107,13 +107,10 @@
     {
       "name": "type3_tests_mixed",
       "output_type": "type3_tests_mixed",
-      "indexed_by": [
-        "covariate",
-        "repeated_factor",
-        "fixed_effect",
-        "fixed_effect:repeated_factor",
-        "covariate:fixed_effect"
-      ],
+      "indexed_by": {
+        "granularity": "component",
+        "components": "all"
+      },
       "examples": [
         {
           "term": "covariate"
@@ -132,21 +129,18 @@
     {
       "name": "parameter_estimates_linear",
       "output_type": "parameter_estimates_linear",
-      "indexed_by": [
-        "covariate",
-        "repeated_factor",
-        "fixed_effect",
-        "fixed_effect:repeated_factor",
-        "covariate:fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "level",
+        "components": "all"
+      }
     },
     {
       "name": "ls_means",
       "output_type": "ls_means",
-      "indexed_by": [
-        "fixed_effect",
-        "repeated_factor"
-      ],
+      "indexed_by": {
+        "granularity": "level",
+        "components": "discrete"
+      },
       "sub_types": [
         {
           "name": "ls_means_by_group_time",
@@ -252,9 +246,11 @@
     {
       "name": "covariance_parameters",
       "output_type": "covariance_parameters",
-      "indexed_by": [
-        "repeated_factor"
-      ]
+      "indexed_by": {
+        "granularity": "component",
+        "components": "discrete",
+        "axis": "cov_param"
+      }
     }
   ]
 }

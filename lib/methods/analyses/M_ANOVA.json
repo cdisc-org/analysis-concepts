@@ -63,17 +63,18 @@
     {
       "name": "type3_tests_f",
       "output_type": "type3_tests_f",
-      "indexed_by": [
-        "fixed_effect",
-        "fixed_effect:fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "component",
+        "components": "all"
+      }
     },
     {
       "name": "ls_means",
       "output_type": "ls_means",
-      "indexed_by": [
-        "fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "level",
+        "components": "discrete"
+      }
     },
     {
       "name": "contrasts_t",

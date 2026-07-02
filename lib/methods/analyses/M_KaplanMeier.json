@@ -58,32 +58,36 @@
     {
       "name": "event_summary",
       "output_type": "event_summary",
-      "indexed_by": [
-        "fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "level",
+        "components": "discrete"
+      }
     },
     {
       "name": "survival_table",
       "output_type": "survival_table",
-      "indexed_by": [
-        "fixed_effect",
-        "time"
-      ]
+      "indexed_by": {
+        "granularity": "level",
+        "components": "discrete",
+        "axis": "time"
+      }
     },
     {
       "name": "median_survival",
       "output_type": "median_survival",
-      "indexed_by": [
-        "fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "level",
+        "components": "discrete"
+      }
     },
     {
       "name": "landmark_estimates",
       "output_type": "landmark_estimates",
-      "indexed_by": [
-        "fixed_effect",
-        "time"
-      ]
+      "indexed_by": {
+        "granularity": "level",
+        "components": "discrete",
+        "axis": "time"
+      }
     }
   ]
 }

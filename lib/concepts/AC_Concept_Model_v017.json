@@ -1,7 +1,7 @@
 {
   "model": "AC",
   "version": "0.18",
-  "description": "Analysis Concept model with three levels: Statistical Concepts (atoms), Result Patterns (molecules), and Categories (groupings). The shared statistics vocabulary is referenced by both methods and result patterns but owned by neither. — v0.17 corrects four result patterns (LSMeans, Contrasts, ComputedValue, CovarianceParameters) whose dimensions previously held layer-3 study values; they now match the layer-1 abstract pattern shape from output_class_templates.json. — v0.18 makes statistical concepts thin references into the statistics terminology (term/leaves) overlaid with FHIR valueTypes + unit policies (incl. ConfidenceInterval as Range), references shared statistic_sets in resultPatterns, and repairs methodOutputSlotMapping.",
+  "description": "Analysis Concept model with three levels: Statistical Concepts (atoms), Result Patterns (molecules), and Categories (groupings). The shared statistics vocabulary is referenced by both methods and result patterns but owned by neither. — v0.17 corrects four result patterns (LSMeans, Contrasts, ComputedValue, CovarianceParameters) whose dimensions previously held layer-3 study values; they now match the layer-1 abstract pattern shape from output_class_templates.json. — v0.18 makes statistical concepts thin references into the statistics terminology (term/leaves) overlaid with FHIR valueTypes + unit policies (incl. ConfidenceInterval as Range), references shared statistic_sets in resultPatterns, and removes methodOutputSlotMapping; slot→concept binding now lives in the transformation.",
   "$vocabulary": {
     "valueTypes": "../vocabulary/fhir_value_types.json",
     "statistics": "../vocabulary/statistics_vocabulary.json",
@@ -31,7 +31,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "SE": {
         "label": "Standard error",
@@ -42,7 +43,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "ConfidenceInterval": {
         "label": "Confidence interval",
@@ -50,13 +52,22 @@
         "valueType": "Range",
         "unitRule": "inherited",
         "leaves": [
-          { "fhirPath": "low.value",  "term": "CI_lower" },
-          { "fhirPath": "high.value", "term": "CI_upper" }
+          {
+            "fhirPath": "low.value",
+            "term": "CI_lower",
+            "dec_id": null
+          },
+          {
+            "fhirPath": "high.value",
+            "term": "CI_upper",
+            "dec_id": null
+          }
         ],
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "DF": {
         "label": "Degrees of freedom",
@@ -67,7 +78,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "PValue": {
         "label": "P-value",
@@ -78,7 +90,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "TStatistic": {
         "label": "t statistic",
@@ -89,7 +102,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "FStatistic": {
         "label": "F statistic",
@@ -100,7 +114,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "ChiSquared": {
         "label": "Chi-squared statistic",
@@ -111,7 +126,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "ZStatistic": {
         "label": "Z statistic",
@@ -122,7 +138,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Coefficient": {
         "label": "Model coefficient",
@@ -133,7 +150,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "HazardRatio": {
         "label": "Hazard ratio",
@@ -144,7 +162,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "OddsRatio": {
         "label": "Odds ratio",
@@ -155,7 +174,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "SurvivalProb": {
         "label": "Survival probability",
@@ -166,7 +186,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Median": {
         "label": "Median",
@@ -176,7 +197,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Mean": {
         "label": "Mean",
@@ -186,7 +208,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Min": {
         "label": "Minimum",
@@ -197,7 +220,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Max": {
         "label": "Maximum",
@@ -208,7 +232,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Sum": {
         "label": "Sum",
@@ -218,7 +243,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Mode": {
         "label": "Mode",
@@ -228,7 +254,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Range": {
         "label": "Range",
@@ -239,7 +266,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "StandardDeviation": {
         "label": "Standard deviation",
@@ -250,7 +278,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Variance": {
         "label": "Variance",
@@ -261,7 +290,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Q1": {
         "label": "First quartile",
@@ -272,7 +302,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Q3": {
         "label": "Third quartile",
@@ -283,7 +314,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "IQR": {
         "label": "Interquartile range",
@@ -294,7 +326,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Percentile": {
         "label": "Percentile",
@@ -305,7 +338,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Skewness": {
         "label": "Skewness",
@@ -315,7 +349,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Kurtosis": {
         "label": "Kurtosis",
@@ -325,7 +360,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "GeometricMean": {
         "label": "Geometric mean",
@@ -336,7 +372,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "HarmonicMean": {
         "label": "Harmonic mean",
@@ -347,7 +384,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "TrimmedMean": {
         "label": "Trimmed mean",
@@ -358,7 +396,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "WinsorizedMean": {
         "label": "Winsorized mean",
@@ -369,7 +408,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "CoefficientOfVariation": {
         "label": "Coefficient of variation",
@@ -380,7 +420,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "GeometricCV": {
         "label": "Geometric coefficient of variation",
@@ -391,7 +432,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "NRisk": {
         "label": "Number at risk",
@@ -402,7 +444,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "NEvent": {
         "label": "Number of events",
@@ -413,7 +456,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "NCensored": {
         "label": "Number censored",
@@ -424,7 +468,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Proportion": {
         "label": "Proportion",
@@ -435,17 +480,20 @@
         "leaves": [
           {
             "fhirPath": "numerator.value",
-            "term": "numerator"
+            "term": "numerator",
+            "dec_id": null
           },
           {
             "fhirPath": "denominator.value",
-            "term": "denominator"
+            "term": "denominator",
+            "dec_id": null
           }
         ],
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "AIC": {
         "label": "Akaike Information Criterion",
@@ -456,7 +504,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "BIC": {
         "label": "Bayesian Information Criterion",
@@ -467,7 +516,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Minus2LogL": {
         "label": "−2 log likelihood",
@@ -478,7 +528,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "DF_Num": {
         "label": "Numerator degrees of freedom",
@@ -489,7 +540,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "DF_Den": {
         "label": "Denominator degrees of freedom",
@@ -500,7 +552,8 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
       },
       "Value": {
         "label": "Value",
@@ -510,7 +563,128 @@
         "code": {
           "system": "NCI",
           "value": null
-        }
+        },
+        "dec_id": null
+      },
+      "NObs": {
+        "label": "Number of observations",
+        "shortLabel": "N",
+        "term": "n",
+        "valueType": "Count",
+        "unitRule": "none",
+        "code": {
+          "system": "NCI",
+          "value": null
+        },
+        "dec_id": null
+      },
+      "Frequency": {
+        "label": "Frequency",
+        "shortLabel": "freq",
+        "term": "frequency",
+        "valueType": "Count",
+        "unitRule": "none",
+        "code": {
+          "system": "NCI",
+          "value": null
+        },
+        "dec_id": null
+      },
+      "CumulativeN": {
+        "label": "Cumulative count",
+        "shortLabel": "cum N",
+        "term": "cumulative_n",
+        "valueType": "Count",
+        "unitRule": "none",
+        "code": {
+          "system": "NCI",
+          "value": null
+        },
+        "dec_id": null
+      },
+      "PValueAdjusted": {
+        "label": "Adjusted p-value",
+        "shortLabel": "p adj",
+        "term": "p_value_adjusted",
+        "valueType": "decimal",
+        "unitRule": "unitless",
+        "code": {
+          "system": "NCI",
+          "value": null
+        },
+        "dec_id": null
+      },
+      "RSquared": {
+        "label": "R-squared",
+        "shortLabel": "R^2",
+        "term": "R_squared",
+        "valueType": "decimal",
+        "unitRule": "unitless",
+        "code": {
+          "system": "NCI",
+          "value": null
+        },
+        "dec_id": null
+      },
+      "Concordance": {
+        "label": "Concordance (C-index)",
+        "shortLabel": "C",
+        "term": "concordance",
+        "valueType": "decimal",
+        "unitRule": "unitless",
+        "code": {
+          "system": "NCI",
+          "value": null
+        },
+        "dec_id": null
+      },
+      "Pct": {
+        "label": "Percentage",
+        "shortLabel": "%",
+        "term": "pct",
+        "valueType": "decimal",
+        "unitRule": "none",
+        "code": {
+          "system": "NCI",
+          "value": null
+        },
+        "dec_id": null
+      },
+      "CumulativePct": {
+        "label": "Cumulative percentage",
+        "shortLabel": "cum %",
+        "term": "cumulative_pct",
+        "valueType": "decimal",
+        "unitRule": "none",
+        "code": {
+          "system": "NCI",
+          "value": null
+        },
+        "dec_id": null
+      },
+      "SumOfSquares": {
+        "label": "Sum of squares",
+        "shortLabel": "SS",
+        "term": "SS",
+        "valueType": "Quantity",
+        "unitRule": "derived",
+        "code": {
+          "system": "NCI",
+          "value": null
+        },
+        "dec_id": null
+      },
+      "MeanSquare": {
+        "label": "Mean square",
+        "shortLabel": "MS",
+        "term": "MS",
+        "valueType": "Quantity",
+        "unitRule": "derived",
+        "code": {
+          "system": "NCI",
+          "value": null
+        },
+        "dec_id": null
       }
     }
   },
@@ -518,10 +692,17 @@
     "note": "Level 2 Result Patterns. Each groups a set of statistical concepts and defines the identifying relationships for each instance.",
     "LSMeans": {
       "definition": "Least-squares means (adjusted marginal means) per factor level or level combination",
-      "statistics_set": ["ci_estimate_t_distribution"],
+      "statistics_set": [
+        "ci_estimate_t_distribution"
+      ],
       "additional_statistics": [],
       "optional_statistics": [],
-      "constituents": ["Estimate", "SE", "ConfidenceInterval", "DF"],
+      "constituents": [
+        "Estimate",
+        "SE",
+        "ConfidenceInterval",
+        "DF"
+      ],
       "dimensions": [
         "factor",
         "level"
@@ -533,10 +714,22 @@
     },
     "Contrasts": {
       "definition": "Pairwise or custom contrasts between LS means",
-      "statistics_set": ["ci_estimate_t_distribution", "hypothesis_test_t_distribution"],
+      "statistics_set": [
+        "ci_estimate_t_distribution",
+        "hypothesis_test_t_distribution"
+      ],
       "additional_statistics": [],
-      "optional_statistics": ["p_value_adjusted"],
-      "constituents": ["Estimate", "SE", "ConfidenceInterval", "DF", "TStatistic", "PValue"],
+      "optional_statistics": [
+        "p_value_adjusted"
+      ],
+      "constituents": [
+        "Estimate",
+        "SE",
+        "ConfidenceInterval",
+        "DF",
+        "TStatistic",
+        "PValue"
+      ],
       "dimensions": [
         "contrast",
         "at_level"
@@ -548,10 +741,17 @@
     },
     "Type3Tests": {
       "definition": "Type III omnibus tests, one per model term",
-      "statistics_set": ["hypothesis_test_F_distribution"],
+      "statistics_set": [
+        "hypothesis_test_F_distribution"
+      ],
       "additional_statistics": [],
       "optional_statistics": [],
-      "constituents": ["FStatistic", "PValue", "DF_Num", "DF_Den"],
+      "constituents": [
+        "FStatistic",
+        "PValue",
+        "DF_Num",
+        "DF_Den"
+      ],
       "dimensions": [
         "term"
       ],
@@ -562,10 +762,22 @@
     },
     "ParameterEstimates": {
       "definition": "Solution for fixed effects, one row per model coefficient",
-      "statistics_set": ["ci_estimate_t_distribution", "hypothesis_test_t_distribution"],
-      "additional_statistics": ["Coefficient"],
+      "statistics_set": [
+        "ci_estimate_t_distribution",
+        "hypothesis_test_t_distribution"
+      ],
+      "additional_statistics": [
+        "Coefficient"
+      ],
       "optional_statistics": [],
-      "constituents": ["Coefficient", "SE", "ConfidenceInterval", "DF", "TStatistic", "PValue"],
+      "constituents": [
+        "Coefficient",
+        "SE",
+        "ConfidenceInterval",
+        "DF",
+        "TStatistic",
+        "PValue"
+      ],
       "dimensions": [
         "term",
         "level"
@@ -578,9 +790,17 @@
     "FitStatistics": {
       "definition": "Overall model goodness-of-fit measures",
       "statistics_set": [],
-      "additional_statistics": ["AIC", "BIC", "Minus2LogL"],
+      "additional_statistics": [
+        "AIC",
+        "BIC",
+        "Minus2LogL"
+      ],
       "optional_statistics": [],
-      "constituents": ["AIC", "BIC", "Minus2LogL"],
+      "constituents": [
+        "AIC",
+        "BIC",
+        "Minus2LogL"
+      ],
       "dimensions": [],
       "code": {
         "system": "NCI",
@@ -589,10 +809,15 @@
     },
     "CovarianceParameters": {
       "definition": "Estimated covariance/variance components",
-      "statistics_set": ["point_estimate_SE"],
+      "statistics_set": [
+        "point_estimate_SE"
+      ],
       "additional_statistics": [],
       "optional_statistics": [],
-      "constituents": ["Estimate", "SE"],
+      "constituents": [
+        "Estimate",
+        "SE"
+      ],
       "dimensions": [
         "repeated_factor",
         "cov_param"
@@ -604,10 +829,16 @@
     },
     "TestResult": {
       "definition": "Single overall test result",
-      "statistics_set": ["hypothesis_test_chi_squared"],
+      "statistics_set": [
+        "hypothesis_test_chi_squared"
+      ],
       "additional_statistics": [],
       "optional_statistics": [],
-      "constituents": ["ChiSquared", "PValue", "DF"],
+      "constituents": [
+        "ChiSquared",
+        "PValue",
+        "DF"
+      ],
       "dimensions": [],
       "code": {
         "system": "NCI",
@@ -616,10 +847,23 @@
     },
     "SurvivalTable": {
       "definition": "Life table with survival estimates at each event time",
-      "statistics_set": ["ci_estimate_normal"],
-      "additional_statistics": ["NRisk", "NEvent", "NCensored"],
+      "statistics_set": [
+        "ci_estimate_normal"
+      ],
+      "additional_statistics": [
+        "NRisk",
+        "NEvent",
+        "NCensored"
+      ],
       "optional_statistics": [],
-      "constituents": ["NRisk", "NEvent", "NCensored", "SurvivalProb", "SE", "ConfidenceInterval"],
+      "constituents": [
+        "NRisk",
+        "NEvent",
+        "NCensored",
+        "SurvivalProb",
+        "SE",
+        "ConfidenceInterval"
+      ],
       "dimensions": [
         "group",
         "time"
@@ -631,10 +875,15 @@
     },
     "MedianSurvival": {
       "definition": "Median survival time per group",
-      "statistics_set": ["ci_estimate"],
+      "statistics_set": [
+        "ci_estimate"
+      ],
       "additional_statistics": [],
       "optional_statistics": [],
-      "constituents": ["Median", "ConfidenceInterval"],
+      "constituents": [
+        "Median",
+        "ConfidenceInterval"
+      ],
       "dimensions": [
         "group"
       ],
@@ -646,9 +895,17 @@
     "EventSummary": {
       "definition": "Summary counts of events and censoring per group",
       "statistics_set": [],
-      "additional_statistics": ["NRisk", "NEvent", "NCensored"],
+      "additional_statistics": [
+        "NRisk",
+        "NEvent",
+        "NCensored"
+      ],
       "optional_statistics": [],
-      "constituents": ["NRisk", "NEvent", "NCensored"],
+      "constituents": [
+        "NRisk",
+        "NEvent",
+        "NCensored"
+      ],
       "dimensions": [
         "group"
       ],
@@ -659,10 +916,15 @@
     },
     "HazardRatioEstimates": {
       "definition": "Hazard ratios with confidence intervals",
-      "statistics_set": ["ci_estimate_hazard_ratio"],
+      "statistics_set": [
+        "ci_estimate_hazard_ratio"
+      ],
       "additional_statistics": [],
       "optional_statistics": [],
-      "constituents": ["HazardRatio", "ConfidenceInterval"],
+      "constituents": [
+        "HazardRatio",
+        "ConfidenceInterval"
+      ],
       "dimensions": [
         "term",
         "level"
@@ -674,10 +936,15 @@
     },
     "OddsRatioEstimates": {
       "definition": "Odds ratios with confidence intervals",
-      "statistics_set": ["ci_estimate_odds_ratio"],
+      "statistics_set": [
+        "ci_estimate_odds_ratio"
+      ],
       "additional_statistics": [],
       "optional_statistics": [],
-      "constituents": ["OddsRatio", "ConfidenceInterval"],
+      "constituents": [
+        "OddsRatio",
+        "ConfidenceInterval"
+      ],
       "dimensions": [
         "term",
         "level"
@@ -743,38 +1010,6 @@
         "system": "NCI",
         "value": null
       }
-    }
-  },
-  "methodOutputSlotMapping": {
-    "note": "Method output slots (by output name) map to result patterns. The method defines slots using the shared vocabulary; the Transformation maps slots to patterns. Neither references the other directly.",
-    "M.MMRM": {
-      "ls_means": "LSMeans",
-      "contrasts_t": "Contrasts",
-      "type3_tests_mixed": "Type3Tests",
-      "parameter_estimates_linear": "ParameterEstimates",
-      "fit_statistics_basic": "FitStatistics",
-      "covariance_parameters": "CovarianceParameters"
-    },
-    "M.ANCOVA": {
-      "ls_means": "LSMeans",
-      "contrasts_t": "Contrasts",
-      "type3_tests_f": "Type3Tests",
-      "parameter_estimates_linear": "ParameterEstimates",
-      "fit_statistics_linear": "FitStatistics"
-    },
-    "M.LogRankTest": {
-      "chi_squared_test_result": "TestResult"
-    },
-    "M.CoxPH": {
-      "type3_tests_chi_squared": "Type3Tests",
-      "parameter_estimates_cox": "ParameterEstimates",
-      "hazard_ratio_estimates": "HazardRatioEstimates",
-      "fit_statistics_concordance": "FitStatistics"
-    },
-    "M.KaplanMeier": {
-      "survival_table": "SurvivalTable",
-      "median_survival": "MedianSurvival",
-      "event_summary": "EventSummary"
     }
   }
 }

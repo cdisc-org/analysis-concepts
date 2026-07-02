@@ -72,9 +72,10 @@
     {
       "name": "ls_means",
       "output_type": "ls_means",
-      "indexed_by": [
-        "fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "level",
+        "components": "discrete"
+      }
     },
     {
       "name": "contrasts_t",

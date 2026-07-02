@@ -460,17 +460,6 @@ def build_ac(data):
         for p in orphans:
             add_pattern(p, oid)
 
-    # methods (cross-ref): edges to the patterns they output
-    mapping = data.get("methodOutputSlotMapping", {})
-    for m, slots in mapping.items():
-        if not isinstance(slots, dict):
-            continue
-        mid = f"AC:method/{m}"
-        d.add(Node(mid, m, AC_FILL_METHOD))
-        for slot, pat in slots.items():
-            pid = f"AC:pat/{pat}"
-            if pid in d.nodes:
-                d.edge(mid, pid, slot)
     return d
 
 

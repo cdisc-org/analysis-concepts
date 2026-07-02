@@ -12,6 +12,16 @@
                 "string"
             ]
         },
+        "AxisEnum": {
+            "description": "A non-model-structure index axis for outputs not indexed by model terms (\u00a73.8).",
+            "enum": [
+                "time",
+                "cov_param",
+                "response"
+            ],
+            "title": "AxisEnum",
+            "type": "string"
+        },
         "Cardinality": {
             "description": "How many bindings may fill a method input slot. Reduced from {single, multiple, single_or_multiple} on 2026-05-28: `multiple` now means \"one or more\" (covers the n=1 case), making the third value redundant.",
             "enum": [
@@ -44,6 +54,16 @@
             ],
             "title": "Coding",
             "type": "object"
+        },
+        "ComponentsEnum": {
+            "description": "Which model components participate in the indexing (\u00a73.8).",
+            "enum": [
+                "all",
+                "discrete",
+                "continuous"
+            ],
+            "title": "ComponentsEnum",
+            "type": "string"
         },
         "Configuration": {
             "additionalProperties": false,
@@ -163,6 +183,39 @@
             ],
             "title": "FormulaNotation",
             "type": "string"
+        },
+        "GranularityEnum": {
+            "description": "How many rows a multi-row output produces (\u00a73.8).",
+            "enum": [
+                "scalar",
+                "component",
+                "level"
+            ],
+            "title": "GranularityEnum",
+            "type": "string"
+        },
+        "IndexedBy": {
+            "additionalProperties": false,
+            "description": "\u00a73.8 \u2014 Indexing of a multi-row output along the statistical model. Replaces the old raw formula-token list in indexed_by.",
+            "properties": {
+                "axis": {
+                    "$ref": "#/$defs/AxisEnum",
+                    "description": "A non-model-structure index, for the few outputs not indexed by model terms (e.g. survival time grid, covariance parameters)."
+                },
+                "components": {
+                    "$ref": "#/$defs/ComponentsEnum",
+                    "description": "Which components participate (omit for scalar)."
+                },
+                "granularity": {
+                    "$ref": "#/$defs/GranularityEnum",
+                    "description": "scalar = one row; component = one row per model term/by-variable; level = one row per level of each discrete component."
+                }
+            },
+            "required": [
+                "granularity"
+            ],
+            "title": "IndexedBy",
+            "type": "object"
         },
         "Method": {
             "additionalProperties": false,
@@ -340,14 +393,15 @@
                     ]
                 },
                 "indexed_by": {
-                    "description": "For multi-row outputs (e.g. one row per factor level), the input slot names whose levels index the output rows. May include interaction tokens (e.g. \"fixed_effect:fixed_effect\").",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IndexedBy"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "How an output's rows are indexed along the model structure (\u00a73.8 of the consolidation spec). Replaces the old raw-token list."
                 },
                 "name": {
                     "description": "Slot identifier within outputs[]. Referenced from transformation outputDataStructure.measures[].output.",

@@ -85,29 +85,26 @@
     {
       "name": "type3_tests_chi_squared",
       "output_type": "type3_tests_chi_squared",
-      "indexed_by": [
-        "covariate",
-        "fixed_effect",
-        "covariate:fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "component",
+        "components": "all"
+      }
     },
     {
       "name": "parameter_estimates_cox",
       "output_type": "parameter_estimates_cox",
-      "indexed_by": [
-        "covariate",
-        "fixed_effect",
-        "covariate:fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "level",
+        "components": "all"
+      }
     },
     {
       "name": "hazard_ratio_estimates",
       "output_type": "hazard_ratio_estimates",
-      "indexed_by": [
-        "covariate",
-        "fixed_effect",
-        "covariate:fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "level",
+        "components": "all"
+      }
     }
   ]
 }

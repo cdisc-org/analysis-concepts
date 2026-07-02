@@ -119,6 +119,36 @@ enums:
   # OutputClass/OutputShape/Distribution enums (the abandoned three-axis model)
   # were removed 2026-06-13; methods reference an output_type identifier only.
 
+  granularity_enum:
+    description: How many rows a multi-row output produces (§3.8).
+    permissible_values:
+      scalar:
+        description: One row (no indexing needed).
+      component:
+        description: One row per model term / by-variable.
+      level:
+        description: One row per level of each discrete component.
+
+  components_enum:
+    description: Which model components participate in the indexing (§3.8).
+    permissible_values:
+      all:
+        description: All model components.
+      discrete:
+        description: Discrete (categorical) components only.
+      continuous:
+        description: Continuous components only.
+
+  axis_enum:
+    description: A non-model-structure index axis for outputs not indexed by model terms (§3.8).
+    permissible_values:
+      time:
+        description: Outcome time grid (e.g. survival table).
+      cov_param:
+        description: Variance/covariance-structure parameters.
+      response:
+        description: "Multivariate response variable (left-hand side), e.g. MANOVA."
+
 
 # ============================================================================
 # Classes
@@ -314,11 +344,10 @@ classes:
         range: string
       indexed_by:
         description: >-
-          For multi-row outputs (e.g. one row per factor level), the input
-          slot names whose levels index the output rows. May include
-          interaction tokens (e.g. "fixed_effect:fixed_effect").
-        range: string
-        multivalued: true
+          How an output's rows are indexed along the model structure (§3.8 of
+          the consolidation spec). Replaces the old raw-token list.
+        range: IndexedBy
+        inlined: true
       examples:
         description: Optional worked-example entries (free-form). Author / documentation scaffolding; not consumed by validators.
         range: Any
@@ -331,6 +360,27 @@ classes:
         description: Optional list of named test specializations (e.g. for CoxPH/MANOVA outputs that aggregate multiple test variants). Free-form; reviewed during the §3.5 vocabulary work.
         range: Any
         multivalued: true
+
+
+  IndexedBy:
+    description: >-
+      §3.8 — Indexing of a multi-row output along the statistical model.
+      Replaces the old raw formula-token list in indexed_by.
+    attributes:
+      granularity:
+        description: >-
+          scalar = one row; component = one row per model term/by-variable;
+          level = one row per level of each discrete component.
+        range: granularity_enum
+        required: true
+      components:
+        description: Which components participate (omit for scalar).
+        range: components_enum
+      axis:
+        description: >-
+          A non-model-structure index, for the few outputs not indexed by
+          model terms (e.g. survival time grid, covariance parameters).
+        range: axis_enum
 
 
 # ============================================================================

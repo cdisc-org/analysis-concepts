@@ -37,9 +37,10 @@
     {
       "output_type": "computed_value",
       "name": "imputed_value",
-      "indexed_by": [
-        "group_partition"
-      ],
+      "indexed_by": {
+        "granularity": "level",
+        "components": "discrete"
+      },
       "dataType": "decimal"
     }
   ]

@@ -43,9 +43,10 @@
     {
       "name": "result",
       "output_type": "computed_value",
-      "indexed_by": [
-        "group"
-      ],
+      "indexed_by": {
+        "granularity": "level",
+        "components": "discrete"
+      },
       "dataType": "decimal"
     }
   ]

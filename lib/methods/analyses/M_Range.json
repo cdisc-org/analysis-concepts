@@ -17,7 +17,7 @@
       "display": "range"
     }
   ],
-  "description": "Computes the range (max \u2212 min) of a numeric variable",
+  "description": "Computes the range (max − min) of a numeric variable",
   "formula": {
     "notation": "assignment",
     "default_expression": "result := RANGE(value) OVER (group)",
@@ -43,9 +43,10 @@
     {
       "output_type": "computed_value",
       "name": "result",
-      "indexed_by": [
-        "group"
-      ],
+      "indexed_by": {
+        "granularity": "level",
+        "components": "discrete"
+      },
       "dataType": "decimal"
     }
   ]

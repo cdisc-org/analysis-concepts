@@ -54,9 +54,10 @@
     {
       "output_type": "computed_value",
       "name": "result",
-      "indexed_by": [
-        "partition"
-      ],
+      "indexed_by": {
+        "granularity": "level",
+        "components": "discrete"
+      },
       "dataType": "decimal"
     }
   ]

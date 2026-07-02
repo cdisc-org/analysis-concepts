@@ -64,7 +64,7 @@
         },
         "ACStatisticalConcept": {
             "additionalProperties": false,
-            "description": "Thin AC concept-side node: references a terminology term (single-leaf via `term`, or multi-leaf via `leaves`) and overlays the FHIR datatype. Does NOT re-state terminology facts (definition/statoMapping/dataType).",
+            "description": "Thin AC concept-side node: references a terminology term (single-leaf via `term`, or multi-leaf via `leaves`) and overlays the FHIR datatype. Does NOT re-state terminology facts (definition/statoMapping).",
             "properties": {
                 "code": {
                     "description": "The concept's own code (e.g. NCI).",
@@ -73,9 +73,12 @@
                         "null"
                     ]
                 },
-                "valueType": {
-                    "description": "FHIR value type (primitive or complex).",
-                    "type": "string"
+                "dec_id": {
+                    "description": "Data Element Concept id \u2014 an NCI C-code. null until registered; the canonical statistic\u2194concept join key.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "label": {
                     "type": [
@@ -107,7 +110,11 @@
                     ]
                 },
                 "unitRule": {
-                    "description": "Symbolic unit rule (concept convention), not a concrete UCUM code: inherited | derived | fixed | unitless | none. When unitRule is \"fixed\", the literal unit is carried in fixedUnit. The concrete unit is bound at transformation time.",
+                    "description": "Symbolic unit rule (concept convention), not a concrete UCUM code: inherited | derived | fixed | unitless | none. When unitRule is \"fixed\", the literal unit is carried in fixedUnit. Concrete unit bound at transformation time.",
+                    "type": "string"
+                },
+                "valueType": {
+                    "description": "FHIR value type (primitive or complex).",
                     "type": "string"
                 }
             },
@@ -180,6 +187,13 @@
             "additionalProperties": false,
             "description": "One FHIR leaf of a multi-leaf concept, mapped to the terminology term that populates it.",
             "properties": {
+                "dec_id": {
+                    "description": "Data Element Concept id \u2014 an NCI C-code. null until registered; the canonical statistic\u2194concept join key.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
                 "fhirPath": {
                     "description": "FHIR element path within the datatype (e.g. low.value).",
                     "type": "string"
@@ -666,7 +680,7 @@
         },
         "StatisticTerm": {
             "additionalProperties": false,
-            "description": "A statistic in the terminology layer (statistics_vocabulary.json). Carries a primitive dataType ONLY \u2014 the FHIR datatype is a concept-side fact and lives on ACStatisticalConcept, not here (D-layers).",
+            "description": "A statistic in the terminology layer (statistics_vocabulary.json). Pure controlled terminology \u2014 structural type (valueType) lives on ACStatisticalConcept, not here (D-layers).",
             "properties": {
                 "codings": {
                     "items": {
@@ -683,9 +697,12 @@
                         "null"
                     ]
                 },
-                "dataType": {
-                    "description": "Primitive type for formula/method typing.",
-                    "type": "string"
+                "dec_id": {
+                    "description": "Data Element Concept id \u2014 an NCI C-code. null until registered; the canonical statistic\u2194concept join key.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "description": {
                     "type": [
@@ -713,8 +730,7 @@
                 }
             },
             "required": [
-                "conceptId",
-                "dataType"
+                "conceptId"
             ],
             "title": "StatisticTerm",
             "type": "object"

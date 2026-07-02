@@ -630,8 +630,12 @@ $defs:
         type: array
         items:
           type: string
-        description: Subset of the output's indexed_by[] terms to include. Uses method-input role names or interaction tokens
-          (e.g. 'fixed_effect', 'covariate:fixed_effect') from method.outputs[name].indexed_by[].
+        description: >-
+          Subset of the output's indexed_by dimensions to include (§3.8 granularity notation).
+          Note: indexed_by is now an object {granularity, components, axis} — the per-level dimension
+          values come from the bound dimension concept's value set (deferred — depends on the dimension
+          value-set gap, spec §3.8). The old token-list form ('fixed_effect', 'covariate:fixed_effect')
+          no longer applies.
     required:
     - outputClass
     - selectedDimensions

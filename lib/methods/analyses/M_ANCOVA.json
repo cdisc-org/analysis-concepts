@@ -69,29 +69,26 @@
     {
       "name": "type3_tests_f",
       "output_type": "type3_tests_f",
-      "indexed_by": [
-        "covariate",
-        "fixed_effect",
-        "fixed_effect:fixed_effect",
-        "covariate:fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "component",
+        "components": "all"
+      }
     },
     {
       "name": "parameter_estimates_linear",
       "output_type": "parameter_estimates_linear",
-      "indexed_by": [
-        "covariate",
-        "fixed_effect",
-        "fixed_effect:fixed_effect",
-        "covariate:fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "level",
+        "components": "all"
+      }
     },
     {
       "name": "ls_means",
       "output_type": "ls_means",
-      "indexed_by": [
-        "fixed_effect"
-      ]
+      "indexed_by": {
+        "granularity": "level",
+        "components": "discrete"
+      }
     },
     {
       "name": "contrasts_t",

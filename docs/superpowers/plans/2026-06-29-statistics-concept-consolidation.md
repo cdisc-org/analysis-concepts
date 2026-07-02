@@ -126,6 +126,40 @@ git commit -m "feat(stats): add dec_id identity to terminology and AC concept at
 
 ---
 
+## Task 2a: Promote orphan terms to concept atoms (prerequisite for Task 2)
+
+**Why:** Task 2's safety check found 10 vocabulary terms with no concept carrying `valueType` — `n, frequency, cumulative_n, pct, cumulative_pct, p_value_adjusted, R_squared, concordance, SS, MS`. All are referenced by `output_class_templates.json` (or `statistic_sets.json`), so spec §4 promotes them. Removing `dataType` (Task 2) is unsafe until each has a concept. `valueType`/`unitRule` per atom were ruled by the user 2026-06-29.
+
+**Files:** Modify `lib/concepts/AC_Concept_Model_v017.json` (`sharedStatisticsVocabulary.concepts`).
+
+```python
+.venv/bin/python - <<'PY'
+import json, pathlib
+p = pathlib.Path("lib/concepts/AC_Concept_Model_v017.json")
+d = json.loads(p.read_text())
+atoms = d["sharedStatisticsVocabulary"]["concepts"]
+NEW = {  # conceptId: (label, shortLabel, term, valueType, unitRule)
+  "NObs":          ("Number of observations", "N",     "n",                "Count",    "none"),
+  "Frequency":     ("Frequency",              "freq",  "frequency",        "Count",    "none"),
+  "CumulativeN":   ("Cumulative count",       "cum N", "cumulative_n",     "Count",    "none"),
+  "PValueAdjusted":("Adjusted p-value",       "p adj", "p_value_adjusted", "decimal",  "unitless"),
+  "RSquared":      ("R-squared",              "R^2",   "R_squared",        "decimal",  "unitless"),
+  "Concordance":   ("Concordance (C-index)",  "C",     "concordance",      "decimal",  "unitless"),
+  "Pct":           ("Percentage",             "%",     "pct",              "decimal",  "none"),
+  "CumulativePct": ("Cumulative percentage",  "cum %", "cumulative_pct",   "decimal",  "none"),
+  "SumOfSquares":  ("Sum of squares",         "SS",    "SS",               "Quantity", "derived"),
+  "MeanSquare":    ("Mean square",            "MS",    "MS",               "Quantity", "derived"),
+}
+for cid, (label, short, term, vt, ur) in NEW.items():
+    atoms.setdefault(cid, {"label": label, "shortLabel": short, "term": term,
+        "valueType": vt, "unitRule": ur, "code": {"system": "NCI", "value": None}, "dec_id": None})
+p.write_text(json.dumps(d, indent=2, ensure_ascii=False) + "\n")
+print("atoms total:", len(atoms))
+PY
+```
+
+Verify: `.venv/bin/python scripts/validate_methods_model.py` is green, and the Task 2 safety-check snippet now reports `none`. Commit locally.
+
 ## Task 2: Make the vocabulary pure CT — remove `dataType`
 
 **Files:**
@@ -180,7 +214,7 @@ d = json.loads(p.read_text())
 n = 0
 for t in d["statistics"].values():
     if t.pop("dataType", None) is not None: n += 1
-p.write_text(json.dumps(d, indent=2) + "\n")
+p.write_text(json.dumps(d, indent=2, ensure_ascii=False) + "\n")
 print("removed dataType from", n, "terms")
 PY
 ```
@@ -333,7 +367,7 @@ import json, pathlib
 p = pathlib.Path("lib/concepts/AC_Concept_Model_v017.json")
 d = json.loads(p.read_text())
 removed = d.pop("methodOutputSlotMapping", None)
-p.write_text(json.dumps(d, indent=2) + "\n")
+p.write_text(json.dumps(d, indent=2, ensure_ascii=False) + "\n")  # ensure_ascii=False also un-escapes the \uXXXX noise Task 1 introduced
 print("removed methodOutputSlotMapping:", bool(removed))
 PY
 ```
@@ -478,7 +512,8 @@ for mp in glob.glob("lib/methods/*/M_*.json"):
             if not has_interaction and o.get("output_type") == "computed_value":
                 o["indexed_by"] = dict(SIMPLE); changed = True; n += 1
     if changed:
-        json.dump(m, open(mp, "w"), indent=2); open(mp, "a").write("\n")
+        with open(mp, "w") as fh:
+            json.dump(m, fh, indent=2, ensure_ascii=False); fh.write("\n")
 print("migrated simple by-group outputs:", n)
 PY
 ```
