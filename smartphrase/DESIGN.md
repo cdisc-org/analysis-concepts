@@ -161,6 +161,55 @@ What release requires — none of it architectural:
   carries all languages as tagged literals); model edits re-render correctly in the active language.
   15 further browser checks, all passing.
 
+## Planned extension — estimands and intercurrent events
+
+The model side already exists on `methods_02` (eSAP: `Estimand`, `IntercurrentEvent`, the reified
+`IceHandling` triple with `implementedBy`, the `IchE9R1Strategy` enum, `Analysis.analysisRole`,
+`Analysis.summarizedByOutputClass`; and `model/linkML/intercurrent-event-derivation.md` for the
+ascertainment-vs-handling split). What is missing is the phrase layer over it. The mapping is
+additive to this design — no architectural change:
+
+- **The estimand is the analysis-instance level, not a phrase.** Four of the five ICH E9(R1)
+  attributes map onto existing roles (treatment → `grouping`, variable → `endpoint`/`parameter`/
+  `timepoint`, population → `population`); the instance grounds in a `usdm:Estimand` IRI as it
+  grounds in an objective today. Correction that falls out: the instance's free-string
+  `sentenceRole` should bind to the typed `Analysis.analysisRole`
+  (MainEstimator | SensitivityAnalysis | SupplementaryAnalysis).
+- **Two new roles** (a library minor-version event): `ice_handling` — repeating, like `covariate` —
+  and `summary_measure` (E9(R1) attribute 5), whose phrase binds to a **method output** the bound
+  method provably produces (`summarizedByOutputClass` is the model hook), e.g. M.ANCOVA's
+  `contrasts_t` → "difference in least-squares means".
+- **One smartphrase per E9(R1) strategy** (`SP_ICE_TREATMENT_POLICY` "regardless of {ice}",
+  `SP_ICE_HYPOTHETICAL` "as if {ice} had not occurred", `SP_ICE_COMPOSITE` "with {ice} treated as
+  {outcome}", `SP_ICE_WHILE_ON_TREATMENT` "using measurements taken prior to {ice}",
+  `SP_ICE_PRINCIPAL_STRATUM` "in the stratum of participants in whom {ice} would not occur"), the
+  strategy carried in `anchors`. `{ice}` is a `concept_ref` to a new registry kind
+  **IntercurrentEvent** grounding in `usdm:IntercurrentEvent` — which brings its
+  strategy-independent `ascertainedBy` (OccurrenceCriterion path or derivation) along for the
+  **trace**: an ICE phrase traces ascertainment-side (BC criterion → source record → ICE flag +
+  timing → dataset).
+- **Strategy phrases change the shape of the instantiated model**, not just slice values — the
+  first phrases to do so, and exactly what `IceHandling.implementedBy` receives: TreatmentPolicy →
+  no modification; Hypothetical → inserts an imputation transformation; Composite → redefines the
+  variable (a derivation producing a composite endpoint concept); WhileOnTreatment → adds a
+  timing-bounded slice constraint; PrincipalStratum → changes the population definition.
+  Model→SAP runs the reverse: each `IceHandling` resolves to its strategy's phrase with the ICE
+  bound. Per-estimand overrides (primary Hypothetical vs sensitivity TreatmentPolicy on the *same*
+  ICE) become two instances reusing one ICE concept — template reuse at estimand level.
+- **Estimand-aware validation:** every declared ICE has exactly one strategy phrase; exactly one
+  MainEstimator per estimand; the summary phrase names an output the method produces; conditional
+  template-validity (e.g. `SP_ICE_HYPOTHETICAL` only where an imputation transformation exists to
+  implement it).
+- **i18n stress test:** the hypothetical strategy wants the German subjunctive ("als ob … nicht
+  aufgetreten wäre") — per-language phrase templates (D7) already accommodate it.
+
+Target prose:
+
+> *Change from baseline in ADAS-Cog(11) at Week 24 in the efficacy population comparing treatment
+> groups, **as if discontinuation of study treatment had not occurred** and **regardless of use of
+> concomitant AD medication**, using ANCOVA … **summarised as the difference in least-squares
+> means**, will be assessed as the primary estimand's main estimator.*
+
 ## Deliberately out of scope / future
 
 - A real LinkML-emitted `@context` (the hand-written context stands in for it).
