@@ -97,6 +97,45 @@ phrase resolves to `alpha`), and a `resolvedExpression` gives the study-variable
 requirements, the eSAP structure is assumed to change with the sister project — only this *shape of
 information*, not its schema, is load-bearing here.
 
+## Distribution — the CDISC Library end-state
+
+When AC/DC is released as a CDISC standard, the intention is that the smartphrase library is
+distributed from the **CDISC Library** (or another shared repository facility CDISC offers). The
+design already assumes this shape: the library layer is an injected, versioned, read-only artefact
+that studies consume but never own — exactly what a CDISC Library package is. Distribution changes
+where the artefact comes from and how real its identifiers are, not the architecture:
+
+- **The layer separation is the distribution boundary.** The library layer (phrases, templates,
+  methods, roles) is what CDISC publishes; the study layer and engine are indifferent to its origin
+  (`ctxOf` takes the library as an input — a CDISC Library API response replaces a `<script src>`
+  file as a loading concern only).
+- **Provenance generalises.** Today's `{source_branch, source_commit}` becomes
+  `{source: "CDISC Library", package, version, retrieved}`; the consumer discipline (pin the
+  version, read-only, record provenance) is unchanged.
+- **The identifier policy anticipates release.** `iri_status: "illustrative"` exists because there
+  is no registration authority yet; a released standard is that authority. `SP_*` / `T.*` / `M.*`
+  become CDISC Library-addressable resources and the flags retire — consumers already bind by
+  stable oid, so nothing downstream changes.
+- **Adjacent CDISC Library content plugs in.** `sliceKeys[].source: "biomedicalConcept"` points
+  study registry entries at CDISC Library Biomedical Concepts; language-pack label overlays inherit
+  from CT translations; the core + TA-overlay layering mirrors foundational-standard + TAUG-style
+  packaging.
+
+What release requires — none of it architectural:
+
+1. **A normative schema for the smartphrase entities** (phrases and roles currently sit informally
+   inside the transformation library JSON; methods already have this treatment on `methods_02`),
+   plus oid governance.
+2. **Versioning and deprecation policy.** Instances bind by oid indefinitely; additive = minor,
+   semantic change = major must become normative, with a deprecation path (the CT precedent).
+3. **Reference-and-pin vs full-copy** — a working-group decision. A submitted SAP must not depend
+   on repository availability or version drift; the eSAP philosophy (full-copy of used definitions
+   into the study, the CDISC Library reference kept as provenance) is the consistent answer for
+   regulatory self-containment.
+4. **A loader, not an embedder, in production tooling.** The demo embeds the library only because
+   of the `file://` zero-install constraint; a real editor fetches from the CDISC Library API,
+   caches and pins — the embedded copy is then honestly a snapshot with provenance.
+
 ## What is authoritative vs illustrative
 
 | Layer | Source | Status |
