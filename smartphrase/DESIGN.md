@@ -75,6 +75,19 @@ see that a text serialisation exists without it being the mechanism.
 Data ships as `<script src>` modules (a `fetch()` of local JSON is blocked by `file://` CORS; a script
 tag is not). One folder, double-click `demo/index.html`, works in any browser.
 
+**D7 — Localisation via per-language sentence templates and label packs.**
+Because the instance stores identifiers and prose is generated, i18n is a renderer concern — but not a
+free one: concatenating phrase fragments in a fixed role order is itself an English assumption (German
+needs the verb bracket, French needs agreement and articles). The design therefore gives each language
+pack (`demo/data/lang-overlay.js`) three things: a **sentence template** that owns word order (role
+tokens + literal frame text — this replaces both the global role order and any hard-coded frame),
+per-language **phrase templates** keyed by oid (falling back to the library's English), and
+**language-tagged display labels** for concepts/methods (in production largely inherited from
+CDISC/NCIt terminology translations). Switching language re-renders the same instance: the tag source,
+constructed model view and every identifier are language-invariant, and the JSON-LD carries the
+rendered sentence as language-tagged literals (`sp:resolvesTo` per language) — the RDF-native
+mechanism. The demo ships EN/FR/DE; the FR/DE copy is illustrative, not validated translation.
+
 ## Relationship to the eSAP schema
 
 The demo's "constructed model instance" view mirrors the eSAP v0.5.0 philosophy deliberately: the
@@ -103,10 +116,16 @@ information*, not its schema, is load-bearing here.
   click-to-trace, model→SAP edits, SAP→model edits via chips and via tag source, validator accept/reject
   (state untouched on reject), reuse cards with binding diffs, open-in-editor, trace following the loaded
   instance, standards table and provenance. All pass; no console errors.
+- **i18n (both layers):** EN output is byte-identical to the pre-i18n renderer; FR/DE resolve all three
+  instances with zero errors; the German verb bracket is produced by the sentence template (frame text,
+  not chips); switching language leaves the tag source and JSON-LD byte-identical (the graph already
+  carries all languages as tagged literals); model edits re-render correctly in the active language.
+  15 further browser checks, all passing.
 
 ## Deliberately out of scope / future
 
 - A real LinkML-emitted `@context` (the hand-written context stands in for it).
 - Web Annotation-style anchoring for documents authored *outside* the tool (the document-first path).
-- Per-language sentence frames (the i18n argument from the first PoC round still applies but is not re-made here).
+- Validated translations and full morphological handling (elision, agreement) — D7 demonstrates the
+  mechanism with illustrative FR/DE copy; production language packs are a terminology-management deliverable.
 - Overlapping annotations, versioning, and schema validation of the instance graph.

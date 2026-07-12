@@ -35,7 +35,8 @@
 | **transformation template** | A library analysis/derivation building block (`T.CFB_ANCOVA`). Declares `validSmartPhrases` and how bindings resolve its data cube (`sliceKeys`, slices). |
 | **concept registry** | The study's bindable entities (parameters, visits, populations, treatments), each with display labels, a grounding IRI, and data-trace hooks. |
 | **anchors** | A phrase's links into the model (`produced_concept`, `uses_method`) — what connects prose to derivations, methods and the trace. |
-| **sentence frame** | Document text around the assembled phrases ("… will be assessed as the primary analysis."). Owned by the renderer/document, **not** a smartphrase. |
+| **sentence frame** | Literal text around and between the assembled phrases ("… will be assessed as the primary analysis."). Owned by the language's sentence template, **not** a smartphrase. |
+| **language pack** | Per-language rendering assets: a sentence template (word order), phrase-template translations, and label overlays (§5.1). The instance itself is language-neutral. |
 
 ## 2. Library layer
 
@@ -178,24 +179,57 @@ validator; *(PoC)* direct state edits are not re-checked against `render_options
 
 ## 5. Resolution: model → SAP
 
-`resolveInstance(ctx, instance)` performs, per phrase instance:
+`resolveInstance(ctx, instance, lang="en")` performs, per phrase instance:
 
 1. Look up the phrase definition by oid. Unknown oid → error, placeholder text `⟨OID?⟩`.
-2. For each placeholder: find the binding by name.
+2. Select the phrase template: the language pack's `phrases[oid]` if present, else the library's
+   English `phrase_template` (the result carries `langFallback: true` when a non-English render fell
+   back).
+3. For each placeholder: find the binding by name.
    - Missing + required → error; the token renders as `⟨name?⟩`.
    - Missing + optional → the token is left unsubstituted *(v0.7 defines no optional placeholders;
      this path is theoretical)*.
-   - Present → validate (§2.2) and substitute the rendered text (§4).
-3. Sort resolved phrases by `roleDefinitions.order` (stable within a role).
-4. Join phrase texts with single spaces; capitalise the first character; append the sentence frame:
-   `" will be assessed as " + (instance.sentenceRole || "an analysis") + "."`.
+   - Present → validate (§2.2) and substitute the rendered text (§4), using language-overlaid
+     labels/names where the pack provides them (§5.1).
+4. Sort resolved phrases by `roleDefinitions.order` (stable within a role).
+5. Assemble the sentence through the language's **sentence template** (§5.1): each `{role}` token is
+   filled with that role's resolved phrase texts (space-separated), `{sentenceRole}` with the
+   localised sentence role, literal segments pass through as frame text. Empty roles collapse
+   (whitespace normalised); the first character is capitalised. With no language packs at all, a
+   default template concatenating every role in `roleDefinitions.order` plus the English frame is
+   used — reproducing plain-English assembly exactly.
 
-Returns `{ phrases, sentence, errors }`; `phrases[i]` = `{ oid, role, name, template, anchors, text,
-bindings[], errors[] }` where `bindings[i].detail` carries `{ kind, id, render, iri, iri_status }`
-(and `formula` for methods) — everything an inspection UI needs.
+Returns `{ phrases, parts, sentence, errors, lang }`:
 
-The sentence frame and capitalisation are **renderer concerns**: phrase templates are lower-case,
-position-independent fragments by design.
+- `phrases[i]` = `{ oid, role, name, template, anchors, text, bindings[], errors[], langFallback }`
+  where `bindings[i].detail` carries `{ kind, id, render, iri, iri_status }` (and `formula` for
+  methods) — everything an inspection UI needs.
+- `parts` is the ordered render sequence a prose surface should consume:
+  `{ type: "phrase", phrase: <resolved> }` for chips and `{ type: "text", text, frame }` for
+  inter-phrase spacing (`frame: false`) and sentence-template literals (`frame: true`). This matters
+  for languages where frame text sits *between* phrases (the German verb bracket), where a
+  chips-then-suffix rendering would be wrong.
+
+Sentence frames, word order and capitalisation are **renderer concerns**, owned by the language's
+sentence template: phrase templates are lower-case, position-independent fragments by design.
+
+### 5.1 Language packs
+
+Localisation assets live outside both the library and the instance (demo:
+`demo/data/lang-overlay.js`, passed as `ctxOf`'s third argument). The analysis instance is
+language-neutral; the prose language is a renderer setting. Pack structure, per language code:
+
+| Field | Meaning |
+|---|---|
+| `name` | Display name of the language. |
+| `sentence_template` | The word-order owner: literal frame text + `{role}` tokens + `{sentenceRole}`. Required for correct assembly in that language. |
+| `phrases` | Per-language phrase templates keyed by smartphrase oid. Missing oids fall back to the library's English template (`langFallback: true`). |
+| `concepts` / `methods` | Per-entity `{ label?, name? }` overlays merged onto the registry/method entity at render time. In production, largely inherited from CDISC/NCIt terminology translations. |
+| `sentenceRoles` | Localised sentence-role strings *(PoC: keyed by the canonical English value in the instance)*. |
+
+Language-invariant by construction: the instance, the tag dialect (§8), `constructModelView` (§6)
+and `buildTrace` (§7) — model artefacts always render canonical (English) labels, so switching
+language changes prose projections only.
 
 ## 6. Instantiation: SAP → model
 
@@ -310,14 +344,19 @@ ARS ref) and replaces `template` and `phrases`. On error the caller keeps its st
     "sp:binding": [{ "sp:slot": "parameter", "@id": "ncit:C168804",
                      "rdfs:label": "ADAS-Cog(11)", "sp:render": "name_with_label" }]
   }],
-  "sp:resolvesTo": "Change from baseline in … will be assessed as the primary analysis."
+  "sp:resolvesTo": [
+    { "@value": "Change from baseline in … as the primary analysis.", "@language": "en" },
+    { "@value": "La variation de … comme analyse principale.", "@language": "fr" },
+    { "@value": "Die Veränderung von … als primäre Analyse untersucht.", "@language": "de" }
+  ]
 }
 ```
 
 Phrase-instance node ids (`#p1`…) double as the **span anchors**: a carrier document marks each
 phrase span with a reference to its node (the standoff link). `sp:resolvesTo` records the rendered
-sentence for round-trip checking; it is derived data, never an input. *(PoC)* the `@context` is
-hand-written; the intended source is the context emitted by the AC/DC LinkML model.
+sentence — as **language-tagged literals**, one per available language pack (a plain string when no
+packs are configured); it is derived data, never an input. *(PoC)* the `@context` is hand-written;
+the intended source is the context emitted by the AC/DC LinkML model.
 
 ## 10. Engine API
 
@@ -326,13 +365,15 @@ throughout. Loading `engine.js` defines `SP_ENGINE` on `window`/`globalThis`.
 
 | Function | Returns |
 |---|---|
-| `ctxOf(lib, graph)` | Context object for all other calls. |
+| `ctxOf(lib, graph, i18n?)` | Context object for all other calls; `i18n` is the language-pack map (§5.1), optional. |
+| `availableLangs(ctx)` | Configured language codes (`["en"]` when no packs). |
+| `langPack(ctx, lang)` | The language pack or `null`. |
 | `phraseDef(ctx, oid)` | SmartPhrase definition or `null`. |
 | `templateDef(ctx, conceptId)` | Transformation template or `null`. |
 | `concept(ctx, id)` | Registry entry or `null`. |
 | `method(ctx, id)` | Merged method view `{ conceptId, label, name, formula, configurations, iri, iri_status, ars, ars_status }` or `null`. |
-| `resolvePhrase(ctx, phraseInstance)` | `{ oid, role, name, template, anchors, text, bindings[], errors[] }` (§5). |
-| `resolveInstance(ctx, instance)` | `{ phrases[], sentence, errors[] }` (§5). |
+| `resolvePhrase(ctx, phraseInstance, lang?)` | `{ oid, role, name, template, anchors, text, bindings[], errors[], langFallback }` (§5). |
+| `resolveInstance(ctx, instance, lang?)` | `{ phrases[], parts[], sentence, errors[], lang }` (§5). |
 | `constructModelView(ctx, instance)` | eSAP-style study model view (§6). |
 | `buildTrace(ctx, instance, role)` | Array of trace tiers, or `null` (§7). |
 | `toMacroText(ctx, instance)` | Dialect text (§8). |

@@ -47,12 +47,13 @@ example. The engine is a single dependency-free script; it runs in a browser or 
 ## A1. Load the three inputs
 
 ```html
-<script src="data/acdc-library.js"></script>   <!-- the library layer  → window.ACDC_LIBRARY -->
-<script src="data/study-graph.js"></script>    <!-- the study layer    → window.STUDY_GRAPH  -->
-<script src="engine.js"></script>              <!-- the engine         → window.SP_ENGINE    -->
+<script src="data/acdc-library.js"></script>   <!-- the library layer   → window.ACDC_LIBRARY -->
+<script src="data/study-graph.js"></script>    <!-- the study layer     → window.STUDY_GRAPH  -->
+<script src="data/lang-overlay.js"></script>   <!-- language packs      → window.LANG_OVERLAY (optional) -->
+<script src="engine.js"></script>              <!-- the engine          → window.SP_ENGINE    -->
 <script>
   const E   = SP_ENGINE;
-  const ctx = E.ctxOf(ACDC_LIBRARY, STUDY_GRAPH);   // pass ctx to every engine call
+  const ctx = E.ctxOf(ACDC_LIBRARY, STUDY_GRAPH, LANG_OVERLAY);   // pass ctx to every engine call
 </script>
 ```
 
@@ -86,15 +87,18 @@ let state = {
 ## A3. Render — model → SAP
 
 ```js
-const res = E.resolveInstance(ctx, state);
+const res = E.resolveInstance(ctx, state, "en");   // third arg: prose language (renderer setting)
 res.sentence   // "Change from baseline in … will be assessed as the primary analysis."
-res.phrases    // ordered per-phrase results: { oid, role, text, bindings[], errors[] }
+res.parts      // ordered render sequence: phrase chips + literal frame text — consume THIS for prose
+res.phrases    // role-ordered per-phrase results: { oid, role, text, bindings[], errors[] }
 res.errors     // aggregate resolution errors ([] when the instance is complete)
 ```
 
-Render `res.phrases` however your surface needs — the PoC wraps each phrase in a `<span>` chip so it
-can carry hover-inspection and click-to-trace, but that is presentation. Phrase order comes from the
-library's `roleDefinitions.order`, so an instance's phrase array order does not matter.
+Render `res.parts` in order — the PoC wraps each phrase part in a `<span>` chip (hover-inspection,
+click-to-trace) and frame-text parts in a muted span, but that is presentation. Word order comes from
+the language's sentence template and phrase order from the library's `roleDefinitions.order`, so an
+instance's phrase array order does not matter. Rendering in another language is the same call with a
+different `lang` — the instance never changes (see REFERENCE §5.1 for language packs).
 
 **Re-render everything from state after every edit.** The PoC's entire UI is one `renderAll()`
 function; that discipline is what makes "two views of one thing" true rather than aspirational.
@@ -274,7 +278,17 @@ Conventions worth fixing early:
 | Identifier policy | ground into USDM / ARS / STATO / NCIt wherever those standards cover the entity; AC/DC ids only for what is genuinely new; unregistered ids carry `iri_status: "illustrative"` |
 | Provenance | consumers record library version + source commit (see the generated header of `demo/data/acdc-library.js`) |
 
-## B5. What to keep out of the phrase library
+## B5. Localisation is a library deliverable too
+
+A language for the smartphrase layer is a **pack**, not a document translation (see REFERENCE §5.1):
+one sentence template that owns word order in that language, phrase-template translations keyed by
+oid, and label overlays for concepts/methods (much of which is inherited from CDISC/NCIt terminology
+translations rather than authored). Packs version and govern like any other library overlay — and
+because instances are language-neutral, shipping a new language re-renders every existing SAP passage
+without touching a single instance. The demo's FR/DE packs (`demo/data/lang-overlay.js`) are the
+worked example; treat their copy as illustrative.
+
+## B6. What to keep out of the phrase library
 
 - **Study-specific wording** — that is a binding or a registry label, not a phrase.
 - **Document structure** — sections, numbering, boilerplate belong to the SAP structure (a sister

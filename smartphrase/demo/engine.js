@@ -9,8 +9,25 @@
 (function (g) {
   "use strict";
 
-  function ctxOf(lib, graph) {
-    return { lib: lib, graph: graph };
+  function ctxOf(lib, graph, i18n) {
+    return { lib: lib, graph: graph, i18n: i18n || null };
+  }
+
+  // ---------- language packs ----------------------------------------------
+
+  function langPack(ctx, lang) {
+    return (ctx.i18n && ctx.i18n[lang]) || null;
+  }
+
+  function availableLangs(ctx) {
+    return ctx.i18n ? Object.keys(ctx.i18n) : ["en"];
+  }
+
+  /* Overlay per-language label/name onto a registry/method entity. */
+  function localiseEntity(ctx, lang, section, id, entity) {
+    var pack = langPack(ctx, lang);
+    var over = pack && pack[section] && pack[section][id];
+    return over ? Object.assign({}, entity, over) : entity;
   }
 
   // ---------- lookups ----------------------------------------------------
@@ -55,7 +72,8 @@
   }
 
   /* Resolve one placeholder binding → { text, detail } or { error } */
-  function resolveBinding(ctx, ph, binding) {
+  function resolveBinding(ctx, ph, binding, lang) {
+    lang = lang || "en";
     if (!binding) {
       return { error: "no binding for required placeholder '" + ph.name + "'" };
     }
@@ -69,6 +87,7 @@
     if (ph.kind === "method_ref" || binding.method) {
       var m = method(ctx, binding.method);
       if (!m) return { error: "unknown method '" + binding.method + "'" };
+      m = localiseEntity(ctx, lang, "methods", binding.method, m);
       var mode = binding.render || ph.default_render || "name";
       return { text: renderEntity(m, mode),
                detail: { kind: "method", id: binding.method, render: mode,
@@ -83,22 +102,26 @@
       return { error: "concept '" + binding.concept + "' is not in category " + ph.concept_category };
     }
     var cmode = binding.render || ph.default_render || "label";
-    return { text: renderEntity(c, cmode),
+    var cl = localiseEntity(ctx, lang, "concepts", binding.concept, c);
+    return { text: renderEntity(cl, cmode),
              detail: { kind: "concept", id: binding.concept, render: cmode,
                        iri: c.iri, iri_status: c.iri_status } };
   }
 
   /* Resolve one phrase instance → { oid, role, text, bindings[], errors[] } */
-  function resolvePhrase(ctx, pi) {
+  function resolvePhrase(ctx, pi, lang) {
+    lang = lang || "en";
     var def = phraseDef(ctx, pi.phrase);
     if (!def) return { oid: pi.phrase, errors: ["unknown smartphrase '" + pi.phrase + "'"], text: "⟨" + pi.phrase + "?⟩" };
-    var text = def.phrase_template;
+    var pack = langPack(ctx, lang);
+    var text = (pack && pack.phrases && pack.phrases[def.oid]) || def.phrase_template;
+    var langFallback = lang !== "en" && !(pack && pack.phrases && pack.phrases[def.oid]);
     var errors = [];
     var bindings = [];
     (def.placeholders || []).forEach(function (ph) {
       var b = (pi.bindings || {})[ph.name];
       if (!b && !ph.required) return;
-      var r = resolveBinding(ctx, ph, b);
+      var r = resolveBinding(ctx, ph, b, lang);
       if (r.error) {
         errors.push(r.error);
         text = text.replace("{" + ph.name + "}", "⟨" + ph.name + "?⟩");
@@ -109,24 +132,71 @@
     });
     return { oid: def.oid, role: def.role, name: def.name,
              template: def.phrase_template, anchors: def.anchors,
-             text: text, bindings: bindings, errors: errors };
+             text: text, bindings: bindings, errors: errors,
+             langFallback: langFallback };
   }
 
   /*
-   * Resolve a whole instance → ordered phrases + assembled sentence.
-   * Phrase order comes from the library's roleDefinitions.order.
+   * Resolve a whole instance → ordered phrases, an assembled sentence, and
+   * `parts` (the render sequence: phrase chips + literal frame text).
+   *
+   * Word order comes from the language pack's `sentence_template` — a string
+   * of {role} tokens plus literal frame text (plus {sentenceRole}). Phrases
+   * sharing a role fill their token in library role order. With no pack, a
+   * default template concatenating all roles in roleDefinitions.order is
+   * used, which reproduces the plain-English assembly.
    */
-  function resolveInstance(ctx, instance) {
+  function resolveInstance(ctx, instance, lang) {
+    lang = lang || "en";
     var order = ctx.lib.roleDefinitions.order;
-    var resolved = instance.phrases.map(function (pi) { return resolvePhrase(ctx, pi); });
+    var resolved = instance.phrases.map(function (pi) { return resolvePhrase(ctx, pi, lang); });
     resolved.sort(function (a, b) {
       return order.indexOf(a.role) - order.indexOf(b.role);
     });
-    var body = resolved.map(function (r) { return r.text; }).join(" ");
-    var sentence = body.charAt(0).toUpperCase() + body.slice(1) +
-      " will be assessed as " + (instance.sentenceRole || "an analysis") + ".";
+
+    var pack = langPack(ctx, lang) || langPack(ctx, "en");
+    var tmpl = (pack && pack.sentence_template) ||
+      "{" + order.join("} {") + "} will be assessed as {sentenceRole}.";
+    var roleText = (pack && pack.sentenceRoles && pack.sentenceRoles[instance.sentenceRole]) ||
+      instance.sentenceRole || "an analysis";
+
+    // Build the render sequence from the sentence template.
+    var parts = [];
+    tmpl.split(/(\{[a-zA-Z_]+\})/).forEach(function (seg) {
+      if (!seg) return;
+      var tok = seg.match(/^\{([a-zA-Z_]+)\}$/);
+      if (!tok) { parts.push({ type: "text", text: seg, frame: true }); return; }
+      if (tok[1] === "sentenceRole") { parts.push({ type: "text", text: roleText, frame: true }); return; }
+      if (order.indexOf(tok[1]) === -1) { parts.push({ type: "text", text: seg, frame: true }); return; }
+      resolved.forEach(function (rp, i) {
+        if (rp.role !== tok[1]) return;
+        if (parts.length && parts[parts.length - 1].type === "phrase") {
+          parts.push({ type: "text", text: " ", frame: false });
+        }
+        parts.push({ type: "phrase", phrase: rp });
+      });
+    });
+    // Normalise: merge adjacent text, collapse whitespace left by empty roles.
+    var norm = [];
+    parts.forEach(function (p) {
+      if (p.type === "text" && norm.length && norm[norm.length - 1].type === "text") {
+        norm[norm.length - 1].text += p.text;
+        norm[norm.length - 1].frame = norm[norm.length - 1].frame || p.frame;
+      } else {
+        norm.push(Object.assign({}, p));
+      }
+    });
+    norm.forEach(function (p) { if (p.type === "text") p.text = p.text.replace(/\s+/g, " "); });
+    while (norm.length && norm[0].type === "text" && !norm[0].text.trim()) norm.shift();
+    if (norm.length && norm[0].type === "text") norm[0].text = norm[0].text.replace(/^\s+/, "");
+
+    var sentence = norm.map(function (p) {
+      return p.type === "phrase" ? p.phrase.text : p.text;
+    }).join("").replace(/\s+/g, " ").trim();
+    sentence = sentence.charAt(0).toUpperCase() + sentence.slice(1);
+
     var errors = resolved.reduce(function (acc, r) { return acc.concat(r.errors || []); }, []);
-    return { phrases: resolved, sentence: sentence, errors: errors };
+    return { phrases: resolved, parts: norm, sentence: sentence, errors: errors, lang: lang };
   }
 
   // ---------- SAP → model: the constructed instance view ------------------
@@ -384,7 +454,13 @@
   function toJSONLD(ctx, instance) {
     var tpl = templateDef(ctx, instance.template);
     var m = tpl ? method(ctx, tpl.usesMethod) : null;
-    var resolved = resolveInstance(ctx, instance);
+    // The rendered sentence per available language, as language-tagged
+    // literals — the RDF-native localisation mechanism.
+    var resolvesTo = ctx.i18n
+      ? availableLangs(ctx).map(function (l) {
+          return { "@value": resolveInstance(ctx, instance, l).sentence, "@language": l };
+        })
+      : resolveInstance(ctx, instance).sentence;
 
     var phraseNodes = instance.phrases.map(function (pi, i) {
       var def = phraseDef(ctx, pi.phrase);
@@ -430,11 +506,13 @@
       },
       "ars:analysis": instance.arsAnalysis && { "@id": instance.arsAnalysis.iri },
       "sp:hasPhraseInstance": phraseNodes,
-      "sp:resolvesTo": resolved.sentence
+      "sp:resolvesTo": resolvesTo
     };
   }
 
   g.SP_ENGINE = {
+    availableLangs: availableLangs,
+    langPack: langPack,
     ctxOf: ctxOf,
     phraseDef: phraseDef,
     templateDef: templateDef,

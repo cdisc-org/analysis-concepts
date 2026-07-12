@@ -41,6 +41,14 @@ at Week 24, ANCOVA, efficacy population — driven by transformation template `T
 > "There is no synchronisation here, because there is no second copy. Every panel is a projection of one
 > object. That's the co-equal bidirectionality the issue asks for."
 
+- **Optional 30s — i18n:** click **DE** (top right). Same object, German prose — and note the verb
+  bracket (*wird … untersucht*): word order is owned by a per-language sentence template, not by
+  concatenating fragments. Point at the tag source: **it did not change**. Click **FR**, then back to
+  **EN**. *(Translations illustrative.)*
+
+> "Multilingual SAPs fall out of the architecture: a new language is a rendering pack, not a
+> re-authored document — and the graph carries every language as tagged literals."
+
 ## 6:15 — Stop 3 · Template reuse (1m30)
 
 - Three cards: primary ADAS-Cog(11)/Week 24, secondary NPI-X, supporting Week 16 — **same template**,
@@ -76,5 +84,8 @@ at Week 24, ANCOVA, efficacy population — driven by transformation template `T
   groups using ANCOVA with 95% confidence intervals adjusting for baseline ADAS-Cog(11) will be assessed
   as the primary analysis."*
 - Library: 23 smartphrases, 8 roles, `T.CFB_ANCOVA` valid-phrase set of 9 — all v0.7, verbatim.
-- Verified: engine round-trip byte-equal; 21 headless-browser end-to-end checks pass, no console errors.
-- If time-pressed: compress Stop 4 to the provenance line and the volatility sentence; never cut Stop 2.
+- Languages: EN/FR/DE via language packs; DE headline: *"… wird im Vergleich der Behandlungsgruppen
+  mittels ANCOVA … als primäre Analyse untersucht."* Tag source/model/graph identical across languages.
+- Verified: engine round-trip byte-equal; 21 + 15 headless-browser end-to-end checks pass, no console errors.
+- If time-pressed: compress Stop 4 to the provenance line and the volatility sentence, and drop the
+  i18n beat (just say it); never cut Stop 2.

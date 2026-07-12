@@ -25,6 +25,11 @@
   nav.stops a { display: block; padding: 12px 14px; text-decoration: none; color: var(--muted);
                 font-size: 14px; font-weight: 600; border-bottom: 3px solid transparent; }
   nav.stops a:hover, nav.stops a.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .langsw { margin-left: auto; display: flex; gap: 4px; align-items: center; padding: 8px 0; }
+  .langsw .lg { font-size: 12px; color: var(--muted); margin-right: 4px; }
+  .langsw button { border: 1px solid var(--line); background: #fff; color: var(--muted);
+                   font-size: 12.5px; font-weight: 600; border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+  .langsw button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
   main { max-width: 1060px; margin: 0 auto; padding: 8px 24px 80px; }
   section.stop { margin-top: 40px; }
   section.stop > h2 { font-size: 20px; margin: 0 0 4px; }
@@ -163,6 +168,7 @@
   <a href="#stop2">2 · Two views, one thing</a>
   <a href="#stop3">3 · Template reuse</a>
   <a href="#stop4">4 · Standards grounding</a>
+  <div class="langsw" id="langsw"><span class="lg">prose language</span></div>
 </nav>
 
 <main>
@@ -199,7 +205,9 @@
 
   <div class="onething">⚡ Everything on this page renders from a single shared state object.
      The tabs below show three more projections of it: the constructed AC/DC model instance,
-     the authoring tag source (editable — apply it and watch everything else follow), and the JSON-LD graph.</div>
+     the authoring tag source (editable — apply it and watch everything else follow), and the JSON-LD graph.
+     Switching the prose language (top right) re-renders that same object through per-language phrase and
+     sentence templates — the tag source, model instance and identifiers do not change. Translations illustrative.</div>
 
   <div class="duo">
     <div class="card panel">
@@ -284,6 +292,7 @@
 
 <script src="data/acdc-library.js"></script>
 <script src="data/study-graph.js"></script>
+<script src="data/lang-overlay.js"></script>
 <script src="engine.js"></script>
 <script>
 (function () {
@@ -291,12 +300,13 @@
   var E = window.SP_ENGINE;
   var LIB = window.ACDC_LIBRARY;
   var GRAPH = window.STUDY_GRAPH;
-  var ctx = E.ctxOf(LIB, GRAPH);
+  var ctx = E.ctxOf(LIB, GRAPH, window.LANG_OVERLAY);
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
   /* ---------- THE single shared state ---------- */
   var state = clone(GRAPH.instances[0]);
+  var lang = "en";   // prose language — a renderer setting, never part of the state
 
   var ROLE_LABELS = LIB.roleDefinitions.roles;
   var TRACEABLE = Object.keys(GRAPH.traceTemplates);
@@ -375,15 +385,31 @@
     return GRAPH.prefixes[pfx] ? GRAPH.prefixes[pfx] + curie.slice(i + 1) : curie;
   }
 
-  /* ---------- prose rendering ---------- */
+  /* ---------- prose rendering (from engine `parts`) ---------- */
   function renderProse(el, instance, mode) {
-    var res = E.resolveInstance(ctx, instance);
+    var res = E.resolveInstance(ctx, instance, lang);
     el.innerHTML = "";
-    res.phrases.forEach(function (rp, i) {
+    var first = true;
+    res.parts.forEach(function (part) {
+      if (part.type === "text") {
+        if (part.frame && part.text.trim()) {
+          var frame = document.createElement("span");
+          frame.className = "frame-text";
+          frame.textContent = first ? part.text.charAt(0).toUpperCase() + part.text.slice(1) : part.text;
+          frame.title = "sentence frame — owned by the language's sentence template, not a smartphrase";
+          el.appendChild(frame);
+          first = false;
+        } else {
+          el.appendChild(document.createTextNode(part.text));
+        }
+        return;
+      }
+      var rp = part.phrase;
       var span = document.createElement("span");
       span.className = "sp " + rp.role;
       span.tabIndex = 0;
-      span.textContent = i === 0 ? rp.text.charAt(0).toUpperCase() + rp.text.slice(1) : rp.text;
+      span.textContent = first ? rp.text.charAt(0).toUpperCase() + rp.text.slice(1) : rp.text;
+      first = false;
       if (mode === "inspect") {
         span.addEventListener("mouseenter", function () { if (!popPinned) showPop(inspectHTML(rp), span); });
         span.addEventListener("mouseleave", function () { hidePop(); });
@@ -395,15 +421,26 @@
         span.addEventListener("click", function (e) { e.stopPropagation(); popPinned = true; showPop(editHTML(rp), span); wireEditor(rp); });
       }
       el.appendChild(span);
-      el.appendChild(document.createTextNode(" "));
     });
-    var frame = document.createElement("span");
-    frame.className = "frame-text";
-    frame.textContent = "will be assessed as " + (instance.sentenceRole || "an analysis") + ".";
-    frame.title = "sentence frame — document text, not a smartphrase";
-    el.appendChild(frame);
     return res;
   }
+
+  /* ---------- language switch (a renderer setting, not state) ---------- */
+  (function () {
+    var sw = document.getElementById("langsw");
+    E.availableLangs(ctx).forEach(function (l) {
+      var b = document.createElement("button");
+      b.textContent = l.toUpperCase();
+      b.title = E.langPack(ctx, l).name;
+      b.className = l === lang ? "active" : "";
+      b.addEventListener("click", function () {
+        lang = l;
+        sw.querySelectorAll("button").forEach(function (x) { x.classList.toggle("active", x === b); });
+        renderAll(true);
+      });
+      sw.appendChild(b);
+    });
+  })();
 
   /* ---------- stop 1: trace ---------- */
   var traceBox = document.getElementById("trace");
@@ -635,7 +672,7 @@
     grid.innerHTML = "";
     var baseMv = E.constructModelView(ctx, GRAPH.instances[0]);
     GRAPH.instances.forEach(function (inst, idx) {
-      var res = E.resolveInstance(ctx, inst);
+      var res = E.resolveInstance(ctx, inst, lang);   // prose follows the language; the model rows below stay canonical
       var mv = E.constructModelView(ctx, inst);
       var card = document.createElement("div"); card.className = "reuse-card";
       var rows = mv.sliceKeys.map(function (sk, i) {

@@ -31,6 +31,7 @@ The demo is one page with four stops:
 | `demo/engine.js` | Pure-function engine: resolve / construct / trace / tag dialect / JSON-LD |
 | `demo/data/acdc-library.js` | **Generated** verbatim subset of the `methods_02` library (v0.7) — do not hand-edit |
 | `demo/data/study-graph.js` | Illustrative study layer: CDISC Pilot concepts, instances, trace tiers |
+| `demo/data/lang-overlay.js` | EN/FR/DE language packs: per-language sentence templates, phrase translations, label overlays (illustrative) |
 | `spec/format-evaluation.md` | Carrier-format analysis (retained from the first PoC round) |
 
 The authoritative model source is the **`methods_02` branch** (Transformation Library v0.7, Method
