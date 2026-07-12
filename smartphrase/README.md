@@ -24,6 +24,8 @@ The demo is one page with four stops:
 | Path | What |
 |---|---|
 | `DESIGN.md` | Design record — architecture, decisions, rationale, verification |
+| `GETTING-STARTED.md` | For integrators (embed smartphrases in your own tooling) and standards managers (build reusable phrase libraries, e.g. per therapeutic area) |
+| `REFERENCE.md` | Reference guide — every structure, algorithm and engine function of the smartphrase layer |
 | `WALKTHROUGH.md` | Working-group session script |
 | `demo/index.html` | The integrated demo (single page) |
 | `demo/engine.js` | Pure-function engine: resolve / construct / trace / tag dialect / JSON-LD |
