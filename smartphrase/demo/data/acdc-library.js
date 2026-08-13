@@ -1,6 +1,11 @@
 /*
  * AC/DC library subset for the smartphrase demo.
  * GENERATED from methods_02 (commit ffee5df) — do not hand-edit; see provenance field.
+ *
+ * Regenerate with:  node smartphrase/tools/build-library-subset.mjs
+ *
+ * Proposed additions that are NOT yet upstream live in acdc-library-proposed.js
+ * and are flagged in the demo UI.
  */
 (function(g){ g.ACDC_LIBRARY = {
   "provenance": {
@@ -8,7 +13,8 @@
     "source_commit": "ffee5df",
     "files": [
       "lib/transformations/ACDC_Transformation_Library_v07.json",
-      "lib/methods/analyses/M_ANCOVA.json"
+      "lib/methods/analyses/M_ANCOVA.json",
+      "lib/methods/analyses/M_KaplanMeier.json"
     ],
     "note": "Verbatim subset of the authoritative AC/DC model artefacts; generated, not hand-edited."
   },
@@ -1077,6 +1083,95 @@
           "system": "http://purl.obolibrary.org/obo/stato",
           "code": "STATO_0000179",
           "display": "ANCOVA"
+        }
+      ]
+    },
+    "M.KaplanMeier": {
+      "$schema": "../../../model/json_schema/acdc_method.schema.json",
+      "schema_version": "0.9.1",
+      "$vocabulary": {
+        "statistics": "../../model/method/statistics_vocabulary.json",
+        "output_classes": "../../model/method/output_class_templates.json",
+        "formula_grammar": "../../model/method/formula_grammar.json"
+      },
+      "conceptId": "M.KaplanMeier",
+      "name": "Kaplan-Meier Estimation",
+      "label": "KM",
+      "ncitCode": null,
+      "description": "Non-parametric survival function estimation with optional grouping",
+      "formula": {
+        "notation": "survival",
+        "default_expression": "Surv(time, event) ~ fixed_effect",
+        "generic_expression": "Surv(<time>, <event>) ~ <fixed_effect>?",
+        "notes": "If no group is specified, estimates a single survival curve. With a group variable, produces stratified curves."
+      },
+      "configurations": [
+        {
+          "name": "conf_type",
+          "dataType": "enum",
+          "defaultValue": "log-log",
+          "enumValues": [
+            "log-log",
+            "log",
+            "plain",
+            "arcsin"
+          ],
+          "description": "Confidence interval transformation type"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "time",
+          "dataType": "decimal",
+          "required": true,
+          "cardinality": "single",
+          "description": "Time to event or censoring"
+        },
+        {
+          "name": "event",
+          "dataType": "boolean",
+          "required": true,
+          "cardinality": "single",
+          "description": "Event indicator (1=event, 0=censored)"
+        },
+        {
+          "name": "fixed_effect",
+          "dataType": "code",
+          "required": false,
+          "cardinality": "single",
+          "description": "Optional grouping variable for stratified curves"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "event_summary",
+          "output_type": "event_summary",
+          "indexed_by": [
+            "fixed_effect"
+          ]
+        },
+        {
+          "name": "survival_table",
+          "output_type": "survival_table",
+          "indexed_by": [
+            "fixed_effect",
+            "time"
+          ]
+        },
+        {
+          "name": "median_survival",
+          "output_type": "median_survival",
+          "indexed_by": [
+            "fixed_effect"
+          ]
+        },
+        {
+          "name": "landmark_estimates",
+          "output_type": "landmark_estimates",
+          "indexed_by": [
+            "fixed_effect",
+            "time"
+          ]
         }
       ]
     }
