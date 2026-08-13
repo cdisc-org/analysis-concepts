@@ -1351,8 +1351,8 @@
     }
   ],
   "PRE0102/AC.PRIMARY.PFS/sentence/en": "Time to disease progression or death (PFS) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as the primary analysis.",
-  "PRE0102/AC.PRIMARY.PFS/sentence/fr": "Time to disease progression or death (PFS) dans la population eligible, treated en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme analyse principale.",
-  "PRE0102/AC.PRIMARY.PFS/sentence/de": "Time to disease progression or death (PFS) in der eligible, treated wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als primäre Analyse untersucht.",
+  "PRE0102/AC.PRIMARY.PFS/sentence/fr": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme analyse principale.",
+  "PRE0102/AC.PRIMARY.PFS/sentence/de": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als primäre Analyse untersucht.",
   "PRE0102/AC.PRIMARY.PFS/modelView": {
     "instance": "AC.PRIMARY.PFS",
     "iri": "acdc:instance/PRE0102-AC-PRIMARY-PFS",
@@ -1562,11 +1562,11 @@
         "@language": "en"
       },
       {
-        "@value": "Time to disease progression or death (PFS) dans la population eligible, treated en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme analyse principale.",
+        "@value": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme analyse principale.",
         "@language": "fr"
       },
       {
-        "@value": "Time to disease progression or death (PFS) in der eligible, treated wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als primäre Analyse untersucht.",
+        "@value": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als primäre Analyse untersucht.",
         "@language": "de"
       }
     ]
@@ -1673,8 +1673,8 @@
     }
   ],
   "PRE0102/AC.SENS.PFS.ITT/sentence/en": "Time to disease progression or death (PFS) in the intent-to-treat population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a sensitivity analysis.",
-  "PRE0102/AC.SENS.PFS.ITT/sentence/fr": "Time to disease progression or death (PFS) dans la population intent-to-treat en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme a sensitivity analysis.",
-  "PRE0102/AC.SENS.PFS.ITT/sentence/de": "Time to disease progression or death (PFS) in der intent-to-treat wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als a sensitivity analysis untersucht.",
+  "PRE0102/AC.SENS.PFS.ITT/sentence/fr": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population en intention de traiter en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme une analyse de sensibilité.",
+  "PRE0102/AC.SENS.PFS.ITT/sentence/de": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der Intention-to-Treat-Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als Sensitivitätsanalyse untersucht.",
   "PRE0102/AC.SENS.PFS.ITT/modelView": {
     "instance": "AC.SENS.PFS.ITT",
     "iri": "acdc:instance/PRE0102-AC-SENS-PFS-ITT",
@@ -1884,11 +1884,11 @@
         "@language": "en"
       },
       {
-        "@value": "Time to disease progression or death (PFS) dans la population intent-to-treat en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme a sensitivity analysis.",
+        "@value": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population en intention de traiter en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme une analyse de sensibilité.",
         "@language": "fr"
       },
       {
-        "@value": "Time to disease progression or death (PFS) in der intent-to-treat wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als a sensitivity analysis untersucht.",
+        "@value": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der Intention-to-Treat-Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als Sensitivitätsanalyse untersucht.",
         "@language": "de"
       }
     ]
@@ -1995,8 +1995,8 @@
     }
   ],
   "PRE0102/AC.SEC.OS/sentence/en": "Time to death from any cause (OS) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a secondary analysis.",
-  "PRE0102/AC.SEC.OS/sentence/fr": "Time to death from any cause (OS) dans la population eligible, treated en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
-  "PRE0102/AC.SEC.OS/sentence/de": "Time to death from any cause (OS) in der eligible, treated wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
+  "PRE0102/AC.SEC.OS/sentence/fr": "Le délai jusqu'à le décès, toutes causes confondues (SG) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
+  "PRE0102/AC.SEC.OS/sentence/de": "Die Zeit bis zum Tod jeglicher Ursache (OS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
   "PRE0102/AC.SEC.OS/modelView": {
     "instance": "AC.SEC.OS",
     "iri": "acdc:instance/PRE0102-AC-SEC-OS",
@@ -2206,11 +2206,11 @@
         "@language": "en"
       },
       {
-        "@value": "Time to death from any cause (OS) dans la population eligible, treated en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
+        "@value": "Le délai jusqu'à le décès, toutes causes confondues (SG) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
         "@language": "fr"
       },
       {
-        "@value": "Time to death from any cause (OS) in der eligible, treated wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
+        "@value": "Die Zeit bis zum Tod jeglicher Ursache (OS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
         "@language": "de"
       }
     ]
@@ -2317,8 +2317,8 @@
     }
   ],
   "PRE0102/AC.SEC.TTP/sentence/en": "Time to disease progression (TTP) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a secondary analysis.",
-  "PRE0102/AC.SEC.TTP/sentence/fr": "Time to disease progression (TTP) dans la population eligible, treated en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
-  "PRE0102/AC.SEC.TTP/sentence/de": "Time to disease progression (TTP) in der eligible, treated wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
+  "PRE0102/AC.SEC.TTP/sentence/fr": "Le délai jusqu'à la progression de la maladie (DJP) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
+  "PRE0102/AC.SEC.TTP/sentence/de": "Die Zeit bis zur Krankheitsprogression (TTP) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
   "PRE0102/AC.SEC.TTP/modelView": {
     "instance": "AC.SEC.TTP",
     "iri": "acdc:instance/PRE0102-AC-SEC-TTP",
@@ -2528,11 +2528,11 @@
         "@language": "en"
       },
       {
-        "@value": "Time to disease progression (TTP) dans la population eligible, treated en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
+        "@value": "Le délai jusqu'à la progression de la maladie (DJP) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
         "@language": "fr"
       },
       {
-        "@value": "Time to disease progression (TTP) in der eligible, treated wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
+        "@value": "Die Zeit bis zur Krankheitsprogression (TTP) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
         "@language": "de"
       }
     ]

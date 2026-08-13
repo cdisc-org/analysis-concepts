@@ -44,7 +44,11 @@
         SP_METHOD_ANCOVA: "au moyen d'une {method}",
         SP_CONFIDENCE_LEVEL: "avec des intervalles de confiance à {conf_level} %",
         SP_COVARIATE_BASELINE: "avec ajustement sur la valeur initiale du score {parameter}",
-        SP_COVARIATE_SITE: "avec ajustement sur le centre"
+        SP_COVARIATE_SITE: "avec ajustement sur le centre",
+        /* time-to-event phrases (PrE0102) */
+        SP_TTE_ENDPOINT: "le délai jusqu'à {event}",
+        SP_METHOD_KM: "au moyen de l'estimation de {method}",
+        SP_STRATIFICATION: "stratifié selon {strata}"
       },
       concepts: {
         "PARAM.ADASCOG11": { name: "l'échelle d'évaluation de la maladie d'Alzheimer – sous-échelle cognitive (11 items)" },
@@ -56,15 +60,24 @@
         "POP.EFFICACY": { name: "d'efficacité (intention de traiter)" },
         "POP.PP": { name: "per protocole" },
         "POP.SAFETY": { name: "de tolérance" },
-        "TRT.ALL": { label: "traitement" }
+        "TRT.ALL": { label: "traitement" },
+        /* PrE0102 study layer */
+        "EVENT.PFS": { label: "SSP", name: "la progression de la maladie ou le décès" },
+        "EVENT.OS": { label: "SG", name: "le décès, toutes causes confondues" },
+        "EVENT.TTP": { label: "DJP", name: "la progression de la maladie" },
+        "POP.EVAL_EFFICACY": { label: "EFF", name: "éligible et traitée" },
+        "POP.ITT": { label: "ITT", name: "en intention de traiter" },
+        "TRT.PRE0102": { label: "traitement" }
       },
       methods: {
-        "M.ANCOVA": { name: "analyse de covariance" }
+        "M.ANCOVA": { name: "analyse de covariance" },
+        "M.KaplanMeier": { label: "Kaplan-Meier", name: "Kaplan-Meier" }
       },
       sentenceRoles: {
         "the primary analysis": "analyse principale",
         "a secondary analysis": "une analyse secondaire",
-        "a supporting analysis": "une analyse complémentaire"
+        "a supporting analysis": "une analyse complémentaire",
+        "a sensitivity analysis": "une analyse de sensibilité"
       }
     },
 
@@ -83,7 +96,11 @@
         SP_METHOD_ANCOVA: "mittels {method}",
         SP_CONFIDENCE_LEVEL: "mit {conf_level}%-Konfidenzintervallen",
         SP_COVARIATE_BASELINE: "adjustiert für den Ausgangswert von {parameter}",
-        SP_COVARIATE_SITE: "adjustiert für das Zentrum"
+        SP_COVARIATE_SITE: "adjustiert für das Zentrum",
+        /* time-to-event phrases (PrE0102) */
+        SP_TTE_ENDPOINT: "die Zeit bis {event}",
+        SP_METHOD_KM: "mittels {method}-Schätzung",
+        SP_STRATIFICATION: "stratifiziert nach {strata}"
       },
       concepts: {
         "PARAM.ADASCOG11": { name: "Alzheimer's Disease Assessment Scale – kognitive Subskala (11 Items)" },
@@ -95,15 +112,25 @@
         "POP.EFFICACY": { name: "Wirksamkeitspopulation (Intention-to-Treat)" },
         "POP.PP": { name: "Per-Protocol-Population" },
         "POP.SAFETY": { name: "Sicherheitspopulation" },
-        "TRT.ALL": { label: "Behandlung" }
+        "TRT.ALL": { label: "Behandlung" },
+        /* PrE0102 study layer. Event names are in the dative, to follow
+           "die Zeit bis" in the SP_TTE_ENDPOINT template. */
+        "EVENT.PFS": { label: "PFS", name: "zur Krankheitsprogression oder zum Tod" },
+        "EVENT.OS": { label: "OS", name: "zum Tod jeglicher Ursache" },
+        "EVENT.TTP": { label: "TTP", name: "zur Krankheitsprogression" },
+        "POP.EVAL_EFFICACY": { label: "EFF", name: "auswertbaren, behandelten Population" },
+        "POP.ITT": { label: "ITT", name: "Intention-to-Treat-Population" },
+        "TRT.PRE0102": { label: "Behandlung" }
       },
       methods: {
-        "M.ANCOVA": { name: "Kovarianzanalyse" }
+        "M.ANCOVA": { name: "Kovarianzanalyse" },
+        "M.KaplanMeier": { label: "Kaplan-Meier", name: "Kaplan-Meier" }
       },
       sentenceRoles: {
         "the primary analysis": "primäre Analyse",
         "a secondary analysis": "sekundäre Analyse",
-        "a supporting analysis": "unterstützende Analyse"
+        "a supporting analysis": "unterstützende Analyse",
+        "a sensitivity analysis": "Sensitivitätsanalyse"
       }
     }
   };

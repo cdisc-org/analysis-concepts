@@ -61,6 +61,17 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
         res.errors.length === 0,
         JSON.stringify(res.errors)
       );
+
+      /* Localisation completeness: every phrase must have a per-language
+         template in every non-English pack (English is the source). */
+      if (lang !== "en") {
+        const missing = res.phrases.filter((p) => p.langFallback).map((p) => p.oid);
+        check(
+          `${studyKey}/${inst.id} has no untranslated phrases (${lang})`,
+          missing.length === 0,
+          missing.join(", ")
+        );
+      }
     }
 
     /* constructed model view */
