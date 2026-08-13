@@ -180,13 +180,19 @@
      a span of text bound to the AC/DC model. <strong>Hover</strong> any phrase to see the model behind it;
      <strong>click</strong> one to follow its resolution chain down to the physical dataset.</p>
 
+  <div class="studyswitch" id="studySwitch"
+       style="display:flex;gap:6px;align-items:center;margin:0 0 10px;flex-wrap:wrap;">
+    <span style="font-size:12.5px;color:var(--muted);">Study:</span>
+  </div>
+
   <div class="doc-shell">
     <div class="docmeta"><span id="docStudy"></span><span>Statistical Analysis Plan — document shell is illustrative</span></div>
     <h3><span class="secbadge">4.1.2</span> <span id="docTitle"></span></h3>
     <p class="prose" id="prose1"></p>
     <div class="legend" id="legend"></div>
-    <p class="hint">Hover to inspect · click to trace. The greyed sentence frame is part of the document,
-       not a smartphrase — the linking layer does not depend on the surrounding document structure.</p>
+    <p class="hint">Hover to inspect · click to trace. Switch study above to see the same mechanism over a
+       different therapeutic area and a different endpoint type. The greyed sentence frame is part of the
+       document, not a smartphrase — the linking layer does not depend on the surrounding document structure.</p>
   </div>
 
   <div id="trace" class="card">
@@ -254,10 +260,12 @@
 <!-- ================= STOP 3 ================= -->
 <section class="stop" id="stop3">
   <h2><span class="stopno">3</span>Template reuse — write once, instantiate many</h2>
-  <p class="lede">All three analyses below instantiate the <em>same</em> library building block —
-     transformation template <code>T.CFB_ANCOVA</code> with its valid smartphrases — from the
-     Transformation Library v0.7. Only the highlighted bindings vary; prose, model structure, method and
-     traceability all come from the template. Open any of them in the editor above.</p>
+  <p class="lede">Reuse works in two directions. <strong>Within</strong> each study, every analysis below
+     instantiates the <em>same</em> library building block — one transformation template with its valid
+     smartphrases — and only the highlighted bindings vary; prose, model structure, method and traceability
+     all come from the template. <strong>Across</strong> studies, a different block is drawn from the same
+     Transformation Library v0.7, so the pattern holds over a different therapeutic area and a different
+     endpoint type. Open any of them in the editor above.</p>
   <div class="reuse-grid" id="reuseGrid"></div>
 </section>
 
@@ -301,8 +309,15 @@
   "use strict";
   var E = window.SP_ENGINE;
   var LIB = window.ACDC_LIBRARY;
-  var GRAPH = window.STUDY_GRAPH;
-  var ctx = E.ctxOf(LIB, GRAPH, window.LANG_OVERLAY);
+  var I18N = window.LANG_OVERLAY;
+
+  /* ---------- the study registry ---------- */
+  var STUDY_GRAPHS = window.STUDY_GRAPHS || { CDISCPILOT01: window.STUDY_GRAPH };
+  var STUDY_KEYS = Object.keys(STUDY_GRAPHS);
+  var activeStudy = STUDY_KEYS[0];
+
+  var GRAPH = STUDY_GRAPHS[activeStudy];
+  var ctx = E.ctxOf(LIB, GRAPH, I18N);
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
@@ -312,6 +327,39 @@
 
   var ROLE_LABELS = LIB.roleDefinitions.roles;
   var TRACEABLE = Object.keys(GRAPH.traceTemplates);
+
+  /*
+   * Switching study swaps the whole study layer: graph, context, state and the
+   * set of traceable roles. The library layer is shared — that is the point of
+   * the cross-study reuse claim.
+   */
+  function switchStudy(key) {
+    if (!STUDY_GRAPHS[key]) return;
+    activeStudy = key;
+    GRAPH = STUDY_GRAPHS[key];
+    ctx = E.ctxOf(LIB, GRAPH, I18N);
+    TRACEABLE = Object.keys(GRAPH.traceTemplates);
+    state = clone(GRAPH.instances[0]);
+    srcDirty = false;
+    hidePop(true);
+    document.getElementById("srcFindings").innerHTML = "";
+    buildStudySwitch();
+    renderAll();
+  }
+
+  function buildStudySwitch() {
+    var sw = document.getElementById("studySwitch");
+    Array.prototype.slice.call(sw.querySelectorAll("button")).forEach(function (b) { b.remove(); });
+    STUDY_KEYS.forEach(function (key) {
+      var gph = STUDY_GRAPHS[key];
+      var b = document.createElement("button");
+      b.className = "btn ghost" + (key === activeStudy ? " active" : "");
+      b.textContent = gph.study.studyId;
+      b.title = gph.study.title;
+      b.addEventListener("click", function () { switchStudy(key); });
+      sw.appendChild(b);
+    });
+  }
 
   /* ---------- helpers over state ---------- */
   function findPhrase(oid) { return state.phrases.find(function (p) { return p.phrase === oid; }); }
@@ -331,7 +379,10 @@
         var co = LIB.configurationOptions[ph.name];
         b[ph.name] = { value: co ? co.default : "" };
       } else if (ph.kind === "method_ref") {
-        b[ph.name] = { method: "M.ANCOVA", render: "label" };
+        /* The method comes from the active template, not a fixed default —
+           otherwise a KM analysis would be handed M.ANCOVA. */
+        var tpl = E.templateDef(ctx, state.template);
+        b[ph.name] = { method: (tpl && tpl.usesMethod) || "M.ANCOVA", render: "label" };
       } else {
         var opts = conceptOptions(ph);
         if (opts.length) b[ph.name] = { concept: opts[0], render: ph.default_render };
@@ -472,97 +523,121 @@
     traceBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
-  /* ---------- stop 2: model panel ---------- */
+  /* ---------- stop 2: model panel ----------
+   * Derived entirely from the active template and the phrases the instance
+   * currently uses, in library role order. No phrase OID appears here, so a
+   * new template needs no change to this function.
+   */
   function renderModelPanel() {
     var mp = document.getElementById("modelPanel");
     mp.innerHTML = "";
+    var tpl = E.templateDef(ctx, state.template);
+    if (!tpl) return;
 
-    function conceptField(labelTxt, phraseOid, slot, phDef) {
-      var pi = findPhrase(phraseOid);
-      if (!pi) return;
-      var wrap = document.createElement("div"); wrap.className = "fld";
-      var lab = document.createElement("label");
-      lab.innerHTML = labelTxt + ' <span class="roleTag">(' + phraseOid + ")</span>";
-      var sel = document.createElement("select");
-      conceptOptions(phDef).forEach(function (id) {
-        var o = document.createElement("option");
-        o.value = id; o.textContent = GRAPH.concepts[id].label + " — " + GRAPH.concepts[id].name;
-        if (pi.bindings[slot].concept === id) o.selected = true;
-        sel.appendChild(o);
-      });
-      sel.addEventListener("change", function () {
-        pi.bindings[slot].concept = sel.value;
-        // keep the baseline covariate parameter in step with the endpoint parameter
-        if (phraseOid === "SP_CFB_ENDPOINT") {
-          var cov = findPhrase("SP_COVARIATE_BASELINE");
-          if (cov) cov.bindings.parameter.concept = sel.value;
+    var order = LIB.roleDefinitions.order;
+    var active = state.phrases
+      .map(function (pi) { return { pi: pi, def: E.phraseDef(ctx, pi.phrase) }; })
+      .filter(function (x) { return !!x.def; })
+      .sort(function (a, b) { return order.indexOf(a.def.role) - order.indexOf(b.def.role); });
+
+    active.forEach(function (x) {
+      (x.def.placeholders || []).forEach(function (ph) {
+        if (ph.kind === "method_ref") return;   // method is fixed by the template
+        var b = x.pi.bindings[ph.name];
+        if (!b) return;
+
+        var wrap = document.createElement("div"); wrap.className = "fld";
+        var lab = document.createElement("label");
+        var roleLabel = ROLE_LABELS[x.def.role] ? ROLE_LABELS[x.def.role].label : x.def.role;
+        lab.innerHTML = roleLabel + " — {" + ph.name + "}" +
+          ' <span class="roleTag">(' + x.def.oid + ")</span>";
+        wrap.appendChild(lab);
+
+        if (ph.kind === "value") {
+          var co = LIB.configurationOptions[ph.name];
+          var selV = document.createElement("select");
+          (co ? co.values : [b.value]).forEach(function (v) {
+            var o = document.createElement("option");
+            o.value = v; o.textContent = v;
+            if (String(b.value) === String(v)) o.selected = true;
+            selV.appendChild(o);
+          });
+          selV.addEventListener("change", function () { b.value = selV.value; renderAll(); });
+          wrap.appendChild(selV);
+        } else {
+          var sel = document.createElement("select");
+          conceptOptions(ph).forEach(function (id) {
+            var o = document.createElement("option");
+            o.value = id;
+            o.textContent = GRAPH.concepts[id].label + " — " + GRAPH.concepts[id].name;
+            if (b.concept === id) o.selected = true;
+            sel.appendChild(o);
+          });
+          sel.addEventListener("change", function () {
+            b.concept = sel.value;
+            /* Keep a baseline covariate's parameter in step with the endpoint. */
+            if (x.def.role === "endpoint" && ph.name === "parameter") {
+              var cov = findPhrase("SP_COVARIATE_BASELINE");
+              if (cov && cov.bindings.parameter) cov.bindings.parameter.concept = sel.value;
+            }
+            renderAll();
+          });
+          wrap.appendChild(sel);
+
+          if (ph.render_options) {
+            var selR = document.createElement("select");
+            selR.style.marginTop = "4px";
+            ph.render_options.forEach(function (m) {
+              var o = document.createElement("option");
+              o.value = m; o.textContent = "render: " + m;
+              if ((b.render || ph.default_render) === m) o.selected = true;
+              selR.appendChild(o);
+            });
+            selR.addEventListener("change", function () { b.render = selR.value; renderAll(); });
+            wrap.appendChild(selR);
+          }
         }
-        renderAll();
+        mp.appendChild(wrap);
       });
-      wrap.appendChild(lab); wrap.appendChild(sel); mp.appendChild(wrap);
-    }
+    });
 
-    var endpointDef = E.phraseDef(ctx, "SP_CFB_ENDPOINT").placeholders[0];
-    var visitDef = E.phraseDef(ctx, "SP_TIMEPOINT").placeholders[0];
-    var popDef = E.phraseDef(ctx, "SP_POPULATION").placeholders[0];
+    /* Phrases the template allows but the instance omits. */
+    var used = state.phrases.map(function (p) { return p.phrase; });
+    var optional = (tpl.validSmartPhrases || []).filter(function (oid) {
+      return used.indexOf(oid) === -1;
+    });
 
-    conceptField("Endpoint parameter", "SP_CFB_ENDPOINT", "parameter", endpointDef);
-    conceptField("Analysis visit", "SP_TIMEPOINT", "visit", visitDef);
-    conceptField("Population", "SP_POPULATION", "population", popDef);
-
-    // render mode for the endpoint parameter
-    var pi = findPhrase("SP_CFB_ENDPOINT");
-    if (pi) {
-      var wrap = document.createElement("div"); wrap.className = "fld";
-      wrap.innerHTML = '<label>Endpoint render mode <span class="roleTag">(how the concept appears in prose)</span></label>';
-      var sel = document.createElement("select");
-      endpointDef.render_options.forEach(function (m) {
-        var o = document.createElement("option"); o.value = m; o.textContent = m;
-        if ((pi.bindings.parameter.render || endpointDef.default_render) === m) o.selected = true;
-        sel.appendChild(o);
-      });
-      sel.addEventListener("change", function () { pi.bindings.parameter.render = sel.value; renderAll(); });
-      wrap.appendChild(sel); mp.appendChild(wrap);
-    }
-
-    // optional phrases
     var optHead = document.createElement("label");
     optHead.style.cssText = "display:block;font-size:12.5px;font-weight:600;margin:14px 0 6px;";
-    optHead.textContent = "Optional phrases (template T.CFB_ANCOVA allows these)";
+    optHead.textContent = "Phrases template " + tpl.conceptId + " also allows" +
+      (tpl.proposed ? " (proposed template)" : "");
     mp.appendChild(optHead);
 
-    [
-      { oid: "SP_CONFIDENCE_LEVEL", label: "confidence intervals" },
-      { oid: "SP_COVARIATE_BASELINE", label: "baseline covariate" },
-      { oid: "SP_COVARIATE_SITE", label: "site covariate" }
-    ].forEach(function (opt) {
-      var def = E.phraseDef(ctx, opt.oid);
+    if (!optional.length) {
+      var none = document.createElement("p");
+      none.style.cssText = "font-size:12.5px;color:var(--muted);margin:0;";
+      none.textContent = "All permitted phrases are in use.";
+      mp.appendChild(none);
+    }
+
+    optional.forEach(function (oid) {
+      var def = E.phraseDef(ctx, oid);
+      if (!def) return;
       var row = document.createElement("div"); row.className = "togglerow";
-      var cb = document.createElement("input"); cb.type = "checkbox";
-      cb.checked = !!findPhrase(opt.oid);
-      cb.id = "tg_" + opt.oid;
+      var cb = document.createElement("input");
+      cb.type = "checkbox"; cb.checked = false; cb.id = "tg_" + oid;
       cb.addEventListener("change", function () {
-        if (cb.checked) state.phrases.push({ phrase: opt.oid, bindings: defaultBindingsFor(def) });
-        else removePhrase(opt.oid);
+        state.phrases.push({ phrase: oid, bindings: defaultBindingsFor(def) });
         renderAll();
       });
       var lb = document.createElement("label"); lb.htmlFor = cb.id;
-      lb.style.cssText = "font-weight:400;margin:0;"; lb.textContent = opt.label + " (" + opt.oid + ")";
+      lb.style.cssText = "font-weight:400;margin:0;";
+      lb.textContent = def.name + " (" + oid + ")";
       row.appendChild(cb); row.appendChild(lb);
-      if (opt.oid === "SP_CONFIDENCE_LEVEL" && cb.checked) {
-        var piC = findPhrase(opt.oid);
-        var selC = document.createElement("select");
-        LIB.configurationOptions.conf_level.values.forEach(function (v) {
-          var o = document.createElement("option"); o.value = v; o.textContent = v + "%";
-          if (piC.bindings.conf_level.value === v) o.selected = true;
-          selC.appendChild(o);
-        });
-        selC.addEventListener("change", function () { piC.bindings.conf_level.value = selC.value; renderAll(); });
-        row.appendChild(selC);
-      }
       mp.appendChild(row);
     });
   }
+
 
   /* ---------- stop 2: chip editor ---------- */
   function editHTML(rp) {
@@ -589,7 +664,9 @@
         : "";
       return "<div class='editrow'><span style='color:var(--muted)'>{" + ph.name + "}</span> " + control + renderSel + "</div>";
     }).join("");
-    var removable = ["SP_CFB_ENDPOINT", "SP_METHOD_ANCOVA"].indexOf(rp.oid) === -1;
+    /* An analysis must keep an endpoint and a method; everything else is
+       optional. Role-driven so new templates need no edit here. */
+    var removable = ["endpoint", "method"].indexOf(rp.role) === -1;
     return "<h4>" + rp.oid + '<span class="rolebadge">' + (ROLE_LABELS[rp.role] ? ROLE_LABELS[rp.role].label : rp.role) + "</span></h4>" +
       '<div class="tpl">"' + rp.template + '"</div>' + rows +
       "<div class='popact'>" + (removable ? "<button class='danger' data-act='remove'>remove phrase</button> " : "") +
@@ -672,29 +749,54 @@
   function renderReuse() {
     var grid = document.getElementById("reuseGrid");
     grid.innerHTML = "";
-    var baseMv = E.constructModelView(ctx, GRAPH.instances[0]);
-    GRAPH.instances.forEach(function (inst, idx) {
-      var res = E.resolveInstance(ctx, inst, lang);   // prose follows the language; the model rows below stay canonical
-      var mv = E.constructModelView(ctx, inst);
-      var card = document.createElement("div"); card.className = "reuse-card";
-      var rows = mv.sliceKeys.map(function (sk, i) {
-        var baseVal = baseMv.sliceKeys[i].value && baseMv.sliceKeys[i].value.label;
-        var val = sk.value && sk.value.label;
-        var diff = idx > 0 && val !== baseVal;
-        return "<tr><td class='k'>" + sk.dimension + "</td><td class='" + (diff ? "diff" : "") + "'>" + val + "</td></tr>";
-      }).join("");
-      card.innerHTML = "<h3>" + inst.label + "</h3>" +
-        "<span class='tplbadge'>" + inst.template + " · same library template</span>" +
-        "<div class='rsent'>" + res.sentence + "</div>" +
-        "<table>" + rows +
-        "<tr><td class='k'>method</td><td>" + mv.usesMethod.label + " (" + mv.usesMethod.conceptId + ")</td></tr>" +
-        "<tr><td class='k'>model</td><td style='font-family:var(--mono);font-size:12px'>" + mv.resolvedExpression + "</td></tr></table>" +
-        "<div class='cardact'><button class='btn ghost' data-open='" + idx + "'>Open in editor ↑</button></div>";
-      grid.appendChild(card);
+
+    STUDY_KEYS.forEach(function (key) {
+      var gph = STUDY_GRAPHS[key];
+      var sctx = E.ctxOf(LIB, gph, I18N);
+      /* Diff baseline is the first instance OF THIS STUDY. */
+      var baseMv = E.constructModelView(sctx, gph.instances[0]);
+      var tplIds = gph.instances.map(function (i) { return i.template; })
+        .filter(function (v, i, a) { return a.indexOf(v) === i; });
+
+      var head = document.createElement("h3");
+      head.style.cssText = "grid-column:1/-1;margin:16px 0 0;font-size:14px;";
+      head.innerHTML = gph.study.studyId + " <span style='font-weight:400;color:var(--muted)'>— " +
+        gph.instances.length + " analyses, " +
+        (tplIds.length === 1 ? "one template: " : "templates: ") + tplIds.join(", ") +
+        (key === activeStudy ? " · active" : "") + "</span>";
+      grid.appendChild(head);
+
+      gph.instances.forEach(function (inst, idx) {
+        var res = E.resolveInstance(sctx, inst, lang);   // prose follows the language; model rows stay canonical
+        var mv = E.constructModelView(sctx, inst);
+        var itpl = E.templateDef(sctx, inst.template);
+        var card = document.createElement("div"); card.className = "reuse-card";
+        var rows = mv.sliceKeys.map(function (sk, i) {
+          var baseSk = baseMv.sliceKeys[i];
+          var baseVal = baseSk && baseSk.value && baseSk.value.label;
+          var val = sk.value && sk.value.label;
+          var diff = idx > 0 && val !== baseVal;
+          return "<tr><td class='k'>" + sk.dimension + "</td><td class='" + (diff ? "diff" : "") + "'>" + val + "</td></tr>";
+        }).join("");
+        card.innerHTML = "<h3>" + inst.label + "</h3>" +
+          "<span class='tplbadge'>" + inst.template + " · same library template" +
+          (itpl && itpl.proposed ? " · proposed" : "") + "</span>" +
+          "<div class='rsent'>" + res.sentence + "</div>" +
+          "<table>" + rows +
+          "<tr><td class='k'>method</td><td>" + mv.usesMethod.label + " (" + mv.usesMethod.conceptId + ")</td></tr>" +
+          "<tr><td class='k'>model</td><td style='font-family:var(--mono);font-size:12px'>" + mv.resolvedExpression + "</td></tr></table>" +
+          "<div class='cardact'><button class='btn ghost' data-open-study='" + key +
+          "' data-open='" + idx + "'>Open in editor ↑</button></div>";
+        grid.appendChild(card);
+      });
     });
+
     grid.querySelectorAll("button[data-open]").forEach(function (b) {
       b.addEventListener("click", function () {
-        state = clone(GRAPH.instances[Number(b.getAttribute("data-open"))]);
+        var key = b.getAttribute("data-open-study");
+        if (key !== activeStudy) switchStudy(key);
+        state = clone(STUDY_GRAPHS[key].instances[Number(b.getAttribute("data-open"))]);
+        srcDirty = false;
         renderAll();
         document.getElementById("stop2").scrollIntoView({ behavior: "smooth" });
       });
@@ -719,9 +821,12 @@
       var c = GRAPH.concepts[id];
       push(c.kind + " — " + c.label, id, c.iri, c.iri_status);
     });
-    var mg = GRAPH.methodGrounding["M.ANCOVA"];
-    push("Method — ANCOVA", "M.ANCOVA", mg.iri, mg.iri_status);
-    push("Method — ANCOVA (analysis def)", "M.ANCOVA", mg.ars, mg.ars_status);
+    /* Every method the active study grounds, not just ANCOVA. */
+    Object.keys(GRAPH.methodGrounding).forEach(function (mid) {
+      var mg = GRAPH.methodGrounding[mid];
+      push("Method — " + mg.label, mid, mg.iri, mg.iri_status);
+      push("Method — " + mg.label + " (analysis def)", mid, mg.ars, mg.ars_status);
+    });
     GRAPH.instances.forEach(function (inst) {
       push("Analysis instance — " + inst.label, inst.id, inst.iri, "illustrative");
       push("Objective (" + inst.id + ")", "—", inst.usdmObjective.iri, inst.usdmObjective.iri_status);
@@ -730,11 +835,20 @@
     document.getElementById("idTable").innerHTML =
       "<tr><th>Entity</th><th>AC/DC id</th><th>IRI</th><th>Grounds into</th><th>Status</th></tr>" + rows.join("");
     var prov = LIB.provenance;
+    /* Proposed additions live on the MERGED library that ctxOf builds, not on
+       the raw generated global — read them from the context. */
+    var proposed = ctx.lib.proposedProvenance;
     document.getElementById("provenance").innerHTML =
       "<b>Provenance:</b> phrase templates, transformation templates and the method definition are a verbatim " +
       "subset of <code>" + prov.files.join("</code>, <code>") + "</code> at <code>" + prov.source_branch +
       "@" + prov.source_commit + "</code> (Transformation Library v" + LIB.library_version + "). " +
-      "The study layer (concepts, instances, trace tiers) is illustrative.";
+      "The study layer (concepts, instances, trace tiers) is illustrative." +
+      (proposed
+        ? "<br><br><b>Proposed additions:</b> authored for " + proposed.authored_for +
+          " and <em>not</em> in <code>" + proposed.not_in + "</code>. " +
+          proposed.rationale +
+          " These are badged <span class='tplbadge'>proposed</span> wherever they appear."
+        : "");
   }
 
   /* ---------- render everything from the one state ---------- */
@@ -786,6 +900,7 @@
     links.forEach(function (a) { a.classList.toggle("active", a.getAttribute("href") === "#" + current); });
   });
 
+  buildStudySwitch();
   renderAll();
 })();
 </script>
