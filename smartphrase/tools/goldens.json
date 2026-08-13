@@ -1,0 +1,1353 @@
+{
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/sentence/en": "Change from baseline in Alzheimer's Disease Assessment Scale - Cognitive Subscale (11 items) (ADAS-Cog(11)) at Week 24 in the efficacy (intent-to-treat) population comparing treatment groups using ANCOVA with 95% confidence intervals adjusting for baseline ADAS-Cog(11) will be assessed as the primary analysis.",
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/sentence/fr": "La variation de l'échelle d'évaluation de la maladie d'Alzheimer – sous-échelle cognitive (11 items) (ADAS-Cog(11)) par rapport à la valeur initiale à la semaine 24 dans la population d'efficacité (intention de traiter) en comparant les groupes de traitement au moyen d'une ANCOVA avec des intervalles de confiance à 95 % avec ajustement sur la valeur initiale du score ADAS-Cog(11) sera évaluée comme analyse principale.",
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/sentence/de": "Die Veränderung von Alzheimer's Disease Assessment Scale – kognitive Subskala (11 Items) (ADAS-Cog(11)) gegenüber dem Ausgangswert in Woche 24 in der Wirksamkeitspopulation (Intention-to-Treat) wird im Vergleich der Behandlungsgruppen mittels ANCOVA mit 95%-Konfidenzintervallen adjustiert für den Ausgangswert von ADAS-Cog(11) als primäre Analyse untersucht.",
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/modelView": {
+    "instance": "AC.PRIMARY.ADASCOG",
+    "iri": "acdc:instance/AC-PRIMARY-ADASCOG",
+    "template": {
+      "conceptId": "T.CFB_ANCOVA",
+      "label": "Change From Baseline ANCOVA",
+      "transformationType": "analysis",
+      "copiedFrom": "Transformation Library v0.7 (methods_02)"
+    },
+    "usesMethod": {
+      "conceptId": "M.ANCOVA",
+      "label": "ANCOVA",
+      "iri": "stato:STATO_0000176",
+      "ars": "ars:method/MTH-ANCOVA-CFB",
+      "genericExpression": "<response> ~ <covariate>* + <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)* + (<covariate>:<fixed_effect>)*"
+    },
+    "configurationValues": [
+      {
+        "configurationName": "ss_type",
+        "value": "III",
+        "from": "template"
+      },
+      {
+        "configurationName": "alpha",
+        "value": "0.050000000000000044",
+        "from": "SP_CONFIDENCE_LEVEL"
+      }
+    ],
+    "sliceKeys": [
+      {
+        "dimension": "ParameterDimension",
+        "source": "biomedicalConcept",
+        "value": {
+          "concept": "PARAM.ADASCOG11",
+          "label": "ADAS-Cog(11)",
+          "iri": "ncit:C168804"
+        }
+      },
+      {
+        "dimension": "VisitDimension",
+        "source": "visit",
+        "value": {
+          "concept": "VISIT.WK24",
+          "label": "Week 24",
+          "iri": "usdm:ScheduledActivityInstance/SAI-WK24"
+        }
+      },
+      {
+        "dimension": "Population",
+        "source": "population",
+        "value": {
+          "concept": "POP.EFFICACY",
+          "label": "efficacy (intent-to-treat)",
+          "iri": "usdm:AnalysisPopulation/POP-EFF"
+        }
+      }
+    ],
+    "slices": [
+      {
+        "name": "endpoint",
+        "constraints": [
+          {
+            "dimension": "ParameterDimension",
+            "value": "ADAS-Cog(11)"
+          },
+          {
+            "dimension": "VisitDimension",
+            "value": "Week 24"
+          },
+          {
+            "dimension": "Population",
+            "value": "efficacy (intent-to-treat)"
+          }
+        ]
+      },
+      {
+        "name": "parameter_baseline",
+        "constraints": [
+          {
+            "dimension": "ParameterDimension",
+            "value": "ADAS-Cog(11)"
+          },
+          {
+            "dimension": "VisitDimension",
+            "value": "Baseline"
+          },
+          {
+            "dimension": "Population",
+            "value": "efficacy (intent-to-treat)"
+          }
+        ]
+      }
+    ],
+    "outputMeasures": [
+      {
+        "output": "ls_means",
+        "concept": "LSMeans"
+      },
+      {
+        "output": "contrasts_t",
+        "concept": "Contrasts"
+      },
+      {
+        "output": "type3_tests_f",
+        "concept": "Type3Tests"
+      },
+      {
+        "output": "parameter_estimates_linear",
+        "concept": "ParameterEstimates"
+      },
+      {
+        "output": "fit_statistics_linear",
+        "concept": "FitStatistics"
+      }
+    ],
+    "resolvedExpression": "CHG ~ TRTP + BASE",
+    "usdmObjective": {
+      "iri": "usdm:Objective/OBJ-PRIMARY-1",
+      "iri_status": "illustrative",
+      "text": "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
+    },
+    "arsAnalysis": {
+      "iri": "ars:analysis/AN-3.02.01",
+      "iri_status": "illustrative"
+    },
+    "validSmartPhrases": [
+      "SP_CFB_ENDPOINT",
+      "SP_PARAMETER",
+      "SP_TIMEPOINT",
+      "SP_POPULATION",
+      "SP_GROUPING",
+      "SP_METHOD_ANCOVA",
+      "SP_CONFIDENCE_LEVEL",
+      "SP_COVARIATE_BASELINE",
+      "SP_COVARIATE_SITE"
+    ]
+  },
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/macro": "<acdc:macro id=\"analysis\" ref=\"T.CFB_ANCOVA\" instance=\"AC.PRIMARY.ADASCOG\">\n  <acdc:macro id=\"phrase\" ref=\"SP_CFB_ENDPOINT\" instance=\"p1\" parameter=\"PARAM.ADASCOG11\" render=\"parameter:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_TIMEPOINT\" instance=\"p2\" visit=\"VISIT.WK24\" render=\"visit:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p3\" population=\"POP.EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p4\" treatment=\"TRT.ALL\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_ANCOVA\" instance=\"p5\" method=\"M.ANCOVA\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p6\" conf_level=\"95\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_COVARIATE_BASELINE\" instance=\"p7\" parameter=\"PARAM.ADASCOG11\" render=\"parameter:label\"/>\n</acdc:macro>",
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/jsonld": {
+    "@context": {
+      "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "acdc": "https://w3id.org/cdisc/ac-dc/",
+      "usdm": "https://ddf.cdisc.org/usdm/v4/",
+      "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
+      "stato": "http://purl.obolibrary.org/obo/",
+      "ncit": "http://purl.obolibrary.org/obo/NCIT_",
+      "qb": "http://purl.org/linked-data/cube#"
+    },
+    "@id": "acdc:instance/AC-PRIMARY-ADASCOG",
+    "@type": "acdc:AnalysisConcept",
+    "rdfs:label": "Primary efficacy analysis",
+    "acdc:instantiates": {
+      "@id": "acdc:template/T.CFB_ANCOVA"
+    },
+    "acdc:usesMethod": {
+      "@id": "ars:method/MTH-ANCOVA-CFB",
+      "rdfs:label": "ANCOVA",
+      "acdc:alignedTo": {
+        "@id": "stato:STATO_0000176"
+      }
+    },
+    "usdm:objective": {
+      "@id": "usdm:Objective/OBJ-PRIMARY-1",
+      "rdfs:comment": "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
+    },
+    "ars:analysis": {
+      "@id": "ars:analysis/AN-3.02.01"
+    },
+    "sp:hasPhraseInstance": [
+      {
+        "@id": "#p1",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CFB_ENDPOINT",
+        "sp:role": "endpoint",
+        "sp:binding": [
+          {
+            "sp:slot": "parameter",
+            "@id": "ncit:C168804",
+            "rdfs:label": "ADAS-Cog(11)",
+            "sp:render": "name_with_label"
+          }
+        ]
+      },
+      {
+        "@id": "#p2",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_TIMEPOINT",
+        "sp:role": "timepoint",
+        "sp:binding": [
+          {
+            "sp:slot": "visit",
+            "@id": "usdm:ScheduledActivityInstance/SAI-WK24",
+            "rdfs:label": "Week 24",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p3",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_POPULATION",
+        "sp:role": "population",
+        "sp:binding": [
+          {
+            "sp:slot": "population",
+            "@id": "usdm:AnalysisPopulation/POP-EFF",
+            "rdfs:label": "EFF",
+            "sp:render": "name"
+          }
+        ]
+      },
+      {
+        "@id": "#p4",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_GROUPING",
+        "sp:role": "grouping",
+        "sp:binding": [
+          {
+            "sp:slot": "treatment",
+            "@id": "usdm:StudyArm/ARM-SET-ALL",
+            "rdfs:label": "treatment",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p5",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_METHOD_ANCOVA",
+        "sp:role": "method",
+        "sp:binding": [
+          {
+            "sp:slot": "method",
+            "@id": "ars:method/MTH-ANCOVA-CFB",
+            "acdc:alignedTo": {
+              "@id": "stato:STATO_0000176"
+            }
+          }
+        ]
+      },
+      {
+        "@id": "#p6",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CONFIDENCE_LEVEL",
+        "sp:role": "method_qualifier",
+        "sp:binding": [
+          {
+            "sp:slot": "conf_level",
+            "sp:value": "95"
+          }
+        ]
+      },
+      {
+        "@id": "#p7",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_COVARIATE_BASELINE",
+        "sp:role": "covariate",
+        "sp:binding": [
+          {
+            "sp:slot": "parameter",
+            "@id": "ncit:C168804",
+            "rdfs:label": "ADAS-Cog(11)",
+            "sp:render": "label"
+          }
+        ]
+      }
+    ],
+    "sp:resolvesTo": [
+      {
+        "@value": "Change from baseline in Alzheimer's Disease Assessment Scale - Cognitive Subscale (11 items) (ADAS-Cog(11)) at Week 24 in the efficacy (intent-to-treat) population comparing treatment groups using ANCOVA with 95% confidence intervals adjusting for baseline ADAS-Cog(11) will be assessed as the primary analysis.",
+        "@language": "en"
+      },
+      {
+        "@value": "La variation de l'échelle d'évaluation de la maladie d'Alzheimer – sous-échelle cognitive (11 items) (ADAS-Cog(11)) par rapport à la valeur initiale à la semaine 24 dans la population d'efficacité (intention de traiter) en comparant les groupes de traitement au moyen d'une ANCOVA avec des intervalles de confiance à 95 % avec ajustement sur la valeur initiale du score ADAS-Cog(11) sera évaluée comme analyse principale.",
+        "@language": "fr"
+      },
+      {
+        "@value": "Die Veränderung von Alzheimer's Disease Assessment Scale – kognitive Subskala (11 Items) (ADAS-Cog(11)) gegenüber dem Ausgangswert in Woche 24 in der Wirksamkeitspopulation (Intention-to-Treat) wird im Vergleich der Behandlungsgruppen mittels ANCOVA mit 95%-Konfidenzintervallen adjustiert für den Ausgangswert von ADAS-Cog(11) als primäre Analyse untersucht.",
+        "@language": "de"
+      }
+    ]
+  },
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/endpoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.CHG",
+      "label": "Change from Baseline",
+      "iri": "acdc:dc/ChangeFromBaseline",
+      "iri_status": "illustrative",
+      "note": "Derived analysis value: post-baseline value minus baseline value. Produced by library derivation T.ChangeFromBaseline."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "CHG",
+      "label": "Change from Baseline",
+      "dataStructure": "BDS",
+      "note": "BDS analysis-value variable, ADaMIG v1.3."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADQSADAS.CHG",
+      "label": "CHG in ADQSADAS",
+      "whereClause": "PARAMCD = 'ACTOT' AND AVISITN = 24",
+      "note": "ADAS-Cog(11), Week 24 record."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADQSADAS",
+      "label": "ADaM ADAS-Cog analysis dataset",
+      "file": "adqsadas.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ],
+      "note": "One record per subject per parameter per analysis visit."
+    }
+  ],
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/covariate": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.BASE",
+      "label": "Baseline Value",
+      "iri": "acdc:dc/BaselineValue",
+      "iri_status": "illustrative",
+      "note": "Reference value at the baseline visit. Produced by library derivation T.BaselineSelection."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "BASE",
+      "label": "Baseline Value",
+      "dataStructure": "BDS"
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADQSADAS.BASE",
+      "label": "BASE in ADQSADAS",
+      "whereClause": "PARAMCD = 'ACTOT'",
+      "note": "Baseline ADAS-Cog(11)."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADQSADAS",
+      "label": "ADaM ADAS-Cog analysis dataset",
+      "file": "adqsadas.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/timepoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.AVISIT",
+      "label": "Analysis Visit",
+      "iri": "acdc:dc/AnalysisVisit",
+      "iri_status": "illustrative"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "AVISIT",
+      "label": "Analysis Visit",
+      "dataStructure": "BDS",
+      "note": "Paired with numeric AVISITN for sorting."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADQSADAS.AVISIT",
+      "label": "AVISIT in ADQSADAS",
+      "whereClause": "AVISITN = 24",
+      "note": "Decodes to 'Week 24'."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADQSADAS",
+      "label": "ADaM ADAS-Cog analysis dataset",
+      "file": "adqsadas.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/grouping": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TRT",
+      "label": "Planned Treatment",
+      "iri": "acdc:dc/PlannedTreatment",
+      "iri_status": "illustrative",
+      "usdm": "usdm:StudyArm"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "TRTP",
+      "label": "Planned Treatment",
+      "dataStructure": "ADSL",
+      "note": "Subject-level treatment assignment."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.TRTP",
+      "label": "TRTP in ADSL",
+      "note": "Placebo / Xanomeline Low Dose / Xanomeline High Dose."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ],
+      "note": "One record per subject."
+    }
+  ],
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/population": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.POP",
+      "label": "Analysis Population",
+      "iri": "acdc:dc/AnalysisPopulation",
+      "iri_status": "illustrative",
+      "usdm": "usdm:AnalysisPopulation"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "ITTFL",
+      "label": "Population Flag",
+      "dataStructure": "ADSL",
+      "note": "Population indicator variable."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.ITTFL",
+      "label": "ITTFL in ADSL",
+      "whereClause": "ITTFL = 'Y'",
+      "note": "Subjects in the efficacy (intent-to-treat) analysis set."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.SEC.NPIX/sentence/en": "Change from baseline in Neuropsychiatric Inventory - Revised, mean domain total score (NPI-X) at Week 24 in the efficacy (intent-to-treat) population comparing treatment groups using ANCOVA adjusting for baseline NPI-X will be assessed as a secondary analysis.",
+  "CDISCPILOT01/AC.SEC.NPIX/sentence/fr": "La variation de l'inventaire neuropsychiatrique révisé, score total moyen des domaines (NPI-X) par rapport à la valeur initiale à la semaine 24 dans la population d'efficacité (intention de traiter) en comparant les groupes de traitement au moyen d'une ANCOVA avec ajustement sur la valeur initiale du score NPI-X sera évaluée comme une analyse secondaire.",
+  "CDISCPILOT01/AC.SEC.NPIX/sentence/de": "Die Veränderung von Neuropsychiatrisches Inventar – revidiert, mittlerer Domänen-Gesamtscore (NPI-X) gegenüber dem Ausgangswert in Woche 24 in der Wirksamkeitspopulation (Intention-to-Treat) wird im Vergleich der Behandlungsgruppen mittels ANCOVA adjustiert für den Ausgangswert von NPI-X als sekundäre Analyse untersucht.",
+  "CDISCPILOT01/AC.SEC.NPIX/modelView": {
+    "instance": "AC.SEC.NPIX",
+    "iri": "acdc:instance/AC-SEC-NPIX",
+    "template": {
+      "conceptId": "T.CFB_ANCOVA",
+      "label": "Change From Baseline ANCOVA",
+      "transformationType": "analysis",
+      "copiedFrom": "Transformation Library v0.7 (methods_02)"
+    },
+    "usesMethod": {
+      "conceptId": "M.ANCOVA",
+      "label": "ANCOVA",
+      "iri": "stato:STATO_0000176",
+      "ars": "ars:method/MTH-ANCOVA-CFB",
+      "genericExpression": "<response> ~ <covariate>* + <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)* + (<covariate>:<fixed_effect>)*"
+    },
+    "configurationValues": [
+      {
+        "configurationName": "ss_type",
+        "value": "III",
+        "from": "template"
+      }
+    ],
+    "sliceKeys": [
+      {
+        "dimension": "ParameterDimension",
+        "source": "biomedicalConcept",
+        "value": {
+          "concept": "PARAM.NPIX",
+          "label": "NPI-X",
+          "iri": "acdc:param/NPIX"
+        }
+      },
+      {
+        "dimension": "VisitDimension",
+        "source": "visit",
+        "value": {
+          "concept": "VISIT.WK24",
+          "label": "Week 24",
+          "iri": "usdm:ScheduledActivityInstance/SAI-WK24"
+        }
+      },
+      {
+        "dimension": "Population",
+        "source": "population",
+        "value": {
+          "concept": "POP.EFFICACY",
+          "label": "efficacy (intent-to-treat)",
+          "iri": "usdm:AnalysisPopulation/POP-EFF"
+        }
+      }
+    ],
+    "slices": [
+      {
+        "name": "endpoint",
+        "constraints": [
+          {
+            "dimension": "ParameterDimension",
+            "value": "NPI-X"
+          },
+          {
+            "dimension": "VisitDimension",
+            "value": "Week 24"
+          },
+          {
+            "dimension": "Population",
+            "value": "efficacy (intent-to-treat)"
+          }
+        ]
+      },
+      {
+        "name": "parameter_baseline",
+        "constraints": [
+          {
+            "dimension": "ParameterDimension",
+            "value": "NPI-X"
+          },
+          {
+            "dimension": "VisitDimension",
+            "value": "Baseline"
+          },
+          {
+            "dimension": "Population",
+            "value": "efficacy (intent-to-treat)"
+          }
+        ]
+      }
+    ],
+    "outputMeasures": [
+      {
+        "output": "ls_means",
+        "concept": "LSMeans"
+      },
+      {
+        "output": "contrasts_t",
+        "concept": "Contrasts"
+      },
+      {
+        "output": "type3_tests_f",
+        "concept": "Type3Tests"
+      },
+      {
+        "output": "parameter_estimates_linear",
+        "concept": "ParameterEstimates"
+      },
+      {
+        "output": "fit_statistics_linear",
+        "concept": "FitStatistics"
+      }
+    ],
+    "resolvedExpression": "CHG ~ TRTP + BASE",
+    "usdmObjective": {
+      "iri": "usdm:Objective/OBJ-SECONDARY-1",
+      "iri_status": "illustrative",
+      "text": "To evaluate the effect of xanomeline TTS on behavioural disturbance"
+    },
+    "arsAnalysis": {
+      "iri": "ars:analysis/AN-3.03.01",
+      "iri_status": "illustrative"
+    },
+    "validSmartPhrases": [
+      "SP_CFB_ENDPOINT",
+      "SP_PARAMETER",
+      "SP_TIMEPOINT",
+      "SP_POPULATION",
+      "SP_GROUPING",
+      "SP_METHOD_ANCOVA",
+      "SP_CONFIDENCE_LEVEL",
+      "SP_COVARIATE_BASELINE",
+      "SP_COVARIATE_SITE"
+    ]
+  },
+  "CDISCPILOT01/AC.SEC.NPIX/macro": "<acdc:macro id=\"analysis\" ref=\"T.CFB_ANCOVA\" instance=\"AC.SEC.NPIX\">\n  <acdc:macro id=\"phrase\" ref=\"SP_CFB_ENDPOINT\" instance=\"p1\" parameter=\"PARAM.NPIX\" render=\"parameter:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_TIMEPOINT\" instance=\"p2\" visit=\"VISIT.WK24\" render=\"visit:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p3\" population=\"POP.EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p4\" treatment=\"TRT.ALL\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_ANCOVA\" instance=\"p5\" method=\"M.ANCOVA\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_COVARIATE_BASELINE\" instance=\"p6\" parameter=\"PARAM.NPIX\" render=\"parameter:label\"/>\n</acdc:macro>",
+  "CDISCPILOT01/AC.SEC.NPIX/jsonld": {
+    "@context": {
+      "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "acdc": "https://w3id.org/cdisc/ac-dc/",
+      "usdm": "https://ddf.cdisc.org/usdm/v4/",
+      "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
+      "stato": "http://purl.obolibrary.org/obo/",
+      "ncit": "http://purl.obolibrary.org/obo/NCIT_",
+      "qb": "http://purl.org/linked-data/cube#"
+    },
+    "@id": "acdc:instance/AC-SEC-NPIX",
+    "@type": "acdc:AnalysisConcept",
+    "rdfs:label": "Secondary efficacy analysis — behaviour",
+    "acdc:instantiates": {
+      "@id": "acdc:template/T.CFB_ANCOVA"
+    },
+    "acdc:usesMethod": {
+      "@id": "ars:method/MTH-ANCOVA-CFB",
+      "rdfs:label": "ANCOVA",
+      "acdc:alignedTo": {
+        "@id": "stato:STATO_0000176"
+      }
+    },
+    "usdm:objective": {
+      "@id": "usdm:Objective/OBJ-SECONDARY-1",
+      "rdfs:comment": "To evaluate the effect of xanomeline TTS on behavioural disturbance"
+    },
+    "ars:analysis": {
+      "@id": "ars:analysis/AN-3.03.01"
+    },
+    "sp:hasPhraseInstance": [
+      {
+        "@id": "#p1",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CFB_ENDPOINT",
+        "sp:role": "endpoint",
+        "sp:binding": [
+          {
+            "sp:slot": "parameter",
+            "@id": "acdc:param/NPIX",
+            "rdfs:label": "NPI-X",
+            "sp:render": "name_with_label"
+          }
+        ]
+      },
+      {
+        "@id": "#p2",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_TIMEPOINT",
+        "sp:role": "timepoint",
+        "sp:binding": [
+          {
+            "sp:slot": "visit",
+            "@id": "usdm:ScheduledActivityInstance/SAI-WK24",
+            "rdfs:label": "Week 24",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p3",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_POPULATION",
+        "sp:role": "population",
+        "sp:binding": [
+          {
+            "sp:slot": "population",
+            "@id": "usdm:AnalysisPopulation/POP-EFF",
+            "rdfs:label": "EFF",
+            "sp:render": "name"
+          }
+        ]
+      },
+      {
+        "@id": "#p4",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_GROUPING",
+        "sp:role": "grouping",
+        "sp:binding": [
+          {
+            "sp:slot": "treatment",
+            "@id": "usdm:StudyArm/ARM-SET-ALL",
+            "rdfs:label": "treatment",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p5",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_METHOD_ANCOVA",
+        "sp:role": "method",
+        "sp:binding": [
+          {
+            "sp:slot": "method",
+            "@id": "ars:method/MTH-ANCOVA-CFB",
+            "acdc:alignedTo": {
+              "@id": "stato:STATO_0000176"
+            }
+          }
+        ]
+      },
+      {
+        "@id": "#p6",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_COVARIATE_BASELINE",
+        "sp:role": "covariate",
+        "sp:binding": [
+          {
+            "sp:slot": "parameter",
+            "@id": "acdc:param/NPIX",
+            "rdfs:label": "NPI-X",
+            "sp:render": "label"
+          }
+        ]
+      }
+    ],
+    "sp:resolvesTo": [
+      {
+        "@value": "Change from baseline in Neuropsychiatric Inventory - Revised, mean domain total score (NPI-X) at Week 24 in the efficacy (intent-to-treat) population comparing treatment groups using ANCOVA adjusting for baseline NPI-X will be assessed as a secondary analysis.",
+        "@language": "en"
+      },
+      {
+        "@value": "La variation de l'inventaire neuropsychiatrique révisé, score total moyen des domaines (NPI-X) par rapport à la valeur initiale à la semaine 24 dans la population d'efficacité (intention de traiter) en comparant les groupes de traitement au moyen d'une ANCOVA avec ajustement sur la valeur initiale du score NPI-X sera évaluée comme une analyse secondaire.",
+        "@language": "fr"
+      },
+      {
+        "@value": "Die Veränderung von Neuropsychiatrisches Inventar – revidiert, mittlerer Domänen-Gesamtscore (NPI-X) gegenüber dem Ausgangswert in Woche 24 in der Wirksamkeitspopulation (Intention-to-Treat) wird im Vergleich der Behandlungsgruppen mittels ANCOVA adjustiert für den Ausgangswert von NPI-X als sekundäre Analyse untersucht.",
+        "@language": "de"
+      }
+    ]
+  },
+  "CDISCPILOT01/AC.SEC.NPIX/trace/endpoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.CHG",
+      "label": "Change from Baseline",
+      "iri": "acdc:dc/ChangeFromBaseline",
+      "iri_status": "illustrative",
+      "note": "Derived analysis value: post-baseline value minus baseline value. Produced by library derivation T.ChangeFromBaseline."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "CHG",
+      "label": "Change from Baseline",
+      "dataStructure": "BDS",
+      "note": "BDS analysis-value variable, ADaMIG v1.3."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADNPIX.CHG",
+      "label": "CHG in ADNPIX",
+      "whereClause": "PARAMCD = 'NPTOT' AND AVISITN = 24",
+      "note": "NPI-X, Week 24 record."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADNPIX",
+      "label": "ADaM NPI-X analysis dataset",
+      "file": "adnpix.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ],
+      "note": "One record per subject per parameter per analysis visit."
+    }
+  ],
+  "CDISCPILOT01/AC.SEC.NPIX/trace/covariate": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.BASE",
+      "label": "Baseline Value",
+      "iri": "acdc:dc/BaselineValue",
+      "iri_status": "illustrative",
+      "note": "Reference value at the baseline visit. Produced by library derivation T.BaselineSelection."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "BASE",
+      "label": "Baseline Value",
+      "dataStructure": "BDS"
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADNPIX.BASE",
+      "label": "BASE in ADNPIX",
+      "whereClause": "PARAMCD = 'NPTOT'",
+      "note": "Baseline NPI-X."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADNPIX",
+      "label": "ADaM NPI-X analysis dataset",
+      "file": "adnpix.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.SEC.NPIX/trace/timepoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.AVISIT",
+      "label": "Analysis Visit",
+      "iri": "acdc:dc/AnalysisVisit",
+      "iri_status": "illustrative"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "AVISIT",
+      "label": "Analysis Visit",
+      "dataStructure": "BDS",
+      "note": "Paired with numeric AVISITN for sorting."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADNPIX.AVISIT",
+      "label": "AVISIT in ADNPIX",
+      "whereClause": "AVISITN = 24",
+      "note": "Decodes to 'Week 24'."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADNPIX",
+      "label": "ADaM NPI-X analysis dataset",
+      "file": "adnpix.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.SEC.NPIX/trace/grouping": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TRT",
+      "label": "Planned Treatment",
+      "iri": "acdc:dc/PlannedTreatment",
+      "iri_status": "illustrative",
+      "usdm": "usdm:StudyArm"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "TRTP",
+      "label": "Planned Treatment",
+      "dataStructure": "ADSL",
+      "note": "Subject-level treatment assignment."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.TRTP",
+      "label": "TRTP in ADSL",
+      "note": "Placebo / Xanomeline Low Dose / Xanomeline High Dose."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ],
+      "note": "One record per subject."
+    }
+  ],
+  "CDISCPILOT01/AC.SEC.NPIX/trace/population": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.POP",
+      "label": "Analysis Population",
+      "iri": "acdc:dc/AnalysisPopulation",
+      "iri_status": "illustrative",
+      "usdm": "usdm:AnalysisPopulation"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "ITTFL",
+      "label": "Population Flag",
+      "dataStructure": "ADSL",
+      "note": "Population indicator variable."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.ITTFL",
+      "label": "ITTFL in ADSL",
+      "whereClause": "ITTFL = 'Y'",
+      "note": "Subjects in the efficacy (intent-to-treat) analysis set."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/sentence/en": "Change from baseline in Alzheimer's Disease Assessment Scale - Cognitive Subscale (11 items) (ADAS-Cog(11)) at Week 16 in the efficacy (intent-to-treat) population comparing treatment groups using ANCOVA with 95% confidence intervals adjusting for baseline ADAS-Cog(11) will be assessed as a supporting analysis.",
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/sentence/fr": "La variation de l'échelle d'évaluation de la maladie d'Alzheimer – sous-échelle cognitive (11 items) (ADAS-Cog(11)) par rapport à la valeur initiale à la semaine 16 dans la population d'efficacité (intention de traiter) en comparant les groupes de traitement au moyen d'une ANCOVA avec des intervalles de confiance à 95 % avec ajustement sur la valeur initiale du score ADAS-Cog(11) sera évaluée comme une analyse complémentaire.",
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/sentence/de": "Die Veränderung von Alzheimer's Disease Assessment Scale – kognitive Subskala (11 Items) (ADAS-Cog(11)) gegenüber dem Ausgangswert in Woche 16 in der Wirksamkeitspopulation (Intention-to-Treat) wird im Vergleich der Behandlungsgruppen mittels ANCOVA mit 95%-Konfidenzintervallen adjustiert für den Ausgangswert von ADAS-Cog(11) als unterstützende Analyse untersucht.",
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/modelView": {
+    "instance": "AC.SUPP.ADASCOG.WK16",
+    "iri": "acdc:instance/AC-SUPP-ADASCOG-WK16",
+    "template": {
+      "conceptId": "T.CFB_ANCOVA",
+      "label": "Change From Baseline ANCOVA",
+      "transformationType": "analysis",
+      "copiedFrom": "Transformation Library v0.7 (methods_02)"
+    },
+    "usesMethod": {
+      "conceptId": "M.ANCOVA",
+      "label": "ANCOVA",
+      "iri": "stato:STATO_0000176",
+      "ars": "ars:method/MTH-ANCOVA-CFB",
+      "genericExpression": "<response> ~ <covariate>* + <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)* + (<covariate>:<fixed_effect>)*"
+    },
+    "configurationValues": [
+      {
+        "configurationName": "ss_type",
+        "value": "III",
+        "from": "template"
+      },
+      {
+        "configurationName": "alpha",
+        "value": "0.050000000000000044",
+        "from": "SP_CONFIDENCE_LEVEL"
+      }
+    ],
+    "sliceKeys": [
+      {
+        "dimension": "ParameterDimension",
+        "source": "biomedicalConcept",
+        "value": {
+          "concept": "PARAM.ADASCOG11",
+          "label": "ADAS-Cog(11)",
+          "iri": "ncit:C168804"
+        }
+      },
+      {
+        "dimension": "VisitDimension",
+        "source": "visit",
+        "value": {
+          "concept": "VISIT.WK16",
+          "label": "Week 16",
+          "iri": "usdm:ScheduledActivityInstance/SAI-WK16"
+        }
+      },
+      {
+        "dimension": "Population",
+        "source": "population",
+        "value": {
+          "concept": "POP.EFFICACY",
+          "label": "efficacy (intent-to-treat)",
+          "iri": "usdm:AnalysisPopulation/POP-EFF"
+        }
+      }
+    ],
+    "slices": [
+      {
+        "name": "endpoint",
+        "constraints": [
+          {
+            "dimension": "ParameterDimension",
+            "value": "ADAS-Cog(11)"
+          },
+          {
+            "dimension": "VisitDimension",
+            "value": "Week 16"
+          },
+          {
+            "dimension": "Population",
+            "value": "efficacy (intent-to-treat)"
+          }
+        ]
+      },
+      {
+        "name": "parameter_baseline",
+        "constraints": [
+          {
+            "dimension": "ParameterDimension",
+            "value": "ADAS-Cog(11)"
+          },
+          {
+            "dimension": "VisitDimension",
+            "value": "Baseline"
+          },
+          {
+            "dimension": "Population",
+            "value": "efficacy (intent-to-treat)"
+          }
+        ]
+      }
+    ],
+    "outputMeasures": [
+      {
+        "output": "ls_means",
+        "concept": "LSMeans"
+      },
+      {
+        "output": "contrasts_t",
+        "concept": "Contrasts"
+      },
+      {
+        "output": "type3_tests_f",
+        "concept": "Type3Tests"
+      },
+      {
+        "output": "parameter_estimates_linear",
+        "concept": "ParameterEstimates"
+      },
+      {
+        "output": "fit_statistics_linear",
+        "concept": "FitStatistics"
+      }
+    ],
+    "resolvedExpression": "CHG ~ TRTP + BASE",
+    "usdmObjective": {
+      "iri": "usdm:Objective/OBJ-PRIMARY-1",
+      "iri_status": "illustrative",
+      "text": "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
+    },
+    "arsAnalysis": {
+      "iri": "ars:analysis/AN-3.02.02",
+      "iri_status": "illustrative"
+    },
+    "validSmartPhrases": [
+      "SP_CFB_ENDPOINT",
+      "SP_PARAMETER",
+      "SP_TIMEPOINT",
+      "SP_POPULATION",
+      "SP_GROUPING",
+      "SP_METHOD_ANCOVA",
+      "SP_CONFIDENCE_LEVEL",
+      "SP_COVARIATE_BASELINE",
+      "SP_COVARIATE_SITE"
+    ]
+  },
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/macro": "<acdc:macro id=\"analysis\" ref=\"T.CFB_ANCOVA\" instance=\"AC.SUPP.ADASCOG.WK16\">\n  <acdc:macro id=\"phrase\" ref=\"SP_CFB_ENDPOINT\" instance=\"p1\" parameter=\"PARAM.ADASCOG11\" render=\"parameter:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_TIMEPOINT\" instance=\"p2\" visit=\"VISIT.WK16\" render=\"visit:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p3\" population=\"POP.EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p4\" treatment=\"TRT.ALL\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_ANCOVA\" instance=\"p5\" method=\"M.ANCOVA\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p6\" conf_level=\"95\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_COVARIATE_BASELINE\" instance=\"p7\" parameter=\"PARAM.ADASCOG11\" render=\"parameter:label\"/>\n</acdc:macro>",
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/jsonld": {
+    "@context": {
+      "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "acdc": "https://w3id.org/cdisc/ac-dc/",
+      "usdm": "https://ddf.cdisc.org/usdm/v4/",
+      "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
+      "stato": "http://purl.obolibrary.org/obo/",
+      "ncit": "http://purl.obolibrary.org/obo/NCIT_",
+      "qb": "http://purl.org/linked-data/cube#"
+    },
+    "@id": "acdc:instance/AC-SUPP-ADASCOG-WK16",
+    "@type": "acdc:AnalysisConcept",
+    "rdfs:label": "Supporting analysis — earlier timepoint",
+    "acdc:instantiates": {
+      "@id": "acdc:template/T.CFB_ANCOVA"
+    },
+    "acdc:usesMethod": {
+      "@id": "ars:method/MTH-ANCOVA-CFB",
+      "rdfs:label": "ANCOVA",
+      "acdc:alignedTo": {
+        "@id": "stato:STATO_0000176"
+      }
+    },
+    "usdm:objective": {
+      "@id": "usdm:Objective/OBJ-PRIMARY-1",
+      "rdfs:comment": "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
+    },
+    "ars:analysis": {
+      "@id": "ars:analysis/AN-3.02.02"
+    },
+    "sp:hasPhraseInstance": [
+      {
+        "@id": "#p1",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CFB_ENDPOINT",
+        "sp:role": "endpoint",
+        "sp:binding": [
+          {
+            "sp:slot": "parameter",
+            "@id": "ncit:C168804",
+            "rdfs:label": "ADAS-Cog(11)",
+            "sp:render": "name_with_label"
+          }
+        ]
+      },
+      {
+        "@id": "#p2",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_TIMEPOINT",
+        "sp:role": "timepoint",
+        "sp:binding": [
+          {
+            "sp:slot": "visit",
+            "@id": "usdm:ScheduledActivityInstance/SAI-WK16",
+            "rdfs:label": "Week 16",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p3",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_POPULATION",
+        "sp:role": "population",
+        "sp:binding": [
+          {
+            "sp:slot": "population",
+            "@id": "usdm:AnalysisPopulation/POP-EFF",
+            "rdfs:label": "EFF",
+            "sp:render": "name"
+          }
+        ]
+      },
+      {
+        "@id": "#p4",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_GROUPING",
+        "sp:role": "grouping",
+        "sp:binding": [
+          {
+            "sp:slot": "treatment",
+            "@id": "usdm:StudyArm/ARM-SET-ALL",
+            "rdfs:label": "treatment",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p5",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_METHOD_ANCOVA",
+        "sp:role": "method",
+        "sp:binding": [
+          {
+            "sp:slot": "method",
+            "@id": "ars:method/MTH-ANCOVA-CFB",
+            "acdc:alignedTo": {
+              "@id": "stato:STATO_0000176"
+            }
+          }
+        ]
+      },
+      {
+        "@id": "#p6",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CONFIDENCE_LEVEL",
+        "sp:role": "method_qualifier",
+        "sp:binding": [
+          {
+            "sp:slot": "conf_level",
+            "sp:value": "95"
+          }
+        ]
+      },
+      {
+        "@id": "#p7",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_COVARIATE_BASELINE",
+        "sp:role": "covariate",
+        "sp:binding": [
+          {
+            "sp:slot": "parameter",
+            "@id": "ncit:C168804",
+            "rdfs:label": "ADAS-Cog(11)",
+            "sp:render": "label"
+          }
+        ]
+      }
+    ],
+    "sp:resolvesTo": [
+      {
+        "@value": "Change from baseline in Alzheimer's Disease Assessment Scale - Cognitive Subscale (11 items) (ADAS-Cog(11)) at Week 16 in the efficacy (intent-to-treat) population comparing treatment groups using ANCOVA with 95% confidence intervals adjusting for baseline ADAS-Cog(11) will be assessed as a supporting analysis.",
+        "@language": "en"
+      },
+      {
+        "@value": "La variation de l'échelle d'évaluation de la maladie d'Alzheimer – sous-échelle cognitive (11 items) (ADAS-Cog(11)) par rapport à la valeur initiale à la semaine 16 dans la population d'efficacité (intention de traiter) en comparant les groupes de traitement au moyen d'une ANCOVA avec des intervalles de confiance à 95 % avec ajustement sur la valeur initiale du score ADAS-Cog(11) sera évaluée comme une analyse complémentaire.",
+        "@language": "fr"
+      },
+      {
+        "@value": "Die Veränderung von Alzheimer's Disease Assessment Scale – kognitive Subskala (11 Items) (ADAS-Cog(11)) gegenüber dem Ausgangswert in Woche 16 in der Wirksamkeitspopulation (Intention-to-Treat) wird im Vergleich der Behandlungsgruppen mittels ANCOVA mit 95%-Konfidenzintervallen adjustiert für den Ausgangswert von ADAS-Cog(11) als unterstützende Analyse untersucht.",
+        "@language": "de"
+      }
+    ]
+  },
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/endpoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.CHG",
+      "label": "Change from Baseline",
+      "iri": "acdc:dc/ChangeFromBaseline",
+      "iri_status": "illustrative",
+      "note": "Derived analysis value: post-baseline value minus baseline value. Produced by library derivation T.ChangeFromBaseline."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "CHG",
+      "label": "Change from Baseline",
+      "dataStructure": "BDS",
+      "note": "BDS analysis-value variable, ADaMIG v1.3."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADQSADAS.CHG",
+      "label": "CHG in ADQSADAS",
+      "whereClause": "PARAMCD = 'ACTOT' AND AVISITN = 16",
+      "note": "ADAS-Cog(11), Week 16 record."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADQSADAS",
+      "label": "ADaM ADAS-Cog analysis dataset",
+      "file": "adqsadas.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ],
+      "note": "One record per subject per parameter per analysis visit."
+    }
+  ],
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/covariate": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.BASE",
+      "label": "Baseline Value",
+      "iri": "acdc:dc/BaselineValue",
+      "iri_status": "illustrative",
+      "note": "Reference value at the baseline visit. Produced by library derivation T.BaselineSelection."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "BASE",
+      "label": "Baseline Value",
+      "dataStructure": "BDS"
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADQSADAS.BASE",
+      "label": "BASE in ADQSADAS",
+      "whereClause": "PARAMCD = 'ACTOT'",
+      "note": "Baseline ADAS-Cog(11)."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADQSADAS",
+      "label": "ADaM ADAS-Cog analysis dataset",
+      "file": "adqsadas.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/timepoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.AVISIT",
+      "label": "Analysis Visit",
+      "iri": "acdc:dc/AnalysisVisit",
+      "iri_status": "illustrative"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "AVISIT",
+      "label": "Analysis Visit",
+      "dataStructure": "BDS",
+      "note": "Paired with numeric AVISITN for sorting."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADQSADAS.AVISIT",
+      "label": "AVISIT in ADQSADAS",
+      "whereClause": "AVISITN = 16",
+      "note": "Decodes to 'Week 16'."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADQSADAS",
+      "label": "ADaM ADAS-Cog analysis dataset",
+      "file": "adqsadas.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/grouping": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TRT",
+      "label": "Planned Treatment",
+      "iri": "acdc:dc/PlannedTreatment",
+      "iri_status": "illustrative",
+      "usdm": "usdm:StudyArm"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "TRTP",
+      "label": "Planned Treatment",
+      "dataStructure": "ADSL",
+      "note": "Subject-level treatment assignment."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.TRTP",
+      "label": "TRTP in ADSL",
+      "note": "Placebo / Xanomeline Low Dose / Xanomeline High Dose."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ],
+      "note": "One record per subject."
+    }
+  ],
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/population": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.POP",
+      "label": "Analysis Population",
+      "iri": "acdc:dc/AnalysisPopulation",
+      "iri_status": "illustrative",
+      "usdm": "usdm:AnalysisPopulation"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "ITTFL",
+      "label": "Population Flag",
+      "dataStructure": "ADSL",
+      "note": "Population indicator variable."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.ITTFL",
+      "label": "ITTFL in ADSL",
+      "whereClause": "ITTFL = 'Y'",
+      "note": "Subjects in the efficacy (intent-to-treat) analysis set."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ]
+    }
+  ]
+}
