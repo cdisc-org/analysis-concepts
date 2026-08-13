@@ -26,7 +26,7 @@
       },
       {
         "configurationName": "alpha",
-        "value": "0.050000000000000044",
+        "value": "0.05",
         "from": "SP_CONFIDENCE_LEVEL"
       }
     ],
@@ -921,7 +921,7 @@
       },
       {
         "configurationName": "alpha",
-        "value": "0.050000000000000044",
+        "value": "0.05",
         "from": "SP_CONFIDENCE_LEVEL"
       }
     ],

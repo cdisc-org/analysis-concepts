@@ -208,6 +208,66 @@
   }
 
   /*
+   * Every concept the instance binds, as { slot, id, c, role }, ordered by the
+   * library's role order so the endpoint-role binding wins when two phrases
+   * bind the same slot name (e.g. SP_CFB_ENDPOINT and SP_COVARIATE_BASELINE
+   * both bind `parameter`). Slot NAMES are the join to template tokens —
+   * {parameter}, {visit}, {population}, {event} — so no phrase OID is
+   * hardcoded and a new endpoint phrase works with no engine change.
+   */
+  function boundConcepts(ctx, instance) {
+    var order = ctx.lib.roleDefinitions.order;
+    var out = [];
+    instance.phrases.forEach(function (pi) {
+      var def = phraseDef(ctx, pi.phrase);
+      var role = def ? def.role : null;
+      Object.keys(pi.bindings || {}).forEach(function (slot) {
+        var b = pi.bindings[slot];
+        if (!b || !b.concept) return;
+        var c = concept(ctx, b.concept);
+        if (c) out.push({ slot: slot, id: b.concept, c: c, role: role });
+      });
+    });
+    out.sort(function (a, b) {
+      return order.indexOf(a.role) - order.indexOf(b.role);
+    });
+    return out;
+  }
+
+  /* Display value for a bound concept: populations read as names, everything
+     else as short labels. Matches the pre-generalisation behaviour exactly. */
+  function conceptDisplay(c) {
+    return c.kind === "Population" ? c.name : c.label;
+  }
+
+  /*
+   * Study-variable expression per method. The method's own
+   * formula.default_expression is input-name shaped ("response ~ covariate +
+   * fixed_effect"); rendering it in study variables needs the template's
+   * measure→variable mapping, which the library does not yet carry, so this
+   * dispatches on method and falls back to the generic expression.
+   * TODO(upstream): replace with a formula resolver once measures declare
+   * their ADaM variable, per DESIGN.md "deliberately out of scope".
+   */
+  var EXPRESSION_BUILDERS = {
+    "M.ANCOVA": function (ctx, instance) {
+      var terms = ["TRTP"];
+      if (instance.phrases.some(function (p) { return p.phrase === "SP_COVARIATE_BASELINE"; })) terms.push("BASE");
+      if (instance.phrases.some(function (p) { return p.phrase === "SP_COVARIATE_SITE"; })) terms.push("SITEGR1");
+      return "CHG ~ " + terms.join(" + ");
+    },
+    "M.KaplanMeier": function () {
+      return "Surv(AVAL, 1-CNSR) ~ TRTP";
+    }
+  };
+
+  function resolvedExpressionFor(ctx, instance, tpl, m) {
+    var builder = EXPRESSION_BUILDERS[tpl.usesMethod];
+    if (builder) return builder(ctx, instance, tpl);
+    return (m && m.formula && m.formula.default_expression) || null;
+  }
+
+  /*
    * Construct the study-model view of the instance, eSAP-style: the template
    * is copied, its sliceKeys get study-resolved values, its slice constraint
    * {placeholder} tokens are substituted, and the method formula is resolved
@@ -218,30 +278,34 @@
     if (!tpl) return { errors: ["unknown template '" + instance.template + "'"] };
     var m = method(ctx, tpl.usesMethod);
 
-    var paramId = bindingConceptId(instance, "SP_CFB_ENDPOINT", "parameter");
-    var visitId = bindingConceptId(instance, "SP_TIMEPOINT", "visit");
-    var popId = bindingConceptId(instance, "SP_POPULATION", "population");
-    var param = paramId ? concept(ctx, paramId) : null;
-    var visit = visitId ? concept(ctx, visitId) : null;
-    var pop = popId ? concept(ctx, popId) : null;
-    var baseVisit = concept(ctx, instance.baselineVisit);
+    var bound = boundConcepts(ctx, instance);
 
-    var subst = {
-      "{parameter}": param ? param.label : "⟨parameter⟩",
-      "{visit}": visit ? visit.label : "⟨visit⟩",
-      "{baseline_visit}": baseVisit ? baseVisit.label : "⟨baseline_visit⟩",
-      "{population}": pop ? pop.name : "⟨population⟩"
-    };
+    /* Slot-name-keyed substitution for slice constraint tokens. */
+    var subst = {};
+    bound.forEach(function (bc) {
+      var tok = "{" + bc.slot + "}";
+      if (subst[tok] === undefined) subst[tok] = conceptDisplay(bc.c);
+    });
+    if (instance.baselineVisit) {
+      var baseVisit = concept(ctx, instance.baselineVisit);
+      subst["{baseline_visit}"] = baseVisit ? baseVisit.label : "⟨baseline_visit⟩";
+    }
     function fill(s) {
       return Object.keys(subst).reduce(function (acc, k) { return acc.split(k).join(subst[k]); }, s);
     }
 
+    /* A sliceKey dimension is matched by the bound concept's conceptCategory
+       (ParameterDimension, VisitDimension, EventDimension) or its kind
+       (Population, Treatment). */
     var sliceKeys = (tpl.sliceKeys || []).map(function (sk) {
-      var value =
-        sk.dimension === "ParameterDimension" ? (param && { concept: paramId, label: param.label, iri: param.iri }) :
-        sk.dimension === "VisitDimension" ? (visit && { concept: visitId, label: visit.label, iri: visit.iri }) :
-        sk.dimension === "Population" ? (pop && { concept: popId, label: pop.name, iri: pop.iri }) : null;
-      return { dimension: sk.dimension, source: sk.source, value: value };
+      var hit = bound.find(function (bc) {
+        return bc.c.conceptCategory === sk.dimension || bc.c.kind === sk.dimension;
+      });
+      return {
+        dimension: sk.dimension,
+        source: sk.source,
+        value: hit ? { concept: hit.id, label: conceptDisplay(hit.c), iri: hit.c.iri } : null
+      };
     });
 
     var slices = ((tpl.inputDataStructure || {}).slices || []).map(function (sl) {
@@ -253,22 +317,22 @@
       };
     });
 
-    var hasConf = instance.phrases.some(function (p) { return p.phrase === "SP_CONFIDENCE_LEVEL"; });
-    var confLevel = hasConf ? bindingConceptId(instance, "SP_CONFIDENCE_LEVEL", "conf_level") : null;
-    var hasSite = instance.phrases.some(function (p) { return p.phrase === "SP_COVARIATE_SITE"; });
-    var hasBaseCov = instance.phrases.some(function (p) { return p.phrase === "SP_COVARIATE_BASELINE"; });
+    var confLevel = bindingConceptId(instance, "SP_CONFIDENCE_LEVEL", "conf_level");
 
     var configurationValues = (tpl.methodConfigurations || []).map(function (mc) {
       return { configurationName: mc.configurationName, value: mc.value, from: "template" };
     });
     if (confLevel) {
-      configurationValues.push({ configurationName: "alpha", value: String(1 - Number(confLevel) / 100), from: "SP_CONFIDENCE_LEVEL" });
+      /* Round: 1 - 90/100 is 0.09999999999999998 in IEEE 754. */
+      var alpha = Math.round((1 - Number(confLevel) / 100) * 1000) / 1000;
+      configurationValues.push({
+        configurationName: "alpha",
+        value: String(alpha),
+        from: "SP_CONFIDENCE_LEVEL"
+      });
     }
 
-    var terms = ["TRTP"];
-    if (hasBaseCov) terms.push("BASE");
-    if (hasSite) terms.push("SITEGR1");
-    var resolvedExpression = "CHG ~ " + terms.join(" + ");
+    var resolvedExpression = resolvedExpressionFor(ctx, instance, tpl, m);
 
     return {
       instance: instance.id,
@@ -299,24 +363,32 @@
     var tplChain = ctx.graph.traceTemplates[role];
     if (!tplChain) return null;
 
-    var paramId = bindingConceptId(instance, "SP_CFB_ENDPOINT", "parameter");
-    var visitId = bindingConceptId(instance, "SP_TIMEPOINT", "visit");
-    var popId = bindingConceptId(instance, "SP_POPULATION", "population");
-    var param = paramId ? concept(ctx, paramId) : null;
-    var visit = visitId ? concept(ctx, visitId) : null;
-    var pop = popId ? concept(ctx, popId) : null;
+    var bound = boundConcepts(ctx, instance);
 
-    var tokens = {
-      "{dataset}": param && param.data ? param.data.dataset : "⟨dataset⟩",
-      "{datasetLabel}": param && param.data ? param.data.datasetLabel : "⟨dataset⟩",
-      "{file}": param && param.data ? param.data.file : "⟨file⟩",
-      "{paramcd}": param && param.data ? param.data.paramcd : "⟨paramcd⟩",
-      "{paramLabel}": param ? param.label : "⟨parameter⟩",
-      "{avisitn}": visit && visit.data ? String(visit.data.avisitn) : "⟨avisitn⟩",
-      "{visitLabel}": visit ? visit.label : "⟨visit⟩",
-      "{flag}": pop && pop.data ? pop.data.flag : "⟨flag⟩",
-      "{popName}": pop ? pop.name : "⟨population⟩"
-    };
+    /* Each bound concept contributes its `data` keys as tokens — {dataset},
+       {file}, {paramcd}, {avisitn}, {flag}, {aval}, {cnsr}, … — in role order,
+       so the endpoint concept's data wins on any key collision. Label tokens
+       are derived from the concept's position in the model, not its phrase. */
+    var tokens = {};
+    bound.forEach(function (bc) {
+      Object.keys(bc.c.data || {}).forEach(function (k) {
+        var tok = "{" + k + "}";
+        if (tokens[tok] === undefined) tokens[tok] = String(bc.c.data[k]);
+      });
+    });
+    bound.forEach(function (bc) {
+      if (bc.role === "endpoint" || bc.role === "parameter") {
+        if (tokens["{paramLabel}"] === undefined) tokens["{paramLabel}"] = bc.c.label;
+        if (tokens["{eventLabel}"] === undefined) tokens["{eventLabel}"] = bc.c.label;
+      }
+      if (bc.c.conceptCategory === "VisitDimension" && tokens["{visitLabel}"] === undefined) {
+        tokens["{visitLabel}"] = bc.c.label;
+      }
+      if (bc.c.kind === "Population" && tokens["{popName}"] === undefined) {
+        tokens["{popName}"] = bc.c.name;
+      }
+    });
+
     function fill(s) {
       if (typeof s !== "string") return s;
       return Object.keys(tokens).reduce(function (acc, k) { return acc.split(k).join(tokens[k]); }, s);
