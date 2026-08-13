@@ -61,9 +61,15 @@ STATO for statistical methods, NCIt for terminology; AC/DC ids only for what is 
 
 **D4 — Library data is verbatim from `methods_02`.**
 `demo/data/acdc-library.js` is a **generated** subset of `lib/transformations/ACDC_Transformation_Library_v07.json`
-and `lib/methods/analyses/M_ANCOVA.json` at `methods_02@ffee5df` (Transformation Library v0.7, Method
+and the selected `lib/methods/analyses/*.json` at `methods_02@ffee5df` (Transformation Library v0.7, Method
 schema v0.9.1) — provenance is recorded in the file and shown in the demo. The study layer
-(`demo/data/study-graph.js`) is hand-crafted and marked illustrative.
+(`demo/data/study-graph*.js`) is hand-crafted and marked illustrative.
+
+The generator that produces it is `tools/build-library-subset.mjs`, which reads the pinned commit via
+`git show`, copies entities unmodified, and declares its selection explicitly (3 of the 25 upstream
+transformations, and the methods the demo instantiates). `--check` asserts that the file on disk is
+exactly what the generator emits, so the "do not hand-edit" contract is enforced rather than merely
+stated. Widening the `SELECT_*` lists is the only legitimate way to add upstream library content.
 
 **D5 — Two authoring surfaces, layered.**
 Phrase chips with constrained pickers are the primary surface. The `acdc:macro` tag dialect (adopted
@@ -87,6 +93,40 @@ CDISC/NCIt terminology translations). Switching language re-renders the same ins
 constructed model view and every identifier are language-invariant, and the JSON-LD carries the
 rendered sentence as language-tagged literals (`sp:resolvesTo` per language) — the RDF-native
 mechanism. The demo ships EN/FR/DE; the FR/DE copy is illustrative, not validated translation.
+
+**D8 — Proposed library additions live in an overlay, not the generated subset.**
+The breast-cancer example needs a transformation template that does not exist upstream (see below), and
+hand-editing the generated file would destroy the provenance claim D4 makes and the demo displays. Such
+entities therefore live in `demo/data/acdc-library-proposed.js`, which carries its own `provenance`
+block stating what it is and why, is merged over the generated subset by `ctxOf`, and has every entity
+tagged `proposed: true` so the UI can badge it. The generated object is never mutated — the merge
+produces a new library object, which the verification harness asserts. Upstreaming is a deliberate
+follow-up: submit to `methods_02` as a v0.7.x minor addition, widen the generator's selection, delete
+from the overlay. *Rejected alternative:* authoring directly on `methods_02`, which would put a
+PoC-driven change on a shared branch before the working group has seen it.
+
+**D9 — Study graphs live behind a `STUDY_GRAPHS` registry, one file per study.**
+Study layers are independent illustrative data, so each gets its own file (`study-graph.js`,
+`study-graph-pre0102.js`) registering itself into `window.STUDY_GRAPHS`. A second study therefore cannot
+perturb the first, and because the engine already takes the graph as a parameter, switching study is
+just rebuilding the context — no engine change. Concept pickers, trace chains, method grounding and the
+identifier table all scope to the active study automatically. `STUDY_GRAPH` remains an alias to the
+first study for back-compatibility.
+
+**D10 — The model↔prose join is on placeholder slot names, not phrase OIDs.**
+`constructModelView` and `buildTrace` originally located their inputs by hardcoded phrase OID
+(`SP_CFB_ENDPOINT`, `SP_TIMEPOINT`, `SP_POPULATION`), matched three fixed slice dimensions, and built
+the study-variable expression as a literal `"CHG ~ …"` string — so no non-ANCOVA template could be
+instantiated. They now collect the instance's bound concepts in library **role order** (so an
+endpoint-role binding wins over a covariate binding on the same slot name), substitute slice-constraint
+tokens by **slot name** (`{parameter}`, `{visit}`, `{population}`, `{event}`), match sliceKey dimensions
+on the concept's `conceptCategory` or `kind`, and derive trace tokens from each concept's own `data`
+map. A new endpoint phrase or dimension needs no engine change.
+
+The one honest exception is the study-variable expression, which dispatches on `usesMethod`. A method's
+`formula.default_expression` is input-name shaped (`response ~ covariate + fixed_effect`) and rendering
+it in study variables needs a measure→ADaM-variable mapping the library does not yet carry; term order
+also differs from the current output. A real formula resolver stays out of scope (see below).
 
 ## Relationship to the eSAP schema
 
@@ -140,26 +180,49 @@ What release requires — none of it architectural:
 
 | Layer | Source | Status |
 |---|---|---|
-| Phrase templates, roles, transformation templates, method definition | `methods_02@ffee5df`, generated subset | authoritative (for this PoC) |
-| STATO method IRI (`STATO_0000176`) | STATO/OBO | authoritative |
-| Study concepts, USDM/ARS/NCIt instance ids, trace tiers, document shell | hand-crafted for CDISC Pilot | illustrative, flagged in-UI |
+| Phrase templates, roles, transformation templates, method definitions | `methods_02@ffee5df`, generated subset | authoritative (for this PoC) |
+| STATO ANCOVA IRI (`STATO_0000176`) | STATO/OBO | authoritative |
+| `T.PFS_KaplanMeier` transformation template | authored here, `acdc-library-proposed.js` | **proposed** — not upstream, badged in-UI |
+| Kaplan-Meier method IRI | none found | illustrative — **open question**, see below |
+| Study concepts, USDM/ARS/NCIt instance ids, trace tiers, document shell | hand-crafted per study (CDISC Pilot, PrE0102) | illustrative, flagged in-UI |
 | `acdc:macro` dialect | methods_02 authoring experiment | design input, revisable |
+
+**Open identifier question.** `M.ANCOVA` grounds authoritatively in STATO, but no STATO (or NCIt) term
+for Kaplan-Meier estimation was found in the AC/DC artefacts, and `M_KaplanMeier.json` carries
+`"ncitCode": null` upstream. Rather than invent a plausible-looking `STATO_00003xx`, the grounding is an
+AC/DC identifier flagged `illustrative`. Resolving it is a steer for the working group.
 
 ## Verification
 
-- **Engine (Node, no DOM):** all three instances resolve with 0 errors and the primary reproduces the
-  known-good sentence; the constructed model view fills sliceKeys/slices correctly; all five trace roles
-  reach the right `.xpt`; the tag dialect round-trips byte-equal; planted faults (invalid phrase for
-  template, unbound required slot, out-of-range value) are all caught; JSON-LD projection well-formed.
-- **Demo (headless Chrome, puppeteer):** 21 end-to-end checks covering chip rendering, hover inspect,
-  click-to-trace, model→SAP edits, SAP→model edits via chips and via tag source, validator accept/reject
-  (state untouched on reject), reuse cards with binding diffs, open-in-editor, trace following the loaded
-  instance, standards table and provenance. All pass; no console errors.
-- **i18n (both layers):** EN output is byte-identical to the pre-i18n renderer; FR/DE resolve all three
-  instances with zero errors; the German verb bracket is produced by the sentence template (frame text,
-  not chips); switching language leaves the tag source and JSON-LD byte-identical (the graph already
-  carries all languages as tagged literals); model edits re-render correctly in the active language.
-  15 further browser checks, all passing.
+Verification is **committed and runnable**, not described. Three gates:
+
+```
+node smartphrase/tools/verify.mjs                    # engine + pinned goldens
+node smartphrase/tools/build-library-subset.mjs --check   # generated file is unmodified
+NODE_PATH=<dir>/node_modules node smartphrase/tools/verify-ui.mjs   # real DOM, needs jsdom
+```
+
+- **`verify.mjs` — engine, no DOM.** Loads the demo's browser IIFEs under Node via `vm` and, for every
+  instance in **every registered study**, checks: resolution has no errors in every available language;
+  every `sliceKey` is filled; the `acdc:macro` dialect round-trips byte-equal; no trace leaves an
+  unfilled `⟨token⟩`; every phrase used is valid for the instance's template; and no phrase falls back
+  to English in a non-English pack. Three planted faults (unknown concept, unknown phrase ref, missing
+  wrapper) must all be rejected. Also asserts the proposed overlay resolves, is flagged, declares only
+  outputs its method really has, and does not mutate the generated subset.
+- **Goldens.** 69 outputs (sentences per language, constructed model views, tag source, JSON-LD, traces)
+  are pinned in `tools/goldens.json`, **captured from behaviour** rather than hand-written, and compared
+  on every run. This is what let the engine generalisation (D10) be proven non-breaking: a leaf-level
+  diff showed the *only* change across all pinned outputs was an intended float-formatting fix.
+- **`verify-ui.mjs` — real DOM.** Loads the actual `index.html` in jsdom and walks both studies through
+  all four stops: study switch, prose rendering, hover inspect, click-to-trace, model→SAP edit (change
+  the endpoint and assert prose *and* trace follow), tag source regeneration, JSON-LD well-formedness,
+  the reuse grid's per-study grouping and proposed badges, the identifier table, and EN/FR/DE. Fails on
+  any console error. jsdom is dev-only and deliberately not vendored — the demo itself stays
+  zero-install, and the script exits 2 with install instructions when jsdom is absent.
+
+Both the alpha float artefact and a real bug in the proposed-provenance note (it read the raw generated
+global instead of the merged library, so it would never have rendered) were found by these gates rather
+than by inspection.
 
 ## Planned extension — estimands and intercurrent events
 
@@ -210,6 +273,35 @@ Target prose:
 > concomitant AD medication**, using ANCOVA … **summarised as the difference in least-squares
 > means**, will be assessed as the primary estimand's main estimator.*
 
+## Second worked study — PrE0102 (metastatic breast cancer)
+
+The CDISC Pilot passage demonstrates reuse *within* one study and one therapeutic area. A second study
+was added to show the same building-block mechanism holding across therapeutic areas and across endpoint
+types — a stronger form of claim 3.
+
+Source: **PrECOG PrE0102**, Final SAP 24 March 2014, converted to Markdown in [`SAP/`](SAP/) alongside
+the original PDF. The encoded passage is the PFS primary analysis (SAP §3.1 objective, §5.3 definitions,
+§7.7.2 methodology). Every study concept carries a `sapRef` quoting the source sentence it came from.
+
+What this surfaced, and why it matters:
+
+- **The SAP's analysis is descriptive.** §7.7.2 asks for Kaplan-Meier medians with 90% confidence
+  intervals by arm. There is no log-rank test, no p-value and no alpha anywhere in the 36-page document.
+  Upstream `T.OS_LogRank` is a hypothesis test (it outputs `chi_squared_test_result`) and does not fit,
+  and v0.7 has no descriptive Kaplan-Meier template — hence `T.PFS_KaplanMeier` and D8. **A real SAP
+  needed a library addition**, which is itself a finding worth putting to the working group: the phrase
+  layer was largely sufficient (`SP_TTE_ENDPOINT`, `SP_METHOD_KM`, `SP_STRATIFICATION` already existed,
+  unused), but the template layer was not.
+- **The engine was more ANCOVA-coupled than it looked.** See D10 — the coupling was invisible to a search
+  for "ANCOVA" because it was expressed through phrase OIDs and a literal formula string.
+- **Reuse is now two-dimensional.** Within PrE0102, four analyses share the one template, varying the
+  event (PFS / OS / TTP) and the population — the ITT instance is the SAP's *own* sensitivity analysis
+  (§7.7.2), not an invented variation. Across studies, two templates from one library.
+- **A time-to-event trace looks different.** `DC.TTE → AVAL → ADTTE.AVAL where PARAMCD='PFS' →
+  adtte.xpt`, with `CNSR` travelling alongside the analysis value, and no analysis-visit tier at all.
+  The trace-chain-per-role design absorbed this without engine changes because chains live in the study
+  layer (D9).
+
 ## Deliberately out of scope / future
 
 - A real LinkML-emitted `@context` (the hand-written context stands in for it).
@@ -217,3 +309,8 @@ Target prose:
 - Validated translations and full morphological handling (elision, agreement) — D7 demonstrates the
   mechanism with illustrative FR/DE copy; production language packs are a terminology-management deliverable.
 - Overlapping annotations, versioning, and schema validation of the instance graph.
+- **A generic formula resolver.** Study-variable expressions dispatch on method (D10) because the library
+  does not declare a measure→ADaM-variable mapping. Adding one upstream would let the expression be
+  derived from `formula.generic_expression` instead.
+- **Upstreaming `T.PFS_KaplanMeier`** to `methods_02`, and the governance question of who accepts phrase
+  and template contributions into the library.

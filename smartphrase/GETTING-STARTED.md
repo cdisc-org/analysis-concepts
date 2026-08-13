@@ -44,22 +44,32 @@ only one copy.
 This track walks through embedding the layer in an editor, using the PoC engine as the worked
 example. The engine is a single dependency-free script; it runs in a browser or under Node.
 
-## A1. Load the three inputs
+## A1. Load the inputs
 
 ```html
-<script src="data/acdc-library.js"></script>   <!-- the library layer   → window.ACDC_LIBRARY -->
-<script src="data/study-graph.js"></script>    <!-- the study layer     → window.STUDY_GRAPH  -->
-<script src="data/lang-overlay.js"></script>   <!-- language packs      → window.LANG_OVERLAY (optional) -->
-<script src="engine.js"></script>              <!-- the engine          → window.SP_ENGINE    -->
+<script src="data/acdc-library.js"></script>          <!-- library layer  → window.ACDC_LIBRARY -->
+<script src="data/acdc-library-proposed.js"></script> <!-- proposed additions (optional) -->
+<script src="data/study-graph.js"></script>           <!-- a study layer  → window.STUDY_GRAPHS.<id> -->
+<script src="data/lang-overlay.js"></script>          <!-- language packs → window.LANG_OVERLAY (optional) -->
+<script src="engine.js"></script>                     <!-- the engine     → window.SP_ENGINE -->
 <script>
-  const E   = SP_ENGINE;
-  const ctx = E.ctxOf(ACDC_LIBRARY, STUDY_GRAPH, LANG_OVERLAY);   // pass ctx to every engine call
+  const E     = SP_ENGINE;
+  const graph = STUDY_GRAPHS["CDISCPILOT01"];                     // one study layer at a time
+  const ctx   = E.ctxOf(ACDC_LIBRARY, graph, LANG_OVERLAY);       // pass ctx to every engine call
 </script>
 ```
 
+`ctxOf` takes the study graph as a parameter, so **switching study is just rebuilding the context** —
+there is no global to reassign. Each study registers itself into `window.STUDY_GRAPHS` from its own
+file; `window.STUDY_GRAPH` is an alias to the first one for back-compatibility.
+
 Treat the library as **read-only**: your application never mutates phrase or template definitions.
+`ctxOf` honours that — it merges any proposed-additions overlay into a *new* library object exposed as
+`ctx.lib`, leaving the object you passed untouched. Read merged content (including
+`ctx.lib.proposedProvenance`) from `ctx.lib`, never from the raw global.
+
 The study layer (concept registry, instances) is yours to manage — in the PoC it is a hand-written
-file, in your application it would come from your study metadata store.
+file per study, in your application it would come from your study metadata store.
 
 ## A2. Hold one instance object as your document state
 

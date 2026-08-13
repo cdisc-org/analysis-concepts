@@ -51,29 +51,63 @@ at Week 24, ANCOVA, efficacy population — driven by transformation template `T
 
 ## 6:15 — Stop 3 · Template reuse (1m30)
 
-- Three cards: primary ADAS-Cog(11)/Week 24, secondary NPI-X, supporting Week 16 — **same template**,
-  only the highlighted bindings differ.
+- CDISC Pilot group: primary ADAS-Cog(11)/Week 24, secondary NPI-X, supporting Week 16 — **same
+  template**, only the highlighted bindings differ.
 - Click *Open in editor* on the NPI-X card, then trace its endpoint at Stop 1: the chain now ends at
   `adnpix.xpt` — the trace follows the instance too.
 
 > "Write the building block once in the library; every study analysis is bindings."
 
-## 7:45 — Stop 4 · Standards grounding (1m)
+## 7:45 — Switch study · PrE0102, metastatic breast cancer (2m)
+
+**Action:** click **PRE0102** in the study switch at Stop 1.
+
+> "Same page, same library, same engine — but a real published SAP from a different therapeutic area.
+> This is the PFS primary analysis from PrECOG PrE0102. Every claim you have just seen still holds.
+>
+> Hover the endpoint: it is `SP_TTE_ENDPOINT`, a *time-to-event* phrase, not the change-from-baseline
+> one. Click it and the trace goes somewhere else entirely — `DC.TTE → AVAL → ADTTE.AVAL where
+> PARAMCD='PFS' → adtte.xpt`, with the censoring flag alongside, and no analysis-visit tier at all."
+
+**Be straight about what it cost:**
+
+> "This needed a new library building block. The SAP asks for Kaplan-Meier medians with 90% confidence
+> intervals by arm — descriptive, no test — and v0.7 has no template for that; the nearest thing,
+> `T.OS_LogRank`, is a hypothesis test. So we wrote one. It is badged **proposed** because it is not
+> upstream yet, and that badge is the point: this is what a library contribution looks like from the
+> outside. Worth noting the *phrase* layer needed nothing new — `SP_TTE_ENDPOINT` and `SP_METHOD_KM` were
+> already in v0.7, unused. It was the template layer that was missing."
+
+**Back at Stop 3:** the grid now has two study groups.
+
+> "So reuse is two-dimensional. Within this study, four analyses share that one block — PFS, PFS on the
+> ITT population, which is the SAP's *own* sensitivity analysis rather than something we invented, plus
+> OS and TTP. Across studies, two blocks from one library. Write once, apply many — and the 'many'
+> crosses therapeutic areas and endpoint types."
+
+## 9:45 — Stop 4 · Standards grounding (1m)
 
 - The identifier table: USDM for study structure, ARS for analyses, STATO for methods, NCIt for
   terminology; AC/DC ids only where nothing exists yet, and unregistered ids are flagged *illustrative*.
 - Provenance line: the library data is a generated verbatim subset of `methods_02@ffee5df`.
 - The volatility card: the semantics are standoff — the SAP-structure initiative (M11-analogue) can land
   on any structure and this layer attaches unchanged.
+- Note the honest gap: ANCOVA grounds authoritatively in STATO, but **no STATO or NCIt term for
+  Kaplan-Meier estimation** was found, and the upstream method file carries `ncitCode: null`. We did not
+  invent one — it is flagged *illustrative*.
 
-## 8:45 — The ask (1m)
+## 10:45 — The ask (1m15)
 
 > "Issue #9 now states requirements only; `smartphrase/DESIGN.md` records this design and why.
 > The steer we need:
 > 1. Does the working group accept **one-state / many-projections** as the smartphrase architecture?
 > 2. Is **structured authoring** (phrases + typed placeholders, not free-text parsing) the right SAP→model story?
 > 3. Should the identifier policy — *resolve into USDM/ARS/STATO/NCIt wherever they cover the entity* — become an AC/DC principle?
-> 4. Who owns registering the currently-illustrative ids as the sister SAP-structure project spins up?"
+> 4. Who owns registering the currently-illustrative ids as the sister SAP-structure project spins up —
+>    including finding or minting a term for Kaplan-Meier estimation?
+> 5. **Who accepts phrase and template contributions into the library, and what does that review look
+>    like?** We have produced one (`T.PFS_KaplanMeier`) by encoding a single real SAP, so this is no
+>    longer hypothetical — and a library that grows one therapeutic area at a time needs an owner."
 
 ---
 

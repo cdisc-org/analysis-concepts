@@ -18,7 +18,8 @@
 9. [JSON-LD projection](#9-json-ld-projection)
 10. [Engine API](#10-engine-api)
 11. [Identifier policy](#11-identifier-policy)
-12. [Errors and findings](#12-errors-and-findings)
+12. [Tooling](#12-tooling-poc)
+13. [Errors and findings](#13-errors-and-findings)
 
 ---
 
@@ -101,9 +102,10 @@ typically comes from an endpoint specification (`"endpoint"`) or a direct user c
 | `usesMethod` | Resolved to the method definition (formula, configurations). |
 | `validSmartPhrases` | The complete legal phrase set for instances of this template — enforced by editors and by the dialect validator. |
 | `sliceKeys` | `[{ dimension, source }]` — which bound concepts key the analysis cube (§6). |
-| `inputDataStructure.slices[].constraints[].value` | May contain `{placeholder}` tokens (`{parameter}`, `{visit}`, `{baseline_visit}`, `{population}`) substituted at instantiation (§6). |
+| `inputDataStructure.slices[].constraints[].value` | May contain `{placeholder}` tokens substituted at instantiation (§6). The token set is **open**: any placeholder slot name bound by any of the instance's phrases resolves (`{parameter}`, `{visit}`, `{population}`, `{event}`, …), plus `{baseline_visit}` from `instance.baselineVisit`. |
 | `methodConfigurations` | Template-fixed method configuration, merged into `configurationValues` (§6). |
-| `outputDataStructure.measures` | Reported as the instance's output measures (§6). |
+| `outputDataStructure.measures` | Reported as the instance's output measures (§6). Each `output` MUST name a declared output of `usesMethod` — this is the `summarizedByOutputClass` hook, and the verification harness asserts it. |
+| `proposed` | *(PoC)* `true` on templates merged from `acdc-library-proposed.js` — additions not yet upstream on `methods_02`. Set by `ctxOf`, never authored by hand. Surfaced as a badge in the demo. |
 
 ### 2.5 configurationOptions
 
@@ -114,8 +116,13 @@ own `constraint`.
 
 ## 3. Study layer
 
-Source in the demo: `demo/data/study-graph.js` (illustrative). In production this layer comes from
-study metadata (USDM study design, ARS analysis set).
+Source in the demo: one file per study, each registering itself into `window.STUDY_GRAPHS`
+(`demo/data/study-graph.js` → `CDISCPILOT01`, `demo/data/study-graph-pre0102.js` → `PRE0102`); all
+illustrative. In production this layer comes from study metadata (USDM study design, ARS analysis set).
+
+A graph is self-contained — `prefixes`, `study`, `concepts`, `methodGrounding`, `instances`,
+`traceTemplates` — so switching study is just passing a different graph to `ctxOf`. `window.STUDY_GRAPH`
+remains an alias to the first registered study.
 
 ### 3.1 Concept registry entry
 
@@ -134,8 +141,15 @@ study metadata (USDM study design, ARS analysis set).
 }
 ```
 
-`data` hooks by kind: Parameter → `dataset`, `datasetLabel`, `file`, `paramcd`; Timepoint →
-`avisitn`; Population → `flag`; Treatment → `variable`.
+`data` hooks by kind: Parameter → `dataset`, `datasetLabel`, `file`, `paramcd`; **Event** →
+`dataset`, `datasetLabel`, `file`, `paramcd`, `aval`, `cnsr`; Timepoint → `avisitn`; Population →
+`flag`; Treatment → `variable`. The set is not fixed — every key becomes a trace token (§7).
+
+`kind: "Event"` with `conceptCategory: "EventDimension"` is what `SP_TTE_ENDPOINT` binds
+(`concept_constraint: "Event"`), for time-to-event endpoints.
+
+*(PoC)* concepts may also carry `sapRef`, a quotation of the source SAP sentence the concept was
+derived from — provenance for hand-crafted study data, not consumed by the engine.
 
 ### 3.2 Analysis instance (the shared state)
 
@@ -255,8 +269,10 @@ language changes prose projections only.
 ## 7. Data trace
 
 `buildTrace(ctx, instance, role)` returns a four-tier chain for a phrase role, or `null` for roles
-without a chain. Chains are defined per role in `STUDY_GRAPH.traceTemplates`
-(roles: `endpoint`, `covariate`, `timepoint`, `grouping`, `population`); tiers:
+without a chain. Chains are defined per role in the **active study graph's** `traceTemplates`, so each study supplies
+its own — the CDISC Pilot defines `endpoint`, `covariate`, `timepoint`, `grouping`, `population`;
+PrE0102 defines `endpoint`, `grouping`, `population` (there is no analysis visit in a time-to-event
+analysis). Tiers:
 
 ```
 DataConcept → ADaM Class Variable → Study variable (with where-clause) → Physical dataset (.xpt)
@@ -265,15 +281,25 @@ DataConcept → ADaM Class Variable → Study variable (with where-clause) → P
 Every string field of every tier may contain tokens, substituted from the **live instance**
 (the trace follows edits):
 
+The token set is **open and data-driven**: every concept the instance binds contributes each key of
+its `data` map as `{key}`, walked in library role order so the endpoint concept wins any collision.
+Four label tokens are derived rather than read from `data`:
+
 | Token | Source |
 |---|---|
-| `{dataset}` `{datasetLabel}` `{file}` `{paramcd}` | endpoint parameter concept's `data` |
-| `{paramLabel}` | endpoint parameter concept's `label` |
-| `{avisitn}` `{visitLabel}` | timepoint concept's `data.avisitn` / `label` |
-| `{flag}` `{popName}` | population concept's `data.flag` / `name` |
+| `{dataset}` `{datasetLabel}` `{file}` `{paramcd}` `{avisitn}` `{flag}` `{aval}` `{cnsr}` … | any bound concept's `data` keys, endpoint-first |
+| `{paramLabel}` `{eventLabel}` | the endpoint-or-parameter-role concept's `label` |
+| `{visitLabel}` | the `VisitDimension` concept's `label` |
+| `{popName}` | the `Population` concept's `name` |
 
-Example (primary instance, `endpoint`):
-`DC.CHG → CHG (BDS) → ADQSADAS.CHG where PARAMCD = 'ACTOT' AND AVISITN = 24 → adqsadas.xpt`.
+Adding a `data` key therefore makes a new token available with no engine change.
+
+Examples:
+- CDISC Pilot primary, `endpoint`:
+  `DC.CHG → CHG (BDS) → ADQSADAS.CHG where PARAMCD = 'ACTOT' AND AVISITN = 24 → adqsadas.xpt`
+- PrE0102 primary, `endpoint`:
+  `DC.TTE → AVAL (BDS time-to-event) → ADTTE.AVAL where PARAMCD = 'PFS' → adtte.xpt` (with `CNSR`
+  carrying the censoring indicator)
 
 ## 8. The `acdc:macro` tag dialect
 
@@ -360,12 +386,19 @@ the intended source is the context emitted by the AC/DC LinkML model.
 
 ## 10. Engine API
 
-All functions are pure; `ctx = SP_ENGINE.ctxOf(library, studyGraph)` is the first argument
+All functions are pure; `ctx = SP_ENGINE.ctxOf(library, studyGraph, i18n)` is the first argument
 throughout. Loading `engine.js` defines `SP_ENGINE` on `window`/`globalThis`.
+
+Neither `constructModelView` nor `buildTrace` references any phrase OID: both collect the instance's
+bound concepts in library role order and join to the template on **placeholder slot name**, matching
+sliceKey dimensions against each concept's `conceptCategory` or `kind`. A new endpoint phrase or
+dimension therefore needs no engine change. The one method-specific piece is the study-variable
+expression in `constructModelView`, which dispatches on `usesMethod` because the library does not yet
+declare a measure→ADaM-variable mapping.
 
 | Function | Returns |
 |---|---|
-| `ctxOf(lib, graph, i18n?)` | Context object for all other calls; `i18n` is the language-pack map (§5.1), optional. |
+| `ctxOf(lib, graph, i18n?, proposed?)` | Context object for all other calls. `i18n` is the language-pack map (§5.1). `proposed` is the proposed-additions overlay, defaulting to `window.ACDC_LIBRARY_PROPOSED`; its entities are merged into `ctx.lib` tagged `proposed: true`, and its `provenance` is exposed as `ctx.lib.proposedProvenance`. The passed-in `lib` is never mutated — read merged content from `ctx.lib`, not from the raw global. |
 | `availableLangs(ctx)` | Configured language codes (`["en"]` when no packs). |
 | `langPack(ctx, lang)` | The language pack or `null`. |
 | `phraseDef(ctx, oid)` | SmartPhrase definition or `null`. |
@@ -395,7 +428,22 @@ standard; `illustrative` — the intended grounding, id not yet registered), and
 | `qb:` | `http://purl.org/linked-data/cube#` | Data-cube vocabulary (via the library's DSDs) |
 | `acdc:` | `https://w3id.org/cdisc/ac-dc/` | Templates, phrase library, instances, data concepts |
 
-## 12. Errors and findings
+## 12. Tooling *(PoC)*
+
+Dev-time only; the demo itself needs none of it and stays zero-install.
+
+| Command | Purpose |
+|---|---|
+| `node tools/build-library-subset.mjs` | Regenerate `demo/data/acdc-library.js` from `methods_02` at the pinned commit, via `git show`. Entities are copied verbatim; the selection (`SELECT_TRANSFORMATIONS`, `SELECT_METHODS`) is declared in the script. |
+| `node tools/build-library-subset.mjs --check` | Assert the file on disk equals generator output — enforces "do not hand-edit". |
+| `node tools/verify.mjs` | Engine gate: every instance of every registered study, plus planted faults, overlay integrity and localisation completeness. Compares against `tools/goldens.json`. |
+| `node tools/verify.mjs --update-goldens` | Re-pin goldens. Only after reviewing the reported diff. |
+| `NODE_PATH=<dir>/node_modules node tools/verify-ui.mjs` | Headless DOM walkthrough of `demo/index.html` in jsdom, both studies, all four stops; fails on any console error. Exit 2 if jsdom is absent. |
+
+Goldens are **captured from behaviour, not hand-written**, so they answer "did this change anything?"
+rather than "is this correct?" — correctness lives in the assertions alongside them.
+
+## 13. Errors and findings
 
 Resolution errors (strings, in `errors[]`):
 
