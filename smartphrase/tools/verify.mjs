@@ -24,6 +24,7 @@ function load(rel) {
 }
 
 load("data/acdc-library.js");
+load("data/acdc-library-proposed.js");
 load("data/study-graph.js");
 load("data/lang-overlay.js");
 load("engine.js");
@@ -152,6 +153,27 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
 
   const noWrapper = E.parseMacroText(ctx, "<p>not a macro block</p>", base);
   check("planted fault: missing wrapper rejected", noWrapper.instancePatch === null);
+}
+
+/* ---- proposed library additions ---- */
+{
+  const ctx = E.ctxOf(LIB, graphs.CDISCPILOT01, I18N);
+  const tpl = E.templateDef(ctx, "T.PFS_KaplanMeier");
+  check("proposed template T.PFS_KaplanMeier resolves", !!tpl);
+  if (tpl) {
+    check("proposed template is flagged proposed", tpl.proposed === true);
+    check("proposed template's method is in the subset", !!LIB.methods[tpl.usesMethod]);
+    const methodOutputs = LIB.methods[tpl.usesMethod].outputs.map((o) => o.name);
+    const declared = tpl.outputDataStructure.measures.map((m) => m.output);
+    const unknown = declared.filter((o) => methodOutputs.indexOf(o) === -1);
+    check("proposed template declares only real method outputs", unknown.length === 0, unknown.join(", "));
+    const unknownPhrases = tpl.validSmartPhrases.filter((oid) => !E.phraseDef(ctx, oid));
+    check("proposed template's validSmartPhrases all exist", unknownPhrases.length === 0, unknownPhrases.join(", "));
+  }
+  check(
+    "generated subset is not mutated by the overlay",
+    LIB.transformations.every((t) => t.conceptId !== "T.PFS_KaplanMeier")
+  );
 }
 
 /* ---- compare or update ---- */

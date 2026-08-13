@@ -9,8 +9,34 @@
 (function (g) {
   "use strict";
 
-  function ctxOf(lib, graph, i18n) {
-    return { lib: lib, graph: graph, i18n: i18n || null };
+  /*
+   * Build the evaluation context. Proposed library additions (not yet upstream
+   * on methods_02) are merged over the generated subset here, tagged
+   * proposed: true so the UI can badge them. The generated subset is never
+   * mutated — the merge produces a new lib object.
+   */
+  function ctxOf(lib, graph, i18n, proposed) {
+    var merged = lib;
+    var pro = proposed || g.ACDC_LIBRARY_PROPOSED || null;
+    if (pro) {
+      merged = Object.assign({}, lib);
+      merged.proposedProvenance = pro.provenance;
+      if (pro.transformations && pro.transformations.length) {
+        merged.transformations = lib.transformations.concat(
+          pro.transformations.map(function (t) {
+            return Object.assign({}, t, { proposed: true });
+          })
+        );
+      }
+      if (pro.smartPhrases && pro.smartPhrases.length) {
+        merged.smartPhrases = lib.smartPhrases.concat(
+          pro.smartPhrases.map(function (p) {
+            return Object.assign({}, p, { proposed: true });
+          })
+        );
+      }
+    }
+    return { lib: merged, graph: graph, i18n: i18n || null };
   }
 
   // ---------- language packs ----------------------------------------------
