@@ -26,6 +26,7 @@ function load(rel) {
 load("data/acdc-library.js");
 load("data/acdc-library-proposed.js");
 load("data/study-graph.js");
+load("data/study-graph-pre0102.js");
 load("data/lang-overlay.js");
 load("engine.js");
 

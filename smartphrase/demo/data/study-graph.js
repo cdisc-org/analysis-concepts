@@ -10,7 +10,8 @@
  * NOT defined here — it comes verbatim from methods_02 via acdc-library.js.
  */
 (function (g) {
-  g.STUDY_GRAPH = {
+  g.STUDY_GRAPHS = g.STUDY_GRAPHS || {};
+  g.STUDY_GRAPHS.CDISCPILOT01 = {
 
     prefixes: {
       acdc:  "https://w3id.org/cdisc/ac-dc/",
@@ -252,4 +253,6 @@
       ]
     }
   };
+  /* Back-compat alias: the original single-study global. */
+  g.STUDY_GRAPH = g.STUDY_GRAPHS.CDISCPILOT01;
 })(typeof window !== "undefined" ? window : globalThis);

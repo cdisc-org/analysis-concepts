@@ -1349,5 +1349,1293 @@
         "USUBJID"
       ]
     }
+  ],
+  "PRE0102/AC.PRIMARY.PFS/sentence/en": "Time to disease progression or death (PFS) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as the primary analysis.",
+  "PRE0102/AC.PRIMARY.PFS/sentence/fr": "Time to disease progression or death (PFS) dans la population eligible, treated en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme analyse principale.",
+  "PRE0102/AC.PRIMARY.PFS/sentence/de": "Time to disease progression or death (PFS) in der eligible, treated wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als primäre Analyse untersucht.",
+  "PRE0102/AC.PRIMARY.PFS/modelView": {
+    "instance": "AC.PRIMARY.PFS",
+    "iri": "acdc:instance/PRE0102-AC-PRIMARY-PFS",
+    "template": {
+      "conceptId": "T.PFS_KaplanMeier",
+      "label": "Time-to-Event Kaplan-Meier Summary",
+      "transformationType": "analysis",
+      "copiedFrom": "Transformation Library v0.7 (methods_02)"
+    },
+    "usesMethod": {
+      "conceptId": "M.KaplanMeier",
+      "label": "Kaplan-Meier",
+      "iri": "acdc:method/KaplanMeier",
+      "ars": "ars:method/MTH-KM-TTE",
+      "genericExpression": "Surv(<time>, <event>) ~ <fixed_effect>?"
+    },
+    "configurationValues": [
+      {
+        "configurationName": "conf_type",
+        "value": "log-log",
+        "from": "template"
+      },
+      {
+        "configurationName": "alpha",
+        "value": "0.1",
+        "from": "SP_CONFIDENCE_LEVEL"
+      }
+    ],
+    "sliceKeys": [
+      {
+        "dimension": "EventDimension",
+        "source": "event",
+        "value": {
+          "concept": "EVENT.PFS",
+          "label": "PFS",
+          "iri": "ncit:C18215"
+        }
+      },
+      {
+        "dimension": "Population",
+        "source": "population",
+        "value": {
+          "concept": "POP.EVAL_EFFICACY",
+          "label": "eligible, treated",
+          "iri": "usdm:AnalysisPopulation/PRE0102-POP-EFF"
+        }
+      }
+    ],
+    "slices": [
+      {
+        "name": "endpoint",
+        "constraints": [
+          {
+            "dimension": "EventDimension",
+            "value": "PFS"
+          },
+          {
+            "dimension": "Population",
+            "value": "eligible, treated"
+          }
+        ]
+      }
+    ],
+    "outputMeasures": [
+      {
+        "output": "median_survival",
+        "concept": "MedianSurvival"
+      },
+      {
+        "output": "survival_table",
+        "concept": "SurvivalFunction"
+      },
+      {
+        "output": "event_summary",
+        "concept": "EventSummary"
+      },
+      {
+        "output": "landmark_estimates",
+        "concept": "LandmarkEstimate"
+      }
+    ],
+    "resolvedExpression": "Surv(AVAL, 1-CNSR) ~ TRTP",
+    "usdmObjective": {
+      "iri": "usdm:Objective/PRE0102-OBJ-PRIMARY-1",
+      "iri_status": "illustrative",
+      "text": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "arsAnalysis": {
+      "iri": "ars:analysis/PRE0102-AN-7.07.02-PFS",
+      "iri_status": "illustrative"
+    },
+    "validSmartPhrases": [
+      "SP_TTE_ENDPOINT",
+      "SP_POPULATION",
+      "SP_GROUPING",
+      "SP_METHOD_KM",
+      "SP_CONFIDENCE_LEVEL",
+      "SP_STRATIFICATION"
+    ]
+  },
+  "PRE0102/AC.PRIMARY.PFS/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.PRIMARY.PFS\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.PFS\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.EVAL_EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n</acdc:macro>",
+  "PRE0102/AC.PRIMARY.PFS/jsonld": {
+    "@context": {
+      "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "acdc": "https://w3id.org/cdisc/ac-dc/",
+      "usdm": "https://ddf.cdisc.org/usdm/v4/",
+      "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
+      "stato": "http://purl.obolibrary.org/obo/",
+      "ncit": "http://purl.obolibrary.org/obo/NCIT_",
+      "qb": "http://purl.org/linked-data/cube#"
+    },
+    "@id": "acdc:instance/PRE0102-AC-PRIMARY-PFS",
+    "@type": "acdc:AnalysisConcept",
+    "rdfs:label": "Primary efficacy analysis — PFS",
+    "acdc:instantiates": {
+      "@id": "acdc:template/T.PFS_KaplanMeier"
+    },
+    "acdc:usesMethod": {
+      "@id": "ars:method/MTH-KM-TTE",
+      "rdfs:label": "Kaplan-Meier",
+      "acdc:alignedTo": {
+        "@id": "acdc:method/KaplanMeier"
+      }
+    },
+    "usdm:objective": {
+      "@id": "usdm:Objective/PRE0102-OBJ-PRIMARY-1",
+      "rdfs:comment": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "ars:analysis": {
+      "@id": "ars:analysis/PRE0102-AN-7.07.02-PFS"
+    },
+    "sp:hasPhraseInstance": [
+      {
+        "@id": "#p1",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_TTE_ENDPOINT",
+        "sp:role": "endpoint",
+        "sp:binding": [
+          {
+            "sp:slot": "event",
+            "@id": "ncit:C18215",
+            "rdfs:label": "PFS",
+            "sp:render": "name_with_label"
+          }
+        ]
+      },
+      {
+        "@id": "#p2",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_POPULATION",
+        "sp:role": "population",
+        "sp:binding": [
+          {
+            "sp:slot": "population",
+            "@id": "usdm:AnalysisPopulation/PRE0102-POP-EFF",
+            "rdfs:label": "EFF",
+            "sp:render": "name"
+          }
+        ]
+      },
+      {
+        "@id": "#p3",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_GROUPING",
+        "sp:role": "grouping",
+        "sp:binding": [
+          {
+            "sp:slot": "treatment",
+            "@id": "usdm:StudyArm/PRE0102-ARM-SET",
+            "rdfs:label": "treatment",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p4",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_METHOD_KM",
+        "sp:role": "method",
+        "sp:binding": [
+          {
+            "sp:slot": "method",
+            "@id": "ars:method/MTH-KM-TTE",
+            "acdc:alignedTo": {
+              "@id": "acdc:method/KaplanMeier"
+            }
+          }
+        ]
+      },
+      {
+        "@id": "#p5",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CONFIDENCE_LEVEL",
+        "sp:role": "method_qualifier",
+        "sp:binding": [
+          {
+            "sp:slot": "conf_level",
+            "sp:value": "90"
+          }
+        ]
+      }
+    ],
+    "sp:resolvesTo": [
+      {
+        "@value": "Time to disease progression or death (PFS) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as the primary analysis.",
+        "@language": "en"
+      },
+      {
+        "@value": "Time to disease progression or death (PFS) dans la population eligible, treated en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme analyse principale.",
+        "@language": "fr"
+      },
+      {
+        "@value": "Time to disease progression or death (PFS) in der eligible, treated wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als primäre Analyse untersucht.",
+        "@language": "de"
+      }
+    ]
+  },
+  "PRE0102/AC.PRIMARY.PFS/trace/endpoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TTE",
+      "label": "Time to Event",
+      "iri": "acdc:dc/TimeToEvent",
+      "iri_status": "illustrative",
+      "note": "Elapsed time from the time-origin (randomization) to the event or to censoring. Paired with an event/censoring indicator."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "AVAL",
+      "label": "Analysis Value (time to event)",
+      "dataStructure": "BDS (time-to-event)",
+      "note": "Time-to-event analysis value; CNSR carries the censoring indicator (0 = event, 1 = censored), ADaMIG v1.3."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADTTE.AVAL",
+      "label": "AVAL in ADTTE",
+      "whereClause": "PARAMCD = 'PFS'",
+      "note": "PFS record; censoring in ADTTE.CNSR."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADTTE",
+      "label": "ADaM time-to-event analysis dataset",
+      "file": "adtte.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD"
+      ],
+      "note": "One record per subject per time-to-event parameter."
+    }
+  ],
+  "PRE0102/AC.PRIMARY.PFS/trace/grouping": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TRT",
+      "label": "Planned Treatment",
+      "iri": "acdc:dc/PlannedTreatment",
+      "iri_status": "illustrative",
+      "usdm": "usdm:StudyArm"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "TRTP",
+      "label": "Planned Treatment",
+      "dataStructure": "ADSL",
+      "note": "Subject-level treatment assignment."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.TRTP",
+      "label": "TRTP in ADSL",
+      "note": "Fulvestrant + everolimus / fulvestrant + placebo."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ],
+      "note": "One record per subject."
+    }
+  ],
+  "PRE0102/AC.PRIMARY.PFS/trace/population": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.POP",
+      "label": "Analysis Population",
+      "iri": "acdc:dc/AnalysisPopulation",
+      "iri_status": "illustrative",
+      "usdm": "usdm:AnalysisPopulation"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "EFFIFL",
+      "label": "Population Flag",
+      "dataStructure": "ADSL",
+      "note": "Population indicator variable."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.EFFIFL",
+      "label": "EFFIFL in ADSL",
+      "whereClause": "EFFIFL = 'Y'",
+      "note": "Subjects in the eligible, treated analysis set."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ]
+    }
+  ],
+  "PRE0102/AC.SENS.PFS.ITT/sentence/en": "Time to disease progression or death (PFS) in the intent-to-treat population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a sensitivity analysis.",
+  "PRE0102/AC.SENS.PFS.ITT/sentence/fr": "Time to disease progression or death (PFS) dans la population intent-to-treat en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme a sensitivity analysis.",
+  "PRE0102/AC.SENS.PFS.ITT/sentence/de": "Time to disease progression or death (PFS) in der intent-to-treat wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als a sensitivity analysis untersucht.",
+  "PRE0102/AC.SENS.PFS.ITT/modelView": {
+    "instance": "AC.SENS.PFS.ITT",
+    "iri": "acdc:instance/PRE0102-AC-SENS-PFS-ITT",
+    "template": {
+      "conceptId": "T.PFS_KaplanMeier",
+      "label": "Time-to-Event Kaplan-Meier Summary",
+      "transformationType": "analysis",
+      "copiedFrom": "Transformation Library v0.7 (methods_02)"
+    },
+    "usesMethod": {
+      "conceptId": "M.KaplanMeier",
+      "label": "Kaplan-Meier",
+      "iri": "acdc:method/KaplanMeier",
+      "ars": "ars:method/MTH-KM-TTE",
+      "genericExpression": "Surv(<time>, <event>) ~ <fixed_effect>?"
+    },
+    "configurationValues": [
+      {
+        "configurationName": "conf_type",
+        "value": "log-log",
+        "from": "template"
+      },
+      {
+        "configurationName": "alpha",
+        "value": "0.1",
+        "from": "SP_CONFIDENCE_LEVEL"
+      }
+    ],
+    "sliceKeys": [
+      {
+        "dimension": "EventDimension",
+        "source": "event",
+        "value": {
+          "concept": "EVENT.PFS",
+          "label": "PFS",
+          "iri": "ncit:C18215"
+        }
+      },
+      {
+        "dimension": "Population",
+        "source": "population",
+        "value": {
+          "concept": "POP.ITT",
+          "label": "intent-to-treat",
+          "iri": "usdm:AnalysisPopulation/PRE0102-POP-ITT"
+        }
+      }
+    ],
+    "slices": [
+      {
+        "name": "endpoint",
+        "constraints": [
+          {
+            "dimension": "EventDimension",
+            "value": "PFS"
+          },
+          {
+            "dimension": "Population",
+            "value": "intent-to-treat"
+          }
+        ]
+      }
+    ],
+    "outputMeasures": [
+      {
+        "output": "median_survival",
+        "concept": "MedianSurvival"
+      },
+      {
+        "output": "survival_table",
+        "concept": "SurvivalFunction"
+      },
+      {
+        "output": "event_summary",
+        "concept": "EventSummary"
+      },
+      {
+        "output": "landmark_estimates",
+        "concept": "LandmarkEstimate"
+      }
+    ],
+    "resolvedExpression": "Surv(AVAL, 1-CNSR) ~ TRTP",
+    "usdmObjective": {
+      "iri": "usdm:Objective/PRE0102-OBJ-PRIMARY-1",
+      "iri_status": "illustrative",
+      "text": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "arsAnalysis": {
+      "iri": "ars:analysis/PRE0102-AN-7.07.02-PFS-ITT",
+      "iri_status": "illustrative"
+    },
+    "validSmartPhrases": [
+      "SP_TTE_ENDPOINT",
+      "SP_POPULATION",
+      "SP_GROUPING",
+      "SP_METHOD_KM",
+      "SP_CONFIDENCE_LEVEL",
+      "SP_STRATIFICATION"
+    ]
+  },
+  "PRE0102/AC.SENS.PFS.ITT/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.SENS.PFS.ITT\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.PFS\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.ITT\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n</acdc:macro>",
+  "PRE0102/AC.SENS.PFS.ITT/jsonld": {
+    "@context": {
+      "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "acdc": "https://w3id.org/cdisc/ac-dc/",
+      "usdm": "https://ddf.cdisc.org/usdm/v4/",
+      "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
+      "stato": "http://purl.obolibrary.org/obo/",
+      "ncit": "http://purl.obolibrary.org/obo/NCIT_",
+      "qb": "http://purl.org/linked-data/cube#"
+    },
+    "@id": "acdc:instance/PRE0102-AC-SENS-PFS-ITT",
+    "@type": "acdc:AnalysisConcept",
+    "rdfs:label": "Sensitivity analysis — PFS, ITT population",
+    "acdc:instantiates": {
+      "@id": "acdc:template/T.PFS_KaplanMeier"
+    },
+    "acdc:usesMethod": {
+      "@id": "ars:method/MTH-KM-TTE",
+      "rdfs:label": "Kaplan-Meier",
+      "acdc:alignedTo": {
+        "@id": "acdc:method/KaplanMeier"
+      }
+    },
+    "usdm:objective": {
+      "@id": "usdm:Objective/PRE0102-OBJ-PRIMARY-1",
+      "rdfs:comment": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "ars:analysis": {
+      "@id": "ars:analysis/PRE0102-AN-7.07.02-PFS-ITT"
+    },
+    "sp:hasPhraseInstance": [
+      {
+        "@id": "#p1",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_TTE_ENDPOINT",
+        "sp:role": "endpoint",
+        "sp:binding": [
+          {
+            "sp:slot": "event",
+            "@id": "ncit:C18215",
+            "rdfs:label": "PFS",
+            "sp:render": "name_with_label"
+          }
+        ]
+      },
+      {
+        "@id": "#p2",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_POPULATION",
+        "sp:role": "population",
+        "sp:binding": [
+          {
+            "sp:slot": "population",
+            "@id": "usdm:AnalysisPopulation/PRE0102-POP-ITT",
+            "rdfs:label": "ITT",
+            "sp:render": "name"
+          }
+        ]
+      },
+      {
+        "@id": "#p3",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_GROUPING",
+        "sp:role": "grouping",
+        "sp:binding": [
+          {
+            "sp:slot": "treatment",
+            "@id": "usdm:StudyArm/PRE0102-ARM-SET",
+            "rdfs:label": "treatment",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p4",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_METHOD_KM",
+        "sp:role": "method",
+        "sp:binding": [
+          {
+            "sp:slot": "method",
+            "@id": "ars:method/MTH-KM-TTE",
+            "acdc:alignedTo": {
+              "@id": "acdc:method/KaplanMeier"
+            }
+          }
+        ]
+      },
+      {
+        "@id": "#p5",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CONFIDENCE_LEVEL",
+        "sp:role": "method_qualifier",
+        "sp:binding": [
+          {
+            "sp:slot": "conf_level",
+            "sp:value": "90"
+          }
+        ]
+      }
+    ],
+    "sp:resolvesTo": [
+      {
+        "@value": "Time to disease progression or death (PFS) in the intent-to-treat population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a sensitivity analysis.",
+        "@language": "en"
+      },
+      {
+        "@value": "Time to disease progression or death (PFS) dans la population intent-to-treat en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme a sensitivity analysis.",
+        "@language": "fr"
+      },
+      {
+        "@value": "Time to disease progression or death (PFS) in der intent-to-treat wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als a sensitivity analysis untersucht.",
+        "@language": "de"
+      }
+    ]
+  },
+  "PRE0102/AC.SENS.PFS.ITT/trace/endpoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TTE",
+      "label": "Time to Event",
+      "iri": "acdc:dc/TimeToEvent",
+      "iri_status": "illustrative",
+      "note": "Elapsed time from the time-origin (randomization) to the event or to censoring. Paired with an event/censoring indicator."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "AVAL",
+      "label": "Analysis Value (time to event)",
+      "dataStructure": "BDS (time-to-event)",
+      "note": "Time-to-event analysis value; CNSR carries the censoring indicator (0 = event, 1 = censored), ADaMIG v1.3."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADTTE.AVAL",
+      "label": "AVAL in ADTTE",
+      "whereClause": "PARAMCD = 'PFS'",
+      "note": "PFS record; censoring in ADTTE.CNSR."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADTTE",
+      "label": "ADaM time-to-event analysis dataset",
+      "file": "adtte.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD"
+      ],
+      "note": "One record per subject per time-to-event parameter."
+    }
+  ],
+  "PRE0102/AC.SENS.PFS.ITT/trace/grouping": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TRT",
+      "label": "Planned Treatment",
+      "iri": "acdc:dc/PlannedTreatment",
+      "iri_status": "illustrative",
+      "usdm": "usdm:StudyArm"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "TRTP",
+      "label": "Planned Treatment",
+      "dataStructure": "ADSL",
+      "note": "Subject-level treatment assignment."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.TRTP",
+      "label": "TRTP in ADSL",
+      "note": "Fulvestrant + everolimus / fulvestrant + placebo."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ],
+      "note": "One record per subject."
+    }
+  ],
+  "PRE0102/AC.SENS.PFS.ITT/trace/population": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.POP",
+      "label": "Analysis Population",
+      "iri": "acdc:dc/AnalysisPopulation",
+      "iri_status": "illustrative",
+      "usdm": "usdm:AnalysisPopulation"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "ITTFL",
+      "label": "Population Flag",
+      "dataStructure": "ADSL",
+      "note": "Population indicator variable."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.ITTFL",
+      "label": "ITTFL in ADSL",
+      "whereClause": "ITTFL = 'Y'",
+      "note": "Subjects in the intent-to-treat analysis set."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ]
+    }
+  ],
+  "PRE0102/AC.SEC.OS/sentence/en": "Time to death from any cause (OS) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a secondary analysis.",
+  "PRE0102/AC.SEC.OS/sentence/fr": "Time to death from any cause (OS) dans la population eligible, treated en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
+  "PRE0102/AC.SEC.OS/sentence/de": "Time to death from any cause (OS) in der eligible, treated wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
+  "PRE0102/AC.SEC.OS/modelView": {
+    "instance": "AC.SEC.OS",
+    "iri": "acdc:instance/PRE0102-AC-SEC-OS",
+    "template": {
+      "conceptId": "T.PFS_KaplanMeier",
+      "label": "Time-to-Event Kaplan-Meier Summary",
+      "transformationType": "analysis",
+      "copiedFrom": "Transformation Library v0.7 (methods_02)"
+    },
+    "usesMethod": {
+      "conceptId": "M.KaplanMeier",
+      "label": "Kaplan-Meier",
+      "iri": "acdc:method/KaplanMeier",
+      "ars": "ars:method/MTH-KM-TTE",
+      "genericExpression": "Surv(<time>, <event>) ~ <fixed_effect>?"
+    },
+    "configurationValues": [
+      {
+        "configurationName": "conf_type",
+        "value": "log-log",
+        "from": "template"
+      },
+      {
+        "configurationName": "alpha",
+        "value": "0.1",
+        "from": "SP_CONFIDENCE_LEVEL"
+      }
+    ],
+    "sliceKeys": [
+      {
+        "dimension": "EventDimension",
+        "source": "event",
+        "value": {
+          "concept": "EVENT.OS",
+          "label": "OS",
+          "iri": "ncit:C16952"
+        }
+      },
+      {
+        "dimension": "Population",
+        "source": "population",
+        "value": {
+          "concept": "POP.EVAL_EFFICACY",
+          "label": "eligible, treated",
+          "iri": "usdm:AnalysisPopulation/PRE0102-POP-EFF"
+        }
+      }
+    ],
+    "slices": [
+      {
+        "name": "endpoint",
+        "constraints": [
+          {
+            "dimension": "EventDimension",
+            "value": "OS"
+          },
+          {
+            "dimension": "Population",
+            "value": "eligible, treated"
+          }
+        ]
+      }
+    ],
+    "outputMeasures": [
+      {
+        "output": "median_survival",
+        "concept": "MedianSurvival"
+      },
+      {
+        "output": "survival_table",
+        "concept": "SurvivalFunction"
+      },
+      {
+        "output": "event_summary",
+        "concept": "EventSummary"
+      },
+      {
+        "output": "landmark_estimates",
+        "concept": "LandmarkEstimate"
+      }
+    ],
+    "resolvedExpression": "Surv(AVAL, 1-CNSR) ~ TRTP",
+    "usdmObjective": {
+      "iri": "usdm:Objective/PRE0102-OBJ-SECONDARY-1",
+      "iri_status": "illustrative",
+      "text": "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "arsAnalysis": {
+      "iri": "ars:analysis/PRE0102-AN-7.07.02-OS",
+      "iri_status": "illustrative"
+    },
+    "validSmartPhrases": [
+      "SP_TTE_ENDPOINT",
+      "SP_POPULATION",
+      "SP_GROUPING",
+      "SP_METHOD_KM",
+      "SP_CONFIDENCE_LEVEL",
+      "SP_STRATIFICATION"
+    ]
+  },
+  "PRE0102/AC.SEC.OS/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.SEC.OS\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.OS\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.EVAL_EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n</acdc:macro>",
+  "PRE0102/AC.SEC.OS/jsonld": {
+    "@context": {
+      "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "acdc": "https://w3id.org/cdisc/ac-dc/",
+      "usdm": "https://ddf.cdisc.org/usdm/v4/",
+      "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
+      "stato": "http://purl.obolibrary.org/obo/",
+      "ncit": "http://purl.obolibrary.org/obo/NCIT_",
+      "qb": "http://purl.org/linked-data/cube#"
+    },
+    "@id": "acdc:instance/PRE0102-AC-SEC-OS",
+    "@type": "acdc:AnalysisConcept",
+    "rdfs:label": "Secondary analysis — overall survival",
+    "acdc:instantiates": {
+      "@id": "acdc:template/T.PFS_KaplanMeier"
+    },
+    "acdc:usesMethod": {
+      "@id": "ars:method/MTH-KM-TTE",
+      "rdfs:label": "Kaplan-Meier",
+      "acdc:alignedTo": {
+        "@id": "acdc:method/KaplanMeier"
+      }
+    },
+    "usdm:objective": {
+      "@id": "usdm:Objective/PRE0102-OBJ-SECONDARY-1",
+      "rdfs:comment": "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "ars:analysis": {
+      "@id": "ars:analysis/PRE0102-AN-7.07.02-OS"
+    },
+    "sp:hasPhraseInstance": [
+      {
+        "@id": "#p1",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_TTE_ENDPOINT",
+        "sp:role": "endpoint",
+        "sp:binding": [
+          {
+            "sp:slot": "event",
+            "@id": "ncit:C16952",
+            "rdfs:label": "OS",
+            "sp:render": "name_with_label"
+          }
+        ]
+      },
+      {
+        "@id": "#p2",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_POPULATION",
+        "sp:role": "population",
+        "sp:binding": [
+          {
+            "sp:slot": "population",
+            "@id": "usdm:AnalysisPopulation/PRE0102-POP-EFF",
+            "rdfs:label": "EFF",
+            "sp:render": "name"
+          }
+        ]
+      },
+      {
+        "@id": "#p3",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_GROUPING",
+        "sp:role": "grouping",
+        "sp:binding": [
+          {
+            "sp:slot": "treatment",
+            "@id": "usdm:StudyArm/PRE0102-ARM-SET",
+            "rdfs:label": "treatment",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p4",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_METHOD_KM",
+        "sp:role": "method",
+        "sp:binding": [
+          {
+            "sp:slot": "method",
+            "@id": "ars:method/MTH-KM-TTE",
+            "acdc:alignedTo": {
+              "@id": "acdc:method/KaplanMeier"
+            }
+          }
+        ]
+      },
+      {
+        "@id": "#p5",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CONFIDENCE_LEVEL",
+        "sp:role": "method_qualifier",
+        "sp:binding": [
+          {
+            "sp:slot": "conf_level",
+            "sp:value": "90"
+          }
+        ]
+      }
+    ],
+    "sp:resolvesTo": [
+      {
+        "@value": "Time to death from any cause (OS) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a secondary analysis.",
+        "@language": "en"
+      },
+      {
+        "@value": "Time to death from any cause (OS) dans la population eligible, treated en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
+        "@language": "fr"
+      },
+      {
+        "@value": "Time to death from any cause (OS) in der eligible, treated wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
+        "@language": "de"
+      }
+    ]
+  },
+  "PRE0102/AC.SEC.OS/trace/endpoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TTE",
+      "label": "Time to Event",
+      "iri": "acdc:dc/TimeToEvent",
+      "iri_status": "illustrative",
+      "note": "Elapsed time from the time-origin (randomization) to the event or to censoring. Paired with an event/censoring indicator."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "AVAL",
+      "label": "Analysis Value (time to event)",
+      "dataStructure": "BDS (time-to-event)",
+      "note": "Time-to-event analysis value; CNSR carries the censoring indicator (0 = event, 1 = censored), ADaMIG v1.3."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADTTE.AVAL",
+      "label": "AVAL in ADTTE",
+      "whereClause": "PARAMCD = 'OS'",
+      "note": "OS record; censoring in ADTTE.CNSR."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADTTE",
+      "label": "ADaM time-to-event analysis dataset",
+      "file": "adtte.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD"
+      ],
+      "note": "One record per subject per time-to-event parameter."
+    }
+  ],
+  "PRE0102/AC.SEC.OS/trace/grouping": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TRT",
+      "label": "Planned Treatment",
+      "iri": "acdc:dc/PlannedTreatment",
+      "iri_status": "illustrative",
+      "usdm": "usdm:StudyArm"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "TRTP",
+      "label": "Planned Treatment",
+      "dataStructure": "ADSL",
+      "note": "Subject-level treatment assignment."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.TRTP",
+      "label": "TRTP in ADSL",
+      "note": "Fulvestrant + everolimus / fulvestrant + placebo."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ],
+      "note": "One record per subject."
+    }
+  ],
+  "PRE0102/AC.SEC.OS/trace/population": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.POP",
+      "label": "Analysis Population",
+      "iri": "acdc:dc/AnalysisPopulation",
+      "iri_status": "illustrative",
+      "usdm": "usdm:AnalysisPopulation"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "EFFIFL",
+      "label": "Population Flag",
+      "dataStructure": "ADSL",
+      "note": "Population indicator variable."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.EFFIFL",
+      "label": "EFFIFL in ADSL",
+      "whereClause": "EFFIFL = 'Y'",
+      "note": "Subjects in the eligible, treated analysis set."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ]
+    }
+  ],
+  "PRE0102/AC.SEC.TTP/sentence/en": "Time to disease progression (TTP) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a secondary analysis.",
+  "PRE0102/AC.SEC.TTP/sentence/fr": "Time to disease progression (TTP) dans la population eligible, treated en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
+  "PRE0102/AC.SEC.TTP/sentence/de": "Time to disease progression (TTP) in der eligible, treated wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
+  "PRE0102/AC.SEC.TTP/modelView": {
+    "instance": "AC.SEC.TTP",
+    "iri": "acdc:instance/PRE0102-AC-SEC-TTP",
+    "template": {
+      "conceptId": "T.PFS_KaplanMeier",
+      "label": "Time-to-Event Kaplan-Meier Summary",
+      "transformationType": "analysis",
+      "copiedFrom": "Transformation Library v0.7 (methods_02)"
+    },
+    "usesMethod": {
+      "conceptId": "M.KaplanMeier",
+      "label": "Kaplan-Meier",
+      "iri": "acdc:method/KaplanMeier",
+      "ars": "ars:method/MTH-KM-TTE",
+      "genericExpression": "Surv(<time>, <event>) ~ <fixed_effect>?"
+    },
+    "configurationValues": [
+      {
+        "configurationName": "conf_type",
+        "value": "log-log",
+        "from": "template"
+      },
+      {
+        "configurationName": "alpha",
+        "value": "0.1",
+        "from": "SP_CONFIDENCE_LEVEL"
+      }
+    ],
+    "sliceKeys": [
+      {
+        "dimension": "EventDimension",
+        "source": "event",
+        "value": {
+          "concept": "EVENT.TTP",
+          "label": "TTP",
+          "iri": "acdc:event/TimeToProgression"
+        }
+      },
+      {
+        "dimension": "Population",
+        "source": "population",
+        "value": {
+          "concept": "POP.EVAL_EFFICACY",
+          "label": "eligible, treated",
+          "iri": "usdm:AnalysisPopulation/PRE0102-POP-EFF"
+        }
+      }
+    ],
+    "slices": [
+      {
+        "name": "endpoint",
+        "constraints": [
+          {
+            "dimension": "EventDimension",
+            "value": "TTP"
+          },
+          {
+            "dimension": "Population",
+            "value": "eligible, treated"
+          }
+        ]
+      }
+    ],
+    "outputMeasures": [
+      {
+        "output": "median_survival",
+        "concept": "MedianSurvival"
+      },
+      {
+        "output": "survival_table",
+        "concept": "SurvivalFunction"
+      },
+      {
+        "output": "event_summary",
+        "concept": "EventSummary"
+      },
+      {
+        "output": "landmark_estimates",
+        "concept": "LandmarkEstimate"
+      }
+    ],
+    "resolvedExpression": "Surv(AVAL, 1-CNSR) ~ TRTP",
+    "usdmObjective": {
+      "iri": "usdm:Objective/PRE0102-OBJ-SECONDARY-1",
+      "iri_status": "illustrative",
+      "text": "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "arsAnalysis": {
+      "iri": "ars:analysis/PRE0102-AN-7.07.02-TTP",
+      "iri_status": "illustrative"
+    },
+    "validSmartPhrases": [
+      "SP_TTE_ENDPOINT",
+      "SP_POPULATION",
+      "SP_GROUPING",
+      "SP_METHOD_KM",
+      "SP_CONFIDENCE_LEVEL",
+      "SP_STRATIFICATION"
+    ]
+  },
+  "PRE0102/AC.SEC.TTP/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.SEC.TTP\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.TTP\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.EVAL_EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n</acdc:macro>",
+  "PRE0102/AC.SEC.TTP/jsonld": {
+    "@context": {
+      "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "acdc": "https://w3id.org/cdisc/ac-dc/",
+      "usdm": "https://ddf.cdisc.org/usdm/v4/",
+      "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
+      "stato": "http://purl.obolibrary.org/obo/",
+      "ncit": "http://purl.obolibrary.org/obo/NCIT_",
+      "qb": "http://purl.org/linked-data/cube#"
+    },
+    "@id": "acdc:instance/PRE0102-AC-SEC-TTP",
+    "@type": "acdc:AnalysisConcept",
+    "rdfs:label": "Secondary analysis — time to progression",
+    "acdc:instantiates": {
+      "@id": "acdc:template/T.PFS_KaplanMeier"
+    },
+    "acdc:usesMethod": {
+      "@id": "ars:method/MTH-KM-TTE",
+      "rdfs:label": "Kaplan-Meier",
+      "acdc:alignedTo": {
+        "@id": "acdc:method/KaplanMeier"
+      }
+    },
+    "usdm:objective": {
+      "@id": "usdm:Objective/PRE0102-OBJ-SECONDARY-1",
+      "rdfs:comment": "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "ars:analysis": {
+      "@id": "ars:analysis/PRE0102-AN-7.07.02-TTP"
+    },
+    "sp:hasPhraseInstance": [
+      {
+        "@id": "#p1",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_TTE_ENDPOINT",
+        "sp:role": "endpoint",
+        "sp:binding": [
+          {
+            "sp:slot": "event",
+            "@id": "acdc:event/TimeToProgression",
+            "rdfs:label": "TTP",
+            "sp:render": "name_with_label"
+          }
+        ]
+      },
+      {
+        "@id": "#p2",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_POPULATION",
+        "sp:role": "population",
+        "sp:binding": [
+          {
+            "sp:slot": "population",
+            "@id": "usdm:AnalysisPopulation/PRE0102-POP-EFF",
+            "rdfs:label": "EFF",
+            "sp:render": "name"
+          }
+        ]
+      },
+      {
+        "@id": "#p3",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_GROUPING",
+        "sp:role": "grouping",
+        "sp:binding": [
+          {
+            "sp:slot": "treatment",
+            "@id": "usdm:StudyArm/PRE0102-ARM-SET",
+            "rdfs:label": "treatment",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p4",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_METHOD_KM",
+        "sp:role": "method",
+        "sp:binding": [
+          {
+            "sp:slot": "method",
+            "@id": "ars:method/MTH-KM-TTE",
+            "acdc:alignedTo": {
+              "@id": "acdc:method/KaplanMeier"
+            }
+          }
+        ]
+      },
+      {
+        "@id": "#p5",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CONFIDENCE_LEVEL",
+        "sp:role": "method_qualifier",
+        "sp:binding": [
+          {
+            "sp:slot": "conf_level",
+            "sp:value": "90"
+          }
+        ]
+      }
+    ],
+    "sp:resolvesTo": [
+      {
+        "@value": "Time to disease progression (TTP) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a secondary analysis.",
+        "@language": "en"
+      },
+      {
+        "@value": "Time to disease progression (TTP) dans la population eligible, treated en comparant les groupes de treatment using Kaplan-Meier estimation avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
+        "@language": "fr"
+      },
+      {
+        "@value": "Time to disease progression (TTP) in der eligible, treated wird im Vergleich der treatmentsgruppen using Kaplan-Meier estimation mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
+        "@language": "de"
+      }
+    ]
+  },
+  "PRE0102/AC.SEC.TTP/trace/endpoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TTE",
+      "label": "Time to Event",
+      "iri": "acdc:dc/TimeToEvent",
+      "iri_status": "illustrative",
+      "note": "Elapsed time from the time-origin (randomization) to the event or to censoring. Paired with an event/censoring indicator."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "AVAL",
+      "label": "Analysis Value (time to event)",
+      "dataStructure": "BDS (time-to-event)",
+      "note": "Time-to-event analysis value; CNSR carries the censoring indicator (0 = event, 1 = censored), ADaMIG v1.3."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADTTE.AVAL",
+      "label": "AVAL in ADTTE",
+      "whereClause": "PARAMCD = 'TTP'",
+      "note": "TTP record; censoring in ADTTE.CNSR."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADTTE",
+      "label": "ADaM time-to-event analysis dataset",
+      "file": "adtte.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD"
+      ],
+      "note": "One record per subject per time-to-event parameter."
+    }
+  ],
+  "PRE0102/AC.SEC.TTP/trace/grouping": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TRT",
+      "label": "Planned Treatment",
+      "iri": "acdc:dc/PlannedTreatment",
+      "iri_status": "illustrative",
+      "usdm": "usdm:StudyArm"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "TRTP",
+      "label": "Planned Treatment",
+      "dataStructure": "ADSL",
+      "note": "Subject-level treatment assignment."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.TRTP",
+      "label": "TRTP in ADSL",
+      "note": "Fulvestrant + everolimus / fulvestrant + placebo."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ],
+      "note": "One record per subject."
+    }
+  ],
+  "PRE0102/AC.SEC.TTP/trace/population": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.POP",
+      "label": "Analysis Population",
+      "iri": "acdc:dc/AnalysisPopulation",
+      "iri_status": "illustrative",
+      "usdm": "usdm:AnalysisPopulation"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "EFFIFL",
+      "label": "Population Flag",
+      "dataStructure": "ADSL",
+      "note": "Population indicator variable."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.EFFIFL",
+      "label": "EFFIFL in ADSL",
+      "whereClause": "EFFIFL = 'Y'",
+      "note": "Subjects in the eligible, treated analysis set."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ]
+    }
   ]
 }
