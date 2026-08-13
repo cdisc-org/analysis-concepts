@@ -1,5 +1,13 @@
 # Breast Cancer (PrE0102) Worked Example — Implementation Plan
 
+> **COMPLETE — 2026-08-13.** All 10 tasks executed and verified. Final state: 69 pinned outputs across
+> two studies, all three gates green (`verify.mjs`, `build-library-subset.mjs --check`, `verify-ui.mjs`),
+> working tree clean. Deviations from the plan as written are recorded in the commits: the generator
+> needed a `SELECT_TRANSFORMATIONS` list and an upstream `version`→`library_version` rename (the plan
+> assumed all 25 transformations and a matching field name); the manual browser walkthrough was replaced
+> by a committed headless jsdom check (`tools/verify-ui.mjs`), which found a real bug the manual pass
+> would likely have missed.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a second worked study — PrECOG PrE0102 metastatic breast cancer — to the smartphrase demo, carrying a new descriptive Kaplan-Meier transformation template, so that template-level reuse is shown across therapeutic areas and endpoint types rather than only within one study.
@@ -57,7 +65,7 @@ The converted SAP is currently untracked, so every later diff is noisy and the s
 - Consumes: nothing.
 - Produces: `smartphrase/SAP/` on the branch. Later tasks quote §3.1, §5.3, §7.7.2 from `smartphrase/SAP/03-study-objectives.md`, `05-measurement-of-effect.md`, `07-general-statistical-considerations.md`.
 
-- [ ] **Step 1: Confirm what is untracked**
+- [x] **Step 1: Confirm what is untracked**
 
 ```bash
 cd /Volumes/External/skunk/analysis-concepts
@@ -66,7 +74,7 @@ git status --short smartphrase/SAP
 
 Expected: `?? smartphrase/SAP/` (17 files: 16 `.md` + 1 `.pdf`).
 
-- [ ] **Step 2: Check the PDF size is acceptable to commit**
+- [x] **Step 2: Check the PDF size is acceptable to commit**
 
 ```bash
 du -h smartphrase/SAP/PrE0102_SAP_001.pdf
@@ -74,7 +82,7 @@ du -h smartphrase/SAP/PrE0102_SAP_001.pdf
 
 Expected: ~674K. Under a megabyte, so commit it directly — the converted Markdown is only trustworthy if the source travels with it.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add smartphrase/SAP
@@ -111,7 +119,7 @@ Nothing in the repo can currently verify the demo — the 21 + 15 headless check
 - Consumes: `demo/data/acdc-library.js`, `demo/data/study-graph.js`, `demo/data/lang-overlay.js`, `demo/engine.js` (all IIFEs that attach to `globalThis` under Node).
 - Produces: `node smartphrase/tools/verify.mjs` exits 0 on pass, 1 on failure with a diff. `--update-goldens` rewrites `goldens.json`. Later tasks run this after every change.
 
-- [ ] **Step 1: Write the harness**
+- [x] **Step 1: Write the harness**
 
 Create `smartphrase/tools/verify.mjs`:
 
@@ -304,7 +312,7 @@ if (failures.length) {
 console.log(`PASS — ${Object.keys(captured).length} outputs checked, no failures.`);
 ```
 
-- [ ] **Step 2: Run it before goldens exist, to verify it fails loudly**
+- [x] **Step 2: Run it before goldens exist, to verify it fails loudly**
 
 ```bash
 cd /Volumes/External/skunk/analysis-concepts
@@ -313,7 +321,7 @@ node smartphrase/tools/verify.mjs
 
 Expected: FAIL with `no goldens.json — run with --update-goldens first`, exit 1. If it instead crashes on loading, the `vm` load order is wrong — `engine.js` must load last.
 
-- [ ] **Step 3: Capture goldens from current (unmodified) code**
+- [x] **Step 3: Capture goldens from current (unmodified) code**
 
 ```bash
 node smartphrase/tools/verify.mjs --update-goldens
@@ -321,7 +329,7 @@ node smartphrase/tools/verify.mjs --update-goldens
 
 Expected: `goldens written: N entries`. N should be roughly 3 instances × (3 sentences + model view + macro + JSON-LD + ~5 traces) ≈ 35–40.
 
-- [ ] **Step 4: Run again to confirm the gate is green and stable**
+- [x] **Step 4: Run again to confirm the gate is green and stable**
 
 ```bash
 node smartphrase/tools/verify.mjs
@@ -329,7 +337,7 @@ node smartphrase/tools/verify.mjs
 
 Expected: `PASS — N outputs checked, no failures.`
 
-- [ ] **Step 5: Sanity-read two goldens to confirm they are real, not empty**
+- [x] **Step 5: Sanity-read two goldens to confirm they are real, not empty**
 
 ```bash
 node -e "const g=require('./smartphrase/tools/goldens.json'); console.log(g['CDISCPILOT01/AC.PRIMARY.ADASCOG/sentence/en']); console.log(g['CDISCPILOT01/AC.PRIMARY.ADASCOG/sentence/de']);"
@@ -337,7 +345,7 @@ node -e "const g=require('./smartphrase/tools/goldens.json'); console.log(g['CDI
 
 Expected: two full sentences, the German one containing the `wird … untersucht` verb bracket. If either is empty or contains `⟨`, stop — the harness is loading the wrong state.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add smartphrase/tools/verify.mjs smartphrase/tools/goldens.json
@@ -371,7 +379,7 @@ EOF
 - Consumes: a `methods_02` tree, read via `git show` from the local clone (no network, no working-tree switch).
 - Produces: `node smartphrase/tools/build-library-subset.mjs` rewrites `data/acdc-library.js`. `--check` verifies the file on disk matches what the generator would emit, without writing. `ACDC_LIBRARY.methods` gains `M.KaplanMeier`.
 
-- [ ] **Step 1: Confirm the upstream pin and what the current subset selected**
+- [x] **Step 1: Confirm the upstream pin and what the current subset selected**
 
 ```bash
 cd /Volumes/External/skunk/analysis-concepts
@@ -390,7 +398,7 @@ console.log('top-level keys:', Object.keys(L).join(', '));
 
 Expected: provenance pinning `methods_02` / `ffee5df`, `library_version` `0.7`, 22 phrases, templates including `T.CFB_ANCOVA`, methods `M.ANCOVA` only.
 
-- [ ] **Step 2: Write the generator**
+- [x] **Step 2: Write the generator**
 
 Create `smartphrase/tools/build-library-subset.mjs`. It reads the pinned commit through `git show`, selects the same entities the current file contains, and emits the identical wrapper:
 
@@ -491,7 +499,7 @@ if (check) {
 }
 ```
 
-- [ ] **Step 3: Verify the upstream paths and keys the generator assumes actually exist**
+- [x] **Step 3: Verify the upstream paths and keys the generator assumes actually exist**
 
 ```bash
 cd /Volumes/External/skunk/analysis-concepts
@@ -506,7 +514,7 @@ git show ffee5df:lib/methods/analyses/M_KaplanMeier.json | head -3
 
 Expected: the transformation library exposes `library_version`, `configurationOptions`, `roleDefinitions`, `smartPhrases`, `transformations`; `M_KaplanMeier.json` opens with `{ "$schema": ...`. If key names differ, fix the generator's field mapping to match upstream before continuing.
 
-- [ ] **Step 4: Prove the generator reproduces the current file, before widening selection**
+- [x] **Step 4: Prove the generator reproduces the current file, before widening selection**
 
 Temporarily narrow selection to today's content and diff:
 
@@ -519,7 +527,7 @@ diff /tmp/acdc-library.before.js smartphrase/demo/data/acdc-library.js && echo "
 
 Expected: `IDENTICAL`. If the diff is only whitespace/indentation, adjust the emitter (indent width, trailing newline) until byte-identical — do **not** accept a cosmetic diff, because that would silently rewrite the pinned file. If the diff is *semantic* (different entity content), the current file was hand-edited at some point: stop and report before proceeding.
 
-- [ ] **Step 5: Restore the widened selection and regenerate with `M.KaplanMeier`**
+- [x] **Step 5: Restore the widened selection and regenerate with `M.KaplanMeier`**
 
 ```bash
 sed -i '' 's/^const SELECT_METHODS = .*/const SELECT_METHODS = ["M_ANCOVA", "M_KaplanMeier"];/' smartphrase/tools/build-library-subset.mjs
@@ -529,7 +537,7 @@ node smartphrase/tools/build-library-subset.mjs --check
 
 Expected: write reports `methods: M.ANCOVA, M.KaplanMeier`; `--check` reports PASS.
 
-- [ ] **Step 6: Confirm the addition is purely additive**
+- [x] **Step 6: Confirm the addition is purely additive**
 
 ```bash
 node smartphrase/tools/verify.mjs
@@ -537,7 +545,7 @@ node smartphrase/tools/verify.mjs
 
 Expected: `PASS`. Adding an unused method must not change any golden. If goldens changed, the generator altered existing content — revert and fix.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add smartphrase/tools/build-library-subset.mjs smartphrase/demo/data/acdc-library.js
@@ -571,7 +579,7 @@ EOF
 - Consumes: `ctx` from `E.ctxOf(lib, graph, i18n)`; concepts carrying `kind`, `conceptCategory`, and a `data` map.
 - Produces: unchanged public signatures — `constructModelView(ctx, instance)` and `buildTrace(ctx, instance, role)`. Two new internal helpers: `boundConcepts(ctx, instance)` returning `[{ slot, id, c, role }]` sorted by library role order, and `EXPRESSION_BUILDERS` keyed by method conceptId. `resolvedExpression` for `M.ANCOVA` is byte-identical to today.
 
-- [ ] **Step 1: Add the failing assertion first — a KM-shaped instance must construct**
+- [x] **Step 1: Add the failing assertion first — a KM-shaped instance must construct**
 
 Append a temporary probe to `smartphrase/tools/verify.mjs` immediately before the `/* ---- compare or update ---- */` block:
 
@@ -609,7 +617,7 @@ Append a temporary probe to `smartphrase/tools/verify.mjs` immediately before th
 }
 ```
 
-- [ ] **Step 2: Run to verify the probe fails**
+- [x] **Step 2: Run to verify the probe fails**
 
 ```bash
 cd /Volumes/External/skunk/analysis-concepts
@@ -618,7 +626,7 @@ node smartphrase/tools/verify.mjs
 
 Expected: FAIL, exit 1, with both `PROBE:` assertions listed — `Population sliceKey` and `ParameterDimension sliceKey` are `null` because `bindingConceptId` looks for `SP_POPULATION`'s value via the hardcoded OID path but `constructModelView` resolves the parameter only from `SP_CFB_ENDPOINT`. (The Population probe may pass since `SP_POPULATION` is hardcoded too; the ParameterDimension one must fail. If both pass, the probe is not exercising the coupling — bind the parameter through a different phrase and retry.)
 
-- [ ] **Step 3: Replace the hardcoded lookups with slot-driven helpers**
+- [x] **Step 3: Replace the hardcoded lookups with slot-driven helpers**
 
 In `smartphrase/demo/engine.js`, replace `bindingConceptId` (currently at lines 204-208) with both the original function (still used by `constructModelView` for value slots) and the new collector:
 
@@ -690,7 +698,7 @@ In `smartphrase/demo/engine.js`, replace `bindingConceptId` (currently at lines 
   }
 ```
 
-- [ ] **Step 4: Rewrite `constructModelView`'s substitution, sliceKeys and expression**
+- [x] **Step 4: Rewrite `constructModelView`'s substitution, sliceKeys and expression**
 
 Replace the body of `constructModelView` from the `var paramId = …` line through `var resolvedExpression = …` (currently lines 221-271) with:
 
@@ -754,7 +762,7 @@ Replace the body of `constructModelView` from the `var paramId = …` line throu
 
 Then delete the now-unused `hasConf`, `hasSite`, `hasBaseCov`, `param`/`visit`/`pop`/`paramId`/`visitId`/`popId` locals and the old `terms` block. Leave the `return { … }` object exactly as it is.
 
-- [ ] **Step 5: Rewrite `buildTrace`'s token derivation**
+- [x] **Step 5: Rewrite `buildTrace`'s token derivation**
 
 Replace the body of `buildTrace` between the `if (!tplChain) return null;` line and the closing `return tplChain.map(…)` (currently lines 302-323) with:
 
@@ -791,7 +799,7 @@ Replace the body of `buildTrace` between the `if (!tplChain) return null;` line 
     }
 ```
 
-- [ ] **Step 6: Run — probe should pass, and exactly one golden should change**
+- [x] **Step 6: Run — probe should pass, and exactly one golden should change**
 
 ```bash
 node smartphrase/tools/verify.mjs
@@ -799,7 +807,7 @@ node smartphrase/tools/verify.mjs
 
 Expected: the two `PROBE:` assertions now pass. Goldens for `*/modelView` change **only** in `configurationValues` alpha — `"0.050000000000000044"` becomes `"0.05"`. Any other golden change is a regression: investigate before proceeding. In particular every `sentence/*`, `macro`, `jsonld` and `trace/*` golden must be untouched.
 
-- [ ] **Step 7: Accept the intended alpha fix and re-pin**
+- [x] **Step 7: Accept the intended alpha fix and re-pin**
 
 ```bash
 node smartphrase/tools/verify.mjs --update-goldens
@@ -809,7 +817,7 @@ node -e "const g=require('./smartphrase/tools/goldens.json'); console.log(JSON.s
 
 Expected: PASS, and the alpha entry reads `"0.05"`.
 
-- [ ] **Step 8: Remove the temporary probe**
+- [x] **Step 8: Remove the temporary probe**
 
 Delete the `/* ---- TEMPORARY PROBE (Task 4) ---- */` block from `verify.mjs`. Its job was to fail before the change; the real coverage arrives with the PrE0102 instances in Task 6.
 
@@ -819,7 +827,7 @@ node smartphrase/tools/verify.mjs
 
 Expected: PASS.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add smartphrase/demo/engine.js smartphrase/tools/verify.mjs smartphrase/tools/goldens.json
@@ -864,7 +872,7 @@ The SAP's PFS analysis (§7.7.2) is descriptive — Kaplan-Meier medians and 90%
 - Consumes: `M.KaplanMeier` from Task 3; phrases `SP_TTE_ENDPOINT`, `SP_POPULATION`, `SP_GROUPING`, `SP_METHOD_KM`, `SP_CONFIDENCE_LEVEL`, `SP_STRATIFICATION` (all already in the v0.7 subset).
 - Produces: `globalThis.ACDC_LIBRARY_PROPOSED` with `{ provenance, transformations: [...] }`. After `ctxOf`, `E.templateDef(ctx, "T.PFS_KaplanMeier")` resolves and carries `proposed: true`.
 
-- [ ] **Step 1: Write the overlay file**
+- [x] **Step 1: Write the overlay file**
 
 Create `smartphrase/demo/data/acdc-library-proposed.js`:
 
@@ -968,7 +976,7 @@ Create `smartphrase/demo/data/acdc-library-proposed.js`:
 })(typeof window !== "undefined" ? window : globalThis);
 ```
 
-- [ ] **Step 2: Verify every declared output exists on `M.KaplanMeier`**
+- [x] **Step 2: Verify every declared output exists on `M.KaplanMeier`**
 
 The template's `outputDataStructure.measures` must name real method outputs (the `summarizedByOutputClass` hook):
 
@@ -982,7 +990,7 @@ let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{
 
 Expected: a list containing `event_summary`, `survival_table`, `median_survival`. If a name differs, correct the template to match the method — never the reverse.
 
-- [ ] **Step 3: Merge the overlay in `ctxOf`**
+- [x] **Step 3: Merge the overlay in `ctxOf`**
 
 In `smartphrase/demo/engine.js`, replace `ctxOf` (lines 12-14):
 
@@ -1018,7 +1026,7 @@ In `smartphrase/demo/engine.js`, replace `ctxOf` (lines 12-14):
   }
 ```
 
-- [ ] **Step 4: Load the overlay in both hosts**
+- [x] **Step 4: Load the overlay in both hosts**
 
 In `smartphrase/demo/index.html`, insert after the `acdc-library.js` script tag (line 293):
 
@@ -1032,7 +1040,7 @@ In `smartphrase/tools/verify.mjs`, insert after `load("data/acdc-library.js");`:
 load("data/acdc-library-proposed.js");
 ```
 
-- [ ] **Step 5: Add the assertion that the proposed template resolves and is well-formed**
+- [x] **Step 5: Add the assertion that the proposed template resolves and is well-formed**
 
 In `verify.mjs`, immediately before the `/* ---- compare or update ---- */` block:
 
@@ -1059,7 +1067,7 @@ In `verify.mjs`, immediately before the `/* ---- compare or update ---- */` bloc
 }
 ```
 
-- [ ] **Step 6: Run**
+- [x] **Step 6: Run**
 
 ```bash
 node smartphrase/tools/verify.mjs
@@ -1067,7 +1075,7 @@ node smartphrase/tools/verify.mjs
 
 Expected: PASS with the five new proposed-template assertions, and **no golden changes** — the overlay adds a template nothing instantiates yet.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add smartphrase/demo/data/acdc-library-proposed.js smartphrase/demo/engine.js \
@@ -1108,7 +1116,7 @@ Add the breast-cancer study graph — `Event`-kind concepts (a first for the dem
 - Consumes: `T.PFS_KaplanMeier` (Task 5); slot-driven engine (Task 4).
 - Produces: `globalThis.STUDY_GRAPHS = { CDISCPILOT01: {...}, PRE0102: {...} }`, each value the same shape `engine.js` already expects (`prefixes`, `study`, `concepts`, `methodGrounding`, `instances`, `traceTemplates`). `globalThis.STUDY_GRAPH` is kept as an alias to `CDISCPILOT01` so nothing that referenced it breaks.
 
-- [ ] **Step 1: Convert `study-graph.js` to register into `STUDY_GRAPHS`**
+- [x] **Step 1: Convert `study-graph.js` to register into `STUDY_GRAPHS`**
 
 In `smartphrase/demo/data/study-graph.js`, replace line 13 (`g.STUDY_GRAPH = {`) with:
 
@@ -1133,7 +1141,7 @@ to:
 })(typeof window !== "undefined" ? window : globalThis);
 ```
 
-- [ ] **Step 2: Run to confirm the registry refactor changed nothing**
+- [x] **Step 2: Run to confirm the registry refactor changed nothing**
 
 ```bash
 cd /Volumes/External/skunk/analysis-concepts
@@ -1142,7 +1150,7 @@ node smartphrase/tools/verify.mjs
 
 Expected: PASS, no golden changes. The harness already prefers `STUDY_GRAPHS` when present, so it now iterates the registry and finds the same single study.
 
-- [ ] **Step 3: Resolve the STATO term for Kaplan-Meier before grounding it**
+- [x] **Step 3: Resolve the STATO term for Kaplan-Meier before grounding it**
 
 Do not invent an IRI. Check STATO for a Kaplan-Meier estimation term:
 
@@ -1153,7 +1161,7 @@ git -C /Volumes/External/skunk/analysis-concepts grep -n -i "kaplan" ffee5df -- 
 
 If a STATO id is found upstream, use it with `iri_status: "authoritative"`. If not, use `iri: "acdc:method/KaplanMeier"` with `iri_status: "illustrative"` and record it in the Task 9 docs as an identifier the working group must resolve. **Do not** guess a `STATO_00003xx` number.
 
-- [ ] **Step 4: Write the PrE0102 study graph**
+- [x] **Step 4: Write the PrE0102 study graph**
 
 Create `smartphrase/demo/data/study-graph-pre0102.js`. Substitute the IRI decided in step 3 where marked:
 
@@ -1391,7 +1399,7 @@ Create `smartphrase/demo/data/study-graph-pre0102.js`. Substitute the IRI decide
 })(typeof window !== "undefined" ? window : globalThis);
 ```
 
-- [ ] **Step 5: Load it in both hosts**
+- [x] **Step 5: Load it in both hosts**
 
 In `smartphrase/demo/index.html`, after the `study-graph.js` tag:
 
@@ -1405,7 +1413,7 @@ In `smartphrase/tools/verify.mjs`, after `load("data/study-graph.js");`:
 load("data/study-graph-pre0102.js");
 ```
 
-- [ ] **Step 6: Run — all four PrE0102 instances must resolve and trace cleanly**
+- [x] **Step 6: Run — all four PrE0102 instances must resolve and trace cleanly**
 
 ```bash
 node smartphrase/tools/verify.mjs
@@ -1415,7 +1423,7 @@ Expected: PASS. New goldens are reported as `new golden (not yet pinned)` for ev
 
 If `sliceKeys` shows a null for `EventDimension`, the engine's dimension match isn't seeing `conceptCategory: "EventDimension"` — recheck Task 4 step 4. If a trace shows `⟨aval⟩`, the concept's `data` map is missing that key.
 
-- [ ] **Step 7: Read the generated PFS sentence and sanity-check it against the SAP**
+- [x] **Step 7: Read the generated PFS sentence and sanity-check it against the SAP**
 
 ```bash
 node -e "
@@ -1430,7 +1438,7 @@ Expected: four sentences. The primary should read close to: *"Time to progressio
 
 **Judgement call required here.** `SP_TTE_ENDPOINT`'s template is `"time to {event}"`, so a `name_with_label` render of PFS produces a clumsy doubled construction ("time to progression-free survival … (PFS)"). Fix by changing the instance's render mode to `label` (giving "time to PFS") or by rewording the concept's `name` to a bare event phrase (e.g. `name: "disease progression or death"`, so it reads "time to disease progression or death (PFS)"). Prefer the latter — it keeps a rich render mode and reads like the SAP. Adjust `EVENT.*` names, re-run step 7, and confirm all four read naturally before pinning.
 
-- [ ] **Step 8: Pin the new goldens**
+- [x] **Step 8: Pin the new goldens**
 
 ```bash
 node smartphrase/tools/verify.mjs --update-goldens
@@ -1440,7 +1448,7 @@ git diff --stat smartphrase/tools/goldens.json
 
 Expected: PASS; the diff shows only additions (`PRE0102/*` keys), no modifications to `CDISCPILOT01/*`.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add smartphrase/demo/data/study-graph.js smartphrase/demo/data/study-graph-pre0102.js \
@@ -1482,7 +1490,7 @@ The page is single-study and ANCOVA-shaped: `renderModelPanel` hardcodes three c
 - Consumes: `STUDY_GRAPHS`, `E.templateDef(ctx, state.template).validSmartPhrases`, `tpl.proposed`, `LIB.proposedProvenance`.
 - Produces: a `switchStudy(key)` function that rebuilds `ctx`/`GRAPH`/`state` and re-renders; a model panel derived from the active template; a reuse grid grouped per study.
 
-- [ ] **Step 1: Add the study switch markup**
+- [x] **Step 1: Add the study switch markup**
 
 In `smartphrase/demo/index.html`, inside the stop 1 `<section>` just above `<p class="prose" id="prose1"></p>`, add:
 
@@ -1492,7 +1500,7 @@ In `smartphrase/demo/index.html`, inside the stop 1 `<section>` just above `<p c
 </div>
 ```
 
-- [ ] **Step 2: Wire the switch and make `ctx`/`GRAPH`/`state` reassignable**
+- [x] **Step 2: Wire the switch and make `ctx`/`GRAPH`/`state` reassignable**
 
 Find the top of the demo IIFE where `ctx`, `GRAPH`, `LIB` and `state` are initialised (around line 298-315). Change those bindings to `var` (if any are effectively fixed) and add below them:
 
@@ -1532,7 +1540,7 @@ Find the top of the demo IIFE where `ctx`, `GRAPH`, `LIB` and `state` are initia
 
 Call `buildStudySwitch();` once in the existing init sequence, before the first `renderAll()`.
 
-- [ ] **Step 3: Make the document shell reflect the active study**
+- [x] **Step 3: Make the document shell reflect the active study**
 
 In `renderAll`, wherever `docStudy` and `docTitle` are set, replace the hardcoded values with:
 
@@ -1541,7 +1549,7 @@ In `renderAll`, wherever `docStudy` and `docTitle` are set, replace the hardcode
     document.getElementById("docTitle").textContent = GRAPH.study.title;
 ```
 
-- [ ] **Step 4: Derive the model panel from the active template**
+- [x] **Step 4: Derive the model panel from the active template**
 
 Replace `renderModelPanel` (lines 474-563) wholesale:
 
@@ -1659,7 +1667,7 @@ Replace `renderModelPanel` (lines 474-563) wholesale:
   }
 ```
 
-- [ ] **Step 5: Derive removability from role, not an OID list**
+- [x] **Step 5: Derive removability from role, not an OID list**
 
 In `editHTML` (line 590), replace:
 
@@ -1675,7 +1683,7 @@ with:
     var removable = ["endpoint", "method"].indexOf(rp.role) === -1;
 ```
 
-- [ ] **Step 6: Group the reuse grid by study and diff within study**
+- [x] **Step 6: Group the reuse grid by study and diff within study**
 
 In `renderReuse`, replace the single-study body so it iterates studies. The baseline for the binding diff must be the first instance **of the same study**:
 
@@ -1732,7 +1740,7 @@ In `renderReuse`, replace the single-study body so it iterates studies. The base
   }
 ```
 
-- [ ] **Step 7: Show the proposed-overlay provenance in the standards table**
+- [x] **Step 7: Show the proposed-overlay provenance in the standards table**
 
 In `renderStandards`, after the existing provenance note, append:
 
@@ -1746,7 +1754,7 @@ In `renderStandards`, after the existing provenance note, append:
 
 Also ensure the id table iterates the **active** study's concepts and instances (it already reads `GRAPH.concepts` / `GRAPH.instances`, which now follow `activeStudy` — verify by switching studies in step 9).
 
-- [ ] **Step 8: Update the stop 1 and stop 3 lede text**
+- [x] **Step 8: Update the stop 1 and stop 3 lede text**
 
 Stop 3's lede currently claims "All three analyses below instantiate the *same* library building block". Replace with wording that covers both studies, e.g.:
 
@@ -1764,7 +1772,7 @@ Stop 1's lede should note the study switch:
   document, not the model.</p>
 ```
 
-- [ ] **Step 9: Manual browser check — both studies, all four stops**
+- [x] **Step 9: Manual browser check — both studies, all four stops**
 
 ```bash
 open /Volumes/External/skunk/analysis-concepts/smartphrase/demo/index.html
@@ -1780,7 +1788,7 @@ Walk through and confirm, with the browser console open (must stay clean of erro
 6. Stop 4 lists PrE0102 identifiers and the proposed-additions provenance note.
 7. Language switch: EN/FR/DE all render PrE0102 without `⟨…⟩` (English fallback is expected until Task 8).
 
-- [ ] **Step 10: Re-run the harness and commit**
+- [x] **Step 10: Re-run the harness and commit**
 
 ```bash
 node smartphrase/tools/verify.mjs
@@ -1820,7 +1828,7 @@ The demo's language switch is a headline feature. Untranslated phrases fall back
 - Consumes: phrase oids `SP_TTE_ENDPOINT`, `SP_METHOD_KM`, `SP_STRATIFICATION`; concept ids `EVENT.*`, `POP.EVAL_EFFICACY`, `POP.ITT`, `TRT.PRE0102`; method `M.KaplanMeier`; sentence role `"a sensitivity analysis"`.
 - Produces: `E.resolveInstance(ctx, inst, "fr"|"de").langFallback === false` for every phrase of every PrE0102 instance.
 
-- [ ] **Step 1: Add a harness assertion that no PrE0102 phrase falls back**
+- [x] **Step 1: Add a harness assertion that no PrE0102 phrase falls back**
 
 In `verify.mjs`, inside the per-instance loop, after the existing per-language resolution check:
 
@@ -1837,7 +1845,7 @@ In `verify.mjs`, inside the per-instance loop, after the existing per-language r
       }
 ```
 
-- [ ] **Step 2: Run to verify it fails for PrE0102**
+- [x] **Step 2: Run to verify it fails for PrE0102**
 
 ```bash
 cd /Volumes/External/skunk/analysis-concepts
@@ -1846,7 +1854,7 @@ node smartphrase/tools/verify.mjs
 
 Expected: FAIL listing untranslated `SP_TTE_ENDPOINT`, `SP_METHOD_KM` for `fr` and `de` on all four PrE0102 instances. CDISCPILOT01 should pass (its phrases are already translated) — if it also fails, note which phrase and translate it here too.
 
-- [ ] **Step 3: Add the French entries**
+- [x] **Step 3: Add the French entries**
 
 In `lang-overlay.js`, in the `fr.phrases` object add:
 
@@ -1879,7 +1887,7 @@ In `fr.sentenceRoles` add:
         "a sensitivity analysis": "une analyse de sensibilité"
 ```
 
-- [ ] **Step 4: Add the German entries**
+- [x] **Step 4: Add the German entries**
 
 In `de.phrases`:
 
@@ -1912,7 +1920,7 @@ In `de.sentenceRoles`:
         "a sensitivity analysis": "Sensitivitätsanalyse"
 ```
 
-- [ ] **Step 5: Run and read all three languages**
+- [x] **Step 5: Run and read all three languages**
 
 ```bash
 node smartphrase/tools/verify.mjs
@@ -1927,7 +1935,7 @@ const i=STUDY_GRAPHS.PRE0102.instances[0];
 
 Expected: PASS, and three sentences with no English residue in the FR/DE ones. The German must show the `wird … untersucht` verb bracket. Adjust the German case endings if the population phrase reads wrong inside `in der {population}` — the concept `name` carries the inflection.
 
-- [ ] **Step 6: Confirm language-neutrality of the instance still holds**
+- [x] **Step 6: Confirm language-neutrality of the instance still holds**
 
 ```bash
 node -e "
@@ -1943,7 +1951,7 @@ console.log('model view is language-free:', !/Zeit|délai/.test(a));
 
 Expected: both `true`. The constructed model view must contain no localised text — it holds identifiers.
 
-- [ ] **Step 7: Pin goldens and commit**
+- [x] **Step 7: Pin goldens and commit**
 
 ```bash
 node smartphrase/tools/verify.mjs --update-goldens
@@ -1984,7 +1992,7 @@ Record the three architectural decisions this work introduced, document the new 
 - Consumes: everything above.
 - Produces: docs an adopter can follow without reading the diff. No code depends on this task.
 
-- [ ] **Step 1: Add the decision records to `DESIGN.md`**
+- [x] **Step 1: Add the decision records to `DESIGN.md`**
 
 Append to the decisions section, matching the existing D1–D7 style:
 
@@ -1994,7 +2002,7 @@ Append to the decisions section, matching the existing D1–D7 style:
 
 Also update the verification section: replace the prose about ad-hoc headless checks with the committed harness — `node smartphrase/tools/verify.mjs`, N pinned goldens across two studies, plus the planted-fault and localisation-completeness assertions.
 
-- [ ] **Step 2: Extend `REFERENCE.md`**
+- [x] **Step 2: Extend `REFERENCE.md`**
 
 Add or update these subsections:
 
@@ -2006,7 +2014,7 @@ Add or update these subsections:
 6. **Concept registry** — add `kind: "Event"` / `conceptCategory: "EventDimension"`, and the PoC-local `sapRef` field.
 7. **Tooling** — `tools/build-library-subset.mjs` (`--check`) and `tools/verify.mjs` (`--update-goldens`), both marked *(PoC)*.
 
-- [ ] **Step 3: Add the cross-study beat to `WALKTHROUGH.md`**
+- [x] **Step 3: Add the cross-study beat to `WALKTHROUGH.md`**
 
 Insert a beat after the existing template-reuse stop, roughly two minutes:
 
@@ -2020,11 +2028,11 @@ Insert a beat after the existing template-reuse stop, roughly two minutes:
 
 Add the steer this raises to the closing asks: **who owns accepting proposed phrase/template contributions into the library, and what does that review look like?**
 
-- [ ] **Step 4: Update `README.md`**
+- [x] **Step 4: Update `README.md`**
 
 Note the second study, the `tools/` directory with the two commands, and that `smartphrase/SAP/` holds the PrE0102 source and its conversion.
 
-- [ ] **Step 5: Check every doc claim is true**
+- [x] **Step 5: Check every doc claim is true**
 
 ```bash
 cd /Volumes/External/skunk/analysis-concepts
@@ -2035,7 +2043,7 @@ grep -rn "three analyses\|all three\|21 headless\|36 headless" smartphrase/*.md
 
 Expected: both commands PASS. The grep should return nothing — any surviving "three analyses" or headless-check counts are now false and must be rewritten. Also confirm the golden count quoted in `DESIGN.md` matches the harness's actual output line.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add smartphrase/DESIGN.md smartphrase/REFERENCE.md smartphrase/WALKTHROUGH.md smartphrase/README.md
@@ -2071,7 +2079,7 @@ EOF
 - Consumes: all tasks.
 - Produces: a comment on issue #9 with what was built, what was verified, and the open questions the working group must answer.
 
-- [ ] **Step 1: Full clean-slate verification**
+- [x] **Step 1: Full clean-slate verification**
 
 ```bash
 cd /Volumes/External/skunk/analysis-concepts
@@ -2082,7 +2090,7 @@ node smartphrase/tools/verify.mjs
 
 Expected: clean working tree; both commands PASS. Record the exact golden count from the verify output — it goes in the issue comment.
 
-- [ ] **Step 2: Confirm the zero-install constraint still holds**
+- [x] **Step 2: Confirm the zero-install constraint still holds**
 
 ```bash
 grep -n "fetch(\|XMLHttpRequest\|import \|require(" smartphrase/demo/index.html smartphrase/demo/engine.js smartphrase/demo/data/*.js
@@ -2091,7 +2099,7 @@ grep -c "<script src=" smartphrase/demo/index.html
 
 Expected: the first grep returns nothing (no network or module loading in demo files); the second returns 6 (library, proposed overlay, two study graphs, lang overlay, engine).
 
-- [ ] **Step 3: Final in-browser pass**
+- [x] **Step 3: Final in-browser pass**
 
 ```bash
 open smartphrase/demo/index.html
@@ -2099,13 +2107,13 @@ open smartphrase/demo/index.html
 
 Re-run the Task 7 step 9 checklist end to end with the console open. Confirm zero console errors and that the CDISC Pilot walkthrough is unchanged from before this work.
 
-- [ ] **Step 4: Push the branch**
+- [x] **Step 4: Push the branch**
 
 ```bash
 git push origin smartphrase_01
 ```
 
-- [ ] **Step 5: Post the completion comment to issue #9**
+- [x] **Step 5: Post the completion comment to issue #9**
 
 Cover: the four claims and how the second study strengthens claim 3; the new template and why it was necessary (SAP §7.7.2 is descriptive, `T.OS_LogRank` does not fit); D8/D9/D10; the engine coupling that had to be undone and the correction to the earlier "engine looks template-agnostic" assessment; the committed verification harness replacing ad-hoc checks; the pre-existing alpha float bug fixed in passing; and the open questions — the unresolved STATO term for Kaplan-Meier estimation, upstreaming the proposed template to `methods_02`, and who owns accepting library contributions.
 
@@ -2113,7 +2121,7 @@ Cover: the four claims and how the second study strengthens claim 3; the new tem
 gh issue comment 9 --repo cdisc-org/analysis-concepts --body-file <path to drafted comment>
 ```
 
-- [ ] **Step 6: Mark this plan complete**
+- [x] **Step 6: Mark this plan complete**
 
 Tick every box above and add a line at the top of this file recording the completion date and the final golden count.
 
