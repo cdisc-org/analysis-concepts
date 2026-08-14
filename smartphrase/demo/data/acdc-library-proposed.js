@@ -132,6 +132,22 @@
         phrase_template: "in the stratum of participants in whom {ice} would not occur",
         anchors: { icheStrategy: "PrincipalStratum", implementation: "population_subsetting" },
         placeholders: [ICE_SLOT]
+      },
+      {
+        oid: "SP_SUMMARY_MEASURE",
+        name: "Population-level summary measure",
+        role: "summary_measure",
+        phrase_template: "summarised as {summary}",
+        anchors: { estimandAttribute: "PopulationLevelSummary" },
+        placeholders: [{
+          name: "summary",
+          kind: "output_ref",
+          value_source: "method_outputs",
+          render_options: ["label", "name"],
+          default_render: "name",
+          required: true,
+          description: "A MethodOutput the bound method produces — the model hook is Analysis.summarizedByOutputClass."
+        }]
       }
     ],
 

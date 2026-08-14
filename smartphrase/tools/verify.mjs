@@ -167,6 +167,31 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
   check("planted fault: missing wrapper rejected", noWrapper.instancePatch === null);
 }
 
+/* ---- summary measure is verifiable, not decorative ---- */
+{
+  const ctx = E.ctxOf(LIB, graphs.CDISCPILOT01, I18N);
+  const tpl = E.templateDef(ctx, "T.CFB_ANCOVA");
+  const def = E.phraseDef(ctx, "SP_SUMMARY_MEASURE");
+  check("SP_SUMMARY_MEASURE exists", !!def);
+  check("output classes are in the library subset", !!ctx.lib.outputClasses);
+
+  /* contrasts_t IS produced by T.CFB_ANCOVA. */
+  const good = E.resolvePhrase(
+    ctx, { phrase: "SP_SUMMARY_MEASURE", bindings: { summary: { output: "contrasts_t" } } }, "en", tpl);
+  check("a real method output resolves", good.errors.length === 0, JSON.stringify(good.errors));
+
+  /* median_survival is a real output CLASS but T.CFB_ANCOVA/M.ANCOVA does not
+     produce it — the whole point of requirement 4. */
+  const bad = E.resolvePhrase(
+    ctx, { phrase: "SP_SUMMARY_MEASURE", bindings: { summary: { output: "median_survival" } } }, "en", tpl);
+  check("planted fault: summary the method cannot produce is rejected",
+    bad.errors.length > 0, JSON.stringify(bad.errors));
+
+  const nonsense = E.resolvePhrase(
+    ctx, { phrase: "SP_SUMMARY_MEASURE", bindings: { summary: { output: "not_an_output" } } }, "en", tpl);
+  check("planted fault: unknown output class is rejected", nonsense.errors.length > 0);
+}
+
 /* ---- ICH E9(R1) strategy phrase coverage ---- */
 {
   const ctx = E.ctxOf(LIB, graphs.CDISCPILOT01, I18N);

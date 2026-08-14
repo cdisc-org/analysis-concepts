@@ -13,6 +13,7 @@
     "source_commit": "ffee5df",
     "files": [
       "lib/transformations/ACDC_Transformation_Library_v07.json",
+      "lib/vocabulary/output_class_templates.json",
       "lib/methods/analyses/M_ANCOVA.json",
       "lib/methods/analyses/M_KaplanMeier.json"
     ],
@@ -821,6 +822,61 @@
       ]
     },
     {
+      "conceptId": "T.LOCF_Imputation",
+      "label": "LOCF Imputation",
+      "shortLabel": "LOCF",
+      "transformationType": "derivation",
+      "description": "Impute missing values by carrying forward the last non-missing observation within each subject-parameter partition, ordered by analysis visit.",
+      "usesMethod": "M.ImputedValue_LOCF",
+      "methodConfigurations": [],
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "partition",
+            "concept": "Subject"
+          },
+          {
+            "input": "partition",
+            "conceptCategory": "ParameterDimension"
+          },
+          {
+            "input": "time_order",
+            "conceptCategory": "VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "Measure",
+            "requiredValueType": null,
+            "description": "LOCF operates on records — value type is pass-through."
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "Subject"
+          },
+          {
+            "conceptCategory": "ParameterDimension"
+          },
+          {
+            "conceptCategory": "VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "output": "imputed_value",
+            "concept": "Measure"
+          }
+        ]
+      },
+      "validSmartPhrases": [
+        "SP_IMPUTATION"
+      ]
+    },
+    {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
       "shortLabel": "CFB ANCOVA",
@@ -1173,6 +1229,157 @@
             "time"
           ]
         }
+      ]
+    }
+  },
+  "outputClasses": {
+    "ls_means": {
+      "conceptId": "ls_means",
+      "name": "Least-squares means",
+      "label": "Least-squares means",
+      "ncitCode": null,
+      "codings": [],
+      "description": "Least-squares means (adjusted marginal means) per factor level or level combination.",
+      "broader": "marginal_estimates",
+      "statistics": [
+        "estimate",
+        "SE",
+        "CI_lower",
+        "CI_upper",
+        "df"
+      ]
+    },
+    "contrasts_t": {
+      "conceptId": "contrasts_t",
+      "name": "Contrasts from linear models with t-based inference",
+      "label": "T-based contrasts",
+      "ncitCode": null,
+      "codings": [],
+      "description": "Contrasts from linear models with t-based inference.",
+      "broader": "contrasts",
+      "statistics": [
+        "estimate",
+        "SE",
+        "CI_lower",
+        "CI_upper",
+        "t_statistic",
+        "p_value",
+        "p_value_adjusted",
+        "df"
+      ],
+      "optional_statistics": [
+        "p_value_adjusted"
+      ]
+    },
+    "type3_tests_f": {
+      "conceptId": "type3_tests_f",
+      "name": "Type III F-tests with sums-of-squares decomposition",
+      "label": "Type III F-tests",
+      "ncitCode": null,
+      "codings": [],
+      "description": "Type III F-tests with sums-of-squares decomposition (linear models).",
+      "broader": "type3_tests",
+      "statistics": [
+        "F_statistic",
+        "p_value",
+        "df_num",
+        "df_den",
+        "SS",
+        "MS"
+      ]
+    },
+    "parameter_estimates_linear": {
+      "conceptId": "parameter_estimates_linear",
+      "name": "Linear-model coefficients with t-based inference",
+      "label": "Linear-model parameter estimates",
+      "ncitCode": null,
+      "codings": [],
+      "description": "Linear-model coefficients with t-based inference.",
+      "broader": "parameter_estimates",
+      "statistics": [
+        "coefficient",
+        "SE",
+        "t_statistic",
+        "p_value",
+        "CI_lower",
+        "CI_upper",
+        "df"
+      ]
+    },
+    "fit_statistics_linear": {
+      "conceptId": "fit_statistics_linear",
+      "name": "Linear-model fit indices including R-squared",
+      "label": "Linear-model fit statistics",
+      "ncitCode": null,
+      "codings": [],
+      "description": "Linear-model fit indices including R-squared.",
+      "broader": "fit_statistics",
+      "statistics": [
+        "AIC",
+        "BIC",
+        "minus2LogL",
+        "R_squared"
+      ]
+    },
+    "median_survival": {
+      "conceptId": "median_survival",
+      "name": "Median survival time per group",
+      "label": "Median survival",
+      "ncitCode": null,
+      "codings": [],
+      "description": "Median survival time per group.",
+      "broader": "survival_outputs",
+      "statistics": [
+        "median",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "survival_table": {
+      "conceptId": "survival_table",
+      "name": "Life table with survival estimates at each event time",
+      "label": "Survival table",
+      "ncitCode": null,
+      "codings": [],
+      "description": "Life table with survival estimates at each event time.",
+      "broader": "survival_outputs",
+      "statistics": [
+        "n_risk",
+        "n_event",
+        "n_censored",
+        "survival_prob",
+        "SE",
+        "CI_lower",
+        "CI_upper"
+      ]
+    },
+    "event_summary": {
+      "conceptId": "event_summary",
+      "name": "Summary counts of events and censoring per group",
+      "label": "Event summary",
+      "ncitCode": null,
+      "codings": [],
+      "description": "Summary counts of events and censoring per group.",
+      "broader": "survival_outputs",
+      "statistics": [
+        "n_risk",
+        "n_event",
+        "n_censored"
+      ]
+    },
+    "landmark_estimates": {
+      "conceptId": "landmark_estimates",
+      "name": "Survival probability at specific landmark times",
+      "label": "Landmark estimates",
+      "ncitCode": null,
+      "codings": [],
+      "description": "Survival probability at specific landmark times.",
+      "broader": "survival_outputs",
+      "statistics": [
+        "survival_prob",
+        "SE",
+        "CI_lower",
+        "CI_upper"
       ]
     }
   }

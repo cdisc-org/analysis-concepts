@@ -28,14 +28,29 @@ const legacyBanner = process.argv.includes("--legacy-banner");
 const SOURCE_BRANCH = "methods_02";
 const SOURCE_COMMIT = "ffee5df";
 const TRANSFORMATION_LIB = "lib/transformations/ACDC_Transformation_Library_v07.json";
+const OUTPUT_CLASS_VOCAB = "lib/vocabulary/output_class_templates.json";
 
 /* Which upstream entities the demo needs. */
 const SELECT_TRANSFORMATIONS = [
   "T.BaselineSelection",
   "T.ChangeFromBaseline",
-  "T.CFB_ANCOVA"
+  "T.CFB_ANCOVA",
+  /* Implements the Hypothetical strategy for the Pilot estimand — real
+     upstream content, referenced by IceHandling.implementedBy (issue #11). */
+  "T.LOCF_Imputation"
 ];
 const SELECT_METHODS = ["M_ANCOVA", "M_KaplanMeier"];
+
+/* Output classes the demo's templates declare. The summary-measure phrase
+   binds one of these, and the binding is validated against both the template's
+   declared outputs and the method's own outputs[] — so this vocabulary is what
+   makes ICH E9(R1) attribute 5 verifiable rather than decorative. Selected
+   explicitly so the subset stays small and the selection stays auditable. */
+const SELECT_OUTPUT_CLASSES = [
+  "ls_means", "contrasts_t", "type3_tests_f", "parameter_estimates_linear",
+  "fit_statistics_linear", "median_survival", "survival_table",
+  "event_summary", "landmark_estimates"
+];
 
 function gitShow(relPath) {
   return execFileSync("git", ["show", `${SOURCE_COMMIT}:${relPath}`], {
@@ -65,11 +80,21 @@ SELECT_METHODS.forEach((name, i) => {
   methods[name.replace("_", ".")] = JSON.parse(gitShow(methodFiles[i]));
 });
 
+const vocab = JSON.parse(gitShow(OUTPUT_CLASS_VOCAB)).output_class_templates;
+const outputClasses = {};
+SELECT_OUTPUT_CLASSES.forEach((id) => {
+  if (!vocab[id]) {
+    console.error(`FAIL — output class not found upstream: ${id}`);
+    process.exit(1);
+  }
+  outputClasses[id] = vocab[id];
+});
+
 const library = {
   provenance: {
     source_branch: SOURCE_BRANCH,
     source_commit: SOURCE_COMMIT,
-    files: [TRANSFORMATION_LIB].concat(methodFiles),
+    files: [TRANSFORMATION_LIB, OUTPUT_CLASS_VOCAB].concat(methodFiles),
     note: "Verbatim subset of the authoritative AC/DC model artefacts; generated, not hand-edited."
   },
   /* Upstream calls this `version`; the demo has always exposed it as
@@ -79,7 +104,8 @@ const library = {
   roleDefinitions: upstream.roleDefinitions,
   smartPhrases: upstream.smartPhrases,
   transformations: transformations,
-  methods: methods
+  methods: methods,
+  outputClasses: outputClasses
 };
 
 const BANNER_LEGACY = [

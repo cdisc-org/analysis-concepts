@@ -116,8 +116,16 @@
     }
   }
 
-  /* Resolve one placeholder binding → { text, detail } or { error } */
-  function resolveBinding(ctx, ph, binding, lang) {
+  /*
+   * Resolve one placeholder binding → { text, detail } or { error }.
+   *
+   * `tpl` (the active transformation template) and `phDef` (the phrase this
+   * placeholder belongs to) are optional and carry the context some slot kinds
+   * need to validate themselves: an output_ref must be an output the template
+   * and method actually produce, and an ICE must declare a handling for the
+   * strategy its phrase asserts.
+   */
+  function resolveBinding(ctx, ph, binding, lang, tpl, phDef) {
     lang = lang || "en";
     if (!binding) {
       return { error: "no binding for required placeholder '" + ph.name + "'" };
@@ -128,6 +136,33 @@
         return { error: "value " + v + " outside constraint [" + ph.constraint.min + ", " + ph.constraint.max + "] for '" + ph.name + "'" };
       }
       return { text: String(v), detail: { kind: "value", value: v } };
+    }
+    if (ph.kind === "output_ref" || binding.output !== undefined) {
+      var oc = (ctx.lib.outputClasses || {})[binding.output];
+      if (!oc) return { error: "unknown output class '" + binding.output + "'" };
+      /* Requirement: the summary must be an output the bound method provably
+         produces. Checked against BOTH the template's declared output measures
+         and the method's own outputs[] — a template may declare a subset, and
+         neither list alone is authoritative. */
+      if (tpl) {
+        var declared = ((tpl.outputDataStructure || {}).measures || [])
+          .map(function (om) { return om.output; });
+        if (declared.indexOf(binding.output) === -1) {
+          return { error: "output '" + binding.output + "' is not produced by template " +
+                          tpl.conceptId + " (declares: " + declared.join(", ") + ")" };
+        }
+        var md = ctx.lib.methods[tpl.usesMethod];
+        var produced = md ? (md.outputs || []).map(function (o) { return o.name; }) : [];
+        if (md && produced.indexOf(binding.output) === -1) {
+          return { error: "output '" + binding.output + "' is not produced by method " +
+                          tpl.usesMethod };
+        }
+      }
+      var ocl = localiseEntity(ctx, lang, "outputClasses", binding.output, oc);
+      var omode = binding.render || ph.default_render || "name";
+      return { text: renderEntity(ocl, omode),
+               detail: { kind: "output", id: binding.output, render: omode,
+                         statistics: oc.statistics, libraryLabel: oc.label } };
     }
     if (ph.kind === "method_ref" || binding.method) {
       var m = method(ctx, binding.method);
@@ -154,7 +189,7 @@
   }
 
   /* Resolve one phrase instance → { oid, role, text, bindings[], errors[] } */
-  function resolvePhrase(ctx, pi, lang) {
+  function resolvePhrase(ctx, pi, lang, tpl) {
     lang = lang || "en";
     var def = phraseDef(ctx, pi.phrase);
     if (!def) return { oid: pi.phrase, errors: ["unknown smartphrase '" + pi.phrase + "'"], text: "⟨" + pi.phrase + "?⟩" };
@@ -166,7 +201,7 @@
     (def.placeholders || []).forEach(function (ph) {
       var b = (pi.bindings || {})[ph.name];
       if (!b && !ph.required) return;
-      var r = resolveBinding(ctx, ph, b, lang);
+      var r = resolveBinding(ctx, ph, b, lang, tpl, def);
       if (r.error) {
         errors.push(r.error);
         text = text.replace("{" + ph.name + "}", "⟨" + ph.name + "?⟩");
@@ -194,7 +229,8 @@
   function resolveInstance(ctx, instance, lang) {
     lang = lang || "en";
     var order = ctx.lib.roleDefinitions.order;
-    var resolved = instance.phrases.map(function (pi) { return resolvePhrase(ctx, pi, lang); });
+    var instTpl = templateDef(ctx, instance.template);
+    var resolved = instance.phrases.map(function (pi) { return resolvePhrase(ctx, pi, lang, instTpl); });
     resolved.sort(function (a, b) {
       return order.indexOf(a.role) - order.indexOf(b.role);
     });
@@ -280,7 +316,8 @@
   function bindingConceptId(instance, phraseOid, phName) {
     var pi = instance.phrases.find(function (p) { return p.phrase === phraseOid; });
     if (!pi || !pi.bindings[phName]) return null;
-    return pi.bindings[phName].concept || pi.bindings[phName].method || pi.bindings[phName].value || null;
+    return pi.bindings[phName].concept || pi.bindings[phName].method ||
+           pi.bindings[phName].value || pi.bindings[phName].output || null;
   }
 
   /*
@@ -494,7 +531,7 @@
       var renders = [];
       Object.keys(pi.bindings).forEach(function (slot) {
         var b = pi.bindings[slot];
-        attrs.push(slot + '="' + (b.concept || b.method || b.value) + '"');
+        attrs.push(slot + '="' + (b.concept || b.method || b.value || b.output) + '"');
         if (b.render) renders.push(slot + ":" + b.render);
       });
       if (renders.length) attrs.push('render="' + renders.join(",") + '"');
@@ -565,6 +602,7 @@
         var b;
         if (ph.kind === "value") b = { value: raw };
         else if (ph.kind === "method_ref") b = { method: raw };
+        else if (ph.kind === "output_ref") b = { output: raw };
         else b = { concept: raw };
         if (renders[ph.name]) {
           if (ph.render_options && ph.render_options.indexOf(renders[ph.name]) === -1) {
@@ -573,7 +611,7 @@
             b.render = renders[ph.name];
           }
         }
-        var check = resolveBinding(ctx, ph, b);
+        var check = resolveBinding(ctx, ph, b, "en", tpl, def);
         if (check.error) findings.push({ level: "error", message: def.oid + ": " + check.error });
         bindings[ph.name] = b;
       });
@@ -623,6 +661,11 @@
         var b = pi.bindings[slot];
         if (b.value !== undefined) {
           bnodes.push({ "sp:slot": slot, "sp:value": b.value });
+        } else if (b.output) {
+          /* ICH E9(R1) attribute 5. The model hook is
+             Analysis.summarizedByOutputClass. */
+          bnodes.push({ "sp:slot": slot, "acdc:outputClass": b.output,
+                        "esap:summarizedByOutputClass": b.output });
         } else if (b.method) {
           var mm = method(ctx, b.method);
           bnodes.push({ "sp:slot": slot, "@id": mm && mm.ars, "acdc:alignedTo": mm && { "@id": mm.iri } });
