@@ -198,6 +198,35 @@ transformation without duplicating the event. An empty list is a valid answer �
 data as observed, which upstream documents as "omitted" — but an *absent* key is an error, because that is
 prose claiming a handling the model cannot deliver.
 
+**D16 — The estimand owns its intercurrent-event *scope*; the analysis owns the *strategy*.**
+Estimands live in a study-level `estimands` registry and are referenced by id, so an estimand addressed by
+several analyses is stated once. Each declares `intercurrentEvents[]` (per `Estimand.intercurrentEvents`),
+because which events are in scope is part of the **question**, not of any one estimator. The strategy comes
+from the analysis's `ice_handling` phrase, falling back to the event's own `icheStrategy` — so a strategy
+is never stored twice and the phrase remains its only author.
+
+This was a correction, not a plan item. The first implementation derived the ICE set from an instance's
+phrases, which meant an estimand's scope was whatever the analysis you happened to be looking at declared.
+`AC.SUPP.ADASCOG.WK16` addressed `EST.PRIMARY` and stated no ICE handling, so its model view emitted
+`handlesIntercurrentEvent: []` — reading as *"handles no intercurrent events"*, which is a materially
+different claim from *"handles them as standard"*. Nothing could catch it, because there was no declared
+scope to check against. Inherited handlings now carry `source: "studyDefault"` and are labelled
+*(inherited)* in the UI.
+
+A second correction fell out of the same review. **Changing an ICE strategy changes the estimand, not the
+estimator.** Intercurrent-event handling is ICH E9(R1) attribute 4, so an analysis applying a different
+strategy is the main estimator of a *different estimand* — which is precisely the example
+`IceHandling.implementedBy` gives upstream ("primary estimand uses Hypothetical while a sensitivity
+**estimand** uses TreatmentPolicy on the same ICE"), and what requirement 6 literally asks for. The
+override is therefore `EST.SENS.TP`, a sensitivity **estimand** referencing the same two event concepts,
+not a sensitivity *analysis* of `EST.PRIMARY`.
+
+One related distinction worth stating, since the four-attributes-already-covered claim leans on it:
+E9(R1) attribute 3 is the estimand's **target population** (the patients the question is about), whereas
+`SP_POPULATION` binds an **analysis set** (`ITTFL`, `EFFIFL`). They are related but not the same thing,
+which is what makes PrE0102's ITT analysis a legitimate *sensitivity analysis of one estimand* rather than
+a second estimand. A production layer should probably distinguish them explicitly.
+
 ## Relationship to the eSAP schema
 
 The demo's "constructed model instance" view mirrors the eSAP v0.5.0 philosophy deliberately: the

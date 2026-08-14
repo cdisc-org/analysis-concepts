@@ -30,8 +30,23 @@
 >    not anticipate. The engine handles a repeated phrase OID and the macro round-trip stays byte-equal;
 >    noted in `REFERENCE.md` §3.2 as supported for `repeating` roles.
 >
+> 9. **Two corrections landed after the twelve tasks**, prompted by the question "are there estimand
+>    examples in the demo?" — recorded as **D16**:
+>    - **The estimand now declares its intercurrent-event scope.** Deriving the ICE set from an instance's
+>      phrases meant an estimand's scope was whatever analysis you happened to look at.
+>      `AC.SUPP.ADASCOG.WK16` addressed `EST.PRIMARY`, stated no ICE handling, and emitted
+>      `handlesIntercurrentEvent: []` — reading as *"handles no intercurrent events"* rather than *"handles
+>      them as standard"*, with nothing able to catch it. Estimands moved into a study-level registry
+>      declaring `intercurrentEvents[]`; strategy still comes from the phrase, falling back to the event's
+>      study default, marked `source`.
+>    - **The override example was modelled wrong.** ICE handling is E9(R1) attribute 4, so changing it
+>      changes the *estimand*, not the estimator. `AC.SENS.ADASCOG.TP` is now the MainEstimator of
+>      `EST.SENS.TP` — which is what `IceHandling`'s own upstream example describes and what requirement 6
+>      literally says ("for a sensitivity **estimand**").
+>
 > The five design deviations recorded below were all confirmed correct in implementation. Deviation E
-> (`analysisRole` beside `sentenceRole`, not replacing it) is the one worth the working group's attention.
+> (`analysisRole` beside `sentenceRole`, not replacing it) is the one worth the working group's attention,
+> along with D16's second correction.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan
 > task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

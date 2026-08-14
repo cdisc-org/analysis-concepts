@@ -120,11 +120,21 @@ architecture carrying all five ICH E9(R1) attributes.
 
 **The load-bearing beat — Stop 3, the reuse grid:**
 
-> "Look at the two ADAS-Cog cards. Same estimand id, `EST.PRIMARY`. Same intercurrent event. Different
-> strategy — Hypothetical on one, **TreatmentPolicy (override)** on the other. One event, handled two ways,
-> with no second copy of the event anywhere. That falls straight out of the model: `IceHandling` is a
-> reified (estimand, event, strategy) triple, so the strategy is a property of the *pairing*, not of the
-> event."
+> "Look at the ADAS-Cog cards. `EST.PRIMARY` handles discontinuation as **Hypothetical**; `EST.SENS.TP`
+> handles the *same event* as **TreatmentPolicy (override)**. One event, two handlings, with no second copy
+> of the event anywhere — `IceHandling` is a reified (estimand, event, strategy) triple, so the strategy is
+> a property of the *pairing*, not of the event.
+>
+> And note it is a sensitivity **estimand**, not a sensitivity analysis. Intercurrent-event handling is
+> E9(R1) attribute 4 — change it and you have changed the question, so you have a different estimand. We
+> had this wrong first time and the model corrected us: `IceHandling`'s own documentation gives exactly
+> this example. Contrast the PrE0102 ITT case, which varies the *analysis set* — not an estimand attribute
+> — and so is genuinely a sensitivity analysis of one estimand."
+
+> "One more thing on that card: the Week 16 supporting analysis states no ICE clause at all, yet its
+> estimand panel lists both events, marked *(inherited)*. Scope belongs to the estimand; strategy belongs
+> to the analysis. Silence means 'handled as standard' — it must never be readable as 'no intercurrent
+> events', and that distinction is enforced by the gate."
 
 **Be straight about what it cost:**
 
@@ -184,8 +194,8 @@ architecture carrying all five ICH E9(R1) attributes.
   roles** for the estimand work — 29 phrases and 10 roles merged. Generated subset holds 4 upstream
   templates and 9 output classes; one **proposed** template (`T.PFS_KaplanMeier`) makes 5.
   `T.CFB_ANCOVA`'s valid-phrase set is 9 upstream + 3 proposed = 12.
-- Estimand facts: 8 analysis instances across 2 studies, 4 estimands, 5 strategy phrases (2 exercised),
-  1 per-estimand override. The Hypothetical implementer is `T.LOCF_Imputation`, real v0.7 content.
+- Estimand facts: 8 analysis instances across 2 studies, **6 estimands**, 5 strategy phrases
+  (2 exercised), 1 sensitivity estimand overriding a strategy on a shared event. The Hypothetical implementer is `T.LOCF_Imputation`, real v0.7 content.
 - Languages: EN/FR/DE via language packs; DE headline: *"… wird im Vergleich der Behandlungsgruppen
   mittels ANCOVA … als primäre Analyse untersucht."* Tag source/model/graph identical across languages.
 - Verified, and re-runnable: `tools/verify.mjs` (**86** pinned outputs across both studies),

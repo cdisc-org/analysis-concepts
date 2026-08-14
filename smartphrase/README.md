@@ -26,8 +26,9 @@ The demo is one page with four stops:
 **Estimands.** The CDISC Pilot primary passage carries all five ICH E9(R1) attributes: four fall on
 existing phrase roles, and intercurrent-event handling plus the summary measure are two roles added for
 #11. Each intercurrent event traces on its own axis — through the occurrence criterion that ascertains it,
-rather than through an analysis value — and the reuse grid shows one event handled two ways by two analyses
-of the same estimand, with no duplicated event.
+rather than through an analysis value — and the reuse grid shows one event handled two ways by two
+*estimands* — a primary and a sensitivity estimand sharing the event concept rather than copying it,
+because changing an event's strategy changes E9(R1) attribute 4 and therefore the estimand itself.
 
 ## Contents
 

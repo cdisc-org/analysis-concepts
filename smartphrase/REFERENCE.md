@@ -215,11 +215,7 @@ derived from — provenance for hand-crafted study data, not consumed by the eng
   "template": "T.CFB_ANCOVA",
   "usdmObjective": { "iri": "...", "iri_status": "...", "text": "..." },
   "arsAnalysis":   { "iri": "...", "iri_status": "..." },
-  "estimand": {                             // ICH E9(R1); instance-level, NOT a phrase
-    "id": "EST.PRIMARY", "iri": "usdm:Estimand/...", "iri_status": "illustrative",
-    "label": "Primary estimand — ADAS-Cog(11) change at Week 24",
-    "rank": "primary"                       // needed to RENDER sentenceRole — see below
-  },
+  "estimand": "EST.PRIMARY",                // id into the study's estimand registry (§3.3)
   "analysisRole": "MainEstimator",          // Analysis.analysisRole; exactly one per estimand
   "sentenceRole": "the primary analysis",   // consumed by the sentence frame, not by a phrase
   "baselineVisit": "VISIT.BASELINE",        // feeds the {baseline_visit} slice token
@@ -242,6 +238,33 @@ A binding object has exactly one of `concept` / `method` / `value` / `output`, p
 Phrase array order is irrelevant (§5 orders by role). The **same phrase OID may appear more than once**
 in one instance when its role is `repeating` — two `SP_ICE_TREATMENT_POLICY` entries bound to different
 events is the normal way to handle two ICEs the same way.
+
+### 3.3 Estimand registry
+
+```jsonc
+"estimands": {
+  "EST.PRIMARY": {
+    "iri": "usdm:Estimand/CDISCPILOT01-EST-PRIMARY", "iri_status": "illustrative",
+    "label": "Primary estimand — ADAS-Cog(11) change at Week 24",
+    "rank": "primary",                                  // renders sentenceRole — see below
+    "intercurrentEvents": ["ICE.TRT_DISCONT", "ICE.CONMED"]   // SCOPE, not strategy
+  }
+}
+```
+
+Estimands are **study-level and referenced by id**, so an estimand addressed by several analyses is stated
+once and cannot drift between them.
+
+`intercurrentEvents` is the estimand's **scope** — which events the question covers. It belongs to the
+estimand, not to any analysis, because an analysis that says nothing about an event must read as *"handled
+as standard"*, not *"handles no events"*. The **strategy** comes from the analysis's `ice_handling` phrase,
+falling back to the event's own `icheStrategy` (§3.1), so a strategy is never stored twice. An empty array
+is a valid, explicit answer; an absent one is a validation error.
+
+Because intercurrent-event handling is ICH E9(R1) attribute 4, **an analysis applying a different strategy
+belongs to a different estimand.** Two estimands may reference the same event concepts — that is how
+requirement 6 (one event, two handlings, no duplicated event) is met. A *sensitivity analysis* varies
+things that are not estimand attributes, such as the analysis set.
 
 `analysisRole` is **additional to** `sentenceRole`, not a replacement for it. `AnalysisRole` is defined per
 estimand, so *"a secondary analysis"* is the `MainEstimator` **of a secondary estimand** — the display
@@ -345,11 +368,14 @@ language changes prose projections only.
    `alpha = 1 − conf_level/100` when `SP_CONFIDENCE_LEVEL` is present (tagged
    `from: "SP_CONFIDENCE_LEVEL"`, rounded to 3dp — IEEE 754 makes the naïve subtraction
    `0.050000000000000044`).
-8. Emit `handlesIntercurrentEvent[]` — the eSAP `IceHandling` triples — one per `ice_handling` phrase:
-   `{ forIntercurrentEvent, label, icheStrategy, studyDefaultStrategy, isOverride, implementedBy[], fromPhrase }`.
-   The strategy comes from the phrase's `anchors.icheStrategy`, the event from its binding, and
-   `implementedBy` from the event's strategy-keyed map (§3.1). `isOverride` is true when the estimand
-   applies a strategy other than the event's own `icheStrategy`, so a divergence is stated, not silent.
+8. Emit `handlesIntercurrentEvent[]` — the eSAP `IceHandling` triples — **one per event the estimand
+   declares** (§3.3), in declaration order:
+   `{ forIntercurrentEvent, label, icheStrategy, studyDefaultStrategy, isOverride, source, implementedBy[], fromPhrase }`.
+   The strategy comes from this analysis's `ice_handling` phrase when it has one (`source: "phrase"`), else
+   from the event's own `icheStrategy` (`source: "studyDefault"`, `fromPhrase: null`); `implementedBy` comes
+   from the event's strategy-keyed map (§3.1). `isOverride` is true when the applied strategy differs from
+   the event's study default, so a divergence is stated rather than silent. An event in scope therefore
+   always yields exactly one handling — never an empty list that would read as "handles nothing".
 9. Build `resolvedExpression`, which dispatches on `usesMethod` — the one method-specific piece, because
    the library declares no measure→ADaM-variable mapping *(PoC)*.
 10. Report `outputMeasures`, `usdmObjective`, `arsAnalysis`, and the template's `validSmartPhrases`
@@ -524,7 +550,8 @@ declare a measure→ADaM-variable mapping.
 | `resolveInstance(ctx, instance, lang?)` | `{ phrases[], parts[], sentence, errors[], lang }` (§5). |
 | `constructModelView(ctx, instance)` | eSAP-style study model view (§6). |
 | `buildTrace(ctx, instance, role, focusConceptId?)` | Array of trace tiers, or `null` (§7). Pass `focusConceptId` for repeating roles. |
-| `iceHandlings(ctx, instance)` | The eSAP `IceHandling` triples the instance asserts (§6 step 8). |
+| `estimandOf(ctx, instance)` | The instance's estimand resolved from the study registry, with `id` merged in, or `null` (§3.3). |
+| `iceHandlings(ctx, instance)` | One eSAP `IceHandling` triple per event the instance's **estimand** declares (§6 step 8). |
 | `toMacroText(ctx, instance)` | Dialect text (§8). |
 | `parseMacroText(ctx, text, baseInstance)` | `{ instancePatch \| null, findings[] }` (§8.2). |
 | `toJSONLD(ctx, instance)` | JSON-LD graph fragment (§9). |
