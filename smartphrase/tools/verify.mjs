@@ -186,6 +186,28 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
     "generated subset is not mutated by the overlay",
     LIB.transformations.every((t) => t.conceptId !== "T.PFS_KaplanMeier")
   );
+
+  /* Proposed ROLES reach ctx.lib at their declared insertion point, and the
+     generated subset is untouched — the same overlay discipline as templates. */
+  const order = ctx.lib.roleDefinitions.order;
+  check("proposed role ice_handling is in ctx.lib order", order.indexOf("ice_handling") !== -1);
+  check("proposed role summary_measure is in ctx.lib order", order.indexOf("summary_measure") !== -1);
+  check(
+    "ice_handling sits immediately after grouping",
+    order.indexOf("ice_handling") === order.indexOf("grouping") + 1,
+    order.join(",")
+  );
+  check("summary_measure sits last", order[order.length - 1] === "summary_measure", order.join(","));
+  check(
+    "generated subset role order is not mutated",
+    LIB.roleDefinitions.order.indexOf("ice_handling") === -1
+  );
+  check(
+    "proposed roles are flagged proposed",
+    ["ice_handling", "summary_measure"].every(
+      (r) => ctx.lib.roleDefinitions.roles[r] && ctx.lib.roleDefinitions.roles[r].proposed === true
+    )
+  );
 }
 
 /* ---- compare or update ---- */

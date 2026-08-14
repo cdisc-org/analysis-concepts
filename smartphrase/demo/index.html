@@ -325,7 +325,10 @@
   var state = clone(GRAPH.instances[0]);
   var lang = "en";   // prose language — a renderer setting, never part of the state
 
-  var ROLE_LABELS = LIB.roleDefinitions.roles;
+  /* Read the role registry off ctx.lib, not the raw global: proposed roles are
+     merged in ctxOf and would be invisible here otherwise. Same bug class as
+     the proposedProvenance note that the headless gate caught in issue #9. */
+  var ROLE_LABELS = ctx.lib.roleDefinitions.roles;
   var TRACEABLE = Object.keys(GRAPH.traceTemplates);
 
   /*
@@ -338,6 +341,7 @@
     activeStudy = key;
     GRAPH = STUDY_GRAPHS[key];
     ctx = E.ctxOf(LIB, GRAPH, I18N);
+    ROLE_LABELS = ctx.lib.roleDefinitions.roles;
     TRACEABLE = Object.keys(GRAPH.traceTemplates);
     state = clone(GRAPH.instances[0]);
     srcDirty = false;
@@ -376,7 +380,7 @@
     var b = {};
     (def.placeholders || []).forEach(function (ph) {
       if (ph.kind === "value") {
-        var co = LIB.configurationOptions[ph.name];
+        var co = ctx.lib.configurationOptions[ph.name];
         b[ph.name] = { value: co ? co.default : "" };
       } else if (ph.kind === "method_ref") {
         /* The method comes from the active template, not a fixed default —
@@ -534,7 +538,7 @@
     var tpl = E.templateDef(ctx, state.template);
     if (!tpl) return;
 
-    var order = LIB.roleDefinitions.order;
+    var order = ctx.lib.roleDefinitions.order;
     var active = state.phrases
       .map(function (pi) { return { pi: pi, def: E.phraseDef(ctx, pi.phrase) }; })
       .filter(function (x) { return !!x.def; })
@@ -554,7 +558,7 @@
         wrap.appendChild(lab);
 
         if (ph.kind === "value") {
-          var co = LIB.configurationOptions[ph.name];
+          var co = ctx.lib.configurationOptions[ph.name];
           var selV = document.createElement("select");
           (co ? co.values : [b.value]).forEach(function (v) {
             var o = document.createElement("option");
@@ -647,7 +651,7 @@
       var b = pi.bindings[ph.name] || {};
       var control;
       if (ph.kind === "value") {
-        var co = LIB.configurationOptions[ph.name];
+        var co = ctx.lib.configurationOptions[ph.name];
         control = co
           ? "<select data-slot='" + ph.name + "' data-kind='value'>" + co.values.map(function (v) {
               return "<option value='" + v + "'" + (b.value === v ? " selected" : "") + ">" + v + "</option>"; }).join("") + "</select>"
@@ -834,14 +838,14 @@
     });
     document.getElementById("idTable").innerHTML =
       "<tr><th>Entity</th><th>AC/DC id</th><th>IRI</th><th>Grounds into</th><th>Status</th></tr>" + rows.join("");
-    var prov = LIB.provenance;
+    var prov = ctx.lib.provenance;
     /* Proposed additions live on the MERGED library that ctxOf builds, not on
        the raw generated global — read them from the context. */
     var proposed = ctx.lib.proposedProvenance;
     document.getElementById("provenance").innerHTML =
       "<b>Provenance:</b> phrase templates, transformation templates and the method definition are a verbatim " +
       "subset of <code>" + prov.files.join("</code>, <code>") + "</code> at <code>" + prov.source_branch +
-      "@" + prov.source_commit + "</code> (Transformation Library v" + LIB.library_version + "). " +
+      "@" + prov.source_commit + "</code> (Transformation Library v" + ctx.lib.library_version + "). " +
       "The study layer (concepts, instances, trace tiers) is illustrative." +
       (proposed
         ? "<br><br><b>Proposed additions:</b> authored for " + proposed.authored_for +

@@ -35,6 +35,25 @@
           })
         );
       }
+      /* Proposed ROLES splice into the generated order at their declared
+         position — appending would put ice_handling after covariate. The
+         generated subset's arrays are copied, never mutated. */
+      if (pro.roleDefinitions && pro.roleDefinitions.roles) {
+        var newOrder = lib.roleDefinitions.order.slice();
+        var newRoles = Object.assign({}, lib.roleDefinitions.roles);
+        Object.keys(pro.roleDefinitions.roles).forEach(function (name) {
+          var def = pro.roleDefinitions.roles[name];
+          newRoles[name] = Object.assign({}, def, { proposed: true });
+          if (newOrder.indexOf(name) !== -1) return;
+          var after = def.order_after;
+          var at = after && after !== "last" ? newOrder.indexOf(after) : -1;
+          if (at === -1) newOrder.push(name);
+          else newOrder.splice(at + 1, 0, name);
+        });
+        merged.roleDefinitions = Object.assign({}, lib.roleDefinitions, {
+          order: newOrder, roles: newRoles
+        });
+      }
     }
     return { lib: merged, graph: graph, i18n: i18n || null };
   }

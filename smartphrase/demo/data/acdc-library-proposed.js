@@ -23,6 +23,31 @@
                  "Kaplan-Meier template exists in v0.7."
     },
 
+    /*
+     * Two new phrase roles — a library MINOR-VERSION event, not a study
+     * addition. `order_after` is overlay-only plumbing (upstream carries a
+     * flat `order` array): it declares where each role splices into the
+     * generated subset's order, so the overlay never restates upstream order
+     * and cannot silently reorder existing roles. "last" appends.
+     */
+    roleDefinitions: {
+      roles: {
+        ice_handling: {
+          label: "ICE Handling",
+          contextSource: "manual",
+          repeating: true,
+          order_after: "grouping",
+          description: "ICH E9(R1) attribute 4 — the strategy applied to an intercurrent event. Repeating: one phrase per declared ICE."
+        },
+        summary_measure: {
+          label: "Summary Measure",
+          contextSource: "manual",
+          order_after: "last",
+          description: "ICH E9(R1) attribute 5 — the population-level summary, bound to a method output class."
+        }
+      }
+    },
+
     transformations: [
       {
         "conceptId": "T.PFS_KaplanMeier",
