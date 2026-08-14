@@ -99,6 +99,28 @@ const pilotPanel = $("modelPanel").textContent;
 check("pilot panel names SP_CFB_ENDPOINT", pilotPanel.includes("SP_CFB_ENDPOINT"));
 check("pilot panel names the active template", pilotPanel.includes("T.CFB_ANCOVA"), pilotPanel.slice(0,200));
 
+/* ---------- 2b. estimand surfaces (issue #11) ---------- */
+check("model panel shows the estimand", pilotPanel.includes("EST.PRIMARY"), pilotPanel.slice(0, 300));
+check("model panel shows the typed analysis role", pilotPanel.includes("MainEstimator"));
+check("model panel shows the ICE handling role", pilotPanel.includes("ICE Handling"));
+check("model panel shows the summary measure role", pilotPanel.includes("Summary Measure"));
+check("model panel badges proposed phrases on a released template",
+  pilotPanel.includes("proposed phrase"), pilotPanel.slice(-400));
+check("prose renders both ICE clauses joined by 'and'",
+  /as if .+ had not occurred and regardless of /.test(pilotProse), pilotProse.slice(0, 400));
+check("prose renders the summary measure", pilotProse.includes("summarised as"), pilotProse.slice(-160));
+check("prose has no stranded punctuation", !/\s,|,\s*,/.test(pilotProse), pilotProse.slice(0, 300));
+
+/* the model view must carry the eSAP IceHandling triples and their implementer */
+{
+  const mvText = $("modelView").textContent;
+  check("model view emits IceHandling triples", mvText.includes("handlesIntercurrentEvent"));
+  check("model view names the implementing transformation", mvText.includes("T.LOCF_Imputation"));
+  check("model view carries summarizedByOutputClass in the graph",
+    $("jsonldView").textContent.includes("summarizedByOutputClass"),
+    $("jsonldView").textContent.slice(0, 200));
+}
+
 /* pilot reuse grid: two study groups, 8 cards */
 const cards = [...doc.querySelectorAll("#reuseGrid .reuse-card")];
 const heads = [...doc.querySelectorAll("#reuseGrid > h3")];
@@ -128,6 +150,11 @@ check("PrE0102 title is the trial title",
 /* model panel is now KM-shaped */
 const bcPanel = $("modelPanel").textContent;
 check("PrE0102 panel names SP_TTE_ENDPOINT", bcPanel.includes("SP_TTE_ENDPOINT"), bcPanel.slice(0,240));
+check("PrE0102 panel shows its own estimand", bcPanel.includes("EST.PFS"), bcPanel.slice(0, 240));
+check("PrE0102 prose states the source-grounded ICE strategy",
+  bcProse.includes("regardless of discontinuation of everolimus"), bcProse.slice(0, 300));
+check("PrE0102 prose states its summary measure",
+  bcProse.includes("summarised as the median time to event"), bcProse.slice(-200));
 check("PrE0102 panel names the proposed template", bcPanel.includes("T.PFS_KaplanMeier"));
 check("PrE0102 panel flags the template proposed", bcPanel.includes("proposed template"));
 check("PrE0102 panel offers SP_STRATIFICATION as addable", bcPanel.includes("SP_STRATIFICATION"));
@@ -158,6 +185,45 @@ const idTable = $("idTable").textContent;
 check("standards table lists EVENT.PFS", idTable.includes("EVENT.PFS"));
 check("standards table lists the KM method grounding", idTable.includes("M.KaplanMeier"));
 check("standards table no longer shows pilot-only ANCOVA", !idTable.includes("M.ANCOVA"));
+
+/* ---------- 3b. the ICE trace, and that focus works through the real DOM ----
+ * Back on the Pilot, which has TWO intercurrent events in one instance. Each
+ * chip must trace to its OWN ascertainment; without the focus parameter both
+ * would resolve to whichever concept library role order puts first.
+ */
+studyBtns[0].dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+{
+  const iceChips = [...$("prose1").querySelectorAll("span.ice_handling")];
+  check("both ICE chips are in the prose", iceChips.length === 2, "chips=" + iceChips.length);
+  if (iceChips.length === 2) {
+    iceChips[0].dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    const t1 = $("traceTiers").textContent;
+    check("first ICE traces to its own dataset", t1.includes("adsl.xpt"), t1.slice(0, 240));
+    check("ICE trace descends through the occurrence criterion",
+      t1.includes("BC_DS_001"), t1.slice(0, 240));
+    check("ICE trace shows the ascertained fact tier",
+      t1.includes("occurred, when"), t1.slice(0, 240));
+    check("ICE trace has no unfilled tokens",
+      !t1.includes("⟨") && !/\{[a-zA-Z_]+\}/.test(t1), t1.slice(0, 240));
+
+    iceChips[1].dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    const t2 = $("traceTiers").textContent;
+    check("second ICE traces somewhere ELSE — focus works in the DOM",
+      t2.includes("adcm.xpt") && !t2.includes("adsl.xpt"), t2.slice(0, 240));
+    check("the endpoint concept does not shadow the focused ICE",
+      !t2.includes("adqsadas.xpt"), t2.slice(0, 240));
+  }
+  /* The standards table must name the strategies the study asserts. */
+  const idTablePilot = $("idTable").textContent;
+  check("standards table grounds the ICH E9(R1) strategies used",
+    idTablePilot.includes("ICH E9(R1) strategy — Hypothetical") &&
+    idTablePilot.includes("ICH E9(R1) strategy — TreatmentPolicy"),
+    idTablePilot.slice(0, 300));
+  check("standards table lists the estimand",
+    idTablePilot.includes("EST.PRIMARY"), idTablePilot.slice(0, 300));
+}
+/* back to PrE0102 for the remaining stops */
+studyBtns[1].dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
 
 /* ---------- 4. trace: click the endpoint chip ---------- */
 const chips = [...$("prose1").querySelectorAll("span")].filter(

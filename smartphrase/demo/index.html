@@ -12,6 +12,7 @@
     --chip-endpoint: #d7ecff; --chip-timepoint: #ffe6d1; --chip-population: #ddf3dd;
     --chip-grouping: #f3e3f7; --chip-method: #ffe0e6; --chip-method_qualifier: #e8e8fc;
     --chip-covariate: #e5f4e0; --chip-parameter: #d7ecff;
+    --chip-ice_handling: #fde8d6; --chip-summary_measure: #e0f0ef;
     --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
   }
   * { box-sizing: border-box; }
@@ -52,6 +53,14 @@
   .sp.timepoint { background: var(--chip-timepoint); } .sp.population { background: var(--chip-population); }
   .sp.grouping { background: var(--chip-grouping); } .sp.method { background: var(--chip-method); }
   .sp.method_qualifier { background: var(--chip-method_qualifier); } .sp.covariate { background: var(--chip-covariate); }
+  .sp.ice_handling { background: var(--chip-ice_handling); }
+  .sp.summary_measure { background: var(--chip-summary_measure); }
+  .estimandhead { border: 1px solid #bcd7ec; background: var(--accent-soft); border-radius: 9px;
+                  padding: 10px 13px; margin-bottom: 14px; font-size: 13.5px; color: #143c5c; }
+  .estimandhead .rolebadge { font-size: 11px; padding: 1px 7px; border-radius: 4px; background: #fff;
+                             color: var(--accent); font-weight: 600; margin-left: 6px; }
+  .estimandhead .iri { font-family: var(--mono); font-size: 11px; color: var(--accent);
+                       word-break: break-all; margin-top: 3px; }
   .frame-text { color: var(--muted); border-bottom: 1px dashed var(--line); }
   .hint { font-size: 13px; color: var(--muted); margin-top: 12px; }
   .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
@@ -376,12 +385,28 @@
       return !ph.concept_constraint && !ph.concept_category ? false : true;
     });
   }
+  /* The output classes the ACTIVE template declares — the only legitimate
+     choices for a summary_measure binding, so the picker cannot offer a summary
+     the method does not produce. */
+  function outputOptions() {
+    var tpl = E.templateDef(ctx, state.template);
+    return (((tpl || {}).outputDataStructure || {}).measures || []).map(function (om) {
+      return om.output;
+    });
+  }
+  function outputLabel(id) {
+    var oc = (ctx.lib.outputClasses || {})[id];
+    return oc ? oc.label + " — " + oc.name : id;
+  }
   function defaultBindingsFor(def) {
     var b = {};
     (def.placeholders || []).forEach(function (ph) {
       if (ph.kind === "value") {
         var co = ctx.lib.configurationOptions[ph.name];
         b[ph.name] = { value: co ? co.default : "" };
+      } else if (ph.kind === "output_ref") {
+        var outs = outputOptions();
+        if (outs.length) b[ph.name] = { output: outs[0] };
       } else if (ph.kind === "method_ref") {
         /* The method comes from the active template, not a fixed default —
            otherwise a KM analysis would be handed M.ANCOVA. */
@@ -423,7 +448,14 @@
     var rows = rp.bindings.map(function (b) {
       var d = b.detail;
       var iri = d.iri ? '<div class="iri">' + expand(d.iri) + statBadge(d.iri_status || "illustrative") + "</div>" : "";
+      /* An output binding shows the UPSTREAM library label alongside the prose
+         rendering, so the divergence between analyst-facing and document-facing
+         wording is visible rather than hidden (DESIGN.md D14). */
       var val = d.kind === "value" ? "= " + d.value
+              : d.kind === "output"
+              ? '<b>' + b.text + '</b> <span style="color:var(--muted)">(' + d.id +
+                " · library label: “" + d.libraryLabel + "”" +
+                (d.statistics ? " · statistics: " + d.statistics.join(", ") : "") + ')</span>'
               : '<b>' + b.text + '</b> <span style="color:var(--muted)">(' + d.id + (d.render ? " · render: " + d.render : "") + ')</span>';
       return "<tr><td class='k'>{" + b.placeholder + "}</td><td>" + val + iri + "</td></tr>";
     }).join("");
@@ -545,6 +577,20 @@
     var tpl = E.templateDef(ctx, state.template);
     if (!tpl) return;
 
+    /* Estimand header. The estimand is instance-level, not a phrase, so it is
+       not derivable from the phrase loop below. */
+    if (state.estimand) {
+      var eh = document.createElement("div");
+      eh.className = "estimandhead";
+      eh.innerHTML = "<b>" + state.estimand.label + "</b>" +
+        '<span class="rolebadge">' + (state.analysisRole || "?") + "</span>" +
+        '<div class="iri">' + expand(state.estimand.iri) +
+        statBadge(state.estimand.iri_status) + "</div>" +
+        '<div class="sub" style="margin:4px 0 0">ICH E9(R1) estimand · ' +
+        state.estimand.id + " · rank: " + (state.estimand.rank || "—") + "</div>";
+      mp.appendChild(eh);
+    }
+
     var order = ctx.lib.roleDefinitions.order;
     var active = state.phrases
       .map(function (pi) { return { pi: pi, def: E.phraseDef(ctx, pi.phrase) }; })
@@ -560,8 +606,12 @@
         var wrap = document.createElement("div"); wrap.className = "fld";
         var lab = document.createElement("label");
         var roleLabel = ROLE_LABELS[x.def.role] ? ROLE_LABELS[x.def.role].label : x.def.role;
+        /* Phrases from the proposed overlay are badged wherever they appear —
+           in use here, and in the "also allows" list below — so no viewer
+           mistakes them for released library content. */
         lab.innerHTML = roleLabel + " — {" + ph.name + "}" +
-          ' <span class="roleTag">(' + x.def.oid + ")</span>";
+          ' <span class="roleTag">(' + x.def.oid + ")</span>" +
+          (x.def.proposed ? ' <span class="tplbadge">proposed phrase</span>' : "");
         wrap.appendChild(lab);
 
         if (ph.kind === "value") {
@@ -575,6 +625,18 @@
           });
           selV.addEventListener("change", function () { b.value = selV.value; renderAll(); });
           wrap.appendChild(selV);
+        } else if (ph.kind === "output_ref") {
+          /* Offer only outputs the active template declares. The engine rejects
+             anything else anyway; not offering it is the friendlier half. */
+          var selO = document.createElement("select");
+          outputOptions().forEach(function (id) {
+            var o = document.createElement("option");
+            o.value = id; o.textContent = outputLabel(id);
+            if (b.output === id) o.selected = true;
+            selO.appendChild(o);
+          });
+          selO.addEventListener("change", function () { b.output = selO.value; renderAll(); });
+          wrap.appendChild(selO);
         } else {
           var sel = document.createElement("select");
           conceptOptions(ph).forEach(function (id) {
@@ -645,6 +707,15 @@
       lb.style.cssText = "font-weight:400;margin:0;";
       lb.textContent = def.name + " (" + oid + ")";
       row.appendChild(cb); row.appendChild(lb);
+      /* A released template can host PROPOSED phrases (validSmartPhrasesAdded).
+         Badge those individually — badging the whole template would be wrong. */
+      if ((tpl.proposedPhrasesAdded || []).indexOf(oid) !== -1) {
+        var pb = document.createElement("span");
+        pb.className = "tplbadge";
+        pb.style.marginLeft = "6px";
+        pb.textContent = "proposed phrase";
+        row.appendChild(pb);
+      }
       mp.appendChild(row);
     });
   }
@@ -789,11 +860,26 @@
           var diff = idx > 0 && val !== baseVal;
           return "<tr><td class='k'>" + sk.dimension + "</td><td class='" + (diff ? "diff" : "") + "'>" + val + "</td></tr>";
         }).join("");
+        /* Estimand + strategy rows: reuse is at estimand level too. Two cards
+           sharing an estimand id but differing in strategy is the per-estimand
+           override, readable side by side. */
+        var estRow = mv.estimand
+          ? "<tr><td class='k'>estimand</td><td class='" +
+            (idx > 0 && baseMv.estimand && mv.estimand.id !== baseMv.estimand.id ? "diff" : "") +
+            "'>" + mv.estimand.id + " · " + (mv.analysisRole || "?") + "</td></tr>"
+          : "";
+        var iceRow = (mv.handlesIntercurrentEvent || []).length
+          ? "<tr><td class='k'>ICE handling</td><td>" +
+            mv.handlesIntercurrentEvent.map(function (h) {
+              return h.icheStrategy + " → " + h.forIntercurrentEvent +
+                (h.isOverride ? " <b>(override)</b>" : "");
+            }).join("<br>") + "</td></tr>"
+          : "";
         card.innerHTML = "<h3>" + inst.label + "</h3>" +
           "<span class='tplbadge'>" + inst.template + " · same library template" +
           (itpl && itpl.proposed ? " · proposed" : "") + "</span>" +
           "<div class='rsent'>" + res.sentence + "</div>" +
-          "<table>" + rows +
+          "<table>" + estRow + rows + iceRow +
           "<tr><td class='k'>method</td><td>" + mv.usesMethod.label + " (" + mv.usesMethod.conceptId + ")</td></tr>" +
           "<tr><td class='k'>model</td><td style='font-family:var(--mono);font-size:12px'>" + mv.resolvedExpression + "</td></tr></table>" +
           "<div class='cardact'><button class='btn ghost' data-open-study='" + key +
@@ -837,6 +923,30 @@
       var mg = GRAPH.methodGrounding[mid];
       push("Method — " + mg.label, mid, mg.iri, mg.iri_status);
       push("Method — " + mg.label + " (analysis def)", mid, mg.ars, mg.ars_status);
+    });
+    /*
+     * ICH E9(R1) strategies. The guideline is not a registry, so there is no
+     * resolvable term to point at — the enum is eSAP-owned. Listing it as an
+     * AC/DC identifier flagged illustrative is more honest than omitting the
+     * row and implying the strategies are ungrounded.
+     */
+    var strategiesUsed = {};
+    GRAPH.instances.forEach(function (inst) {
+      (E.iceHandlings(ctx, inst) || []).forEach(function (h) {
+        strategiesUsed[h.icheStrategy] = true;
+      });
+    });
+    Object.keys(strategiesUsed).sort().forEach(function (s) {
+      push("ICH E9(R1) strategy — " + s, "IchE9R1Strategy/" + s,
+        "acdc:estimand/strategy/" + s, "illustrative");
+    });
+    /* Estimands, deduplicated: several analyses share one. */
+    var seenEstimand = {};
+    GRAPH.instances.forEach(function (inst) {
+      if (!inst.estimand || seenEstimand[inst.estimand.id]) return;
+      seenEstimand[inst.estimand.id] = true;
+      push("Estimand — " + inst.estimand.label, inst.estimand.id,
+        inst.estimand.iri, inst.estimand.iri_status);
     });
     GRAPH.instances.forEach(function (inst) {
       push("Analysis instance — " + inst.label, inst.id, inst.iri, "illustrative");
