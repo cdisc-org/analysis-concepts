@@ -167,6 +167,29 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
   check("planted fault: missing wrapper rejected", noWrapper.instancePatch === null);
 }
 
+/* ---- sentence-template optional groups ---- */
+{
+  const graph = graphs.CDISCPILOT01;
+  const base = graph.instances[0];
+  /* A pack whose template wraps an absent role in punctuation: the whole
+     group must vanish, not strand its comma. `covariate` is present in this
+     instance and `ice_handling` has no phrases yet, so one group renders and
+     the other disappears. */
+  const probe = {
+    en: {
+      name: "probe",
+      sentence_template:
+        "{endpoint}[, ICE: {ice_handling}][, COV: {covariate}] will be assessed as {sentenceRole}."
+    }
+  };
+  const pctx = E.ctxOf(LIB, graph, probe);
+  const s = E.resolveInstance(pctx, base, "en").sentence;
+  check("optional group with no phrases is elided entirely", !s.includes("ICE:"), s);
+  check("optional group with a phrase is kept", s.includes("COV:"), s);
+  check("eliding leaves no stranded punctuation", !/,\s*,/.test(s) && !/,\s*will be/.test(s), s);
+  check("no literal brackets survive in the sentence", !/[[\]]/.test(s), s);
+}
+
 /* ---- proposed library additions ---- */
 {
   const ctx = E.ctxOf(LIB, graphs.CDISCPILOT01, I18N);

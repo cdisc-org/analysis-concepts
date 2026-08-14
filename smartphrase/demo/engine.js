@@ -205,20 +205,51 @@
     var roleText = (pack && pack.sentenceRoles && pack.sentenceRoles[instance.sentenceRole]) ||
       instance.sentenceRole || "an analysis";
 
+    /*
+     * A sentence template is a sequence of segments. `[ ... ]` marks an
+     * OPTIONAL group: it is emitted only if at least one role token inside it
+     * resolves to a phrase, so punctuation belonging to an optional clause
+     * disappears with the clause instead of stranding a comma. Templates using
+     * no brackets are unaffected — their frame text between role tokens is pure
+     * whitespace, which the normaliser below already collapses.
+     */
+    function segmentsOf(t) {
+      var segs = [];
+      var re = /\[([^\]]*)\]/g;
+      var last = 0, mm;
+      while ((mm = re.exec(t))) {
+        if (mm.index > last) segs.push({ text: t.slice(last, mm.index), optional: false });
+        segs.push({ text: mm[1], optional: true });
+        last = mm.index + mm[0].length;
+      }
+      if (last < t.length) segs.push({ text: t.slice(last), optional: false });
+      return segs;
+    }
+    function segHasPhrase(t) {
+      var toks = t.match(/\{([a-zA-Z_]+)\}/g) || [];
+      return toks.some(function (tk) {
+        var role = tk.slice(1, -1);
+        return resolved.some(function (rp) { return rp.role === role; });
+      });
+    }
+
     // Build the render sequence from the sentence template.
     var parts = [];
-    tmpl.split(/(\{[a-zA-Z_]+\})/).forEach(function (seg) {
-      if (!seg) return;
-      var tok = seg.match(/^\{([a-zA-Z_]+)\}$/);
-      if (!tok) { parts.push({ type: "text", text: seg, frame: true }); return; }
-      if (tok[1] === "sentenceRole") { parts.push({ type: "text", text: roleText, frame: true }); return; }
-      if (order.indexOf(tok[1]) === -1) { parts.push({ type: "text", text: seg, frame: true }); return; }
-      resolved.forEach(function (rp, i) {
-        if (rp.role !== tok[1]) return;
-        if (parts.length && parts[parts.length - 1].type === "phrase") {
-          parts.push({ type: "text", text: " ", frame: false });
-        }
-        parts.push({ type: "phrase", phrase: rp });
+    segmentsOf(tmpl).forEach(function (group) {
+      if (group.optional && !segHasPhrase(group.text)) return;
+      group.text.split(/(\{[a-zA-Z_]+\})/).forEach(function (seg) {
+        if (!seg) return;
+        var tok = seg.match(/^\{([a-zA-Z_]+)\}$/);
+        if (!tok) { parts.push({ type: "text", text: seg, frame: true }); return; }
+        if (tok[1] === "sentenceRole") { parts.push({ type: "text", text: roleText, frame: true }); return; }
+        if (order.indexOf(tok[1]) === -1) { parts.push({ type: "text", text: seg, frame: true }); return; }
+        resolved.forEach(function (rp, i) {
+          if (rp.role !== tok[1]) return;
+          if (parts.length && parts[parts.length - 1].type === "phrase") {
+            parts.push({ type: "text", text: " ", frame: false });
+          }
+          parts.push({ type: "phrase", phrase: rp });
+        });
       });
     });
     // Normalise: merge adjacent text, collapse whitespace left by empty roles.
