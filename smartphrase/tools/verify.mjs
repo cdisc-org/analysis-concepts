@@ -115,16 +115,43 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
     /* JSON-LD projection */
     record(`${studyKey}/${inst.id}/jsonld`, E.toJSONLD(ctx, inst));
 
-    /* trace for every role that has a chain */
+    /*
+     * Trace every role the instance ACTUALLY USES, focused on each concept the
+     * role binds. Both parts matter: tracing a role the instance has no phrase
+     * for fills the chain from unrelated concepts (it produced "ADQSADAS.ITTFL"
+     * — the endpoint's dataset crossed with the population's flag), and an
+     * unfocused repeating role gives every phrase the first concept's data.
+     */
     for (const role of Object.keys(graph.traceTemplates)) {
-      const chain = E.buildTrace(ctx, inst, role);
-      if (!chain) continue;
-      record(`${studyKey}/${inst.id}/trace/${role}`, chain);
-      check(
-        `${studyKey}/${inst.id} trace ${role} leaves no unfilled tokens`,
-        !JSON.stringify(chain).includes("⟨"),
-        JSON.stringify(chain)
-      );
+      const forRole = inst.phrases.filter((p) => {
+        const d = E.phraseDef(ctx, p.phrase);
+        return d && d.role === role;
+      });
+      if (!forRole.length) continue;
+      /* The concept each phrase of this role binds — slot name is irrelevant,
+         so this needs no per-role list of slots to maintain. */
+      const focuses = forRole
+        .map((p) => {
+          const b = Object.keys(p.bindings || {})
+            .map((s) => p.bindings[s])
+            .find((x) => x && x.concept);
+          return b ? b.concept : null;
+        })
+        .filter(Boolean);
+      for (const f of focuses.length ? focuses : [null]) {
+        const chain = E.buildTrace(ctx, inst, role, f);
+        if (!chain) continue;
+        record(`${studyKey}/${inst.id}/trace/${role}${f ? "/" + f : ""}`, chain);
+        const json = JSON.stringify(chain);
+        check(
+          `${studyKey}/${inst.id} trace ${role}${f ? " (" + f + ")" : ""} leaves no unfilled tokens`,
+          /* Two failure shapes: ⟨name⟩ from phrase resolution, and a surviving
+             {token} the trace fill found no value for. The second was invisible
+             to this gate until an ICE chain exposed it. */
+          !json.includes("⟨") && !/\{[a-zA-Z_]+\}/.test(json),
+          json
+        );
+      }
     }
 
     /* every phrase the instance uses must be valid for its template */
@@ -188,6 +215,29 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
 
   const noWrapper = E.parseMacroText(ctx, "<p>not a macro block</p>", base);
   check("planted fault: missing wrapper rejected", noWrapper.instancePatch === null);
+}
+
+/* ---- ICE ascertainment trace: a distinct axis, focused per ICE ---- */
+{
+  const ctx = E.ctxOf(LIB, graphs.CDISCPILOT01, I18N);
+  const inst = JSON.parse(JSON.stringify(graphs.CDISCPILOT01.instances[0]));
+  inst.phrases.push({ phrase: "SP_ICE_HYPOTHETICAL", bindings: { ice: { concept: "ICE.TRT_DISCONT" } } });
+  inst.phrases.push({ phrase: "SP_ICE_TREATMENT_POLICY", bindings: { ice: { concept: "ICE.CONMED" } } });
+
+  const a = E.buildTrace(ctx, inst, "ice_handling", "ICE.TRT_DISCONT");
+  const b = E.buildTrace(ctx, inst, "ice_handling", "ICE.CONMED");
+  check("ICE trace exists", !!a && !!b);
+  /* Two ICEs in one instance must trace to DIFFERENT data. Unfocused, role
+     order would give both the first ICE's dataset — or the endpoint's. */
+  check("each ICE traces to its own dataset",
+    JSON.stringify(a).includes("adsl.xpt") && JSON.stringify(b).includes("adcm.xpt"),
+    JSON.stringify([a, b]).slice(0, 300));
+  check("the focused ICE is not shadowed by the endpoint concept",
+    !JSON.stringify(b).includes("adqsadas.xpt"), JSON.stringify(b).slice(0, 300));
+  check("ICE traces leave no unfilled tokens",
+    !JSON.stringify([a, b]).includes("⟨"), JSON.stringify([a, b]).slice(0, 300));
+  check("the ICE trace descends through its occurrence criterion",
+    JSON.stringify(a).includes("BC_DS_001"), JSON.stringify(a).slice(0, 200));
 }
 
 /* ---- IceHandling: strategy resolves to what implements it ---- */

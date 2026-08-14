@@ -293,6 +293,25 @@
      * ADaM class-variable tier reflects ADaMIG v1.3 BDS / ADSL structures.
      */
     traceTemplates: {
+      /*
+       * The ICE axis. Note the shape differs from the analysis-value chains: it
+       * descends through the ascertainment CRITERION rather than an ADaM class
+       * variable, because what is traced is "did this event occur, and when" — a
+       * per-subject (boolean, Timing) pair that is strategy-independent, so the
+       * same chain serves every estimand that declares the event.
+       */
+      ice_handling: [
+        { tier: "Occurrence criterion", id: "{bc}/{property}", label: "{iceName}",
+          iri: "usdm:Condition", iri_status: "illustrative",
+          whereClause: "{criterion}",
+          note: "Executable USDM Condition entering the BC ▸ property ▸ code path; the source Biomedical Concept is the path head, named once." },
+        { tier: "Ascertained fact", id: "(occurred, when)", label: "Per-subject occurrence",
+          note: "A boolean indicator plus a Timing, per subject. Strategy-independent — the same ascertainment is reused whichever strategy an estimand applies." },
+        { tier: "Study variable", id: "{dataset}.{flag}", label: "{flag} in {dataset}",
+          note: "Occurrence flag; timing in {dataset}.{timing}." },
+        { tier: "Physical dataset", id: "{dataset}", label: "{datasetLabel}",
+          file: "{file}", keys: ["USUBJID"] }
+      ],
       endpoint: [
         { tier: "DataConcept", id: "DC.CHG", label: "Change from Baseline",
           iri: "acdc:dc/ChangeFromBaseline", iri_status: "illustrative",

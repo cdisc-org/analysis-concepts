@@ -535,11 +535,22 @@
 
   // ---------- trace: phrase → physical data --------------------------------
 
-  function buildTrace(ctx, instance, role) {
+  /*
+   * `focusConceptId` puts one bound concept at the head of the token precedence
+   * order. Required for repeating roles: two ICE phrases in one instance must
+   * each trace to their OWN ascertainment, and without a focus the endpoint
+   * concept's {dataset} would shadow both, since role order puts endpoint first
+   * and the token fill below is first-wins.
+   */
+  function buildTrace(ctx, instance, role, focusConceptId) {
     var tplChain = ctx.graph.traceTemplates[role];
     if (!tplChain) return null;
 
     var bound = boundConcepts(ctx, instance);
+    if (focusConceptId) {
+      bound = bound.filter(function (bc) { return bc.id === focusConceptId; })
+        .concat(bound.filter(function (bc) { return bc.id !== focusConceptId; }));
+    }
 
     /* Each bound concept contributes its `data` keys as tokens — {dataset},
        {file}, {paramcd}, {avisitn}, {flag}, {aval}, {cnsr}, … — in role order,
@@ -562,6 +573,17 @@
       }
       if (bc.c.kind === "Population" && tokens["{popName}"] === undefined) {
         tokens["{popName}"] = bc.c.name;
+      }
+      if (bc.c.kind === "IntercurrentEvent") {
+        if (tokens["{iceLabel}"] === undefined) tokens["{iceLabel}"] = bc.c.label;
+        if (tokens["{iceName}"] === undefined) tokens["{iceName}"] = bc.c.name;
+        /* The executable form of the ascertainment condition, rendered from the
+           OccurrenceCriterion shape. Presence operators take no value. */
+        var crit = ((bc.c.ascertainedBy || {}).criteria || [])[0];
+        if (crit && tokens["{criterion}"] === undefined) {
+          tokens["{criterion}"] = crit.property + " " + crit.operator +
+            (crit.responseCode ? " '" + crit.responseCode + "'" : "");
+        }
       }
     });
 

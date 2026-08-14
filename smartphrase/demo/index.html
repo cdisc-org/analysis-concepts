@@ -502,7 +502,14 @@
   /* ---------- stop 1: trace ---------- */
   var traceBox = document.getElementById("trace");
   function showTrace(rp) {
-    var chain = E.buildTrace(ctx, state, rp.role);
+    /* Focus the trace on THIS phrase's own concept: with a repeating role
+       (ice_handling) each chip must trace to its own event, not to whichever
+       concept the library's role order happens to put first. */
+    var focus = null;
+    (rp.bindings || []).forEach(function (b) {
+      if (!focus && b.detail && b.detail.kind === "concept") focus = b.detail.id;
+    });
+    var chain = E.buildTrace(ctx, state, rp.role, focus);
     if (!chain) { traceBox.style.display = "none"; return; }
     document.getElementById("traceTitle").textContent = '"' + rp.text + '" (' + rp.oid + ")";
     var tiers = document.getElementById("traceTiers");

@@ -299,7 +299,7 @@
       }
     ]
   },
-  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/endpoint": [
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/endpoint/PARAM.ADASCOG11": [
     {
       "tier": "DataConcept",
       "id": "DC.CHG",
@@ -335,7 +335,7 @@
       "note": "One record per subject per parameter per analysis visit."
     }
   ],
-  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/covariate": [
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/covariate/PARAM.ADASCOG11": [
     {
       "tier": "DataConcept",
       "id": "DC.BASE",
@@ -369,7 +369,7 @@
       ]
     }
   ],
-  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/timepoint": [
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/timepoint/VISIT.WK24": [
     {
       "tier": "DataConcept",
       "id": "DC.AVISIT",
@@ -403,7 +403,7 @@
       ]
     }
   ],
-  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/grouping": [
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/grouping/TRT.ALL": [
     {
       "tier": "DataConcept",
       "id": "DC.TRT",
@@ -436,7 +436,7 @@
       "note": "One record per subject."
     }
   ],
-  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/population": [
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/population/POP.EFFICACY": [
     {
       "tier": "DataConcept",
       "id": "DC.POP",
@@ -752,7 +752,7 @@
       }
     ]
   },
-  "CDISCPILOT01/AC.SEC.NPIX/trace/endpoint": [
+  "CDISCPILOT01/AC.SEC.NPIX/trace/endpoint/PARAM.NPIX": [
     {
       "tier": "DataConcept",
       "id": "DC.CHG",
@@ -788,7 +788,7 @@
       "note": "One record per subject per parameter per analysis visit."
     }
   ],
-  "CDISCPILOT01/AC.SEC.NPIX/trace/covariate": [
+  "CDISCPILOT01/AC.SEC.NPIX/trace/covariate/PARAM.NPIX": [
     {
       "tier": "DataConcept",
       "id": "DC.BASE",
@@ -822,7 +822,7 @@
       ]
     }
   ],
-  "CDISCPILOT01/AC.SEC.NPIX/trace/timepoint": [
+  "CDISCPILOT01/AC.SEC.NPIX/trace/timepoint/VISIT.WK24": [
     {
       "tier": "DataConcept",
       "id": "DC.AVISIT",
@@ -856,7 +856,7 @@
       ]
     }
   ],
-  "CDISCPILOT01/AC.SEC.NPIX/trace/grouping": [
+  "CDISCPILOT01/AC.SEC.NPIX/trace/grouping/TRT.ALL": [
     {
       "tier": "DataConcept",
       "id": "DC.TRT",
@@ -889,7 +889,7 @@
       "note": "One record per subject."
     }
   ],
-  "CDISCPILOT01/AC.SEC.NPIX/trace/population": [
+  "CDISCPILOT01/AC.SEC.NPIX/trace/population/POP.EFFICACY": [
     {
       "tier": "DataConcept",
       "id": "DC.POP",
@@ -1222,7 +1222,7 @@
       }
     ]
   },
-  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/endpoint": [
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/endpoint/PARAM.ADASCOG11": [
     {
       "tier": "DataConcept",
       "id": "DC.CHG",
@@ -1258,7 +1258,7 @@
       "note": "One record per subject per parameter per analysis visit."
     }
   ],
-  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/covariate": [
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/covariate/PARAM.ADASCOG11": [
     {
       "tier": "DataConcept",
       "id": "DC.BASE",
@@ -1292,7 +1292,7 @@
       ]
     }
   ],
-  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/timepoint": [
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/timepoint/VISIT.WK16": [
     {
       "tier": "DataConcept",
       "id": "DC.AVISIT",
@@ -1326,7 +1326,7 @@
       ]
     }
   ],
-  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/grouping": [
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/grouping/TRT.ALL": [
     {
       "tier": "DataConcept",
       "id": "DC.TRT",
@@ -1359,7 +1359,7 @@
       "note": "One record per subject."
     }
   ],
-  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/population": [
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/population/POP.EFFICACY": [
     {
       "tier": "DataConcept",
       "id": "DC.POP",
@@ -1627,7 +1627,7 @@
       }
     ]
   },
-  "PRE0102/AC.PRIMARY.PFS/trace/endpoint": [
+  "PRE0102/AC.PRIMARY.PFS/trace/endpoint/EVENT.PFS": [
     {
       "tier": "DataConcept",
       "id": "DC.TTE",
@@ -1662,7 +1662,7 @@
       "note": "One record per subject per time-to-event parameter."
     }
   ],
-  "PRE0102/AC.PRIMARY.PFS/trace/grouping": [
+  "PRE0102/AC.PRIMARY.PFS/trace/grouping/TRT.PRE0102": [
     {
       "tier": "DataConcept",
       "id": "DC.TRT",
@@ -1695,7 +1695,7 @@
       "note": "One record per subject."
     }
   ],
-  "PRE0102/AC.PRIMARY.PFS/trace/population": [
+  "PRE0102/AC.PRIMARY.PFS/trace/population/POP.EVAL_EFFICACY": [
     {
       "tier": "DataConcept",
       "id": "DC.POP",
@@ -1963,7 +1963,7 @@
       }
     ]
   },
-  "PRE0102/AC.SENS.PFS.ITT/trace/endpoint": [
+  "PRE0102/AC.SENS.PFS.ITT/trace/endpoint/EVENT.PFS": [
     {
       "tier": "DataConcept",
       "id": "DC.TTE",
@@ -1998,7 +1998,7 @@
       "note": "One record per subject per time-to-event parameter."
     }
   ],
-  "PRE0102/AC.SENS.PFS.ITT/trace/grouping": [
+  "PRE0102/AC.SENS.PFS.ITT/trace/grouping/TRT.PRE0102": [
     {
       "tier": "DataConcept",
       "id": "DC.TRT",
@@ -2031,7 +2031,7 @@
       "note": "One record per subject."
     }
   ],
-  "PRE0102/AC.SENS.PFS.ITT/trace/population": [
+  "PRE0102/AC.SENS.PFS.ITT/trace/population/POP.ITT": [
     {
       "tier": "DataConcept",
       "id": "DC.POP",
@@ -2299,7 +2299,7 @@
       }
     ]
   },
-  "PRE0102/AC.SEC.OS/trace/endpoint": [
+  "PRE0102/AC.SEC.OS/trace/endpoint/EVENT.OS": [
     {
       "tier": "DataConcept",
       "id": "DC.TTE",
@@ -2334,7 +2334,7 @@
       "note": "One record per subject per time-to-event parameter."
     }
   ],
-  "PRE0102/AC.SEC.OS/trace/grouping": [
+  "PRE0102/AC.SEC.OS/trace/grouping/TRT.PRE0102": [
     {
       "tier": "DataConcept",
       "id": "DC.TRT",
@@ -2367,7 +2367,7 @@
       "note": "One record per subject."
     }
   ],
-  "PRE0102/AC.SEC.OS/trace/population": [
+  "PRE0102/AC.SEC.OS/trace/population/POP.EVAL_EFFICACY": [
     {
       "tier": "DataConcept",
       "id": "DC.POP",
@@ -2635,7 +2635,7 @@
       }
     ]
   },
-  "PRE0102/AC.SEC.TTP/trace/endpoint": [
+  "PRE0102/AC.SEC.TTP/trace/endpoint/EVENT.TTP": [
     {
       "tier": "DataConcept",
       "id": "DC.TTE",
@@ -2670,7 +2670,7 @@
       "note": "One record per subject per time-to-event parameter."
     }
   ],
-  "PRE0102/AC.SEC.TTP/trace/grouping": [
+  "PRE0102/AC.SEC.TTP/trace/grouping/TRT.PRE0102": [
     {
       "tier": "DataConcept",
       "id": "DC.TRT",
@@ -2703,7 +2703,7 @@
       "note": "One record per subject."
     }
   ],
-  "PRE0102/AC.SEC.TTP/trace/population": [
+  "PRE0102/AC.SEC.TTP/trace/population/POP.EVAL_EFFICACY": [
     {
       "tier": "DataConcept",
       "id": "DC.POP",
