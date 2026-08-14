@@ -397,34 +397,67 @@
   }
 
   /*
-   * The reified (Estimand, IntercurrentEvent, Strategy) triples this instance
-   * asserts — eSAP IceHandling. Read from the ICE phrases: the strategy comes
-   * from the phrase's anchors, the event from its binding, and the implementing
-   * transformation(s) from the event's strategy-keyed implementedBy map.
-   * Model→SAP is the reverse lookup: find the phrase whose anchors.icheStrategy
-   * matches and bind the ICE.
+   * The estimand this analysis addresses, resolved from the study's registry.
+   * Instances reference it by id (`estimand: "EST.PRIMARY"`) so several analyses
+   * of one estimand cannot drift out of step — the estimand's identity,
+   * including its intercurrent-event scope, is stated once.
+   */
+  function estimandOf(ctx, instance) {
+    var reg = ctx.graph.estimands || {};
+    var id = typeof instance.estimand === "string"
+      ? instance.estimand
+      : instance.estimand && instance.estimand.id;
+    if (!id || !reg[id]) return null;
+    return Object.assign({ id: id }, reg[id]);
+  }
+
+  /*
+   * The reified (Estimand, IntercurrentEvent, Strategy) triples for this
+   * analysis — eSAP IceHandling.
+   *
+   * The ESTIMAND owns which events are in scope (`intercurrentEvents[]`, per
+   * usdm Estimand.intercurrentEvents): they are part of the question being
+   * asked. The ANALYSIS supplies the strategy, via an `ice_handling` phrase; an
+   * analysis that states none inherits the event's own study-default
+   * `icheStrategy`. So one event always yields exactly one handling per
+   * analysis, and an analysis with no ICE prose reads as "handled as standard"
+   * rather than "handles nothing".
+   *
+   * Strategy is never stored twice: the phrase is the only author of a
+   * non-default strategy, and this projection reads it back. Model→SAP is the
+   * reverse lookup — find the phrase whose anchors.icheStrategy matches.
    */
   function iceHandlings(ctx, instance) {
-    var out = [];
+    var est = estimandOf(ctx, instance);
+    var declared = (est && est.intercurrentEvents) || [];
+
+    var byPhrase = {};
     instance.phrases.forEach(function (pi) {
       var def = phraseDef(ctx, pi.phrase);
       if (!def || def.role !== "ice_handling") return;
       var b = (pi.bindings || {}).ice;
-      var c = b && concept(ctx, b.concept);
+      if (b && b.concept) byPhrase[b.concept] = def;
+    });
+
+    var out = [];
+    declared.forEach(function (iceId) {
+      var c = concept(ctx, iceId);
       if (!c) return;
-      var strat = def.anchors.icheStrategy;
+      var def = byPhrase[iceId] || null;
+      var strat = def ? def.anchors.icheStrategy : c.icheStrategy;
       out.push({
-        forIntercurrentEvent: b.concept,
+        forIntercurrentEvent: iceId,
         label: c.name,
-        icheStrategy: strat,
+        icheStrategy: strat || null,
         studyDefaultStrategy: c.icheStrategy || null,
-        /* The event carries a study-default strategy; an estimand applying a
-           different one is an override, flagged rather than silently divergent. */
-        isOverride: !!c.icheStrategy && c.icheStrategy !== strat,
+        /* An analysis applying a strategy other than the event's study default
+           is an override — stated, not silently divergent. */
+        isOverride: !!c.icheStrategy && !!strat && c.icheStrategy !== strat,
+        source: def ? "phrase" : "studyDefault",
         implementedBy: ((c.implementedBy || {})[strat] || []).map(function (tid) {
           return { transformationId: tid };
         }),
-        fromPhrase: def.oid
+        fromPhrase: def ? def.oid : null
       });
     });
     return out;
@@ -535,7 +568,7 @@
       iri: instance.iri,
       /* eSAP: the Analysis sits under Estimand.hasTransformation and states its
          role for that estimand via Analysis.analysisRole. */
-      estimand: instance.estimand || null,
+      estimand: estimandOf(ctx, instance),
       analysisRole: instance.analysisRole || null,
       handlesIntercurrentEvent: iceHandlings(ctx, instance),
       template: {
@@ -750,6 +783,7 @@
   function toJSONLD(ctx, instance) {
     var tpl = templateDef(ctx, instance.template);
     var m = tpl ? method(ctx, tpl.usesMethod) : null;
+    var est = estimandOf(ctx, instance);
     // The rendered sentence per available language, as language-tagged
     // literals — the RDF-native localisation mechanism.
     var resolvesTo = ctx.i18n
@@ -805,8 +839,14 @@
       "usdm:objective": instance.usdmObjective && {
         "@id": instance.usdmObjective.iri, "rdfs:comment": instance.usdmObjective.text
       },
-      "usdm:estimand": instance.estimand && {
-        "@id": instance.estimand.iri, "rdfs:label": instance.estimand.label
+      "usdm:estimand": est && {
+        "@id": est.iri, "rdfs:label": est.label,
+        /* Estimand.intercurrentEvents — the scope of the question, distinct from
+           the per-analysis handling emitted in the model view. */
+        "usdm:intercurrentEvent": (est.intercurrentEvents || []).map(function (id) {
+          var ic = concept(ctx, id);
+          return { "@id": ic && ic.iri, "rdfs:label": ic && ic.name };
+        })
       },
       "esap:analysisRole": instance.analysisRole || null,
       "ars:analysis": instance.arsAnalysis && { "@id": instance.arsAnalysis.iri },
@@ -825,6 +865,7 @@
     method: method,
     resolvePhrase: resolvePhrase,
     resolveInstance: resolveInstance,
+    estimandOf: estimandOf,
     iceHandlings: iceHandlings,
     constructModelView: constructModelView,
     buildTrace: buildTrace,

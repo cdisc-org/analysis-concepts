@@ -178,6 +178,56 @@
      * instances (whose bindings fill the template's sliceKeys) and its place
      * in the study (objective, ARS analysis, sentence role).
      */
+    /*
+     * Estimand registry. ICH E9(R1) estimands are study-level, referenced by id
+     * from the analyses that address them — stated once, so several analyses of
+     * one estimand cannot drift out of step.
+     *
+     * `intercurrentEvents` is the estimand's SCOPE: which events are part of the
+     * question. It is deliberately owned here and not by the analyses, because an
+     * analysis that says nothing about an event should read as "handled as
+     * standard", not as "handles no events at all". The STRATEGY comes from the
+     * analysis's ice_handling phrase, falling back to the event's own
+     * `icheStrategy` — so a strategy is never stored twice.
+     *
+     * `rank` is what makes the sentence-role string renderable: AnalysisRole is
+     * per-estimand, so "a secondary analysis" is the MainEstimator OF a secondary
+     * estimand and needs both. See DESIGN.md D15.
+     *
+     * ILLUSTRATIVE, like the rest of this study layer.
+     */
+    estimands: {
+      "EST.PRIMARY": {
+        iri: "usdm:Estimand/CDISCPILOT01-EST-PRIMARY", iri_status: "illustrative",
+        label: "Primary estimand — ADAS-Cog(11) change at Week 24",
+        rank: "primary",
+        intercurrentEvents: ["ICE.TRT_DISCONT", "ICE.CONMED"]
+      },
+      /*
+       * A DIFFERENT estimand, not a sensitivity analysis of the primary.
+       * Intercurrent-event handling is ICH E9(R1) attribute 4, so changing it
+       * changes the estimand — which is exactly the example
+       * IceHandling.implementedBy gives upstream ("primary estimand uses
+       * Hypothetical while a sensitivity estimand uses TreatmentPolicy on the
+       * same ICE"). Both estimands reference the SAME two event concepts; the
+       * event is not duplicated.
+       */
+      "EST.SENS.TP": {
+        iri: "usdm:Estimand/CDISCPILOT01-EST-SENS-TP", iri_status: "illustrative",
+        label: "Sensitivity estimand — treatment policy for discontinuation",
+        rank: "sensitivity",
+        intercurrentEvents: ["ICE.TRT_DISCONT", "ICE.CONMED"]
+      },
+      "EST.SECONDARY.NPIX": {
+        iri: "usdm:Estimand/CDISCPILOT01-EST-SECONDARY-NPIX", iri_status: "illustrative",
+        label: "Secondary estimand — NPI-X change at Week 24",
+        rank: "secondary",
+        /* This estimand declares no intercurrent events — an explicit empty
+           scope, not an omission. */
+        intercurrentEvents: []
+      }
+    },
+
     instances: [
       {
         id: "AC.PRIMARY.ADASCOG",
@@ -202,12 +252,7 @@
          * sentenceRole is kept beside analysisRole rather than derived from it.
          * See DESIGN.md D15.
          */
-        estimand: {
-          id: "EST.PRIMARY",
-          iri: "usdm:Estimand/CDISCPILOT01-EST-PRIMARY", iri_status: "illustrative",
-          label: "Primary estimand — ADAS-Cog(11) change at Week 24",
-          rank: "primary"
-        },
+        estimand: "EST.PRIMARY",
         analysisRole: "MainEstimator",
         sentenceRole: "the primary analysis",
         baselineVisit: "VISIT.BASELINE",
@@ -239,12 +284,7 @@
         arsAnalysis: { iri: "ars:analysis/AN-3.03.01", iri_status: "illustrative" },
         /* Its own estimand, of which it is the main estimator — see the note on
            AC.PRIMARY.ADASCOG for why rank and analysisRole are both needed. */
-        estimand: {
-          id: "EST.SECONDARY.NPIX",
-          iri: "usdm:Estimand/CDISCPILOT01-EST-SECONDARY-NPIX", iri_status: "illustrative",
-          label: "Secondary estimand — NPI-X change at Week 24",
-          rank: "secondary"
-        },
+        estimand: "EST.SECONDARY.NPIX",
         analysisRole: "MainEstimator",
         sentenceRole: "a secondary analysis",
         baselineVisit: "VISIT.BASELINE",
@@ -271,12 +311,7 @@
            SUPPLEMENTARY analysis of EST.PRIMARY, not an estimand of its own.
            This is what gives the one-MainEstimator-per-estimand check something
            real to verify. */
-        estimand: {
-          id: "EST.PRIMARY",
-          iri: "usdm:Estimand/CDISCPILOT01-EST-PRIMARY", iri_status: "illustrative",
-          label: "Primary estimand — ADAS-Cog(11) change at Week 24",
-          rank: "primary"
-        },
+        estimand: "EST.PRIMARY",
         analysisRole: "SupplementaryAnalysis",
         sentenceRole: "a supporting analysis",
         baselineVisit: "VISIT.BASELINE",
@@ -310,13 +345,8 @@
          *
          * ILLUSTRATIVE, like the ICE concepts it uses.
          */
-        estimand: {
-          id: "EST.PRIMARY",
-          iri: "usdm:Estimand/CDISCPILOT01-EST-PRIMARY", iri_status: "illustrative",
-          label: "Primary estimand — ADAS-Cog(11) change at Week 24",
-          rank: "primary"
-        },
-        analysisRole: "SensitivityAnalysis",
+        estimand: "EST.SENS.TP",
+        analysisRole: "MainEstimator",
         sentenceRole: "a sensitivity analysis",
         baselineVisit: "VISIT.BASELINE",
         phrases: [

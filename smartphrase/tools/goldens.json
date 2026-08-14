@@ -10,7 +10,11 @@
       "iri": "usdm:Estimand/CDISCPILOT01-EST-PRIMARY",
       "iri_status": "illustrative",
       "label": "Primary estimand — ADAS-Cog(11) change at Week 24",
-      "rank": "primary"
+      "rank": "primary",
+      "intercurrentEvents": [
+        "ICE.TRT_DISCONT",
+        "ICE.CONMED"
+      ]
     },
     "analysisRole": "MainEstimator",
     "handlesIntercurrentEvent": [
@@ -20,6 +24,7 @@
         "icheStrategy": "Hypothetical",
         "studyDefaultStrategy": "Hypothetical",
         "isOverride": false,
+        "source": "phrase",
         "implementedBy": [
           {
             "transformationId": "T.LOCF_Imputation"
@@ -33,6 +38,7 @@
         "icheStrategy": "TreatmentPolicy",
         "studyDefaultStrategy": "TreatmentPolicy",
         "isOverride": false,
+        "source": "phrase",
         "implementedBy": [],
         "fromPhrase": "SP_ICE_TREATMENT_POLICY"
       }
@@ -205,7 +211,17 @@
     },
     "usdm:estimand": {
       "@id": "usdm:Estimand/CDISCPILOT01-EST-PRIMARY",
-      "rdfs:label": "Primary estimand — ADAS-Cog(11) change at Week 24"
+      "rdfs:label": "Primary estimand — ADAS-Cog(11) change at Week 24",
+      "usdm:intercurrentEvent": [
+        {
+          "@id": "usdm:IntercurrentEvent/CDISCPILOT01-ICE-DISC",
+          "rdfs:label": "discontinuation of study treatment"
+        },
+        {
+          "@id": "usdm:IntercurrentEvent/CDISCPILOT01-ICE-CONMED",
+          "rdfs:label": "use of concomitant AD medication"
+        }
+      ]
     },
     "esap:analysisRole": "MainEstimator",
     "ars:analysis": {
@@ -611,7 +627,8 @@
       "iri": "usdm:Estimand/CDISCPILOT01-EST-SECONDARY-NPIX",
       "iri_status": "illustrative",
       "label": "Secondary estimand — NPI-X change at Week 24",
-      "rank": "secondary"
+      "rank": "secondary",
+      "intercurrentEvents": []
     },
     "analysisRole": "MainEstimator",
     "handlesIntercurrentEvent": [],
@@ -778,7 +795,8 @@
     },
     "usdm:estimand": {
       "@id": "usdm:Estimand/CDISCPILOT01-EST-SECONDARY-NPIX",
-      "rdfs:label": "Secondary estimand — NPI-X change at Week 24"
+      "rdfs:label": "Secondary estimand — NPI-X change at Week 24",
+      "usdm:intercurrentEvent": []
     },
     "esap:analysisRole": "MainEstimator",
     "ars:analysis": {
@@ -1067,10 +1085,39 @@
       "iri": "usdm:Estimand/CDISCPILOT01-EST-PRIMARY",
       "iri_status": "illustrative",
       "label": "Primary estimand — ADAS-Cog(11) change at Week 24",
-      "rank": "primary"
+      "rank": "primary",
+      "intercurrentEvents": [
+        "ICE.TRT_DISCONT",
+        "ICE.CONMED"
+      ]
     },
     "analysisRole": "SupplementaryAnalysis",
-    "handlesIntercurrentEvent": [],
+    "handlesIntercurrentEvent": [
+      {
+        "forIntercurrentEvent": "ICE.TRT_DISCONT",
+        "label": "discontinuation of study treatment",
+        "icheStrategy": "Hypothetical",
+        "studyDefaultStrategy": "Hypothetical",
+        "isOverride": false,
+        "source": "studyDefault",
+        "implementedBy": [
+          {
+            "transformationId": "T.LOCF_Imputation"
+          }
+        ],
+        "fromPhrase": null
+      },
+      {
+        "forIntercurrentEvent": "ICE.CONMED",
+        "label": "use of concomitant AD medication",
+        "icheStrategy": "TreatmentPolicy",
+        "studyDefaultStrategy": "TreatmentPolicy",
+        "isOverride": false,
+        "source": "studyDefault",
+        "implementedBy": [],
+        "fromPhrase": null
+      }
+    ],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -1239,7 +1286,17 @@
     },
     "usdm:estimand": {
       "@id": "usdm:Estimand/CDISCPILOT01-EST-PRIMARY",
-      "rdfs:label": "Primary estimand — ADAS-Cog(11) change at Week 24"
+      "rdfs:label": "Primary estimand — ADAS-Cog(11) change at Week 24",
+      "usdm:intercurrentEvent": [
+        {
+          "@id": "usdm:IntercurrentEvent/CDISCPILOT01-ICE-DISC",
+          "rdfs:label": "discontinuation of study treatment"
+        },
+        {
+          "@id": "usdm:IntercurrentEvent/CDISCPILOT01-ICE-CONMED",
+          "rdfs:label": "use of concomitant AD medication"
+        }
+      ]
     },
     "esap:analysisRole": "SupplementaryAnalysis",
     "ars:analysis": {
@@ -1536,13 +1593,17 @@
     "instance": "AC.SENS.ADASCOG.TP",
     "iri": "acdc:instance/AC-SENS-ADASCOG-TP",
     "estimand": {
-      "id": "EST.PRIMARY",
-      "iri": "usdm:Estimand/CDISCPILOT01-EST-PRIMARY",
+      "id": "EST.SENS.TP",
+      "iri": "usdm:Estimand/CDISCPILOT01-EST-SENS-TP",
       "iri_status": "illustrative",
-      "label": "Primary estimand — ADAS-Cog(11) change at Week 24",
-      "rank": "primary"
+      "label": "Sensitivity estimand — treatment policy for discontinuation",
+      "rank": "sensitivity",
+      "intercurrentEvents": [
+        "ICE.TRT_DISCONT",
+        "ICE.CONMED"
+      ]
     },
-    "analysisRole": "SensitivityAnalysis",
+    "analysisRole": "MainEstimator",
     "handlesIntercurrentEvent": [
       {
         "forIntercurrentEvent": "ICE.TRT_DISCONT",
@@ -1550,6 +1611,7 @@
         "icheStrategy": "TreatmentPolicy",
         "studyDefaultStrategy": "Hypothetical",
         "isOverride": true,
+        "source": "phrase",
         "implementedBy": [],
         "fromPhrase": "SP_ICE_TREATMENT_POLICY"
       },
@@ -1559,6 +1621,7 @@
         "icheStrategy": "TreatmentPolicy",
         "studyDefaultStrategy": "TreatmentPolicy",
         "isOverride": false,
+        "source": "phrase",
         "implementedBy": [],
         "fromPhrase": "SP_ICE_TREATMENT_POLICY"
       }
@@ -1730,10 +1793,20 @@
       "rdfs:comment": "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
     },
     "usdm:estimand": {
-      "@id": "usdm:Estimand/CDISCPILOT01-EST-PRIMARY",
-      "rdfs:label": "Primary estimand — ADAS-Cog(11) change at Week 24"
+      "@id": "usdm:Estimand/CDISCPILOT01-EST-SENS-TP",
+      "rdfs:label": "Sensitivity estimand — treatment policy for discontinuation",
+      "usdm:intercurrentEvent": [
+        {
+          "@id": "usdm:IntercurrentEvent/CDISCPILOT01-ICE-DISC",
+          "rdfs:label": "discontinuation of study treatment"
+        },
+        {
+          "@id": "usdm:IntercurrentEvent/CDISCPILOT01-ICE-CONMED",
+          "rdfs:label": "use of concomitant AD medication"
+        }
+      ]
     },
-    "esap:analysisRole": "SensitivityAnalysis",
+    "esap:analysisRole": "MainEstimator",
     "ars:analysis": {
       "@id": "ars:analysis/AN-SENS-TP"
     },
@@ -2137,7 +2210,10 @@
       "iri": "usdm:Estimand/PRE0102-EST-PFS",
       "iri_status": "illustrative",
       "label": "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)",
-      "rank": "primary"
+      "rank": "primary",
+      "intercurrentEvents": [
+        "ICE.TOX_DISCONT"
+      ]
     },
     "analysisRole": "MainEstimator",
     "handlesIntercurrentEvent": [
@@ -2147,6 +2223,7 @@
         "icheStrategy": "TreatmentPolicy",
         "studyDefaultStrategy": "TreatmentPolicy",
         "isOverride": false,
+        "source": "phrase",
         "implementedBy": [],
         "fromPhrase": "SP_ICE_TREATMENT_POLICY"
       }
@@ -2282,7 +2359,13 @@
     },
     "usdm:estimand": {
       "@id": "usdm:Estimand/PRE0102-EST-PFS",
-      "rdfs:label": "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)"
+      "rdfs:label": "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)",
+      "usdm:intercurrentEvent": [
+        {
+          "@id": "usdm:IntercurrentEvent/PRE0102-ICE-TOXDISC",
+          "rdfs:label": "discontinuation of everolimus for suspected toxicity"
+        }
+      ]
     },
     "esap:analysisRole": "MainEstimator",
     "ars:analysis": {
@@ -2547,7 +2630,10 @@
       "iri": "usdm:Estimand/PRE0102-EST-PFS",
       "iri_status": "illustrative",
       "label": "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)",
-      "rank": "primary"
+      "rank": "primary",
+      "intercurrentEvents": [
+        "ICE.TOX_DISCONT"
+      ]
     },
     "analysisRole": "SensitivityAnalysis",
     "handlesIntercurrentEvent": [
@@ -2557,6 +2643,7 @@
         "icheStrategy": "TreatmentPolicy",
         "studyDefaultStrategy": "TreatmentPolicy",
         "isOverride": false,
+        "source": "phrase",
         "implementedBy": [],
         "fromPhrase": "SP_ICE_TREATMENT_POLICY"
       }
@@ -2692,7 +2779,13 @@
     },
     "usdm:estimand": {
       "@id": "usdm:Estimand/PRE0102-EST-PFS",
-      "rdfs:label": "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)"
+      "rdfs:label": "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)",
+      "usdm:intercurrentEvent": [
+        {
+          "@id": "usdm:IntercurrentEvent/PRE0102-ICE-TOXDISC",
+          "rdfs:label": "discontinuation of everolimus for suspected toxicity"
+        }
+      ]
     },
     "esap:analysisRole": "SensitivityAnalysis",
     "ars:analysis": {
@@ -2957,7 +3050,8 @@
       "iri": "usdm:Estimand/PRE0102-EST-OS",
       "iri_status": "illustrative",
       "label": "Secondary estimand — overall survival (SAP 3.2, 7.7.2)",
-      "rank": "secondary"
+      "rank": "secondary",
+      "intercurrentEvents": []
     },
     "analysisRole": "MainEstimator",
     "handlesIntercurrentEvent": [],
@@ -3092,7 +3186,8 @@
     },
     "usdm:estimand": {
       "@id": "usdm:Estimand/PRE0102-EST-OS",
-      "rdfs:label": "Secondary estimand — overall survival (SAP 3.2, 7.7.2)"
+      "rdfs:label": "Secondary estimand — overall survival (SAP 3.2, 7.7.2)",
+      "usdm:intercurrentEvent": []
     },
     "esap:analysisRole": "MainEstimator",
     "ars:analysis": {
@@ -3309,7 +3404,8 @@
       "iri": "usdm:Estimand/PRE0102-EST-TTP",
       "iri_status": "illustrative",
       "label": "Secondary estimand — time to progression (SAP 3.2, 7.7.2)",
-      "rank": "secondary"
+      "rank": "secondary",
+      "intercurrentEvents": []
     },
     "analysisRole": "MainEstimator",
     "handlesIntercurrentEvent": [],
@@ -3444,7 +3540,8 @@
     },
     "usdm:estimand": {
       "@id": "usdm:Estimand/PRE0102-EST-TTP",
-      "rdfs:label": "Secondary estimand — time to progression (SAP 3.2, 7.7.2)"
+      "rdfs:label": "Secondary estimand — time to progression (SAP 3.2, 7.7.2)",
+      "usdm:intercurrentEvent": []
     },
     "esap:analysisRole": "MainEstimator",
     "ars:analysis": {

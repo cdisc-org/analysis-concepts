@@ -104,13 +104,46 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
       JSON.stringify((mv.sliceKeys || []).filter((sk) => !sk.value))
     );
 
-    /* Estimand attribution. Every analysis instance belongs to exactly one
-       estimand and states its ICH E9(R1) role for that estimand. */
-    check(`${studyKey}/${inst.id} declares an estimand`, !!inst.estimand, "no estimand block");
+    /* Estimand attribution. Every analysis instance references exactly one
+       estimand in the study's registry and states its ICH E9(R1) role for it. */
+    const est = E.estimandOf(ctx, inst);
+    check(`${studyKey}/${inst.id} references a registered estimand`, !!est,
+      "unresolved: " + JSON.stringify(inst.estimand));
     check(`${studyKey}/${inst.id} declares a typed analysisRole`,
       ["MainEstimator", "SensitivityAnalysis", "SupplementaryAnalysis"].indexOf(inst.analysisRole) !== -1,
       String(inst.analysisRole));
     check(`${studyKey}/${inst.id} model view carries the estimand`, !!mv.estimand);
+
+    /*
+     * Requirement 2 — every ICE the ESTIMAND declares carries exactly one
+     * strategy for this analysis, whether stated by a phrase or inherited from
+     * the event's study default. Before the estimand declared its ICE scope, an
+     * analysis could silently omit an event its estimand declared and emit
+     * handlesIntercurrentEvent: [] — reading as "handles no intercurrent
+     * events", which is a different claim from "handles them as standard".
+     */
+    if (est) {
+      const declared = est.intercurrentEvents || [];
+      const handled = (mv.handlesIntercurrentEvent || []).map((h) => h.forIntercurrentEvent);
+      check(`${studyKey}/${inst.id} accounts for every ICE its estimand declares`,
+        declared.every((id) => handled.indexOf(id) !== -1),
+        "declared " + JSON.stringify(declared) + " handled " + JSON.stringify(handled));
+      check(`${studyKey}/${inst.id} handles no ICE outside its estimand's scope`,
+        handled.every((id) => declared.indexOf(id) !== -1),
+        "handled " + JSON.stringify(handled) + " declared " + JSON.stringify(declared));
+      check(`${studyKey}/${inst.id} every handling names a strategy`,
+        (mv.handlesIntercurrentEvent || []).every((h) => !!h.icheStrategy),
+        JSON.stringify(mv.handlesIntercurrentEvent));
+      /* An ICE phrase may only bind an event its estimand declares — otherwise
+         the prose asserts a handling for something outside the question. */
+      const phraseIces = inst.phrases
+        .map((p) => ({ d: E.phraseDef(ctx, p.phrase), b: (p.bindings || {}).ice }))
+        .filter((x) => x.d && x.d.role === "ice_handling" && x.b)
+        .map((x) => x.b.concept);
+      check(`${studyKey}/${inst.id} ICE phrases bind only declared events`,
+        phraseIces.every((id) => declared.indexOf(id) !== -1),
+        JSON.stringify(phraseIces));
+    }
 
     /* tag dialect round-trip must be byte-equal */
     const src = E.toMacroText(ctx, inst);
@@ -189,10 +222,20 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
      upstream documentation ("MainEstimator (exactly one per estimand)"). */
   const byEstimand = {};
   graph.instances.forEach((i) => {
-    const k = i.estimand && i.estimand.id;
-    if (!k) return;
-    byEstimand[k] = byEstimand[k] || [];
-    byEstimand[k].push(i);
+    const e = E.estimandOf(ctx, i);
+    if (!e) return;
+    byEstimand[e.id] = byEstimand[e.id] || [];
+    byEstimand[e.id].push(i);
+  });
+  /* Every registered estimand must be addressed by at least one analysis, and
+     must declare its ICE scope explicitly (an empty list is a valid answer —
+     "this estimand declares no intercurrent events" — but it must be stated). */
+  Object.keys(graph.estimands || {}).forEach((eid) => {
+    check(`${studyKey}/${eid} is addressed by at least one analysis`,
+      (byEstimand[eid] || []).length > 0);
+    check(`${studyKey}/${eid} declares its intercurrent-event scope`,
+      Array.isArray(graph.estimands[eid].intercurrentEvents),
+      "intercurrentEvents must be an array, even if empty");
   });
   Object.keys(byEstimand).forEach((k) => {
     const mains = byEstimand[k].filter((i) => i.analysisRole === "MainEstimator");
@@ -238,14 +281,14 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
   const ctx = E.ctxOf(LIB, graphs.CDISCPILOT01, I18N);
   const main = graphs.CDISCPILOT01.instances.find((i) => i.id === "AC.PRIMARY.ADASCOG");
   const sens = graphs.CDISCPILOT01.instances.find((i) => i.id === "AC.SENS.ADASCOG.TP");
-  check("the override instance exists", !!sens);
+  check("the sensitivity-estimand instance exists", !!sens);
   if (sens) {
     const ice = "ICE.TRT_DISCONT";
     const a = E.constructModelView(ctx, main).handlesIntercurrentEvent
       .find((h) => h.forIntercurrentEvent === ice);
     const b = E.constructModelView(ctx, sens).handlesIntercurrentEvent
       .find((h) => h.forIntercurrentEvent === ice);
-    check("the same ICE is handled two ways across the estimand's analyses",
+    check("the same ICE is handled two ways",
       a && b && a.icheStrategy === "Hypothetical" && b.icheStrategy === "TreatmentPolicy",
       JSON.stringify([a && a.icheStrategy, b && b.icheStrategy]));
     check("the override is flagged as such",
@@ -256,8 +299,37 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
     check("the override drops the implementing transformation",
       a && b && a.implementedBy.length === 1 && b.implementedBy.length === 0,
       JSON.stringify([a && a.implementedBy, b && b.implementedBy]));
-    check("both analyses belong to the same estimand",
-      main.estimand.id === sens.estimand.id, main.estimand.id + " vs " + sens.estimand.id);
+    /*
+     * Changing an ICE strategy changes an ESTIMAND ATTRIBUTE, so it yields a
+     * DIFFERENT estimand — not a sensitivity analysis of the same one. That is
+     * what IceHandling's own upstream example says ("primary estimand uses
+     * Hypothetical while a sensitivity estimand uses TreatmentPolicy on the same
+     * ICE") and what requirement 6 literally asks for. Both estimands share the
+     * ICE concept; neither duplicates it.
+     */
+    const eMain = E.estimandOf(ctx, main);
+    const eSens = E.estimandOf(ctx, sens);
+    check("differing ICE strategy yields a DIFFERENT estimand",
+      eMain.id !== eSens.id, eMain.id + " vs " + eSens.id);
+    check("the sensitivity estimand is its own main estimator",
+      sens.analysisRole === "MainEstimator", sens.analysisRole);
+    check("both estimands declare the same ICE, not a copy of it",
+      JSON.stringify(eMain.intercurrentEvents) === JSON.stringify(eSens.intercurrentEvents),
+      JSON.stringify([eMain.intercurrentEvents, eSens.intercurrentEvents]));
+  }
+
+  /* An analysis that states no ICE phrase INHERITS its estimand's scope at the
+     events' study-default strategies — it does not silently handle nothing. */
+  {
+    const supp = graphs.CDISCPILOT01.instances.find((i) => i.id === "AC.SUPP.ADASCOG.WK16");
+    const h = E.constructModelView(ctx, supp).handlesIntercurrentEvent;
+    check("an analysis with no ICE phrase inherits its estimand's ICEs",
+      h.length === 2, JSON.stringify(h));
+    check("inherited handlings are marked as study defaults",
+      h.every((x) => x.source === "studyDefault" && x.fromPhrase === null),
+      JSON.stringify(h.map((x) => x.source)));
+    check("inherited handlings are not flagged as overrides",
+      h.every((x) => x.isOverride === false), JSON.stringify(h));
   }
   /* All five ICH E9(R1) attributes present on the primary. */
   const roles = E.resolveInstance(ctx, main, "en").phrases.map((p) => p.role);

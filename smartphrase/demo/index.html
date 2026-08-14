@@ -577,17 +577,29 @@
     var tpl = E.templateDef(ctx, state.template);
     if (!tpl) return;
 
-    /* Estimand header. The estimand is instance-level, not a phrase, so it is
-       not derivable from the phrase loop below. */
-    if (state.estimand) {
+    /* Estimand header. The estimand is study-level and referenced by id, so it
+       is resolved through the engine rather than read off the instance. */
+    var est = E.estimandOf(ctx, state);
+    if (est) {
+      var ices = E.iceHandlings(ctx, state);
       var eh = document.createElement("div");
       eh.className = "estimandhead";
-      eh.innerHTML = "<b>" + state.estimand.label + "</b>" +
+      eh.innerHTML = "<b>" + est.label + "</b>" +
         '<span class="rolebadge">' + (state.analysisRole || "?") + "</span>" +
-        '<div class="iri">' + expand(state.estimand.iri) +
-        statBadge(state.estimand.iri_status) + "</div>" +
+        '<div class="iri">' + expand(est.iri) + statBadge(est.iri_status) + "</div>" +
         '<div class="sub" style="margin:4px 0 0">ICH E9(R1) estimand · ' +
-        state.estimand.id + " · rank: " + (state.estimand.rank || "—") + "</div>";
+        est.id + " · rank: " + (est.rank || "—") + "</div>" +
+        /* Scope is the estimand's; strategy is this analysis's. An event with no
+           phrase is inherited at its study default, and saying so is the point:
+           silence must not read as "no intercurrent events". */
+        (ices.length
+          ? '<div class="sub" style="margin:4px 0 0">Intercurrent events: ' +
+            ices.map(function (h) {
+              return h.forIntercurrentEvent + " → " + h.icheStrategy +
+                (h.source === "studyDefault" ? " <i>(inherited)</i>" : "") +
+                (h.isOverride ? " <b>(override)</b>" : "");
+            }).join(" · ") + "</div>"
+          : '<div class="sub" style="margin:4px 0 0">Intercurrent events: none declared</div>');
       mp.appendChild(eh);
     }
 
@@ -872,6 +884,7 @@
           ? "<tr><td class='k'>ICE handling</td><td>" +
             mv.handlesIntercurrentEvent.map(function (h) {
               return h.icheStrategy + " → " + h.forIntercurrentEvent +
+                (h.source === "studyDefault" ? " <i>(inherited)</i>" : "") +
                 (h.isOverride ? " <b>(override)</b>" : "");
             }).join("<br>") + "</td></tr>"
           : "";
@@ -940,13 +953,11 @@
       push("ICH E9(R1) strategy — " + s, "IchE9R1Strategy/" + s,
         "acdc:estimand/strategy/" + s, "illustrative");
     });
-    /* Estimands, deduplicated: several analyses share one. */
-    var seenEstimand = {};
-    GRAPH.instances.forEach(function (inst) {
-      if (!inst.estimand || seenEstimand[inst.estimand.id]) return;
-      seenEstimand[inst.estimand.id] = true;
-      push("Estimand — " + inst.estimand.label, inst.estimand.id,
-        inst.estimand.iri, inst.estimand.iri_status);
+    /* Estimands come from the study registry, so no deduplication is needed —
+       several analyses referencing one estimand list it once by construction. */
+    Object.keys(GRAPH.estimands || {}).forEach(function (eid) {
+      var e = GRAPH.estimands[eid];
+      push("Estimand — " + e.label, eid, e.iri, e.iri_status);
     });
     GRAPH.instances.forEach(function (inst) {
       push("Analysis instance — " + inst.label, inst.id, inst.iri, "illustrative");
