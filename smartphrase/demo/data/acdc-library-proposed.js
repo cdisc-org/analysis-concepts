@@ -11,16 +11,40 @@
  * the entry from here.
  */
 (function (g) {
+
+  /*
+   * All five strategy phrases bind the same slot — one ICE per phrase. Shared
+   * by reference across the five definitions: safe because nothing mutates
+   * placeholder objects. If that ever changes, clone it per phrase.
+   */
+  var ICE_SLOT = {
+    name: "ice",
+    kind: "concept_ref",
+    concept_class: "IntercurrentEvent",
+    concept_constraint: "IntercurrentEvent",
+    value_source: "study_registry",
+    render_options: ["label", "name", "name_with_label"],
+    default_render: "name",
+    required: true
+  };
+
   g.ACDC_LIBRARY_PROPOSED = {
 
     provenance: {
       status: "proposed",
-      authored_for: "issue #9 — breast cancer worked example (PrE0102)",
+      authored_for: [
+        "issue #9 — breast cancer worked example (PrE0102)",
+        "issue #11 — estimands and intercurrent events"
+      ],
       not_in: "methods_02@ffee5df",
       rationale: "The SAP's PFS analysis is descriptive (median + 90% CI by arm). " +
                  "Upstream T.OS_LogRank is a hypothesis test (outputs " +
                  "chi_squared_test_result) and does not fit; no descriptive " +
-                 "Kaplan-Meier template exists in v0.7."
+                 "Kaplan-Meier template exists in v0.7. " +
+                 "The ICH E9(R1) strategy phrases and the summary-measure phrase " +
+                 "need two new phrase ROLES, which is a library minor-version " +
+                 "event rather than a study addition — so they are proposed here " +
+                 "until the working group decides who accepts role-level changes."
     },
 
     /*
@@ -47,6 +71,69 @@
         }
       }
     },
+
+    /*
+     * One smartphrase per ICH E9(R1) strategy. The strategy is carried in
+     * `anchors.icheStrategy` (an IchE9R1Strategy enum value) rather than being
+     * inferred from the OID, so model→SAP is a lookup, not string surgery.
+     *
+     * `anchors.implementation` names the transformation pattern that
+     * operationalises the strategy — the values are taken from
+     * IceHandling.implementedBy's own documentation on methods_02, so the two
+     * layers agree on semantics. "none" is correct for TreatmentPolicy: data
+     * are used as observed, and there is nothing to implement.
+     */
+    smartPhrases: [
+      {
+        oid: "SP_ICE_TREATMENT_POLICY",
+        name: "Intercurrent event — treatment policy strategy",
+        role: "ice_handling",
+        phrase_template: "regardless of {ice}",
+        anchors: { icheStrategy: "TreatmentPolicy", implementation: "none" },
+        placeholders: [ICE_SLOT]
+      },
+      {
+        oid: "SP_ICE_HYPOTHETICAL",
+        name: "Intercurrent event — hypothetical strategy",
+        role: "ice_handling",
+        phrase_template: "as if {ice} had not occurred",
+        anchors: { icheStrategy: "Hypothetical", implementation: "imputation" },
+        placeholders: [ICE_SLOT]
+      },
+      {
+        oid: "SP_ICE_COMPOSITE",
+        name: "Intercurrent event — composite strategy",
+        role: "ice_handling",
+        phrase_template: "with {ice} treated as {outcome}",
+        anchors: { icheStrategy: "Composite", implementation: "derivation" },
+        placeholders: [ICE_SLOT, {
+          name: "outcome",
+          kind: "concept_ref",
+          concept_class: "Outcome",
+          concept_constraint: "Outcome",
+          value_source: "study_registry",
+          render_options: ["label", "name"],
+          default_render: "name",
+          required: true
+        }]
+      },
+      {
+        oid: "SP_ICE_WHILE_ON_TREATMENT",
+        name: "Intercurrent event — while on treatment strategy",
+        role: "ice_handling",
+        phrase_template: "using measurements taken prior to {ice}",
+        anchors: { icheStrategy: "WhileOnTreatment", implementation: "censoring" },
+        placeholders: [ICE_SLOT]
+      },
+      {
+        oid: "SP_ICE_PRINCIPAL_STRATUM",
+        name: "Intercurrent event — principal stratum strategy",
+        role: "ice_handling",
+        phrase_template: "in the stratum of participants in whom {ice} would not occur",
+        anchors: { icheStrategy: "PrincipalStratum", implementation: "population_subsetting" },
+        placeholders: [ICE_SLOT]
+      }
+    ],
 
     transformations: [
       {

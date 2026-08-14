@@ -167,6 +167,30 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
   check("planted fault: missing wrapper rejected", noWrapper.instancePatch === null);
 }
 
+/* ---- ICH E9(R1) strategy phrase coverage ---- */
+{
+  const ctx = E.ctxOf(LIB, graphs.CDISCPILOT01, I18N);
+  /* The five enum values of IchE9R1Strategy in study_esap.schema.yaml on
+     methods_02. One phrase per strategy, no more and no fewer — a strategy
+     with no phrase is an estimand the layer cannot express. */
+  const STRATEGIES = ["TreatmentPolicy", "Hypothetical", "Composite",
+                      "WhileOnTreatment", "PrincipalStratum"];
+  const icePhrases = ctx.lib.smartPhrases.filter((p) => p.role === "ice_handling");
+  check("every ICH E9(R1) strategy has exactly one phrase",
+    STRATEGIES.every((s) => icePhrases.filter((p) => p.anchors.icheStrategy === s).length === 1),
+    icePhrases.map((p) => p.oid + "=" + p.anchors.icheStrategy).join(", "));
+  check("no ice_handling phrase claims an unknown strategy",
+    icePhrases.every((p) => STRATEGIES.indexOf(p.anchors.icheStrategy) !== -1));
+  check("every ice_handling phrase binds an IntercurrentEvent concept",
+    icePhrases.every((p) => p.placeholders.some(
+      (ph) => ph.name === "ice" && ph.concept_constraint === "IntercurrentEvent")));
+  check("every ice_handling phrase declares its implementation pattern",
+    icePhrases.every((p) => typeof p.anchors.implementation === "string"));
+  check("only TreatmentPolicy needs no implementing transformation",
+    icePhrases.filter((p) => p.anchors.implementation === "none")
+      .every((p) => p.anchors.icheStrategy === "TreatmentPolicy"));
+}
+
 /* ---- sentence-template optional groups ---- */
 {
   const graph = graphs.CDISCPILOT01;

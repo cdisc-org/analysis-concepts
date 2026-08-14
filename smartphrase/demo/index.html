@@ -848,7 +848,9 @@
       "@" + prov.source_commit + "</code> (Transformation Library v" + ctx.lib.library_version + "). " +
       "The study layer (concepts, instances, trace tiers) is illustrative." +
       (proposed
-        ? "<br><br><b>Proposed additions:</b> authored for " + proposed.authored_for +
+        /* authored_for is a list once more than one work item has contributed. */
+        ? "<br><br><b>Proposed additions:</b> authored for " +
+          [].concat(proposed.authored_for).join("; ") +
           " and <em>not</em> in <code>" + proposed.not_in + "</code>. " +
           proposed.rationale +
           " These are badged <span class='tplbadge'>proposed</span> wherever they appear."
