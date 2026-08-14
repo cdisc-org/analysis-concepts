@@ -1,5 +1,38 @@
 # Estimands and Intercurrent Events Implementation Plan
 
+> **COMPLETE — 2026-08-14.** All twelve tasks executed and verified. Final state: **86 pinned outputs**
+> across two studies, all three gates green, working tree clean.
+>
+> **Deviations from this plan, all deliberate:**
+>
+> 1. **Task 10 (localisation) was folded into Task 8**, not committed separately. Task 8 as written would
+>    have pinned knowingly-English-fallback FR/DE sentences as goldens and left the localisation gate red
+>    across two commits. Translating first avoided both.
+> 2. **`role_conjunctions` landed in Task 8 rather than Task 9.** The EN sentence template needed it as
+>    soon as the optional groups were written, so the engine support came with the template change.
+> 3. **Two prose defects were found by reading rendered output, as the plan instructed** — an ICE clause
+>    that opened a comma without closing it, and `" , "` left where an elided optional group met an empty
+>    `covariate` role. Both fixed; the second needed normalising in the `parts` array rather than the
+>    assembled string, because the DOM renders parts individually.
+> 4. **Two holes in the verification gate surfaced during Task 7**, neither predicted here: the
+>    per-instance trace loop ran for roles the instance did not use (producing `ADQSADAS.ITTFL`, the
+>    endpoint's dataset crossed with the population's flag), and the "no unfilled tokens" assertion only
+>    looked for `⟨name⟩`, so a surviving `{token}` passed silently. Both fixed.
+> 5. **Test fixtures were coupled to live data**, discovered in Task 9: three blocks pushed ICE phrases
+>    onto `instances[0]`, so once that instance grew ICE phrases of its own, "push two ICEs" became "push
+>    two more". Added a `without(ctx, inst, roles)` helper so each fixture states its own precondition.
+> 6. **`tools/diff-goldens.mjs` was added** — not in the plan. Reviewing a recapture by eye across a 35KB
+>    JSON diff cannot answer "did anything move that I did not intend?"; a leaf-level structural diff can,
+>    and every recapture here was reviewed with it.
+> 7. **`REFERENCE.md` §6 was stale from #9**, still describing the pre-D10 phrase-OID keying that issue
+>    had already replaced. Rewritten while updating it.
+> 8. **`SP_ICE_TREATMENT_POLICY` appears twice in one instance** (`AC.SENS.ADASCOG.TP`), which the plan did
+>    not anticipate. The engine handles a repeated phrase OID and the macro round-trip stays byte-equal;
+>    noted in `REFERENCE.md` §3.2 as supported for `repeating` roles.
+>
+> The five design deviations recorded below were all confirmed correct in implementation. Deviation E
+> (`analysisRole` beside `sentenceRole`, not replacing it) is the one worth the working group's attention.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan
 > task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -131,7 +164,7 @@ proposed role reaches `ctx.lib` at the right index and that nothing else moves.
 - Produces: `ctx.lib.roleDefinitions.order` containing `ice_handling` immediately after `grouping` and
   `summary_measure` last; `ctx.lib.roleDefinitions.roles[<new>].proposed === true`.
 
-- [ ] **Step 1: Write the failing assertions in `verify.mjs`**
+- [x] **Step 1: Write the failing assertions in `verify.mjs`**
 
 Add to the `/* ---- proposed library additions ---- */` block:
 
@@ -159,12 +192,12 @@ Add to the `/* ---- proposed library additions ---- */` block:
   );
 ```
 
-- [ ] **Step 2: Run the gate to verify it fails**
+- [x] **Step 2: Run the gate to verify it fails**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: FAIL, 6 problems, first being `proposed role ice_handling is in ctx.lib order`.
 
-- [ ] **Step 3: Declare the roles in the overlay**
+- [x] **Step 3: Declare the roles in the overlay**
 
 In `demo/data/acdc-library-proposed.js`, add a `roleDefinitions` block before `transformations`. The
 `order_after` field is overlay-only metadata consumed by `ctxOf` — it is not upstream shape, so it is
@@ -197,7 +230,7 @@ commented as such:
     },
 ```
 
-- [ ] **Step 4: Merge role definitions in `ctxOf`**
+- [x] **Step 4: Merge role definitions in `ctxOf`**
 
 In `engine.js`, inside `ctxOf`'s `if (pro) { ... }` block, after the `smartPhrases` merge:
 
@@ -223,14 +256,14 @@ In `engine.js`, inside `ctxOf`'s `if (pro) { ... }` block, after the `smartPhras
       }
 ```
 
-- [ ] **Step 5: Run the gate — role assertions pass, goldens unchanged**
+- [x] **Step 5: Run the gate — role assertions pass, goldens unchanged**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: PASS, 69 outputs. **If any golden changed, stop and investigate** — adding an unused role must
 not alter any output. (The default sentence template in `resolveInstance` is only used when no language
 pack exists, and `en` always exists, so the new role tokens cannot leak into prose yet.)
 
-- [ ] **Step 6: Route every `index.html` library read through `ctx.lib`**
+- [x] **Step 6: Route every `index.html` library read through `ctx.lib`**
 
 Replace all `LIB.` reads with `ctx.lib.` — lines 328, 379, 537, 557, 650, 837, 844. Keep `var LIB` as the
 raw global only where the overlay must *not* apply (nowhere, currently). At line 328:
@@ -245,7 +278,7 @@ raw global only where the overlay must *not* apply (nowhere, currently). At line
 `switchStudy` rebuilds `ctx`, so also reassign `ROLE_LABELS` there alongside the existing `TRACEABLE`
 reassignment at line 341.
 
-- [ ] **Step 7: Assert it in the UI gate**
+- [x] **Step 7: Assert it in the UI gate**
 
 In `verify-ui.mjs`, after the pilot model-panel checks:
 
@@ -259,7 +292,7 @@ Then add a stronger check once phrases exist (Task 3). For now, run all three ga
 Run: `node smartphrase/tools/verify.mjs && node smartphrase/tools/build-library-subset.mjs --check && NODE_PATH=<scratchpad>/domtest/node_modules node smartphrase/tools/verify-ui.mjs`
 Expected: three PASS lines.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add smartphrase/demo/engine.js smartphrase/demo/data/acdc-library-proposed.js \
@@ -284,7 +317,7 @@ existing outputs are byte-identical.
 - Produces: `[` … `]` in any `sentence_template` marks a group emitted only when at least one role token
   inside it resolves to a phrase.
 
-- [ ] **Step 1: Write the failing assertions in `verify.mjs`**
+- [x] **Step 1: Write the failing assertions in `verify.mjs`**
 
 Add a new block after the planted faults:
 
@@ -312,13 +345,13 @@ Add a new block after the planted faults:
 }
 ```
 
-- [ ] **Step 2: Run the gate to verify it fails**
+- [x] **Step 2: Run the gate to verify it fails**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: FAIL — `optional group with no phrases is elided entirely` (the literal `[`/`]` characters
 appear in the output because nothing strips them).
 
-- [ ] **Step 3: Implement segmentation in `resolveInstance`**
+- [x] **Step 3: Implement segmentation in `resolveInstance`**
 
 Insert before the `var parts = [];` line:
 
@@ -368,13 +401,13 @@ to:
 
 and close the extra `});` at the end of that loop body.
 
-- [ ] **Step 4: Run the gate — new assertions pass, all 69 goldens byte-identical**
+- [x] **Step 4: Run the gate — new assertions pass, all 69 goldens byte-identical**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: PASS, 69 outputs, **zero golden changes**. If a golden moved, the refactor changed existing
 behaviour — stop and diff it.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add smartphrase/demo/engine.js smartphrase/tools/verify.mjs
@@ -396,7 +429,7 @@ git commit -m "Add optional [...] groups to the sentence template language"
   `IchE9R1Strategy` enum value and `anchors.implementation` naming the transformation pattern
   `IceHandling.implementedBy` expects. `{ice}` binds `concept_constraint: "IntercurrentEvent"`.
 
-- [ ] **Step 1: Write the failing assertions in `verify.mjs`**
+- [x] **Step 1: Write the failing assertions in `verify.mjs`**
 
 ```js
 /* ---- ICH E9(R1) strategy phrase coverage ---- */
@@ -424,12 +457,12 @@ git commit -m "Add optional [...] groups to the sentence template language"
 }
 ```
 
-- [ ] **Step 2: Run the gate to verify it fails**
+- [x] **Step 2: Run the gate to verify it fails**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: FAIL — `every ICH E9(R1) strategy has exactly one phrase` (no `ice_handling` phrases exist).
 
-- [ ] **Step 3: Add the five phrases to the overlay**
+- [x] **Step 3: Add the five phrases to the overlay**
 
 In `demo/data/acdc-library-proposed.js`, add a `smartPhrases` array. The `implementation` values are
 copied from `IceHandling.implementedBy`'s own upstream documentation, so the phrase layer and the model
@@ -519,7 +552,7 @@ Define `ICE_SLOT` once above `g.ACDC_LIBRARY_PROPOSED`, inside the IIFE, since a
 Note: `ICE_SLOT` is shared by reference across five phrase definitions. That is safe because nothing
 mutates placeholder objects — but state it in the comment so a later change does not break it silently.
 
-- [ ] **Step 4: Extend the overlay provenance block**
+- [x] **Step 4: Extend the overlay provenance block**
 
 The existing `provenance` says `authored_for: "issue #9 …"`. Add the second work item rather than
 overwriting:
@@ -539,12 +572,12 @@ overwriting:
 **Check every consumer of `provenance.authored_for`** before changing its type from string to array —
 `grep -rn "authored_for" smartphrase/` — and update `index.html`'s `renderStandards` if it renders it.
 
-- [ ] **Step 5: Run the gate**
+- [x] **Step 5: Run the gate**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: PASS, 69 outputs, no golden changes (phrases exist but no instance uses them yet).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add smartphrase/demo/data/acdc-library-proposed.js smartphrase/tools/verify.mjs
@@ -571,7 +604,7 @@ enforced in `resolveBinding`, so a wrong summary measure is a resolution error, 
   `resolveBinding(ctx, ph, binding, lang, tpl)` and `resolvePhrase(ctx, pi, lang, tpl)` — the 5th/4th
   parameters are optional, so existing callers keep working.
 
-- [ ] **Step 1: Write the failing assertions in `verify.mjs`**
+- [x] **Step 1: Write the failing assertions in `verify.mjs`**
 
 ```js
 /* ---- summary measure is verifiable, not decorative ---- */
@@ -600,12 +633,12 @@ enforced in `resolveBinding`, so a wrong summary measure is a resolution error, 
 }
 ```
 
-- [ ] **Step 2: Run the gate to verify it fails**
+- [x] **Step 2: Run the gate to verify it fails**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: FAIL — `SP_SUMMARY_MEASURE exists` and `output classes are in the library subset`.
 
-- [ ] **Step 3: Add the output-class vocabulary to the generator**
+- [x] **Step 3: Add the output-class vocabulary to the generator**
 
 In `tools/build-library-subset.mjs`, after `TRANSFORMATION_LIB`:
 
@@ -663,7 +696,7 @@ Add both to the emitted `library` object and to `provenance.files`:
 
 Place `outputClasses` after `methods` so the diff to the generated file is append-only where possible.
 
-- [ ] **Step 4: Regenerate and confirm the gate agrees**
+- [x] **Step 4: Regenerate and confirm the gate agrees**
 
 ```bash
 node smartphrase/tools/build-library-subset.mjs
@@ -671,14 +704,14 @@ node smartphrase/tools/build-library-subset.mjs --check
 ```
 Expected: `wrote …` then `PASS — acdc-library.js matches generator output.`
 
-- [ ] **Step 5: Run the engine gate to see whether adding upstream content moved any output**
+- [x] **Step 5: Run the engine gate to see whether adding upstream content moved any output**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: the Task 4 Step 1 failures only. **No golden may change** — `T.LOCF_Imputation` and
 `outputClasses` are additive and no instance references them. If a golden moved, stop: something reads
 the transformation list positionally.
 
-- [ ] **Step 6: Thread the template through binding resolution**
+- [x] **Step 6: Thread the template through binding resolution**
 
 In `engine.js`, change three signatures (all new parameters optional):
 
@@ -702,7 +735,7 @@ In `parseMacroText`, the local `tpl` is already in scope at the `resolveBinding`
         var check = resolveBinding(ctx, ph, b, "en", tpl);
 ```
 
-- [ ] **Step 7: Handle `output_ref` in `resolveBinding`**
+- [x] **Step 7: Handle `output_ref` in `resolveBinding`**
 
 Insert before the `method_ref` branch (so `binding.output` is matched before the concept fallback):
 
@@ -739,7 +772,7 @@ Insert before the `method_ref` branch (so `binding.output` is matched before the
 `detail.libraryLabel` deliberately keeps the *upstream* label alongside the localised prose, so the
 inspect panel can show both — finding F made visible rather than hidden.
 
-- [ ] **Step 8: Add `SP_SUMMARY_MEASURE` to the overlay**
+- [x] **Step 8: Add `SP_SUMMARY_MEASURE` to the overlay**
 
 Append to the overlay's `smartPhrases`:
 
@@ -762,7 +795,7 @@ Append to the overlay's `smartPhrases`:
       }
 ```
 
-- [ ] **Step 9: Teach the tag dialect the new slot kind**
+- [x] **Step 9: Teach the tag dialect the new slot kind**
 
 `toMacroText` writes `b.concept || b.method || b.value` (line 447) and `parseMacroText` builds bindings by
 `ph.kind` (lines 516-518). Both need `output`:
@@ -786,12 +819,12 @@ JSON-LD projection emits the summary measure. In `toJSONLD`:
                         "esap:summarizedByOutputClass": b.output });
 ```
 
-- [ ] **Step 10: Run the gate**
+- [x] **Step 10: Run the gate**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: PASS. The three Task 4 assertions pass; all 69 goldens unchanged.
 
-- [ ] **Step 11: Commit**
+- [x] **Step 11: Commit**
 
 ```bash
 git add smartphrase/tools/build-library-subset.mjs smartphrase/demo/data/acdc-library.js \
@@ -817,7 +850,7 @@ Per deviation E, this **adds** typed fields beside `sentenceRole` rather than re
   `instance.analysisRole ∈ {MainEstimator, SensitivityAnalysis, SupplementaryAnalysis}`;
   `constructModelView(...).estimand` and `.analysisRole`.
 
-- [ ] **Step 1: Write the failing assertions in `verify.mjs`**
+- [x] **Step 1: Write the failing assertions in `verify.mjs`**
 
 Inside the per-instance loop, after the model-view checks:
 
@@ -850,13 +883,13 @@ and after the loop over each study's instances:
   });
 ```
 
-- [ ] **Step 2: Run the gate to verify it fails**
+- [x] **Step 2: Run the gate to verify it fails**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: FAIL — one `declares an estimand` failure per instance across both studies (7), plus the
 `analysisRole` and `model view carries the estimand` failures.
 
-- [ ] **Step 3: Add estimand blocks to the CDISC Pilot instances**
+- [x] **Step 3: Add estimand blocks to the CDISC Pilot instances**
 
 Only `study-graph.js` in this step — PrE0102 comes in Task 8. For each of `AC.PRIMARY.ADASCOG`,
 `AC.SEC.NPIX`, `AC.SUPP.ADASCOG.WK16`, add beside `sentenceRole`:
@@ -886,7 +919,7 @@ its own secondary estimand). `AC.SUPP.ADASCOG.WK16` → `estimand: EST.PRIMARY` 
 honest reading of a Week 16 supporting analysis and gives the one-MainEstimator check something real to
 verify.
 
-- [ ] **Step 4: Emit the estimand in the model view**
+- [x] **Step 4: Emit the estimand in the model view**
 
 In `constructModelView`'s return object, after `instance`/`iri`:
 
@@ -897,7 +930,7 @@ In `constructModelView`'s return object, after `instance`/`iri`:
       analysisRole: instance.analysisRole || null,
 ```
 
-- [ ] **Step 5: Emit it in the JSON-LD projection**
+- [x] **Step 5: Emit it in the JSON-LD projection**
 
 In `toJSONLD`'s return object, after `usdm:objective`:
 
@@ -908,7 +941,7 @@ In `toJSONLD`'s return object, after `usdm:objective`:
       "esap:analysisRole": instance.analysisRole || null,
 ```
 
-- [ ] **Step 6: Run the gate and recapture the intended golden changes**
+- [x] **Step 6: Run the gate and recapture the intended golden changes**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: FAIL with `golden changed` for the 3 Pilot `modelView` and `jsonld` entries — **this change is
@@ -928,7 +961,7 @@ known, named failure, but each commit message must say so.
 To avoid committing a red gate at all, do Task 8's Step 3 (PrE0102 estimand blocks) now as part of this
 task. **Preferred:** add PrE0102's four estimand blocks here, leaving only the ICE work for Task 8.
 
-- [ ] **Step 7: Add estimand blocks to the PrE0102 instances**
+- [x] **Step 7: Add estimand blocks to the PrE0102 instances**
 
 `AC.PRIMARY.PFS` → `EST.PFS` (`rank: "primary"`, `MainEstimator`); `AC.SENS.PFS.ITT` → **the same**
 `EST.PFS` with `analysisRole: "SensitivityAnalysis"` — the SAP's own §7.7.2 sensitivity analysis, so this
@@ -938,7 +971,7 @@ pairing is source-grounded, and it is what makes the one-MainEstimator check mea
 Each carries a `sapRef`-style note in the estimand label where the source supports it, e.g.
 `label: "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)"`.
 
-- [ ] **Step 8: Recapture, verify green, commit**
+- [x] **Step 8: Recapture, verify green, commit**
 
 ```bash
 node smartphrase/tools/verify.mjs --update-goldens
@@ -968,7 +1001,7 @@ operationalise it. Enforced, so a Hypothetical strategy with nothing to implemen
   `{ forIntercurrentEvent, icheStrategy, implementedBy: [{transformationId}] }`, matching `IceHandling`
   in `study_esap.schema.yaml`.
 
-- [ ] **Step 1: Add the two Pilot ICE concepts**
+- [x] **Step 1: Add the two Pilot ICE concepts**
 
 In `study-graph.js` `concepts`. The `implementedBy` map is keyed by strategy — **on the ICE, not on the
 estimand** — so a per-estimand override automatically picks up the right implementer without duplicating
@@ -1030,7 +1063,7 @@ the ICE (requirement 6):
       },
 ```
 
-- [ ] **Step 2: Write the failing assertions in `verify.mjs`**
+- [x] **Step 2: Write the failing assertions in `verify.mjs`**
 
 ```js
 /* ---- IceHandling: strategy resolves to what implements it ---- */
@@ -1062,12 +1095,12 @@ the ICE (requirement 6):
 }
 ```
 
-- [ ] **Step 3: Run the gate to verify it fails**
+- [x] **Step 3: Run the gate to verify it fails**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: FAIL — `model view emits one IceHandling per ICE phrase`.
 
-- [ ] **Step 4: Enforce implementability in `resolveBinding`**
+- [x] **Step 4: Enforce implementability in `resolveBinding`**
 
 In the concept branch, after the `concept_category` check:
 
@@ -1119,7 +1152,7 @@ pre-check:
 
 Update `parseMacroText`'s call too: `resolveBinding(ctx, ph, b, "en", tpl, def)`.
 
-- [ ] **Step 5: Emit `handlesIntercurrentEvent` in the model view**
+- [x] **Step 5: Emit `handlesIntercurrentEvent` in the model view**
 
 Add a helper near `boundConcepts`:
 
@@ -1166,14 +1199,14 @@ Export it on `SP_ENGINE` and add to `constructModelView`'s return object after `
 `isOverride` is what makes requirement 6 visible: the ICE carries a study-default `icheStrategy`, and an
 estimand applying a different one is flagged rather than silently diverging.
 
-- [ ] **Step 6: Run the gate**
+- [x] **Step 6: Run the gate**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: PASS on the new assertions; `golden changed` for all 7 `modelView` entries (each gains an empty
 `handlesIntercurrentEvent: []`). Confirm the diff is only that addition, then `--update-goldens` and
 re-run.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add smartphrase/demo/engine.js smartphrase/demo/data/study-graph.js \
@@ -1199,7 +1232,7 @@ the data — a different trace axis from the analysis-value traces of #9.
 - Produces: `buildTrace(ctx, instance, role, focusConceptId)` — the 4th parameter is optional; when given,
   that concept's `data` keys take precedence over role order.
 
-- [ ] **Step 1: Write the failing assertions in `verify.mjs`**
+- [x] **Step 1: Write the failing assertions in `verify.mjs`**
 
 ```js
 /* ---- ICE ascertainment trace: a distinct axis, focused per ICE ---- */
@@ -1224,12 +1257,12 @@ the data — a different trace axis from the analysis-value traces of #9.
 }
 ```
 
-- [ ] **Step 2: Run the gate to verify it fails**
+- [x] **Step 2: Run the gate to verify it fails**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: FAIL — `ICE trace exists` (no `ice_handling` trace template).
 
-- [ ] **Step 3: Add the focus parameter to `buildTrace`**
+- [x] **Step 3: Add the focus parameter to `buildTrace`**
 
 ```js
   /*
@@ -1267,7 +1300,7 @@ pattern:
 Note: with a focus, the *focused* concept's tokens must win — the loop already uses first-wins, and the
 focus reorders `bound`, so this works without further change. Verify that in Step 5.
 
-- [ ] **Step 4: Add the ascertainment trace chain**
+- [x] **Step 4: Add the ascertainment trace chain**
 
 In `study-graph.js` `traceTemplates`:
 
@@ -1292,7 +1325,7 @@ In `study-graph.js` `traceTemplates`:
       ]
 ```
 
-- [ ] **Step 5: Run the gate**
+- [x] **Step 5: Run the gate**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: PASS on the four new assertions. Note that `verify.mjs`'s existing per-instance trace loop
@@ -1330,7 +1363,7 @@ This renames existing golden keys (adding `/CONCEPTID`). Expect `golden missing 
 keys plus `new golden` lines. **Confirm the chains themselves are unchanged** by comparing one old and
 one new value by hand before recapturing.
 
-- [ ] **Step 6: Wire the focus through the UI**
+- [x] **Step 6: Wire the focus through the UI**
 
 In `index.html`, `showTrace(rp)` at line 501. The clicked phrase's own bound concept is the focus:
 
@@ -1346,7 +1379,7 @@ In `index.html`, `showTrace(rp)` at line 501. The clicked phrase's own bound con
     var chain = E.buildTrace(ctx, state, rp.role, focus);
 ```
 
-- [ ] **Step 7: Recapture, run all three gates, commit**
+- [x] **Step 7: Recapture, run all three gates, commit**
 
 ```bash
 node smartphrase/tools/verify.mjs --update-goldens && node smartphrase/tools/verify.mjs
@@ -1382,7 +1415,7 @@ from a published SAP, not constructed.
 - §7.7.2: *"Median time and 90% confidence interval for PFS, TTP, and OS will be summarized …"*
   → summary measure = output class `median_survival`.
 
-- [ ] **Step 1: Write the failing assertions in `verify.mjs`**
+- [x] **Step 1: Write the failing assertions in `verify.mjs`**
 
 ```js
 /* ---- PrE0102: source-grounded ICE and summary measure ---- */
@@ -1407,12 +1440,12 @@ from a published SAP, not constructed.
 }
 ```
 
-- [ ] **Step 2: Run the gate to verify it fails**
+- [x] **Step 2: Run the gate to verify it fails**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: FAIL — `PrE0102 primary states the ICE strategy in prose`.
 
-- [ ] **Step 3: Add the ICE concept**
+- [x] **Step 3: Add the ICE concept**
 
 ```js
       /*
@@ -1443,7 +1476,7 @@ Expected: FAIL — `PrE0102 primary states the ICE strategy in prose`.
       },
 ```
 
-- [ ] **Step 4: Widen the KM template's valid phrase set**
+- [x] **Step 4: Widen the KM template's valid phrase set**
 
 In `acdc-library-proposed.js`, `T.PFS_KaplanMeier.validSmartPhrases` — add the ICE strategies the
 template can legitimately host and the summary phrase:
@@ -1501,7 +1534,7 @@ And in `ctxOf`, after the transformations merge:
 
 `proposedPhrasesAdded` lets the UI badge *which* phrases on an otherwise-released template are proposed.
 
-- [ ] **Step 5: Add the phrases to `AC.PRIMARY.PFS`**
+- [x] **Step 5: Add the phrases to `AC.PRIMARY.PFS`**
 
 ```js
           { phrase: "SP_ICE_TREATMENT_POLICY", bindings: { ice: { concept: "ICE.TOX_DISCONT", render: "name" } } },
@@ -1511,7 +1544,7 @@ And in `ctxOf`, after the transformations merge:
 Add the same two to `AC.SENS.PFS.ITT` (the SAP says the sensitivity analysis repeats *all* of the above),
 and `SP_SUMMARY_MEASURE` to `AC.SEC.OS` / `AC.SEC.TTP`.
 
-- [ ] **Step 6: Add the EN summary-measure wording**
+- [x] **Step 6: Add the EN summary-measure wording**
 
 Per deviation F, the upstream label for `median_survival` is "Median survival" — fine for a table header,
 wrong mid-sentence. Add to `lang-overlay.js` `en`:
@@ -1537,7 +1570,7 @@ it. If it reads badly, prefer `name: "the median time to event"` and let the exi
 phrase carry the interval. **Decide by reading the rendered prose, not by reasoning about it** — this is
 exactly how #9's "estimation estimation" defect was caught.
 
-- [ ] **Step 7: Run the gate, read the prose, recapture**
+- [x] **Step 7: Run the gate, read the prose, recapture**
 
 Run: `node smartphrase/tools/verify.mjs`
 Then print the sentence and read it critically:
@@ -1557,7 +1590,7 @@ event, will be assessed as the primary analysis."*
 FR/DE will still fall back for the new phrases — Task 10. The localisation gate will fail here; that is
 expected and named. Recapture goldens and commit with that failure noted.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add smartphrase/demo/data/study-graph-pre0102.js smartphrase/demo/data/acdc-library-proposed.js \
@@ -1585,7 +1618,7 @@ handled differently by two estimands.
 - Produces: `AC.PRIMARY.ADASCOG` with two ICE phrases and a summary measure; a new instance
   `AC.SENS.ADASCOG.TP` that overrides `ICE.TRT_DISCONT` to TreatmentPolicy.
 
-- [ ] **Step 1: Write the failing assertions in `verify.mjs`**
+- [x] **Step 1: Write the failing assertions in `verify.mjs`**
 
 ```js
 /* ---- requirement 6: per-estimand override with no duplicated ICE ---- */
@@ -1615,12 +1648,12 @@ handled differently by two estimands.
 }
 ```
 
-- [ ] **Step 2: Run the gate to verify it fails**
+- [x] **Step 2: Run the gate to verify it fails**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: FAIL — `the override instance exists`.
 
-- [ ] **Step 3: Extend `AC.PRIMARY.ADASCOG`**
+- [x] **Step 3: Extend `AC.PRIMARY.ADASCOG`**
 
 Add three phrases, in role order for readability:
 
@@ -1630,7 +1663,7 @@ Add three phrases, in role order for readability:
           { phrase: "SP_SUMMARY_MEASURE",       bindings: { summary: { output: "contrasts_t" } } }
 ```
 
-- [ ] **Step 4: Add the override instance**
+- [x] **Step 4: Add the override instance**
 
 ```js
       {
@@ -1660,7 +1693,7 @@ instance will fail Task 6's implementability check. Add the TreatmentPolicy key 
 
 That is the honest encoding: the ICE declares both handlings it supports, and each estimand picks one.
 
-- [ ] **Step 5: Run the gate and read the target prose**
+- [x] **Step 5: Run the gate and read the target prose**
 
 Run: `node smartphrase/tools/verify.mjs`, then render the Pilot primary sentence with the snippet from
 Task 8 Step 7 (swap `PRE0102` for `CDISCPILOT01`).
@@ -1684,7 +1717,7 @@ role, use `(pack.role_conjunctions && pack.role_conjunctions[tok[1]]) || " "`. A
 This changes the separator only for roles that declare a conjunction, so `covariate` (the only other
 repeating role in use) is untouched and its goldens hold.
 
-- [ ] **Step 6: Update the sentence templates for the new roles**
+- [x] **Step 6: Update the sentence templates for the new roles**
 
 The `en` template must now place the ICE clause and the summary. Using Task 2's optional groups so the
 six instances without them are unaffected:
@@ -1697,7 +1730,7 @@ six instances without them are unaffected:
 Run the gate: the six ICE-free instances must be **byte-identical**. If any moved, the optional-group
 elision is wrong — go back to Task 2.
 
-- [ ] **Step 7: Recapture, verify, commit**
+- [x] **Step 7: Recapture, verify, commit**
 
 ```bash
 node smartphrase/tools/verify.mjs --update-goldens && node smartphrase/tools/verify.mjs
@@ -1721,12 +1754,12 @@ Task 8 and must go green here.
 - Produces: FR and DE templates for all six new phrases, ICE concept names, output-class prose,
   `role_conjunctions`, and updated `sentence_template`s.
 
-- [ ] **Step 1: Confirm the gate is red for the right reason**
+- [x] **Step 1: Confirm the gate is red for the right reason**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: failures naming `has no untranslated phrases (fr)` / `(de)` and listing exactly the new OIDs.
 
-- [ ] **Step 2: Add the FR pack entries**
+- [x] **Step 2: Add the FR pack entries**
 
 ```js
         SP_ICE_TREATMENT_POLICY: "indépendamment de {ice}",
@@ -1738,7 +1771,7 @@ Expected: failures naming `has no untranslated phrases (fr)` / `(de)` and listin
 ```
 plus `role_conjunctions: { ice_handling: " et " }`, ICE concept names, and `outputClasses` prose.
 
-- [ ] **Step 3: Add the DE pack entries — the subjunctive inside the verb bracket**
+- [x] **Step 3: Add the DE pack entries — the subjunctive inside the verb bracket**
 
 ```js
         /* The hypothetical strategy wants Konjunktiv II ("als ob … nicht
@@ -1759,7 +1792,7 @@ works after `von` when the article is inflected in the phrase template. **Read t
 accepting it** and adjust the phrase template rather than the concept name where they conflict — the same
 lesson as PrE0102's dative event names in #9.
 
-- [ ] **Step 4: Update the FR and DE sentence templates**
+- [x] **Step 4: Update the FR and DE sentence templates**
 
 FR mirrors EN. DE places the ICE clause inside the bracket:
 
@@ -1768,7 +1801,7 @@ FR mirrors EN. DE places the ICE clause inside the bracket:
         "{endpoint} {parameter} {timepoint} {population} wird {grouping}[, {ice_handling},] {method} {method_qualifier} {covariate}[, {summary_measure},] als {sentenceRole} untersucht."
 ```
 
-- [ ] **Step 5: Read all three languages for every instance with an ICE**
+- [x] **Step 5: Read all three languages for every instance with an ICE**
 
 ```bash
 node -e "
@@ -1782,7 +1815,7 @@ g.instances.forEach(function(i){['en','fr','de'].forEach(function(l){console.log
 Check specifically: no stranded commas, no doubled words, the German bracket intact, and the ICE
 conjunction correct in each language.
 
-- [ ] **Step 6: Recapture, verify green, commit**
+- [x] **Step 6: Recapture, verify green, commit**
 
 ```bash
 node smartphrase/tools/verify.mjs --update-goldens && node smartphrase/tools/verify.mjs
@@ -1803,7 +1836,7 @@ git commit -m "Localise the estimand phrases; German subjunctive inside the verb
 - Produces: estimand/ICE/summary visible in the model panel, ICH E9(R1) in the standards table, and
   headless coverage of all of it.
 
-- [ ] **Step 1: Write the failing UI assertions**
+- [x] **Step 1: Write the failing UI assertions**
 
 In `verify-ui.mjs`, in the pilot section:
 
@@ -1823,12 +1856,12 @@ and an ICE trace walk: click the `ice_handling` chip, assert the tiers reach `ad
 occurrence criterion, and that a *second* ICE chip reaches `adcm.xpt` — the focus behaviour proven
 through the real DOM, not just the engine.
 
-- [ ] **Step 2: Run the UI gate to verify it fails**
+- [x] **Step 2: Run the UI gate to verify it fails**
 
 Run: `NODE_PATH=<scratchpad>/domtest/node_modules node smartphrase/tools/verify-ui.mjs`
 Expected: FAIL on `model panel shows the estimand`.
 
-- [ ] **Step 3: Show the estimand in the model panel**
+- [x] **Step 3: Show the estimand in the model panel**
 
 `renderModelPanel` (line 531) is derived from the template's phrases in role order, so ICE and summary
 rows appear automatically once the roles exist — **verify that before writing code.** What is missing is
@@ -1849,7 +1882,7 @@ the estimand header. Add above the field list:
 
 Add a minimal `.estimandhead` rule to the stylesheet, matching the existing visual language.
 
-- [ ] **Step 4: Ground ICH E9(R1) in the standards table**
+- [x] **Step 4: Ground ICH E9(R1) in the standards table**
 
 In `renderStandards`, add a row per distinct strategy the active study asserts, grounding in ICH E9(R1)
 rather than an invented IRI:
@@ -1860,13 +1893,13 @@ rather than an invented IRI:
        term was found. Naming it explicitly is more honest than omitting it. */
 ```
 
-- [ ] **Step 5: Badge proposed phrases on a released template**
+- [x] **Step 5: Badge proposed phrases on a released template**
 
 `T.CFB_ANCOVA` is released but three of its valid phrases now come from the overlay
 (`proposedPhrasesAdded`, Task 8). The panel must badge those individually, not the template. Use the
 `proposedPhrasesAdded` array set in `ctxOf`.
 
-- [ ] **Step 6: Run all three gates, commit**
+- [x] **Step 6: Run all three gates, commit**
 
 ```bash
 node smartphrase/tools/verify.mjs
@@ -1884,7 +1917,7 @@ git commit -m "Surface the estimand, ICE handling and summary measure in the dem
 - Modify: `smartphrase/DESIGN.md`, `REFERENCE.md`, `GETTING-STARTED.md`, `WALKTHROUGH.md`, `README.md`
 - Modify: `smartphrase/PLAN-estimands.md` (completion note)
 
-- [ ] **Step 1: Record decisions D11–D15 in `DESIGN.md`**
+- [x] **Step 1: Record decisions D11–D15 in `DESIGN.md`**
 
 - **D11** Proposed roles merge through the overlay with declared insertion points; all library reads go
   through `ctx.lib`.
@@ -1897,27 +1930,27 @@ git commit -m "Surface the estimand, ICE handling and summary measure in the dem
   per-estimand and cannot express "a secondary analysis" alone. **Record this as a correction to the
   planned design.**
 
-- [ ] **Step 2: Convert the "Planned extension" section to delivered**
+- [x] **Step 2: Convert the "Planned extension" section to delivered**
 
 Rewrite the section as a record of what was built, keeping the cross-reference to #11 and stating the
 five deviations and their reasons. Move unexercised strategies (Composite, PrincipalStratum, and
 WhileOnTreatment where no censoring derivation exists) into a clearly-labelled "authored but not
 exercised" list with what each would need — **do not imply coverage that is not there.**
 
-- [ ] **Step 3: Update `REFERENCE.md`**
+- [x] **Step 3: Update `REFERENCE.md`**
 
 New roles, the `IntercurrentEvent` and `Outcome` kinds, the `output_ref` placeholder kind, the
 `ice_handling` trace tier shape, `implementedBy`/`isOverride`, optional groups and `role_conjunctions`,
 and the new `ctx.lib` rule for `roleDefinitions`.
 
-- [ ] **Step 4: Add the walkthrough beat**
+- [x] **Step 4: Add the walkthrough beat**
 
 A ~2-minute estimand beat, and revise the stated timing (currently "~12 minutes" — recount it, do not
 guess). Add the honest cost: two new roles is a library minor version, and it forced all three sentence
 templates to change. Extend the pocket facts with the new golden count, and add an ask about who owns
 role-level library changes.
 
-- [ ] **Step 5: Sweep for stale claims**
+- [x] **Step 5: Sweep for stale claims**
 
 The lesson from #9: a targeted grep missed `21 + 15 headless-`. Use loose patterns:
 ```bash
@@ -1926,11 +1959,11 @@ grep -rniE "8 roles|23 smartphrase|69|two worked|~1[0-9] min" smartphrase/*.md
 ```
 Reconcile every number against a gate run.
 
-- [ ] **Step 6: Tick this plan's boxes and add a completion note**
+- [x] **Step 6: Tick this plan's boxes and add a completion note**
 
 Record deviations from *this* plan, as `PLAN-breast-cancer.md` does.
 
-- [ ] **Step 7: Final gate run and commit**
+- [x] **Step 7: Final gate run and commit**
 
 ```bash
 node smartphrase/tools/verify.mjs
@@ -1941,7 +1974,7 @@ git add smartphrase/*.md
 git commit -m "Document the estimands extension: decisions D11-D15, delivered design, walkthrough beat"
 ```
 
-- [ ] **Step 8: Push and report on the issue**
+- [x] **Step 8: Push and report on the issue**
 
 ```bash
 git push -u origin estimands_01

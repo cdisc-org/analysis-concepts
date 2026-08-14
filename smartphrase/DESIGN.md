@@ -128,6 +128,76 @@ The one honest exception is the study-variable expression, which dispatches on `
 it in study variables needs a measure→ADaM-variable mapping the library does not yet carry; term order
 also differs from the current output. A real formula resolver stays out of scope (see below).
 
+**D11 — Proposed *roles* merge through the overlay, and every library read goes through `ctx.lib`.**
+The estimand extension needs two new phrase roles (`ice_handling`, `summary_measure`), which is a library
+minor-version event. `roleDefinitions` lives in the generated subset, so the roles arrive via the D8
+overlay — but `ctxOf` merged only `transformations` and `smartPhrases`, and `index.html` read
+`LIB.roleDefinitions` off the raw generated global. That is the **same bug class** the headless gate
+caught in #9 with the proposed-provenance note: a merge that produces a new object, read around. All
+library reads in the UI now go through `ctx.lib`. Overlay roles declare `order_after` rather than
+appending, because appending would place `ice_handling` after `covariate`; and `validSmartPhrasesAdded`
+lets the overlay widen an **existing upstream template's** valid-phrase set without hand-editing
+generated content, carrying `proposedPhrasesAdded` so the UI badges the additions individually rather
+than badging a released template.
+
+**D12 — The sentence template has optional groups and per-role conjunctions.**
+An ICE clause needs commas around it (*"…comparing treatment groups, as if X had not occurred,
+using ANCOVA…"*). Until now every frame segment between role tokens was pure whitespace, which the
+normaliser collapses harmlessly — but literal punctuation beside an **absent** role stranded as `", ,"`
+on every instance without that role. `[ … ]` marks an optional group, emitted only when at least one role
+token inside it resolves to a phrase, so punctuation disappears with its clause. Two related fixes fell
+out of reading the rendered output: an elided group left the preceding role's separating space in front of
+the next group's comma (`"intervals , summarised"`), normalised in the `parts` array rather than the
+assembled string because the DOM renders parts individually; and repeating roles now join with a
+pack-declared `role_conjunctions` entry (`" and "` / `" et "` / `" und "`) instead of a bare space.
+
+**D13 — Traces take an optional focus concept; the ICE axis is shaped differently.**
+`buildTrace(ctx, instance, role)` gathered `data` tokens from all bound concepts in role order,
+first-wins. That is fine for singular roles but wrong for a repeating one: with two ICEs in one instance
+both traced to whichever came first, and the endpoint concept's `{dataset}` shadowed both regardless.
+A fourth parameter heads the precedence order with one concept, and the UI passes the clicked phrase's own
+binding. The ICE chain also **descends through the ascertainment criterion**, not an ADaM class variable,
+because what is traced is *"did this event occur, and when"* — a per-subject (boolean, `Timing`) pair
+that is strategy-independent, so one chain serves every estimand declaring the event.
+
+Two holes in the verification gate surfaced here rather than by inspection: the per-instance loop traced
+*every* role in `traceTemplates` whether the instance used it or not, producing chains filled from
+unrelated concepts (`ADQSADAS.ITTFL` — the endpoint's dataset crossed with the population's flag) and
+pinning them as goldens; and the "no unfilled tokens" assertion only looked for the phrase-resolution
+marker `⟨name⟩`, so a surviving `{token}` from trace fill passed silently. Both are fixed.
+
+**D14 — A summary measure binds a method *output class*, validated against template and method.**
+ICH E9(R1) attribute 5 is a new placeholder kind, `output_ref`. It resolves against
+`lib/vocabulary/output_class_templates.json` — real upstream content, so it enters through the generator,
+not the overlay — and is **rejected** unless the named output appears in both the template's declared
+`outputDataStructure.measures` and the bound method's own `outputs[]`. Neither list alone is
+authoritative: a template may declare a subset. This required threading the active template and the phrase
+definition into `resolveBinding`.
+
+A finding worth reporting: **the library's output labels are analyst-facing, not document-facing.**
+Upstream `contrasts_t` is labelled *"T-based contrasts"*, but SAP prose wants *"the difference in
+least-squares means"*. Rendering the library label mid-sentence produces bad English. The language packs
+supply the prose register via an `outputClasses` overlay — exactly as they already do for concepts and
+methods, English being a pack like any other — and the inspect panel shows the upstream label alongside,
+so the divergence is visible rather than hidden.
+
+**D15 — `analysisRole` is added *beside* `sentenceRole`, not substituted for it.**
+The planned design said the instance's free-string `sentenceRole` "should bind to" the typed
+`Analysis.analysisRole`. **It cannot.** `AnalysisRole` is defined *per estimand*, so *"a secondary
+analysis"* is the `MainEstimator` **of a secondary estimand** — not a distinct enum value. Rendering that
+string needs the estimand's rank as well as the role, so it is not derivable from the enum alone. Each
+instance therefore carries an `estimand` reference (with `rank`) *and* a typed `analysisRole`, and the
+consistency is **validated** — exactly one `MainEstimator` per estimand, per `Analysis.analysisRole`'s own
+upstream documentation — rather than one field being derived from the other. Every existing sentence and
+golden is preserved as a result. Whether `sentenceRole` should eventually be retired in favour of a
+rendering rule computed from (rank, role) is a working-group question, not a unilateral one.
+
+`IceHandling` follows the model exactly: `implementedBy` is keyed by strategy and lives on the **ICE
+concept**, not the estimand, so two estimands handling one event differently each resolve to the right
+transformation without duplicating the event. An empty list is a valid answer — `TreatmentPolicy` uses
+data as observed, which upstream documents as "omitted" — but an *absent* key is an error, because that is
+prose claiming a handling the model cannot deliver.
+
 ## Relationship to the eSAP schema
 
 The demo's "constructed model instance" view mirrors the eSAP v0.5.0 philosophy deliberately: the
@@ -182,100 +252,165 @@ What release requires — none of it architectural:
 |---|---|---|
 | Phrase templates, roles, transformation templates, method definitions | `methods_02@ffee5df`, generated subset | authoritative (for this PoC) |
 | STATO ANCOVA IRI (`STATO_0000176`) | STATO/OBO | authoritative |
+| Output class vocabulary (`output_class_templates.json`) | `methods_02@ffee5df`, generated subset | authoritative (for this PoC) |
+| `T.LOCF_Imputation` (implements the Hypothetical strategy) | `methods_02@ffee5df`, generated subset | authoritative — real v0.7 content, not invented |
 | `T.PFS_KaplanMeier` transformation template | authored here, `acdc-library-proposed.js` | **proposed** — not upstream, badged in-UI |
+| `ice_handling` / `summary_measure` roles, the five strategy phrases, `SP_SUMMARY_MEASURE` | authored here, `acdc-library-proposed.js` | **proposed** — a library *minor version*, badged in-UI |
 | Kaplan-Meier method IRI | none found | illustrative — **open question**, see below |
+| ICH E9(R1) strategy identifiers | none exist — a guideline is not a registry | illustrative — **open question**, see below |
+| Occurrence-criterion BC paths (`BC_DS_001/Disposition Event`, …) | shaped per `OccurrenceCriterion`, ids not from a published BC library | illustrative |
 | Study concepts, USDM/ARS/NCIt instance ids, trace tiers, document shell | hand-crafted per study (CDISC Pilot, PrE0102) | illustrative, flagged in-UI |
 | `acdc:macro` dialect | methods_02 authoring experiment | design input, revisable |
 
-**Open identifier question.** `M.ANCOVA` grounds authoritatively in STATO, but no STATO (or NCIt) term
+**Open identifier questions.** `M.ANCOVA` grounds authoritatively in STATO, but no STATO (or NCIt) term
 for Kaplan-Meier estimation was found in the AC/DC artefacts, and `M_KaplanMeier.json` carries
 `"ncitCode": null` upstream. Rather than invent a plausible-looking `STATO_00003xx`, the grounding is an
-AC/DC identifier flagged `illustrative`. Resolving it is a steer for the working group.
+AC/DC identifier flagged `illustrative`. The same applies to the five **ICH E9(R1) strategies**: the enum
+is eSAP-owned and a guideline is not a registry, so there is no resolvable term to point at. Both are
+listed in the standards table as AC/DC ids flagged `illustrative` — more honest than omitting the rows and
+implying the entities are ungrounded. Resolving them is a steer for the working group.
+
+**One substantive modelling doubt, stated rather than buried.** `T.LOCF_Imputation` is used as the
+Hypothetical strategy's implementer because it is the only imputation derivation v0.7 affords. LOCF is a
+missing-data method; a hypothetical estimand strictly wants imputation under an explicitly stated
+alternative assumption. The mechanism is right — a strategy resolving to a real transformation — but
+whether *this* transformation is the right one for *this* strategy is a question for the working group, not
+something the demo should assert by choosing quietly.
 
 ## Verification
 
-Verification is **committed and runnable**, not described. Three gates:
+Verification is **committed and runnable**, not described. Three gates, plus a review aid:
 
 ```
 node smartphrase/tools/verify.mjs                    # engine + pinned goldens
 node smartphrase/tools/build-library-subset.mjs --check   # generated file is unmodified
 NODE_PATH=<dir>/node_modules node smartphrase/tools/verify-ui.mjs   # real DOM, needs jsdom
+node smartphrase/tools/diff-goldens.mjs --summary     # review aid, not a gate
 ```
 
 - **`verify.mjs` — engine, no DOM.** Loads the demo's browser IIFEs under Node via `vm` and, for every
   instance in **every registered study**, checks: resolution has no errors in every available language;
   every `sliceKey` is filled; the `acdc:macro` dialect round-trips byte-equal; no trace leaves an
   unfilled `⟨token⟩`; every phrase used is valid for the instance's template; and no phrase falls back
-  to English in a non-English pack. Three planted faults (unknown concept, unknown phrase ref, missing
-  wrapper) must all be rejected. Also asserts the proposed overlay resolves, is flagged, declares only
-  outputs its method really has, and does not mutate the generated subset.
-- **Goldens.** 69 outputs (sentences per language, constructed model views, tag source, JSON-LD, traces)
+  to English in a non-English pack. Every instance must declare an estimand and a typed `analysisRole`,
+  and each estimand must have **exactly one** `MainEstimator`. Traces run only for roles the instance
+  actually uses, focused per bound concept, and must leave neither an unfilled `⟨token⟩` nor a surviving
+  `{token}`. Planted faults that must all be rejected: unknown concept, unknown phrase ref, missing
+  wrapper, a summary measure the bound method cannot produce, an unknown output class, and an ICE phrase
+  asserting a strategy its event declares no handling for. Also asserts the proposed overlay resolves, is
+  flagged, declares only outputs its method really has, splices its roles at the declared position, does
+  not mutate the generated subset, and covers each of the five `IchE9R1Strategy` values exactly once.
+- **Goldens.** 86 outputs (sentences per language, constructed model views, tag source, JSON-LD, traces)
   are pinned in `tools/goldens.json`, **captured from behaviour** rather than hand-written, and compared
   on every run. This is what let the engine generalisation (D10) be proven non-breaking: a leaf-level
   diff showed the *only* change across all pinned outputs was an intended float-formatting fix.
+- **`diff-goldens.mjs` — a review aid, not a gate.** Because goldens are captured from behaviour, the
+  question after `--update-goldens` is never "are they right?" but "did anything move that I did not
+  intend?" — which a textual diff of two large JSON blobs cannot answer. This walks both trees and reports
+  one line per changed **leaf**, so an intended addition reads as *N × ADDED* and an accidental edit is
+  impossible to miss. It is how each recapture in this extension was reviewed.
 - **`verify-ui.mjs` — real DOM.** Loads the actual `index.html` in jsdom and walks both studies through
   all four stops: study switch, prose rendering, hover inspect, click-to-trace, model→SAP edit (change
   the endpoint and assert prose *and* trace follow), tag source regeneration, JSON-LD well-formedness,
-  the reuse grid's per-study grouping and proposed badges, the identifier table, and EN/FR/DE. Fails on
-  any console error. jsdom is dev-only and deliberately not vendored — the demo itself stays
+  the reuse grid's per-study grouping and proposed badges, the identifier table, and EN/FR/DE. It also
+  walks the two-ICE instance, clicking each ICE chip in turn to prove the **trace focus** works through
+  the real DOM — each reaches its own dataset, and neither the other ICE nor the endpoint concept shadows
+  it. Fails on any console error. jsdom is dev-only and deliberately not vendored — the demo itself stays
   zero-install, and the script exits 2 with install instructions when jsdom is absent.
 
 Both the alpha float artefact and a real bug in the proposed-provenance note (it read the raw generated
 global instead of the merged library, so it would never have rendered) were found by these gates rather
 than by inspection.
 
-## Planned extension — estimands and intercurrent events
+## Estimands and intercurrent events
 
-> Tracked as issue [#11](https://github.com/cdisc-org/analysis-concepts/issues/11), a sub-issue of #9,
-> on branch `estimands_01` (forked from `smartphrase_01` at `afffb84`). That issue states the
-> requirements; what follows is the proposed approach and remains revisable.
+> Delivered on branch `estimands_01` under issue
+> [#11](https://github.com/cdisc-org/analysis-concepts/issues/11), a sub-issue of #9. That issue states
+> the requirements. The approach recorded here during #9 was **revised in five places** once the code and
+> the upstream schema were read against it — see D11–D15, each of which records what the planned design
+> got wrong and why.
 
-The model side already exists on `methods_02` (eSAP: `Estimand`, `IntercurrentEvent`, the reified
+The model side already existed on `methods_02` (eSAP: `Estimand`, `IntercurrentEvent`, the reified
 `IceHandling` triple with `implementedBy`, the `IchE9R1Strategy` enum, `Analysis.analysisRole`,
 `Analysis.summarizedByOutputClass`; and `model/linkML/intercurrent-event-derivation.md` for the
-ascertainment-vs-handling split). What is missing is the phrase layer over it. The mapping is
-additive to this design — no architectural change:
+ascertainment-vs-handling split). What was missing was the phrase layer over it, and the mapping turned
+out to be additive — no architectural change to the one-state design.
 
-- **The estimand is the analysis-instance level, not a phrase.** Four of the five ICH E9(R1)
-  attributes map onto existing roles (treatment → `grouping`, variable → `endpoint`/`parameter`/
-  `timepoint`, population → `population`); the instance grounds in a `usdm:Estimand` IRI as it
-  grounds in an objective today. Correction that falls out: the instance's free-string
-  `sentenceRole` should bind to the typed `Analysis.analysisRole`
-  (MainEstimator | SensitivityAnalysis | SupplementaryAnalysis).
-- **Two new roles** (a library minor-version event): `ice_handling` — repeating, like `covariate` —
-  and `summary_measure` (E9(R1) attribute 5), whose phrase binds to a **method output** the bound
-  method provably produces (`summarizedByOutputClass` is the model hook), e.g. M.ANCOVA's
-  `contrasts_t` → "difference in least-squares means".
-- **One smartphrase per E9(R1) strategy** (`SP_ICE_TREATMENT_POLICY` "regardless of {ice}",
-  `SP_ICE_HYPOTHETICAL` "as if {ice} had not occurred", `SP_ICE_COMPOSITE` "with {ice} treated as
-  {outcome}", `SP_ICE_WHILE_ON_TREATMENT` "using measurements taken prior to {ice}",
-  `SP_ICE_PRINCIPAL_STRATUM` "in the stratum of participants in whom {ice} would not occur"), the
-  strategy carried in `anchors`. `{ice}` is a `concept_ref` to a new registry kind
-  **IntercurrentEvent** grounding in `usdm:IntercurrentEvent` — which brings its
-  strategy-independent `ascertainedBy` (OccurrenceCriterion path or derivation) along for the
-  **trace**: an ICE phrase traces ascertainment-side (BC criterion → source record → ICE flag +
-  timing → dataset).
-- **Strategy phrases change the shape of the instantiated model**, not just slice values — the
-  first phrases to do so, and exactly what `IceHandling.implementedBy` receives: TreatmentPolicy →
-  no modification; Hypothetical → inserts an imputation transformation; Composite → redefines the
-  variable (a derivation producing a composite endpoint concept); WhileOnTreatment → adds a
-  timing-bounded slice constraint; PrincipalStratum → changes the population definition.
-  Model→SAP runs the reverse: each `IceHandling` resolves to its strategy's phrase with the ICE
-  bound. Per-estimand overrides (primary Hypothetical vs sensitivity TreatmentPolicy on the *same*
-  ICE) become two instances reusing one ICE concept — template reuse at estimand level.
-- **Estimand-aware validation:** every declared ICE has exactly one strategy phrase; exactly one
-  MainEstimator per estimand; the summary phrase names an output the method produces; conditional
-  template-validity (e.g. `SP_ICE_HYPOTHETICAL` only where an imputation transformation exists to
-  implement it).
-- **i18n stress test:** the hypothetical strategy wants the German subjunctive ("als ob … nicht
-  aufgetreten wäre") — per-language phrase templates (D7) already accommodate it.
+**How the five ICH E9(R1) attributes are carried.** Four were already covered by v0.7 roles without anyone
+designing for it: treatment → `grouping`, variable → `endpoint`/`parameter`/`timepoint`, population →
+`population`. Attribute 4 (intercurrent-event handling) and attribute 5 (the population-level summary) are
+the two new roles. The estimand itself is **instance-level metadata**, not a phrase — the instance grounds
+in a `usdm:Estimand` IRI as it already grounds in an objective.
 
-Target prose:
+**One smartphrase per strategy**, the strategy carried in `anchors.icheStrategy` as an `IchE9R1Strategy`
+enum value so model→SAP is a lookup rather than string surgery on the OID:
 
-> *Change from baseline in ADAS-Cog(11) at Week 24 in the efficacy population comparing treatment
-> groups, **as if discontinuation of study treatment had not occurred** and **regardless of use of
-> concomitant AD medication**, using ANCOVA … **summarised as the difference in least-squares
-> means**, will be assessed as the primary estimand's main estimator.*
+| Phrase | English template | Implementation pattern |
+|---|---|---|
+| `SP_ICE_TREATMENT_POLICY` | regardless of {ice} | *none* — data used as observed |
+| `SP_ICE_HYPOTHETICAL` | as if {ice} had not occurred | imputation |
+| `SP_ICE_COMPOSITE` | with {ice} treated as {outcome} | derivation |
+| `SP_ICE_WHILE_ON_TREATMENT` | using measurements taken prior to {ice} | censoring |
+| `SP_ICE_PRINCIPAL_STRATUM` | in the stratum of participants in whom {ice} would not occur | population subsetting |
+
+The `implementation` values are taken from `IceHandling.implementedBy`'s own upstream documentation, so the
+phrase and model layers name the same patterns. `{ice}` binds a new registry kind **IntercurrentEvent**,
+which carries strategy-independent `ascertainedBy` (an `OccurrenceCriterion` path, BC-headed) and hence its
+own trace axis.
+
+**What is exercised, and what is not.** All five strategies are authored, so the enum is fully covered, but
+only two are bound by worked instances:
+
+| Strategy | Exercised? | Note |
+|---|---|---|
+| TreatmentPolicy | yes — PrE0102 (real) and CDISC Pilot | `implementedBy: []` is correct, not missing |
+| Hypothetical | yes — CDISC Pilot, implemented by `T.LOCF_Imputation` | real upstream v0.7 content |
+| WhileOnTreatment | no | needs a censoring derivation; none in v0.7 |
+| Composite | no | needs a folding derivation and an `Outcome` concept kind |
+| PrincipalStratum | no | needs population subsetting driven by a counterfactual |
+
+`SP_ICE_HYPOTHETICAL` is deliberately **excluded** from `T.PFS_KaplanMeier`'s valid-phrase set for exactly
+this reason: with no imputation or censoring derivation on that template, offering it would be prose the
+model cannot honour. That conditional template validity is enforced, not documented — `resolveBinding`
+rejects an ICE phrase whose event declares no handling for the asserted strategy.
+
+**Prose delivered** (CDISC Pilot primary, all five attributes):
+
+> *Change from baseline in Alzheimer's Disease Assessment Scale - Cognitive Subscale (11 items)
+> (ADAS-Cog(11)) at Week 24 in the efficacy (intent-to-treat) population comparing treatment groups,
+> **as if discontinuation of study treatment had not occurred** and **regardless of use of concomitant AD
+> medication**, using ANCOVA with 95% confidence intervals adjusting for baseline ADAS-Cog(11),
+> **summarised as the difference in least-squares means**, will be assessed as the primary analysis.*
+
+**Per-estimand override.** `AC.SENS.ADASCOG.TP` shares the primary's estimand *and* its ICE concept,
+applying `TreatmentPolicy` where the primary applies `Hypothetical`. One event, two handlings, no second
+copy of the event — and the implementer follows the strategy automatically. The model view flags it
+`isOverride: true` against the event's study-default strategy, so a divergence is stated rather than
+silent.
+
+**The real intercurrent event is PrE0102's.** The CDISC Pilot has no protocol-defined ICE list, so its two
+events are constructed and marked `ILLUSTRATIVE — not from a source SAP`. PrE0102's is quoted, and so is
+its handling and its summary measure:
+
+- SAP §4.3 — *"Subjects who discontinue everolimus/placebo because of suspected everolimus-associated
+  toxicity should continue treatment with fulvestrant alone until disease progression."*
+- SAP §4.3 — *"All subjects who have discontinued protocol therapy will be followed for survival and for
+  progression, even if protocol therapy was discontinued because of toxicity or for other reasons."*
+  → an explicit **TreatmentPolicy**, stated in prose in a published SAP.
+- SAP §7.7.2 — *"Median time and 90% confidence interval … using Kaplan-Meier estimates"* → summary
+  measure `median_survival`.
+
+Requirement 6 (the same ICE handled two ways) is **not** in PrE0102 — its own sensitivity analysis changes
+the *population*, not a strategy — which is why the override lives on the Pilot rather than being invented
+for the real document and breaking the `sapRef` discipline every PrE0102 concept follows.
+
+**The i18n stress test found a real limit.** German assigns a **case** to the ICE noun phrase, and the case
+differs by strategy: the natural *"unabhängig von {ice}"* and *"vor {ice}"* demand the dative while
+*"als ob {ice} … wäre"* demands the nominative — and one concept `name` cannot be both. Per-language
+phrase templates (D7) cannot fix this; it needs per-case declined forms the registry does not carry. It is
+resolved here by choosing nominative-compatible constructions for all five strategies, so a single
+nominative name serves every one. A language with richer case marking than German would strain this
+further, and that is worth putting to the working group.
 
 ## Second worked study — PrE0102 (metastatic breast cancer)
 
@@ -310,11 +445,22 @@ What this surfaced, and why it matters:
 
 - A real LinkML-emitted `@context` (the hand-written context stands in for it).
 - Web Annotation-style anchoring for documents authored *outside* the tool (the document-first path).
-- Validated translations and full morphological handling (elision, agreement) — D7 demonstrates the
-  mechanism with illustrative FR/DE copy; production language packs are a terminology-management deliverable.
+- Validated translations and full morphological handling (elision, agreement, **case declension** — see
+  the German ICE finding above) — D7 demonstrates the mechanism with illustrative FR/DE copy; production
+  language packs are a terminology-management deliverable.
+- **The three unexercised E9(R1) strategies** (Composite, WhileOnTreatment, PrincipalStratum). The phrases
+  exist and the enum is fully covered, but each needs library content v0.7 does not have — a folding
+  derivation, a censoring derivation, and counterfactual population subsetting respectively. Binding them
+  without an implementer is refused by design, not left to chance.
+- **Multiplicity, `MultiplicityStrategy` and `Hypothesis`.** Adjacent in the eSAP model and deliberately
+  not bundled with the estimand work.
+- **Estimand *selection* guidance** — which strategy is clinically appropriate. This layer expresses a
+  chosen estimand; it does not recommend one.
 - Overlapping annotations, versioning, and schema validation of the instance graph.
 - **A generic formula resolver.** Study-variable expressions dispatch on method (D10) because the library
   does not declare a measure→ADaM-variable mapping. Adding one upstream would let the expression be
   derived from `formula.generic_expression` instead.
-- **Upstreaming `T.PFS_KaplanMeier`** to `methods_02`, and the governance question of who accepts phrase
-  and template contributions into the library.
+- **Upstreaming the proposed overlay** to `methods_02` — `T.PFS_KaplanMeier`, the two new roles, the six
+  new phrases, and `T.CFB_ANCOVA`'s widened valid-phrase set — and the governance question of who accepts
+  contributions into the library. Two new **roles** is a larger ask than a template: it is a library minor
+  version, and it forced all three language packs' sentence templates to change.

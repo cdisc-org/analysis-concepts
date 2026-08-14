@@ -1,7 +1,9 @@
 # Smartphrase — SAP ↔ AC/DC model linkage (PoC)
 
-Proof of concept for issue [#9](https://github.com/cdisc-org/analysis-concepts/issues/9): spans of SAP
-prose bound to AC/DC model metadata so the prose and the model are **two views of one thing**.
+Proof of concept for issues [#9](https://github.com/cdisc-org/analysis-concepts/issues/9) and
+[#11](https://github.com/cdisc-org/analysis-concepts/issues/11): spans of SAP prose bound to AC/DC model
+metadata so the prose and the model are **two views of one thing** — extended to carry a full ICH E9(R1)
+estimand, intercurrent events included.
 
 ## Run the demo
 
@@ -21,6 +23,12 @@ The demo is one page with four stops:
 4. **Standards grounding** — every identifier and the standard it resolves into (USDM / ARS / STATO /
    NCIt / AC-DC), with illustrative ids flagged.
 
+**Estimands.** The CDISC Pilot primary passage carries all five ICH E9(R1) attributes: four fall on
+existing phrase roles, and intercurrent-event handling plus the summary measure are two roles added for
+#11. Each intercurrent event traces on its own axis — through the occurrence criterion that ascertains it,
+rather than through an analysis value — and the reuse grid shows one event handled two ways by two analyses
+of the same estimand, with no duplicated event.
+
 ## Contents
 
 | Path | What |
@@ -32,22 +40,29 @@ The demo is one page with four stops:
 | `demo/index.html` | The integrated demo (single page) |
 | `demo/engine.js` | Pure-function engine: resolve / construct / trace / tag dialect / JSON-LD |
 | `demo/data/acdc-library.js` | **Generated** verbatim subset of the `methods_02` library (v0.7) — do not hand-edit; regenerate with `tools/build-library-subset.mjs` |
-| `demo/data/acdc-library-proposed.js` | **Proposed** library additions not yet upstream (`T.PFS_KaplanMeier`), badged in the UI |
+| `demo/data/acdc-library-proposed.js` | **Proposed** library additions not yet upstream — `T.PFS_KaplanMeier`, the `ice_handling` / `summary_measure` roles, the five ICH E9(R1) strategy phrases and `SP_SUMMARY_MEASURE` — badged in the UI |
 | `demo/data/study-graph.js` | Illustrative study layer: CDISC Pilot concepts, instances, trace tiers |
 | `demo/data/study-graph-pre0102.js` | Illustrative study layer: PrE0102 breast cancer (time-to-event) |
 | `SAP/` | Source SAP for PrE0102 — original PDF plus a Markdown conversion split by section |
 | `tools/build-library-subset.mjs` | Regenerates the library subset from `methods_02`; `--check` asserts no hand-edits |
 | `tools/verify.mjs` | Engine + pinned-golden gate (no DOM, no dependencies) |
 | `tools/verify-ui.mjs` | Headless DOM walkthrough of the demo (needs jsdom; dev-only) |
+| `tools/diff-goldens.mjs` | Leaf-by-leaf review of a golden recapture — a review aid, not a gate |
 | `demo/data/lang-overlay.js` | EN/FR/DE language packs: per-language sentence templates, phrase translations, label overlays (illustrative) |
 | `spec/format-evaluation.md` | Carrier-format analysis (retained from the first PoC round) |
 
 ## Verify
 
 ```bash
-node smartphrase/tools/verify.mjs                          # engine + 69 pinned outputs
+node smartphrase/tools/verify.mjs                          # engine + 86 pinned outputs
 node smartphrase/tools/build-library-subset.mjs --check    # generated file unmodified
 NODE_PATH=<dir>/node_modules node smartphrase/tools/verify-ui.mjs   # real DOM (needs jsdom)
+```
+
+After `verify.mjs --update-goldens`, review what moved:
+
+```bash
+node smartphrase/tools/diff-goldens.mjs --summary
 ```
 
 The demo itself stays zero-install; jsdom is needed only by the optional UI check, which exits 2 with

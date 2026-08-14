@@ -221,7 +221,7 @@ Design tests for a good phrase:
 A transformation template (the analysis building block) declares:
 
 - `validSmartPhrases` — the complete set of phrase oids meaningful for that analysis type. This is
-  the contract an editor enforces: an author of a `T.CFB_ANCOVA` passage can only insert those nine
+  the contract an editor enforces: an author of a `T.CFB_ANCOVA` passage can only insert those twelve
   phrases.
 - `sliceKeys` and slice-constraint `{placeholder}` tokens — how the phrases' bindings become the
   study-resolved data cube (this is what makes the prose *computable*, not just tagged).
@@ -229,6 +229,14 @@ A transformation template (the analysis building block) declares:
 So "adding a smartphrase" is a two-sided act: define the phrase, **and** add its oid to
 `validSmartPhrases` of every template where it is meaningful. A phrase no template references is
 unreachable.
+
+**And validity can be conditional on what the template can actually do.** `SP_ICE_HYPOTHETICAL` is valid
+for `T.CFB_ANCOVA`, which has an imputation derivation available to implement a hypothetical strategy, but
+deliberately *not* for `T.PFS_KaplanMeier`, which has neither an imputation nor a censoring derivation.
+Listing it there would let an author write prose the model cannot honour. The same principle applies
+whenever a phrase asserts something that has to be *operationalised* rather than merely stated — and the
+engine enforces it, refusing an intercurrent-event phrase whose event declares no handling for the
+strategy asserted.
 
 ## B3. Worked example — adding a subgroup phrase
 
@@ -287,6 +295,7 @@ Conventions worth fixing early:
 | Template ids | `T.<Name>` · methods `M.<Name>` |
 | Identifier policy | ground into USDM / ARS / STATO / NCIt wherever those standards cover the entity; AC/DC ids only for what is genuinely new; unregistered ids carry `iri_status: "illustrative"` |
 | Provenance | consumers record library version + source commit (see the generated header of `demo/data/acdc-library.js`) |
+| New **roles** vs new phrases | a phrase is additive within an existing role; a new *role* is a library **minor version**, because every language pack's sentence template enumerates role tokens explicitly and a role absent from a template is dropped from the rendered sentence entirely. Budget for touching every pack. |
 
 ## B5. Localisation is a library deliverable too
 
@@ -297,6 +306,14 @@ translations rather than authored). Packs version and govern like any other libr
 because instances are language-neutral, shipping a new language re-renders every existing SAP passage
 without touching a single instance. The demo's FR/DE packs (`demo/data/lang-overlay.js`) are the
 worked example; treat their copy as illustrative.
+
+One caveat worth knowing before you commission translations: a pack can own word order, optional clause
+punctuation and per-role conjunctions, but it cannot own **inflection of the values it interpolates**.
+Adding the ICH E9(R1) strategy phrases exposed this — German declines the intercurrent-event noun phrase
+differently depending on the strategy (*"unabhängig von …"* wants the dative, *"als ob … wäre"* wants the
+nominative), and a concept carries one `name`. The workaround is to write every template in that language
+to take the same case; the real fix would be per-case declined forms in the registry, which is a
+terminology-management question rather than an engine one.
 
 ## B6. What to keep out of the phrase library
 

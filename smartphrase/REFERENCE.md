@@ -68,7 +68,7 @@ Common fields:
 | Field | Type | Meaning |
 |---|---|---|
 | `name` | string | The `{token}` in the template. |
-| `kind` | `"concept_ref"` \| `"method_ref"` \| `"value"` | What a binding must supply. |
+| `kind` | `"concept_ref"` \| `"method_ref"` \| `"output_ref"` \| `"value"` | What a binding must supply. |
 | `required` | boolean | Unbound required placeholders are resolution errors. |
 | `render_options` | string[] | Legal render modes (§4). Absent for `value` kinds. |
 | `default_render` | string | Used when a binding has no `render`. |
@@ -79,7 +79,16 @@ Kind-specific fields:
 |---|---|---|
 | `concept_ref` | `concept_class`, `concept_constraint` (registry `kind` must equal it), `concept_category` (registry `conceptCategory` must equal it), `value_source` | concept must exist in the registry and satisfy constraint/category |
 | `method_ref` | `intent_constraint`, `value_source` | method must exist in the library |
+| `output_ref` | `value_source` | the named output class must exist in `lib.outputClasses` **and** appear in both the active template's `outputDataStructure.measures` and the bound method's `outputs[]` |
 | `value` | `datatype`, `constraint: { min, max }` | numeric value must lie within `[min, max]` |
+
+`output_ref` is how ICH E9(R1) attribute 5 stays verifiable: a summary measure the bound method cannot
+produce is a resolution error, not a mismatch nobody notices. Both lists are checked because neither alone
+is authoritative — a template may declare a subset of what its method emits. Validation needs the active
+template, so `resolvePhrase`/`resolveBinding` take it as an optional trailing argument (§10).
+
+A `concept_ref` bound to an `IntercurrentEvent` gets one further check, driven by the phrase's
+`anchors.icheStrategy`: the event must declare an `implementedBy` entry for that strategy (§3.1).
 
 ### 2.3 Role definitions
 
@@ -91,8 +100,26 @@ Kind-specific fields:
 }
 ```
 
-`order` is the sentence-assembly order (§5). `contextSource` classifies whether the role's value
-typically comes from an endpoint specification (`"endpoint"`) or a direct user choice (`"manual"`).
+`order` is the tie-break order for phrases sharing a role, and the fallback assembly order when no
+language pack exists (§5); actual word order is owned by the pack's `sentence_template`. Role order also
+sets **token precedence** for slice-constraint substitution and trace fill (§7), which is why an
+endpoint-role binding wins over a covariate binding on the same slot name.
+
+`contextSource` classifies whether the role's value typically comes from an endpoint specification
+(`"endpoint"`) or a direct user choice (`"manual"`). `repeating: true` marks a role that may appear more
+than once in one instance (`covariate`, `ice_handling`).
+
+**Proposed roles arrive through the overlay** (§12), which must declare `order_after` — the existing role
+the new one follows, or `"last"`. `ctxOf` splices rather than appends, and appending would be wrong:
+`ice_handling` must precede `method`. The merged order is:
+
+```
+endpoint · parameter · timepoint · population · grouping · ice_handling
+        · method · method_qualifier · covariate · summary_measure
+```
+
+`ice_handling` (ICH E9(R1) attribute 4) and `summary_measure` (attribute 5) are **proposed**, not upstream
+v0.7 — read them off `ctx.lib`, never the raw `ACDC_LIBRARY` global, or the merge is invisible.
 
 ### 2.4 Transformation template (fields the smartphrase layer uses)
 
@@ -143,10 +170,37 @@ remains an alias to the first registered study.
 
 `data` hooks by kind: Parameter → `dataset`, `datasetLabel`, `file`, `paramcd`; **Event** →
 `dataset`, `datasetLabel`, `file`, `paramcd`, `aval`, `cnsr`; Timepoint → `avisitn`; Population →
-`flag`; Treatment → `variable`. The set is not fixed — every key becomes a trace token (§7).
+`flag`; Treatment → `variable`; **IntercurrentEvent** → `dataset`, `datasetLabel`, `file`, `flag`,
+`timing`, `bc`, `property`. The set is not fixed — every key becomes a trace token (§7).
 
 `kind: "Event"` with `conceptCategory: "EventDimension"` is what `SP_TTE_ENDPOINT` binds
 (`concept_constraint: "Event"`), for time-to-event endpoints.
+
+`kind: "IntercurrentEvent"` is what the five strategy phrases bind. It carries three fields no other kind
+has:
+
+```jsonc
+"ICE.TRT_DISCONT": {
+  "kind": "IntercurrentEvent",
+  "label": "treatment discontinuation",
+  "name": "discontinuation of study treatment",
+  "icheStrategy": "Hypothetical",          // the STUDY-DEFAULT strategy (IntercurrentEvent.icheStrategy)
+  "ascertainedBy": {                       // strategy-INDEPENDENT; drives the ICE trace axis (§7)
+    "arm": "collected",                    // "collected" | "derived"
+    "criteria": [{ "property": "BC_DS_001/Disposition Event",   // BC ▸ property path, BC is the head
+                   "operator": "equals",                        // OccurrenceCriterion operator
+                   "responseCode": "Treatment Discontinued" }]
+  },
+  "implementedBy": {                       // keyed by STRATEGY, so a per-estimand override resolves
+    "Hypothetical": ["T.LOCF_Imputation"], //   correctly without duplicating the event
+    "TreatmentPolicy": []                  // empty is VALID — data used as observed
+  }
+}
+```
+
+An **absent** `implementedBy` key for an asserted strategy is a resolution error: that is prose claiming a
+handling the model cannot deliver. An **empty list** is valid only where the phrase's
+`anchors.implementation` is `"none"` (TreatmentPolicy).
 
 *(PoC)* concepts may also carry `sapRef`, a quotation of the source SAP sentence the concept was
 derived from — provenance for hand-crafted study data, not consumed by the engine.
@@ -161,6 +215,12 @@ derived from — provenance for hand-crafted study data, not consumed by the eng
   "template": "T.CFB_ANCOVA",
   "usdmObjective": { "iri": "...", "iri_status": "...", "text": "..." },
   "arsAnalysis":   { "iri": "...", "iri_status": "..." },
+  "estimand": {                             // ICH E9(R1); instance-level, NOT a phrase
+    "id": "EST.PRIMARY", "iri": "usdm:Estimand/...", "iri_status": "illustrative",
+    "label": "Primary estimand — ADAS-Cog(11) change at Week 24",
+    "rank": "primary"                       // needed to RENDER sentenceRole — see below
+  },
+  "analysisRole": "MainEstimator",          // Analysis.analysisRole; exactly one per estimand
   "sentenceRole": "the primary analysis",   // consumed by the sentence frame, not by a phrase
   "baselineVisit": "VISIT.BASELINE",        // feeds the {baseline_visit} slice token
   "phrases": [
@@ -169,13 +229,25 @@ derived from — provenance for hand-crafted study data, not consumed by the eng
     { "phrase": "SP_CONFIDENCE_LEVEL",
       "bindings": { "conf_level": { "value": "95" } } },
     { "phrase": "SP_METHOD_ANCOVA",
-      "bindings": { "method": { "method": "M.ANCOVA", "render": "label" } } }
+      "bindings": { "method": { "method": "M.ANCOVA", "render": "label" } } },
+    { "phrase": "SP_ICE_HYPOTHETICAL",
+      "bindings": { "ice": { "concept": "ICE.TRT_DISCONT", "render": "name" } } },
+    { "phrase": "SP_SUMMARY_MEASURE",
+      "bindings": { "summary": { "output": "contrasts_t" } } }
   ]
 }
 ```
 
-A binding object has exactly one of `concept` / `method` / `value`, plus optional `render`.
-Phrase array order is irrelevant (§5 orders by role).
+A binding object has exactly one of `concept` / `method` / `value` / `output`, plus optional `render`.
+Phrase array order is irrelevant (§5 orders by role). The **same phrase OID may appear more than once**
+in one instance when its role is `repeating` — two `SP_ICE_TREATMENT_POLICY` entries bound to different
+events is the normal way to handle two ICEs the same way.
+
+`analysisRole` is **additional to** `sentenceRole`, not a replacement for it. `AnalysisRole` is defined per
+estimand, so *"a secondary analysis"* is the `MainEstimator` **of a secondary estimand** — the display
+string needs `estimand.rank` as well as the role, and so cannot be derived from the enum alone. The engine
+validates the pair instead (exactly one `MainEstimator` per estimand) rather than deriving one from the
+other. See DESIGN.md D15.
 
 ## 4. Render modes
 
@@ -207,17 +279,23 @@ validator; *(PoC)* direct state edits are not re-checked against `render_options
      labels/names where the pack provides them (§5.1).
 4. Sort resolved phrases by `roleDefinitions.order` (stable within a role).
 5. Assemble the sentence through the language's **sentence template** (§5.1): each `{role}` token is
-   filled with that role's resolved phrase texts (space-separated), `{sentenceRole}` with the
-   localised sentence role, literal segments pass through as frame text. Empty roles collapse
-   (whitespace normalised); the first character is capitalised. With no language packs at all, a
-   default template concatenating every role in `roleDefinitions.order` plus the English frame is
-   used — reproducing plain-English assembly exactly.
+   filled with that role's resolved phrase texts, `{sentenceRole}` with the localised sentence role,
+   literal segments pass through as frame text. Phrases sharing a role are joined by the pack's
+   `role_conjunctions[role]` if it declares one, else a single space. `[ … ]` marks an **optional
+   group**, emitted only if at least one role token inside it resolves to a phrase — so punctuation
+   belonging to an optional clause vanishes with the clause instead of stranding a comma. Empty roles
+   collapse (whitespace normalised, and whitespace before `,` `;` `.` removed); the first character is
+   capitalised. With no language packs at all, a default template concatenating every role in
+   `roleDefinitions.order` plus the English frame is used — reproducing plain-English assembly exactly.
 
 Returns `{ phrases, parts, sentence, errors, lang }`:
 
 - `phrases[i]` = `{ oid, role, name, template, anchors, text, bindings[], errors[], langFallback }`
-  where `bindings[i].detail` carries `{ kind, id, render, iri, iri_status }` (and `formula` for
-  methods) — everything an inspection UI needs.
+  where `bindings[i].detail` carries `{ kind, id, render, iri, iri_status }` (plus `formula` for
+  methods, and `statistics` + `libraryLabel` for outputs) — everything an inspection UI needs.
+  `libraryLabel` is the **upstream** output-class label, kept alongside the localised prose so a UI can
+  show both: the library's labels are analyst-facing (*"T-based contrasts"*) where document prose needs a
+  different register (*"the difference in least-squares means"*). See DESIGN.md D14.
 - `parts` is the ordered render sequence a prose surface should consume:
   `{ type: "phrase", phrase: <resolved> }` for chips and `{ type: "text", text, frame }` for
   inter-phrase spacing (`frame: false`) and sentence-template literals (`frame: true`). This matters
@@ -236,9 +314,10 @@ language-neutral; the prose language is a renderer setting. Pack structure, per 
 | Field | Meaning |
 |---|---|
 | `name` | Display name of the language. |
-| `sentence_template` | The word-order owner: literal frame text + `{role}` tokens + `{sentenceRole}`. Required for correct assembly in that language. |
+| `sentence_template` | The word-order owner: literal frame text + `{role}` tokens + `{sentenceRole}`, with `[ … ]` optional groups. Required for correct assembly in that language. |
+| `role_conjunctions` | Per-role joiner for repeating roles, e.g. `{ "ice_handling": " and " }`. Roles with no entry join with a single space, so adding one cannot disturb an existing role. |
 | `phrases` | Per-language phrase templates keyed by smartphrase oid. Missing oids fall back to the library's English template (`langFallback: true`). |
-| `concepts` / `methods` | Per-entity `{ label?, name? }` overlays merged onto the registry/method entity at render time. In production, largely inherited from CDISC/NCIt terminology translations. |
+| `concepts` / `methods` / `outputClasses` | Per-entity `{ label?, name? }` overlays merged onto the registry / method / output-class entity at render time. In production, largely inherited from CDISC/NCIt terminology translations. **English is a pack like any other** and uses `outputClasses` for exactly this reason (D14). |
 | `sentenceRoles` | Localised sentence-role strings *(PoC: keyed by the canonical English value in the instance)*. |
 
 Language-invariant by construction: the instance, the tag dialect (§8), `constructModelView` (§6)
@@ -251,32 +330,58 @@ language changes prose projections only.
 
 1. Copy identity from the template: `conceptId`, `label`, `transformationType`, library provenance.
 2. Resolve the method (`usesMethod`) with its generic formula expression.
-3. Read the key bindings *(PoC: keyed by well-known phrase oids — `SP_CFB_ENDPOINT.parameter`,
-   `SP_TIMEPOINT.visit`, `SP_POPULATION.population`; a production version would key by
-   `sliceKeys[].source`)*.
-4. Fill `sliceKeys[].value` with `{ concept, label, iri }` per dimension
-   (ParameterDimension ← parameter, VisitDimension ← visit, Population ← population).
-5. Substitute slice-constraint tokens: `{parameter}` → parameter label, `{visit}` → visit label,
-   `{baseline_visit}` → label of `instance.baselineVisit`, `{population}` → population name.
-6. Collect `configurationValues`: template `methodConfigurations` (tagged `from: "template"`), plus
+3. Carry the instance's **estimand** and typed `analysisRole` through unchanged (§3.2) — these are
+   instance-level, so they are not derived from any phrase.
+4. Collect every bound concept as `{ slot, id, concept, role }`, ordered by `roleDefinitions.order` so an
+   endpoint-role binding wins over a covariate binding on the same slot name. **The join to the template
+   is on placeholder slot name, never on phrase OID** (DESIGN.md D10).
+5. Fill `sliceKeys[].value` with `{ concept, label, iri }`, matching each declared dimension against a
+   bound concept's `conceptCategory` (ParameterDimension, VisitDimension, EventDimension) or `kind`
+   (Population, Treatment).
+6. Substitute slice-constraint tokens by slot name — `{parameter}`, `{visit}`, `{event}`, `{population}`
+   — plus `{baseline_visit}` from `instance.baselineVisit`. Populations substitute their `name`,
+   everything else its `label`.
+7. Collect `configurationValues`: template `methodConfigurations` (tagged `from: "template"`), plus
    `alpha = 1 − conf_level/100` when `SP_CONFIDENCE_LEVEL` is present (tagged
-   `from: "SP_CONFIDENCE_LEVEL"`).
-7. Build `resolvedExpression` from phrase presence: `CHG ~ TRTP` (+ ` + BASE` if
-   `SP_COVARIATE_BASELINE`) (+ ` + SITEGR1` if `SP_COVARIATE_SITE`) *(PoC: study-variable names are
-   fixed for the CFB/ANCOVA family)*.
-8. Report `outputMeasures`, `usdmObjective`, `arsAnalysis`, and the template's `validSmartPhrases`.
+   `from: "SP_CONFIDENCE_LEVEL"`, rounded to 3dp — IEEE 754 makes the naïve subtraction
+   `0.050000000000000044`).
+8. Emit `handlesIntercurrentEvent[]` — the eSAP `IceHandling` triples — one per `ice_handling` phrase:
+   `{ forIntercurrentEvent, label, icheStrategy, studyDefaultStrategy, isOverride, implementedBy[], fromPhrase }`.
+   The strategy comes from the phrase's `anchors.icheStrategy`, the event from its binding, and
+   `implementedBy` from the event's strategy-keyed map (§3.1). `isOverride` is true when the estimand
+   applies a strategy other than the event's own `icheStrategy`, so a divergence is stated, not silent.
+9. Build `resolvedExpression`, which dispatches on `usesMethod` — the one method-specific piece, because
+   the library declares no measure→ADaM-variable mapping *(PoC)*.
+10. Report `outputMeasures`, `usdmObjective`, `arsAnalysis`, and the template's `validSmartPhrases`
+    (including any the proposed overlay added, §12).
 
 ## 7. Data trace
 
-`buildTrace(ctx, instance, role)` returns a four-tier chain for a phrase role, or `null` for roles
-without a chain. Chains are defined per role in the **active study graph's** `traceTemplates`, so each study supplies
-its own — the CDISC Pilot defines `endpoint`, `covariate`, `timepoint`, `grouping`, `population`;
-PrE0102 defines `endpoint`, `grouping`, `population` (there is no analysis visit in a time-to-event
-analysis). Tiers:
+`buildTrace(ctx, instance, role, focusConceptId?)` returns a four-tier chain for a phrase role, or `null`
+for roles without a chain. Chains are defined per role in the **active study graph's** `traceTemplates`, so
+each study supplies its own — the CDISC Pilot defines `endpoint`, `covariate`, `timepoint`, `grouping`,
+`population`, `ice_handling`; PrE0102 defines `endpoint`, `grouping`, `population`, `ice_handling` (there
+is no analysis visit in a time-to-event analysis). Tiers, for an analysis-value chain:
 
 ```
 DataConcept → ADaM Class Variable → Study variable (with where-clause) → Physical dataset (.xpt)
 ```
+
+**`focusConceptId` is required for repeating roles.** Tokens are filled first-wins in role order, so with
+two `ice_handling` phrases in one instance both would otherwise resolve to whichever concept came first —
+and the endpoint concept's `{dataset}` would shadow both regardless. Passing the clicked phrase's own bound
+concept heads the precedence order with it. Callers that trace a singular role may omit it.
+
+**The ICE axis is shaped differently**, because what is traced is not an analysis value but *"did this event
+occur, and when"* — a per-subject (boolean, `Timing`) pair:
+
+```
+Occurrence criterion → Ascertained fact → Study variable → Physical dataset (.xpt)
+```
+
+The first tier is the executable `OccurrenceCriterion` (a BC ▸ property ▸ code path, BC as the head), not
+an ADaM class variable. The chain is **strategy-independent**, so one definition serves every estimand that
+declares the event — which is exactly what `ascertainedBy` being separate from `implementedBy` buys.
 
 Every string field of every tier may contain tokens, substituted from the **live instance**
 (the trace follows edits):
@@ -291,8 +396,15 @@ Four label tokens are derived rather than read from `data`:
 | `{paramLabel}` `{eventLabel}` | the endpoint-or-parameter-role concept's `label` |
 | `{visitLabel}` | the `VisitDimension` concept's `label` |
 | `{popName}` | the `Population` concept's `name` |
+| `{iceLabel}` `{iceName}` | the `IntercurrentEvent` concept's `label` / `name` |
+| `{criterion}` | the first `ascertainedBy.criteria` entry rendered as `property operator 'responseCode'` |
 
 Adding a `data` key therefore makes a new token available with no engine change.
+
+A chain that leaves a `{token}` unfilled is a **defect**, not a soft failure — `verify.mjs` asserts against
+both `⟨name⟩` (phrase resolution) and a surviving `{token}` (trace fill). The second check was added after
+an unfocused ICE chain silently produced `ADQSADAS.ITTFL`: the endpoint's dataset crossed with the
+population's flag.
 
 Examples:
 - CDISC Pilot primary, `endpoint`:
@@ -300,6 +412,9 @@ Examples:
 - PrE0102 primary, `endpoint`:
   `DC.TTE → AVAL (BDS time-to-event) → ADTTE.AVAL where PARAMCD = 'PFS' → adtte.xpt` (with `CNSR`
   carrying the censoring indicator)
+- CDISC Pilot primary, `ice_handling` focused on `ICE.TRT_DISCONT`:
+  `BC_DS_001/Disposition Event where … equals 'Treatment Discontinued' → (occurred, when) →
+  ADSL.DCSREAS → adsl.xpt`
 
 ## 8. The `acdc:macro` tag dialect
 
@@ -398,17 +513,18 @@ declare a measure→ADaM-variable mapping.
 
 | Function | Returns |
 |---|---|
-| `ctxOf(lib, graph, i18n?, proposed?)` | Context object for all other calls. `i18n` is the language-pack map (§5.1). `proposed` is the proposed-additions overlay, defaulting to `window.ACDC_LIBRARY_PROPOSED`; its entities are merged into `ctx.lib` tagged `proposed: true`, and its `provenance` is exposed as `ctx.lib.proposedProvenance`. The passed-in `lib` is never mutated — read merged content from `ctx.lib`, not from the raw global. |
+| `ctxOf(lib, graph, i18n?, proposed?)` | Context object for all other calls. `i18n` is the language-pack map (§5.1). `proposed` is the proposed-additions overlay, defaulting to `window.ACDC_LIBRARY_PROPOSED`; it may contribute `transformations`, `smartPhrases`, `roleDefinitions.roles` (spliced at `order_after`, §2.3) and `validSmartPhrasesAdded` (widening an existing upstream template, which then carries `proposedPhrasesAdded`). Merged entities are tagged `proposed: true` and the overlay's `provenance` is exposed as `ctx.lib.proposedProvenance`. The passed-in `lib` is never mutated — **read merged content from `ctx.lib`, never from the raw global**, or proposed content is invisible. |
 | `availableLangs(ctx)` | Configured language codes (`["en"]` when no packs). |
 | `langPack(ctx, lang)` | The language pack or `null`. |
 | `phraseDef(ctx, oid)` | SmartPhrase definition or `null`. |
 | `templateDef(ctx, conceptId)` | Transformation template or `null`. |
 | `concept(ctx, id)` | Registry entry or `null`. |
 | `method(ctx, id)` | Merged method view `{ conceptId, label, name, formula, configurations, iri, iri_status, ars, ars_status }` or `null`. |
-| `resolvePhrase(ctx, phraseInstance, lang?)` | `{ oid, role, name, template, anchors, text, bindings[], errors[], langFallback }` (§5). |
+| `resolvePhrase(ctx, phraseInstance, lang?, tpl?)` | `{ oid, role, name, template, anchors, text, bindings[], errors[], langFallback }` (§5). `tpl` (the active template) enables `output_ref` validation (§2.2); omit it and that check is skipped. |
 | `resolveInstance(ctx, instance, lang?)` | `{ phrases[], parts[], sentence, errors[], lang }` (§5). |
 | `constructModelView(ctx, instance)` | eSAP-style study model view (§6). |
-| `buildTrace(ctx, instance, role)` | Array of trace tiers, or `null` (§7). |
+| `buildTrace(ctx, instance, role, focusConceptId?)` | Array of trace tiers, or `null` (§7). Pass `focusConceptId` for repeating roles. |
+| `iceHandlings(ctx, instance)` | The eSAP `IceHandling` triples the instance asserts (§6 step 8). |
 | `toMacroText(ctx, instance)` | Dialect text (§8). |
 | `parseMacroText(ctx, text, baseInstance)` | `{ instancePatch \| null, findings[] }` (§8.2). |
 | `toJSONLD(ctx, instance)` | JSON-LD graph fragment (§9). |
@@ -434,10 +550,11 @@ Dev-time only; the demo itself needs none of it and stays zero-install.
 
 | Command | Purpose |
 |---|---|
-| `node tools/build-library-subset.mjs` | Regenerate `demo/data/acdc-library.js` from `methods_02` at the pinned commit, via `git show`. Entities are copied verbatim; the selection (`SELECT_TRANSFORMATIONS`, `SELECT_METHODS`) is declared in the script. |
+| `node tools/build-library-subset.mjs` | Regenerate `demo/data/acdc-library.js` from `methods_02` at the pinned commit, via `git show`. Entities are copied verbatim; the selection (`SELECT_TRANSFORMATIONS`, `SELECT_METHODS`, `SELECT_OUTPUT_CLASSES`) is declared in the script. Widening a selection is the **only** legitimate way to add upstream content to the demo. |
 | `node tools/build-library-subset.mjs --check` | Assert the file on disk equals generator output — enforces "do not hand-edit". |
 | `node tools/verify.mjs` | Engine gate: every instance of every registered study, plus planted faults, overlay integrity and localisation completeness. Compares against `tools/goldens.json`. |
-| `node tools/verify.mjs --update-goldens` | Re-pin goldens. Only after reviewing the reported diff. |
+| `node tools/verify.mjs --update-goldens` | Re-pin goldens. Only after reviewing the diff. |
+| `node tools/diff-goldens.mjs [rev] [--summary]` | Structural diff of `goldens.json` against its committed version: one line per changed **leaf**, so an intended addition reads as *N × ADDED* and an accidental edit cannot hide in a large JSON blob. A review aid, not a gate — always exits 0. |
 | `NODE_PATH=<dir>/node_modules node tools/verify-ui.mjs` | Headless DOM walkthrough of `demo/index.html` in jsdom, both studies, all four stops; fails on any console error. Exit 2 if jsdom is absent. |
 
 Goldens are **captured from behaviour, not hand-written**, so they answer "did this change anything?"

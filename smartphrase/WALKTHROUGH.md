@@ -1,8 +1,8 @@
 # Working-group walkthrough — smartphrase PoC
 
-> ~12 minutes · one browser tab: `smartphrase/demo/index.html` (double-click; nothing is server-backed —
-> if anything misbehaves, reload). Keep issue #9 open in a spare tab for the close.
-> Drop the PrE0102 beat (7:45) to bring this back to ~10 minutes if time is tight.
+> ~15 minutes · one browser tab: `smartphrase/demo/index.html` (double-click; nothing is server-backed —
+> if anything misbehaves, reload). Keep issues #9 and #11 open in spare tabs for the close.
+> Drop the PrE0102 beat (7:45) for ~13 min, or the estimand beat (9:45) for ~12.
 
 **Headline:** the SAP and the AC/DC model are two views of *one* thing — and this page holds exactly one
 copy of that thing.
@@ -10,9 +10,10 @@ copy of that thing.
 **Worked examples.** Stops 1–3 run on CDISC Pilot primary efficacy — change from baseline in
 ADAS-Cog(11) at Week 24, ANCOVA, efficacy population — driven by transformation template
 `T.CFB_ANCOVA` and method `M.ANCOVA` from the Transformation Library **v0.7 on `methods_02`**, loaded
-verbatim. The 7:45 beat then switches to a second study, PrECOG **PrE0102** (metastatic breast cancer,
+verbatim. The 7:45 beat switches to a second study, PrECOG **PrE0102** (metastatic breast cancer,
 progression-free survival, Kaplan-Meier), to show the same mechanism across therapeutic areas and
-endpoint types.
+endpoint types. The 9:45 beat covers **estimands and intercurrent events** (issue #11) — the same
+architecture carrying all five ICH E9(R1) attributes.
 
 ---
 
@@ -89,18 +90,68 @@ endpoint types.
 > OS and TTP. Across studies, two blocks from one library. Write once, apply many — and the 'many'
 > crosses therapeutic areas and endpoint types."
 
-## 9:45 — Stop 4 · Standards grounding (1m)
+## 9:45 — Estimands and intercurrent events (2m)
+
+**Action:** switch back to **CDISCPILOT01**. The primary passage is longer than it was at Stop 1.
+
+> "This is the same object you edited at Stop 2, now carrying a full ICH E9(R1) estimand. Four of the five
+> attributes were *already* in the sentence — treatment is the grouping phrase, the variable is the
+> endpoint and timepoint, the population is the population phrase. Nobody designed them for E9(R1); they
+> just happen to line up. What was missing was attribute 4, intercurrent-event handling, and attribute 5,
+> the summary measure."
+
+- Hover **"as if discontinuation of study treatment had not occurred"** → `SP_ICE_HYPOTHETICAL`, and note
+  its anchor: `icheStrategy: Hypothetical`, a typed value from the model's own enum, not a string in prose.
+- Hover **"summarised as the difference in least-squares means"** → the popover shows the *library's* own
+  label alongside: **"T-based contrasts"**. Worth naming out loud.
+
+> "That gap is a finding. The library's output vocabulary is written for analysts; SAP prose needs a
+> different register. So the document wording lives in the language pack — English is a rendering pack like
+> any other — and the library label stays visible so nobody thinks we renamed anything."
+
+- **Click** the ICE phrase → the trace goes somewhere new: **an occurrence criterion**, not an ADaM class
+  variable. `BC_DS_001/Disposition Event → (occurred, when) → ADSL.DCSREAS → adsl.xpt`.
+- **Click the second ICE chip** ("regardless of use of concomitant AD medication") → `adcm.xpt`.
+
+> "Two different chains from one sentence. This is a *different trace axis* from Stop 1: there we followed
+> an analysis value, here we follow *did this event happen, and when*. And notice the ascertainment is
+> strategy-independent — you recognise a discontinuation the same way regardless of how you then handle it,
+> which is exactly how the eSAP model splits `ascertainedBy` from `implementedBy`."
+
+**The load-bearing beat — Stop 3, the reuse grid:**
+
+> "Look at the two ADAS-Cog cards. Same estimand id, `EST.PRIMARY`. Same intercurrent event. Different
+> strategy — Hypothetical on one, **TreatmentPolicy (override)** on the other. One event, handled two ways,
+> with no second copy of the event anywhere. That falls straight out of the model: `IceHandling` is a
+> reified (estimand, event, strategy) triple, so the strategy is a property of the *pairing*, not of the
+> event."
+
+**Be straight about what it cost:**
+
+> "This one needed two new **roles**, which is a library minor version, not a study addition — and because
+> each language owns its word order explicitly, all three sentence templates had to change. That is the
+> honest price. The strategy that had to *do* something, Hypothetical, resolves to `T.LOCF_Imputation` —
+> real v0.7 content, not something we invented. TreatmentPolicy resolves to *nothing*, which is correct:
+> data used as observed. The engine refuses a strategy the event declares no handling for, so the prose
+> cannot promise something the model can't deliver."
+
+> "Two of the five strategies are exercised. Composite, WhileOnTreatment and PrincipalStratum are written
+> but not bound, because each needs library content v0.7 doesn't have — a folding derivation, a censoring
+> derivation, counterfactual subsetting. We'd rather say that than imply coverage."
+
+## 11:45 — Stop 4 · Standards grounding (1m15)
 
 - The identifier table: USDM for study structure, ARS for analyses, STATO for methods, NCIt for
   terminology; AC/DC ids only where nothing exists yet, and unregistered ids are flagged *illustrative*.
 - Provenance line: the library data is a generated verbatim subset of `methods_02@ffee5df`.
 - The volatility card: the semantics are standoff — the SAP-structure initiative (M11-analogue) can land
   on any structure and this layer attaches unchanged.
-- Note the honest gap: ANCOVA grounds authoritatively in STATO, but **no STATO or NCIt term for
-  Kaplan-Meier estimation** was found, and the upstream method file carries `ncitCode: null`. We did not
-  invent one — it is flagged *illustrative*.
+- Note the honest gaps, both flagged *illustrative* because we would not invent an identifier:
+  **no STATO or NCIt term for Kaplan-Meier estimation** was found (the upstream method file carries
+  `ncitCode: null`), and **no resolvable term for the ICH E9(R1) strategies** — the enum is eSAP-owned and
+  a guideline is not a registry. Both are listed rather than omitted, so the gap is visible.
 
-## 10:45 — The ask (1m15)
+## 13:00 — The ask (1m30)
 
 > "Issue #9 now states requirements only; `smartphrase/DESIGN.md` records this design and why.
 > The steer we need:
@@ -109,9 +160,14 @@ endpoint types.
 > 3. Should the identifier policy — *resolve into USDM/ARS/STATO/NCIt wherever they cover the entity* — become an AC/DC principle?
 > 4. Who owns registering the currently-illustrative ids as the sister SAP-structure project spins up —
 >    including finding or minting a term for Kaplan-Meier estimation?
-> 5. **Who accepts phrase and template contributions into the library, and what does that review look
->    like?** We have produced one (`T.PFS_KaplanMeier`) by encoding a single real SAP, so this is no
->    longer hypothetical — and a library that grows one therapeutic area at a time needs an owner."
+> 5. **Who accepts contributions into the library, and what does that review look like?** Encoding one
+>    real SAP produced a template (`T.PFS_KaplanMeier`). The estimand work produced two new **roles**,
+>    six phrases, and a widened valid-phrase set on an existing released template — a library *minor
+>    version*. That is a bigger ask than a template and needs an owner and a process.
+> 6. **Is `T.LOCF_Imputation` the right implementer for a Hypothetical strategy?** It is the only
+>    imputation derivation v0.7 affords, but LOCF is a missing-data method and a hypothetical estimand
+>    strictly wants imputation under a stated alternative assumption. The mechanism is right; we are
+>    asking whether the content is."
 
 ---
 
@@ -124,12 +180,23 @@ endpoint types.
 - PrE0102 sentence produced: *"Time to disease progression or death (PFS) in the eligible, treated
   population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will
   be assessed as the primary analysis."* Source: SAP §3.1, §5.3, §7.7.2 (converted in `smartphrase/SAP/`).
-- Library: 23 smartphrases, 8 roles, `T.CFB_ANCOVA` valid-phrase set of 9 — all v0.7, verbatim. Plus one
-  **proposed** template, `T.PFS_KaplanMeier`, authored here and not yet upstream.
+- Library: **23 smartphrases and 8 roles** verbatim from v0.7, plus **6 proposed phrases and 2 proposed
+  roles** for the estimand work — 29 phrases and 10 roles merged. Generated subset holds 4 upstream
+  templates and 9 output classes; one **proposed** template (`T.PFS_KaplanMeier`) makes 5.
+  `T.CFB_ANCOVA`'s valid-phrase set is 9 upstream + 3 proposed = 12.
+- Estimand facts: 8 analysis instances across 2 studies, 4 estimands, 5 strategy phrases (2 exercised),
+  1 per-estimand override. The Hypothetical implementer is `T.LOCF_Imputation`, real v0.7 content.
 - Languages: EN/FR/DE via language packs; DE headline: *"… wird im Vergleich der Behandlungsgruppen
   mittels ANCOVA … als primäre Analyse untersucht."* Tag source/model/graph identical across languages.
-- Verified, and re-runnable: `tools/verify.mjs` (69 pinned outputs across both studies),
+- Verified, and re-runnable: `tools/verify.mjs` (**86** pinned outputs across both studies),
   `tools/build-library-subset.mjs --check` (generated file unmodified), `tools/verify-ui.mjs` (headless
-  DOM walkthrough of both studies, fails on any console error). All green.
-- If time-pressed: drop the PrE0102 beat, compress Stop 4 to the provenance line and the volatility
-  sentence, and drop the i18n beat (just say it); never cut Stop 2.
+  DOM walkthrough of both studies, including per-ICE trace focus; fails on any console error). All green.
+  `tools/diff-goldens.mjs` reviews a recapture leaf-by-leaf — a review aid, not a gate.
+- If time-pressed: drop the estimand beat first, then PrE0102, then compress Stop 4 to the provenance line
+  and the volatility sentence, then drop the i18n beat (just say it); **never cut Stop 2.**
+- If asked "does German really work?": the estimand sentence keeps the *wird … untersucht* bracket with the
+  ICE clause inside it, and the hypothetical uses Konjunktiv II (*als ob … nicht aufgetreten wäre*). The
+  real limit found was **case**: German declines the ICE noun phrase differently per strategy, and one
+  concept name cannot be both nominative and dative. All five *strategy phrase templates* were built
+  nominative-compatible;
+  a language with richer case marking would strain this.
