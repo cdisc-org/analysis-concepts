@@ -1,14 +1,18 @@
 # Working-group walkthrough — smartphrase PoC
 
-> ~10 minutes · one browser tab: `smartphrase/demo/index.html` (double-click; nothing is server-backed —
+> ~12 minutes · one browser tab: `smartphrase/demo/index.html` (double-click; nothing is server-backed —
 > if anything misbehaves, reload). Keep issue #9 open in a spare tab for the close.
+> Drop the PrE0102 beat (7:45) to bring this back to ~10 minutes if time is tight.
 
 **Headline:** the SAP and the AC/DC model are two views of *one* thing — and this page holds exactly one
 copy of that thing.
 
-**Worked example** (all four stops): CDISC Pilot primary efficacy — change from baseline in ADAS-Cog(11)
-at Week 24, ANCOVA, efficacy population — driven by transformation template `T.CFB_ANCOVA` and method
-`M.ANCOVA` from the Transformation Library **v0.7 on `methods_02`**, loaded verbatim.
+**Worked examples.** Stops 1–3 run on CDISC Pilot primary efficacy — change from baseline in
+ADAS-Cog(11) at Week 24, ANCOVA, efficacy population — driven by transformation template
+`T.CFB_ANCOVA` and method `M.ANCOVA` from the Transformation Library **v0.7 on `methods_02`**, loaded
+verbatim. The 7:45 beat then switches to a second study, PrECOG **PrE0102** (metastatic breast cancer,
+progression-free survival, Kaplan-Meier), to show the same mechanism across therapeutic areas and
+endpoint types.
 
 ---
 
@@ -117,9 +121,15 @@ at Week 24, ANCOVA, efficacy population — driven by transformation template `T
   (11 items) (ADAS-Cog(11)) at Week 24 in the efficacy (intent-to-treat) population comparing treatment
   groups using ANCOVA with 95% confidence intervals adjusting for baseline ADAS-Cog(11) will be assessed
   as the primary analysis."*
-- Library: 23 smartphrases, 8 roles, `T.CFB_ANCOVA` valid-phrase set of 9 — all v0.7, verbatim.
+- PrE0102 sentence produced: *"Time to disease progression or death (PFS) in the eligible, treated
+  population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will
+  be assessed as the primary analysis."* Source: SAP §3.1, §5.3, §7.7.2 (converted in `smartphrase/SAP/`).
+- Library: 23 smartphrases, 8 roles, `T.CFB_ANCOVA` valid-phrase set of 9 — all v0.7, verbatim. Plus one
+  **proposed** template, `T.PFS_KaplanMeier`, authored here and not yet upstream.
 - Languages: EN/FR/DE via language packs; DE headline: *"… wird im Vergleich der Behandlungsgruppen
   mittels ANCOVA … als primäre Analyse untersucht."* Tag source/model/graph identical across languages.
-- Verified: engine round-trip byte-equal; 21 + 15 headless-browser end-to-end checks pass, no console errors.
-- If time-pressed: compress Stop 4 to the provenance line and the volatility sentence, and drop the
-  i18n beat (just say it); never cut Stop 2.
+- Verified, and re-runnable: `tools/verify.mjs` (69 pinned outputs across both studies),
+  `tools/build-library-subset.mjs --check` (generated file unmodified), `tools/verify-ui.mjs` (headless
+  DOM walkthrough of both studies, fails on any console error). All green.
+- If time-pressed: drop the PrE0102 beat, compress Stop 4 to the provenance line and the volatility
+  sentence, and drop the i18n beat (just say it); never cut Stop 2.
