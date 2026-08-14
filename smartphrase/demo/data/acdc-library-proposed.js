@@ -73,6 +73,21 @@
     },
 
     /*
+     * Phrases added to an EXISTING upstream template. The template itself is
+     * generated content and must not be hand-edited, so the addition is declared
+     * here and merged in ctxOf — the same discipline as roles. Upstreaming means
+     * widening T.CFB_ANCOVA.validSmartPhrases on methods_02 and deleting this.
+     *
+     * SP_ICE_HYPOTHETICAL is valid here because T.LOCF_Imputation exists to
+     * implement it. It is deliberately NOT added to the Kaplan-Meier template,
+     * where no imputation or censoring derivation exists — conditional template
+     * validity, so the layer cannot offer prose the model cannot honour.
+     */
+    validSmartPhrasesAdded: {
+      "T.CFB_ANCOVA": ["SP_ICE_HYPOTHETICAL", "SP_ICE_TREATMENT_POLICY", "SP_SUMMARY_MEASURE"]
+    },
+
+    /*
      * One smartphrase per ICH E9(R1) strategy. The strategy is carried in
      * `anchors.icheStrategy` (an IchE9R1Strategy enum value) rather than being
      * inferred from the OID, so model→SAP is a lookup, not string surgery.
@@ -219,7 +234,14 @@
           "SP_GROUPING",
           "SP_METHOD_KM",
           "SP_CONFIDENCE_LEVEL",
-          "SP_STRATIFICATION"
+          "SP_STRATIFICATION",
+          /* issue #11. Hypothetical is deliberately EXCLUDED: implementing it
+             for a time-to-event endpoint needs an imputation or censoring
+             derivation this template does not carry, so offering it would be
+             prose the model cannot honour. */
+          "SP_ICE_TREATMENT_POLICY",
+          "SP_ICE_WHILE_ON_TREATMENT",
+          "SP_SUMMARY_MEASURE"
         ]
       }
     ]

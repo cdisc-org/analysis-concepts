@@ -28,6 +28,19 @@
           })
         );
       }
+      /* Phrases added to an upstream template. The generated entry is copied,
+         never mutated; proposedPhrasesAdded lets the UI badge the additions
+         individually rather than badging the whole released template. */
+      if (pro.validSmartPhrasesAdded) {
+        merged.transformations = merged.transformations.map(function (t) {
+          var add = pro.validSmartPhrasesAdded[t.conceptId];
+          if (!add) return t;
+          return Object.assign({}, t, {
+            validSmartPhrases: (t.validSmartPhrases || []).concat(add),
+            proposedPhrasesAdded: add
+          });
+        });
+      }
       if (pro.smartPhrases && pro.smartPhrases.length) {
         merged.smartPhrases = lib.smartPhrases.concat(
           pro.smartPhrases.map(function (p) {
@@ -303,10 +316,14 @@
         if (!tok) { parts.push({ type: "text", text: seg, frame: true }); return; }
         if (tok[1] === "sentenceRole") { parts.push({ type: "text", text: roleText, frame: true }); return; }
         if (order.indexOf(tok[1]) === -1) { parts.push({ type: "text", text: seg, frame: true }); return; }
+        /* Phrases sharing a role are separated by a bare space unless the pack
+           declares a conjunction for that role — "as if X had not occurred AND
+           regardless of Y". Localisable, and roles with no entry are unchanged. */
+        var joiner = (pack && pack.role_conjunctions && pack.role_conjunctions[tok[1]]) || " ";
         resolved.forEach(function (rp, i) {
           if (rp.role !== tok[1]) return;
           if (parts.length && parts[parts.length - 1].type === "phrase") {
-            parts.push({ type: "text", text: " ", frame: false });
+            parts.push({ type: "text", text: joiner, frame: joiner !== " " });
           }
           parts.push({ type: "phrase", phrase: rp });
         });
@@ -322,7 +339,15 @@
         norm.push(Object.assign({}, p));
       }
     });
-    norm.forEach(function (p) { if (p.type === "text") p.text = p.text.replace(/\s+/g, " "); });
+    norm.forEach(function (p) {
+      if (p.type !== "text") return;
+      p.text = p.text.replace(/\s+/g, " ");
+      /* An elided optional group leaves the whitespace that separated it from
+         the previous role, so punctuation opening the NEXT group arrives as
+         " , ". Fixed here rather than in the assembled string, because the DOM
+         renders these parts individually. */
+      p.text = p.text.replace(/\s+([,;.])/g, "$1");
+    });
     while (norm.length && norm[0].type === "text" && !norm[0].text.trim()) norm.shift();
     if (norm.length && norm[0].type === "text") norm[0].text = norm[0].text.replace(/^\s+/, "");
 

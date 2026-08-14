@@ -217,6 +217,29 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
   check("planted fault: missing wrapper rejected", noWrapper.instancePatch === null);
 }
 
+/* ---- PrE0102: source-grounded ICE and summary measure ---- */
+{
+  const ctx = E.ctxOf(LIB, graphs.PRE0102, I18N);
+  const inst = graphs.PRE0102.instances.find((i) => i.id === "AC.PRIMARY.PFS");
+  const res = E.resolveInstance(ctx, inst, "en");
+  check("PrE0102 primary states the ICE strategy in prose",
+    res.sentence.includes("regardless of"), res.sentence);
+  check("PrE0102 primary states the summary measure in prose",
+    res.sentence.includes("median"), res.sentence);
+  const mv = E.constructModelView(ctx, inst);
+  check("PrE0102 emits a TreatmentPolicy IceHandling",
+    (mv.handlesIntercurrentEvent || []).some((h) => h.icheStrategy === "TreatmentPolicy"),
+    JSON.stringify(mv.handlesIntercurrentEvent));
+  check("PrE0102 summary measure is a real KM output",
+    JSON.stringify(mv).includes("median_survival"));
+  /* Every PrE0102 concept quotes its source — the ICE included. That discipline
+     is what separates this study from the illustrative Pilot layer. */
+  const iceConcept = ctx.graph.concepts["ICE.TOX_DISCONT"];
+  check("the PrE0102 ICE quotes its source sentence",
+    !!iceConcept && /SAP 4\.3/.test(iceConcept.sapRef || ""),
+    iceConcept ? iceConcept.sapRef : "ICE.TOX_DISCONT not in the registry");
+}
+
 /* ---- ICE ascertainment trace: a distinct axis, focused per ICE ---- */
 {
   const ctx = E.ctxOf(LIB, graphs.CDISCPILOT01, I18N);

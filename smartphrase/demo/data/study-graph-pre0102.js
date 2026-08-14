@@ -85,6 +85,38 @@
         sapRef: "SAP 7.2 — 'Intent-to-treat (ITT) analysis population includes all subjects as randomized.'"
       },
 
+      /*
+       * A REAL intercurrent event, from the source SAP — contrast the CDISC
+       * Pilot's illustrative pair. The SAP's handling is an explicit
+       * TreatmentPolicy: subjects who stop protocol therapy are still followed
+       * for progression, so the event is not permitted to change what is
+       * measured. That is stated in prose in the source document, which is
+       * exactly the claim this layer makes machine-readable.
+       *
+       * implementedBy carries TreatmentPolicy only: an empty list, because data
+       * are used as observed. Hypothetical is deliberately absent — no
+       * imputation or censoring derivation exists here to implement it, so
+       * asserting it would be prose the model cannot honour.
+       */
+      "ICE.TOX_DISCONT": {
+        kind: "IntercurrentEvent",
+        label: "everolimus discontinuation",
+        name: "discontinuation of everolimus for suspected toxicity",
+        iri: "usdm:IntercurrentEvent/PRE0102-ICE-TOXDISC", iri_status: "illustrative",
+        icheStrategy: "TreatmentPolicy",
+        ascertainedBy: {
+          arm: "collected",
+          criteria: [{ property: "BC_DS_001/Disposition Event",
+                       operator: "equals",
+                       responseCode: "Adverse Event" }]
+        },
+        implementedBy: { TreatmentPolicy: [] },
+        data: { dataset: "ADSL", file: "adsl.xpt", flag: "DCTREAS",
+                datasetLabel: "Subject-Level Analysis Dataset",
+                timing: "TRTEDT", bc: "BC_DS_001", property: "Disposition Event" },
+        sapRef: "SAP 4.3 — 'Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression'; handled by treatment policy per SAP 4.3 — 'All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons.'"
+      },
+
       "TRT.PRE0102": {
         kind: "Treatment",
         label: "treatment",
@@ -142,7 +174,9 @@
           { phrase: "SP_POPULATION",       bindings: { population: { concept: "POP.EVAL_EFFICACY", render: "name" } } },
           { phrase: "SP_GROUPING",         bindings: { treatment:  { concept: "TRT.PRE0102", render: "label" } } },
           { phrase: "SP_METHOD_KM",        bindings: { method:     { method: "M.KaplanMeier", render: "label" } } },
-          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } } }
+          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } } },
+          { phrase: "SP_ICE_TREATMENT_POLICY", bindings: { ice: { concept: "ICE.TOX_DISCONT", render: "name" } } },
+          { phrase: "SP_SUMMARY_MEASURE",      bindings: { summary: { output: "median_survival" } } }
         ]
       },
       {
@@ -172,7 +206,9 @@
           { phrase: "SP_POPULATION",       bindings: { population: { concept: "POP.ITT", render: "name" } } },
           { phrase: "SP_GROUPING",         bindings: { treatment:  { concept: "TRT.PRE0102", render: "label" } } },
           { phrase: "SP_METHOD_KM",        bindings: { method:     { method: "M.KaplanMeier", render: "label" } } },
-          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } } }
+          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } } },
+          { phrase: "SP_ICE_TREATMENT_POLICY", bindings: { ice: { concept: "ICE.TOX_DISCONT", render: "name" } } },
+          { phrase: "SP_SUMMARY_MEASURE",      bindings: { summary: { output: "median_survival" } } }
         ]
       },
       {
@@ -198,7 +234,8 @@
           { phrase: "SP_POPULATION",       bindings: { population: { concept: "POP.EVAL_EFFICACY", render: "name" } } },
           { phrase: "SP_GROUPING",         bindings: { treatment:  { concept: "TRT.PRE0102", render: "label" } } },
           { phrase: "SP_METHOD_KM",        bindings: { method:     { method: "M.KaplanMeier", render: "label" } } },
-          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } } }
+          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } } },
+          { phrase: "SP_SUMMARY_MEASURE",      bindings: { summary: { output: "median_survival" } } }
         ]
       },
       {
@@ -224,7 +261,8 @@
           { phrase: "SP_POPULATION",       bindings: { population: { concept: "POP.EVAL_EFFICACY", render: "name" } } },
           { phrase: "SP_GROUPING",         bindings: { treatment:  { concept: "TRT.PRE0102", render: "label" } } },
           { phrase: "SP_METHOD_KM",        bindings: { method:     { method: "M.KaplanMeier", render: "label" } } },
-          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } } }
+          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } } },
+          { phrase: "SP_SUMMARY_MEASURE",      bindings: { summary: { output: "median_survival" } } }
         ]
       }
     ],
@@ -235,6 +273,22 @@
      * censoring flag travels with the analysis value.
      */
     traceTemplates: {
+      /* The ICE axis — same shape as the Pilot's: it descends through the
+         ascertainment criterion, not an ADaM class variable, because the fact
+         being traced is per-subject occurrence and timing. */
+      ice_handling: [
+        { tier: "Occurrence criterion", id: "{bc}/{property}", label: "{iceName}",
+          iri: "usdm:Condition", iri_status: "illustrative",
+          whereClause: "{criterion}",
+          note: "Executable USDM Condition entering the BC ▸ property ▸ code path; the source Biomedical Concept is the path head, named once." },
+        { tier: "Ascertained fact", id: "(occurred, when)", label: "Per-subject occurrence",
+          note: "A boolean indicator plus a Timing, per subject. Strategy-independent — the same ascertainment serves every estimand that declares this event." },
+        { tier: "Study variable", id: "{dataset}.{flag}", label: "{flag} in {dataset}",
+          whereClause: "{flag} indicates toxicity",
+          note: "Reason off treatment; timing in {dataset}.{timing}." },
+        { tier: "Physical dataset", id: "{dataset}", label: "{datasetLabel}",
+          file: "{file}", keys: ["USUBJID"], note: "One record per subject." }
+      ],
       endpoint: [
         { tier: "DataConcept", id: "DC.TTE", label: "Time to Event",
           iri: "acdc:dc/TimeToEvent", iri_status: "illustrative",
