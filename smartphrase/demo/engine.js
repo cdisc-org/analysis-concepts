@@ -450,6 +450,10 @@
     return {
       instance: instance.id,
       iri: instance.iri,
+      /* eSAP: the Analysis sits under Estimand.hasTransformation and states its
+         role for that estimand via Analysis.analysisRole. */
+      estimand: instance.estimand || null,
+      analysisRole: instance.analysisRole || null,
       template: {
         conceptId: tpl.conceptId, label: tpl.label,
         transformationType: tpl.transformationType,
@@ -695,6 +699,10 @@
       "usdm:objective": instance.usdmObjective && {
         "@id": instance.usdmObjective.iri, "rdfs:comment": instance.usdmObjective.text
       },
+      "usdm:estimand": instance.estimand && {
+        "@id": instance.estimand.iri, "rdfs:label": instance.estimand.label
+      },
+      "esap:analysisRole": instance.analysisRole || null,
       "ars:analysis": instance.arsAnalysis && { "@id": instance.arsAnalysis.iri },
       "sp:hasPhraseInstance": phraseNodes,
       "sp:resolvesTo": resolvesTo

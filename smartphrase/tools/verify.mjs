@@ -88,6 +88,14 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
       JSON.stringify((mv.sliceKeys || []).filter((sk) => !sk.value))
     );
 
+    /* Estimand attribution. Every analysis instance belongs to exactly one
+       estimand and states its ICH E9(R1) role for that estimand. */
+    check(`${studyKey}/${inst.id} declares an estimand`, !!inst.estimand, "no estimand block");
+    check(`${studyKey}/${inst.id} declares a typed analysisRole`,
+      ["MainEstimator", "SensitivityAnalysis", "SupplementaryAnalysis"].indexOf(inst.analysisRole) !== -1,
+      String(inst.analysisRole));
+    check(`${studyKey}/${inst.id} model view carries the estimand`, !!mv.estimand);
+
     /* tag dialect round-trip must be byte-equal */
     const src = E.toMacroText(ctx, inst);
     record(`${studyKey}/${inst.id}/macro`, src);
@@ -133,6 +141,21 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
       );
     }
   }
+
+  /* Exactly one MainEstimator per estimand — per Analysis.analysisRole's own
+     upstream documentation ("MainEstimator (exactly one per estimand)"). */
+  const byEstimand = {};
+  graph.instances.forEach((i) => {
+    const k = i.estimand && i.estimand.id;
+    if (!k) return;
+    byEstimand[k] = byEstimand[k] || [];
+    byEstimand[k].push(i);
+  });
+  Object.keys(byEstimand).forEach((k) => {
+    const mains = byEstimand[k].filter((i) => i.analysisRole === "MainEstimator");
+    check(`${studyKey}/${k} has exactly one MainEstimator`, mains.length === 1,
+      mains.map((i) => i.id).join(", ") || "none");
+  });
 }
 
 /* ---- planted faults must be caught ---- */

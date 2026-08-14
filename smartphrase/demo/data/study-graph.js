@@ -132,6 +132,26 @@
           text: "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
         },
         arsAnalysis: { iri: "ars:analysis/AN-3.02.01", iri_status: "illustrative" },
+        /*
+         * The estimand is instance-level metadata, not a phrase: four of the
+         * five ICH E9(R1) attributes are already carried by the phrases
+         * (treatment→grouping, variable→endpoint/parameter/timepoint,
+         * population→population). Attributes 4 and 5 are the ice_handling and
+         * summary_measure phrases.
+         *
+         * `rank` is what makes "a secondary analysis" renderable. AnalysisRole
+         * is per-estimand, so a secondary analysis is the MainEstimator OF a
+         * secondary estimand — the display string needs both, which is why
+         * sentenceRole is kept beside analysisRole rather than derived from it.
+         * See DESIGN.md D15.
+         */
+        estimand: {
+          id: "EST.PRIMARY",
+          iri: "usdm:Estimand/CDISCPILOT01-EST-PRIMARY", iri_status: "illustrative",
+          label: "Primary estimand — ADAS-Cog(11) change at Week 24",
+          rank: "primary"
+        },
+        analysisRole: "MainEstimator",
         sentenceRole: "the primary analysis",
         baselineVisit: "VISIT.BASELINE",
         phrases: [
@@ -154,6 +174,15 @@
           text: "To evaluate the effect of xanomeline TTS on behavioural disturbance"
         },
         arsAnalysis: { iri: "ars:analysis/AN-3.03.01", iri_status: "illustrative" },
+        /* Its own estimand, of which it is the main estimator — see the note on
+           AC.PRIMARY.ADASCOG for why rank and analysisRole are both needed. */
+        estimand: {
+          id: "EST.SECONDARY.NPIX",
+          iri: "usdm:Estimand/CDISCPILOT01-EST-SECONDARY-NPIX", iri_status: "illustrative",
+          label: "Secondary estimand — NPI-X change at Week 24",
+          rank: "secondary"
+        },
+        analysisRole: "MainEstimator",
         sentenceRole: "a secondary analysis",
         baselineVisit: "VISIT.BASELINE",
         phrases: [
@@ -175,6 +204,17 @@
           text: "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
         },
         arsAnalysis: { iri: "ars:analysis/AN-3.02.02", iri_status: "illustrative" },
+        /* Same estimand as the primary, at an earlier timepoint — so it is a
+           SUPPLEMENTARY analysis of EST.PRIMARY, not an estimand of its own.
+           This is what gives the one-MainEstimator-per-estimand check something
+           real to verify. */
+        estimand: {
+          id: "EST.PRIMARY",
+          iri: "usdm:Estimand/CDISCPILOT01-EST-PRIMARY", iri_status: "illustrative",
+          label: "Primary estimand — ADAS-Cog(11) change at Week 24",
+          rank: "primary"
+        },
+        analysisRole: "SupplementaryAnalysis",
         sentenceRole: "a supporting analysis",
         baselineVisit: "VISIT.BASELINE",
         phrases: [

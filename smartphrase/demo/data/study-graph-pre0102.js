@@ -127,6 +127,15 @@
           text: "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
         },
         arsAnalysis: { iri: "ars:analysis/PRE0102-AN-7.07.02-PFS", iri_status: "illustrative" },
+        /* Primary estimand, per SAP 3.1 (objective) and 7.7.2 (methodology).
+           See DESIGN.md D15 on why sentenceRole is kept beside analysisRole. */
+        estimand: {
+          id: "EST.PFS",
+          iri: "usdm:Estimand/PRE0102-EST-PFS", iri_status: "illustrative",
+          label: "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)",
+          rank: "primary"
+        },
+        analysisRole: "MainEstimator",
         sentenceRole: "the primary analysis",
         phrases: [
           { phrase: "SP_TTE_ENDPOINT",     bindings: { event:      { concept: "EVENT.PFS", render: "name_with_label" } } },
@@ -146,6 +155,17 @@
           text: "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
         },
         arsAnalysis: { iri: "ars:analysis/PRE0102-AN-7.07.02-PFS-ITT", iri_status: "illustrative" },
+        /* The SAME estimand as the primary — the SAP's own sensitivity analysis
+           (7.7.2: "As a sensitivity analysis, all of the above analyses ... will
+           be repeated for the as-randomized population"). Source-grounded, and
+           it is what makes the one-MainEstimator check meaningful. */
+        estimand: {
+          id: "EST.PFS",
+          iri: "usdm:Estimand/PRE0102-EST-PFS", iri_status: "illustrative",
+          label: "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)",
+          rank: "primary"
+        },
+        analysisRole: "SensitivityAnalysis",
         sentenceRole: "a sensitivity analysis",
         phrases: [
           { phrase: "SP_TTE_ENDPOINT",     bindings: { event:      { concept: "EVENT.PFS", render: "name_with_label" } } },
@@ -165,6 +185,13 @@
           text: "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
         },
         arsAnalysis: { iri: "ars:analysis/PRE0102-AN-7.07.02-OS", iri_status: "illustrative" },
+        estimand: {
+          id: "EST.OS",
+          iri: "usdm:Estimand/PRE0102-EST-OS", iri_status: "illustrative",
+          label: "Secondary estimand — overall survival (SAP 3.2, 7.7.2)",
+          rank: "secondary"
+        },
+        analysisRole: "MainEstimator",
         sentenceRole: "a secondary analysis",
         phrases: [
           { phrase: "SP_TTE_ENDPOINT",     bindings: { event:      { concept: "EVENT.OS", render: "name_with_label" } } },
@@ -184,6 +211,13 @@
           text: "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
         },
         arsAnalysis: { iri: "ars:analysis/PRE0102-AN-7.07.02-TTP", iri_status: "illustrative" },
+        estimand: {
+          id: "EST.TTP",
+          iri: "usdm:Estimand/PRE0102-EST-TTP", iri_status: "illustrative",
+          label: "Secondary estimand — time to progression (SAP 3.2, 7.7.2)",
+          rank: "secondary"
+        },
+        analysisRole: "MainEstimator",
         sentenceRole: "a secondary analysis",
         phrases: [
           { phrase: "SP_TTE_ENDPOINT",     bindings: { event:      { concept: "EVENT.TTP", render: "name_with_label" } } },

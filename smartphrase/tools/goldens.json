@@ -5,6 +5,14 @@
   "CDISCPILOT01/AC.PRIMARY.ADASCOG/modelView": {
     "instance": "AC.PRIMARY.ADASCOG",
     "iri": "acdc:instance/AC-PRIMARY-ADASCOG",
+    "estimand": {
+      "id": "EST.PRIMARY",
+      "iri": "usdm:Estimand/CDISCPILOT01-EST-PRIMARY",
+      "iri_status": "illustrative",
+      "label": "Primary estimand — ADAS-Cog(11) change at Week 24",
+      "rank": "primary"
+    },
+    "analysisRole": "MainEstimator",
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -168,6 +176,11 @@
       "@id": "usdm:Objective/OBJ-PRIMARY-1",
       "rdfs:comment": "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
     },
+    "usdm:estimand": {
+      "@id": "usdm:Estimand/CDISCPILOT01-EST-PRIMARY",
+      "rdfs:label": "Primary estimand — ADAS-Cog(11) change at Week 24"
+    },
+    "esap:analysisRole": "MainEstimator",
     "ars:analysis": {
       "@id": "ars:analysis/AN-3.02.01"
     },
@@ -461,6 +474,14 @@
   "CDISCPILOT01/AC.SEC.NPIX/modelView": {
     "instance": "AC.SEC.NPIX",
     "iri": "acdc:instance/AC-SEC-NPIX",
+    "estimand": {
+      "id": "EST.SECONDARY.NPIX",
+      "iri": "usdm:Estimand/CDISCPILOT01-EST-SECONDARY-NPIX",
+      "iri_status": "illustrative",
+      "label": "Secondary estimand — NPI-X change at Week 24",
+      "rank": "secondary"
+    },
+    "analysisRole": "MainEstimator",
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -619,6 +640,11 @@
       "@id": "usdm:Objective/OBJ-SECONDARY-1",
       "rdfs:comment": "To evaluate the effect of xanomeline TTS on behavioural disturbance"
     },
+    "usdm:estimand": {
+      "@id": "usdm:Estimand/CDISCPILOT01-EST-SECONDARY-NPIX",
+      "rdfs:label": "Secondary estimand — NPI-X change at Week 24"
+    },
+    "esap:analysisRole": "MainEstimator",
     "ars:analysis": {
       "@id": "ars:analysis/AN-3.03.01"
     },
@@ -900,6 +926,14 @@
   "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/modelView": {
     "instance": "AC.SUPP.ADASCOG.WK16",
     "iri": "acdc:instance/AC-SUPP-ADASCOG-WK16",
+    "estimand": {
+      "id": "EST.PRIMARY",
+      "iri": "usdm:Estimand/CDISCPILOT01-EST-PRIMARY",
+      "iri_status": "illustrative",
+      "label": "Primary estimand — ADAS-Cog(11) change at Week 24",
+      "rank": "primary"
+    },
+    "analysisRole": "SupplementaryAnalysis",
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -1063,6 +1097,11 @@
       "@id": "usdm:Objective/OBJ-PRIMARY-1",
       "rdfs:comment": "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
     },
+    "usdm:estimand": {
+      "@id": "usdm:Estimand/CDISCPILOT01-EST-PRIMARY",
+      "rdfs:label": "Primary estimand — ADAS-Cog(11) change at Week 24"
+    },
+    "esap:analysisRole": "SupplementaryAnalysis",
     "ars:analysis": {
       "@id": "ars:analysis/AN-3.02.02"
     },
@@ -1356,6 +1395,14 @@
   "PRE0102/AC.PRIMARY.PFS/modelView": {
     "instance": "AC.PRIMARY.PFS",
     "iri": "acdc:instance/PRE0102-AC-PRIMARY-PFS",
+    "estimand": {
+      "id": "EST.PFS",
+      "iri": "usdm:Estimand/PRE0102-EST-PFS",
+      "iri_status": "illustrative",
+      "label": "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)",
+      "rank": "primary"
+    },
+    "analysisRole": "MainEstimator",
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
@@ -1482,6 +1529,11 @@
       "@id": "usdm:Objective/PRE0102-OBJ-PRIMARY-1",
       "rdfs:comment": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
     },
+    "usdm:estimand": {
+      "@id": "usdm:Estimand/PRE0102-EST-PFS",
+      "rdfs:label": "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)"
+    },
+    "esap:analysisRole": "MainEstimator",
     "ars:analysis": {
       "@id": "ars:analysis/PRE0102-AN-7.07.02-PFS"
     },
@@ -1678,6 +1730,14 @@
   "PRE0102/AC.SENS.PFS.ITT/modelView": {
     "instance": "AC.SENS.PFS.ITT",
     "iri": "acdc:instance/PRE0102-AC-SENS-PFS-ITT",
+    "estimand": {
+      "id": "EST.PFS",
+      "iri": "usdm:Estimand/PRE0102-EST-PFS",
+      "iri_status": "illustrative",
+      "label": "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)",
+      "rank": "primary"
+    },
+    "analysisRole": "SensitivityAnalysis",
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
@@ -1804,6 +1864,11 @@
       "@id": "usdm:Objective/PRE0102-OBJ-PRIMARY-1",
       "rdfs:comment": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
     },
+    "usdm:estimand": {
+      "@id": "usdm:Estimand/PRE0102-EST-PFS",
+      "rdfs:label": "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)"
+    },
+    "esap:analysisRole": "SensitivityAnalysis",
     "ars:analysis": {
       "@id": "ars:analysis/PRE0102-AN-7.07.02-PFS-ITT"
     },
@@ -2000,6 +2065,14 @@
   "PRE0102/AC.SEC.OS/modelView": {
     "instance": "AC.SEC.OS",
     "iri": "acdc:instance/PRE0102-AC-SEC-OS",
+    "estimand": {
+      "id": "EST.OS",
+      "iri": "usdm:Estimand/PRE0102-EST-OS",
+      "iri_status": "illustrative",
+      "label": "Secondary estimand — overall survival (SAP 3.2, 7.7.2)",
+      "rank": "secondary"
+    },
+    "analysisRole": "MainEstimator",
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
@@ -2126,6 +2199,11 @@
       "@id": "usdm:Objective/PRE0102-OBJ-SECONDARY-1",
       "rdfs:comment": "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
     },
+    "usdm:estimand": {
+      "@id": "usdm:Estimand/PRE0102-EST-OS",
+      "rdfs:label": "Secondary estimand — overall survival (SAP 3.2, 7.7.2)"
+    },
+    "esap:analysisRole": "MainEstimator",
     "ars:analysis": {
       "@id": "ars:analysis/PRE0102-AN-7.07.02-OS"
     },
@@ -2322,6 +2400,14 @@
   "PRE0102/AC.SEC.TTP/modelView": {
     "instance": "AC.SEC.TTP",
     "iri": "acdc:instance/PRE0102-AC-SEC-TTP",
+    "estimand": {
+      "id": "EST.TTP",
+      "iri": "usdm:Estimand/PRE0102-EST-TTP",
+      "iri_status": "illustrative",
+      "label": "Secondary estimand — time to progression (SAP 3.2, 7.7.2)",
+      "rank": "secondary"
+    },
+    "analysisRole": "MainEstimator",
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
@@ -2448,6 +2534,11 @@
       "@id": "usdm:Objective/PRE0102-OBJ-SECONDARY-1",
       "rdfs:comment": "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
     },
+    "usdm:estimand": {
+      "@id": "usdm:Estimand/PRE0102-EST-TTP",
+      "rdfs:label": "Secondary estimand — time to progression (SAP 3.2, 7.7.2)"
+    },
+    "esap:analysisRole": "MainEstimator",
     "ars:analysis": {
       "@id": "ars:analysis/PRE0102-AN-7.07.02-TTP"
     },
