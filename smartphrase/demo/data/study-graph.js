@@ -218,7 +218,13 @@
           { phrase: "SP_GROUPING",          bindings: { treatment:  { concept: "TRT.ALL", render: "label" } } },
           { phrase: "SP_METHOD_ANCOVA",     bindings: { method:     { method: "M.ANCOVA", render: "label" } } },
           { phrase: "SP_CONFIDENCE_LEVEL",  bindings: { conf_level: { value: "95" } } },
-          { phrase: "SP_COVARIATE_BASELINE",bindings: { parameter:  { concept: "PARAM.ADASCOG11", render: "label" } } }
+          { phrase: "SP_COVARIATE_BASELINE",bindings: { parameter:  { concept: "PARAM.ADASCOG11", render: "label" } } },
+          /* ICH E9(R1) attributes 4 and 5. Two intercurrent events handled
+             differently in one estimand — hypothetical for discontinuation,
+             treatment policy for concomitant medication. */
+          { phrase: "SP_ICE_HYPOTHETICAL",     bindings: { ice: { concept: "ICE.TRT_DISCONT", render: "name" } } },
+          { phrase: "SP_ICE_TREATMENT_POLICY", bindings: { ice: { concept: "ICE.CONMED", render: "name" } } },
+          { phrase: "SP_SUMMARY_MEASURE",      bindings: { summary: { output: "contrasts_t" } } }
         ]
       },
       {
@@ -282,6 +288,51 @@
           { phrase: "SP_METHOD_ANCOVA",     bindings: { method:     { method: "M.ANCOVA", render: "label" } } },
           { phrase: "SP_CONFIDENCE_LEVEL",  bindings: { conf_level: { value: "95" } } },
           { phrase: "SP_COVARIATE_BASELINE",bindings: { parameter:  { concept: "PARAM.ADASCOG11", render: "label" } } }
+        ]
+      },
+      {
+        id: "AC.SENS.ADASCOG.TP",
+        iri: "acdc:instance/AC-SENS-ADASCOG-TP",
+        label: "Sensitivity analysis — treatment policy for discontinuation",
+        template: "T.CFB_ANCOVA",
+        usdmObjective: {
+          iri: "usdm:Objective/OBJ-PRIMARY-1", iri_status: "illustrative",
+          text: "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
+        },
+        arsAnalysis: { iri: "ars:analysis/AN-SENS-TP", iri_status: "illustrative" },
+        /*
+         * The SAME estimand and the SAME ICE concept as the primary — only the
+         * strategy differs. This is the per-estimand override: the reified
+         * IceHandling triple lets one event be handled two ways without a second
+         * copy of the event, and ICE.TRT_DISCONT declares both handlings it
+         * supports so each analysis resolves to the right implementer (LOCF for
+         * the hypothetical, nothing for the treatment policy).
+         *
+         * ILLUSTRATIVE, like the ICE concepts it uses.
+         */
+        estimand: {
+          id: "EST.PRIMARY",
+          iri: "usdm:Estimand/CDISCPILOT01-EST-PRIMARY", iri_status: "illustrative",
+          label: "Primary estimand — ADAS-Cog(11) change at Week 24",
+          rank: "primary"
+        },
+        analysisRole: "SensitivityAnalysis",
+        sentenceRole: "a sensitivity analysis",
+        baselineVisit: "VISIT.BASELINE",
+        phrases: [
+          { phrase: "SP_CFB_ENDPOINT",      bindings: { parameter:  { concept: "PARAM.ADASCOG11", render: "name_with_label" } } },
+          { phrase: "SP_TIMEPOINT",         bindings: { visit:      { concept: "VISIT.WK24", render: "label" } } },
+          { phrase: "SP_POPULATION",        bindings: { population: { concept: "POP.EFFICACY", render: "name" } } },
+          { phrase: "SP_GROUPING",          bindings: { treatment:  { concept: "TRT.ALL", render: "label" } } },
+          { phrase: "SP_METHOD_ANCOVA",     bindings: { method:     { method: "M.ANCOVA", render: "label" } } },
+          { phrase: "SP_CONFIDENCE_LEVEL",  bindings: { conf_level: { value: "95" } } },
+          { phrase: "SP_COVARIATE_BASELINE",bindings: { parameter:  { concept: "PARAM.ADASCOG11", render: "label" } } },
+          /* The override: treatment policy where the primary is hypothetical.
+             Both declared ICEs still get exactly one strategy each — the same
+             phrase OID appears twice, once per event. */
+          { phrase: "SP_ICE_TREATMENT_POLICY", bindings: { ice: { concept: "ICE.TRT_DISCONT", render: "name" } } },
+          { phrase: "SP_ICE_TREATMENT_POLICY", bindings: { ice: { concept: "ICE.CONMED", render: "name" } } },
+          { phrase: "SP_SUMMARY_MEASURE",      bindings: { summary: { output: "contrasts_t" } } }
         ]
       }
     ],

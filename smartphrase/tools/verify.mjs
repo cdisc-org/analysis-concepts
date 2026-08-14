@@ -45,6 +45,22 @@ function check(name, cond, detail) {
   if (!cond) failures.push(name + (detail ? " — " + detail : ""));
 }
 
+/*
+ * A copy of an instance with every phrase in the named roles removed. Fixtures
+ * that add phrases must state their own precondition: several blocks below build
+ * on a live study instance, and once that instance grew ICE phrases of its own,
+ * "push two ICEs onto it" silently became "push two more".
+ */
+function without(ctx, inst, roles) {
+  const copy = JSON.parse(JSON.stringify(inst));
+  copy.phrases = copy.phrases.filter((p) => {
+    const d = E.phraseDef(ctx, p.phrase);
+    return !d || roles.indexOf(d.role) === -1;
+  });
+  return copy;
+}
+const ESTIMAND_ROLES = ["ice_handling", "summary_measure"];
+
 /* ---- graphs under test: every study in the registry ---- */
 const graphs = globalThis.STUDY_GRAPHS || { CDISCPILOT01: globalThis.STUDY_GRAPH };
 
@@ -217,6 +233,39 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
   check("planted fault: missing wrapper rejected", noWrapper.instancePatch === null);
 }
 
+/* ---- per-estimand override with no duplicated ICE ---- */
+{
+  const ctx = E.ctxOf(LIB, graphs.CDISCPILOT01, I18N);
+  const main = graphs.CDISCPILOT01.instances.find((i) => i.id === "AC.PRIMARY.ADASCOG");
+  const sens = graphs.CDISCPILOT01.instances.find((i) => i.id === "AC.SENS.ADASCOG.TP");
+  check("the override instance exists", !!sens);
+  if (sens) {
+    const ice = "ICE.TRT_DISCONT";
+    const a = E.constructModelView(ctx, main).handlesIntercurrentEvent
+      .find((h) => h.forIntercurrentEvent === ice);
+    const b = E.constructModelView(ctx, sens).handlesIntercurrentEvent
+      .find((h) => h.forIntercurrentEvent === ice);
+    check("the same ICE is handled two ways across the estimand's analyses",
+      a && b && a.icheStrategy === "Hypothetical" && b.icheStrategy === "TreatmentPolicy",
+      JSON.stringify([a && a.icheStrategy, b && b.icheStrategy]));
+    check("the override is flagged as such",
+      b && b.isOverride === true && a.isOverride === false,
+      JSON.stringify([a && a.isOverride, b && b.isOverride]));
+    check("only ONE ICE concept backs both",
+      a && b && a.forIntercurrentEvent === b.forIntercurrentEvent);
+    check("the override drops the implementing transformation",
+      a && b && a.implementedBy.length === 1 && b.implementedBy.length === 0,
+      JSON.stringify([a && a.implementedBy, b && b.implementedBy]));
+    check("both analyses belong to the same estimand",
+      main.estimand.id === sens.estimand.id, main.estimand.id + " vs " + sens.estimand.id);
+  }
+  /* All five ICH E9(R1) attributes present on the primary. */
+  const roles = E.resolveInstance(ctx, main, "en").phrases.map((p) => p.role);
+  check("all five E9(R1) attributes are expressed",
+    ["endpoint", "population", "grouping", "ice_handling", "summary_measure"]
+      .every((r) => roles.indexOf(r) !== -1), roles.join(","));
+}
+
 /* ---- PrE0102: source-grounded ICE and summary measure ---- */
 {
   const ctx = E.ctxOf(LIB, graphs.PRE0102, I18N);
@@ -243,7 +292,7 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
 /* ---- ICE ascertainment trace: a distinct axis, focused per ICE ---- */
 {
   const ctx = E.ctxOf(LIB, graphs.CDISCPILOT01, I18N);
-  const inst = JSON.parse(JSON.stringify(graphs.CDISCPILOT01.instances[0]));
+  const inst = without(ctx, graphs.CDISCPILOT01.instances[0], ESTIMAND_ROLES);
   inst.phrases.push({ phrase: "SP_ICE_HYPOTHETICAL", bindings: { ice: { concept: "ICE.TRT_DISCONT" } } });
   inst.phrases.push({ phrase: "SP_ICE_TREATMENT_POLICY", bindings: { ice: { concept: "ICE.CONMED" } } });
 
@@ -266,7 +315,7 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
 /* ---- IceHandling: strategy resolves to what implements it ---- */
 {
   const ctx = E.ctxOf(LIB, graphs.CDISCPILOT01, I18N);
-  const base = JSON.parse(JSON.stringify(graphs.CDISCPILOT01.instances[0]));
+  const base = without(ctx, graphs.CDISCPILOT01.instances[0], ESTIMAND_ROLES);
   base.phrases.push({ phrase: "SP_ICE_HYPOTHETICAL", bindings: { ice: { concept: "ICE.TRT_DISCONT" } } });
   base.phrases.push({ phrase: "SP_ICE_TREATMENT_POLICY", bindings: { ice: { concept: "ICE.CONMED" } } });
   const mv = E.constructModelView(ctx, base);
@@ -285,7 +334,7 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
   /* Planted fault: a strategy the ICE declares no handling for must be an
      error, not a silently unimplemented claim. This is what stops the prose and
      the model drifting apart. ICE.CONMED supports TreatmentPolicy only. */
-  const drift = JSON.parse(JSON.stringify(graphs.CDISCPILOT01.instances[0]));
+  const drift = without(ctx, graphs.CDISCPILOT01.instances[0], ESTIMAND_ROLES);
   drift.phrases.push({ phrase: "SP_ICE_HYPOTHETICAL", bindings: { ice: { concept: "ICE.CONMED" } } });
   check("planted fault: strategy with no declared handling is rejected",
     E.resolveInstance(ctx, drift).errors.length > 0,
@@ -344,11 +393,12 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
 /* ---- sentence-template optional groups ---- */
 {
   const graph = graphs.CDISCPILOT01;
-  const base = graph.instances[0];
-  /* A pack whose template wraps an absent role in punctuation: the whole
-     group must vanish, not strand its comma. `covariate` is present in this
-     instance and `ice_handling` has no phrases yet, so one group renders and
-     the other disappears. */
+  const pctx0 = E.ctxOf(LIB, graph, I18N);
+  /* A pack whose template wraps an absent role in punctuation: the whole group
+     must vanish, not strand its comma. The fixture strips ice_handling so the
+     precondition is explicit — `covariate` is present, `ice_handling` is not, so
+     one group renders and the other disappears. */
+  const base = without(pctx0, graph.instances[0], ESTIMAND_ROLES);
   const probe = {
     en: {
       name: "probe",

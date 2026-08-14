@@ -99,11 +99,11 @@ const pilotPanel = $("modelPanel").textContent;
 check("pilot panel names SP_CFB_ENDPOINT", pilotPanel.includes("SP_CFB_ENDPOINT"));
 check("pilot panel names the active template", pilotPanel.includes("T.CFB_ANCOVA"), pilotPanel.slice(0,200));
 
-/* pilot reuse grid: two study groups, 7 cards */
+/* pilot reuse grid: two study groups, 8 cards */
 const cards = [...doc.querySelectorAll("#reuseGrid .reuse-card")];
 const heads = [...doc.querySelectorAll("#reuseGrid > h3")];
 check("reuse grid groups by study (2 headings)", heads.length === 2, heads.map(h=>h.textContent).join(" | "));
-check("reuse grid shows 7 cards (3 pilot + 4 PrE0102)", cards.length === 7, "cards=" + cards.length);
+check("reuse grid shows 8 cards (4 pilot + 4 PrE0102)", cards.length === 8, "cards=" + cards.length);
 const proposedBadges = cards.filter(c => c.textContent.includes("proposed"));
 check("4 PrE0102 cards badged proposed", proposedBadges.length === 4, "badged=" + proposedBadges.length);
 
