@@ -190,6 +190,35 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
   check("planted fault: missing wrapper rejected", noWrapper.instancePatch === null);
 }
 
+/* ---- IceHandling: strategy resolves to what implements it ---- */
+{
+  const ctx = E.ctxOf(LIB, graphs.CDISCPILOT01, I18N);
+  const base = JSON.parse(JSON.stringify(graphs.CDISCPILOT01.instances[0]));
+  base.phrases.push({ phrase: "SP_ICE_HYPOTHETICAL", bindings: { ice: { concept: "ICE.TRT_DISCONT" } } });
+  base.phrases.push({ phrase: "SP_ICE_TREATMENT_POLICY", bindings: { ice: { concept: "ICE.CONMED" } } });
+  const mv = E.constructModelView(ctx, base);
+  const h = mv.handlesIntercurrentEvent || [];
+  check("model view emits one IceHandling per ICE phrase", h.length === 2, JSON.stringify(h));
+  const hyp = h.find((x) => x.icheStrategy === "Hypothetical");
+  check("Hypothetical resolves to an implementing transformation",
+    hyp && hyp.implementedBy.length === 1 &&
+    hyp.implementedBy[0].transformationId === "T.LOCF_Imputation", JSON.stringify(hyp));
+  check("the implementing transformation is really in the library",
+    !!E.templateDef(ctx, "T.LOCF_Imputation"));
+  const tp = h.find((x) => x.icheStrategy === "TreatmentPolicy");
+  check("TreatmentPolicy legitimately implements by nothing",
+    tp && tp.implementedBy.length === 0, JSON.stringify(tp));
+
+  /* Planted fault: a strategy the ICE declares no handling for must be an
+     error, not a silently unimplemented claim. This is what stops the prose and
+     the model drifting apart. ICE.CONMED supports TreatmentPolicy only. */
+  const drift = JSON.parse(JSON.stringify(graphs.CDISCPILOT01.instances[0]));
+  drift.phrases.push({ phrase: "SP_ICE_HYPOTHETICAL", bindings: { ice: { concept: "ICE.CONMED" } } });
+  check("planted fault: strategy with no declared handling is rejected",
+    E.resolveInstance(ctx, drift).errors.length > 0,
+    JSON.stringify(E.resolveInstance(ctx, drift).errors));
+}
+
 /* ---- summary measure is verifiable, not decorative ---- */
 {
   const ctx = E.ctxOf(LIB, graphs.CDISCPILOT01, I18N);

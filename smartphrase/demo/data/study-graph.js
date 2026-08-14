@@ -93,6 +93,63 @@
         iri: "usdm:AnalysisPopulation/POP-SAF", iri_status: "illustrative",
         data: { flag: "SAFFL" }
       },
+      /*
+       * Intercurrent events. New registry kind, grounding in
+       * usdm:IntercurrentEvent. `ascertainedBy` mirrors the eSAP model's
+       * OccurrenceCriterion shape (the BC ▸ property ▸ code path, named once,
+       * with the BC as the path head) and is STRATEGY-INDEPENDENT — the same
+       * ascertainment is reused whichever strategy an estimand applies. That is
+       * why the ICE trace is a separate axis from the analysis-value trace.
+       *
+       * `implementedBy` is keyed by strategy and lives on the ICE, so two
+       * estimands handling this event differently each resolve to the right
+       * transformation without a second copy of the event.
+       *
+       * ILLUSTRATIVE: the CDISC Pilot has no protocol-defined ICE list, so
+       * these are constructed to exercise the layer. Contrast PrE0102, whose
+       * ICE and its handling are both quoted from the source SAP.
+       */
+      "ICE.TRT_DISCONT": {
+        kind: "IntercurrentEvent",
+        label: "treatment discontinuation",
+        name: "discontinuation of study treatment",
+        iri: "usdm:IntercurrentEvent/CDISCPILOT01-ICE-DISC", iri_status: "illustrative",
+        icheStrategy: "Hypothetical",
+        ascertainedBy: {
+          arm: "collected",
+          criteria: [{ property: "BC_DS_001/Disposition Event",
+                       operator: "equals",
+                       responseCode: "Treatment Discontinued" }]
+        },
+        /* Both handlings this event supports; each estimand picks one. */
+        implementedBy: { Hypothetical: ["T.LOCF_Imputation"], TreatmentPolicy: [] },
+        data: { dataset: "ADSL", file: "adsl.xpt", flag: "DCSREAS",
+                datasetLabel: "Subject-Level Analysis Dataset",
+                timing: "EOSDT", bc: "BC_DS_001", property: "Disposition Event" },
+        sapRef: "ILLUSTRATIVE — not from a source SAP; constructed for issue #11"
+      },
+      "ICE.CONMED": {
+        kind: "IntercurrentEvent",
+        label: "concomitant AD medication",
+        name: "use of concomitant AD medication",
+        iri: "usdm:IntercurrentEvent/CDISCPILOT01-ICE-CONMED", iri_status: "illustrative",
+        icheStrategy: "TreatmentPolicy",
+        ascertainedBy: {
+          arm: "collected",
+          criteria: [{ property: "BC_CM_001/Category",
+                       operator: "in",
+                       responseCode: "AD THERAPY" }]
+        },
+        /* TreatmentPolicy is implemented by nothing: data are used as observed.
+           Upstream IceHandling.implementedBy documents this as "omitted", so an
+           empty list is the correct encoding, not a missing one. */
+        implementedBy: { TreatmentPolicy: [] },
+        data: { dataset: "ADCM", file: "adcm.xpt", flag: "CMCAT",
+                datasetLabel: "Concomitant Medications Analysis Dataset",
+                timing: "ASTDT", bc: "BC_CM_001", property: "Category" },
+        sapRef: "ILLUSTRATIVE — not from a source SAP; constructed for issue #11"
+      },
+
       "TRT.ALL": {
         kind: "Treatment",
         label: "treatment",

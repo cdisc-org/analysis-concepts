@@ -181,6 +181,30 @@
     if (ph.concept_category && c.conceptCategory !== ph.concept_category) {
       return { error: "concept '" + binding.concept + "' is not in category " + ph.concept_category };
     }
+    /* An ICE phrase asserts a strategy; the event must declare a handling that
+       operationalises it. An empty list is a valid answer — TreatmentPolicy
+       uses data as observed, which upstream IceHandling.implementedBy documents
+       as "omitted". An ABSENT key is not: that is prose claiming a handling the
+       model cannot deliver, which is exactly the drift this layer exists to
+       prevent. The phrase's anchors say whether an implementer is expected. */
+    if (c.kind === "IntercurrentEvent" && phDef && phDef.anchors && phDef.anchors.icheStrategy) {
+      var strat = phDef.anchors.icheStrategy;
+      var impl = (c.implementedBy || {})[strat];
+      if (impl === undefined) {
+        return { error: "intercurrent event '" + binding.concept +
+                        "' declares no handling for the " + strat + " strategy" };
+      }
+      if (phDef.anchors.implementation !== "none" && impl.length === 0) {
+        return { error: "strategy " + strat + " on '" + binding.concept +
+                        "' needs an implementing transformation (" +
+                        phDef.anchors.implementation + ") but declares none" };
+      }
+      var missingImpl = impl.filter(function (tid) { return !templateDef(ctx, tid); });
+      if (missingImpl.length) {
+        return { error: "implementing transformation(s) not in the library: " +
+                        missingImpl.join(", ") };
+      }
+    }
     var cmode = binding.render || ph.default_render || "label";
     var cl = localiseEntity(ctx, lang, "concepts", binding.concept, c);
     return { text: renderEntity(cl, cmode),
@@ -347,6 +371,40 @@
     return out;
   }
 
+  /*
+   * The reified (Estimand, IntercurrentEvent, Strategy) triples this instance
+   * asserts — eSAP IceHandling. Read from the ICE phrases: the strategy comes
+   * from the phrase's anchors, the event from its binding, and the implementing
+   * transformation(s) from the event's strategy-keyed implementedBy map.
+   * Model→SAP is the reverse lookup: find the phrase whose anchors.icheStrategy
+   * matches and bind the ICE.
+   */
+  function iceHandlings(ctx, instance) {
+    var out = [];
+    instance.phrases.forEach(function (pi) {
+      var def = phraseDef(ctx, pi.phrase);
+      if (!def || def.role !== "ice_handling") return;
+      var b = (pi.bindings || {}).ice;
+      var c = b && concept(ctx, b.concept);
+      if (!c) return;
+      var strat = def.anchors.icheStrategy;
+      out.push({
+        forIntercurrentEvent: b.concept,
+        label: c.name,
+        icheStrategy: strat,
+        studyDefaultStrategy: c.icheStrategy || null,
+        /* The event carries a study-default strategy; an estimand applying a
+           different one is an override, flagged rather than silently divergent. */
+        isOverride: !!c.icheStrategy && c.icheStrategy !== strat,
+        implementedBy: ((c.implementedBy || {})[strat] || []).map(function (tid) {
+          return { transformationId: tid };
+        }),
+        fromPhrase: def.oid
+      });
+    });
+    return out;
+  }
+
   /* Display value for a bound concept: populations read as names, everything
      else as short labels. Matches the pre-generalisation behaviour exactly. */
   function conceptDisplay(c) {
@@ -454,6 +512,7 @@
          role for that estimand via Analysis.analysisRole. */
       estimand: instance.estimand || null,
       analysisRole: instance.analysisRole || null,
+      handlesIntercurrentEvent: iceHandlings(ctx, instance),
       template: {
         conceptId: tpl.conceptId, label: tpl.label,
         transformationType: tpl.transformationType,
@@ -719,6 +778,7 @@
     method: method,
     resolvePhrase: resolvePhrase,
     resolveInstance: resolveInstance,
+    iceHandlings: iceHandlings,
     constructModelView: constructModelView,
     buildTrace: buildTrace,
     toMacroText: toMacroText,

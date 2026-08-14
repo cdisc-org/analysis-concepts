@@ -13,6 +13,7 @@
       "rank": "primary"
     },
     "analysisRole": "MainEstimator",
+    "handlesIntercurrentEvent": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -482,6 +483,7 @@
       "rank": "secondary"
     },
     "analysisRole": "MainEstimator",
+    "handlesIntercurrentEvent": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -934,6 +936,7 @@
       "rank": "primary"
     },
     "analysisRole": "SupplementaryAnalysis",
+    "handlesIntercurrentEvent": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -1403,6 +1406,7 @@
       "rank": "primary"
     },
     "analysisRole": "MainEstimator",
+    "handlesIntercurrentEvent": [],
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
@@ -1738,6 +1742,7 @@
       "rank": "primary"
     },
     "analysisRole": "SensitivityAnalysis",
+    "handlesIntercurrentEvent": [],
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
@@ -2073,6 +2078,7 @@
       "rank": "secondary"
     },
     "analysisRole": "MainEstimator",
+    "handlesIntercurrentEvent": [],
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
@@ -2408,6 +2414,7 @@
       "rank": "secondary"
     },
     "analysisRole": "MainEstimator",
+    "handlesIntercurrentEvent": [],
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
