@@ -226,6 +226,10 @@ than by inspection.
 
 ## Planned extension — estimands and intercurrent events
 
+> Tracked as issue [#11](https://github.com/cdisc-org/analysis-concepts/issues/11), a sub-issue of #9,
+> on branch `estimands_01` (forked from `smartphrase_01` at `afffb84`). That issue states the
+> requirements; what follows is the proposed approach and remains revisable.
+
 The model side already exists on `methods_02` (eSAP: `Estimand`, `IntercurrentEvent`, the reified
 `IceHandling` triple with `implementedBy`, the `IchE9R1Strategy` enum, `Analysis.analysisRole`,
 `Analysis.summarizedByOutputClass`; and `model/linkML/intercurrent-event-derivation.md` for the
