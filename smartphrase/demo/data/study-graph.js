@@ -126,7 +126,11 @@
         data: { dataset: "ADSL", file: "adsl.xpt", flag: "DCSREAS",
                 datasetLabel: "Subject-Level Analysis Dataset",
                 timing: "EOSDT", bc: "BC_DS_001", property: "Disposition Event" },
-        sapRef: "ILLUSTRATIVE — not from a source SAP; constructed for issue #11"
+        /* No sapRef: this study declares no source document (see sourceDocument
+           below), so there is nothing to quote. The anchor type means "here is
+           the text that grounds this" and must not be overloaded to mean "there
+           is none". */
+        note: "Constructed for issue #11; the CDISC Pilot has no protocol-defined ICE list."
       },
       "ICE.CONMED": {
         kind: "IntercurrentEvent",
@@ -147,7 +151,11 @@
         data: { dataset: "ADCM", file: "adcm.xpt", flag: "CMCAT",
                 datasetLabel: "Concomitant Medications Analysis Dataset",
                 timing: "ASTDT", bc: "BC_CM_001", property: "Category" },
-        sapRef: "ILLUSTRATIVE — not from a source SAP; constructed for issue #11"
+        /* No sapRef: this study declares no source document (see sourceDocument
+           below), so there is nothing to quote. The anchor type means "here is
+           the text that grounds this" and must not be overloaded to mean "there
+           is none". */
+        note: "Constructed for issue #11; the CDISC Pilot has no protocol-defined ICE list."
       },
 
       "TRT.ALL": {

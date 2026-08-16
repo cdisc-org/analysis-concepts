@@ -276,6 +276,21 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
   check("planted fault: missing wrapper rejected", noWrapper.instancePatch === null);
 }
 
+/* ---- document anchors are structured, not prose strings ---- */
+{
+  for (const [studyKey, graph] of Object.entries(graphs)) {
+    Object.keys(graph.concepts).forEach((id) => {
+      const a = graph.concepts[id].sapRef;
+      if (a === undefined) return;
+      check(`${studyKey}/${id} sapRef is a structured anchor`,
+        a !== null && typeof a === "object" && typeof a.section === "string",
+        JSON.stringify(a));
+      check(`${studyKey}/${id} sapRef cites a section number`,
+        /^[0-9]+(\.[0-9]+)*$/.test((a && a.section) || ""), String(a && a.section));
+    });
+  }
+}
+
 /* ---- per-estimand override with no duplicated ICE ---- */
 {
   const ctx = E.ctxOf(LIB, graphs.CDISCPILOT01, I18N);
@@ -357,8 +372,9 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
      is what separates this study from the illustrative Pilot layer. */
   const iceConcept = ctx.graph.concepts["ICE.TOX_DISCONT"];
   check("the PrE0102 ICE quotes its source sentence",
-    !!iceConcept && /SAP 4\.3/.test(iceConcept.sapRef || ""),
-    iceConcept ? iceConcept.sapRef : "ICE.TOX_DISCONT not in the registry");
+    !!iceConcept && iceConcept.sapRef && iceConcept.sapRef.section === "4.3" &&
+      /suspected everolimus-associated toxicity/.test(iceConcept.sapRef.quote || ""),
+    iceConcept ? JSON.stringify(iceConcept.sapRef) : "ICE.TOX_DISCONT not in the registry");
 }
 
 /* ---- ICE ascertainment trace: a distinct axis, focused per ICE ---- */

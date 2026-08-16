@@ -49,7 +49,8 @@
         data: { dataset: "ADTTE", file: "adtte.xpt", paramcd: "PFS",
                 datasetLabel: "ADaM time-to-event analysis dataset",
                 aval: "AVAL", cnsr: "CNSR" },
-        sapRef: "SAP 5.3 — 'the duration of time from time of randomization to time of progression or death, whichever occurs first'"
+        sapRef: { section: "5.3",
+                  quote: "the duration of time from time of randomization to time of progression or death, whichever occurs first" }
       },
       "EVENT.OS": {
         kind: "Event", conceptCategory: "EventDimension",
@@ -58,7 +59,8 @@
         data: { dataset: "ADTTE", file: "adtte.xpt", paramcd: "OS",
                 datasetLabel: "ADaM time-to-event analysis dataset",
                 aval: "AVAL", cnsr: "CNSR" },
-        sapRef: "SAP 5.3 — 'the time from randomization until death or censored at the date of last follow-up'"
+        sapRef: { section: "5.3",
+                  quote: "the time from randomization until death or censored at the date of last follow-up" }
       },
       "EVENT.TTP": {
         kind: "Event", conceptCategory: "EventDimension",
@@ -67,7 +69,8 @@
         data: { dataset: "ADTTE", file: "adtte.xpt", paramcd: "TTP",
                 datasetLabel: "ADaM time-to-event analysis dataset",
                 aval: "AVAL", cnsr: "CNSR" },
-        sapRef: "SAP 5.3 — 'the time from randomization until progression of the disease'"
+        sapRef: { section: "5.3",
+                  quote: "the time from randomization until progression of the disease" }
       },
 
       "POP.EVAL_EFFICACY": {
@@ -75,14 +78,16 @@
         label: "EFF", name: "eligible, treated",
         iri: "usdm:AnalysisPopulation/PRE0102-POP-EFF", iri_status: "illustrative",
         data: { flag: "EFFIFL" },
-        sapRef: "SAP 7.2 — 'Evaluable for efficacy: The primary efficacy analysis will be done including eligible, treated subjects.'"
+        sapRef: { section: "7.2",
+                  quote: "The primary efficacy analysis will be done including eligible, treated subjects." }
       },
       "POP.ITT": {
         kind: "Population",
         label: "ITT", name: "intent-to-treat",
         iri: "usdm:AnalysisPopulation/PRE0102-POP-ITT", iri_status: "illustrative",
         data: { flag: "ITTFL" },
-        sapRef: "SAP 7.2 — 'Intent-to-treat (ITT) analysis population includes all subjects as randomized.'"
+        sapRef: { section: "7.2",
+                  quote: "Intent-to-treat (ITT) analysis population includes all subjects as randomized." }
       },
 
       /*
@@ -114,7 +119,11 @@
         data: { dataset: "ADSL", file: "adsl.xpt", flag: "DCTREAS",
                 datasetLabel: "Subject-Level Analysis Dataset",
                 timing: "TRTEDT", bc: "BC_DS_001", property: "Disposition Event" },
-        sapRef: "SAP 4.3 — 'Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression'; handled by treatment policy per SAP 4.3 — 'All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons.'"
+        /* The concept is anchored to the event's DEFINITION. The sentence that
+           justifies its treatment-policy HANDLING is a different claim, made by
+           the analysis, and is anchored on the phrase instance instead. */
+        sapRef: { section: "4.3",
+                  quote: "Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression" }
       },
 
       "TRT.PRE0102": {
@@ -123,7 +132,9 @@
         name: "fulvestrant plus everolimus and fulvestrant plus placebo",
         iri: "usdm:StudyArm/PRE0102-ARM-SET", iri_status: "illustrative",
         data: { variable: "TRTP" },
-        sapRef: "SAP 4.1 — randomized 1:1 to everolimus or placebo, both with fulvestrant"
+        /* Was a PARAPHRASE until issue #12's quote-verification gate caught it. */
+        sapRef: { section: "4.1",
+                  quote: "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors" }
       }
     },
 
