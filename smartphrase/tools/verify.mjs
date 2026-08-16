@@ -232,6 +232,23 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
     byEstimand[e.id] = byEstimand[e.id] || [];
     byEstimand[e.id].push(i);
   });
+  /* Estimands and analyses are study-side entities, so they anchor like any
+     other — and the section reference must be a typed field, not a string
+     smuggled into a label for tooling to regex out again (issue #12). */
+  Object.keys(graph.estimands || {}).forEach((eid) => {
+    check(`${studyKey}/${eid} estimand carries a document anchor`,
+      !graph.sourceDocument || !!graph.estimands[eid].sapRef,
+      "no sapRef");
+    check(`${studyKey}/${eid} label does not embed a section reference`,
+      !/\(\s*SAP\s*[0-9]/i.test(graph.estimands[eid].label), graph.estimands[eid].label);
+  });
+  graph.instances.forEach((inst) => {
+    check(`${studyKey}/${inst.id} instance carries a document anchor`,
+      !graph.sourceDocument || !!inst.sapRef, "no sapRef");
+    check(`${studyKey}/${inst.id} label does not embed a section reference`,
+      !/\(\s*SAP\s*[0-9]/i.test(inst.label), inst.label);
+  });
+
   /* Every registered estimand must be addressed by at least one analysis, and
      must declare its ICE scope explicitly (an empty list is a valid answer —
      "this estimand declares no intercurrent events" — but it must be stated). */

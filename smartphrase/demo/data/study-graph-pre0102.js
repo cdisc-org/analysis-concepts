@@ -203,20 +203,29 @@
     estimands: {
       "EST.PFS": {
         iri: "usdm:Estimand/PRE0102-EST-PFS", iri_status: "illustrative",
-        label: "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)",
+        label: "Primary estimand — progression-free survival",
         rank: "primary",
+        /* Typed, not smuggled into the label as "(SAP 3.1)" for tooling to regex
+           back out — the convention issue #12 objects to, which this study
+           carried until now. */
+        sapRef: { section: "3.1",
+                  quote: "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone." },
         intercurrentEvents: ["ICE.TOX_DISCONT"]
       },
       "EST.OS": {
         iri: "usdm:Estimand/PRE0102-EST-OS", iri_status: "illustrative",
-        label: "Secondary estimand — overall survival (SAP 3.2, 7.7.2)",
+        label: "Secondary estimand — overall survival",
         rank: "secondary",
+        sapRef: { section: "3.2",
+                  quote: "To describe the safety profile, objective response rate, time to progression and overall survival" },
         intercurrentEvents: []
       },
       "EST.TTP": {
         iri: "usdm:Estimand/PRE0102-EST-TTP", iri_status: "illustrative",
-        label: "Secondary estimand — time to progression (SAP 3.2, 7.7.2)",
+        label: "Secondary estimand — time to progression",
         rank: "secondary",
+        sapRef: { section: "3.2",
+                  quote: "To describe the safety profile, objective response rate, time to progression and overall survival" },
         intercurrentEvents: []
       }
     },
@@ -232,6 +241,9 @@
           text: "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
         },
         arsAnalysis: { iri: "ars:analysis/PRE0102-AN-7.07.02-PFS", iri_status: "illustrative" },
+        /* The section that defines this analysis's methodology. */
+        sapRef: { section: "7.7.2",
+                  quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." },
         /* Primary estimand, per SAP 3.1 (objective) and 7.7.2 (methodology).
            See DESIGN.md D15 on why sentenceRole is kept beside analysisRole. */
         estimand: "EST.PFS",
@@ -257,6 +269,10 @@
           text: "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
         },
         arsAnalysis: { iri: "ars:analysis/PRE0102-AN-7.07.02-PFS-ITT", iri_status: "illustrative" },
+        /* The SAP's own sensitivity sentence, not the general methodology one —
+           an instance anchor cites what licenses THIS analysis. */
+        sapRef: { section: "7.7.2",
+                  quote: "As a sensitivity analysis, all of the above analyses described in Section 7.6.2 will be repeated for the as-randomized population (intent-to-treat analysis)." },
         /* The SAME estimand as the primary — the SAP's own sensitivity analysis
            (7.7.2: "As a sensitivity analysis, all of the above analyses ... will
            be repeated for the as-randomized population"). Source-grounded, and
@@ -284,6 +300,8 @@
           text: "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
         },
         arsAnalysis: { iri: "ars:analysis/PRE0102-AN-7.07.02-OS", iri_status: "illustrative" },
+        sapRef: { section: "7.7.2",
+                  quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." },
         estimand: "EST.OS",
         analysisRole: "MainEstimator",
         sentenceRole: "a secondary analysis",
@@ -306,6 +324,8 @@
           text: "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
         },
         arsAnalysis: { iri: "ars:analysis/PRE0102-AN-7.07.02-TTP", iri_status: "illustrative" },
+        sapRef: { section: "7.7.2",
+                  quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." },
         estimand: "EST.TTP",
         analysisRole: "MainEstimator",
         sentenceRole: "a secondary analysis",

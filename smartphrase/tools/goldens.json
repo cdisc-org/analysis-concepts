@@ -2209,8 +2209,12 @@
       "id": "EST.PFS",
       "iri": "usdm:Estimand/PRE0102-EST-PFS",
       "iri_status": "illustrative",
-      "label": "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)",
+      "label": "Primary estimand — progression-free survival",
       "rank": "primary",
+      "sapRef": {
+        "section": "3.1",
+        "quote": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+      },
       "intercurrentEvents": [
         "ICE.TOX_DISCONT"
       ]
@@ -2359,7 +2363,7 @@
     },
     "usdm:estimand": {
       "@id": "usdm:Estimand/PRE0102-EST-PFS",
-      "rdfs:label": "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)",
+      "rdfs:label": "Primary estimand — progression-free survival",
       "usdm:intercurrentEvent": [
         {
           "@id": "usdm:IntercurrentEvent/PRE0102-ICE-TOXDISC",
@@ -2629,8 +2633,12 @@
       "id": "EST.PFS",
       "iri": "usdm:Estimand/PRE0102-EST-PFS",
       "iri_status": "illustrative",
-      "label": "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)",
+      "label": "Primary estimand — progression-free survival",
       "rank": "primary",
+      "sapRef": {
+        "section": "3.1",
+        "quote": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+      },
       "intercurrentEvents": [
         "ICE.TOX_DISCONT"
       ]
@@ -2779,7 +2787,7 @@
     },
     "usdm:estimand": {
       "@id": "usdm:Estimand/PRE0102-EST-PFS",
-      "rdfs:label": "Primary estimand — progression-free survival (SAP 3.1, 7.7.2)",
+      "rdfs:label": "Primary estimand — progression-free survival",
       "usdm:intercurrentEvent": [
         {
           "@id": "usdm:IntercurrentEvent/PRE0102-ICE-TOXDISC",
@@ -3049,8 +3057,12 @@
       "id": "EST.OS",
       "iri": "usdm:Estimand/PRE0102-EST-OS",
       "iri_status": "illustrative",
-      "label": "Secondary estimand — overall survival (SAP 3.2, 7.7.2)",
+      "label": "Secondary estimand — overall survival",
       "rank": "secondary",
+      "sapRef": {
+        "section": "3.2",
+        "quote": "To describe the safety profile, objective response rate, time to progression and overall survival"
+      },
       "intercurrentEvents": []
     },
     "analysisRole": "MainEstimator",
@@ -3186,7 +3198,7 @@
     },
     "usdm:estimand": {
       "@id": "usdm:Estimand/PRE0102-EST-OS",
-      "rdfs:label": "Secondary estimand — overall survival (SAP 3.2, 7.7.2)",
+      "rdfs:label": "Secondary estimand — overall survival",
       "usdm:intercurrentEvent": []
     },
     "esap:analysisRole": "MainEstimator",
@@ -3403,8 +3415,12 @@
       "id": "EST.TTP",
       "iri": "usdm:Estimand/PRE0102-EST-TTP",
       "iri_status": "illustrative",
-      "label": "Secondary estimand — time to progression (SAP 3.2, 7.7.2)",
+      "label": "Secondary estimand — time to progression",
       "rank": "secondary",
+      "sapRef": {
+        "section": "3.2",
+        "quote": "To describe the safety profile, objective response rate, time to progression and overall survival"
+      },
       "intercurrentEvents": []
     },
     "analysisRole": "MainEstimator",
@@ -3540,7 +3556,7 @@
     },
     "usdm:estimand": {
       "@id": "usdm:Estimand/PRE0102-EST-TTP",
-      "rdfs:label": "Secondary estimand — time to progression (SAP 3.2, 7.7.2)",
+      "rdfs:label": "Secondary estimand — time to progression",
       "usdm:intercurrentEvent": []
     },
     "esap:analysisRole": "MainEstimator",
