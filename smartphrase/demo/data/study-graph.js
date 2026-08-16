@@ -30,6 +30,19 @@
     },
 
     /*
+     * No source document (issue #12). This study layer is constructed to
+     * demonstrate the mechanism; there is no SAP behind it to quote, so its
+     * concepts and instances carry no anchors and cannot.
+     *
+     * Declaring the absence explicitly is what lets the anchoring gate hold
+     * PrE0102 to a hard coverage requirement — every phrase use anchored —
+     * without either failing this study forever or exempting it by silence.
+     * Contrast PrE0102, whose every anchor is verified against real source text.
+     */
+    sourceDocument: null,
+    sourceDocumentNote: "Illustrative study layer with no source SAP; document-anchoring coverage is not gated for this study.",
+
+    /*
      * Shared concept registry. `label` is the short display label, `name` the
      * full name — the render options on library placeholders (label / name /
      * name_with_label) select between them.

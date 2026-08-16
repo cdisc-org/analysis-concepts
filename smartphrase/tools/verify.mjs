@@ -276,6 +276,23 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
   check("planted fault: missing wrapper rejected", noWrapper.instancePatch === null);
 }
 
+/* ---- every study states whether it has a source document ---- */
+for (const [studyKey, graph] of Object.entries(graphs)) {
+  check(`${studyKey} declares sourceDocument (object or explicit null)`,
+    "sourceDocument" in graph, "field absent — an exemption must be declared, not implied");
+  if (graph.sourceDocument === null) {
+    check(`${studyKey} explains why it has no source document`,
+      typeof graph.sourceDocumentNote === "string" && graph.sourceDocumentNote.length > 20,
+      String(graph.sourceDocumentNote));
+  } else if (graph.sourceDocument) {
+    const sd = graph.sourceDocument;
+    check(`${studyKey} source document identifies itself`,
+      !!sd.id && !!sd.title && !!sd.date, JSON.stringify(sd));
+    check(`${studyKey} source document maps top-level sections to files`,
+      !!sd.sectionFiles && Object.keys(sd.sectionFiles).length > 0);
+  }
+}
+
 /* ---- document anchors are structured, not prose strings ---- */
 {
   for (const [studyKey, graph] of Object.entries(graphs)) {

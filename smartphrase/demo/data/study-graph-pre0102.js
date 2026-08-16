@@ -38,6 +38,36 @@
       sapSource: "smartphrase/SAP/ — PrE0102 Final SAP, 24 March 2014"
     },
 
+    /*
+     * The source document this study's prose is anchored to (issue #12).
+     *
+     * `sectionFiles` maps a TOP-LEVEL section number to its converted file. The
+     * conversion is split by the SAP's own section numbering, so a subsection
+     * such as "7.7.2" resolves through its head, "7" — which keeps this map to a
+     * handful of entries instead of one per subsection.
+     *
+     * Declaring this is what makes anchoring coverage gateable for this study:
+     * tools/verify.mjs checks that every quote appears verbatim in the section
+     * it cites, so an anchor is a verified fact rather than an unchecked claim.
+     */
+    sourceDocument: {
+      id: "PRE0102-SAP-001",
+      title: "PrE0102 Final Statistical Analysis Plan",
+      date: "2014-03-24",
+      root: "SAP",
+      iri: "acdc:document/PRE0102-SAP-001", iri_status: "illustrative",
+      sectionFiles: {
+        "1": "01-list-of-abbreviations.md",
+        "2": "02-introduction.md",
+        "3": "03-study-objectives.md",
+        "4": "04-study-design.md",
+        "5": "05-measurement-of-effect.md",
+        "6": "06-safety-measurements.md",
+        "7": "07-general-statistical-considerations.md",
+        "8": "08-reporting-conventions.md"
+      }
+    },
+
     concepts: {
       /* Event-kind concepts — required by SP_TTE_ENDPOINT's
          concept_constraint: "Event". First use of this kind in the demo. */
