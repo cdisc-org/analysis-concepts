@@ -295,6 +295,7 @@ Conventions worth fixing early:
 | Template ids | `T.<Name>` · methods `M.<Name>` |
 | Identifier policy | ground into USDM / ARS / STATO / NCIt wherever those standards cover the entity; AC/DC ids only for what is genuinely new; unregistered ids carry `iri_status: "illustrative"` |
 | Provenance | consumers record library version + source commit (see the generated header of `demo/data/acdc-library.js`) |
+| Document anchoring | study-side only. A phrase, template or method in the library must never carry SAP text; the citation belongs on the study's *use* of it (`sapRef` on the phrase instance). See REFERENCE §3.4. |
 | New **roles** vs new phrases | a phrase is additive within an existing role; a new *role* is a library **minor version**, because every language pack's sentence template enumerates role tokens explicitly and a role absent from a template is dropped from the rendered sentence entirely. Budget for touching every pack. |
 
 ## B5. Localisation is a library deliverable too

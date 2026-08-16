@@ -21,7 +21,13 @@ The demo is one page with four stops:
    one library. Use the **study switch** at stop 1 to move between the CDISC Pilot (change from
    baseline, ANCOVA) and PrECOG PrE0102 (progression-free survival, Kaplan-Meier).
 4. **Standards grounding** — every identifier and the standard it resolves into (USDM / ARS / STATO /
-   NCIt / AC-DC), with illustrative ids flagged.
+   NCIt / AC-DC), with illustrative ids flagged, plus document-anchoring coverage for the active study.
+
+**Document anchoring.** Hovering any phrase in the PrE0102 passage shows the SAP sentence that grounds
+it — including method, confidence-level and summary-measure spans, whose bindings resolve into the
+study-agnostic library and so had no path to the document before
+[#12](https://github.com/cdisc-org/analysis-concepts/issues/12). Every quote is **verified verbatim**
+against the converted SAP by the gate, so a paraphrase fails the build.
 
 **Estimands.** The CDISC Pilot primary passage carries all five ICH E9(R1) attributes: four fall on
 existing phrase roles, and intercurrent-event handling plus the summary measure are two roles added for
@@ -49,6 +55,7 @@ because changing an event's strategy changes E9(R1) attribute 4 and therefore th
 | `tools/verify.mjs` | Engine + pinned-golden gate (no DOM, no dependencies) |
 | `tools/verify-ui.mjs` | Headless DOM walkthrough of the demo (needs jsdom; dev-only) |
 | `tools/diff-goldens.mjs` | Leaf-by-leaf review of a golden recapture — a review aid, not a gate |
+| `tools/lib-anchors.mjs` | Resolves a cited SAP section to its converted file; normalises text for quote verification |
 | `demo/data/lang-overlay.js` | EN/FR/DE language packs: per-language sentence templates, phrase translations, label overlays (illustrative) |
 | `spec/format-evaluation.md` | Carrier-format analysis (retained from the first PoC round) |
 

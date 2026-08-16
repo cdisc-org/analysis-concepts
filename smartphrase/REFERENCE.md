@@ -161,6 +161,8 @@ remains an alias to the first registered study.
   "name": "Alzheimer's Disease Assessment Scale - Cognitive Subscale (11 items)",
   "iri": "ncit:C168804",                  // grounding IRI (CURIE against §11 prefixes)
   "iri_status": "illustrative",           // "authoritative" | "illustrative"
+  "sapRef": { "section": "5.3",           // document anchor (§3.4) — quote is optional
+              "quote": "…" },
   "data": {                               // trace hooks (§7) — shape varies by kind:
     "dataset": "ADQSADAS", "file": "adqsadas.xpt", "paramcd": "ACTOT",
     "datasetLabel": "ADaM ADAS-Cog analysis dataset"
@@ -202,8 +204,8 @@ An **absent** `implementedBy` key for an asserted strategy is a resolution error
 handling the model cannot deliver. An **empty list** is valid only where the phrase's
 `anchors.implementation` is `"none"` (TreatmentPolicy).
 
-*(PoC)* concepts may also carry `sapRef`, a quotation of the source SAP sentence the concept was
-derived from — provenance for hand-crafted study data, not consumed by the engine.
+Concepts may also carry `note`, free commentary that is **not** an anchor — a study with no source
+document has nothing to quote, and the anchor type must not be overloaded to say so (§3.4).
 
 ### 3.2 Analysis instance (the shared state)
 
@@ -215,6 +217,7 @@ derived from — provenance for hand-crafted study data, not consumed by the eng
   "template": "T.CFB_ANCOVA",
   "usdmObjective": { "iri": "...", "iri_status": "...", "text": "..." },
   "arsAnalysis":   { "iri": "...", "iri_status": "..." },
+  "sapRef": { "section": "7.7.2", "quote": "…" },   // what licenses THIS analysis (§3.4)
   "estimand": "EST.PRIMARY",                // id into the study's estimand registry (§3.3)
   "analysisRole": "MainEstimator",          // Analysis.analysisRole; exactly one per estimand
   "sentenceRole": "the primary analysis",   // consumed by the sentence frame, not by a phrase
@@ -234,6 +237,11 @@ derived from — provenance for hand-crafted study data, not consumed by the eng
 }
 ```
 
+A phrase instance may also carry its own **`sapRef`** — the change that closes issue #12. `method`,
+`output` and `value` bindings resolve into the library, which correctly forbids study text, and a
+fixed-text phrase has no binding at all; an anchor on the *use* is the only route those have to the
+document. See §3.4.
+
 A binding object has exactly one of `concept` / `method` / `value` / `output`, plus optional `render`.
 Phrase array order is irrelevant (§5 orders by role). The **same phrase OID may appear more than once**
 in one instance when its role is `repeating` — two `SP_ICE_TREATMENT_POLICY` entries bound to different
@@ -247,6 +255,7 @@ events is the normal way to handle two ICEs the same way.
     "iri": "usdm:Estimand/CDISCPILOT01-EST-PRIMARY", "iri_status": "illustrative",
     "label": "Primary estimand — ADAS-Cog(11) change at Week 24",
     "rank": "primary",                                  // renders sentenceRole — see below
+    "sapRef": { "section": "3.1", "quote": "…" },       // document anchor (§3.4)
     "intercurrentEvents": ["ICE.TRT_DISCONT", "ICE.CONMED"]   // SCOPE, not strategy
   }
 }
@@ -271,6 +280,43 @@ estimand, so *"a secondary analysis"* is the `MainEstimator` **of a secondary es
 string needs `estimand.rank` as well as the role, and so cannot be derived from the enum alone. The engine
 validates the pair instead (exactly one `MainEstimator` per estimand) rather than deriving one from the
 other. See DESIGN.md D15.
+
+### 3.4 Document anchors and the source document
+
+A study states whether it has a source document. The declaration is required — an exemption must be
+declared, not inferred from silence:
+
+```jsonc
+"sourceDocument": {
+  "id": "PRE0102-SAP-001",
+  "title": "PrE0102 Final Statistical Analysis Plan",
+  "date": "2014-03-24",
+  "root": "SAP",                       // folder holding the converted document
+  "iri": "acdc:document/PRE0102-SAP-001", "iri_status": "illustrative",
+  "sectionFiles": { "7": "07-general-statistical-considerations.md", … }
+}
+// or, for a study with no document behind it:
+"sourceDocument": null,
+"sourceDocumentNote": "Illustrative study layer with no source SAP; …"
+```
+
+`sectionFiles` maps a **top-level** section number to its converted file; a subsection such as `7.7.2`
+resolves through its head, `7`.
+
+An **anchor** is `{ section, quote? }` and may sit on four study-side entities: a concept (§3.1), a
+**phrase instance** (§3.2), an estimand (§3.3) or an analysis instance (§3.2). It never sits on a library
+entity — methods, output classes and transformation templates are study-agnostic and must not carry study
+text, which is precisely why an anchor on the *use* was needed (DESIGN.md D17).
+
+**Resolution and precedence** (`resolvePhrase`, §5): the phrase instance's own `sapRef` wins, answering
+*"why is this here?"*; otherwise the first bound concept with an anchor supplies one, answering *"what is
+this?"*. Both persist — overriding never erases the concept's — and `anchorSource` reports which applied
+(`"phraseInstance"` or `"concept:<ID>"`).
+
+**Quotes are verified, not merely stored.** For a study with a source document, `tools/verify.mjs` asserts
+that the cited section exists and the quote appears verbatim in it. Normalisation forgives only what the
+conversion introduced: hard-wrap newlines, typographic punctuation, Markdown emphasis, and — as two
+alternatives, because the case is ambiguous — mid-word line-break hyphenation.
 
 ## 4. Render modes
 
@@ -313,7 +359,9 @@ validator; *(PoC)* direct state edits are not re-checked against `render_options
 
 Returns `{ phrases, parts, sentence, errors, lang }`:
 
-- `phrases[i]` = `{ oid, role, name, template, anchors, text, bindings[], errors[], langFallback }`
+- `phrases[i]` = `{ oid, role, name, template, anchors, text, bindings[], errors[], langFallback,
+  anchor, anchorSource }` — `anchors` is the library phrase's semantic anchors (e.g. `icheStrategy`),
+  `anchor` is the resolved **document** anchor (§3.4); the two are unrelated despite the similar name
   where `bindings[i].detail` carries `{ kind, id, render, iri, iri_status }` (plus `formula` for
   methods, and `statistics` + `libraryLabel` for outputs) — everything an inspection UI needs.
   `libraryLabel` is the **upstream** output-class label, kept alongside the localised prose so a UI can
@@ -376,9 +424,12 @@ language changes prose projections only.
    from the event's strategy-keyed map (§3.1). `isOverride` is true when the applied strategy differs from
    the event's study default, so a divergence is stated rather than silent. An event in scope therefore
    always yields exactly one handling — never an empty list that would read as "handles nothing".
-9. Build `resolvedExpression`, which dispatches on `usesMethod` — the one method-specific piece, because
+9. Emit document provenance: `sapRef` (the instance's own anchor) and `documentAnchors[]`, one entry per
+   anchored phrase use as `{ phrase, role, section, quote, from }`. Emitting it is the point — an anchor
+   no projection carries is inert, which is how the gap in issue #12 survived unnoticed.
+10. Build `resolvedExpression`, which dispatches on `usesMethod` — the one method-specific piece, because
    the library declares no measure→ADaM-variable mapping *(PoC)*.
-10. Report `outputMeasures`, `usdmObjective`, `arsAnalysis`, and the template's `validSmartPhrases`
+11. Report `outputMeasures`, `usdmObjective`, `arsAnalysis`, and the template's `validSmartPhrases`
     (including any the proposed overlay added, §12).
 
 ## 7. Data trace
@@ -546,6 +597,7 @@ declare a measure→ADaM-variable mapping.
 | `templateDef(ctx, conceptId)` | Transformation template or `null`. |
 | `concept(ctx, id)` | Registry entry or `null`. |
 | `method(ctx, id)` | Merged method view `{ conceptId, label, name, formula, configurations, iri, iri_status, ars, ars_status }` or `null`. |
+| `anchorForPhrase(ctx, phraseInstance, phraseDef)` | Internal: `{ anchor, source }` for one use (§3.4). Shared by `resolvePhrase` and `toJSONLD` so prose and graph cannot disagree. |
 | `resolvePhrase(ctx, phraseInstance, lang?, tpl?)` | `{ oid, role, name, template, anchors, text, bindings[], errors[], langFallback }` (§5). `tpl` (the active template) enables `output_ref` validation (§2.2); omit it and that check is skipped. |
 | `resolveInstance(ctx, instance, lang?)` | `{ phrases[], parts[], sentence, errors[], lang }` (§5). |
 | `constructModelView(ctx, instance)` | eSAP-style study model view (§6). |
@@ -581,6 +633,7 @@ Dev-time only; the demo itself needs none of it and stays zero-install.
 | `node tools/build-library-subset.mjs --check` | Assert the file on disk equals generator output — enforces "do not hand-edit". |
 | `node tools/verify.mjs` | Engine gate: every instance of every registered study, plus planted faults, overlay integrity and localisation completeness. Compares against `tools/goldens.json`. |
 | `node tools/verify.mjs --update-goldens` | Re-pin goldens. Only after reviewing the diff. |
+| `tools/lib-anchors.mjs` | Library, not a command: resolves a cited section to its converted file and normalises text for quote comparison (§3.4). |
 | `node tools/diff-goldens.mjs [rev] [--summary]` | Structural diff of `goldens.json` against its committed version: one line per changed **leaf**, so an intended addition reads as *N × ADDED* and an accidental edit cannot hide in a large JSON blob. A review aid, not a gate — always exits 0. |
 | `NODE_PATH=<dir>/node_modules node tools/verify-ui.mjs` | Headless DOM walkthrough of `demo/index.html` in jsdom, both studies, all four stops; fails on any console error. Exit 2 if jsdom is absent. |
 

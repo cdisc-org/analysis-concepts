@@ -1,5 +1,32 @@
 # Document Anchoring Implementation Plan
 
+> **COMPLETE — 2026-08-16.** All ten tasks executed and verified. **PrE0102: 33 of 33 phrase uses
+> anchored**, every quote verified verbatim against the converted SAP; the CDISC Pilot exempt by
+> declaration. All three gates green, 86 pinned outputs.
+>
+> **Deviations from this plan:**
+>
+> 1. **Tasks 7 and 8 were committed together.** Task 7 as written would have committed a red gate. It was
+>    still run first, so issue #12 is reproduced as a failing test in the history before being fixed.
+> 2. **`normalise()` needed a fourth case the plan did not anticipate.** The PDF wrapped mid-word, so
+>    §7.7.2 contains `"Kaplan-\nMeier"` and the `SP_KM_CURVES` quote failed verification. Rejoining is
+>    genuinely ambiguous — a line-break hyphen may belong to the word or be typesetting — so both readings
+>    are tried and either may match. That cannot admit a wrong quote.
+> 3. **`method_qualifier` became a repeating role in practice**, and the two new fixed-text phrases ran
+>    together with `SP_CONFIDENCE_LEVEL` using bare spaces. Given a `", "` conjunction in all three packs;
+>    the Pilot has only one such phrase so its prose is unchanged.
+> 4. **The JSON-LD anchor lookup was wrong on first cut** — it paired resolved phrases back to instances by
+>    oid, which breaks for a repeating role using one oid twice (the same bug class as the unfocused trace
+>    in #11). Fixed by extracting `anchorForPhrase()`, shared by `resolvePhrase` and `toJSONLD` so the
+>    prose and the graph cannot disagree about provenance.
+> 5. **The quote gate caught a real paraphrase on its first run**, as predicted: `TRT.PRE0102`'s `sapRef`
+>    had read *"randomized 1:1 to everolimus or placebo, both with fulvestrant"* since #9.
+> 6. **A `.DS_Store` change was accidentally committed** in the preceding #11 work (`c1ab386`). Not fixed
+>    here — both `.DS_Store` files are tracked from before this work, so untracking them is a repo-wide
+>    decision for the maintainer.
+>
+> The three open questions below remain open and are carried to the issue.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan
 > task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -70,7 +97,7 @@ had no path.
 **Interfaces:**
 - Produces: the anchor type `{ section: string, quote?: string }`, used everywhere an anchor appears.
 
-- [ ] **Step 1: Write the failing assertions**
+- [x] **Step 1: Write the failing assertions**
 
 ```js
 /* ---- document anchors are structured, not prose strings ---- */
@@ -90,12 +117,12 @@ had no path.
 }
 ```
 
-- [ ] **Step 2: Run — expect one failure per concept carrying a prose `sapRef`**
+- [x] **Step 2: Run — expect one failure per concept carrying a prose `sapRef`**
 
 Run: `node smartphrase/tools/verify.mjs`
 Expected: FAIL, 9 concepts reported as unstructured.
 
-- [ ] **Step 3: Migrate the PrE0102 concept anchors**
+- [x] **Step 3: Migrate the PrE0102 concept anchors**
 
 Split each prose string into its parts. `EVENT.PFS` becomes:
 
@@ -112,7 +139,7 @@ Do the same for `EVENT.OS` (5.3), `EVENT.TTP` (5.3), `POP.EVAL_EFFICACY` (7.2), 
 text from §4.1 or drop the quote and keep the section alone. Task 3's gate will reject a paraphrase, which
 is the point.
 
-- [ ] **Step 4: Handle the Pilot's two ICE concepts**
+- [x] **Step 4: Handle the Pilot's two ICE concepts**
 
 Their `sapRef` is not an anchor at all — it reads `"ILLUSTRATIVE — not from a source SAP; constructed for
 issue #11"`. An anchor type must not be overloaded to mean "there is no anchor". Replace with:
@@ -123,7 +150,7 @@ issue #11"`. An anchor type must not be overloaded to mean "there is no anchor".
         note: "Constructed for issue #11; the CDISC Pilot has no protocol-defined ICE list.",
 ```
 
-- [ ] **Step 5: Run the gate; commit**
+- [x] **Step 5: Run the gate; commit**
 
 Expected: PASS, 86 outputs, **no golden change** — `sapRef` is projected nowhere yet.
 
@@ -142,7 +169,7 @@ git commit -m "Structure document anchors as {section, quote}; migrate concept s
 **Interfaces:**
 - Produces: `graph.sourceDocument` — an object, or `null` with `sourceDocumentNote` giving the reason.
 
-- [ ] **Step 1: Write the failing assertions**
+- [x] **Step 1: Write the failing assertions**
 
 ```js
 /* ---- every study states whether it has a source document ---- */
@@ -163,9 +190,9 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
 }
 ```
 
-- [ ] **Step 2: Run — expect both studies to fail**
+- [x] **Step 2: Run — expect both studies to fail**
 
-- [ ] **Step 3: Declare PrE0102's source document**
+- [x] **Step 3: Declare PrE0102's source document**
 
 ```js
     /*
@@ -196,7 +223,7 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
     },
 ```
 
-- [ ] **Step 4: Declare the Pilot's exemption**
+- [x] **Step 4: Declare the Pilot's exemption**
 
 ```js
     /*
@@ -210,7 +237,7 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
     sourceDocumentNote: "Illustrative study layer with no source SAP; anchoring coverage is not gated for this study.",
 ```
 
-- [ ] **Step 5: Run all gates; commit**
+- [x] **Step 5: Run all gates; commit**
 
 ---
 
@@ -226,7 +253,7 @@ The load-bearing task. Without it, an anchor is an unchecked claim.
 - Produces: `resolveSection(graph, section)` → absolute file path or `null`;
   `quoteAppearsIn(text, quote)` → boolean, whitespace- and punctuation-normalised.
 
-- [ ] **Step 1: Write the failing assertions**
+- [x] **Step 1: Write the failing assertions**
 
 ```js
 /* ---- every quote must actually appear in the section it cites ---- */
@@ -249,11 +276,11 @@ The load-bearing task. Without it, an anchor is an unchecked claim.
 `allAnchors(graph)` walks concepts now, and gains phrase instances / estimands / instances as later tasks
 add them — write it to walk whatever exists so no task has to revisit it.
 
-- [ ] **Step 2: Run — expect the `TRT.PRE0102` paraphrase to fail**
+- [x] **Step 2: Run — expect the `TRT.PRE0102` paraphrase to fail**
 
 This is the check earning its place: the paraphrase introduced in #9 is caught automatically.
 
-- [ ] **Step 3: Implement the resolver**
+- [x] **Step 3: Implement the resolver**
 
 ```js
 /*
@@ -286,7 +313,7 @@ export function resolveSection(graph, section) {
 }
 ```
 
-- [ ] **Step 4: Fix the paraphrase, re-run, commit**
+- [x] **Step 4: Fix the paraphrase, re-run, commit**
 
 Replace `TRT.PRE0102`'s quote with real §4.1 text (read the file; do not compose it from memory).
 
@@ -302,7 +329,7 @@ Replace `TRT.PRE0102`'s quote with real §4.1 text (read the file; do not compos
 - Produces: `rp.anchor` = `{ section, quote }` or `null`; `rp.anchorSource` =
   `"phraseInstance"` | `"concept:<ID>"` | `null`.
 
-- [ ] **Step 1: Write the failing assertions**
+- [x] **Step 1: Write the failing assertions**
 
 ```js
 /* ---- anchor resolution and precedence ---- */
@@ -331,9 +358,9 @@ Replace `TRT.PRE0102`'s quote with real §4.1 text (read the file; do not compos
 }
 ```
 
-- [ ] **Step 2: Run — expect failures**
+- [x] **Step 2: Run — expect failures**
 
-- [ ] **Step 3: Resolve the anchor in `resolvePhrase`**
+- [x] **Step 3: Resolve the anchor in `resolvePhrase`**
 
 ```js
     /*
@@ -360,7 +387,7 @@ Replace `TRT.PRE0102`'s quote with real §4.1 text (read the file; do not compos
 
 Return `anchor` and `anchorSource` on the resolved phrase.
 
-- [ ] **Step 4: Carry `sapRef` through the tag dialect**
+- [x] **Step 4: Carry `sapRef` through the tag dialect**
 
 `toMacroText`/`parseMacroText` round-trip the instance byte-equal, and the gate asserts it. A phrase-level
 `sapRef` must therefore either be serialised or be explicitly out of scope for the dialect. **Decision:
@@ -376,7 +403,7 @@ the preservation of `sapRef` from `baseInstance` so a round-trip does not silent
 
 Assert that a round-trip preserves anchors.
 
-- [ ] **Step 5: Run, commit**
+- [x] **Step 5: Run, commit**
 
 ---
 
@@ -386,7 +413,7 @@ Assert that a round-trip preserves anchors.
 - Modify: both study graphs
 - Modify: `smartphrase/tools/verify.mjs`
 
-- [ ] **Step 1: Write the failing assertions**
+- [x] **Step 1: Write the failing assertions**
 
 ```js
 check(`${studyKey}/${eid} estimand carries a document anchor`,
@@ -398,9 +425,9 @@ check(`${studyKey}/${eid} label does not embed a section reference`,
   !/\(SAP\s*[0-9]/.test(graph.estimands[eid].label), graph.estimands[eid].label);
 ```
 
-- [ ] **Step 2: Run — expect the three PrE0102 estimand labels to fail**
+- [x] **Step 2: Run — expect the three PrE0102 estimand labels to fail**
 
-- [ ] **Step 3: Add estimand anchors and strip the labels**
+- [x] **Step 3: Add estimand anchors and strip the labels**
 
 ```js
       "EST.PFS": {
@@ -414,13 +441,13 @@ check(`${studyKey}/${eid} label does not embed a section reference`,
 
 Read §3.1 and §7.7.2 for the exact wording — do not compose it.
 
-- [ ] **Step 4: Add instance anchors**
+- [x] **Step 4: Add instance anchors**
 
 Each analysis instance cites the section defining its methodology (§7.7.2 for all four PrE0102 analyses;
 the ITT sensitivity analysis cites the sensitivity sentence specifically). This replaces the untyped
 `"(SAP n.n)"` convention #12 names.
 
-- [ ] **Step 5: Run, recapture if goldens moved, review with `diff-goldens`, commit**
+- [x] **Step 5: Run, recapture if goldens moved, review with `diff-goldens`, commit**
 
 ---
 
@@ -436,7 +463,7 @@ Until this task the anchor is still inert. This is what wires it into the archit
 - Produces: `mv.sapRef`, `mv.estimand.sapRef`, `mv.documentAnchors[]`;
   JSON-LD `prov:wasQuotedFrom` per phrase node.
 
-- [ ] **Step 1: Write the failing assertions**
+- [x] **Step 1: Write the failing assertions**
 
 ```js
 check(`${studyKey}/${inst.id} model view carries document anchors`,
@@ -445,9 +472,9 @@ check(`${studyKey}/${inst.id} JSON-LD quotes its source`,
   !graph.sourceDocument || JSON.stringify(ld).includes("prov:wasQuotedFrom"));
 ```
 
-- [ ] **Step 2: Run — expect failures**
+- [x] **Step 2: Run — expect failures**
 
-- [ ] **Step 3: Emit in the model view**
+- [x] **Step 3: Emit in the model view**
 
 ```js
       /* Document provenance for this analysis: the instance's own anchor, and
@@ -463,7 +490,7 @@ check(`${studyKey}/${inst.id} JSON-LD quotes its source`,
         }),
 ```
 
-- [ ] **Step 4: Emit in JSON-LD, using PROV**
+- [x] **Step 4: Emit in JSON-LD, using PROV**
 
 `prov:wasQuotedFrom` is the W3C term for exactly this relation, so the identifier policy (ground into
 existing standards) is satisfied rather than an AC/DC term invented. Add `prov:
@@ -478,7 +505,7 @@ existing standards) is satisfied rather than an AC/DC term invented. Add `prov:
       }
 ```
 
-- [ ] **Step 5: Run — goldens WILL move. Review with `diff-goldens --summary`, recapture, commit**
+- [x] **Step 5: Run — goldens WILL move. Review with `diff-goldens --summary`, recapture, commit**
 
 ---
 
@@ -487,7 +514,7 @@ existing standards) is satisfied rather than an AC/DC term invented. Add `prov:
 **Files:**
 - Modify: `smartphrase/tools/verify.mjs`
 
-- [ ] **Step 1: Write the assertion**
+- [x] **Step 1: Write the assertion**
 
 ```js
 /* ---- anchoring coverage, for studies that HAVE a source document ---- */
@@ -499,12 +526,12 @@ if (graph.sourceDocument) {
 }
 ```
 
-- [ ] **Step 2: Run — expect the method, value, output and fixed-text uses to fail**
+- [x] **Step 2: Run — expect the method, value, output and fixed-text uses to fail**
 
 This is #12's finding reproduced as a failing test before it is fixed. Record the count in the commit
 message.
 
-- [ ] **Step 3: Leave it failing — Task 8 supplies the anchors**
+- [x] **Step 3: Leave it failing — Task 8 supplies the anchors**
 
 Commit the gate with the failure named, or defer the commit to Task 8. **Prefer deferring**, so no red
 gate is committed.
@@ -532,7 +559,7 @@ One sentence grounding the method binding, the value binding (`90`), and the out
 > *"In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier
 > survival curves."*
 
-- [ ] **Step 1: Add the two fixed-text phrases to the proposed overlay**
+- [x] **Step 1: Add the two fixed-text phrases to the proposed overlay**
 
 Both have **no placeholders** — the class #12 says can never anchor, because there is no binding to route
 through. Role `method_qualifier`, so no new role is needed (a new role would be another library minor
@@ -563,7 +590,7 @@ version, and these are qualifiers on how the analysis is reported).
 
 Add both to `T.PFS_KaplanMeier.validSmartPhrases`.
 
-- [ ] **Step 2: Bind them, with per-instance anchors**
+- [x] **Step 2: Bind them, with per-instance anchors**
 
 `SP_CENSOR_LTFU` goes on all three time-to-event instances — and **each cites a different clause of the
 same sentence**, because the rule differs by endpoint:
@@ -578,11 +605,11 @@ concept-level anchor could not express it, and there is no concept to hang it on
 `SP_KM_CURVES` goes on the PFS and OS instances only — the SAP names those two, not TTP. Getting that
 right is itself a check that the encoding follows the document rather than the pattern.
 
-- [ ] **Step 3: Anchor the method, value and output bindings**
+- [x] **Step 3: Anchor the method, value and output bindings**
 
 Add `sapRef` to those phrase instances, all citing §7.7.2 with the summarisation sentence.
 
-- [ ] **Step 4: Localise the two new phrases (FR/DE)**
+- [x] **Step 4: Localise the two new phrases (FR/DE)**
 
 The localisation gate fails otherwise. Suggested:
 - FR: `"en censurant les participants perdus de vue"` / `"présenté sous forme de courbes de survie de Kaplan-Meier par bras de traitement"`
@@ -592,7 +619,7 @@ The localisation gate fails otherwise. Suggested:
 **Read the rendered sentences in all three languages before accepting them** — this is the step that
 caught two defects in #11.
 
-- [ ] **Step 5: Run — coverage gate should now pass; recapture; commit**
+- [x] **Step 5: Run — coverage gate should now pass; recapture; commit**
 
 ---
 
@@ -602,7 +629,7 @@ caught two defects in #11.
 - Modify: `smartphrase/demo/index.html`
 - Modify: `smartphrase/tools/verify-ui.mjs`
 
-- [ ] **Step 1: Write the failing UI assertions**
+- [x] **Step 1: Write the failing UI assertions**
 
 ```js
 check("inspect popover shows the source quote",
@@ -611,7 +638,7 @@ check("the method phrase — unanchorable before #12 — now cites the SAP",
   methodPop.includes("Kaplan-Meier estimates"), methodPop.slice(0, 300));
 ```
 
-- [ ] **Step 2: Add a Source row to `inspectHTML`**
+- [x] **Step 2: Add a Source row to `inspectHTML`**
 
 ```js
     /* The row issue #12 exists for: before this, hovering a method, value or
@@ -625,12 +652,12 @@ check("the method phrase — unanchorable before #12 — now cites the SAP",
 
 with a muted `.quote` style. For a study with no source document, show nothing rather than an empty row.
 
-- [ ] **Step 3: Add a coverage line to stop 4**
+- [x] **Step 3: Add a coverage line to stop 4**
 
 Next to the provenance line: *"Document anchoring: N of N phrase uses in this study cite the source SAP"*,
 or the exemption note for the Pilot. This makes the claim visible and self-reporting.
 
-- [ ] **Step 4: Run all three gates; commit**
+- [x] **Step 4: Run all three gates; commit**
 
 ---
 
@@ -641,7 +668,7 @@ or the exemption note for the Pilot. This makes the claim visible and self-repor
 - Modify: `DESIGN.md`, `REFERENCE.md`, `GETTING-STARTED.md`, `WALKTHROUGH.md`, `README.md`
 - Modify: `smartphrase/PLAN-anchoring.md`
 
-- [ ] **Step 1: Contain the study text in the proposed overlay**
+- [x] **Step 1: Contain the study text in the proposed overlay**
 
 `provenance.rationale` carries study text (*"The SAP's PFS analysis is descriptive…"*). It is defensible
 where it is — provenance is metadata about why the proposal exists, not a library semantic field — but it
@@ -655,7 +682,7 @@ must not travel upstream with the entity. Mark it:
          are contributed to methods_02. */
 ```
 
-- [ ] **Step 2: Record D17 and D18 in `DESIGN.md`**
+- [x] **Step 2: Record D17 and D18 in `DESIGN.md`**
 
 - **D17** — anchoring is a property of the study-side *use*, not of one entity class. One anchor type
   `{section, quote}`, four homes, stated precedence, `sectionRef` folded into it rather than added
@@ -664,19 +691,19 @@ must not travel upstream with the entity. Mark it:
 - **D18** — quotes are verified against the converted source, so an anchor is a checked fact. Note that
   the gate immediately caught a paraphrase that had been in the repo since #9.
 
-- [ ] **Step 3: Update `REFERENCE.md`**
+- [x] **Step 3: Update `REFERENCE.md`**
 
 New §3.4 (source document), the anchor type in §3.1/§3.2/§3.3, `anchor`/`anchorSource` in §5's return
 shape, `documentAnchors` in §6, `prov:wasQuotedFrom` in §9, the new tool in §12.
 
-- [ ] **Step 4: Walkthrough beat**
+- [x] **Step 4: Walkthrough beat**
 
 Fold into stop 1 rather than adding a stop: hover the method phrase, show the SAP sentence. Add the ask
 about whether document anchoring should be a required property of a released smartphrase library.
 
-- [ ] **Step 5: Stale-claim sweep with loose patterns; final gate run; completion note; commit; push**
+- [x] **Step 5: Stale-claim sweep with loose patterns; final gate run; completion note; commit; push**
 
-- [ ] **Step 6: Comment on #12 with the outcome and the open questions**
+- [x] **Step 6: Comment on #12 with the outcome and the open questions**
 
 ---
 

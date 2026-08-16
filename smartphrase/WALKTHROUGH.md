@@ -34,6 +34,17 @@ architecture carrying all five ICH E9(R1) attributes.
 
 > "Ordinary-looking prose; every highlight is interrogable down to the column the number comes from."
 
+- **On PrE0102, hover "using Kaplan-Meier estimation"** → the popover shows a **Source** row: SAP 7.7.2,
+  and the sentence itself. Then hover "censoring subjects lost to follow-up" — a phrase with *no
+  bindings at all* — and it cites the SAP too.
+
+> "That is the other half of traceability, and we only added it last week. Anchoring used to hang off the
+> concept a phrase binds — but a method, a confidence level and a summary measure all resolve into the
+> *library*, which is study-agnostic and must never contain SAP text. So those spans had no path back to
+> the document at all; about half of every sentence was unciteable. The anchor now sits on the phrase
+> *use*, which covers all of them, and the quotes are **verified** — the build fails if a quote is not in
+> the section it cites. It caught a paraphrase of ours on the first run."
+
 ## 2:45 — Stop 2 · Two views, one thing (3m30) — *the heart*
 
 - **model → SAP:** change the analysis visit Week 24 → Week 16; the prose rewrites. Flip the endpoint
@@ -174,7 +185,11 @@ architecture carrying all five ICH E9(R1) attributes.
 >    real SAP produced a template (`T.PFS_KaplanMeier`). The estimand work produced two new **roles**,
 >    six phrases, and a widened valid-phrase set on an existing released template — a library *minor
 >    version*. That is a bigger ask than a template and needs an owner and a process.
-> 6. **Is `T.LOCF_Imputation` the right implementer for a Hypothetical strategy?** It is the only
+> 6. **Should a released library require an anchor for phrases whose text is a claim about a document?**
+>    A fixed-text phrase like "adjusting for period" asserts something the SAP says, by construction. We
+>    kept the library untouched and put the anchor on the study side — but arguably such a phrase should
+>    be unusable without a citation. That is a governance question, next to the ownership one above.
+> 7. **Is `T.LOCF_Imputation` the right implementer for a Hypothetical strategy?** It is the only
 >    imputation derivation v0.7 affords, but LOCF is a missing-data method and a hypothetical estimand
 >    strictly wants imputation under a stated alternative assumption. The mechanism is right; we are
 >    asking whether the content is."
@@ -198,6 +213,8 @@ architecture carrying all five ICH E9(R1) attributes.
   (2 exercised), 1 sensitivity estimand overriding a strategy on a shared event. The Hypothetical implementer is `T.LOCF_Imputation`, real v0.7 content.
 - Languages: EN/FR/DE via language packs; DE headline: *"… wird im Vergleich der Behandlungsgruppen
   mittels ANCOVA … als primäre Analyse untersucht."* Tag source/model/graph identical across languages.
+- Document anchoring: **33 of 33** PrE0102 phrase uses cite the source SAP, every quote verified verbatim
+  against the converted text. The CDISC Pilot declares no source document and is exempt by declaration.
 - Verified, and re-runnable: `tools/verify.mjs` (**86** pinned outputs across both studies),
   `tools/build-library-subset.mjs --check` (generated file unmodified), `tools/verify-ui.mjs` (headless
   DOM walkthrough of both studies, including per-ICE trace focus; fails on any console error). All green.

@@ -30,6 +30,18 @@
 
   g.ACDC_LIBRARY_PROPOSED = {
 
+    /*
+     * NOT FOR UPSTREAM. This block explains why these entities were proposed and
+     * cites the studies that motivated them, so it necessarily contains study
+     * text. That is legitimate here — provenance is metadata about the proposal,
+     * not a library semantic field — but it must stay behind when the entities
+     * are contributed to methods_02: library entities are study-agnostic
+     * (acdc_method.yaml: "Methods MUST NOT reference clinical or analysis
+     * concepts"), and issue #12 records an encoding exercise that ended up
+     * smuggling a SAP sentence into a method's `description` for want of
+     * anywhere typed to put it. The fix for that is sapRef on the study side,
+     * not a relaxed library wall.
+     */
     provenance: {
       status: "proposed",
       authored_for: [

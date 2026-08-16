@@ -227,6 +227,54 @@ E9(R1) attribute 3 is the estimand's **target population** (the patients the que
 which is what makes PrE0102's ITT analysis a legitimate *sensitivity analysis of one estimand* rather than
 a second estimand. A production layer should probably distinguish them explicitly.
 
+**D17 — Document anchoring is a property of the study-side *use*, not of one entity class.**
+`sapRef` lived only on study-graph concepts, and concepts are one of four binding kinds a phrase instance
+can use. `method`, `output` and `value` bindings all resolve into the **library**, which correctly forbids
+study text — and fixed-text phrases have no binding at all. So everything the prose asserted that did not
+route through a concept had no typed path back to the SAP. Issue
+[#12](https://github.com/cdisc-org/analysis-concepts/issues/12) audited a 96-instance encoding and found
+roughly half of all phrase uses unanchored; the same shape reproduced here.
+
+The anchor is now one type, `{ section, quote? }`, on four study-side homes: concepts, **phrase
+instances**, estimands and analysis instances. #12 suggested a separate typed `sectionRef` for instances;
+that is folded into the same type with `quote` optional rather than added as a second field. Precedence:
+the phrase instance's anchor wins for display because it answers *"why is this here?"*, a bound concept's
+is the fallback answering *"what is this?"*, and **both survive** — `anchorSource` records which applied.
+The library wall is untouched, which is the point: the boundary was right, only the anchor field was in
+the wrong place.
+
+The deeper finding, and the reason the gap survived: **`sapRef` appeared in zero pinned outputs.** No
+projection emitted it, so no surface could show it and no gate could detect it regressing. Adding a field
+would have reproduced the blindness in a new location, so anchors are now emitted in the model view
+(`sapRef`, `documentAnchors[]`) and the graph (`prov:wasQuotedFrom` — the W3C term for an entity derived
+by quoting another, so the identifier policy is satisfied rather than an AC/DC term invented).
+
+Two smaller consequences. The label-embedded `"(SAP 3.1, 7.7.2)"` convention #12 objects to was written
+into this repo during #11, days before the issue was raised — evidence of how quickly the workaround
+reappears when there is nowhere typed for a reference to go; it is gone. And fixed-text phrases
+(`SP_CENSOR_LTFU`, `SP_KM_CURVES`) are now the sharpest illustration of why the anchor belongs on the use:
+one phrase, one library definition, identical rendered text, bound to four analyses — and the overall-
+survival analysis cites a *different clause of the same sentence*, because the censoring rule differs by
+endpoint. No concept-level anchor could express that, and there is no concept to hang one on.
+
+**D18 — A quote is verified against the source, not merely stored.**
+The converted SAP is in the repo, so `tools/verify.mjs` asserts that every quote appears verbatim in the
+section it cites. An anchor is therefore a checked fact; a paraphrase is a build failure. This earned its
+place on first run by catching `TRT.PRE0102`'s `sapRef`, which had read *"randomized 1:1 to everolimus or
+placebo, both with fulvestrant"* since #9 — a paraphrase sitting among real quotations and indistinguishable
+from them by eye.
+
+Normalisation forgives exactly three things the conversion introduced and the author never typed:
+hard-wrap newlines, typographic punctuation, and Markdown emphasis markers. A fourth case is genuinely
+ambiguous — the PDF wrapped mid-word, so §7.7.2 contains `"Kaplan-\nMeier"`, and a line-break hyphen may
+belong to the word or be pure typesetting. Rather than guess, both readings are tried and either may
+match; that cannot admit a wrong quote, since the text must still equal one of two legitimate
+de-hyphenations of what the document actually contains.
+
+Coverage is gated **per study, keyed on a declaration**: a study states `sourceDocument`, or `null` with a
+reason. PrE0102 is held to every phrase use anchored (33 of 33); the CDISC Pilot, whose study layer is
+constructed and has no SAP behind it, is exempt *by declaration rather than by silence*.
+
 ## Relationship to the eSAP schema
 
 The demo's "constructed model instance" view mirrors the eSAP v0.5.0 philosophy deliberately: the
@@ -288,6 +336,8 @@ What release requires — none of it architectural:
 | Kaplan-Meier method IRI | none found | illustrative — **open question**, see below |
 | ICH E9(R1) strategy identifiers | none exist — a guideline is not a registry | illustrative — **open question**, see below |
 | Occurrence-criterion BC paths (`BC_DS_001/Disposition Event`, …) | shaped per `OccurrenceCriterion`, ids not from a published BC library | illustrative |
+| PrE0102 document anchors (`sapRef`) | quoted from the converted source SAP and **verified verbatim** by the gate | authoritative *as quotations* — the section numbering is the source document's own |
+| CDISC Pilot document anchors | none — the study declares `sourceDocument: null` | n/a, exempt by declaration |
 | Study concepts, USDM/ARS/NCIt instance ids, trace tiers, document shell | hand-crafted per study (CDISC Pilot, PrE0102) | illustrative, flagged in-UI |
 | `acdc:macro` dialect | methods_02 authoring experiment | design input, revisable |
 
@@ -317,6 +367,9 @@ NODE_PATH=<dir>/node_modules node smartphrase/tools/verify-ui.mjs   # real DOM, 
 node smartphrase/tools/diff-goldens.mjs --summary     # review aid, not a gate
 ```
 
+A fourth file, `tools/lib-anchors.mjs`, is a library rather than a command: it resolves a cited section to
+its converted file and normalises text for quote comparison (D18).
+
 - **`verify.mjs` — engine, no DOM.** Loads the demo's browser IIFEs under Node via `vm` and, for every
   instance in **every registered study**, checks: resolution has no errors in every available language;
   every `sliceKey` is filled; the `acdc:macro` dialect round-trips byte-equal; no trace leaves an
@@ -329,6 +382,12 @@ node smartphrase/tools/diff-goldens.mjs --summary     # review aid, not a gate
   asserting a strategy its event declares no handling for. Also asserts the proposed overlay resolves, is
   flagged, declares only outputs its method really has, splices its roles at the declared position, does
   not mutate the generated subset, and covers each of the five `IchE9R1Strategy` values exactly once.
+- **Document anchoring (D17, D18).** Every study declares `sourceDocument` or an explicit `null` with a
+  reason. For a study that has one: every anchor cites a section that exists, every quote appears verbatim
+  in it, every phrase use resolves to an anchor, every estimand and instance carries one, and no label
+  embeds a section reference. Planted faults pin that the quote check rejects a paraphrase, invented text,
+  and a citation to a non-existent subsection. Anchors must also survive a tag-dialect round-trip, which
+  does not serialise them.
 - **Goldens.** 86 outputs (sentences per language, constructed model views, tag source, JSON-LD, traces)
   are pinned in `tools/goldens.json`, **captured from behaviour** rather than hand-written, and compared
   on every run. This is what let the engine generalisation (D10) be proven non-breaking: a leaf-level
