@@ -32,8 +32,27 @@ export function normalise(s) {
     .toLowerCase();
 }
 
+/*
+ * The PDF wrapped lines mid-word, and the conversion preserved that faithfully:
+ * §7.7.2 contains "Kaplan-\nMeier". Rejoining is genuinely ambiguous — a
+ * line-break hyphen may belong to the word ("Kaplan-Meier") or be pure
+ * typesetting ("random-\nised") — and nothing in the text says which.
+ *
+ * Rather than guess, both readings are tried and either may match. That cannot
+ * admit a wrong quote: the text must still equal one of the two legitimate
+ * de-hyphenations of what the document actually contains.
+ */
+function dehyphenations(body) {
+  return [
+    normalise(body),                                     // "kaplan- meier"
+    normalise(String(body).replace(/(\w)-\n\s*(\w)/g, "$1-$2")),  // "kaplan-meier"
+    normalise(String(body).replace(/(\w)-\n\s*(\w)/g, "$1$2"))    // "kaplanmeier"
+  ];
+}
+
 export function quoteAppearsIn(body, quote) {
-  return normalise(body).includes(normalise(quote));
+  const q = normalise(quote);
+  return dehyphenations(body).some((v) => v.includes(q));
 }
 
 /*

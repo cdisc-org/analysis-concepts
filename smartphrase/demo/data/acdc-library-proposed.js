@@ -148,6 +148,33 @@
         anchors: { icheStrategy: "PrincipalStratum", implementation: "population_subsetting" },
         placeholders: [ICE_SLOT]
       },
+      /*
+       * FIXED-TEXT phrases: no placeholders at all. Their entire content is a
+       * claim about what the SAP says, which is the class issue #12 identified
+       * as structurally unanchorable — there is no binding to route through, so
+       * no concept's sapRef can ever cover them. They become anchorable only
+       * because a phrase INSTANCE can carry sapRef.
+       *
+       * Both are quoted from PrE0102 SAP 7.7.2. Role method_qualifier so no new
+       * role is needed; see the open question in PLAN-anchoring.md about whether
+       * SP_KM_CURVES is really a REPORTING qualifier deserving its own role.
+       */
+      {
+        oid: "SP_CENSOR_LTFU",
+        name: "Censoring rule — lost to follow-up",
+        role: "method_qualifier",
+        phrase_template: "censoring subjects lost to follow-up",
+        anchors: {},
+        placeholders: []
+      },
+      {
+        oid: "SP_KM_CURVES",
+        name: "Reporting qualifier — Kaplan-Meier survival curves",
+        role: "method_qualifier",
+        phrase_template: "displayed as Kaplan-Meier survival curves by treatment arm",
+        anchors: {},
+        placeholders: []
+      },
       {
         oid: "SP_SUMMARY_MEASURE",
         name: "Population-level summary measure",
@@ -241,7 +268,10 @@
              prose the model cannot honour. */
           "SP_ICE_TREATMENT_POLICY",
           "SP_ICE_WHILE_ON_TREATMENT",
-          "SP_SUMMARY_MEASURE"
+          "SP_SUMMARY_MEASURE",
+          /* issue #12 — fixed-text qualifiers, anchored per instance. */
+          "SP_CENSOR_LTFU",
+          "SP_KM_CURVES"
         ]
       }
     ]

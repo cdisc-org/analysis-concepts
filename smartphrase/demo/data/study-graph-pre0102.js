@@ -253,10 +253,34 @@
           { phrase: "SP_TTE_ENDPOINT",     bindings: { event:      { concept: "EVENT.PFS", render: "name_with_label" } } },
           { phrase: "SP_POPULATION",       bindings: { population: { concept: "POP.EVAL_EFFICACY", render: "name" } } },
           { phrase: "SP_GROUPING",         bindings: { treatment:  { concept: "TRT.PRE0102", render: "label" } } },
-          { phrase: "SP_METHOD_KM",        bindings: { method:     { method: "M.KaplanMeier", render: "label" } } },
-          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } } },
-          { phrase: "SP_ICE_TREATMENT_POLICY", bindings: { ice: { concept: "ICE.TOX_DISCONT", render: "name" } } },
-          { phrase: "SP_SUMMARY_MEASURE",      bindings: { summary: { output: "median_survival" } } }
+          /* method / value / output bindings all resolve into the LIBRARY,
+             which correctly forbids study text — so before issue #12 these
+             three had no route to the SAP at all. One sentence grounds all
+             three, and each cites it at its own use. */
+          { phrase: "SP_METHOD_KM",        bindings: { method:     { method: "M.KaplanMeier", render: "label" } },
+                          sapRef: { section: "7.7.2",
+                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." } },
+          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } },
+                          sapRef: { section: "7.7.2",
+                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." } },
+          /* The concept anchors the event DEFINITION (4.3); this use anchors
+             the sentence justifying its treatment-policy HANDLING. Same
+             section, different claim. */
+          { phrase: "SP_ICE_TREATMENT_POLICY", bindings: { ice: { concept: "ICE.TOX_DISCONT", render: "name" } },
+                          sapRef: { section: "4.3",
+                                    quote: "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons." } },
+          /* FIXED TEXT — no bindings at all, so no concept anchor could ever
+             reach it. Note the quote differs per instance: one sentence, three
+             clauses, and each analysis cites the clause that governs IT. */
+          { phrase: "SP_CENSOR_LTFU",      bindings: {},
+                          sapRef: { section: "7.7.2",
+                                    quote: "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS" } },
+          { phrase: "SP_KM_CURVES",        bindings: {},
+                          sapRef: { section: "7.7.2",
+                                    quote: "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves." } },
+          { phrase: "SP_SUMMARY_MEASURE",  bindings: { summary: { output: "median_survival" } },
+                          sapRef: { section: "7.7.2",
+                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." } }
         ]
       },
       {
@@ -284,10 +308,34 @@
           { phrase: "SP_TTE_ENDPOINT",     bindings: { event:      { concept: "EVENT.PFS", render: "name_with_label" } } },
           { phrase: "SP_POPULATION",       bindings: { population: { concept: "POP.ITT", render: "name" } } },
           { phrase: "SP_GROUPING",         bindings: { treatment:  { concept: "TRT.PRE0102", render: "label" } } },
-          { phrase: "SP_METHOD_KM",        bindings: { method:     { method: "M.KaplanMeier", render: "label" } } },
-          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } } },
-          { phrase: "SP_ICE_TREATMENT_POLICY", bindings: { ice: { concept: "ICE.TOX_DISCONT", render: "name" } } },
-          { phrase: "SP_SUMMARY_MEASURE",      bindings: { summary: { output: "median_survival" } } }
+          /* method / value / output bindings all resolve into the LIBRARY,
+             which correctly forbids study text — so before issue #12 these
+             three had no route to the SAP at all. One sentence grounds all
+             three, and each cites it at its own use. */
+          { phrase: "SP_METHOD_KM",        bindings: { method:     { method: "M.KaplanMeier", render: "label" } },
+                          sapRef: { section: "7.7.2",
+                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." } },
+          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } },
+                          sapRef: { section: "7.7.2",
+                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." } },
+          /* The concept anchors the event DEFINITION (4.3); this use anchors
+             the sentence justifying its treatment-policy HANDLING. Same
+             section, different claim. */
+          { phrase: "SP_ICE_TREATMENT_POLICY", bindings: { ice: { concept: "ICE.TOX_DISCONT", render: "name" } },
+                          sapRef: { section: "4.3",
+                                    quote: "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons." } },
+          /* FIXED TEXT — no bindings at all, so no concept anchor could ever
+             reach it. Note the quote differs per instance: one sentence, three
+             clauses, and each analysis cites the clause that governs IT. */
+          { phrase: "SP_CENSOR_LTFU",      bindings: {},
+                          sapRef: { section: "7.7.2",
+                                    quote: "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS" } },
+          { phrase: "SP_KM_CURVES",        bindings: {},
+                          sapRef: { section: "7.7.2",
+                                    quote: "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves." } },
+          { phrase: "SP_SUMMARY_MEASURE",  bindings: { summary: { output: "median_survival" } },
+                          sapRef: { section: "7.7.2",
+                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." } }
         ]
       },
       {
@@ -309,9 +357,28 @@
           { phrase: "SP_TTE_ENDPOINT",     bindings: { event:      { concept: "EVENT.OS", render: "name_with_label" } } },
           { phrase: "SP_POPULATION",       bindings: { population: { concept: "POP.EVAL_EFFICACY", render: "name" } } },
           { phrase: "SP_GROUPING",         bindings: { treatment:  { concept: "TRT.PRE0102", render: "label" } } },
-          { phrase: "SP_METHOD_KM",        bindings: { method:     { method: "M.KaplanMeier", render: "label" } } },
-          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } } },
-          { phrase: "SP_SUMMARY_MEASURE",      bindings: { summary: { output: "median_survival" } } }
+          /* method / value / output bindings all resolve into the LIBRARY,
+             which correctly forbids study text — so before issue #12 these
+             three had no route to the SAP at all. One sentence grounds all
+             three, and each cites it at its own use. */
+          { phrase: "SP_METHOD_KM",        bindings: { method:     { method: "M.KaplanMeier", render: "label" } },
+                          sapRef: { section: "7.7.2",
+                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." } },
+          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } },
+                          sapRef: { section: "7.7.2",
+                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." } },
+          /* FIXED TEXT — no bindings at all, so no concept anchor could ever
+             reach it. Note the quote differs per instance: one sentence, three
+             clauses, and each analysis cites the clause that governs IT. */
+          { phrase: "SP_CENSOR_LTFU",      bindings: {},
+                          sapRef: { section: "7.7.2",
+                                    quote: "at the time of the last known contact for OS" } },
+          { phrase: "SP_KM_CURVES",        bindings: {},
+                          sapRef: { section: "7.7.2",
+                                    quote: "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves." } },
+          { phrase: "SP_SUMMARY_MEASURE",  bindings: { summary: { output: "median_survival" } },
+                          sapRef: { section: "7.7.2",
+                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." } }
         ]
       },
       {
@@ -333,9 +400,25 @@
           { phrase: "SP_TTE_ENDPOINT",     bindings: { event:      { concept: "EVENT.TTP", render: "name_with_label" } } },
           { phrase: "SP_POPULATION",       bindings: { population: { concept: "POP.EVAL_EFFICACY", render: "name" } } },
           { phrase: "SP_GROUPING",         bindings: { treatment:  { concept: "TRT.PRE0102", render: "label" } } },
-          { phrase: "SP_METHOD_KM",        bindings: { method:     { method: "M.KaplanMeier", render: "label" } } },
-          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } } },
-          { phrase: "SP_SUMMARY_MEASURE",      bindings: { summary: { output: "median_survival" } } }
+          /* method / value / output bindings all resolve into the LIBRARY,
+             which correctly forbids study text — so before issue #12 these
+             three had no route to the SAP at all. One sentence grounds all
+             three, and each cites it at its own use. */
+          { phrase: "SP_METHOD_KM",        bindings: { method:     { method: "M.KaplanMeier", render: "label" } },
+                          sapRef: { section: "7.7.2",
+                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." } },
+          { phrase: "SP_CONFIDENCE_LEVEL", bindings: { conf_level: { value: "90" } },
+                          sapRef: { section: "7.7.2",
+                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." } },
+          /* FIXED TEXT — no bindings at all, so no concept anchor could ever
+             reach it. Note the quote differs per instance: one sentence, three
+             clauses, and each analysis cites the clause that governs IT. */
+          { phrase: "SP_CENSOR_LTFU",      bindings: {},
+                          sapRef: { section: "7.7.2",
+                                    quote: "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS" } },
+          { phrase: "SP_SUMMARY_MEASURE",  bindings: { summary: { output: "median_survival" } },
+                          sapRef: { section: "7.7.2",
+                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." } }
         ]
       }
     ],

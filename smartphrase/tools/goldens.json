@@ -2211,9 +2211,9 @@
       ]
     }
   ],
-  "PRE0102/AC.PRIMARY.PFS/sentence/en": "Time to disease progression or death (PFS) in the eligible, treated population comparing treatment groups, regardless of discontinuation of everolimus for suspected toxicity, using Kaplan-Meier estimation with 90% confidence intervals, summarised as the median time to event, will be assessed as the primary analysis.",
-  "PRE0102/AC.PRIMARY.PFS/sentence/fr": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population éligible et traitée en comparant les groupes de traitement, indépendamment de l'arrêt de l'évérolimus pour toxicité suspectée, au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, résumé par le délai médian jusqu'à l'événement, sera évaluée comme analyse principale.",
-  "PRE0102/AC.PRIMARY.PFS/sentence/de": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen, unabhängig davon, ob das Absetzen von Everolimus bei Verdacht auf Toxizität vorlag, mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, zusammengefasst als die mediane Zeit bis zum Ereignis, als primäre Analyse untersucht.",
+  "PRE0102/AC.PRIMARY.PFS/sentence/en": "Time to disease progression or death (PFS) in the eligible, treated population comparing treatment groups, regardless of discontinuation of everolimus for suspected toxicity, using Kaplan-Meier estimation with 90% confidence intervals, censoring subjects lost to follow-up, displayed as Kaplan-Meier survival curves by treatment arm, summarised as the median time to event, will be assessed as the primary analysis.",
+  "PRE0102/AC.PRIMARY.PFS/sentence/fr": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population éligible et traitée en comparant les groupes de traitement, indépendamment de l'arrêt de l'évérolimus pour toxicité suspectée, au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, en censurant les participants perdus de vue, présenté sous forme de courbes de survie de Kaplan-Meier par bras de traitement, résumé par le délai médian jusqu'à l'événement, sera évaluée comme analyse principale.",
+  "PRE0102/AC.PRIMARY.PFS/sentence/de": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen, unabhängig davon, ob das Absetzen von Everolimus bei Verdacht auf Toxizität vorlag, mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, unter Zensierung der für die Nachbeobachtung verlorenen Teilnehmenden, dargestellt als Kaplan-Meier-Überlebenskurven nach Behandlungsarm, zusammengefasst als die mediane Zeit bis zum Ereignis, als primäre Analyse untersucht.",
   "PRE0102/AC.PRIMARY.PFS/modelView": {
     "instance": "AC.PRIMARY.PFS",
     "iri": "acdc:instance/PRE0102-AC-PRIMARY-PFS",
@@ -2274,8 +2274,43 @@
         "phrase": "SP_ICE_TREATMENT_POLICY",
         "role": "ice_handling",
         "section": "4.3",
-        "quote": "Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression",
-        "from": "concept:ICE.TOX_DISCONT"
+        "quote": "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons.",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_METHOD_KM",
+        "role": "method",
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_CONFIDENCE_LEVEL",
+        "role": "method_qualifier",
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_CENSOR_LTFU",
+        "role": "method_qualifier",
+        "section": "7.7.2",
+        "quote": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_KM_CURVES",
+        "role": "method_qualifier",
+        "section": "7.7.2",
+        "quote": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves.",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_SUMMARY_MEASURE",
+        "role": "summary_measure",
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+        "from": "phraseInstance"
       }
     ],
     "template": {
@@ -2375,10 +2410,12 @@
       "SP_STRATIFICATION",
       "SP_ICE_TREATMENT_POLICY",
       "SP_ICE_WHILE_ON_TREATMENT",
-      "SP_SUMMARY_MEASURE"
+      "SP_SUMMARY_MEASURE",
+      "SP_CENSOR_LTFU",
+      "SP_KM_CURVES"
     ]
   },
-  "PRE0102/AC.PRIMARY.PFS/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.PRIMARY.PFS\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.PFS\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.EVAL_EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_ICE_TREATMENT_POLICY\" instance=\"p6\" ice=\"ICE.TOX_DISCONT\" render=\"ice:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_SUMMARY_MEASURE\" instance=\"p7\" summary=\"median_survival\"/>\n</acdc:macro>",
+  "PRE0102/AC.PRIMARY.PFS/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.PRIMARY.PFS\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.PFS\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.EVAL_EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_ICE_TREATMENT_POLICY\" instance=\"p6\" ice=\"ICE.TOX_DISCONT\" render=\"ice:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CENSOR_LTFU\" instance=\"p7\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_KM_CURVES\" instance=\"p8\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_SUMMARY_MEASURE\" instance=\"p9\" summary=\"median_survival\"/>\n</acdc:macro>",
   "PRE0102/AC.PRIMARY.PFS/jsonld": {
     "@context": {
       "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
@@ -2486,6 +2523,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_METHOD_KM",
         "sp:role": "method",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        },
         "sp:binding": [
           {
             "sp:slot": "method",
@@ -2501,6 +2542,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_CONFIDENCE_LEVEL",
         "sp:role": "method_qualifier",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        },
         "sp:binding": [
           {
             "sp:slot": "conf_level",
@@ -2515,7 +2560,7 @@
         "sp:role": "ice_handling",
         "prov:wasQuotedFrom": {
           "@id": "acdc:document/PRE0102-SAP-001#4.3",
-          "rdfs:comment": "Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression"
+          "rdfs:comment": "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons."
         },
         "sp:binding": [
           {
@@ -2529,8 +2574,34 @@
       {
         "@id": "#p7",
         "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CENSOR_LTFU",
+        "sp:role": "method_qualifier",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS"
+        },
+        "sp:binding": []
+      },
+      {
+        "@id": "#p8",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_KM_CURVES",
+        "sp:role": "method_qualifier",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves."
+        },
+        "sp:binding": []
+      },
+      {
+        "@id": "#p9",
+        "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_SUMMARY_MEASURE",
         "sp:role": "summary_measure",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        },
         "sp:binding": [
           {
             "sp:slot": "summary",
@@ -2542,15 +2613,15 @@
     ],
     "sp:resolvesTo": [
       {
-        "@value": "Time to disease progression or death (PFS) in the eligible, treated population comparing treatment groups, regardless of discontinuation of everolimus for suspected toxicity, using Kaplan-Meier estimation with 90% confidence intervals, summarised as the median time to event, will be assessed as the primary analysis.",
+        "@value": "Time to disease progression or death (PFS) in the eligible, treated population comparing treatment groups, regardless of discontinuation of everolimus for suspected toxicity, using Kaplan-Meier estimation with 90% confidence intervals, censoring subjects lost to follow-up, displayed as Kaplan-Meier survival curves by treatment arm, summarised as the median time to event, will be assessed as the primary analysis.",
         "@language": "en"
       },
       {
-        "@value": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population éligible et traitée en comparant les groupes de traitement, indépendamment de l'arrêt de l'évérolimus pour toxicité suspectée, au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, résumé par le délai médian jusqu'à l'événement, sera évaluée comme analyse principale.",
+        "@value": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population éligible et traitée en comparant les groupes de traitement, indépendamment de l'arrêt de l'évérolimus pour toxicité suspectée, au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, en censurant les participants perdus de vue, présenté sous forme de courbes de survie de Kaplan-Meier par bras de traitement, résumé par le délai médian jusqu'à l'événement, sera évaluée comme analyse principale.",
         "@language": "fr"
       },
       {
-        "@value": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen, unabhängig davon, ob das Absetzen von Everolimus bei Verdacht auf Toxizität vorlag, mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, zusammengefasst als die mediane Zeit bis zum Ereignis, als primäre Analyse untersucht.",
+        "@value": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen, unabhängig davon, ob das Absetzen von Everolimus bei Verdacht auf Toxizität vorlag, mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, unter Zensierung der für die Nachbeobachtung verlorenen Teilnehmenden, dargestellt als Kaplan-Meier-Überlebenskurven nach Behandlungsarm, zusammengefasst als die mediane Zeit bis zum Ereignis, als primäre Analyse untersucht.",
         "@language": "de"
       }
     ]
@@ -2690,9 +2761,9 @@
       ]
     }
   ],
-  "PRE0102/AC.SENS.PFS.ITT/sentence/en": "Time to disease progression or death (PFS) in the intent-to-treat population comparing treatment groups, regardless of discontinuation of everolimus for suspected toxicity, using Kaplan-Meier estimation with 90% confidence intervals, summarised as the median time to event, will be assessed as a sensitivity analysis.",
-  "PRE0102/AC.SENS.PFS.ITT/sentence/fr": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population en intention de traiter en comparant les groupes de traitement, indépendamment de l'arrêt de l'évérolimus pour toxicité suspectée, au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, résumé par le délai médian jusqu'à l'événement, sera évaluée comme une analyse de sensibilité.",
-  "PRE0102/AC.SENS.PFS.ITT/sentence/de": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der Intention-to-Treat-Population wird im Vergleich der Behandlungsgruppen, unabhängig davon, ob das Absetzen von Everolimus bei Verdacht auf Toxizität vorlag, mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, zusammengefasst als die mediane Zeit bis zum Ereignis, als Sensitivitätsanalyse untersucht.",
+  "PRE0102/AC.SENS.PFS.ITT/sentence/en": "Time to disease progression or death (PFS) in the intent-to-treat population comparing treatment groups, regardless of discontinuation of everolimus for suspected toxicity, using Kaplan-Meier estimation with 90% confidence intervals, censoring subjects lost to follow-up, displayed as Kaplan-Meier survival curves by treatment arm, summarised as the median time to event, will be assessed as a sensitivity analysis.",
+  "PRE0102/AC.SENS.PFS.ITT/sentence/fr": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population en intention de traiter en comparant les groupes de traitement, indépendamment de l'arrêt de l'évérolimus pour toxicité suspectée, au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, en censurant les participants perdus de vue, présenté sous forme de courbes de survie de Kaplan-Meier par bras de traitement, résumé par le délai médian jusqu'à l'événement, sera évaluée comme une analyse de sensibilité.",
+  "PRE0102/AC.SENS.PFS.ITT/sentence/de": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der Intention-to-Treat-Population wird im Vergleich der Behandlungsgruppen, unabhängig davon, ob das Absetzen von Everolimus bei Verdacht auf Toxizität vorlag, mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, unter Zensierung der für die Nachbeobachtung verlorenen Teilnehmenden, dargestellt als Kaplan-Meier-Überlebenskurven nach Behandlungsarm, zusammengefasst als die mediane Zeit bis zum Ereignis, als Sensitivitätsanalyse untersucht.",
   "PRE0102/AC.SENS.PFS.ITT/modelView": {
     "instance": "AC.SENS.PFS.ITT",
     "iri": "acdc:instance/PRE0102-AC-SENS-PFS-ITT",
@@ -2753,8 +2824,43 @@
         "phrase": "SP_ICE_TREATMENT_POLICY",
         "role": "ice_handling",
         "section": "4.3",
-        "quote": "Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression",
-        "from": "concept:ICE.TOX_DISCONT"
+        "quote": "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons.",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_METHOD_KM",
+        "role": "method",
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_CONFIDENCE_LEVEL",
+        "role": "method_qualifier",
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_CENSOR_LTFU",
+        "role": "method_qualifier",
+        "section": "7.7.2",
+        "quote": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_KM_CURVES",
+        "role": "method_qualifier",
+        "section": "7.7.2",
+        "quote": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves.",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_SUMMARY_MEASURE",
+        "role": "summary_measure",
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+        "from": "phraseInstance"
       }
     ],
     "template": {
@@ -2854,10 +2960,12 @@
       "SP_STRATIFICATION",
       "SP_ICE_TREATMENT_POLICY",
       "SP_ICE_WHILE_ON_TREATMENT",
-      "SP_SUMMARY_MEASURE"
+      "SP_SUMMARY_MEASURE",
+      "SP_CENSOR_LTFU",
+      "SP_KM_CURVES"
     ]
   },
-  "PRE0102/AC.SENS.PFS.ITT/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.SENS.PFS.ITT\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.PFS\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.ITT\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_ICE_TREATMENT_POLICY\" instance=\"p6\" ice=\"ICE.TOX_DISCONT\" render=\"ice:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_SUMMARY_MEASURE\" instance=\"p7\" summary=\"median_survival\"/>\n</acdc:macro>",
+  "PRE0102/AC.SENS.PFS.ITT/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.SENS.PFS.ITT\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.PFS\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.ITT\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_ICE_TREATMENT_POLICY\" instance=\"p6\" ice=\"ICE.TOX_DISCONT\" render=\"ice:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CENSOR_LTFU\" instance=\"p7\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_KM_CURVES\" instance=\"p8\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_SUMMARY_MEASURE\" instance=\"p9\" summary=\"median_survival\"/>\n</acdc:macro>",
   "PRE0102/AC.SENS.PFS.ITT/jsonld": {
     "@context": {
       "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
@@ -2965,6 +3073,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_METHOD_KM",
         "sp:role": "method",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        },
         "sp:binding": [
           {
             "sp:slot": "method",
@@ -2980,6 +3092,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_CONFIDENCE_LEVEL",
         "sp:role": "method_qualifier",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        },
         "sp:binding": [
           {
             "sp:slot": "conf_level",
@@ -2994,7 +3110,7 @@
         "sp:role": "ice_handling",
         "prov:wasQuotedFrom": {
           "@id": "acdc:document/PRE0102-SAP-001#4.3",
-          "rdfs:comment": "Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression"
+          "rdfs:comment": "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons."
         },
         "sp:binding": [
           {
@@ -3008,8 +3124,34 @@
       {
         "@id": "#p7",
         "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CENSOR_LTFU",
+        "sp:role": "method_qualifier",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS"
+        },
+        "sp:binding": []
+      },
+      {
+        "@id": "#p8",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_KM_CURVES",
+        "sp:role": "method_qualifier",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves."
+        },
+        "sp:binding": []
+      },
+      {
+        "@id": "#p9",
+        "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_SUMMARY_MEASURE",
         "sp:role": "summary_measure",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        },
         "sp:binding": [
           {
             "sp:slot": "summary",
@@ -3021,15 +3163,15 @@
     ],
     "sp:resolvesTo": [
       {
-        "@value": "Time to disease progression or death (PFS) in the intent-to-treat population comparing treatment groups, regardless of discontinuation of everolimus for suspected toxicity, using Kaplan-Meier estimation with 90% confidence intervals, summarised as the median time to event, will be assessed as a sensitivity analysis.",
+        "@value": "Time to disease progression or death (PFS) in the intent-to-treat population comparing treatment groups, regardless of discontinuation of everolimus for suspected toxicity, using Kaplan-Meier estimation with 90% confidence intervals, censoring subjects lost to follow-up, displayed as Kaplan-Meier survival curves by treatment arm, summarised as the median time to event, will be assessed as a sensitivity analysis.",
         "@language": "en"
       },
       {
-        "@value": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population en intention de traiter en comparant les groupes de traitement, indépendamment de l'arrêt de l'évérolimus pour toxicité suspectée, au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, résumé par le délai médian jusqu'à l'événement, sera évaluée comme une analyse de sensibilité.",
+        "@value": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population en intention de traiter en comparant les groupes de traitement, indépendamment de l'arrêt de l'évérolimus pour toxicité suspectée, au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, en censurant les participants perdus de vue, présenté sous forme de courbes de survie de Kaplan-Meier par bras de traitement, résumé par le délai médian jusqu'à l'événement, sera évaluée comme une analyse de sensibilité.",
         "@language": "fr"
       },
       {
-        "@value": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der Intention-to-Treat-Population wird im Vergleich der Behandlungsgruppen, unabhängig davon, ob das Absetzen von Everolimus bei Verdacht auf Toxizität vorlag, mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, zusammengefasst als die mediane Zeit bis zum Ereignis, als Sensitivitätsanalyse untersucht.",
+        "@value": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der Intention-to-Treat-Population wird im Vergleich der Behandlungsgruppen, unabhängig davon, ob das Absetzen von Everolimus bei Verdacht auf Toxizität vorlag, mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, unter Zensierung der für die Nachbeobachtung verlorenen Teilnehmenden, dargestellt als Kaplan-Meier-Überlebenskurven nach Behandlungsarm, zusammengefasst als die mediane Zeit bis zum Ereignis, als Sensitivitätsanalyse untersucht.",
         "@language": "de"
       }
     ]
@@ -3169,9 +3311,9 @@
       ]
     }
   ],
-  "PRE0102/AC.SEC.OS/sentence/en": "Time to death from any cause (OS) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals, summarised as the median time to event, will be assessed as a secondary analysis.",
-  "PRE0102/AC.SEC.OS/sentence/fr": "Le délai jusqu'à le décès, toutes causes confondues (SG) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, résumé par le délai médian jusqu'à l'événement, sera évaluée comme une analyse secondaire.",
-  "PRE0102/AC.SEC.OS/sentence/de": "Die Zeit bis zum Tod jeglicher Ursache (OS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, zusammengefasst als die mediane Zeit bis zum Ereignis, als sekundäre Analyse untersucht.",
+  "PRE0102/AC.SEC.OS/sentence/en": "Time to death from any cause (OS) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals, censoring subjects lost to follow-up, displayed as Kaplan-Meier survival curves by treatment arm, summarised as the median time to event, will be assessed as a secondary analysis.",
+  "PRE0102/AC.SEC.OS/sentence/fr": "Le délai jusqu'à le décès, toutes causes confondues (SG) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, en censurant les participants perdus de vue, présenté sous forme de courbes de survie de Kaplan-Meier par bras de traitement, résumé par le délai médian jusqu'à l'événement, sera évaluée comme une analyse secondaire.",
+  "PRE0102/AC.SEC.OS/sentence/de": "Die Zeit bis zum Tod jeglicher Ursache (OS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, unter Zensierung der für die Nachbeobachtung verlorenen Teilnehmenden, dargestellt als Kaplan-Meier-Überlebenskurven nach Behandlungsarm, zusammengefasst als die mediane Zeit bis zum Ereignis, als sekundäre Analyse untersucht.",
   "PRE0102/AC.SEC.OS/modelView": {
     "instance": "AC.SEC.OS",
     "iri": "acdc:instance/PRE0102-AC-SEC-OS",
@@ -3214,6 +3356,41 @@
         "section": "4.1",
         "quote": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors",
         "from": "concept:TRT.PRE0102"
+      },
+      {
+        "phrase": "SP_METHOD_KM",
+        "role": "method",
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_CONFIDENCE_LEVEL",
+        "role": "method_qualifier",
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_CENSOR_LTFU",
+        "role": "method_qualifier",
+        "section": "7.7.2",
+        "quote": "at the time of the last known contact for OS",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_KM_CURVES",
+        "role": "method_qualifier",
+        "section": "7.7.2",
+        "quote": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves.",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_SUMMARY_MEASURE",
+        "role": "summary_measure",
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+        "from": "phraseInstance"
       }
     ],
     "template": {
@@ -3313,10 +3490,12 @@
       "SP_STRATIFICATION",
       "SP_ICE_TREATMENT_POLICY",
       "SP_ICE_WHILE_ON_TREATMENT",
-      "SP_SUMMARY_MEASURE"
+      "SP_SUMMARY_MEASURE",
+      "SP_CENSOR_LTFU",
+      "SP_KM_CURVES"
     ]
   },
-  "PRE0102/AC.SEC.OS/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.SEC.OS\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.OS\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.EVAL_EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_SUMMARY_MEASURE\" instance=\"p6\" summary=\"median_survival\"/>\n</acdc:macro>",
+  "PRE0102/AC.SEC.OS/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.SEC.OS\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.OS\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.EVAL_EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CENSOR_LTFU\" instance=\"p6\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_KM_CURVES\" instance=\"p7\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_SUMMARY_MEASURE\" instance=\"p8\" summary=\"median_survival\"/>\n</acdc:macro>",
   "PRE0102/AC.SEC.OS/jsonld": {
     "@context": {
       "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
@@ -3419,6 +3598,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_METHOD_KM",
         "sp:role": "method",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        },
         "sp:binding": [
           {
             "sp:slot": "method",
@@ -3434,6 +3617,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_CONFIDENCE_LEVEL",
         "sp:role": "method_qualifier",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        },
         "sp:binding": [
           {
             "sp:slot": "conf_level",
@@ -3444,8 +3631,34 @@
       {
         "@id": "#p6",
         "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CENSOR_LTFU",
+        "sp:role": "method_qualifier",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "at the time of the last known contact for OS"
+        },
+        "sp:binding": []
+      },
+      {
+        "@id": "#p7",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_KM_CURVES",
+        "sp:role": "method_qualifier",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves."
+        },
+        "sp:binding": []
+      },
+      {
+        "@id": "#p8",
+        "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_SUMMARY_MEASURE",
         "sp:role": "summary_measure",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        },
         "sp:binding": [
           {
             "sp:slot": "summary",
@@ -3457,15 +3670,15 @@
     ],
     "sp:resolvesTo": [
       {
-        "@value": "Time to death from any cause (OS) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals, summarised as the median time to event, will be assessed as a secondary analysis.",
+        "@value": "Time to death from any cause (OS) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals, censoring subjects lost to follow-up, displayed as Kaplan-Meier survival curves by treatment arm, summarised as the median time to event, will be assessed as a secondary analysis.",
         "@language": "en"
       },
       {
-        "@value": "Le délai jusqu'à le décès, toutes causes confondues (SG) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, résumé par le délai médian jusqu'à l'événement, sera évaluée comme une analyse secondaire.",
+        "@value": "Le délai jusqu'à le décès, toutes causes confondues (SG) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, en censurant les participants perdus de vue, présenté sous forme de courbes de survie de Kaplan-Meier par bras de traitement, résumé par le délai médian jusqu'à l'événement, sera évaluée comme une analyse secondaire.",
         "@language": "fr"
       },
       {
-        "@value": "Die Zeit bis zum Tod jeglicher Ursache (OS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, zusammengefasst als die mediane Zeit bis zum Ereignis, als sekundäre Analyse untersucht.",
+        "@value": "Die Zeit bis zum Tod jeglicher Ursache (OS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, unter Zensierung der für die Nachbeobachtung verlorenen Teilnehmenden, dargestellt als Kaplan-Meier-Überlebenskurven nach Behandlungsarm, zusammengefasst als die mediane Zeit bis zum Ereignis, als sekundäre Analyse untersucht.",
         "@language": "de"
       }
     ]
@@ -3571,9 +3784,9 @@
       ]
     }
   ],
-  "PRE0102/AC.SEC.TTP/sentence/en": "Time to disease progression (TTP) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals, summarised as the median time to event, will be assessed as a secondary analysis.",
-  "PRE0102/AC.SEC.TTP/sentence/fr": "Le délai jusqu'à la progression de la maladie (DJP) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, résumé par le délai médian jusqu'à l'événement, sera évaluée comme une analyse secondaire.",
-  "PRE0102/AC.SEC.TTP/sentence/de": "Die Zeit bis zur Krankheitsprogression (TTP) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, zusammengefasst als die mediane Zeit bis zum Ereignis, als sekundäre Analyse untersucht.",
+  "PRE0102/AC.SEC.TTP/sentence/en": "Time to disease progression (TTP) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals, censoring subjects lost to follow-up, summarised as the median time to event, will be assessed as a secondary analysis.",
+  "PRE0102/AC.SEC.TTP/sentence/fr": "Le délai jusqu'à la progression de la maladie (DJP) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, en censurant les participants perdus de vue, résumé par le délai médian jusqu'à l'événement, sera évaluée comme une analyse secondaire.",
+  "PRE0102/AC.SEC.TTP/sentence/de": "Die Zeit bis zur Krankheitsprogression (TTP) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, unter Zensierung der für die Nachbeobachtung verlorenen Teilnehmenden, zusammengefasst als die mediane Zeit bis zum Ereignis, als sekundäre Analyse untersucht.",
   "PRE0102/AC.SEC.TTP/modelView": {
     "instance": "AC.SEC.TTP",
     "iri": "acdc:instance/PRE0102-AC-SEC-TTP",
@@ -3616,6 +3829,34 @@
         "section": "4.1",
         "quote": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors",
         "from": "concept:TRT.PRE0102"
+      },
+      {
+        "phrase": "SP_METHOD_KM",
+        "role": "method",
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_CONFIDENCE_LEVEL",
+        "role": "method_qualifier",
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_CENSOR_LTFU",
+        "role": "method_qualifier",
+        "section": "7.7.2",
+        "quote": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS",
+        "from": "phraseInstance"
+      },
+      {
+        "phrase": "SP_SUMMARY_MEASURE",
+        "role": "summary_measure",
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+        "from": "phraseInstance"
       }
     ],
     "template": {
@@ -3715,10 +3956,12 @@
       "SP_STRATIFICATION",
       "SP_ICE_TREATMENT_POLICY",
       "SP_ICE_WHILE_ON_TREATMENT",
-      "SP_SUMMARY_MEASURE"
+      "SP_SUMMARY_MEASURE",
+      "SP_CENSOR_LTFU",
+      "SP_KM_CURVES"
     ]
   },
-  "PRE0102/AC.SEC.TTP/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.SEC.TTP\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.TTP\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.EVAL_EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_SUMMARY_MEASURE\" instance=\"p6\" summary=\"median_survival\"/>\n</acdc:macro>",
+  "PRE0102/AC.SEC.TTP/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.SEC.TTP\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.TTP\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.EVAL_EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CENSOR_LTFU\" instance=\"p6\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_SUMMARY_MEASURE\" instance=\"p7\" summary=\"median_survival\"/>\n</acdc:macro>",
   "PRE0102/AC.SEC.TTP/jsonld": {
     "@context": {
       "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
@@ -3821,6 +4064,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_METHOD_KM",
         "sp:role": "method",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        },
         "sp:binding": [
           {
             "sp:slot": "method",
@@ -3836,6 +4083,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_CONFIDENCE_LEVEL",
         "sp:role": "method_qualifier",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        },
         "sp:binding": [
           {
             "sp:slot": "conf_level",
@@ -3846,8 +4097,23 @@
       {
         "@id": "#p6",
         "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CENSOR_LTFU",
+        "sp:role": "method_qualifier",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS"
+        },
+        "sp:binding": []
+      },
+      {
+        "@id": "#p7",
+        "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_SUMMARY_MEASURE",
         "sp:role": "summary_measure",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        },
         "sp:binding": [
           {
             "sp:slot": "summary",
@@ -3859,15 +4125,15 @@
     ],
     "sp:resolvesTo": [
       {
-        "@value": "Time to disease progression (TTP) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals, summarised as the median time to event, will be assessed as a secondary analysis.",
+        "@value": "Time to disease progression (TTP) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals, censoring subjects lost to follow-up, summarised as the median time to event, will be assessed as a secondary analysis.",
         "@language": "en"
       },
       {
-        "@value": "Le délai jusqu'à la progression de la maladie (DJP) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, résumé par le délai médian jusqu'à l'événement, sera évaluée comme une analyse secondaire.",
+        "@value": "Le délai jusqu'à la progression de la maladie (DJP) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 %, en censurant les participants perdus de vue, résumé par le délai médian jusqu'à l'événement, sera évaluée comme une analyse secondaire.",
         "@language": "fr"
       },
       {
-        "@value": "Die Zeit bis zur Krankheitsprogression (TTP) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, zusammengefasst als die mediane Zeit bis zum Ereignis, als sekundäre Analyse untersucht.",
+        "@value": "Die Zeit bis zur Krankheitsprogression (TTP) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen, unter Zensierung der für die Nachbeobachtung verlorenen Teilnehmenden, zusammengefasst als die mediane Zeit bis zum Ereignis, als sekundäre Analyse untersucht.",
         "@language": "de"
       }
     ]

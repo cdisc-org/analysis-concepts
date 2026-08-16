@@ -31,7 +31,11 @@
         "{endpoint} {parameter} {timepoint} {population} {grouping}[, {ice_handling},] {method} {method_qualifier} {covariate}[, {summary_measure},] will be assessed as {sentenceRole}.",
       /* Repeating roles joined by a conjunction rather than a bare space. Only
          roles listed here get one, so `covariate` is unaffected. */
-      role_conjunctions: { ice_handling: " and " },
+      /* method_qualifier became repeating in practice once issue #12 added
+         fixed-text qualifiers: "with 90% confidence intervals" + "censoring
+         subjects lost to follow-up" + "displayed as ... curves" ran together
+         with bare spaces. A comma joiner is the minimum that reads. */
+      role_conjunctions: { ice_handling: " and ", method_qualifier: ", " },
       /*
        * SAP-facing wording for output classes. The library's own labels are
        * analyst-facing ("Median survival", "T-based contrasts") and read badly
@@ -50,7 +54,7 @@
       name: "Français",
       sentence_template:
         "{endpoint} {parameter} {timepoint} {population} {grouping}[, {ice_handling},] {method} {method_qualifier} {covariate}[, {summary_measure},] sera évaluée comme {sentenceRole}.",
-      role_conjunctions: { ice_handling: " et " },
+      role_conjunctions: { ice_handling: " et ", method_qualifier: ", " },
       outputClasses: {
         median_survival: { name: "le délai médian jusqu'à l'événement" },
         contrasts_t: { name: "la différence des moyennes des moindres carrés" }
@@ -75,7 +79,10 @@
         SP_ICE_COMPOSITE: "avec {ice} considéré comme {outcome}",
         SP_ICE_WHILE_ON_TREATMENT: "en utilisant les mesures recueillies avant {ice}",
         SP_ICE_PRINCIPAL_STRATUM: "dans la strate des participants chez qui {ice} ne se produirait pas",
-        SP_SUMMARY_MEASURE: "résumé par {summary}"
+        SP_SUMMARY_MEASURE: "résumé par {summary}",
+        /* fixed-text qualifiers (issue #12) */
+        SP_CENSOR_LTFU: "en censurant les participants perdus de vue",
+        SP_KM_CURVES: "présenté sous forme de courbes de survie de Kaplan-Meier par bras de traitement"
       },
       concepts: {
         "PARAM.ADASCOG11": { name: "l'échelle d'évaluation de la maladie d'Alzheimer – sous-échelle cognitive (11 items)" },
@@ -121,7 +128,7 @@
          phrases sit inside the bracket, the participle closes the sentence. */
       sentence_template:
         "{endpoint} {parameter} {timepoint} {population} wird {grouping}[, {ice_handling},] {method} {method_qualifier} {covariate}[, {summary_measure},] als {sentenceRole} untersucht.",
-      role_conjunctions: { ice_handling: " und " },
+      role_conjunctions: { ice_handling: " und ", method_qualifier: ", " },
       outputClasses: {
         median_survival: { name: "die mediane Zeit bis zum Ereignis" },
         contrasts_t: { name: "die Differenz der Kleinste-Quadrate-Mittelwerte" }
@@ -163,7 +170,11 @@
         SP_ICE_COMPOSITE: "wobei {ice} als {outcome} gewertet wird",
         SP_ICE_WHILE_ON_TREATMENT: "sofern {ice} zum Zeitpunkt der Messung noch nicht vorlag",
         SP_ICE_PRINCIPAL_STRATUM: "in der Schicht der Teilnehmenden, bei denen {ice} nicht aufträte",
-        SP_SUMMARY_MEASURE: "zusammengefasst als {summary}"
+        SP_SUMMARY_MEASURE: "zusammengefasst als {summary}",
+        /* fixed-text qualifiers (issue #12). No placeholders, so these are pure
+           per-language sentences — the simplest possible pack entry. */
+        SP_CENSOR_LTFU: "unter Zensierung der für die Nachbeobachtung verlorenen Teilnehmenden",
+        SP_KM_CURVES: "dargestellt als Kaplan-Meier-Überlebenskurven nach Behandlungsarm"
       },
       concepts: {
         "PARAM.ADASCOG11": { name: "Alzheimer's Disease Assessment Scale – kognitive Subskala (11 Items)" },

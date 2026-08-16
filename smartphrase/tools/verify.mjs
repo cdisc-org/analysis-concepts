@@ -150,6 +150,21 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
         JSON.stringify(phraseIces));
     }
 
+    /*
+     * COVERAGE — the requirement in issue #12. For a study that HAS a source
+     * document, every assertion the generated prose makes must be traceable to
+     * the text that grounds it. Not "most"; the audit that raised the issue
+     * found roughly half of all phrase uses unanchored precisely because the
+     * uncovered kinds were invisible rather than few.
+     */
+    if (graph.sourceDocument) {
+      const unanchored = E.resolveInstance(ctx, inst, "en").phrases
+        .filter((p) => !p.anchor)
+        .map((p) => p.oid);
+      check(`${studyKey}/${inst.id} every phrase use is anchored to the document`,
+        unanchored.length === 0, unanchored.join(", "));
+    }
+
     /* Anchors must be PROJECTED, not merely stored. Before issue #12 the
        sapRef field appeared in zero pinned outputs — no surface consumed it and
        no gate could detect it regressing, which is why three of four binding
@@ -379,9 +394,11 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
      serialise them — an edit through the text surface must not strip provenance. */
   const src = E.toMacroText(ctx, mprobe);
   const back = E.parseMacroText(ctx, src, mprobe);
-  const kept = back.instancePatch &&
-    back.instancePatch.phrases.filter((p) => p.sapRef).length;
-  check("tag-dialect round-trip preserves anchors", kept === 1, String(kept));
+  const before = mprobe.phrases.filter((p) => p.sapRef).length;
+  const kept = back.instancePatch
+    ? back.instancePatch.phrases.filter((p) => p.sapRef).length : -1;
+  check("tag-dialect round-trip preserves every anchor",
+    kept === before && before > 0, kept + " of " + before);
 }
 
 /* ---- planted faults: the quote gate must actually bite ---- */
