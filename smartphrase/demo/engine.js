@@ -247,10 +247,38 @@
         bindings.push({ placeholder: ph.name, text: r.text, detail: r.detail });
       }
     });
+    /*
+     * Document anchor for THIS use (issue #12). The phrase instance's own
+     * sapRef wins, because it answers "why is this here?"; a bound concept's
+     * answers "what is this?" and is the fallback. Both survive — the concept
+     * keeps its own anchor — so a use-specific quote never erases the
+     * definitional one, and `anchorSource` records which applied.
+     *
+     * This is what closes the gap: `method`, `output` and `value` bindings all
+     * resolve into the LIBRARY, which correctly forbids study text, so before
+     * this the only anchorable binding kind was `concept` — and fixed-text
+     * phrases, having no bindings at all, could never anchor by any route.
+     */
+    var anchor = pi.sapRef || null;
+    var anchorSource = anchor ? "phraseInstance" : null;
+    if (!anchor) {
+      (def.placeholders || []).some(function (ph) {
+        var b = (pi.bindings || {})[ph.name];
+        var c = b && b.concept && concept(ctx, b.concept);
+        if (c && c.sapRef) {
+          anchor = c.sapRef;
+          anchorSource = "concept:" + b.concept;
+          return true;
+        }
+        return false;
+      });
+    }
+
     return { oid: def.oid, role: def.role, name: def.name,
              template: def.phrase_template, anchors: def.anchors,
              text: text, bindings: bindings, errors: errors,
-             langFallback: langFallback };
+             langFallback: langFallback,
+             anchor: anchor, anchorSource: anchorSource };
   }
 
   /*
@@ -770,6 +798,30 @@
     if (phrases.length === 0) {
       findings.push({ level: "error", message: "no phrase tags found" });
     }
+
+    /*
+     * The tag dialect does NOT serialise document anchors — a quotation is not
+     * an attribute value, and inventing syntax for one would make the authoring
+     * surface worse. So anchors are carried across from the base instance by
+     * matching phrase oid + bindings, which survives reordering: an edit through
+     * the text surface must not silently strip provenance. A genuinely new
+     * phrase has no anchor to carry, which is correct.
+     */
+    function bindingSig(p) {
+      var b = p.bindings || {};
+      return p.phrase + "|" + Object.keys(b).sort().map(function (k) {
+        var v = b[k];
+        return k + "=" + (v.concept || v.method || v.output || v.value);
+      }).join(",");
+    }
+    var anchorsBySig = {};
+    (baseInstance && baseInstance.phrases || []).forEach(function (p) {
+      if (p.sapRef) (anchorsBySig[bindingSig(p)] = anchorsBySig[bindingSig(p)] || []).push(p.sapRef);
+    });
+    phrases.forEach(function (p) {
+      var pool = anchorsBySig[bindingSig(p)];
+      if (pool && pool.length) p.sapRef = pool.shift();
+    });
 
     var patch = null;
     if (!findings.some(function (f) { return f.level === "error"; })) {

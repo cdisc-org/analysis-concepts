@@ -315,6 +315,45 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
   }
 }
 
+/* ---- anchor resolution and precedence ---- */
+{
+  const ctx = E.ctxOf(LIB, graphs.PRE0102, I18N);
+  const inst = graphs.PRE0102.instances.find((i) => i.id === "AC.PRIMARY.PFS");
+
+  /* A concept-bound phrase falls back to the bound concept's anchor. */
+  const endpoint = E.resolveInstance(ctx, inst, "en").phrases.find((p) => p.role === "endpoint");
+  check("a concept-bound phrase inherits the concept's anchor",
+    !!endpoint.anchor && /^concept:/.test(endpoint.anchorSource || ""),
+    String(endpoint.anchorSource));
+
+  /* Instance-level wins, and does not destroy the concept's. */
+  const probe = JSON.parse(JSON.stringify(inst));
+  probe.phrases.find((p) => p.phrase === "SP_TTE_ENDPOINT").sapRef =
+    { section: "7.7.2", quote: "PFS = time from randomization to documented disease progression or death" };
+  const rp = E.resolveInstance(ctx, probe, "en").phrases.find((p) => p.role === "endpoint");
+  check("instance-level anchor takes precedence",
+    !!rp.anchor && rp.anchor.section === "7.7.2" && rp.anchorSource === "phraseInstance",
+    JSON.stringify(rp.anchor) + " " + rp.anchorSource);
+  check("the concept's own anchor survives being overridden",
+    E.concept(ctx, "EVENT.PFS").sapRef.section === "5.3");
+
+  /* A phrase with no concept binding — the whole point of #12 — can anchor. */
+  const mprobe = JSON.parse(JSON.stringify(inst));
+  mprobe.phrases.find((p) => p.phrase === "SP_METHOD_KM").sapRef =
+    { section: "7.7.2", quote: "using Kaplan-Meier estimates" };
+  const mrp = E.resolveInstance(ctx, mprobe, "en").phrases.find((p) => p.role === "method");
+  check("a method phrase can carry its own anchor",
+    !!mrp.anchor && mrp.anchorSource === "phraseInstance", JSON.stringify(mrp));
+
+  /* Anchors must survive a round-trip through the tag dialect, which does not
+     serialise them — an edit through the text surface must not strip provenance. */
+  const src = E.toMacroText(ctx, mprobe);
+  const back = E.parseMacroText(ctx, src, mprobe);
+  const kept = back.instancePatch &&
+    back.instancePatch.phrases.filter((p) => p.sapRef).length;
+  check("tag-dialect round-trip preserves anchors", kept === 1, String(kept));
+}
+
 /* ---- planted faults: the quote gate must actually bite ---- */
 {
   const graph = graphs.PRE0102;
