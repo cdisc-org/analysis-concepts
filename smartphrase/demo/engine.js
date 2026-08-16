@@ -225,6 +225,34 @@
                        iri: c.iri, iri_status: c.iri_status } };
   }
 
+  /*
+   * Document anchor for one phrase USE (issue #12). The phrase instance's own
+   * sapRef wins, because it answers "why is this here?"; a bound concept's
+   * answers "what is this?" and is the fallback. Both survive — the concept
+   * keeps its own anchor — so a use-specific quote never erases the definitional
+   * one, and `source` records which applied.
+   *
+   * This is what closes the gap: `method`, `output` and `value` bindings all
+   * resolve into the LIBRARY, which correctly forbids study text, so before this
+   * the only anchorable binding kind was `concept` — and fixed-text phrases,
+   * having no bindings at all, could never anchor by any route.
+   *
+   * Shared by resolvePhrase and toJSONLD so the prose and the graph cannot
+   * disagree, and so neither has to pair a resolved phrase back to its instance
+   * by oid — which would break for a repeating role using one oid twice.
+   */
+  function anchorForPhrase(ctx, pi, def) {
+    if (pi.sapRef) return { anchor: pi.sapRef, source: "phraseInstance" };
+    var found = null;
+    ((def && def.placeholders) || []).some(function (ph) {
+      var b = (pi.bindings || {})[ph.name];
+      var c = b && b.concept && concept(ctx, b.concept);
+      if (c && c.sapRef) { found = { anchor: c.sapRef, source: "concept:" + b.concept }; return true; }
+      return false;
+    });
+    return found || { anchor: null, source: null };
+  }
+
   /* Resolve one phrase instance → { oid, role, text, bindings[], errors[] } */
   function resolvePhrase(ctx, pi, lang, tpl) {
     lang = lang || "en";
@@ -247,38 +275,13 @@
         bindings.push({ placeholder: ph.name, text: r.text, detail: r.detail });
       }
     });
-    /*
-     * Document anchor for THIS use (issue #12). The phrase instance's own
-     * sapRef wins, because it answers "why is this here?"; a bound concept's
-     * answers "what is this?" and is the fallback. Both survive — the concept
-     * keeps its own anchor — so a use-specific quote never erases the
-     * definitional one, and `anchorSource` records which applied.
-     *
-     * This is what closes the gap: `method`, `output` and `value` bindings all
-     * resolve into the LIBRARY, which correctly forbids study text, so before
-     * this the only anchorable binding kind was `concept` — and fixed-text
-     * phrases, having no bindings at all, could never anchor by any route.
-     */
-    var anchor = pi.sapRef || null;
-    var anchorSource = anchor ? "phraseInstance" : null;
-    if (!anchor) {
-      (def.placeholders || []).some(function (ph) {
-        var b = (pi.bindings || {})[ph.name];
-        var c = b && b.concept && concept(ctx, b.concept);
-        if (c && c.sapRef) {
-          anchor = c.sapRef;
-          anchorSource = "concept:" + b.concept;
-          return true;
-        }
-        return false;
-      });
-    }
+    var resolvedAnchor = anchorForPhrase(ctx, pi, def);
 
     return { oid: def.oid, role: def.role, name: def.name,
              template: def.phrase_template, anchors: def.anchors,
              text: text, bindings: bindings, errors: errors,
              langFallback: langFallback,
-             anchor: anchor, anchorSource: anchorSource };
+             anchor: resolvedAnchor.anchor, anchorSource: resolvedAnchor.source };
   }
 
   /*
@@ -599,6 +602,21 @@
       estimand: estimandOf(ctx, instance),
       analysisRole: instance.analysisRole || null,
       handlesIntercurrentEvent: iceHandlings(ctx, instance),
+      /*
+       * Document provenance: this analysis's own anchor, and one per phrase use
+       * with the source of each resolved anchor recorded. EMITTING it is the
+       * point — an anchor no projection carries is inert, which is how three of
+       * four binding kinds went unanchored unnoticed (issue #12). Now it is
+       * pinned in goldens and can regress detectably.
+       */
+      sapRef: instance.sapRef || null,
+      documentAnchors: resolveInstance(ctx, instance).phrases
+        .filter(function (rp) { return rp.anchor; })
+        .map(function (rp) {
+          return { phrase: rp.oid, role: rp.role,
+                   section: rp.anchor.section, quote: rp.anchor.quote || null,
+                   from: rp.anchorSource };
+        }),
       template: {
         conceptId: tpl.conceptId, label: tpl.label,
         transformationType: tpl.transformationType,
@@ -844,6 +862,8 @@
         })
       : resolveInstance(ctx, instance).sentence;
 
+    var docIri = (ctx.graph.sourceDocument && ctx.graph.sourceDocument.iri) || null;
+
     var phraseNodes = instance.phrases.map(function (pi, i) {
       var def = phraseDef(ctx, pi.phrase);
       var node = {
@@ -852,6 +872,19 @@
         "sp:phrase": pi.phrase,
         "sp:role": def ? def.role : null
       };
+      /*
+       * prov:wasQuotedFrom is the W3C term for exactly this relation — an entity
+       * derived by quoting another — so the identifier policy (ground into
+       * existing standards wherever one covers the entity) is satisfied rather
+       * than an AC/DC term invented.
+       */
+      var anch = anchorForPhrase(ctx, pi, def).anchor;
+      if (anch && docIri) {
+        node["prov:wasQuotedFrom"] = {
+          "@id": docIri + "#" + anch.section,
+          "rdfs:comment": anch.quote || null
+        };
+      }
       var bnodes = [];
       Object.keys(pi.bindings).forEach(function (slot) {
         var b = pi.bindings[slot];
@@ -878,7 +911,8 @@
     return {
       "@context": Object.assign({
         sp: "https://w3id.org/cdisc/ac-dc/smartphrase/",
-        rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+        rdfs: "http://www.w3.org/2000/01/rdf-schema#",
+        prov: "http://www.w3.org/ns/prov#"
       }, ctx.graph.prefixes),
       "@id": instance.iri,
       "@type": "acdc:AnalysisConcept",
@@ -901,6 +935,10 @@
         })
       },
       "esap:analysisRole": instance.analysisRole || null,
+      "prov:wasQuotedFrom": instance.sapRef && docIri && {
+        "@id": docIri + "#" + instance.sapRef.section,
+        "rdfs:comment": instance.sapRef.quote || null
+      },
       "ars:analysis": instance.arsAnalysis && { "@id": instance.arsAnalysis.iri },
       "sp:hasPhraseInstance": phraseNodes,
       "sp:resolvesTo": resolvesTo

@@ -43,6 +43,8 @@
         "fromPhrase": "SP_ICE_TREATMENT_POLICY"
       }
     ],
+    "sapRef": null,
+    "documentAnchors": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -185,6 +187,7 @@
     "@context": {
       "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
       "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "prov": "http://www.w3.org/ns/prov#",
       "acdc": "https://w3id.org/cdisc/ac-dc/",
       "usdm": "https://ddf.cdisc.org/usdm/v4/",
       "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
@@ -632,6 +635,8 @@
     },
     "analysisRole": "MainEstimator",
     "handlesIntercurrentEvent": [],
+    "sapRef": null,
+    "documentAnchors": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -769,6 +774,7 @@
     "@context": {
       "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
       "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "prov": "http://www.w3.org/ns/prov#",
       "acdc": "https://w3id.org/cdisc/ac-dc/",
       "usdm": "https://ddf.cdisc.org/usdm/v4/",
       "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
@@ -1118,6 +1124,8 @@
         "fromPhrase": null
       }
     ],
+    "sapRef": null,
+    "documentAnchors": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -1260,6 +1268,7 @@
     "@context": {
       "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
       "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "prov": "http://www.w3.org/ns/prov#",
       "acdc": "https://w3id.org/cdisc/ac-dc/",
       "usdm": "https://ddf.cdisc.org/usdm/v4/",
       "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
@@ -1626,6 +1635,8 @@
         "fromPhrase": "SP_ICE_TREATMENT_POLICY"
       }
     ],
+    "sapRef": null,
+    "documentAnchors": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -1768,6 +1779,7 @@
     "@context": {
       "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
       "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "prov": "http://www.w3.org/ns/prov#",
       "acdc": "https://w3id.org/cdisc/ac-dc/",
       "usdm": "https://ddf.cdisc.org/usdm/v4/",
       "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
@@ -2232,6 +2244,40 @@
         "fromPhrase": "SP_ICE_TREATMENT_POLICY"
       }
     ],
+    "sapRef": {
+      "section": "7.7.2",
+      "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+    },
+    "documentAnchors": [
+      {
+        "phrase": "SP_TTE_ENDPOINT",
+        "role": "endpoint",
+        "section": "5.3",
+        "quote": "the duration of time from time of randomization to time of progression or death, whichever occurs first",
+        "from": "concept:EVENT.PFS"
+      },
+      {
+        "phrase": "SP_POPULATION",
+        "role": "population",
+        "section": "7.2",
+        "quote": "The primary efficacy analysis will be done including eligible, treated subjects.",
+        "from": "concept:POP.EVAL_EFFICACY"
+      },
+      {
+        "phrase": "SP_GROUPING",
+        "role": "grouping",
+        "section": "4.1",
+        "quote": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors",
+        "from": "concept:TRT.PRE0102"
+      },
+      {
+        "phrase": "SP_ICE_TREATMENT_POLICY",
+        "role": "ice_handling",
+        "section": "4.3",
+        "quote": "Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression",
+        "from": "concept:ICE.TOX_DISCONT"
+      }
+    ],
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
@@ -2337,6 +2383,7 @@
     "@context": {
       "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
       "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "prov": "http://www.w3.org/ns/prov#",
       "acdc": "https://w3id.org/cdisc/ac-dc/",
       "usdm": "https://ddf.cdisc.org/usdm/v4/",
       "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
@@ -2372,6 +2419,10 @@
       ]
     },
     "esap:analysisRole": "MainEstimator",
+    "prov:wasQuotedFrom": {
+      "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+      "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+    },
     "ars:analysis": {
       "@id": "ars:analysis/PRE0102-AN-7.07.02-PFS"
     },
@@ -2381,6 +2432,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_TTE_ENDPOINT",
         "sp:role": "endpoint",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#5.3",
+          "rdfs:comment": "the duration of time from time of randomization to time of progression or death, whichever occurs first"
+        },
         "sp:binding": [
           {
             "sp:slot": "event",
@@ -2395,6 +2450,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_POPULATION",
         "sp:role": "population",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.2",
+          "rdfs:comment": "The primary efficacy analysis will be done including eligible, treated subjects."
+        },
         "sp:binding": [
           {
             "sp:slot": "population",
@@ -2409,6 +2468,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_GROUPING",
         "sp:role": "grouping",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#4.1",
+          "rdfs:comment": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors"
+        },
         "sp:binding": [
           {
             "sp:slot": "treatment",
@@ -2450,6 +2513,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_ICE_TREATMENT_POLICY",
         "sp:role": "ice_handling",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#4.3",
+          "rdfs:comment": "Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression"
+        },
         "sp:binding": [
           {
             "sp:slot": "ice",
@@ -2656,6 +2723,40 @@
         "fromPhrase": "SP_ICE_TREATMENT_POLICY"
       }
     ],
+    "sapRef": {
+      "section": "7.7.2",
+      "quote": "As a sensitivity analysis, all of the above analyses described in Section 7.6.2 will be repeated for the as-randomized population (intent-to-treat analysis)."
+    },
+    "documentAnchors": [
+      {
+        "phrase": "SP_TTE_ENDPOINT",
+        "role": "endpoint",
+        "section": "5.3",
+        "quote": "the duration of time from time of randomization to time of progression or death, whichever occurs first",
+        "from": "concept:EVENT.PFS"
+      },
+      {
+        "phrase": "SP_POPULATION",
+        "role": "population",
+        "section": "7.2",
+        "quote": "Intent-to-treat (ITT) analysis population includes all subjects as randomized.",
+        "from": "concept:POP.ITT"
+      },
+      {
+        "phrase": "SP_GROUPING",
+        "role": "grouping",
+        "section": "4.1",
+        "quote": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors",
+        "from": "concept:TRT.PRE0102"
+      },
+      {
+        "phrase": "SP_ICE_TREATMENT_POLICY",
+        "role": "ice_handling",
+        "section": "4.3",
+        "quote": "Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression",
+        "from": "concept:ICE.TOX_DISCONT"
+      }
+    ],
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
@@ -2761,6 +2862,7 @@
     "@context": {
       "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
       "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "prov": "http://www.w3.org/ns/prov#",
       "acdc": "https://w3id.org/cdisc/ac-dc/",
       "usdm": "https://ddf.cdisc.org/usdm/v4/",
       "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
@@ -2796,6 +2898,10 @@
       ]
     },
     "esap:analysisRole": "SensitivityAnalysis",
+    "prov:wasQuotedFrom": {
+      "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+      "rdfs:comment": "As a sensitivity analysis, all of the above analyses described in Section 7.6.2 will be repeated for the as-randomized population (intent-to-treat analysis)."
+    },
     "ars:analysis": {
       "@id": "ars:analysis/PRE0102-AN-7.07.02-PFS-ITT"
     },
@@ -2805,6 +2911,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_TTE_ENDPOINT",
         "sp:role": "endpoint",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#5.3",
+          "rdfs:comment": "the duration of time from time of randomization to time of progression or death, whichever occurs first"
+        },
         "sp:binding": [
           {
             "sp:slot": "event",
@@ -2819,6 +2929,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_POPULATION",
         "sp:role": "population",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.2",
+          "rdfs:comment": "Intent-to-treat (ITT) analysis population includes all subjects as randomized."
+        },
         "sp:binding": [
           {
             "sp:slot": "population",
@@ -2833,6 +2947,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_GROUPING",
         "sp:role": "grouping",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#4.1",
+          "rdfs:comment": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors"
+        },
         "sp:binding": [
           {
             "sp:slot": "treatment",
@@ -2874,6 +2992,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_ICE_TREATMENT_POLICY",
         "sp:role": "ice_handling",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#4.3",
+          "rdfs:comment": "Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression"
+        },
         "sp:binding": [
           {
             "sp:slot": "ice",
@@ -3067,6 +3189,33 @@
     },
     "analysisRole": "MainEstimator",
     "handlesIntercurrentEvent": [],
+    "sapRef": {
+      "section": "7.7.2",
+      "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+    },
+    "documentAnchors": [
+      {
+        "phrase": "SP_TTE_ENDPOINT",
+        "role": "endpoint",
+        "section": "5.3",
+        "quote": "the time from randomization until death or censored at the date of last follow-up",
+        "from": "concept:EVENT.OS"
+      },
+      {
+        "phrase": "SP_POPULATION",
+        "role": "population",
+        "section": "7.2",
+        "quote": "The primary efficacy analysis will be done including eligible, treated subjects.",
+        "from": "concept:POP.EVAL_EFFICACY"
+      },
+      {
+        "phrase": "SP_GROUPING",
+        "role": "grouping",
+        "section": "4.1",
+        "quote": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors",
+        "from": "concept:TRT.PRE0102"
+      }
+    ],
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
@@ -3172,6 +3321,7 @@
     "@context": {
       "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
       "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "prov": "http://www.w3.org/ns/prov#",
       "acdc": "https://w3id.org/cdisc/ac-dc/",
       "usdm": "https://ddf.cdisc.org/usdm/v4/",
       "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
@@ -3202,6 +3352,10 @@
       "usdm:intercurrentEvent": []
     },
     "esap:analysisRole": "MainEstimator",
+    "prov:wasQuotedFrom": {
+      "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+      "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+    },
     "ars:analysis": {
       "@id": "ars:analysis/PRE0102-AN-7.07.02-OS"
     },
@@ -3211,6 +3365,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_TTE_ENDPOINT",
         "sp:role": "endpoint",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#5.3",
+          "rdfs:comment": "the time from randomization until death or censored at the date of last follow-up"
+        },
         "sp:binding": [
           {
             "sp:slot": "event",
@@ -3225,6 +3383,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_POPULATION",
         "sp:role": "population",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.2",
+          "rdfs:comment": "The primary efficacy analysis will be done including eligible, treated subjects."
+        },
         "sp:binding": [
           {
             "sp:slot": "population",
@@ -3239,6 +3401,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_GROUPING",
         "sp:role": "grouping",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#4.1",
+          "rdfs:comment": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors"
+        },
         "sp:binding": [
           {
             "sp:slot": "treatment",
@@ -3425,6 +3591,33 @@
     },
     "analysisRole": "MainEstimator",
     "handlesIntercurrentEvent": [],
+    "sapRef": {
+      "section": "7.7.2",
+      "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+    },
+    "documentAnchors": [
+      {
+        "phrase": "SP_TTE_ENDPOINT",
+        "role": "endpoint",
+        "section": "5.3",
+        "quote": "the time from randomization until progression of the disease",
+        "from": "concept:EVENT.TTP"
+      },
+      {
+        "phrase": "SP_POPULATION",
+        "role": "population",
+        "section": "7.2",
+        "quote": "The primary efficacy analysis will be done including eligible, treated subjects.",
+        "from": "concept:POP.EVAL_EFFICACY"
+      },
+      {
+        "phrase": "SP_GROUPING",
+        "role": "grouping",
+        "section": "4.1",
+        "quote": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors",
+        "from": "concept:TRT.PRE0102"
+      }
+    ],
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
@@ -3530,6 +3723,7 @@
     "@context": {
       "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
       "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "prov": "http://www.w3.org/ns/prov#",
       "acdc": "https://w3id.org/cdisc/ac-dc/",
       "usdm": "https://ddf.cdisc.org/usdm/v4/",
       "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
@@ -3560,6 +3754,10 @@
       "usdm:intercurrentEvent": []
     },
     "esap:analysisRole": "MainEstimator",
+    "prov:wasQuotedFrom": {
+      "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+      "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+    },
     "ars:analysis": {
       "@id": "ars:analysis/PRE0102-AN-7.07.02-TTP"
     },
@@ -3569,6 +3767,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_TTE_ENDPOINT",
         "sp:role": "endpoint",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#5.3",
+          "rdfs:comment": "the time from randomization until progression of the disease"
+        },
         "sp:binding": [
           {
             "sp:slot": "event",
@@ -3583,6 +3785,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_POPULATION",
         "sp:role": "population",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#7.2",
+          "rdfs:comment": "The primary efficacy analysis will be done including eligible, treated subjects."
+        },
         "sp:binding": [
           {
             "sp:slot": "population",
@@ -3597,6 +3803,10 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_GROUPING",
         "sp:role": "grouping",
+        "prov:wasQuotedFrom": {
+          "@id": "acdc:document/PRE0102-SAP-001#4.1",
+          "rdfs:comment": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors"
+        },
         "sp:binding": [
           {
             "sp:slot": "treatment",

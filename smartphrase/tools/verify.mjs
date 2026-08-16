@@ -150,6 +150,19 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
         JSON.stringify(phraseIces));
     }
 
+    /* Anchors must be PROJECTED, not merely stored. Before issue #12 the
+       sapRef field appeared in zero pinned outputs — no surface consumed it and
+       no gate could detect it regressing, which is why three of four binding
+       kinds went unanchored unnoticed. */
+    if (graph.sourceDocument) {
+      check(`${studyKey}/${inst.id} model view carries document anchors`,
+        (mv.documentAnchors || []).length > 0, JSON.stringify(mv.documentAnchors));
+      check(`${studyKey}/${inst.id} model view carries the instance's own anchor`,
+        !!mv.sapRef);
+      check(`${studyKey}/${inst.id} JSON-LD quotes its source`,
+        JSON.stringify(E.toJSONLD(ctx, inst)).includes("prov:wasQuotedFrom"));
+    }
+
     /* tag dialect round-trip must be byte-equal */
     const src = E.toMacroText(ctx, inst);
     record(`${studyKey}/${inst.id}/macro`, src);
