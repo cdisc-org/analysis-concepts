@@ -225,6 +225,52 @@ studyBtns[0].dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
 /* back to PrE0102 for the remaining stops */
 studyBtns[1].dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
 
+/* ---------- 3c. document anchoring shows in the UI (issue #12) ----------
+ * The method phrase is the case the issue says visibly never highlighted
+ * anything: its binding resolves into the library, which correctly forbids
+ * study text, so there was no route to the SAP at all.
+ */
+{
+  const chipsByText = (t) =>
+    [...$("prose1").querySelectorAll("span.sp")].filter((s) => s.textContent.includes(t));
+
+  const methodChip = chipsByText("Kaplan-Meier estimation")[0];
+  check("method chip present", !!methodChip);
+  if (methodChip) {
+    methodChip.dispatchEvent(new window.MouseEvent("mouseenter", { bubbles: true }));
+    const pop = $("pop").textContent;
+    check("hovering the method phrase now cites the SAP", pop.includes("SAP 7.7.2"), pop.slice(0, 300));
+    check("the popover shows the quotation itself",
+      pop.includes("using Kaplan-Meier estimates"), pop.slice(0, 400));
+    check("the popover says the anchor is on the phrase use",
+      pop.includes("phrase use"), pop.slice(0, 400));
+  }
+
+  /* A FIXED-TEXT phrase: no bindings at all, so no concept could ever have
+     carried its anchor. */
+  const fixedChip = chipsByText("censoring subjects lost to follow-up")[0];
+  check("fixed-text chip present in prose", !!fixedChip);
+  if (fixedChip) {
+    fixedChip.dispatchEvent(new window.MouseEvent("mouseenter", { bubbles: true }));
+    const pop = $("pop").textContent;
+    check("a fixed-text phrase cites the SAP", pop.includes("SAP 7.7.2"), pop.slice(0, 300));
+    check("its quote is the censoring sentence",
+      pop.includes("lost to follow-up are censored"), pop.slice(0, 400));
+  }
+
+  /* A concept-bound phrase attributes its anchor to the concept, not the use. */
+  const endpointChip = chipsByText("disease progression or death")[0];
+  if (endpointChip) {
+    endpointChip.dispatchEvent(new window.MouseEvent("mouseenter", { bubbles: true }));
+    const pop = $("pop").textContent;
+    check("a concept-bound phrase attributes its anchor to the concept",
+      pop.includes("bound concept"), pop.slice(0, 400));
+  }
+
+  check("stop 4 reports anchoring coverage",
+    /33 of 33 phrase uses/.test(txt("anchorCoverage")), txt("anchorCoverage"));
+}
+
 /* ---------- 4. trace: click the endpoint chip ---------- */
 const chips = [...$("prose1").querySelectorAll("span")].filter(
   (s) => s.textContent.includes("disease progression or death")

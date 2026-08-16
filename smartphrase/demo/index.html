@@ -88,6 +88,9 @@
   #pop button { cursor: pointer; }
   #pop button.danger { color: var(--warn); }
   #pop .popact { margin-top: 8px; text-align: right; }
+  #pop .quote { font-style: italic; color: var(--muted); border-left: 2px solid var(--line);
+                padding-left: 8px; margin: 3px 0; font-size: 12.5px; }
+  #pop .anchorfrom { font-size: 11px; color: var(--muted); }
 
   /* trace drawer */
   #trace { margin-top: 18px; display: none; }
@@ -287,6 +290,7 @@
      registered are flagged <span class="stat illustrative">illustrative</span> — the mechanism, not the final ids,
      is the claim.</p>
   <table class="ids" id="idTable"></table>
+  <p class="provenance" id="anchorCoverage"></p>
   <p class="provenance" id="provenance"></p>
   <div class="card" style="margin-top:16px;">
     <h3 style="margin:0 0 6px;font-size:15px;">Why this survives a changing SAP structure</h3>
@@ -459,11 +463,24 @@
               : '<b>' + b.text + '</b> <span style="color:var(--muted)">(' + d.id + (d.render ? " · render: " + d.render : "") + ')</span>';
       return "<tr><td class='k'>{" + b.placeholder + "}</td><td>" + val + iri + "</td></tr>";
     }).join("");
+    /*
+     * The row issue #12 exists for. Before it, hovering a method, value or
+     * output phrase showed no path back to the document at all — those bindings
+     * resolve into the library, which correctly forbids study text — and a
+     * fixed-text phrase had no binding to route through in the first place.
+     */
+    var src = rp.anchor
+      ? "<tr><td class='k'>source</td><td><b>SAP " + rp.anchor.section + "</b>" +
+        (rp.anchor.quote ? "<div class='quote'>“" + rp.anchor.quote + "”</div>" : "") +
+        "<div class='anchorfrom'>anchored at the " +
+        (rp.anchorSource === "phraseInstance" ? "phrase use" : "bound concept (" +
+          rp.anchorSource.replace("concept:", "") + ")") + "</div></td></tr>"
+      : "";
     var anchors = rp.anchors && Object.keys(rp.anchors).length
       ? "<tr><td class='k'>anchors</td><td><span style='font-family:var(--mono);font-size:12px'>" +
         Object.keys(rp.anchors).map(function (k) { return k + " → " + rp.anchors[k]; }).join(", ") + "</span></td></tr>" : "";
     return "<h4>" + rp.oid + '<span class="rolebadge">' + (ROLE_LABELS[rp.role] ? ROLE_LABELS[rp.role].label : rp.role) + "</span></h4>" +
-      '<div class="tpl">"' + rp.template + '"</div><table>' + rows + anchors + "</table>" +
+      '<div class="tpl">"' + rp.template + '"</div><table>' + rows + anchors + src + "</table>" +
       (TRACEABLE.indexOf(rp.role) !== -1 ? '<div class="popact" style="text-align:left;color:var(--muted);font-size:12px;">click the phrase to trace it to the data ↓</div>' : "");
   }
 
@@ -966,6 +983,26 @@
     });
     document.getElementById("idTable").innerHTML =
       "<tr><th>Entity</th><th>AC/DC id</th><th>IRI</th><th>Grounds into</th><th>Status</th></tr>" + rows.join("");
+    /*
+     * Document-anchoring coverage, self-reported (issue #12). Claim 2 of the
+     * PoC is traceability to data; this is its missing twin, traceability to the
+     * source document — stated as a number so it cannot quietly rot.
+     */
+    var uses = 0, anchored = 0;
+    GRAPH.instances.forEach(function (inst) {
+      E.resolveInstance(ctx, inst).phrases.forEach(function (rp) {
+        uses++;
+        if (rp.anchor) anchored++;
+      });
+    });
+    var sd = GRAPH.sourceDocument;
+    document.getElementById("anchorCoverage").innerHTML = sd
+      ? "<b>Document anchoring:</b> " + anchored + " of " + uses +
+        " phrase uses in this study cite <code>" + sd.title + "</code> (" + sd.date +
+        "). Every quote is verified against the converted source by " +
+        "<code>tools/verify.mjs</code> — a paraphrase fails the build."
+      : "<b>Document anchoring:</b> not applicable — " + GRAPH.sourceDocumentNote;
+
     var prov = ctx.lib.provenance;
     /* Proposed additions live on the MERGED library that ctxOf builds, not on
        the raw generated global — read them from the context. */
