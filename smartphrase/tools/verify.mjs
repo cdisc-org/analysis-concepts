@@ -13,8 +13,13 @@ import path from "node:path";
 import vm from "node:vm";
 import { fileURLToPath } from "node:url";
 
+import {
+  allAnchors, quoteAppearsIn, resolveSection, sectionsIn
+} from "./lib-anchors.mjs";
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 const demo = path.join(here, "..", "demo");
+const smartphraseDir = path.join(here, "..");
 const goldenPath = path.join(here, "goldens.json");
 const update = process.argv.includes("--update-goldens");
 
@@ -291,6 +296,45 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
     check(`${studyKey} source document maps top-level sections to files`,
       !!sd.sectionFiles && Object.keys(sd.sectionFiles).length > 0);
   }
+}
+
+/* ---- every quote must actually appear in the section it cites ---- */
+for (const [studyKey, graph] of Object.entries(graphs)) {
+  if (!graph.sourceDocument) continue;
+  for (const a of allAnchors(graph)) {
+    const file = resolveSection(smartphraseDir, graph, a.section);
+    check(`${studyKey}/${a.where} cites a resolvable section (${a.section})`, !!file, a.section);
+    if (!file) continue;
+    check(`${studyKey}/${a.where} section ${a.section} exists in the document`,
+      sectionsIn(file).has(a.section), "not a heading in " + path.basename(file));
+    if (!a.quote) continue;
+    /* The check that makes an anchor a fact rather than a claim. */
+    check(`${studyKey}/${a.where} quote appears verbatim in section ${a.section}`,
+      quoteAppearsIn(fs.readFileSync(file, "utf8"), a.quote),
+      JSON.stringify(a.quote.slice(0, 90)));
+  }
+}
+
+/* ---- planted faults: the quote gate must actually bite ---- */
+{
+  const graph = graphs.PRE0102;
+  const f = resolveSection(smartphraseDir, graph, "4.1");
+  const body = fs.readFileSync(f, "utf8");
+  /* The exact paraphrase that shipped in #9 and read like a quotation. */
+  check("planted fault: a paraphrase is rejected",
+    !quoteAppearsIn(body, "randomized 1:1 to everolimus or placebo, both with fulvestrant"));
+  check("planted fault: invented text is rejected",
+    !quoteAppearsIn(body, "subjects will be randomised by coin toss"));
+  /* Normalisation must forgive line wrapping, typographic punctuation and
+     Markdown emphasis — but nothing else. */
+  check("real quotes survive hard wrapping",
+    quoteAppearsIn(body,
+      "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors"));
+  check("Markdown emphasis is not treated as source text",
+    quoteAppearsIn(fs.readFileSync(resolveSection(smartphraseDir, graph, "7.2"), "utf8"),
+      "Intent-to-treat (ITT) analysis population includes all subjects as randomized"));
+  check("planted fault: a non-existent subsection is rejected",
+    !sectionsIn(resolveSection(smartphraseDir, graph, "7.99")).has("7.99"));
 }
 
 /* ---- document anchors are structured, not prose strings ---- */
