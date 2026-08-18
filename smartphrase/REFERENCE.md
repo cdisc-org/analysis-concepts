@@ -308,6 +308,21 @@ An **anchor** is `{ section, quote? }` and may sit on four study-side entities: 
 entity — methods, output classes and transformation templates are study-agnostic and must not carry study
 text, which is precisely why an anchor on the *use* was needed (DESIGN.md D17).
 
+A phrase use that no passage grounds must say so:
+
+```js
+{ phrase: "SP_KM_CURVES", bindings: {},
+  sapRefs: [],
+  noAnchorReason: "the SAP does not specify curves for this analysis" }
+```
+
+An **absent** `sapRefs` is an unanswered question and fails the gate for any
+study declaring a `sourceDocument`. An **empty** `sapRefs` with a
+`noAnchorReason` is an answer. The distinction exists because a reviewer
+working through a document cannot otherwise tell "not yet anchored" from
+"nothing to anchor to" — the same reasoning that made
+`Estimand.intercurrentEvents` explicit rather than inferred from silence.
+
 **Resolution and precedence** (`resolvePhrase`, §5): the phrase instance's own `sapRef` wins, answering
 *"why is this here?"*; otherwise the first bound concept with an anchor supplies one, answering *"what is
 this?"*. Both persist — overriding never erases the concept's — and `anchorSource` reports which applied

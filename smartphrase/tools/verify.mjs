@@ -151,18 +151,22 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
     }
 
     /*
-     * COVERAGE — the requirement in issue #12. For a study that HAS a source
-     * document, every assertion the generated prose makes must be traceable to
-     * the text that grounds it. Not "most"; the audit that raised the issue
-     * found roughly half of all phrase uses unanchored precisely because the
-     * uncovered kinds were invisible rather than few.
+     * COVERAGE — the requirement in issue #12, refined by #13. Every assertion
+     * the generated prose makes must be traceable to the text that grounds it,
+     * OR must state that no text grounds it. The audit that raised #12 found
+     * roughly half of all phrase uses unanchored precisely because the
+     * uncovered kinds were invisible rather than few; #13 adds that silence is
+     * itself ambiguous, so it has to be broken deliberately.
      */
     if (graph.sourceDocument) {
-      const unanchored = E.resolveInstance(ctx, inst, "en").phrases
-        .filter((p) => !p.anchor)
-        .map((p) => p.oid);
-      check(`${studyKey}/${inst.id} every phrase use is anchored to the document`,
-        unanchored.length === 0, unanchored.join(", "));
+      const undeclared = inst.phrases.filter((pi) => {
+        const res = E.anchorForPhrase(ctx, pi, E.phraseDef(ctx, pi.phrase), inst);
+        if (res.anchors.length) return false;
+        return !(Array.isArray(pi.sapRefs) && typeof pi.noAnchorReason === "string" &&
+                 pi.noAnchorReason.length > 0);
+      }).map((pi) => pi.phrase);
+      check(`${studyKey}/${inst.id} every phrase use is anchored or declares why not`,
+        undeclared.length === 0, undeclared.join(", "));
     }
 
     /* Anchors must be PROJECTED, not merely stored. Before issue #12 the
@@ -591,10 +595,40 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
   /* THE HEADLINE: one concept, two analyses, two different correct sections.
      Inspected from an analysis specified at 5.3, EVENT.PFS leads with 5.3. */
   const at53 = JSON.parse(JSON.stringify(primary));
-  at53.sapRefs = [{ section: "5.3", quote: "the time from randomization until progression of the disease" }];
+  at53.sapRefs = [{ section: "5.3", quote: "the duration of time from time of randomization to time of progression or death, whichever occurs first" }];
   const rp53 = E.resolveInstance(ctx, at53, "en").phrases.find((p) => p.role === "endpoint");
   check("one concept anchors differently per analysis",
     rp53.anchor.section === "5.3", JSON.stringify(rp53.anchor));
+}
+
+/* ---- declared-empty: "nothing to anchor to" is an answer, silence is not ----
+ *
+ * No PrE0102 use is in this position — all 33 resolve — so the rule is proven
+ * on probes. That is stated rather than hidden: the gate is real, and the study
+ * simply has nothing that triggers it.
+ */
+{
+  const graph = JSON.parse(JSON.stringify(graphs.PRE0102));
+  const ctx = E.ctxOf(LIB, graph, I18N);
+  const inst = graph.instances.find((i) => i.id === "AC.PRIMARY.PFS");
+  const km = inst.phrases.find((p) => p.phrase === "SP_KM_CURVES");
+
+  /* Strip the anchor entirely: absent, not empty. */
+  delete km.sapRefs;
+  const bare = E.anchorForPhrase(ctx, km, E.phraseDef(ctx, "SP_KM_CURVES"), inst);
+  check("a use with no reference anywhere resolves to none",
+    bare.anchors.length === 0 && bare.anchor === null, JSON.stringify(bare));
+  check("an absent list is not a declaration",
+    bare.declaredEmpty === false, String(bare.declaredEmpty));
+
+  /* Now declare it. */
+  km.sapRefs = [];
+  km.noAnchorReason = "probe: the SAP does not specify Kaplan-Meier curves for this analysis";
+  const declared = E.anchorForPhrase(ctx, km, E.phraseDef(ctx, "SP_KM_CURVES"), inst);
+  check("an empty list is a declaration",
+    declared.declaredEmpty === true, String(declared.declaredEmpty));
+  check("a declared-empty use still resolves to no reference",
+    declared.anchors.length === 0);
 }
 
 /* ---- planted fault: plurality must not open an unverified back door ---- */
