@@ -891,7 +891,7 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
 node smartphrase/tools/verify.mjs
 ```
 
-Expected failures: `AC.PRIMARY.PFS endpoint now leads with §7.7.2 — 5.3`, the seven sibling assertions, `the summary measure holds three references in one section — [ …2 entries… ]`, and `one concept anchors differently per analysis`.
+Expected failures: `AC.PRIMARY.PFS endpoint now leads with §7.7.2 — 5.3`, the seven sibling assertions, `the summary measure holds two references in one section — [ …1 entry… ]`, and `one concept anchors differently per analysis`.
 
 - [ ] **Step 3: Add the four concept-level references**
 
@@ -1028,7 +1028,7 @@ with 7.7.2 while keeping the definition one place further down. The four
 SP_GROUPING uses deliberately still cite 4.1: that reference is right, and
 the only 7.7.2 fragment available recurs throughout the section.
 
-The summary measure now holds three references sharing a level and a
+The summary measure now holds two references sharing a level and a
 section, so relation is exercised on live data and not only on a probe.
 
 Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
