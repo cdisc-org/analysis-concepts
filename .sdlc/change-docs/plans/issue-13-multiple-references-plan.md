@@ -725,7 +725,11 @@ node smartphrase/tools/verify.mjs --update-goldens
 node smartphrase/tools/diff-goldens.mjs --summary
 ```
 
-Expected: additions of the new `documentAnchors` fields. **No `documentAnchors` entry may be added or removed and no `section` value may change** — the study data still holds one reference per site, so the resolved *set* is unchanged and only its description is richer. If a section value moved, the ranker is being applied where there is nothing to rank; stop and investigate.
+Expected: additions of the new `documentAnchors` fields, and **exactly one new entry each for `AC.PRIMARY.PFS` and `AC.SENS.PFS.ITT`**.
+
+Those two new entries are the union resolver working, not a regression. `ICE.TOX_DISCONT` is the one site in either study where a concept and the phrase instance binding it both carry their own reference — both in §4.3, but different sentences: the phrase cites *"All subjects who have discontinued protocol therapy will be followed for survival and for progression…"*, which justifies the treatment-policy handling, while the concept cites *"Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity…"*, which defines the event. The data file's own comment says as much: *"Same section, different claim."* First-match-wins discarded the concept's sentence silently — the issue's third failure mode, "secondary anchors invisible", live in this repo.
+
+So the constraint is: **no `section` value may change, and no entry may be removed.** Entries may be *added* exactly where a previously-discarded reference now surfaces, and every addition must be explicable as one. An unexplained addition, or any removal or changed section value, means the ranker is being applied where there was nothing to rank — stop and investigate.
 
 - [ ] **Step 11: Run the UI gate**
 
