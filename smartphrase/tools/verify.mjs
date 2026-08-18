@@ -173,7 +173,7 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
       check(`${studyKey}/${inst.id} model view carries document anchors`,
         (mv.documentAnchors || []).length > 0, JSON.stringify(mv.documentAnchors));
       check(`${studyKey}/${inst.id} model view carries the instance's own anchor`,
-        !!mv.sapRef);
+        (mv.sapRefs || []).length > 0, JSON.stringify(mv.sapRefs));
       check(`${studyKey}/${inst.id} JSON-LD quotes its source`,
         JSON.stringify(E.toJSONLD(ctx, inst)).includes("prov:wasQuotedFrom"));
     }
@@ -265,14 +265,14 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
      smuggled into a label for tooling to regex out again (issue #12). */
   Object.keys(graph.estimands || {}).forEach((eid) => {
     check(`${studyKey}/${eid} estimand carries a document anchor`,
-      !graph.sourceDocument || !!graph.estimands[eid].sapRef,
-      "no sapRef");
+      !graph.sourceDocument || (graph.estimands[eid].sapRefs || []).length > 0,
+      "no sapRefs");
     check(`${studyKey}/${eid} label does not embed a section reference`,
       !/\(\s*SAP\s*[0-9]/i.test(graph.estimands[eid].label), graph.estimands[eid].label);
   });
   graph.instances.forEach((inst) => {
     check(`${studyKey}/${inst.id} instance carries a document anchor`,
-      !graph.sourceDocument || !!inst.sapRef, "no sapRef");
+      !graph.sourceDocument || (inst.sapRefs || []).length > 0, "no sapRefs");
     check(`${studyKey}/${inst.id} label does not embed a section reference`,
       !/\(\s*SAP\s*[0-9]/i.test(inst.label), inst.label);
   });
@@ -373,19 +373,19 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
 
   /* Instance-level wins, and does not destroy the concept's. */
   const probe = JSON.parse(JSON.stringify(inst));
-  probe.phrases.find((p) => p.phrase === "SP_TTE_ENDPOINT").sapRef =
-    { section: "7.7.2", quote: "PFS = time from randomization to documented disease progression or death" };
+  probe.phrases.find((p) => p.phrase === "SP_TTE_ENDPOINT").sapRefs =
+    [{ section: "7.7.2", quote: "PFS = time from randomization to documented disease progression or death" }];
   const rp = E.resolveInstance(ctx, probe, "en").phrases.find((p) => p.role === "endpoint");
   check("instance-level anchor takes precedence",
     !!rp.anchor && rp.anchor.section === "7.7.2" && rp.anchorSource === "phraseInstance",
     JSON.stringify(rp.anchor) + " " + rp.anchorSource);
   check("the concept's own anchor survives being overridden",
-    E.concept(ctx, "EVENT.PFS").sapRef.section === "5.3");
+    E.concept(ctx, "EVENT.PFS").sapRefs[0].section === "5.3");
 
   /* A phrase with no concept binding — the whole point of #12 — can anchor. */
   const mprobe = JSON.parse(JSON.stringify(inst));
-  mprobe.phrases.find((p) => p.phrase === "SP_METHOD_KM").sapRef =
-    { section: "7.7.2", quote: "using Kaplan-Meier estimates" };
+  mprobe.phrases.find((p) => p.phrase === "SP_METHOD_KM").sapRefs =
+    [{ section: "7.7.2", quote: "using Kaplan-Meier estimates" }];
   const mrp = E.resolveInstance(ctx, mprobe, "en").phrases.find((p) => p.role === "method");
   check("a method phrase can carry its own anchor",
     !!mrp.anchor && mrp.anchorSource === "phraseInstance", JSON.stringify(mrp));
@@ -394,9 +394,9 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
      serialise them — an edit through the text surface must not strip provenance. */
   const src = E.toMacroText(ctx, mprobe);
   const back = E.parseMacroText(ctx, src, mprobe);
-  const before = mprobe.phrases.filter((p) => p.sapRef).length;
-  const kept = back.instancePatch
-    ? back.instancePatch.phrases.filter((p) => p.sapRef).length : -1;
+  const countRefs = (ps) => ps.reduce((n, p) => n + (p.sapRefs || []).length, 0);
+  const before = countRefs(mprobe.phrases);
+  const kept = back.instancePatch ? countRefs(back.instancePatch.phrases) : -1;
   check("tag-dialect round-trip preserves every anchor",
     kept === before && before > 0, kept + " of " + before);
 }
@@ -427,13 +427,16 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
 {
   for (const [studyKey, graph] of Object.entries(graphs)) {
     Object.keys(graph.concepts).forEach((id) => {
-      const a = graph.concepts[id].sapRef;
-      if (a === undefined) return;
-      check(`${studyKey}/${id} sapRef is a structured anchor`,
-        a !== null && typeof a === "object" && typeof a.section === "string",
-        JSON.stringify(a));
-      check(`${studyKey}/${id} sapRef cites a section number`,
-        /^[0-9]+(\.[0-9]+)*$/.test((a && a.section) || ""), String(a && a.section));
+      const refs = graph.concepts[id].sapRefs;
+      if (refs === undefined) return;
+      check(`${studyKey}/${id} sapRefs is a list`, Array.isArray(refs), JSON.stringify(refs));
+      (Array.isArray(refs) ? refs : []).forEach((a, i) => {
+        check(`${studyKey}/${id} sapRefs[${i}] is a structured anchor`,
+          a !== null && typeof a === "object" && typeof a.section === "string",
+          JSON.stringify(a));
+        check(`${studyKey}/${id} sapRefs[${i}] cites a section number`,
+          /^[0-9]+(\.[0-9]+)*$/.test(a && a.section), String(a && a.section));
+      });
     });
   }
 }
@@ -518,10 +521,11 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
   /* Every PrE0102 concept quotes its source — the ICE included. That discipline
      is what separates this study from the illustrative Pilot layer. */
   const iceConcept = ctx.graph.concepts["ICE.TOX_DISCONT"];
+  const iceRef = iceConcept && iceConcept.sapRefs && iceConcept.sapRefs[0];
   check("the PrE0102 ICE quotes its source sentence",
-    !!iceConcept && iceConcept.sapRef && iceConcept.sapRef.section === "4.3" &&
-      /suspected everolimus-associated toxicity/.test(iceConcept.sapRef.quote || ""),
-    iceConcept ? JSON.stringify(iceConcept.sapRef) : "ICE.TOX_DISCONT not in the registry");
+    !!iceRef && iceRef.section === "4.3" &&
+      /suspected everolimus-associated toxicity/.test(iceRef.quote || ""),
+    iceRef ? JSON.stringify(iceRef) : "ICE.TOX_DISCONT not in the registry");
 }
 
 /* ---- ICE ascertainment trace: a distinct axis, focused per ICE ---- */

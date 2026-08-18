@@ -139,7 +139,7 @@
         data: { dataset: "ADSL", file: "adsl.xpt", flag: "DCSREAS",
                 datasetLabel: "Subject-Level Analysis Dataset",
                 timing: "EOSDT", bc: "BC_DS_001", property: "Disposition Event" },
-        /* No sapRef: this study declares no source document (see sourceDocument
+        /* No sapRefs: this study declares no source document (see sourceDocument
            below), so there is nothing to quote. The anchor type means "here is
            the text that grounds this" and must not be overloaded to mean "there
            is none". */
@@ -164,7 +164,7 @@
         data: { dataset: "ADCM", file: "adcm.xpt", flag: "CMCAT",
                 datasetLabel: "Concomitant Medications Analysis Dataset",
                 timing: "ASTDT", bc: "BC_CM_001", property: "Category" },
-        /* No sapRef: this study declares no source document (see sourceDocument
+        /* No sapRefs: this study declares no source document (see sourceDocument
            below), so there is nothing to quote. The anchor type means "here is
            the text that grounds this" and must not be overloaded to mean "there
            is none". */

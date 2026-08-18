@@ -43,7 +43,7 @@
         "fromPhrase": "SP_ICE_TREATMENT_POLICY"
       }
     ],
-    "sapRef": null,
+    "sapRefs": [],
     "documentAnchors": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
@@ -227,6 +227,7 @@
       ]
     },
     "esap:analysisRole": "MainEstimator",
+    "prov:wasQuotedFrom": null,
     "ars:analysis": {
       "@id": "ars:analysis/AN-3.02.01"
     },
@@ -635,7 +636,7 @@
     },
     "analysisRole": "MainEstimator",
     "handlesIntercurrentEvent": [],
-    "sapRef": null,
+    "sapRefs": [],
     "documentAnchors": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
@@ -805,6 +806,7 @@
       "usdm:intercurrentEvent": []
     },
     "esap:analysisRole": "MainEstimator",
+    "prov:wasQuotedFrom": null,
     "ars:analysis": {
       "@id": "ars:analysis/AN-3.03.01"
     },
@@ -1124,7 +1126,7 @@
         "fromPhrase": null
       }
     ],
-    "sapRef": null,
+    "sapRefs": [],
     "documentAnchors": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
@@ -1308,6 +1310,7 @@
       ]
     },
     "esap:analysisRole": "SupplementaryAnalysis",
+    "prov:wasQuotedFrom": null,
     "ars:analysis": {
       "@id": "ars:analysis/AN-3.02.02"
     },
@@ -1635,7 +1638,7 @@
         "fromPhrase": "SP_ICE_TREATMENT_POLICY"
       }
     ],
-    "sapRef": null,
+    "sapRefs": [],
     "documentAnchors": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
@@ -1819,6 +1822,7 @@
       ]
     },
     "esap:analysisRole": "MainEstimator",
+    "prov:wasQuotedFrom": null,
     "ars:analysis": {
       "@id": "ars:analysis/AN-SENS-TP"
     },
@@ -2223,10 +2227,12 @@
       "iri_status": "illustrative",
       "label": "Primary estimand — progression-free survival",
       "rank": "primary",
-      "sapRef": {
-        "section": "3.1",
-        "quote": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
-      },
+      "sapRefs": [
+        {
+          "section": "3.1",
+          "quote": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+        }
+      ],
       "intercurrentEvents": [
         "ICE.TOX_DISCONT"
       ]
@@ -2244,10 +2250,12 @@
         "fromPhrase": "SP_ICE_TREATMENT_POLICY"
       }
     ],
-    "sapRef": {
-      "section": "7.7.2",
-      "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-    },
+    "sapRefs": [
+      {
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+      }
+    ],
     "documentAnchors": [
       {
         "phrase": "SP_TTE_ENDPOINT",
@@ -2456,10 +2464,12 @@
       ]
     },
     "esap:analysisRole": "MainEstimator",
-    "prov:wasQuotedFrom": {
-      "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-      "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-    },
+    "prov:wasQuotedFrom": [
+      {
+        "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+        "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+      }
+    ],
     "ars:analysis": {
       "@id": "ars:analysis/PRE0102-AN-7.07.02-PFS"
     },
@@ -2469,10 +2479,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_TTE_ENDPOINT",
         "sp:role": "endpoint",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#5.3",
-          "rdfs:comment": "the duration of time from time of randomization to time of progression or death, whichever occurs first"
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#5.3",
+            "rdfs:comment": "the duration of time from time of randomization to time of progression or death, whichever occurs first"
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "event",
@@ -2487,10 +2499,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_POPULATION",
         "sp:role": "population",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.2",
-          "rdfs:comment": "The primary efficacy analysis will be done including eligible, treated subjects."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.2",
+            "rdfs:comment": "The primary efficacy analysis will be done including eligible, treated subjects."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "population",
@@ -2505,10 +2519,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_GROUPING",
         "sp:role": "grouping",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#4.1",
-          "rdfs:comment": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors"
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#4.1",
+            "rdfs:comment": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors"
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "treatment",
@@ -2523,10 +2539,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_METHOD_KM",
         "sp:role": "method",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "method",
@@ -2542,10 +2560,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_CONFIDENCE_LEVEL",
         "sp:role": "method_qualifier",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "conf_level",
@@ -2558,10 +2578,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_ICE_TREATMENT_POLICY",
         "sp:role": "ice_handling",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#4.3",
-          "rdfs:comment": "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#4.3",
+            "rdfs:comment": "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "ice",
@@ -2576,10 +2598,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_CENSOR_LTFU",
         "sp:role": "method_qualifier",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS"
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS"
+          }
+        ],
         "sp:binding": []
       },
       {
@@ -2587,10 +2611,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_KM_CURVES",
         "sp:role": "method_qualifier",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves."
+          }
+        ],
         "sp:binding": []
       },
       {
@@ -2598,10 +2624,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_SUMMARY_MEASURE",
         "sp:role": "summary_measure",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "summary",
@@ -2773,10 +2801,12 @@
       "iri_status": "illustrative",
       "label": "Primary estimand — progression-free survival",
       "rank": "primary",
-      "sapRef": {
-        "section": "3.1",
-        "quote": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
-      },
+      "sapRefs": [
+        {
+          "section": "3.1",
+          "quote": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+        }
+      ],
       "intercurrentEvents": [
         "ICE.TOX_DISCONT"
       ]
@@ -2794,10 +2824,12 @@
         "fromPhrase": "SP_ICE_TREATMENT_POLICY"
       }
     ],
-    "sapRef": {
-      "section": "7.7.2",
-      "quote": "As a sensitivity analysis, all of the above analyses described in Section 7.6.2 will be repeated for the as-randomized population (intent-to-treat analysis)."
-    },
+    "sapRefs": [
+      {
+        "section": "7.7.2",
+        "quote": "As a sensitivity analysis, all of the above analyses described in Section 7.6.2 will be repeated for the as-randomized population (intent-to-treat analysis)."
+      }
+    ],
     "documentAnchors": [
       {
         "phrase": "SP_TTE_ENDPOINT",
@@ -3006,10 +3038,12 @@
       ]
     },
     "esap:analysisRole": "SensitivityAnalysis",
-    "prov:wasQuotedFrom": {
-      "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-      "rdfs:comment": "As a sensitivity analysis, all of the above analyses described in Section 7.6.2 will be repeated for the as-randomized population (intent-to-treat analysis)."
-    },
+    "prov:wasQuotedFrom": [
+      {
+        "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+        "rdfs:comment": "As a sensitivity analysis, all of the above analyses described in Section 7.6.2 will be repeated for the as-randomized population (intent-to-treat analysis)."
+      }
+    ],
     "ars:analysis": {
       "@id": "ars:analysis/PRE0102-AN-7.07.02-PFS-ITT"
     },
@@ -3019,10 +3053,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_TTE_ENDPOINT",
         "sp:role": "endpoint",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#5.3",
-          "rdfs:comment": "the duration of time from time of randomization to time of progression or death, whichever occurs first"
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#5.3",
+            "rdfs:comment": "the duration of time from time of randomization to time of progression or death, whichever occurs first"
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "event",
@@ -3037,10 +3073,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_POPULATION",
         "sp:role": "population",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.2",
-          "rdfs:comment": "Intent-to-treat (ITT) analysis population includes all subjects as randomized."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.2",
+            "rdfs:comment": "Intent-to-treat (ITT) analysis population includes all subjects as randomized."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "population",
@@ -3055,10 +3093,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_GROUPING",
         "sp:role": "grouping",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#4.1",
-          "rdfs:comment": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors"
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#4.1",
+            "rdfs:comment": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors"
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "treatment",
@@ -3073,10 +3113,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_METHOD_KM",
         "sp:role": "method",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "method",
@@ -3092,10 +3134,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_CONFIDENCE_LEVEL",
         "sp:role": "method_qualifier",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "conf_level",
@@ -3108,10 +3152,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_ICE_TREATMENT_POLICY",
         "sp:role": "ice_handling",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#4.3",
-          "rdfs:comment": "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#4.3",
+            "rdfs:comment": "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "ice",
@@ -3126,10 +3172,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_CENSOR_LTFU",
         "sp:role": "method_qualifier",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS"
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS"
+          }
+        ],
         "sp:binding": []
       },
       {
@@ -3137,10 +3185,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_KM_CURVES",
         "sp:role": "method_qualifier",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves."
+          }
+        ],
         "sp:binding": []
       },
       {
@@ -3148,10 +3198,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_SUMMARY_MEASURE",
         "sp:role": "summary_measure",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "summary",
@@ -3323,18 +3375,22 @@
       "iri_status": "illustrative",
       "label": "Secondary estimand — overall survival",
       "rank": "secondary",
-      "sapRef": {
-        "section": "3.2",
-        "quote": "To describe the safety profile, objective response rate, time to progression and overall survival"
-      },
+      "sapRefs": [
+        {
+          "section": "3.2",
+          "quote": "To describe the safety profile, objective response rate, time to progression and overall survival"
+        }
+      ],
       "intercurrentEvents": []
     },
     "analysisRole": "MainEstimator",
     "handlesIntercurrentEvent": [],
-    "sapRef": {
-      "section": "7.7.2",
-      "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-    },
+    "sapRefs": [
+      {
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+      }
+    ],
     "documentAnchors": [
       {
         "phrase": "SP_TTE_ENDPOINT",
@@ -3531,10 +3587,12 @@
       "usdm:intercurrentEvent": []
     },
     "esap:analysisRole": "MainEstimator",
-    "prov:wasQuotedFrom": {
-      "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-      "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-    },
+    "prov:wasQuotedFrom": [
+      {
+        "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+        "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+      }
+    ],
     "ars:analysis": {
       "@id": "ars:analysis/PRE0102-AN-7.07.02-OS"
     },
@@ -3544,10 +3602,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_TTE_ENDPOINT",
         "sp:role": "endpoint",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#5.3",
-          "rdfs:comment": "the time from randomization until death or censored at the date of last follow-up"
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#5.3",
+            "rdfs:comment": "the time from randomization until death or censored at the date of last follow-up"
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "event",
@@ -3562,10 +3622,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_POPULATION",
         "sp:role": "population",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.2",
-          "rdfs:comment": "The primary efficacy analysis will be done including eligible, treated subjects."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.2",
+            "rdfs:comment": "The primary efficacy analysis will be done including eligible, treated subjects."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "population",
@@ -3580,10 +3642,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_GROUPING",
         "sp:role": "grouping",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#4.1",
-          "rdfs:comment": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors"
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#4.1",
+            "rdfs:comment": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors"
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "treatment",
@@ -3598,10 +3662,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_METHOD_KM",
         "sp:role": "method",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "method",
@@ -3617,10 +3683,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_CONFIDENCE_LEVEL",
         "sp:role": "method_qualifier",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "conf_level",
@@ -3633,10 +3701,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_CENSOR_LTFU",
         "sp:role": "method_qualifier",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "at the time of the last known contact for OS"
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "at the time of the last known contact for OS"
+          }
+        ],
         "sp:binding": []
       },
       {
@@ -3644,10 +3714,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_KM_CURVES",
         "sp:role": "method_qualifier",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves."
+          }
+        ],
         "sp:binding": []
       },
       {
@@ -3655,10 +3727,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_SUMMARY_MEASURE",
         "sp:role": "summary_measure",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "summary",
@@ -3796,18 +3870,22 @@
       "iri_status": "illustrative",
       "label": "Secondary estimand — time to progression",
       "rank": "secondary",
-      "sapRef": {
-        "section": "3.2",
-        "quote": "To describe the safety profile, objective response rate, time to progression and overall survival"
-      },
+      "sapRefs": [
+        {
+          "section": "3.2",
+          "quote": "To describe the safety profile, objective response rate, time to progression and overall survival"
+        }
+      ],
       "intercurrentEvents": []
     },
     "analysisRole": "MainEstimator",
     "handlesIntercurrentEvent": [],
-    "sapRef": {
-      "section": "7.7.2",
-      "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-    },
+    "sapRefs": [
+      {
+        "section": "7.7.2",
+        "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+      }
+    ],
     "documentAnchors": [
       {
         "phrase": "SP_TTE_ENDPOINT",
@@ -3997,10 +4075,12 @@
       "usdm:intercurrentEvent": []
     },
     "esap:analysisRole": "MainEstimator",
-    "prov:wasQuotedFrom": {
-      "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-      "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-    },
+    "prov:wasQuotedFrom": [
+      {
+        "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+        "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+      }
+    ],
     "ars:analysis": {
       "@id": "ars:analysis/PRE0102-AN-7.07.02-TTP"
     },
@@ -4010,10 +4090,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_TTE_ENDPOINT",
         "sp:role": "endpoint",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#5.3",
-          "rdfs:comment": "the time from randomization until progression of the disease"
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#5.3",
+            "rdfs:comment": "the time from randomization until progression of the disease"
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "event",
@@ -4028,10 +4110,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_POPULATION",
         "sp:role": "population",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.2",
-          "rdfs:comment": "The primary efficacy analysis will be done including eligible, treated subjects."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.2",
+            "rdfs:comment": "The primary efficacy analysis will be done including eligible, treated subjects."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "population",
@@ -4046,10 +4130,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_GROUPING",
         "sp:role": "grouping",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#4.1",
-          "rdfs:comment": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors"
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#4.1",
+            "rdfs:comment": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors"
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "treatment",
@@ -4064,10 +4150,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_METHOD_KM",
         "sp:role": "method",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "method",
@@ -4083,10 +4171,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_CONFIDENCE_LEVEL",
         "sp:role": "method_qualifier",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "conf_level",
@@ -4099,10 +4189,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_CENSOR_LTFU",
         "sp:role": "method_qualifier",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS"
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS"
+          }
+        ],
         "sp:binding": []
       },
       {
@@ -4110,10 +4202,12 @@
         "@type": "acdc:SmartPhraseInstance",
         "sp:phrase": "SP_SUMMARY_MEASURE",
         "sp:role": "summary_measure",
-        "prov:wasQuotedFrom": {
-          "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
-          "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
-        },
+        "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          }
+        ],
         "sp:binding": [
           {
             "sp:slot": "summary",

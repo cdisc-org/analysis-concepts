@@ -226,6 +226,20 @@
   }
 
   /*
+   * Every study-side anchor site is a LIST (issue #13). A concept exists to be
+   * reused, and the analyses that bind it are specified in different sections,
+   * so one reference can never be the right anchor for all of them.
+   *
+   * Absent and empty are different answers: an absent sapRefs is an unanswered
+   * question, whereas [] states "nothing in the document grounds this" and must
+   * be accompanied by noAnchorReason. Both read as no references here; the gate
+   * is what distinguishes them.
+   */
+  function refsOf(x) {
+    return (x && x.sapRefs) || [];
+  }
+
+  /*
    * Document anchor for one phrase USE (issue #12). The phrase instance's own
    * sapRef wins, because it answers "why is this here?"; a bound concept's
    * answers "what is this?" and is the fallback. Both survive — the concept
@@ -242,15 +256,23 @@
    * by oid — which would break for a repeating role using one oid twice.
    */
   function anchorForPhrase(ctx, pi, def) {
-    if (pi.sapRef) return { anchor: pi.sapRef, source: "phraseInstance" };
+    var own = refsOf(pi);
+    if (own.length) {
+      return { anchors: own.slice(), anchor: own[0], source: "phraseInstance" };
+    }
     var found = null;
     ((def && def.placeholders) || []).some(function (ph) {
       var b = (pi.bindings || {})[ph.name];
       var c = b && b.concept && concept(ctx, b.concept);
-      if (c && c.sapRef) { found = { anchor: c.sapRef, source: "concept:" + b.concept }; return true; }
+      var refs = refsOf(c);
+      if (refs.length) {
+        found = { anchors: refs.slice(), anchor: refs[0],
+                  source: "concept:" + b.concept };
+        return true;
+      }
       return false;
     });
-    return found || { anchor: null, source: null };
+    return found || { anchors: [], anchor: null, source: null };
   }
 
   /* Resolve one phrase instance → { oid, role, text, bindings[], errors[] } */
@@ -281,7 +303,8 @@
              template: def.phrase_template, anchors: def.anchors,
              text: text, bindings: bindings, errors: errors,
              langFallback: langFallback,
-             anchor: resolvedAnchor.anchor, anchorSource: resolvedAnchor.source };
+             anchor: resolvedAnchor.anchor, anchorSource: resolvedAnchor.source,
+             anchors: resolvedAnchor.anchors };
   }
 
   /*
@@ -609,7 +632,7 @@
        * four binding kinds went unanchored unnoticed (issue #12). Now it is
        * pinned in goldens and can regress detectably.
        */
-      sapRef: instance.sapRef || null,
+      sapRefs: refsOf(instance),
       documentAnchors: resolveInstance(ctx, instance).phrases
         .filter(function (rp) { return rp.anchor; })
         .map(function (rp) {
@@ -834,11 +857,13 @@
     }
     var anchorsBySig = {};
     (baseInstance && baseInstance.phrases || []).forEach(function (p) {
-      if (p.sapRef) (anchorsBySig[bindingSig(p)] = anchorsBySig[bindingSig(p)] || []).push(p.sapRef);
+      if (refsOf(p).length) {
+        (anchorsBySig[bindingSig(p)] = anchorsBySig[bindingSig(p)] || []).push(p.sapRefs);
+      }
     });
     phrases.forEach(function (p) {
       var pool = anchorsBySig[bindingSig(p)];
-      if (pool && pool.length) p.sapRef = pool.shift();
+      if (pool && pool.length) p.sapRefs = pool.shift();
     });
 
     var patch = null;
@@ -849,6 +874,18 @@
   }
 
   // ---------- JSON-LD projection -------------------------------------------
+
+  /*
+   * prov:wasQuotedFrom takes a list now that a use can rest on several passages.
+   * An array of quotation nodes is better JSON-LD than the single node it
+   * replaces — the relation was always many-valued in PROV.
+   */
+  function quotationNodes(refs, docIri) {
+    if (!docIri || !refs.length) return null;
+    return refs.map(function (r) {
+      return { "@id": docIri + "#" + r.section, "rdfs:comment": r.quote || null };
+    });
+  }
 
   function toJSONLD(ctx, instance) {
     var tpl = templateDef(ctx, instance.template);
@@ -878,13 +915,8 @@
        * existing standards wherever one covers the entity) is satisfied rather
        * than an AC/DC term invented.
        */
-      var anch = anchorForPhrase(ctx, pi, def).anchor;
-      if (anch && docIri) {
-        node["prov:wasQuotedFrom"] = {
-          "@id": docIri + "#" + anch.section,
-          "rdfs:comment": anch.quote || null
-        };
-      }
+      var quoted = quotationNodes(anchorForPhrase(ctx, pi, def).anchors, docIri);
+      if (quoted) node["prov:wasQuotedFrom"] = quoted;
       var bnodes = [];
       Object.keys(pi.bindings).forEach(function (slot) {
         var b = pi.bindings[slot];
@@ -935,10 +967,7 @@
         })
       },
       "esap:analysisRole": instance.analysisRole || null,
-      "prov:wasQuotedFrom": instance.sapRef && docIri && {
-        "@id": docIri + "#" + instance.sapRef.section,
-        "rdfs:comment": instance.sapRef.quote || null
-      },
+      "prov:wasQuotedFrom": quotationNodes(refsOf(instance), docIri),
       "ars:analysis": instance.arsAnalysis && { "@id": instance.arsAnalysis.iri },
       "sp:hasPhraseInstance": phraseNodes,
       "sp:resolvesTo": resolvesTo
@@ -954,6 +983,7 @@
     concept: concept,
     method: method,
     resolvePhrase: resolvePhrase,
+    anchorForPhrase: anchorForPhrase,
     resolveInstance: resolveInstance,
     estimandOf: estimandOf,
     iceHandlings: iceHandlings,
