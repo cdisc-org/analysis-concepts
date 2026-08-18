@@ -345,6 +345,10 @@
       });
     });
 
+    /* When the same passage is authored identically at two levels, this keeps
+       whichever candidate was pushed first — the phrase instance's own copy,
+       pushed above, before any concept's — so a duplicate never costs the
+       use-specific anchor its level precedence. */
     var seen = {};
     var uniq = cands.filter(function (c) {
       var k = anchorKey(c.ref);
@@ -722,11 +726,13 @@
       analysisRole: instance.analysisRole || null,
       handlesIntercurrentEvent: iceHandlings(ctx, instance),
       /*
-       * Document provenance: this analysis's own anchor, and one per phrase use
-       * with the source of each resolved anchor recorded. EMITTING it is the
-       * point — an anchor no projection carries is inert, which is how three of
-       * four binding kinds went unanchored unnoticed (issue #12). Now it is
-       * pinned in goldens and can regress detectably.
+       * Document provenance: this analysis's own anchor, and every reference
+       * resolved for each phrase use — one entry per reference, not per use,
+       * since a use can rest on several passages (issue #13); `head` marks
+       * which one the engine ranked first. EMITTING it is the point — an
+       * anchor no projection carries is inert, which is how three of four
+       * binding kinds went unanchored unnoticed (issue #12). Now it is pinned
+       * in goldens and can regress detectably.
        */
       sapRefs: refsOf(instance),
       documentAnchors: resolveInstance(ctx, instance).phrases

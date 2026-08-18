@@ -492,8 +492,21 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
     epAnchors.length === 2, JSON.stringify(epAnchors));
   check("the model view marks which reference is the head",
     epAnchors.filter((a) => a.head).length === 1, JSON.stringify(epAnchors));
-  check("the JSON-LD quotes every passage",
-    JSON.stringify(E.toJSONLD(ctxTwo, inst)).split("prov:wasQuotedFrom").length > 1);
+  /* Counting "prov:wasQuotedFrom" across the whole serialised instance proves
+     nothing on its own — every anchored phrase node emits that key once, so
+     the count is already >1 with a single quote per phrase, before this
+     change. The claim under test is specific to ONE phrase node — and even
+     there, the count alone does not distinguish the fix from the pre-#13
+     behaviour, because a concept-only anchor already returned its whole ref
+     list (just unordered, keyed off the first). It is the ORDER — nearest
+     section first — that only threading the instance into this call
+     produces, so that is what is asserted. */
+  const endpointNode = E.toJSONLD(ctxTwo, inst)["sp:hasPhraseInstance"]
+    .find((n) => n["sp:phrase"] === "SP_TTE_ENDPOINT");
+  const wasQuoted = (endpointNode && endpointNode["prov:wasQuotedFrom"]) || [];
+  check("the JSON-LD quotes every passage, nearest first",
+    wasQuoted.length === 2 && /#7\.7\.2$/.test(wasQuoted[0]["@id"] || ""),
+    JSON.stringify(endpointNode));
 }
 
 /* ---- planted faults: the quote gate must actually bite ---- */
