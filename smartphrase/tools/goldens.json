@@ -2262,63 +2262,110 @@
         "role": "endpoint",
         "section": "5.3",
         "quote": "the duration of time from time of randomization to time of progression or death, whichever occurs first",
-        "from": "concept:EVENT.PFS"
+        "relation": null,
+        "from": "concept:EVENT.PFS",
+        "proximity": 0,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_POPULATION",
         "role": "population",
         "section": "7.2",
         "quote": "The primary efficacy analysis will be done including eligible, treated subjects.",
-        "from": "concept:POP.EVAL_EFFICACY"
+        "relation": null,
+        "from": "concept:POP.EVAL_EFFICACY",
+        "proximity": 1,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_GROUPING",
         "role": "grouping",
         "section": "4.1",
         "quote": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors",
-        "from": "concept:TRT.PRE0102"
+        "relation": null,
+        "from": "concept:TRT.PRE0102",
+        "proximity": 0,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_ICE_TREATMENT_POLICY",
         "role": "ice_handling",
         "section": "4.3",
         "quote": "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 0,
+        "head": true,
+        "basis": "level"
+      },
+      {
+        "phrase": "SP_ICE_TREATMENT_POLICY",
+        "role": "ice_handling",
+        "section": "4.3",
+        "quote": "Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression",
+        "relation": null,
+        "from": "concept:ICE.TOX_DISCONT",
+        "proximity": 0,
+        "head": false,
+        "basis": null
       },
       {
         "phrase": "SP_METHOD_KM",
         "role": "method",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_CONFIDENCE_LEVEL",
         "role": "method_qualifier",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_CENSOR_LTFU",
         "role": "method_qualifier",
         "section": "7.7.2",
         "quote": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_KM_CURVES",
         "role": "method_qualifier",
         "section": "7.7.2",
         "quote": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_SUMMARY_MEASURE",
         "role": "summary_measure",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       }
     ],
     "template": {
@@ -2582,6 +2629,10 @@
           {
             "@id": "acdc:document/PRE0102-SAP-001#4.3",
             "rdfs:comment": "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons."
+          },
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#4.3",
+            "rdfs:comment": "Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression"
           }
         ],
         "sp:binding": [
@@ -2836,63 +2887,110 @@
         "role": "endpoint",
         "section": "5.3",
         "quote": "the duration of time from time of randomization to time of progression or death, whichever occurs first",
-        "from": "concept:EVENT.PFS"
+        "relation": null,
+        "from": "concept:EVENT.PFS",
+        "proximity": 0,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_POPULATION",
         "role": "population",
         "section": "7.2",
         "quote": "Intent-to-treat (ITT) analysis population includes all subjects as randomized.",
-        "from": "concept:POP.ITT"
+        "relation": null,
+        "from": "concept:POP.ITT",
+        "proximity": 1,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_GROUPING",
         "role": "grouping",
         "section": "4.1",
         "quote": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors",
-        "from": "concept:TRT.PRE0102"
+        "relation": null,
+        "from": "concept:TRT.PRE0102",
+        "proximity": 0,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_ICE_TREATMENT_POLICY",
         "role": "ice_handling",
         "section": "4.3",
         "quote": "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 0,
+        "head": true,
+        "basis": "level"
+      },
+      {
+        "phrase": "SP_ICE_TREATMENT_POLICY",
+        "role": "ice_handling",
+        "section": "4.3",
+        "quote": "Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression",
+        "relation": null,
+        "from": "concept:ICE.TOX_DISCONT",
+        "proximity": 0,
+        "head": false,
+        "basis": null
       },
       {
         "phrase": "SP_METHOD_KM",
         "role": "method",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_CONFIDENCE_LEVEL",
         "role": "method_qualifier",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_CENSOR_LTFU",
         "role": "method_qualifier",
         "section": "7.7.2",
         "quote": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_KM_CURVES",
         "role": "method_qualifier",
         "section": "7.7.2",
         "quote": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_SUMMARY_MEASURE",
         "role": "summary_measure",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       }
     ],
     "template": {
@@ -3156,6 +3254,10 @@
           {
             "@id": "acdc:document/PRE0102-SAP-001#4.3",
             "rdfs:comment": "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons."
+          },
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#4.3",
+            "rdfs:comment": "Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression"
           }
         ],
         "sp:binding": [
@@ -3397,56 +3499,88 @@
         "role": "endpoint",
         "section": "5.3",
         "quote": "the time from randomization until death or censored at the date of last follow-up",
-        "from": "concept:EVENT.OS"
+        "relation": null,
+        "from": "concept:EVENT.OS",
+        "proximity": 0,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_POPULATION",
         "role": "population",
         "section": "7.2",
         "quote": "The primary efficacy analysis will be done including eligible, treated subjects.",
-        "from": "concept:POP.EVAL_EFFICACY"
+        "relation": null,
+        "from": "concept:POP.EVAL_EFFICACY",
+        "proximity": 1,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_GROUPING",
         "role": "grouping",
         "section": "4.1",
         "quote": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors",
-        "from": "concept:TRT.PRE0102"
+        "relation": null,
+        "from": "concept:TRT.PRE0102",
+        "proximity": 0,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_METHOD_KM",
         "role": "method",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_CONFIDENCE_LEVEL",
         "role": "method_qualifier",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_CENSOR_LTFU",
         "role": "method_qualifier",
         "section": "7.7.2",
         "quote": "at the time of the last known contact for OS",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_KM_CURVES",
         "role": "method_qualifier",
         "section": "7.7.2",
         "quote": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_SUMMARY_MEASURE",
         "role": "summary_measure",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       }
     ],
     "template": {
@@ -3892,49 +4026,77 @@
         "role": "endpoint",
         "section": "5.3",
         "quote": "the time from randomization until progression of the disease",
-        "from": "concept:EVENT.TTP"
+        "relation": null,
+        "from": "concept:EVENT.TTP",
+        "proximity": 0,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_POPULATION",
         "role": "population",
         "section": "7.2",
         "quote": "The primary efficacy analysis will be done including eligible, treated subjects.",
-        "from": "concept:POP.EVAL_EFFICACY"
+        "relation": null,
+        "from": "concept:POP.EVAL_EFFICACY",
+        "proximity": 1,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_GROUPING",
         "role": "grouping",
         "section": "4.1",
         "quote": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors",
-        "from": "concept:TRT.PRE0102"
+        "relation": null,
+        "from": "concept:TRT.PRE0102",
+        "proximity": 0,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_METHOD_KM",
         "role": "method",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_CONFIDENCE_LEVEL",
         "role": "method_qualifier",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_CENSOR_LTFU",
         "role": "method_qualifier",
         "section": "7.7.2",
         "quote": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       },
       {
         "phrase": "SP_SUMMARY_MEASURE",
         "role": "summary_measure",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "from": "phraseInstance"
+        "relation": null,
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": true,
+        "basis": "only"
       }
     ],
     "template": {

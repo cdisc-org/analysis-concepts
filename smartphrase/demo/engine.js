@@ -226,6 +226,79 @@
   }
 
   /*
+   * Relation ranks (issue #13). Unlabelled sits in the MIDDLE deliberately:
+   * labelling a reference `specification` promotes it and labelling it
+   * `definition` demotes it, and both are positive claims an author has made.
+   * `qualification` sits just above unlabelled because a caveat attached to
+   * this analysis is more use-specific than a passage nobody has characterised.
+   *
+   * No registered identifier covers "why this passage grounds this use" —
+   * USDM, ARS, STATO and NCIt are all silent — so the vocabulary is
+   * illustrative under the project's identifier policy, and deliberately stops
+   * at three terms.
+   */
+  var RELATION_RANK = { specification: 0, qualification: 1, definition: 3 };
+  var RELATION_NEUTRAL = 2;
+
+  /*
+   * How near a reference is to the section that specifies the analysis being
+   * inspected: the number of matching leading dotted components. Against
+   * "7.7.2", a "7.7.2" reference scores 3, "7.2" scores 1, and "5.3" scores 0.
+   *
+   * This assumes dotted section numbering. A document anchored by heading text
+   * alone scores every reference 0 and falls through to relation, then
+   * declaration order — a stated limitation, not a silent one.
+   */
+  function sectionProximity(a, b) {
+    if (!a || !b) return 0;
+    var x = String(a).split("."), y = String(b).split(".");
+    var n = 0;
+    while (n < x.length && n < y.length && x[n] === y[n]) n++;
+    return n;
+  }
+
+  /* Enough normalisation to spot the same passage reached by two routes. The
+     gate's normaliser (tools/lib-anchors.mjs) is stricter because it compares
+     against the document; this one only has to catch duplicates. */
+  function anchorKey(ref) {
+    return ref.section + "|" +
+      String(ref.quote || "").replace(/\s+/g, " ").trim().toLowerCase();
+  }
+
+  /*
+   * Order candidates by, outermost key first: level (a use-specific anchor
+   * outranks a definitional one — issue #12's decision, unchanged), then
+   * proximity, then relation, then declaration order. Declaration order is the
+   * LAST resort; it used to be the first, which is the bug.
+   */
+  function rankAnchors(cands, contextSection) {
+    return cands.map(function (c, i) {
+      var rel = RELATION_RANK[c.ref.relation];
+      return {
+        ref: c.ref, level: c.level, from: c.from,
+        _prox: sectionProximity(c.ref.section, contextSection),
+        _rel: rel === undefined ? RELATION_NEUTRAL : rel,
+        _i: i
+      };
+    }).sort(function (a, b) {
+      return a.level - b.level || b._prox - a._prox || a._rel - b._rel || a._i - b._i;
+    });
+  }
+
+  /* What actually distinguished the head from the runner-up, so a heuristic is
+     never presented to a reviewer as a stated fact. Named basisOf rather than
+     anchorBasis because the resolved phrase carries a FIELD of that name. */
+  function basisOf(ordered) {
+    if (!ordered.length) return null;
+    if (ordered.length === 1) return "only";
+    var a = ordered[0], b = ordered[1];
+    if (a.level !== b.level) return "level";
+    if (a._prox !== b._prox) return "proximity";
+    if (a._rel !== b._rel) return "relation";
+    return "declarationOrder";
+  }
+
+  /*
    * Every study-side anchor site is a LIST (issue #13). A concept exists to be
    * reused, and the analyses that bind it are specified in different sections,
    * so one reference can never be the right anchor for all of them.
@@ -240,43 +313,62 @@
   }
 
   /*
-   * Document anchor for one phrase USE (issue #12). The phrase instance's own
-   * sapRef wins, because it answers "why is this here?"; a bound concept's
-   * answers "what is this?" and is the fallback. Both survive — the concept
-   * keeps its own anchor — so a use-specific quote never erases the definitional
-   * one, and `source` records which applied.
+   * Every document reference that grounds one phrase USE, ordered by relevance
+   * to the analysis being inspected (issues #12 and #13).
    *
-   * This is what closes the gap: `method`, `output` and `value` bindings all
-   * resolve into the LIBRARY, which correctly forbids study text, so before this
-   * the only anchorable binding kind was `concept` — and fixed-text phrases,
-   * having no bindings at all, could never anchor by any route.
+   * #12 gave a use a path back to the document. #13 is that ONE path was not
+   * enough: a concept exists to be reused, its definitional quote sits wherever
+   * it was first defined, and first-match-wins then sent every later analysis
+   * to that same passage instead of to the text specifying it. An independent
+   * reviewer working through 96 encoded instances hit this repeatedly.
+   *
+   * So: collect from the phrase instance and from every bound concept,
+   * deduplicate, and rank. The instance's own anchor is the REFERENCE POINT for
+   * proximity, never a member of the set — admitting it would make every use
+   * resolve to something and turn the declared-empty rule into a dead letter.
    *
    * Shared by resolvePhrase and toJSONLD so the prose and the graph cannot
    * disagree, and so neither has to pair a resolved phrase back to its instance
    * by oid — which would break for a repeating role using one oid twice.
    */
-  function anchorForPhrase(ctx, pi, def) {
-    var own = refsOf(pi);
-    if (own.length) {
-      return { anchors: own.slice(), anchor: own[0], source: "phraseInstance" };
-    }
-    var found = null;
-    ((def && def.placeholders) || []).some(function (ph) {
+  function anchorForPhrase(ctx, pi, def, instance) {
+    var contextSection = (refsOf(instance)[0] || {}).section || null;
+    var cands = [];
+    refsOf(pi).forEach(function (r) {
+      cands.push({ ref: r, level: 0, from: "phraseInstance" });
+    });
+    ((def && def.placeholders) || []).forEach(function (ph) {
       var b = (pi.bindings || {})[ph.name];
       var c = b && b.concept && concept(ctx, b.concept);
-      var refs = refsOf(c);
-      if (refs.length) {
-        found = { anchors: refs.slice(), anchor: refs[0],
-                  source: "concept:" + b.concept };
-        return true;
-      }
-      return false;
+      refsOf(c).forEach(function (r) {
+        cands.push({ ref: r, level: 1, from: "concept:" + b.concept });
+      });
     });
-    return found || { anchors: [], anchor: null, source: null };
+
+    var seen = {};
+    var uniq = cands.filter(function (c) {
+      var k = anchorKey(c.ref);
+      if (seen[k]) return false;
+      seen[k] = true;
+      return true;
+    });
+
+    var ordered = rankAnchors(uniq, contextSection);
+    var head = ordered[0] || null;
+    return {
+      anchors: ordered.map(function (o) {
+        return Object.assign({}, o.ref, { from: o.from, proximity: o._prox });
+      }),
+      anchor: head ? head.ref : null,
+      source: head ? head.from : null,
+      basis: basisOf(ordered),
+      contextSection: contextSection,
+      declaredEmpty: Array.isArray(pi.sapRefs) && pi.sapRefs.length === 0
+    };
   }
 
   /* Resolve one phrase instance → { oid, role, text, bindings[], errors[] } */
-  function resolvePhrase(ctx, pi, lang, tpl) {
+  function resolvePhrase(ctx, pi, lang, tpl, instance) {
     lang = lang || "en";
     var def = phraseDef(ctx, pi.phrase);
     if (!def) return { oid: pi.phrase, errors: ["unknown smartphrase '" + pi.phrase + "'"], text: "⟨" + pi.phrase + "?⟩" };
@@ -297,14 +389,16 @@
         bindings.push({ placeholder: ph.name, text: r.text, detail: r.detail });
       }
     });
-    var resolvedAnchor = anchorForPhrase(ctx, pi, def);
+    var resolvedAnchor = anchorForPhrase(ctx, pi, def, instance);
 
     return { oid: def.oid, role: def.role, name: def.name,
              template: def.phrase_template, anchors: def.anchors,
              text: text, bindings: bindings, errors: errors,
              langFallback: langFallback,
              anchor: resolvedAnchor.anchor, anchorSource: resolvedAnchor.source,
-             anchors: resolvedAnchor.anchors };
+             anchors: resolvedAnchor.anchors, anchorBasis: resolvedAnchor.basis,
+             anchorContextSection: resolvedAnchor.contextSection,
+             anchorDeclaredEmpty: resolvedAnchor.declaredEmpty };
   }
 
   /*
@@ -321,7 +415,9 @@
     lang = lang || "en";
     var order = ctx.lib.roleDefinitions.order;
     var instTpl = templateDef(ctx, instance.template);
-    var resolved = instance.phrases.map(function (pi) { return resolvePhrase(ctx, pi, lang, instTpl); });
+    var resolved = instance.phrases.map(function (pi) {
+      return resolvePhrase(ctx, pi, lang, instTpl, instance);
+    });
     resolved.sort(function (a, b) {
       return order.indexOf(a.role) - order.indexOf(b.role);
     });
@@ -634,12 +730,19 @@
        */
       sapRefs: refsOf(instance),
       documentAnchors: resolveInstance(ctx, instance).phrases
-        .filter(function (rp) { return rp.anchor; })
-        .map(function (rp) {
-          return { phrase: rp.oid, role: rp.role,
-                   section: rp.anchor.section, quote: rp.anchor.quote || null,
-                   from: rp.anchorSource };
-        }),
+        .reduce(function (acc, rp) {
+          (rp.anchors || []).forEach(function (a, i) {
+            acc.push({
+              phrase: rp.oid, role: rp.role,
+              section: a.section, quote: a.quote || null,
+              relation: a.relation || null,
+              from: a.from, proximity: a.proximity,
+              head: i === 0,
+              basis: i === 0 ? rp.anchorBasis : null
+            });
+          });
+          return acc;
+        }, []),
       template: {
         conceptId: tpl.conceptId, label: tpl.label,
         transformationType: tpl.transformationType,
@@ -915,7 +1018,7 @@
        * existing standards wherever one covers the entity) is satisfied rather
        * than an AC/DC term invented.
        */
-      var quoted = quotationNodes(anchorForPhrase(ctx, pi, def).anchors, docIri);
+      var quoted = quotationNodes(anchorForPhrase(ctx, pi, def, instance).anchors, docIri);
       if (quoted) node["prov:wasQuotedFrom"] = quoted;
       var bnodes = [];
       Object.keys(pi.bindings).forEach(function (slot) {

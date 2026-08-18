@@ -401,6 +401,101 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
     kept === before && before > 0, kept + " of " + before);
 }
 
+/* ---- union resolution, proximity and relation ranking (issue #13) ----
+ *
+ * Study data still holds one reference per site at this point, so these run on
+ * probes. The live-data assertions arrive with the real second references.
+ */
+{
+  const ctx = E.ctxOf(LIB, graphs.PRE0102, I18N);
+  const inst = graphs.PRE0102.instances.find((i) => i.id === "AC.PRIMARY.PFS");
+  const endpointOf = (i) =>
+    E.resolveInstance(ctx, i, "en").phrases.find((p) => p.role === "endpoint");
+
+  /* NO-DISCARD. First-match-wins threw away every reference after the first;
+     the count resolved must now equal the count authored. */
+  const ctxTwo = E.ctxOf(LIB, JSON.parse(JSON.stringify(graphs.PRE0102)), I18N);
+  ctxTwo.graph.concepts["EVENT.PFS"].sapRefs = [
+    { section: "5.3", quote: "the duration of time from time of randomization to time of progression or death, whichever occurs first" },
+    { section: "7.7.2", quote: "PFS = time from randomization to documented disease progression or death" }
+  ];
+  const rTwo = E.resolveInstance(ctxTwo, inst, "en").phrases.find((p) => p.role === "endpoint");
+  check("union resolution discards no reference",
+    (rTwo.anchors || []).length === 2, JSON.stringify(rTwo.anchors));
+
+  /* PROXIMITY. The instance is specified at 7.7.2, so the 7.7.2 reference must
+     lead — this is the reviewer's complaint, mechanised. */
+  check("the nearer reference leads",
+    rTwo.anchor.section === "7.7.2", JSON.stringify(rTwo.anchor));
+  check("the engine reports proximity as the basis",
+    rTwo.anchorBasis === "proximity", String(rTwo.anchorBasis));
+  check("the engine reports the section it measured against",
+    rTwo.anchorContextSection === "7.7.2", String(rTwo.anchorContextSection));
+
+  /* PLANTED FAULT: ordering must not be authoring order. The far reference is
+     declared FIRST here, and must still rank second. */
+  const ctxOrder = E.ctxOf(LIB, JSON.parse(JSON.stringify(graphs.PRE0102)), I18N);
+  ctxOrder.graph.concepts["EVENT.PFS"].sapRefs = [
+    { section: "5.3", quote: "the time from randomization until progression of the disease" },
+    { section: "7.7.2", quote: "PFS = time from randomization to documented disease progression or death" }
+  ];
+  const rOrder = E.resolveInstance(ctxOrder, inst, "en").phrases.find((p) => p.role === "endpoint");
+  check("planted fault: a farther reference declared first still ranks second",
+    rOrder.anchor.section === "7.7.2" && rOrder.anchors[1].section === "5.3",
+    JSON.stringify(rOrder.anchors.map((a) => a.section)));
+
+  /* RELATION breaks a proximity tie, and only a tie. */
+  const ctxRel = E.ctxOf(LIB, JSON.parse(JSON.stringify(graphs.PRE0102)), I18N);
+  ctxRel.graph.concepts["EVENT.PFS"].sapRefs = [
+    { section: "7.7.2", quote: "PFS = time from randomization to documented disease progression or death", relation: "definition" },
+    { section: "7.7.2", quote: "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals", relation: "qualification" }
+  ];
+  const rRel = E.resolveInstance(ctxRel, inst, "en").phrases.find((p) => p.role === "endpoint");
+  check("relation breaks a proximity tie",
+    /If medians have not been reached/.test(rRel.anchor.quote || ""),
+    JSON.stringify(rRel.anchor));
+  check("the engine reports relation as the basis",
+    rRel.anchorBasis === "relation", String(rRel.anchorBasis));
+
+  /* LEVEL DOMINANCE (D-5). A deliberate use-specific anchor outranks a nearer
+     concept reference — this is #12's precedence decision, and it must hold.
+     The ICE phrase's own 4.3 anchor must not be demoted by a 7.7.2 concept one. */
+  const ctxLevel = E.ctxOf(LIB, JSON.parse(JSON.stringify(graphs.PRE0102)), I18N);
+  ctxLevel.graph.concepts["ICE.TOX_DISCONT"].sapRefs.push(
+    { section: "7.7.2", quote: "by treatment arm" });
+  const iceInst = ctxLevel.graph.instances.find((i) => i.id === "AC.PRIMARY.PFS");
+  const rIce = E.resolveInstance(ctxLevel, iceInst, "en").phrases
+    .find((p) => p.role === "ice_handling");
+  check("a use-specific anchor is not demoted by a nearer concept anchor",
+    rIce.anchorSource === "phraseInstance" && rIce.anchor.section === "4.3",
+    rIce.anchorSource + " " + JSON.stringify(rIce.anchor));
+  check("the engine reports level as the basis",
+    rIce.anchorBasis === "level", String(rIce.anchorBasis));
+
+  /* DEDUPLICATION. The same passage reachable by two routes is one reference. */
+  const ctxDup = E.ctxOf(LIB, JSON.parse(JSON.stringify(graphs.PRE0102)), I18N);
+  const dupQuote = "PFS = time from randomization to documented disease progression or death";
+  ctxDup.graph.concepts["EVENT.PFS"].sapRefs = [{ section: "7.7.2", quote: dupQuote }];
+  const dupInst = ctxDup.graph.instances.find((i) => i.id === "AC.PRIMARY.PFS");
+  dupInst.phrases.find((p) => p.phrase === "SP_TTE_ENDPOINT").sapRefs =
+    [{ section: "7.7.2", quote: dupQuote }];
+  const rDup = E.resolveInstance(ctxDup, dupInst, "en").phrases.find((p) => p.role === "endpoint");
+  check("the same passage reached twice is one reference",
+    (rDup.anchors || []).length === 1, JSON.stringify(rDup.anchors));
+
+  /* PROJECTION. A gate can only assert what a projection carries — the lesson
+     of #12, where sapRef appeared in zero pinned outputs. */
+  const mvTwo = E.constructModelView(ctxTwo, inst);
+  const epAnchors = (mvTwo.documentAnchors || [])
+    .filter((a) => a.phrase === "SP_TTE_ENDPOINT");
+  check("the model view carries every reference, not just the head",
+    epAnchors.length === 2, JSON.stringify(epAnchors));
+  check("the model view marks which reference is the head",
+    epAnchors.filter((a) => a.head).length === 1, JSON.stringify(epAnchors));
+  check("the JSON-LD quotes every passage",
+    JSON.stringify(E.toJSONLD(ctxTwo, inst)).split("prov:wasQuotedFrom").length > 1);
+}
+
 /* ---- planted faults: the quote gate must actually bite ---- */
 {
   const graph = graphs.PRE0102;
