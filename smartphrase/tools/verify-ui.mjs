@@ -267,8 +267,34 @@ studyBtns[1].dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
       pop.includes("bound concept"), pop.slice(0, 400));
   }
 
+  /*
+   * Issue #13: a reused concept must lead with the section specifying THIS
+   * analysis, and the passages it does not lead with must remain visible.
+   */
+  const endpointChip2 = chipsByText("disease progression or death")[0];
+  if (endpointChip2) {
+    endpointChip2.dispatchEvent(new window.MouseEvent("mouseenter", { bubbles: true }));
+    const pop = $("pop").textContent;
+    check("the endpoint now leads with the analysis's own section",
+      pop.includes("SAP 7.7.2"), pop.slice(0, 400));
+    check("the popover says why that reference leads",
+      /nearest to/.test(pop), pop.slice(0, 400));
+    check("the definitional reference is still reachable",
+      /also grounded in/.test(pop) && pop.includes("5.3"), pop.slice(0, 500));
+  }
+
+  /* Three references sharing a section, ordered by relation. */
+  const summaryChip = chipsByText("median")[0];
+  if (summaryChip) {
+    summaryChip.dispatchEvent(new window.MouseEvent("mouseenter", { bubbles: true }));
+    const pop = $("pop").textContent;
+    check("the summary measure shows its other two references",
+      /also grounded in/.test(pop), pop.slice(0, 500));
+  }
+
   check("stop 4 reports anchoring coverage",
-    /33 of 33 phrase uses/.test(txt("anchorCoverage")), txt("anchorCoverage"));
+    /33 phrase uses/.test(txt("anchorCoverage")) &&
+      /document references/.test(txt("anchorCoverage")), txt("anchorCoverage"));
 }
 
 /* ---------- 4. trace: click the endpoint chip ---------- */

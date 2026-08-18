@@ -91,6 +91,13 @@
   #pop .quote { font-style: italic; color: var(--muted); border-left: 2px solid var(--line);
                 padding-left: 8px; margin: 3px 0; font-size: 12.5px; }
   #pop .anchorfrom { font-size: 11px; color: var(--muted); }
+  #pop .alsoref { font-size: 11px; color: var(--muted); margin-top: 6px;
+                  border-top: 1px dotted var(--line); padding-top: 4px; }
+  #pop .alsoref b { color: var(--ink); font-weight: 600; }
+  #pop .relbadge { font-size: 10px; text-transform: uppercase; letter-spacing: .04em;
+                   color: var(--muted); border: 1px solid var(--line);
+                   border-radius: 3px; padding: 0 3px; margin-left: 4px; }
+  #pop .noanchor { font-style: italic; color: var(--muted); }
 
   /* trace drawer */
   #trace { margin-top: 18px; display: none; }
@@ -464,23 +471,62 @@
       return "<tr><td class='k'>{" + b.placeholder + "}</td><td>" + val + iri + "</td></tr>";
     }).join("");
     /*
-     * The row issue #12 exists for. Before it, hovering a method, value or
-     * output phrase showed no path back to the document at all — those bindings
-     * resolve into the library, which correctly forbids study text — and a
-     * fixed-text phrase had no binding to route through in the first place.
+     * The row issue #12 exists for, made plural by #13. Before #12, hovering a
+     * method, value or output phrase showed no path back to the document at all
+     * — those bindings resolve into the library, which correctly forbids study
+     * text — and a fixed-text phrase had no binding to route through. Before
+     * #13 it showed exactly one passage, chosen by whichever anchor happened to
+     * be authored first.
      */
-    var src = rp.anchor
-      ? "<tr><td class='k'>source</td><td><b>SAP " + rp.anchor.section + "</b>" +
-        (rp.anchor.quote ? "<div class='quote'>“" + rp.anchor.quote + "”</div>" : "") +
-        "<div class='anchorfrom'>anchored at the " +
-        (rp.anchorSource === "phraseInstance" ? "phrase use" : "bound concept (" +
-          rp.anchorSource.replace("concept:", "") + ")") + "</div></td></tr>"
-      : "";
-    var anchors = rp.anchors && Object.keys(rp.anchors).length
-      ? "<tr><td class='k'>anchors</td><td><span style='font-family:var(--mono);font-size:12px'>" +
-        Object.keys(rp.anchors).map(function (k) { return k + " → " + rp.anchors[k]; }).join(", ") + "</span></td></tr>" : "";
+    function anchorLevel(a) {
+      return a.from === "phraseInstance"
+        ? "the phrase use" : "the bound concept (" + a.from.replace("concept:", "") + ")";
+    }
+    function anchorWhy(rp) {
+      var head = rp.anchors[0];
+      if (rp.anchorBasis === "proximity") {
+        return "nearest to SAP " + rp.anchorContextSection +
+               ", the section specifying this analysis";
+      }
+      if (rp.anchorBasis === "relation") {
+        return "the " + head.relation + " for this analysis";
+      }
+      return "anchored at " + anchorLevel(head);
+    }
+    var src = "";
+    if ((rp.anchors || []).length) {
+      var head = rp.anchors[0];
+      var rest = rp.anchors.slice(1);
+      /* anchorWhy() already names the level ("anchored at the phrase use")
+         whenever the basis is level, declarationOrder or a single candidate
+         — appending "· from the phrase use" there would say the same thing
+         twice. Only proximity and relation give a why-clause that is silent
+         on level, so only those two earn the trailing clause. */
+      var levelNamedAlready = rp.anchorBasis !== "proximity" && rp.anchorBasis !== "relation";
+      src = "<tr><td class='k'>source</td><td><b>SAP " + head.section + "</b>" +
+        (head.relation ? "<span class='relbadge'>" + head.relation + "</span>" : "") +
+        (head.quote ? "<div class='quote'>“" + head.quote + "”</div>" : "") +
+        "<div class='anchorfrom'>" + anchorWhy(rp) +
+        (levelNamedAlready ? "" : " · from " + anchorLevel(head)) + "</div>" +
+        (rest.length
+          ? "<div class='alsoref'>also grounded in " +
+            rest.map(function (a) {
+              return "<b>SAP " + a.section + "</b>" +
+                     (a.relation ? " (" + a.relation + ")" : "");
+            }).join(", ") + "</div>"
+          : "") +
+        "</td></tr>";
+    } else if (rp.anchorDeclaredEmpty) {
+      src = "<tr><td class='k'>source</td><td><span class='noanchor'>" +
+        "nothing in the document to anchor to — declared</span></td></tr>";
+    }
+    /* There used to be a raw "anchors" debug row here, dumping rp.anchors as
+       key → value pairs. #13 repurposed that field name for the ordered
+       reference list, so Object.keys on it produced index numbers and every
+       value stringified to "[object Object]" — dead weight now that "source"
+       above renders the same list properly. Removed rather than repaired. */
     return "<h4>" + rp.oid + '<span class="rolebadge">' + (ROLE_LABELS[rp.role] ? ROLE_LABELS[rp.role].label : rp.role) + "</span></h4>" +
-      '<div class="tpl">"' + rp.template + '"</div><table>' + rows + anchors + src + "</table>" +
+      '<div class="tpl">"' + rp.template + '"</div><table>' + rows + src + "</table>" +
       (TRACEABLE.indexOf(rp.role) !== -1 ? '<div class="popact" style="text-align:left;color:var(--muted);font-size:12px;">click the phrase to trace it to the data ↓</div>' : "");
   }
 
@@ -933,8 +979,8 @@
   /* ---------- stop 4: identifier table ---------- */
   function renderStandards() {
     var rows = [];
-    function push(entity, id, iri, status) {
-      var std =
+    function push(entity, id, iri, status, groundsOverride) {
+      var std = groundsOverride ? groundsOverride :
         iri.indexOf("usdm:") === 0 ? "CDISC USDM v4.0" :
         iri.indexOf("ars:") === 0 ? "CDISC ARS" :
         iri.indexOf("stato:") === 0 ? "STATO (OBO)" :
@@ -970,6 +1016,14 @@
       push("ICH E9(R1) strategy — " + s, "IchE9R1Strategy/" + s,
         "acdc:estimand/strategy/" + s, "illustrative");
     });
+    /*
+     * #13's relation vocabulary (specification / qualification / definition)
+     * ranks references but grounds into nothing — no registry states why a
+     * passage grounds a use. Say so here rather than let three invented terms
+     * sit beside registered ones unmarked.
+     */
+    push("Anchor relation (specification / qualification / definition)", "—", "—",
+      "illustrative", "nothing — no registry covers why a passage grounds a use");
     /* Estimands come from the study registry, so no deduplication is needed —
        several analyses referencing one estimand list it once by construction. */
     Object.keys(GRAPH.estimands || {}).forEach(function (eid) {
@@ -988,19 +1042,24 @@
      * PoC is traceability to data; this is its missing twin, traceability to the
      * source document — stated as a number so it cannot quietly rot.
      */
-    var uses = 0, anchored = 0;
+    var uses = 0, anchored = 0, refs = 0, declared = 0;
     GRAPH.instances.forEach(function (inst) {
       E.resolveInstance(ctx, inst).phrases.forEach(function (rp) {
         uses++;
+        refs += (rp.anchors || []).length;
         if (rp.anchor) anchored++;
+        else if (rp.anchorDeclaredEmpty) declared++;
       });
     });
     var sd = GRAPH.sourceDocument;
     document.getElementById("anchorCoverage").innerHTML = sd
       ? "<b>Document anchoring:</b> " + anchored + " of " + uses +
         " phrase uses in this study cite <code>" + sd.title + "</code> (" + sd.date +
-        "). Every quote is verified against the converted source by " +
-        "<code>tools/verify.mjs</code> — a paraphrase fails the build."
+        "), across " + refs + " document references" +
+        (declared ? ", with " + declared + " declaring that nothing grounds them" : "") +
+        ". A use with several references leads with the one nearest the section " +
+        "specifying that analysis. Every quote is verified against the converted " +
+        "source by <code>tools/verify.mjs</code> — a paraphrase fails the build."
       : "<b>Document anchoring:</b> not applicable — " + GRAPH.sourceDocumentNote;
 
     var prov = ctx.lib.provenance;

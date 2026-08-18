@@ -159,12 +159,18 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
      * itself ambiguous, so it has to be broken deliberately.
      */
     if (graph.sourceDocument) {
-      const undeclared = inst.phrases.filter((pi) => {
-        const res = E.anchorForPhrase(ctx, pi, E.phraseDef(ctx, pi.phrase), inst);
-        if (res.anchors.length) return false;
-        return !(Array.isArray(pi.sapRefs) && typeof pi.noAnchorReason === "string" &&
-                 pi.noAnchorReason.length > 0);
-      }).map((pi) => pi.phrase);
+      const undeclared = inst.phrases
+        .map((pi, i) => ({ pi, i }))
+        .filter(({ pi }) => {
+          const res = E.anchorForPhrase(ctx, pi, E.phraseDef(ctx, pi.phrase), inst);
+          if (res.anchors.length) return false;
+          return !(Array.isArray(pi.sapRefs) && typeof pi.noAnchorReason === "string" &&
+                   pi.noAnchorReason.length > 0);
+        })
+        /* Identify by position within inst.phrases, not OID alone — a
+           repeating role can use one OID twice, and the JSON-LD anchor lookup
+           (#12) and the trace focus (#11) both broke exactly that way. */
+        .map(({ pi, i }) => `${pi.phrase}[${i}]`);
       check(`${studyKey}/${inst.id} every phrase use is anchored or declares why not`,
         undeclared.length === 0, undeclared.join(", "));
     }
