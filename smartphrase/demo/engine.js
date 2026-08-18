@@ -367,7 +367,12 @@
       source: head ? head.from : null,
       basis: basisOf(ordered),
       contextSection: contextSection,
-      declaredEmpty: Array.isArray(pi.sapRefs) && pi.sapRefs.length === 0
+      declaredEmpty: Array.isArray(pi.sapRefs) && pi.sapRefs.length === 0,
+      /* Carried alongside declaredEmpty rather than left for a caller to fetch
+         off the raw phrase instance — DESIGN.md D18's lesson (a field no
+         projection carries is inert) applies just as much to the REASON for a
+         declared-empty use as to the anchors themselves. */
+      noAnchorReason: typeof pi.noAnchorReason === "string" ? pi.noAnchorReason : null
     };
   }
 
@@ -396,13 +401,14 @@
     var resolvedAnchor = anchorForPhrase(ctx, pi, def, instance);
 
     return { oid: def.oid, role: def.role, name: def.name,
-             template: def.phrase_template, anchors: def.anchors,
+             template: def.phrase_template,
              text: text, bindings: bindings, errors: errors,
              langFallback: langFallback,
              anchor: resolvedAnchor.anchor, anchorSource: resolvedAnchor.source,
              anchors: resolvedAnchor.anchors, anchorBasis: resolvedAnchor.basis,
              anchorContextSection: resolvedAnchor.contextSection,
-             anchorDeclaredEmpty: resolvedAnchor.declaredEmpty };
+             anchorDeclaredEmpty: resolvedAnchor.declaredEmpty,
+             noAnchorReason: resolvedAnchor.noAnchorReason };
   }
 
   /*
@@ -749,6 +755,19 @@
           });
           return acc;
         }, []),
+      /*
+       * Uses that declare "nothing in the document grounds this" rather than
+       * resolving to a reference. documentAnchors above has no row for them —
+       * an empty anchors[] contributes nothing to a reduce — so without this
+       * sibling field noAnchorReason would reach no projection at all, the
+       * exact failure mode DESIGN.md D18 names (a field no projection carries
+       * is inert and cannot regress detectably), reintroduced for a new field.
+       */
+      declaredEmptyUses: resolveInstance(ctx, instance).phrases
+        .filter(function (rp) { return rp.anchorDeclaredEmpty; })
+        .map(function (rp) {
+          return { phrase: rp.oid, role: rp.role, noAnchorReason: rp.noAnchorReason };
+        }),
       template: {
         conceptId: tpl.conceptId, label: tpl.label,
         transformationType: tpl.transformationType,
@@ -1049,7 +1068,7 @@
       return node;
     });
 
-    return {
+    var instanceNode = {
       "@context": Object.assign({
         sp: "https://w3id.org/cdisc/ac-dc/smartphrase/",
         rdfs: "http://www.w3.org/2000/01/rdf-schema#",
@@ -1075,12 +1094,21 @@
           return { "@id": ic && ic.iri, "rdfs:label": ic && ic.name };
         })
       },
-      "esap:analysisRole": instance.analysisRole || null,
-      "prov:wasQuotedFrom": quotationNodes(refsOf(instance), docIri),
-      "ars:analysis": instance.arsAnalysis && { "@id": instance.arsAnalysis.iri },
-      "sp:hasPhraseInstance": phraseNodes,
-      "sp:resolvesTo": resolvesTo
+      "esap:analysisRole": instance.analysisRole || null
     };
+    /* Assigned conditionally, the way the phrase node above already does: the
+       anchor type means "here is the text that grounds this" and must not be
+       overloaded to mean "there is none" by emitting the key with a null value
+       (study-graph.js's own stated principle). Set in its original key
+       position (between analysisRole and ars:analysis) rather than appended
+       at the end, so a study that DOES carry the key sees no reordering —
+       only a study with nothing to quote loses the key entirely. */
+    var quotedInstance = quotationNodes(refsOf(instance), docIri);
+    if (quotedInstance) instanceNode["prov:wasQuotedFrom"] = quotedInstance;
+    instanceNode["ars:analysis"] = instance.arsAnalysis && { "@id": instance.arsAnalysis.iri };
+    instanceNode["sp:hasPhraseInstance"] = phraseNodes;
+    instanceNode["sp:resolvesTo"] = resolvesTo;
+    return instanceNode;
   }
 
   g.SP_ENGINE = {

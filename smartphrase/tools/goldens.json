@@ -45,6 +45,7 @@
     ],
     "sapRefs": [],
     "documentAnchors": [],
+    "declaredEmptyUses": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -227,7 +228,6 @@
       ]
     },
     "esap:analysisRole": "MainEstimator",
-    "prov:wasQuotedFrom": null,
     "ars:analysis": {
       "@id": "ars:analysis/AN-3.02.01"
     },
@@ -638,6 +638,7 @@
     "handlesIntercurrentEvent": [],
     "sapRefs": [],
     "documentAnchors": [],
+    "declaredEmptyUses": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -806,7 +807,6 @@
       "usdm:intercurrentEvent": []
     },
     "esap:analysisRole": "MainEstimator",
-    "prov:wasQuotedFrom": null,
     "ars:analysis": {
       "@id": "ars:analysis/AN-3.03.01"
     },
@@ -1128,6 +1128,7 @@
     ],
     "sapRefs": [],
     "documentAnchors": [],
+    "declaredEmptyUses": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -1310,7 +1311,6 @@
       ]
     },
     "esap:analysisRole": "SupplementaryAnalysis",
-    "prov:wasQuotedFrom": null,
     "ars:analysis": {
       "@id": "ars:analysis/AN-3.02.02"
     },
@@ -1640,6 +1640,7 @@
     ],
     "sapRefs": [],
     "documentAnchors": [],
+    "declaredEmptyUses": [],
     "template": {
       "conceptId": "T.CFB_ANCOVA",
       "label": "Change From Baseline ANCOVA",
@@ -1822,7 +1823,6 @@
       ]
     },
     "esap:analysisRole": "MainEstimator",
-    "prov:wasQuotedFrom": null,
     "ars:analysis": {
       "@id": "ars:analysis/AN-SENS-TP"
     },
@@ -2401,6 +2401,7 @@
         "basis": null
       }
     ],
+    "declaredEmptyUses": [],
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
@@ -3071,6 +3072,7 @@
         "basis": null
       }
     ],
+    "declaredEmptyUses": [],
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
@@ -3706,6 +3708,7 @@
         "basis": null
       }
     ],
+    "declaredEmptyUses": [],
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",
@@ -4267,6 +4270,7 @@
         "basis": null
       }
     ],
+    "declaredEmptyUses": [],
     "template": {
       "conceptId": "T.PFS_KaplanMeier",
       "label": "Time-to-Event Kaplan-Meier Summary",

@@ -488,7 +488,13 @@
         return "nearest to SAP " + rp.anchorContextSection +
                ", the section specifying this analysis";
       }
-      if (rp.anchorBasis === "relation") {
+      /* basisOf() reports "relation" for ANY rank difference, including an
+         unlabelled head (neutral rank) beating a lower-ranked runner-up —
+         reachable per the spec's own ranking rule even though no data
+         currently exercises it. Guard on head.relation actually being
+         present, or an unlabelled head renders as "the undefined for this
+         analysis". */
+      if (rp.anchorBasis === "relation" && head.relation) {
         return "the " + head.relation + " for this analysis";
       }
       return "anchored at " + anchorLevel(head);
@@ -500,9 +506,12 @@
       /* anchorWhy() already names the level ("anchored at the phrase use")
          whenever the basis is level, declarationOrder or a single candidate
          — appending "· from the phrase use" there would say the same thing
-         twice. Only proximity and relation give a why-clause that is silent
-         on level, so only those two earn the trailing clause. */
-      var levelNamedAlready = rp.anchorBasis !== "proximity" && rp.anchorBasis !== "relation";
+         twice. Only proximity, and relation WITH a labelled head, give a
+         why-clause that is silent on level; an unlabelled "relation" head
+         falls through to the same level phrasing (Minor 7), so it must count
+         as already-named too, or the level would be named twice over. */
+      var levelNamedAlready = rp.anchorBasis !== "proximity" &&
+        !(rp.anchorBasis === "relation" && head.relation);
       src = "<tr><td class='k'>source</td><td><b>SAP " + head.section + "</b>" +
         (head.relation ? "<span class='relbadge'>" + head.relation + "</span>" : "") +
         (head.quote ? "<div class='quote'>“" + head.quote + "”</div>" : "") +
@@ -517,8 +526,14 @@
           : "") +
         "</td></tr>";
     } else if (rp.anchorDeclaredEmpty) {
+      /* Spec §4.5: a declared-empty use renders as "nothing to anchor to"
+         WITH THE REASON — otherwise it reads identically to a use that simply
+         has not been anchored yet, which is exactly the distinction the
+         declaration exists to make (DESIGN.md D21). */
       src = "<tr><td class='k'>source</td><td><span class='noanchor'>" +
-        "nothing in the document to anchor to — declared</span></td></tr>";
+        "nothing in the document to anchor to — declared" +
+        (rp.noAnchorReason ? ": " + rp.noAnchorReason : "") +
+        "</span></td></tr>";
     }
     /* There used to be a raw "anchors" debug row here, dumping rp.anchors as
        key → value pairs. #13 repurposed that field name for the ordered
