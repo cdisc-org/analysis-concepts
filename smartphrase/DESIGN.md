@@ -236,12 +236,12 @@ route through a concept had no typed path back to the SAP. Issue
 roughly half of all phrase uses unanchored; the same shape reproduced here.
 
 The anchor is now one type, `{ section, quote? }`, on four study-side homes: concepts, **phrase
-instances**, estimands and analysis instances. #12 suggested a separate typed `sectionRef` for instances;
-that is folded into the same type with `quote` optional rather than added as a second field. Precedence:
-the phrase instance's anchor wins for display because it answers *"why is this here?"*, a bound concept's
-is the fallback answering *"what is this?"*, and **both survive** — `anchorSource` records which applied.
-The library wall is untouched, which is the point: the boundary was right, only the anchor field was in
-the wrong place.
+instances**, estimands and analysis instances (widened to a list, and the fallback below replaced by a
+ranking, in D19–D20). #12 suggested a separate typed `sectionRef` for instances; that is folded into the
+same type with `quote` optional rather than added as a second field. Precedence: the phrase instance's
+anchor wins for display because it answers *"why is this here?"*, a bound concept's is the fallback
+answering *"what is this?"*, and **both survive** — `anchorSource` records which applied. The library wall
+is untouched, which is the point: the boundary was right, only the anchor field was in the wrong place.
 
 The deeper finding, and the reason the gap survived: **`sapRef` appeared in zero pinned outputs.** No
 projection emitted it, so no surface could show it and no gate could detect it regressing. Adding a field
@@ -276,12 +276,11 @@ reason. PrE0102 is held to every phrase use anchored (33 of 33); the CDISC Pilot
 constructed and has no SAP behind it, is exempt *by declaration rather than by silence*.
 
 **D19 — Anchors are plural at every study-side home; the singular field is gone.**
-A concept exists to be reused. `EVENT.PFS` is bound by PrE0102's primary and ITT-sensitivity analyses;
-`PARAM.ADASCOG11` is bound by CDISC Pilot analyses at different visits. Each binding is licensed by a
-different sentence, so one `sapRef` per concept could never be the right anchor for all of them. #12
-established the four study-side homes — concept, phrase instance, estimand, analysis instance. #13 widens
-each from `{ section, quote? }` to `sapRefs: [{ section, quote?, relation? }]`, and the singular field no
-longer exists anywhere in the model.
+A concept exists to be reused. `EVENT.PFS` is bound by PrE0102's primary and ITT-sensitivity analyses, and
+each of those bindings is licensed by a different sentence, so one `sapRef` per concept could never be the
+right anchor for both. #12 established the four study-side homes — concept, phrase instance, estimand,
+analysis instance. #13 widens each from `{ section, quote? }` to `sapRefs: [{ section, quote?, relation? }]`,
+and the singular field no longer exists anywhere in the model.
 
 The issue offered a back-compatible reading — accept either a bare object or an array — and it is declined
 here. Every consumer of this field lives in this repository: the resolver, the verifier, the JSON-LD

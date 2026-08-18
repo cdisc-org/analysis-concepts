@@ -331,12 +331,13 @@ A phrase use that no passage grounds must say so:
   noAnchorReason: "the SAP does not specify curves for this analysis" }
 ```
 
-An **absent** `sapRefs` is an unanswered question and fails the gate for any
-study declaring a `sourceDocument`. An **empty** `sapRefs` with a
-`noAnchorReason` is an answer. The distinction exists because a reviewer
-working through a document cannot otherwise tell "not yet anchored" from
-"nothing to anchor to" — the same reasoning that made
-`Estimand.intercurrentEvents` explicit rather than inferred from silence.
+A phrase instance's own `sapRefs` being absent is not by itself a failure — most concept-anchored uses
+carry no `sapRefs` of their own and pass by falling back to the bound concept's. **The gate fires only
+when a use resolves to no reference at all** (from the phrase instance or any concept it binds) **and**
+does not carry `sapRefs: []` with a `noAnchorReason`. An **empty** `sapRefs` with a `noAnchorReason` is an
+answer. The distinction exists because a reviewer working through a document cannot otherwise tell "not
+yet anchored" from "nothing to anchor to" — the same reasoning that made `Estimand.intercurrentEvents`
+explicit rather than inferred from silence.
 
 **Resolution** (`anchorForPhrase`, called from `resolvePhrase` and `toJSONLD`, §5). A phrase use's
 references are the union of its own and those of every concept it binds, deduplicated on section plus

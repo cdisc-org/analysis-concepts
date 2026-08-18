@@ -59,8 +59,8 @@ architecture carrying all five ICH E9(R1) attributes.
 > 'here'. That line only exists because a heuristic should never be presented as a stated fact."
 
 > "One honest note: the four treatment-grouping chips on this study still cite §4.1. That is correct, not
-> unfixed — §4.1 is the randomization sentence, and it is genuinely the nearest fragment this SAP offers for
-> that claim. The fix is for references that are wrong, not for every reference that is merely distant."
+> unfixed — §4.1 is the randomization sentence, the right sentence for that claim, even though it is distant
+> from §7.7.2. The fix is for references that are wrong, not for every reference that is merely distant."
 
 ## 4:45 — Stop 2 · Two views, one thing (3m30) — *the heart*
 
