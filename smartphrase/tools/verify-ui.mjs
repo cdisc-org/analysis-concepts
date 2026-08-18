@@ -300,9 +300,13 @@ studyBtns[1].dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
       /also grounded in SAP 7\.7\.2 \(qualification\)/.test(pop), pop.slice(0, 500));
   }
 
+  /* Both numbers pinned, not just the wording: "33 phrase uses" alone still
+     matches a regression to "30 of 33 phrase uses", and a bare "document
+     references" match pins no total at all — the same class of
+     non-discriminating assertion already caught once in the Task 2 fix round. */
   check("stop 4 reports anchoring coverage",
-    /33 phrase uses/.test(txt("anchorCoverage")) &&
-      /document references/.test(txt("anchorCoverage")), txt("anchorCoverage"));
+    /33 of 33 phrase uses/.test(txt("anchorCoverage")) &&
+      /across 47 document references/.test(txt("anchorCoverage")), txt("anchorCoverage"));
 }
 
 /* ---------- 4. trace: click the endpoint chip ---------- */

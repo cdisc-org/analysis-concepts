@@ -186,6 +186,15 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
         (mv.sapRefs || []).length > 0, JSON.stringify(mv.sapRefs));
       check(`${studyKey}/${inst.id} JSON-LD quotes its source`,
         JSON.stringify(E.toJSONLD(ctx, inst)).includes("prov:wasQuotedFrom"));
+    } else {
+      /* Important 2: the anchor type means "here is the text that grounds
+         this" and must not be overloaded to mean "there is none" by emitting
+         the key with a null value (study-graph.js's own stated principle).
+         This is also what makes the "JSON-LD quotes its source" check above
+         discriminating rather than vacuous: the key must be able to be
+         ABSENT, and here it must be. */
+      check(`${studyKey}/${inst.id} JSON-LD omits prov:wasQuotedFrom entirely when nothing grounds it`,
+        !("prov:wasQuotedFrom" in E.toJSONLD(ctx, inst)));
     }
 
     /* tag dialect round-trip must be byte-equal */
@@ -419,8 +428,6 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
 {
   const ctx = E.ctxOf(LIB, graphs.PRE0102, I18N);
   const inst = graphs.PRE0102.instances.find((i) => i.id === "AC.PRIMARY.PFS");
-  const endpointOf = (i) =>
-    E.resolveInstance(ctx, i, "en").phrases.find((p) => p.role === "endpoint");
 
   /* NO-DISCARD. First-match-wins threw away every reference after the first;
      the count resolved must now equal the count authored. */
@@ -626,6 +633,8 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
     bare.anchors.length === 0 && bare.anchor === null, JSON.stringify(bare));
   check("an absent list is not a declaration",
     bare.declaredEmpty === false, String(bare.declaredEmpty));
+  check("an absent list carries no reason",
+    bare.noAnchorReason === null, String(bare.noAnchorReason));
 
   /* Now declare it. */
   km.sapRefs = [];
@@ -635,6 +644,26 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
     declared.declaredEmpty === true, String(declared.declaredEmpty));
   check("a declared-empty use still resolves to no reference",
     declared.anchors.length === 0);
+  check("the reason for the declaration is carried on the resolved anchor",
+    declared.noAnchorReason === km.noAnchorReason, String(declared.noAnchorReason));
+
+  /*
+   * PROJECTION (Important 3). anchorForPhrase carrying noAnchorReason is not
+   * enough on its own — DESIGN.md D18's lesson is that a field only reaches a
+   * surface or a gate once a PROJECTION carries it. Check both hops: the
+   * resolved phrase (resolveInstance, what the popover reads) and the model
+   * view (constructModelView, what the JSON tab and other tooling read).
+   */
+  const rpKm = E.resolveInstance(ctx, inst, "en").phrases.find((p) => p.oid === "SP_KM_CURVES");
+  check("the resolved phrase carries the declared-empty reason",
+    rpKm.anchorDeclaredEmpty === true && rpKm.noAnchorReason === km.noAnchorReason,
+    JSON.stringify([rpKm.anchorDeclaredEmpty, rpKm.noAnchorReason]));
+
+  const mvKm = E.constructModelView(ctx, inst);
+  const declaredEntry = (mvKm.declaredEmptyUses || []).find((d) => d.phrase === "SP_KM_CURVES");
+  check("the model view projects the declared-empty use and its reason",
+    !!declaredEntry && declaredEntry.noAnchorReason === km.noAnchorReason,
+    JSON.stringify(mvKm.declaredEmptyUses));
 }
 
 /* ---- planted fault: plurality must not open an unverified back door ---- */
@@ -645,6 +674,33 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
     !quoteAppearsIn(body, "PFS is measured from the date of first dose"));
   check("the real second reference passes",
     quoteAppearsIn(body, "PFS = time from randomization to documented disease progression or death"));
+
+  /*
+   * ENUMERATION (Important 5). Both checks above call quoteAppearsIn directly
+   * — exactly what the pre-existing paraphrase checks already do — so they
+   * exercise the quote gate, never the plural WALK. If allAnchors regressed
+   * to reading refs[0] only, every one of the second references below would
+   * silently vanish from the walk and neither check above would notice,
+   * since neither ever asks allAnchors for anything. Naming the second
+   * references (rather than only pinning a count) makes that regression fail
+   * BY NAME — "concept EVENT.PFS ref[1] missing" — which is the more useful
+   * failure for a reviewer to read than a bare count dropping from 44 to 35.
+   */
+  const all = allAnchors(graph);
+  check("allAnchors reaches 44 entries (35 single-reference + 9 from #13's plural sites)",
+    all.length === 44, String(all.length));
+  const SECOND_REFS = [
+    "concept EVENT.PFS ref[1]", "concept EVENT.OS ref[1]", "concept EVENT.TTP ref[1]",
+    "concept POP.EVAL_EFFICACY ref[1]",
+    "AC.PRIMARY.PFS phrase[8] SP_SUMMARY_MEASURE ref[1]",
+    "AC.SENS.PFS.ITT phrase[8] SP_SUMMARY_MEASURE ref[1]",
+    "AC.SEC.OS phrase[7] SP_SUMMARY_MEASURE ref[1]",
+    "AC.SEC.TTP phrase[6] SP_SUMMARY_MEASURE ref[1]"
+  ];
+  const wheres = all.map((a) => a.where);
+  const missing = SECOND_REFS.filter((w) => wheres.indexOf(w) === -1);
+  check("every second reference is reachable — plurality is walked, not read as refs[0] only",
+    missing.length === 0, "missing: " + missing.join(", "));
 }
 
 /* ---- planted faults: the quote gate must actually bite ---- */
