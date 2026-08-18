@@ -41,6 +41,9 @@ somewhere else:
 | `SP_POPULATION` (`AC.SENS.PFS.ITT`) | §7.2 *"Intent-to-treat (ITT) analysis population includes all subjects as randomized."* | *"…will be repeated for the as-randomized population (intent-to-treat analysis)"* |
 | `SP_GROUPING` (all four) | §4.1 *"Subjects will be randomized (1:1) to receive everolimus or placebo…"* | *"…for all eligible, treated subjects by treatment arm"* |
 
+Of those twelve, eight are repaired by §4.4 and four — the `SP_GROUPING` uses —
+are deliberately left citing §4.1, for the reason given there.
+
 The §7.7.2 sentence in row 2 is the **only** place `AC.SENS.PFS.ITT` is specified
 at all, and no phrase in that analysis cites it.
 
@@ -175,22 +178,42 @@ the concept:
 | Concept | Added reference (§7.7.2) | `relation` |
 |---|---|---|
 | `EVENT.PFS` | *"PFS = time from randomization to documented disease progression or death"* | `definition` |
-| `EVENT.PFS` | *"Median time and 90% confidence interval for PFS, TTP, and OS will be summarized"* | `specification` |
 | `EVENT.TTP` | *"TTP = time from randomization until progression of disease"* | `definition` |
 | `EVENT.OS` | *"OS = time from randomization until death"* | `definition` |
-| `POP.EVAL_EFFICACY` | *"for all eligible, treated subjects by treatment arm"* | `specification` |
-| `TRT.PRE0102` | *"by treatment arm using Kaplan-Meier estimates"* | `specification` |
+| `POP.EVAL_EFFICACY` | *"for all eligible, treated subjects"* | `specification` |
 
-**Phrase-instance level** — this sentence specifies one analysis, not the
-concept, so it belongs to the use:
+**Phrase-instance level** — these specify a use, not a concept:
 
 | Use | Added reference (§7.7.2) | `relation` |
 |---|---|---|
 | `AC.SENS.PFS.ITT` ▸ `SP_POPULATION` | *"will be repeated for the as-randomized population (intent-to-treat analysis)"* | `specification` |
+| all four ▸ `SP_SUMMARY_MEASURE` | *"If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals"* | `qualification` |
 
-**`relation` earns its place exactly once.** `EVENT.PFS`'s two §7.7.2 references
-tie on proximity and on level; only `relation` can order them, and it puts the
-specification ahead of the restated definition.
+Nine added references in total.
+
+**`relation` earns its place on the summary measure.** Each
+`SP_SUMMARY_MEASURE` use then holds two §7.7.2 references at one level, tied on
+both level and proximity: the median-and-CI sentence (`specification`) and the
+not-reached fallback (`qualification`). Nothing but `relation` can order them,
+and they are exactly the "definition plus section-specific qualification" pair
+the issue names as common for conditional analyses.
+
+**Two references considered and rejected**, recorded so the omission is a
+decision rather than an oversight:
+
+- A `specification` reference on `EVENT.PFS` quoting *"Median time and 90%
+  confidence interval for PFS, TTP, and OS will be summarized"* — that sentence
+  is **already** the anchor for the four instances and for their
+  `SP_METHOD_KM`, `SP_CONFIDENCE_LEVEL` and `SP_SUMMARY_MEASURE` uses. Adding a
+  shorter sub-span of it would deduplicate against nothing and show the reviewer
+  two overlapping quotations of one sentence.
+- A `specification` reference on `TRT.PRE0102` quoting a §7.7.2 clause. §4.1
+  *"Subjects will be randomized (1:1)…"* is the correct grounding for treatment
+  allocation, and the only §7.7.2 fragment available is *"by treatment arm"*,
+  which recurs throughout §7.7 and would be anchor noise rather than anchor
+  improvement. `SP_GROUPING` continuing to cite §4.1 is right, so it is left
+  alone — the fix is for references that are *wrong*, not for every reference
+  that is distant.
 
 **CDISC Pilot** remains exempt by declaration (`sourceDocument: null` plus
 `sourceDocumentNote`), migrated to the plural shape.
