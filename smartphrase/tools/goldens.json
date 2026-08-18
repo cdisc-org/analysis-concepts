@@ -2260,24 +2260,46 @@
       {
         "phrase": "SP_TTE_ENDPOINT",
         "role": "endpoint",
+        "section": "7.7.2",
+        "quote": "PFS = time from randomization to documented disease progression or death",
+        "relation": "definition",
+        "from": "concept:EVENT.PFS",
+        "proximity": 3,
+        "head": true,
+        "basis": "proximity"
+      },
+      {
+        "phrase": "SP_TTE_ENDPOINT",
+        "role": "endpoint",
         "section": "5.3",
         "quote": "the duration of time from time of randomization to time of progression or death, whichever occurs first",
-        "relation": null,
+        "relation": "definition",
         "from": "concept:EVENT.PFS",
         "proximity": 0,
+        "head": false,
+        "basis": null
+      },
+      {
+        "phrase": "SP_POPULATION",
+        "role": "population",
+        "section": "7.7.2",
+        "quote": "for all eligible, treated subjects",
+        "relation": "specification",
+        "from": "concept:POP.EVAL_EFFICACY",
+        "proximity": 3,
         "head": true,
-        "basis": "only"
+        "basis": "proximity"
       },
       {
         "phrase": "SP_POPULATION",
         "role": "population",
         "section": "7.2",
         "quote": "The primary efficacy analysis will be done including eligible, treated subjects.",
-        "relation": null,
+        "relation": "definition",
         "from": "concept:POP.EVAL_EFFICACY",
         "proximity": 1,
-        "head": true,
-        "basis": "only"
+        "head": false,
+        "basis": null
       },
       {
         "phrase": "SP_GROUPING",
@@ -2361,11 +2383,22 @@
         "role": "summary_measure",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "relation": null,
+        "relation": "specification",
         "from": "phraseInstance",
         "proximity": 3,
         "head": true,
-        "basis": "only"
+        "basis": "relation"
+      },
+      {
+        "phrase": "SP_SUMMARY_MEASURE",
+        "role": "summary_measure",
+        "section": "7.7.2",
+        "quote": "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals",
+        "relation": "qualification",
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": false,
+        "basis": null
       }
     ],
     "template": {
@@ -2528,6 +2561,10 @@
         "sp:role": "endpoint",
         "prov:wasQuotedFrom": [
           {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "PFS = time from randomization to documented disease progression or death"
+          },
+          {
             "@id": "acdc:document/PRE0102-SAP-001#5.3",
             "rdfs:comment": "the duration of time from time of randomization to time of progression or death, whichever occurs first"
           }
@@ -2547,6 +2584,10 @@
         "sp:phrase": "SP_POPULATION",
         "sp:role": "population",
         "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "for all eligible, treated subjects"
+          },
           {
             "@id": "acdc:document/PRE0102-SAP-001#7.2",
             "rdfs:comment": "The primary efficacy analysis will be done including eligible, treated subjects."
@@ -2679,6 +2720,10 @@
           {
             "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
             "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          },
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals"
           }
         ],
         "sp:binding": [
@@ -2885,13 +2930,35 @@
       {
         "phrase": "SP_TTE_ENDPOINT",
         "role": "endpoint",
+        "section": "7.7.2",
+        "quote": "PFS = time from randomization to documented disease progression or death",
+        "relation": "definition",
+        "from": "concept:EVENT.PFS",
+        "proximity": 3,
+        "head": true,
+        "basis": "proximity"
+      },
+      {
+        "phrase": "SP_TTE_ENDPOINT",
+        "role": "endpoint",
         "section": "5.3",
         "quote": "the duration of time from time of randomization to time of progression or death, whichever occurs first",
-        "relation": null,
+        "relation": "definition",
         "from": "concept:EVENT.PFS",
         "proximity": 0,
+        "head": false,
+        "basis": null
+      },
+      {
+        "phrase": "SP_POPULATION",
+        "role": "population",
+        "section": "7.7.2",
+        "quote": "will be repeated for the as-randomized population (intent-to-treat analysis)",
+        "relation": "specification",
+        "from": "phraseInstance",
+        "proximity": 3,
         "head": true,
-        "basis": "only"
+        "basis": "level"
       },
       {
         "phrase": "SP_POPULATION",
@@ -2901,8 +2968,8 @@
         "relation": null,
         "from": "concept:POP.ITT",
         "proximity": 1,
-        "head": true,
-        "basis": "only"
+        "head": false,
+        "basis": null
       },
       {
         "phrase": "SP_GROUPING",
@@ -2986,11 +3053,22 @@
         "role": "summary_measure",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "relation": null,
+        "relation": "specification",
         "from": "phraseInstance",
         "proximity": 3,
         "head": true,
-        "basis": "only"
+        "basis": "relation"
+      },
+      {
+        "phrase": "SP_SUMMARY_MEASURE",
+        "role": "summary_measure",
+        "section": "7.7.2",
+        "quote": "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals",
+        "relation": "qualification",
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": false,
+        "basis": null
       }
     ],
     "template": {
@@ -3153,6 +3231,10 @@
         "sp:role": "endpoint",
         "prov:wasQuotedFrom": [
           {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "PFS = time from randomization to documented disease progression or death"
+          },
+          {
             "@id": "acdc:document/PRE0102-SAP-001#5.3",
             "rdfs:comment": "the duration of time from time of randomization to time of progression or death, whichever occurs first"
           }
@@ -3172,6 +3254,10 @@
         "sp:phrase": "SP_POPULATION",
         "sp:role": "population",
         "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "will be repeated for the as-randomized population (intent-to-treat analysis)"
+          },
           {
             "@id": "acdc:document/PRE0102-SAP-001#7.2",
             "rdfs:comment": "Intent-to-treat (ITT) analysis population includes all subjects as randomized."
@@ -3304,6 +3390,10 @@
           {
             "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
             "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          },
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals"
           }
         ],
         "sp:binding": [
@@ -3497,24 +3587,46 @@
       {
         "phrase": "SP_TTE_ENDPOINT",
         "role": "endpoint",
+        "section": "7.7.2",
+        "quote": "OS = time from randomization until death",
+        "relation": "definition",
+        "from": "concept:EVENT.OS",
+        "proximity": 3,
+        "head": true,
+        "basis": "proximity"
+      },
+      {
+        "phrase": "SP_TTE_ENDPOINT",
+        "role": "endpoint",
         "section": "5.3",
         "quote": "the time from randomization until death or censored at the date of last follow-up",
-        "relation": null,
+        "relation": "definition",
         "from": "concept:EVENT.OS",
         "proximity": 0,
+        "head": false,
+        "basis": null
+      },
+      {
+        "phrase": "SP_POPULATION",
+        "role": "population",
+        "section": "7.7.2",
+        "quote": "for all eligible, treated subjects",
+        "relation": "specification",
+        "from": "concept:POP.EVAL_EFFICACY",
+        "proximity": 3,
         "head": true,
-        "basis": "only"
+        "basis": "proximity"
       },
       {
         "phrase": "SP_POPULATION",
         "role": "population",
         "section": "7.2",
         "quote": "The primary efficacy analysis will be done including eligible, treated subjects.",
-        "relation": null,
+        "relation": "definition",
         "from": "concept:POP.EVAL_EFFICACY",
         "proximity": 1,
-        "head": true,
-        "basis": "only"
+        "head": false,
+        "basis": null
       },
       {
         "phrase": "SP_GROUPING",
@@ -3576,11 +3688,22 @@
         "role": "summary_measure",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "relation": null,
+        "relation": "specification",
         "from": "phraseInstance",
         "proximity": 3,
         "head": true,
-        "basis": "only"
+        "basis": "relation"
+      },
+      {
+        "phrase": "SP_SUMMARY_MEASURE",
+        "role": "summary_measure",
+        "section": "7.7.2",
+        "quote": "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals",
+        "relation": "qualification",
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": false,
+        "basis": null
       }
     ],
     "template": {
@@ -3738,6 +3861,10 @@
         "sp:role": "endpoint",
         "prov:wasQuotedFrom": [
           {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "OS = time from randomization until death"
+          },
+          {
             "@id": "acdc:document/PRE0102-SAP-001#5.3",
             "rdfs:comment": "the time from randomization until death or censored at the date of last follow-up"
           }
@@ -3757,6 +3884,10 @@
         "sp:phrase": "SP_POPULATION",
         "sp:role": "population",
         "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "for all eligible, treated subjects"
+          },
           {
             "@id": "acdc:document/PRE0102-SAP-001#7.2",
             "rdfs:comment": "The primary efficacy analysis will be done including eligible, treated subjects."
@@ -3865,6 +3996,10 @@
           {
             "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
             "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          },
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals"
           }
         ],
         "sp:binding": [
@@ -4024,24 +4159,46 @@
       {
         "phrase": "SP_TTE_ENDPOINT",
         "role": "endpoint",
+        "section": "7.7.2",
+        "quote": "TTP = time from randomization until progression of disease",
+        "relation": "definition",
+        "from": "concept:EVENT.TTP",
+        "proximity": 3,
+        "head": true,
+        "basis": "proximity"
+      },
+      {
+        "phrase": "SP_TTE_ENDPOINT",
+        "role": "endpoint",
         "section": "5.3",
         "quote": "the time from randomization until progression of the disease",
-        "relation": null,
+        "relation": "definition",
         "from": "concept:EVENT.TTP",
         "proximity": 0,
+        "head": false,
+        "basis": null
+      },
+      {
+        "phrase": "SP_POPULATION",
+        "role": "population",
+        "section": "7.7.2",
+        "quote": "for all eligible, treated subjects",
+        "relation": "specification",
+        "from": "concept:POP.EVAL_EFFICACY",
+        "proximity": 3,
         "head": true,
-        "basis": "only"
+        "basis": "proximity"
       },
       {
         "phrase": "SP_POPULATION",
         "role": "population",
         "section": "7.2",
         "quote": "The primary efficacy analysis will be done including eligible, treated subjects.",
-        "relation": null,
+        "relation": "definition",
         "from": "concept:POP.EVAL_EFFICACY",
         "proximity": 1,
-        "head": true,
-        "basis": "only"
+        "head": false,
+        "basis": null
       },
       {
         "phrase": "SP_GROUPING",
@@ -4092,11 +4249,22 @@
         "role": "summary_measure",
         "section": "7.7.2",
         "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
-        "relation": null,
+        "relation": "specification",
         "from": "phraseInstance",
         "proximity": 3,
         "head": true,
-        "basis": "only"
+        "basis": "relation"
+      },
+      {
+        "phrase": "SP_SUMMARY_MEASURE",
+        "role": "summary_measure",
+        "section": "7.7.2",
+        "quote": "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals",
+        "relation": "qualification",
+        "from": "phraseInstance",
+        "proximity": 3,
+        "head": false,
+        "basis": null
       }
     ],
     "template": {
@@ -4254,6 +4422,10 @@
         "sp:role": "endpoint",
         "prov:wasQuotedFrom": [
           {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "TTP = time from randomization until progression of disease"
+          },
+          {
             "@id": "acdc:document/PRE0102-SAP-001#5.3",
             "rdfs:comment": "the time from randomization until progression of the disease"
           }
@@ -4273,6 +4445,10 @@
         "sp:phrase": "SP_POPULATION",
         "sp:role": "population",
         "prov:wasQuotedFrom": [
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "for all eligible, treated subjects"
+          },
           {
             "@id": "acdc:document/PRE0102-SAP-001#7.2",
             "rdfs:comment": "The primary efficacy analysis will be done including eligible, treated subjects."
@@ -4368,6 +4544,10 @@
           {
             "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
             "rdfs:comment": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+          },
+          {
+            "@id": "acdc:document/PRE0102-SAP-001#7.7.2",
+            "rdfs:comment": "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals"
           }
         ],
         "sp:binding": [

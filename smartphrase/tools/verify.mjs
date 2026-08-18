@@ -509,6 +509,104 @@ for (const [studyKey, graph] of Object.entries(graphs)) {
     JSON.stringify(endpointNode));
 }
 
+/* ---- relevance: the head must be the passage specifying THIS analysis ----
+ *
+ * The reviewer's spot-check, mechanised (issue #13). Where a reference in the
+ * analysis's own section is available to a use, that reference must lead.
+ *
+ * One exemption, and it is D-5 rather than a fudge: a reference authored on the
+ * phrase INSTANCE is a deliberate act about this use, and #12 decided it
+ * outranks a definitional one. So a use whose head is a phrase-instance
+ * reference in another section is exempt — SP_ICE_TREATMENT_POLICY citing 4.3
+ * from an analysis specified at 7.7.2 is correct, not a regression.
+ */
+for (const [studyKey, graph] of Object.entries(graphs)) {
+  if (!graph.sourceDocument) continue;
+  const ctx = E.ctxOf(LIB, graph, I18N);
+  for (const inst of graph.instances) {
+    const own = (inst.sapRefs || [])[0];
+    if (!own) continue;
+    for (const rp of E.resolveInstance(ctx, inst, "en").phrases) {
+      if (!rp.anchor) continue;
+      if (rp.anchorSource === "phraseInstance" && rp.anchor.section !== own.section) continue;
+      const local = (rp.anchors || []).filter((a) => a.section === own.section);
+      if (!local.length) continue;
+      check(`${studyKey}/${inst.id}/${rp.oid} leads with the section specifying this analysis`,
+        rp.anchor.section === own.section,
+        `head §${rp.anchor.section} but §${own.section} is available`);
+    }
+  }
+}
+
+/* The eight uses this issue repairs, named individually so a regression says
+   which one moved rather than only that coverage fell. */
+{
+  const ctx = E.ctxOf(LIB, graphs.PRE0102, I18N);
+  const expect = [
+    ["AC.PRIMARY.PFS", "endpoint", "7.7.2"],
+    ["AC.SENS.PFS.ITT", "endpoint", "7.7.2"],
+    ["AC.SEC.OS", "endpoint", "7.7.2"],
+    ["AC.SEC.TTP", "endpoint", "7.7.2"],
+    ["AC.PRIMARY.PFS", "population", "7.7.2"],
+    ["AC.SEC.OS", "population", "7.7.2"],
+    ["AC.SEC.TTP", "population", "7.7.2"],
+    ["AC.SENS.PFS.ITT", "population", "7.7.2"]
+  ];
+  for (const [instId, role, section] of expect) {
+    const inst = graphs.PRE0102.instances.find((i) => i.id === instId);
+    const rp = E.resolveInstance(ctx, inst, "en").phrases.find((p) => p.role === role);
+    check(`${instId} ${role} now leads with §${section}`,
+      !!rp && !!rp.anchor && rp.anchor.section === section,
+      rp && rp.anchor ? rp.anchor.section : "no anchor");
+    check(`${instId} ${role} keeps its definitional reference`,
+      !!rp && (rp.anchors || []).length >= 2,
+      JSON.stringify(rp && rp.anchors));
+  }
+
+  /* SP_GROUPING is deliberately untouched: 4.1 is the right grounding for
+     treatment allocation, and the only 7.7.2 fragment available recurs
+     throughout the section. The fix is for references that are WRONG, not for
+     every reference that is distant. */
+  const primary = graphs.PRE0102.instances.find((i) => i.id === "AC.PRIMARY.PFS");
+  const grouping = E.resolveInstance(ctx, primary, "en").phrases
+    .find((p) => p.role === "grouping");
+  check("SP_GROUPING still cites §4.1 by design",
+    !!grouping && grouping.anchor.section === "4.1",
+    grouping && grouping.anchor && grouping.anchor.section);
+
+  /* The relation tie-break, on live data: two references sharing a level AND a
+     section, so nothing but relation can order them. The median-and-CI sentence
+     specifies the measure; the not-reached sentence qualifies it. */
+  const summary = E.resolveInstance(ctx, primary, "en").phrases
+    .find((p) => p.role === "summary_measure");
+  check("the summary measure holds two references in one section",
+    (summary.anchors || []).length === 2, JSON.stringify(summary.anchors));
+  check("relation orders them on live data",
+    summary.anchorBasis === "relation", String(summary.anchorBasis));
+  check("the specification leads and the qualification follows",
+    summary.anchors[0].relation === "specification" &&
+      summary.anchors[1].relation === "qualification",
+    JSON.stringify(summary.anchors.map((a) => a.relation)));
+
+  /* THE HEADLINE: one concept, two analyses, two different correct sections.
+     Inspected from an analysis specified at 5.3, EVENT.PFS leads with 5.3. */
+  const at53 = JSON.parse(JSON.stringify(primary));
+  at53.sapRefs = [{ section: "5.3", quote: "the time from randomization until progression of the disease" }];
+  const rp53 = E.resolveInstance(ctx, at53, "en").phrases.find((p) => p.role === "endpoint");
+  check("one concept anchors differently per analysis",
+    rp53.anchor.section === "5.3", JSON.stringify(rp53.anchor));
+}
+
+/* ---- planted fault: plurality must not open an unverified back door ---- */
+{
+  const graph = graphs.PRE0102;
+  const body = fs.readFileSync(resolveSection(smartphraseDir, graph, "7.7.2"), "utf8");
+  check("planted fault: an invented SECOND reference is still rejected",
+    !quoteAppearsIn(body, "PFS is measured from the date of first dose"));
+  check("the real second reference passes",
+    quoteAppearsIn(body, "PFS = time from randomization to documented disease progression or death"));
+}
+
 /* ---- planted faults: the quote gate must actually bite ---- */
 {
   const graph = graphs.PRE0102;

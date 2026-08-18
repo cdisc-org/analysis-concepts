@@ -79,8 +79,20 @@
         data: { dataset: "ADTTE", file: "adtte.xpt", paramcd: "PFS",
                 datasetLabel: "ADaM time-to-event analysis dataset",
                 aval: "AVAL", cnsr: "CNSR" },
-        sapRefs: [{ section: "5.3",
-                  quote: "the duration of time from time of randomization to time of progression or death, whichever occurs first" }]
+        sapRefs: [
+          { section: "5.3",
+            quote: "the duration of time from time of randomization to time of progression or death, whichever occurs first",
+            relation: "definition" },
+          /*
+           * 7.7.2 restates the endpoint where the analysis is specified. Both
+           * are real definitions of the same endpoint in the same document;
+           * neither is a duplicate of the other, and which one a reviewer
+           * should see depends on which analysis they are inspecting.
+           */
+          { section: "7.7.2",
+            quote: "PFS = time from randomization to documented disease progression or death",
+            relation: "definition" }
+        ],
       },
       "EVENT.OS": {
         kind: "Event", conceptCategory: "EventDimension",
@@ -89,8 +101,14 @@
         data: { dataset: "ADTTE", file: "adtte.xpt", paramcd: "OS",
                 datasetLabel: "ADaM time-to-event analysis dataset",
                 aval: "AVAL", cnsr: "CNSR" },
-        sapRefs: [{ section: "5.3",
-                  quote: "the time from randomization until death or censored at the date of last follow-up" }]
+        sapRefs: [
+          { section: "5.3",
+            quote: "the time from randomization until death or censored at the date of last follow-up",
+            relation: "definition" },
+          { section: "7.7.2",
+            quote: "OS = time from randomization until death",
+            relation: "definition" }
+        ],
       },
       "EVENT.TTP": {
         kind: "Event", conceptCategory: "EventDimension",
@@ -99,8 +117,14 @@
         data: { dataset: "ADTTE", file: "adtte.xpt", paramcd: "TTP",
                 datasetLabel: "ADaM time-to-event analysis dataset",
                 aval: "AVAL", cnsr: "CNSR" },
-        sapRefs: [{ section: "5.3",
-                  quote: "the time from randomization until progression of the disease" }]
+        sapRefs: [
+          { section: "5.3",
+            quote: "the time from randomization until progression of the disease",
+            relation: "definition" },
+          { section: "7.7.2",
+            quote: "TTP = time from randomization until progression of disease",
+            relation: "definition" }
+        ],
       },
 
       "POP.EVAL_EFFICACY": {
@@ -108,8 +132,14 @@
         label: "EFF", name: "eligible, treated",
         iri: "usdm:AnalysisPopulation/PRE0102-POP-EFF", iri_status: "illustrative",
         data: { flag: "EFFIFL" },
-        sapRefs: [{ section: "7.2",
-                  quote: "The primary efficacy analysis will be done including eligible, treated subjects." }]
+        sapRefs: [
+          { section: "7.2",
+            quote: "The primary efficacy analysis will be done including eligible, treated subjects.",
+            relation: "definition" },
+          { section: "7.7.2",
+            quote: "for all eligible, treated subjects",
+            relation: "specification" }
+        ],
       },
       "POP.ITT": {
         kind: "Population",
@@ -279,8 +309,20 @@
                           sapRefs: [{ section: "7.7.2",
                                     quote: "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves." }] },
           { phrase: "SP_SUMMARY_MEASURE",  bindings: { summary: { output: "median_survival" } },
-                          sapRefs: [{ section: "7.7.2",
-                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." }] }
+                          sapRefs: [
+                            { section: "7.7.2",
+                              quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+                              relation: "specification" },
+                            /*
+                             * The conditional the issue names as common: a
+                             * summary measure qualified elsewhere in its own
+                             * section. These two share a level AND a section,
+                             * so nothing but `relation` can order them.
+                             */
+                            { section: "7.7.2",
+                              quote: "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals",
+                              relation: "qualification" }
+                          ] }
         ]
       },
       {
@@ -306,7 +348,11 @@
         sentenceRole: "a sensitivity analysis",
         phrases: [
           { phrase: "SP_TTE_ENDPOINT",     bindings: { event:      { concept: "EVENT.PFS", render: "name_with_label" } } },
-          { phrase: "SP_POPULATION",       bindings: { population: { concept: "POP.ITT", render: "name" } } },
+          /* The sentence that specifies THIS analysis — nothing else cites it. */
+          { phrase: "SP_POPULATION",       bindings: { population: { concept: "POP.ITT", render: "name" } },
+                          sapRefs: [{ section: "7.7.2",
+                                    quote: "will be repeated for the as-randomized population (intent-to-treat analysis)",
+                                    relation: "specification" }] },
           { phrase: "SP_GROUPING",         bindings: { treatment:  { concept: "TRT.PRE0102", render: "label" } } },
           /* method / value / output bindings all resolve into the LIBRARY,
              which correctly forbids study text — so before issue #12 these
@@ -334,8 +380,20 @@
                           sapRefs: [{ section: "7.7.2",
                                     quote: "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves." }] },
           { phrase: "SP_SUMMARY_MEASURE",  bindings: { summary: { output: "median_survival" } },
-                          sapRefs: [{ section: "7.7.2",
-                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." }] }
+                          sapRefs: [
+                            { section: "7.7.2",
+                              quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+                              relation: "specification" },
+                            /*
+                             * The conditional the issue names as common: a
+                             * summary measure qualified elsewhere in its own
+                             * section. These two share a level AND a section,
+                             * so nothing but `relation` can order them.
+                             */
+                            { section: "7.7.2",
+                              quote: "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals",
+                              relation: "qualification" }
+                          ] }
         ]
       },
       {
@@ -377,8 +435,20 @@
                           sapRefs: [{ section: "7.7.2",
                                     quote: "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves." }] },
           { phrase: "SP_SUMMARY_MEASURE",  bindings: { summary: { output: "median_survival" } },
-                          sapRefs: [{ section: "7.7.2",
-                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." }] }
+                          sapRefs: [
+                            { section: "7.7.2",
+                              quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+                              relation: "specification" },
+                            /*
+                             * The conditional the issue names as common: a
+                             * summary measure qualified elsewhere in its own
+                             * section. These two share a level AND a section,
+                             * so nothing but `relation` can order them.
+                             */
+                            { section: "7.7.2",
+                              quote: "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals",
+                              relation: "qualification" }
+                          ] }
         ]
       },
       {
@@ -417,8 +487,20 @@
                           sapRefs: [{ section: "7.7.2",
                                     quote: "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS" }] },
           { phrase: "SP_SUMMARY_MEASURE",  bindings: { summary: { output: "median_survival" } },
-                          sapRefs: [{ section: "7.7.2",
-                                    quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates." }] }
+                          sapRefs: [
+                            { section: "7.7.2",
+                              quote: "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+                              relation: "specification" },
+                            /*
+                             * The conditional the issue names as common: a
+                             * summary measure qualified elsewhere in its own
+                             * section. These two share a level AND a section,
+                             * so nothing but `relation` can order them.
+                             */
+                            { section: "7.7.2",
+                              quote: "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals",
+                              relation: "qualification" }
+                          ] }
         ]
       }
     ],
