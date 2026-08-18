@@ -39,7 +39,7 @@
      * (acdc_method.yaml: "Methods MUST NOT reference clinical or analysis
      * concepts"), and issue #12 records an encoding exercise that ended up
      * smuggling a SAP sentence into a method's `description` for want of
-     * anywhere typed to put it. The fix for that is sapRef on the study side,
+     * anywhere typed to put it. The fix for that is sapRefs on the study side,
      * not a relaxed library wall.
      */
     provenance: {
@@ -164,8 +164,8 @@
        * FIXED-TEXT phrases: no placeholders at all. Their entire content is a
        * claim about what the SAP says, which is the class issue #12 identified
        * as structurally unanchorable — there is no binding to route through, so
-       * no concept's sapRef can ever cover them. They become anchorable only
-       * because a phrase INSTANCE can carry sapRef.
+       * no concept's sapRefs can ever cover them. They become anchorable only
+       * because a phrase INSTANCE can carry sapRefs.
        *
        * Both are quoted from PrE0102 SAP 7.7.2. Role method_qualifier so no new
        * role is needed; see the open question in PLAN-anchoring.md about whether
