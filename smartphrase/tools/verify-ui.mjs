@@ -267,8 +267,46 @@ studyBtns[1].dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
       pop.includes("bound concept"), pop.slice(0, 400));
   }
 
+  /*
+   * Issue #13: a reused concept must lead with the section specifying THIS
+   * analysis, and the passages it does not lead with must remain visible.
+   */
+  const endpointChip2 = chipsByText("disease progression or death")[0];
+  if (endpointChip2) {
+    endpointChip2.dispatchEvent(new window.MouseEvent("mouseenter", { bubbles: true }));
+    const pop = $("pop").textContent;
+    /* This is a regression pin on task 3's work (the endpoint already resolved
+       to §7.7.2 before any of this task's changes) — kept because it is still
+       a cheap, useful guard, but it is not this task's assertion. What THIS
+       task introduced is order: the head must render ahead of the reference
+       it outranks, not merely alongside it. */
+    check("the endpoint's SAP 7.7.2 anchor is present (regression pin, predates this task)",
+      pop.includes("SAP 7.7.2"), pop.slice(0, 400));
+    check("the head anchor (7.7.2) renders before the reference it outranks (5.3)",
+      pop.indexOf("7.7.2") !== -1 && pop.indexOf("5.3") !== -1 &&
+        pop.indexOf("7.7.2") < pop.indexOf("5.3"), pop.slice(0, 500));
+    check("the popover says why that reference leads",
+      /nearest to/.test(pop), pop.slice(0, 400));
+    check("the definitional reference is listed as SAP 5.3, not merely present somewhere",
+      /also grounded in SAP 5\.3\b/.test(pop), pop.slice(0, 500));
+  }
+
+  /* Two references sharing a section, ordered by relation. */
+  const summaryChip = chipsByText("median")[0];
+  if (summaryChip) {
+    summaryChip.dispatchEvent(new window.MouseEvent("mouseenter", { bubbles: true }));
+    const pop = $("pop").textContent;
+    check("the summary measure lists its other reference as SAP 7.7.2 (qualification)",
+      /also grounded in SAP 7\.7\.2 \(qualification\)/.test(pop), pop.slice(0, 500));
+  }
+
+  /* Both numbers pinned, not just the wording: "33 phrase uses" alone still
+     matches a regression to "30 of 33 phrase uses", and a bare "document
+     references" match pins no total at all — the same class of
+     non-discriminating assertion already caught once in the Task 2 fix round. */
   check("stop 4 reports anchoring coverage",
-    /33 of 33 phrase uses/.test(txt("anchorCoverage")), txt("anchorCoverage"));
+    /33 of 33 phrase uses/.test(txt("anchorCoverage")) &&
+      /across 47 document references/.test(txt("anchorCoverage")), txt("anchorCoverage"));
 }
 
 /* ---------- 4. trace: click the endpoint chip ---------- */

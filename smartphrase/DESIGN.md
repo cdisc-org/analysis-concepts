@@ -236,12 +236,12 @@ route through a concept had no typed path back to the SAP. Issue
 roughly half of all phrase uses unanchored; the same shape reproduced here.
 
 The anchor is now one type, `{ section, quote? }`, on four study-side homes: concepts, **phrase
-instances**, estimands and analysis instances. #12 suggested a separate typed `sectionRef` for instances;
-that is folded into the same type with `quote` optional rather than added as a second field. Precedence:
-the phrase instance's anchor wins for display because it answers *"why is this here?"*, a bound concept's
-is the fallback answering *"what is this?"*, and **both survive** — `anchorSource` records which applied.
-The library wall is untouched, which is the point: the boundary was right, only the anchor field was in
-the wrong place.
+instances**, estimands and analysis instances (widened to a list, and the fallback below replaced by a
+ranking, in D19–D20). #12 suggested a separate typed `sectionRef` for instances; that is folded into the
+same type with `quote` optional rather than added as a second field. Precedence: the phrase instance's
+anchor wins for display because it answers *"why is this here?"*, a bound concept's is the fallback
+answering *"what is this?"*, and **both survive** — `anchorSource` records which applied. The library wall
+is untouched, which is the point: the boundary was right, only the anchor field was in the wrong place.
 
 The deeper finding, and the reason the gap survived: **`sapRef` appeared in zero pinned outputs.** No
 projection emitted it, so no surface could show it and no gate could detect it regressing. Adding a field
@@ -274,6 +274,86 @@ de-hyphenations of what the document actually contains.
 Coverage is gated **per study, keyed on a declaration**: a study states `sourceDocument`, or `null` with a
 reason. PrE0102 is held to every phrase use anchored (33 of 33); the CDISC Pilot, whose study layer is
 constructed and has no SAP behind it, is exempt *by declaration rather than by silence*.
+
+**D19 — Anchors are plural at every study-side home; the singular field is gone.**
+A concept exists to be reused. `EVENT.PFS` is bound by PrE0102's primary and ITT-sensitivity analyses, and
+each of those bindings is licensed by a different sentence, so one `sapRef` per concept could never be the
+right anchor for both. #12 established the four study-side homes — concept, phrase instance, estimand,
+analysis instance. #13 widens each from `{ section, quote? }` to `sapRefs: [{ section, quote?, relation? }]`,
+and the singular field no longer exists anywhere in the model.
+
+The issue offered a back-compatible reading — accept either a bare object or an array — and it is declined
+here. Every consumer of this field lives in this repository: the resolver, the verifier, the JSON-LD
+projector, and every study-graph literal that carries one. There is no external caller whose contract would
+break on a clean rewrite, so dual-shape support would only buy permanent branching in every reader to avoid
+a one-time mechanical edit of the existing literals. The migration is paid once; the alternative would be
+paid on every read for the life of the project.
+
+Absent and empty remain different answers, unchanged by the widening: an absent `sapRefs` is a question
+nobody has answered and fails the gate for any study with a declared `sourceDocument`; an empty array with
+a `noAnchorReason` is the answer *"nothing in the document grounds this."* Cardinality was never what that
+contract was about, so plurality did not disturb it. (See D21 on why the instance's own anchor still
+cannot be answered by pointing at itself.)
+
+**D20 — Relevance is section proximity, with an optional authored `relation` as tie-break; declaration
+order is the last key, not the first.**
+The bug #13 exists to fix: with one anchor field, the winner was whichever candidate happened to be
+declared first — a phrase instance's binding order, an authoring accident with no relationship to which
+passage actually specifies the analysis being read. An independent reviewer's audit of the encoded corpus
+(the same encoding #12 examined) hit this repeatedly: a concept's definitional quote, authored once
+wherever the concept was first defined, outranked every later analysis's own specifying sentence purely by
+having been declared earlier.
+
+Proximity — the count of matching leading dotted section components against the analysis's own anchor — is
+the fix, because it is *derivable*: no reference in the existing corpus needs re-authoring for it to start
+choosing better heads. That is what the issue's acceptance sketch actually asks for. A fully typed
+`relation` on every reference was the honest alternative — a stated fact rather than a heuristic — but it
+would require touching every instance before a single reviewer's problem improved, since an unlabelled
+reference contributes nothing to a ranking that only understands labels. Proximity repairs the existing
+corpus for free; typing has to be paid for everywhere before it pays for anything. `relation` survives as
+an optional tie-break for what proximity cannot settle — two references at the same section — rather than
+as the primary key.
+
+**Level stays the outermost key**, so #12's precedence decision — a phrase instance's own reason for being
+there outranks a bound concept's account of what it is — is preserved unchanged; proximity only orders
+*within* a level, never across one. `ICE.TOX_DISCONT`'s concept anchor and `SP_ICE_TREATMENT_POLICY`'s own
+anchor are the pair that shows why this still matters even where proximity cannot help: both sit at §4.3,
+so proximity ties at zero, and it is level alone that keeps the phrase instance's account of *why this analysis handles
+the event as it does* from being treated as interchangeable with the concept's account of *what the event
+is*. The engine reports `anchorBasis` precisely so this is checkable — a reviewer can see `"level"` rather
+than `"proximity"` and know the two disagreed for a reason other than distance.
+
+That same pair produced a finding the plan did not anticipate. The first acceptance test written for this
+feature forbade any new `documentAnchors` entry from appearing, to catch an accidental change in
+resolution — but union resolution surfaced a reference that first-match-wins had been silently discarding:
+the concept's §4.3 definition and the phrase instance's own §4.3 justification are, in the data file's own
+words, *"same section, different claim."* Two distinct sentences had been sitting one field-read apart the
+whole time; the singular model could only ever show a reader one of them. Where the first two failure modes
+#13 addresses were argued from the reviewer's audit — first-match-wins deciding by accident, and silence
+reading as an answer (D21) — this third one was found in our own data. It is one anchor in one study; it is
+evidence a plural model finds passages a singular one cannot, not proof the corpus is full of them.
+
+What this did **not** change: the four `SP_GROUPING` uses in PrE0102 still cite §4.1, distant from every
+analysis's own §7.7.2 context. That reference is correct — §4.1 is the randomization sentence, and the only
+§7.7.2 fragment available is a different clause recurring throughout the section, not a nearer statement of
+the grouping. The fix is for references that are wrong, not for every reference that is merely distant, and
+proximity does not disturb a citation nobody disputes.
+
+**D21 — A use grounded in no passage must declare it; the instance's own anchor is the proximity reference
+point, not a member of the set.**
+An absent `sapRefs` and a deliberately unanchorable use render identically if nothing distinguishes them —
+a reviewer sees no citation either way, and cannot tell "not yet anchored" from "nothing in the document
+grounds this." That collapse is one of the three failure modes the reviewer's audit hit, and the fix is the
+same discipline already chosen for `Estimand.intercurrentEvents` (D16): silence is not read as an answer.
+An empty `sapRefs` paired with a required `noAnchorReason` is the explicit statement; an absent one fails
+the gate for any study with a declared `sourceDocument`.
+
+The analysis instance's own anchor is excluded from the candidate set for a related reason. It is the
+**reference point** proximity is measured against — every other reference's distance is measured *to*
+it — so admitting it as a candidate in its own ranking would make every phrase use resolve to at least one
+reference: its own analysis's anchor, trivially at maximum proximity to itself. The declared-empty rule
+above would then never fire, because nothing could ever be truly unanchored. Excluding it keeps the rule
+live rather than turning it into a dead letter on the day it was written.
 
 ## Relationship to the eSAP schema
 
@@ -336,7 +416,7 @@ What release requires — none of it architectural:
 | Kaplan-Meier method IRI | none found | illustrative — **open question**, see below |
 | ICH E9(R1) strategy identifiers | none exist — a guideline is not a registry | illustrative — **open question**, see below |
 | Occurrence-criterion BC paths (`BC_DS_001/Disposition Event`, …) | shaped per `OccurrenceCriterion`, ids not from a published BC library | illustrative |
-| PrE0102 document anchors (`sapRef`) | quoted from the converted source SAP and **verified verbatim** by the gate | authoritative *as quotations* — the section numbering is the source document's own |
+| PrE0102 document anchors (`sapRefs`) | quoted from the converted source SAP and **verified verbatim** by the gate | authoritative *as quotations* — the section numbering is the source document's own |
 | CDISC Pilot document anchors | none — the study declares `sourceDocument: null` | n/a, exempt by declaration |
 | Study concepts, USDM/ARS/NCIt instance ids, trace tiers, document shell | hand-crafted per study (CDISC Pilot, PrE0102) | illustrative, flagged in-UI |
 | `acdc:macro` dialect | methods_02 authoring experiment | design input, revisable |
@@ -490,7 +570,7 @@ its handling and its summary measure:
 
 Requirement 6 (the same ICE handled two ways) is **not** in PrE0102 — its own sensitivity analysis changes
 the *population*, not a strategy — which is why the override lives on the Pilot rather than being invented
-for the real document and breaking the `sapRef` discipline every PrE0102 concept follows.
+for the real document and breaking the `sapRefs` discipline every PrE0102 concept follows.
 
 **The i18n stress test found a real limit.** German assigns a **case** to the ICE noun phrase, and the case
 differs by strategy: the natural *"unabhängig von {ice}"* and *"vor {ice}"* demand the dative while
@@ -508,7 +588,7 @@ types — a stronger form of claim 3.
 
 Source: **PrECOG PrE0102**, Final SAP 24 March 2014, converted to Markdown in [`SAP/`](SAP/) alongside
 the original PDF. The encoded passage is the PFS primary analysis (SAP §3.1 objective, §5.3 definitions,
-§7.7.2 methodology). Every study concept carries a `sapRef` quoting the source sentence it came from.
+§7.7.2 methodology). Every study concept carries `sapRefs` quoting the source sentence(s) it came from.
 
 What this surfaced, and why it matters:
 

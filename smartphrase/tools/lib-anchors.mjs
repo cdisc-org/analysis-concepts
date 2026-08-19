@@ -1,11 +1,12 @@
 /*
  * Document-anchor helpers, shared by the verification gates.
  *
- * An anchor is `{ section, quote? }` on a study-side entity — a concept, a
- * phrase instance, an estimand or an analysis instance. Issue #12: anchoring is
- * a property of the study-side USE, not of one entity class, because three of
- * the four binding kinds (method, output, value) resolve into the library, which
- * correctly forbids study text.
+ * An anchor is `{ section, quote?, relation? }` and every study-side entity
+ * carries a LIST of them (issue #13) — a concept reused across analyses whose
+ * specifying text lives in different sections needs more than one.
+ * Issue #12: anchoring is a property of the study-side USE, not of one entity
+ * class, because three of the four binding kinds (method, output, value)
+ * resolve into the library, which correctly forbids study text.
  *
  * The point of this module is that a quote is CHECKED, not merely stored: an
  * anchor nobody verifies is an assertion, and the first run of this gate caught
@@ -72,20 +73,26 @@ export function resolveSection(smartphraseDir, graph, section) {
  * messages. Walks whatever entity classes exist, so a later task adding anchors
  * to a new class is covered without revisiting this.
  */
-export function allAnchors(graph, phraseDefOf) {
+export function allAnchors(graph) {
   const out = [];
-  const add = (where, a) => {
-    if (a && typeof a === "object" && a.section) out.push({ where, ...a });
+  const addAll = (where, refs) => {
+    if (!Array.isArray(refs)) return;
+    refs.forEach((a, i) => {
+      if (a && typeof a === "object" && a.section) {
+        out.push({ where: refs.length > 1 ? `${where} ref[${i}]` : where, ...a });
+      }
+    });
   };
 
-  Object.keys(graph.concepts || {}).forEach((id) => add(`concept ${id}`, graph.concepts[id].sapRef));
-  Object.keys(graph.estimands || {}).forEach((id) => add(`estimand ${id}`, graph.estimands[id].sapRef));
+  Object.keys(graph.concepts || {}).forEach((id) =>
+    addAll(`concept ${id}`, graph.concepts[id].sapRefs));
+  Object.keys(graph.estimands || {}).forEach((id) =>
+    addAll(`estimand ${id}`, graph.estimands[id].sapRefs));
 
   (graph.instances || []).forEach((inst) => {
-    add(`instance ${inst.id}`, inst.sapRef);
+    addAll(`instance ${inst.id}`, inst.sapRefs);
     (inst.phrases || []).forEach((pi, i) => {
-      const oid = pi.phrase;
-      add(`${inst.id} phrase[${i}] ${oid}`, pi.sapRef);
+      addAll(`${inst.id} phrase[${i}] ${pi.phrase}`, pi.sapRefs);
     });
   });
   return out;

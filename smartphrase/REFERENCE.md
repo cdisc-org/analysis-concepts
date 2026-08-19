@@ -161,8 +161,8 @@ remains an alias to the first registered study.
   "name": "Alzheimer's Disease Assessment Scale - Cognitive Subscale (11 items)",
   "iri": "ncit:C168804",                  // grounding IRI (CURIE against §11 prefixes)
   "iri_status": "illustrative",           // "authoritative" | "illustrative"
-  "sapRef": { "section": "5.3",           // document anchor (§3.4) — quote is optional
-              "quote": "…" },
+  "sapRefs": [{ "section": "5.3",         // document anchors (§3.4) — a LIST; quote is optional
+                "quote": "…" }],
   "data": {                               // trace hooks (§7) — shape varies by kind:
     "dataset": "ADQSADAS", "file": "adqsadas.xpt", "paramcd": "ACTOT",
     "datasetLabel": "ADaM ADAS-Cog analysis dataset"
@@ -217,7 +217,7 @@ document has nothing to quote, and the anchor type must not be overloaded to say
   "template": "T.CFB_ANCOVA",
   "usdmObjective": { "iri": "...", "iri_status": "...", "text": "..." },
   "arsAnalysis":   { "iri": "...", "iri_status": "..." },
-  "sapRef": { "section": "7.7.2", "quote": "…" },   // what licenses THIS analysis (§3.4)
+  "sapRefs": [{ "section": "7.7.2", "quote": "…" }],   // what licenses THIS analysis (§3.4)
   "estimand": "EST.PRIMARY",                // id into the study's estimand registry (§3.3)
   "analysisRole": "MainEstimator",          // Analysis.analysisRole; exactly one per estimand
   "sentenceRole": "the primary analysis",   // consumed by the sentence frame, not by a phrase
@@ -237,10 +237,10 @@ document has nothing to quote, and the anchor type must not be overloaded to say
 }
 ```
 
-A phrase instance may also carry its own **`sapRef`** — the change that closes issue #12. `method`,
-`output` and `value` bindings resolve into the library, which correctly forbids study text, and a
-fixed-text phrase has no binding at all; an anchor on the *use* is the only route those have to the
-document. See §3.4.
+A phrase instance may also carry its own **`sapRefs`** — the change that closes issue #12, widened to a
+list by issue #13. `method`, `output` and `value` bindings resolve into the library, which correctly
+forbids study text, and a fixed-text phrase has no binding at all; an anchor on the *use* is the only
+route those have to the document. See §3.4.
 
 A binding object has exactly one of `concept` / `method` / `value` / `output`, plus optional `render`.
 Phrase array order is irrelevant (§5 orders by role). The **same phrase OID may appear more than once**
@@ -255,7 +255,7 @@ events is the normal way to handle two ICEs the same way.
     "iri": "usdm:Estimand/CDISCPILOT01-EST-PRIMARY", "iri_status": "illustrative",
     "label": "Primary estimand — ADAS-Cog(11) change at Week 24",
     "rank": "primary",                                  // renders sentenceRole — see below
-    "sapRef": { "section": "3.1", "quote": "…" },       // document anchor (§3.4)
+    "sapRefs": [{ "section": "3.1", "quote": "…" }],    // document anchors (§3.4)
     "intercurrentEvents": ["ICE.TRT_DISCONT", "ICE.CONMED"]   // SCOPE, not strategy
   }
 }
@@ -303,15 +303,69 @@ declared, not inferred from silence:
 `sectionFiles` maps a **top-level** section number to its converted file; a subsection such as `7.7.2`
 resolves through its head, `7`.
 
-An **anchor** is `{ section, quote? }` and may sit on four study-side entities: a concept (§3.1), a
-**phrase instance** (§3.2), an estimand (§3.3) or an analysis instance (§3.2). It never sits on a library
-entity — methods, output classes and transformation templates are study-agnostic and must not carry study
-text, which is precisely why an anchor on the *use* was needed (DESIGN.md D17).
+An **anchor** is `{ section, quote?, relation? }`, and every study-side home carries a **list** of them —
+concepts (§3.1), **phrase instances** (§3.2), estimands (§3.3) and analysis instances (§3.2):
 
-**Resolution and precedence** (`resolvePhrase`, §5): the phrase instance's own `sapRef` wins, answering
-*"why is this here?"*; otherwise the first bound concept with an anchor supplies one, answering *"what is
-this?"*. Both persist — overriding never erases the concept's — and `anchorSource` reports which applied
-(`"phraseInstance"` or `"concept:<ID>"`).
+```js
+sapRefs: [
+  { section: "5.3",   quote: "…", relation: "definition" },
+  { section: "7.7.2", quote: "…", relation: "specification" }
+]
+```
+
+A concept exists to be reused, and the analyses that bind it are specified in different sections, so one
+reference cannot be the right anchor for all of them (DESIGN.md D19). It never sits on a library entity —
+methods, output classes and transformation templates are study-agnostic and must not carry study text,
+which is precisely why an anchor on the *use* was needed in the first place (DESIGN.md D17).
+
+`relation` is optional and takes one of three values: `specification` (this passage specifies this
+analysis), `qualification` (a condition or caveat on it), `definition` (background — it defines the entity
+without specifying the analysis). No registry covers this relation, so the vocabulary is **illustrative**
+under the identifier policy (§11) and deliberately stops at three terms.
+
+A phrase use that no passage grounds must say so:
+
+```js
+{ phrase: "SP_KM_CURVES", bindings: {},
+  sapRefs: [],
+  noAnchorReason: "the SAP does not specify curves for this analysis" }
+```
+
+A phrase instance's own `sapRefs` being absent is not by itself a failure — most concept-anchored uses
+carry no `sapRefs` of their own and pass by falling back to the bound concept's. **The gate fires only
+when a use resolves to no reference at all** (from the phrase instance or any concept it binds) **and**
+does not carry `sapRefs: []` with a `noAnchorReason`. An **empty** `sapRefs` with a `noAnchorReason` is an
+answer. The distinction exists because a reviewer working through a document cannot otherwise tell "not
+yet anchored" from "nothing to anchor to" — the same reasoning that made `Estimand.intercurrentEvents`
+explicit rather than inferred from silence.
+
+**Resolution** (`anchorForPhrase`, called from `resolvePhrase` and `toJSONLD`, §5). A phrase use's
+references are the union of its own and those of every concept it binds, deduplicated on section plus
+quote, then ordered by, outermost key first:
+
+1. **level** — a reference on the phrase instance outranks one on a bound concept, because it answers
+   *"why is this here?"* rather than *"what is this?"* (DESIGN.md D17, unchanged by #13);
+2. **proximity** — the number of matching leading dotted components against the analysis's own section
+   (its first `sapRefs` entry). Against §7.7.2, a §7.7.2 reference scores 3, §7.2 scores 1, §5.3 scores 0;
+3. **relation** — breaking a proximity tie only, ranked `specification`, `qualification`, unlabelled,
+   `definition`;
+4. **declaration order** — the last resort. Below level, it used to be the *only* key — whichever
+   candidate was declared first won — which was the bug (DESIGN.md D20).
+
+`anchorSource` names the winning level (`"phraseInstance"` or `"concept:<ID>"`) and `anchorBasis` reports
+which of the four keys actually distinguished the head from the runner-up — `"only"` when there is a
+single candidate — so a heuristic is never presented to a reviewer as a stated fact. All candidates persist
+in `anchors[]`; overriding never erases anything.
+
+The analysis instance's own anchor is the **reference point** proximity is measured against — it is never
+a member of a phrase's reference set. Admitting it would make every use resolve to something, and the
+declared-empty rule above would never fire (DESIGN.md D21).
+
+Proximity assumes dotted section numbering. A document anchored by heading text alone scores every
+reference 0 and falls through to relation, then declaration order — a stated limitation, not a silent one.
+
+Every reference is projected: `sapRefs[]` and `documentAnchors[]` in the model view (§6), and
+`prov:wasQuotedFrom` as an **array** of quotation nodes in the graph (§9).
 
 **Quotes are verified, not merely stored.** For a study with a source document, `tools/verify.mjs` asserts
 that the cited section exists and the quote appears verbatim in it. Normalisation forgives only what the
@@ -424,9 +478,12 @@ language changes prose projections only.
    from the event's strategy-keyed map (§3.1). `isOverride` is true when the applied strategy differs from
    the event's study default, so a divergence is stated rather than silent. An event in scope therefore
    always yields exactly one handling — never an empty list that would read as "handles nothing".
-9. Emit document provenance: `sapRef` (the instance's own anchor) and `documentAnchors[]`, one entry per
-   anchored phrase use as `{ phrase, role, section, quote, from }`. Emitting it is the point — an anchor
-   no projection carries is inert, which is how the gap in issue #12 survived unnoticed.
+9. Emit document provenance: `sapRefs[]` (the instance's own anchors) and `documentAnchors[]`, **one entry
+   per reference, not per use** — a use can now rest on several passages (§3.4, issue #13) — as
+   `{ phrase, role, section, quote, relation, from, proximity, head, basis }`, where `head` marks the entry
+   the engine ranked first and `basis` (set only on the head) names the key that decided it. Emitting it is
+   the point — an anchor no projection carries is inert, which is how three of the four binding kinds went
+   unanchored unnoticed (issue #12).
 10. Build `resolvedExpression`, which dispatches on `usesMethod` — the one method-specific piece, because
    the library declares no measure→ADaM-variable mapping *(PoC)*.
 11. Report `outputMeasures`, `usdmObjective`, `arsAnalysis`, and the template's `validSmartPhrases`

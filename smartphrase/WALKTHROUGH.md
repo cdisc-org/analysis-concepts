@@ -1,8 +1,8 @@
 # Working-group walkthrough — smartphrase PoC
 
-> ~15 minutes · one browser tab: `smartphrase/demo/index.html` (double-click; nothing is server-backed —
+> ~17 minutes · one browser tab: `smartphrase/demo/index.html` (double-click; nothing is server-backed —
 > if anything misbehaves, reload). Keep issues #9 and #11 open in spare tabs for the close.
-> Drop the PrE0102 beat (7:45) for ~13 min, or the estimand beat (9:45) for ~12.
+> Drop the PrE0102 beat (9:45) for ~15 min, or the estimand beat (11:45) for ~14.
 
 **Headline:** the SAP and the AC/DC model are two views of *one* thing — and this page holds exactly one
 copy of that thing.
@@ -10,9 +10,9 @@ copy of that thing.
 **Worked examples.** Stops 1–3 run on CDISC Pilot primary efficacy — change from baseline in
 ADAS-Cog(11) at Week 24, ANCOVA, efficacy population — driven by transformation template
 `T.CFB_ANCOVA` and method `M.ANCOVA` from the Transformation Library **v0.7 on `methods_02`**, loaded
-verbatim. The 7:45 beat switches to a second study, PrECOG **PrE0102** (metastatic breast cancer,
+verbatim. The 9:45 beat switches to a second study, PrECOG **PrE0102** (metastatic breast cancer,
 progression-free survival, Kaplan-Meier), to show the same mechanism across therapeutic areas and
-endpoint types. The 9:45 beat covers **estimands and intercurrent events** (issue #11) — the same
+endpoint types. The 11:45 beat covers **estimands and intercurrent events** (issue #11) — the same
 architecture carrying all five ICH E9(R1) attributes.
 
 ---
@@ -24,7 +24,7 @@ architecture carrying all five ICH E9(R1) attributes.
 > requirements (issue #9 is rewritten): no XHTML namespaces, no TransCelerate coupling — carrier-neutral
 > requirements, and everything binds to the v0.7 library on `methods_02`."
 
-## 0:45 — Stop 1 · The passage (2m)
+## 0:45 — Stop 1 · The passage (4m)
 
 - Hover **"change from baseline in …ADAS-Cog(11)"** → phrase `SP_CFB_ENDPOINT`, its template, the bound
   concept with a real grounding IRI.
@@ -45,7 +45,24 @@ architecture carrying all five ICH E9(R1) attributes.
 > *use*, which covers all of them, and the quotes are **verified** — the build fails if a quote is not in
 > the section it cites. It caught a paraphrase of ours on the first run."
 
-## 2:45 — Stop 2 · Two views, one thing (3m30) — *the heart*
+- **Still on PrE0102, hover the endpoint chip on the primary PFS analysis.** The Source row leads with
+  **SAP 7.7.2** — *"PFS = time from randomization to documented disease progression or death"* — labelled
+  *"nearest to SAP 7.7.2, the section specifying this analysis"*, with §5.3's definition listed beneath as
+  also grounding it.
+
+> "One reference was never going to be enough for a reused concept. Every endpoint concept in this
+> study — PFS, OS, TTP — carries both a §5.3 definition and a §7.7.2 restatement, where the analysis is
+> actually specified. One anchor field could only ever point at one of those, and it pointed at whichever
+> was authored first. Before last week, all four of this study's analyses had their endpoint chip sending
+> a reviewer to the distant definition instead of the passage that specifies the analysis they were
+> reading. Now each resolves to the nearer one, and the engine tells you *why* — 'nearest to', not just
+> 'here'. That line only exists because a heuristic should never be presented as a stated fact."
+
+> "One honest note: the four treatment-grouping chips on this study still cite §4.1. That is correct, not
+> unfixed — §4.1 is the randomization sentence, the right sentence for that claim, even though it is distant
+> from §7.7.2. The fix is for references that are wrong, not for every reference that is merely distant."
+
+## 4:45 — Stop 2 · Two views, one thing (3m30) — *the heart*
 
 - **model → SAP:** change the analysis visit Week 24 → Week 16; the prose rewrites. Flip the endpoint
   render mode; toggle the confidence-interval phrase off and on.
@@ -65,7 +82,7 @@ architecture carrying all five ICH E9(R1) attributes.
 > "Multilingual SAPs fall out of the architecture: a new language is a rendering pack, not a
 > re-authored document — and the graph carries every language as tagged literals."
 
-## 6:15 — Stop 3 · Template reuse (1m30)
+## 8:15 — Stop 3 · Template reuse (1m30)
 
 - CDISC Pilot group: primary ADAS-Cog(11)/Week 24, secondary NPI-X, supporting Week 16 — **same
   template**, only the highlighted bindings differ.
@@ -74,7 +91,7 @@ architecture carrying all five ICH E9(R1) attributes.
 
 > "Write the building block once in the library; every study analysis is bindings."
 
-## 7:45 — Switch study · PrE0102, metastatic breast cancer (2m)
+## 9:45 — Switch study · PrE0102, metastatic breast cancer (2m)
 
 **Action:** click **PRE0102** in the study switch at Stop 1.
 
@@ -101,7 +118,7 @@ architecture carrying all five ICH E9(R1) attributes.
 > OS and TTP. Across studies, two blocks from one library. Write once, apply many — and the 'many'
 > crosses therapeutic areas and endpoint types."
 
-## 9:45 — Estimands and intercurrent events (2m)
+## 11:45 — Estimands and intercurrent events (2m)
 
 **Action:** switch back to **CDISCPILOT01**. The primary passage is longer than it was at Stop 1.
 
@@ -160,7 +177,7 @@ architecture carrying all five ICH E9(R1) attributes.
 > but not bound, because each needs library content v0.7 doesn't have — a folding derivation, a censoring
 > derivation, counterfactual subsetting. We'd rather say that than imply coverage."
 
-## 11:45 — Stop 4 · Standards grounding (1m15)
+## 13:45 — Stop 4 · Standards grounding (1m15)
 
 - The identifier table: USDM for study structure, ARS for analyses, STATO for methods, NCIt for
   terminology; AC/DC ids only where nothing exists yet, and unregistered ids are flagged *illustrative*.
@@ -172,7 +189,7 @@ architecture carrying all five ICH E9(R1) attributes.
   `ncitCode: null`), and **no resolvable term for the ICH E9(R1) strategies** — the enum is eSAP-owned and
   a guideline is not a registry. Both are listed rather than omitted, so the gap is visible.
 
-## 13:00 — The ask (1m30)
+## 15:00 — The ask (1m30)
 
 > "Issue #9 now states requirements only; `smartphrase/DESIGN.md` records this design and why.
 > The steer we need:
@@ -192,7 +209,14 @@ architecture carrying all five ICH E9(R1) attributes.
 > 7. **Is `T.LOCF_Imputation` the right implementer for a Hypothetical strategy?** It is the only
 >    imputation derivation v0.7 affords, but LOCF is a missing-data method and a hypothetical estimand
 >    strictly wants imputation under a stated alternative assumption. The mechanism is right; we are
->    asking whether the content is."
+>    asking whether the content is.
+> 8. **Is section proximity an acceptable relevance signal, or should every reference be typed with an
+>    explicit `relation`?** Proximity costs nothing to author and repairs an existing corpus retroactively;
+>    typing is a stated fact rather than a heuristic, but it has to be authored everywhere before it helps
+>    anyone.
+> 9. **Should the `relation` vocabulary be governed as library vocabulary or study vocabulary?** It is
+>    authored study-side, like the anchors it labels, but it is a modelling term, not clinical content —
+>    the same ownership question already open on issue #9, one level down."
 
 ---
 
