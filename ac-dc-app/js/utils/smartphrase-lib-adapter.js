@@ -29,9 +29,12 @@ function adaptTransformation(t) {
     ...sl,
     constraints: (sl.constraints || []).map(c => ({
       ...c,
-      // v07 calls this `dimension`; v06 carries the same value as
-      // `conceptCategory` (e.g. "ParameterDimension") or, on some entries,
-      // already as `dimension`.
+      // v07 calls this `dimension`. v06 stores dimensions two ways:
+      // - `conceptCategory` (e.g. "ParameterDimension") on 4 constraints; or
+      // - `concept` (e.g. "Parameter") on 2 constraints.
+      // Mapping a concrete concept to its dimension category is deferred to the
+      // slice-resolution phase. When `concept`-keyed, dimension becomes undefined
+      // by design; the original `concept` value survives via spread for that phase.
       dimension: c.dimension || c.conceptCategory
     }))
   }));
@@ -42,6 +45,8 @@ function adaptTransformation(t) {
   // For T.CFB_ANCOVA the mapping's concepts (LSMeans, Contrasts, Type3Tests,
   // ParameterEstimates, FitStatistics) are exactly v07's
   // outputDataStructure.measures concepts, so this is faithful, not a guess.
+  // No transformation carries both shapes (0 of 25); if one ever did,
+  // methodOutputSlotMapping takes precedence and bindings-derived outputs are silently dropped.
   const slotMapping = t.methodOutputSlotMapping || {};
   const measures = Object.keys(slotMapping).length
     ? Object.entries(slotMapping).map(([output, concept]) => ({ output, concept }))

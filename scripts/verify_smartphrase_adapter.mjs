@@ -63,6 +63,14 @@ check("derivation outputs derive from output measure bindings",
     && cfb.outputDataStructure.measures[0].output === "difference",
   cfb && JSON.stringify(cfb.outputDataStructure.measures));
 
+check("concept-keyed constraints yield undefined dimension, original concept preserved (deferred to slice-resolution phase)",
+  cfb && cfb.inputDataStructure.slices.length === 1
+    && cfb.inputDataStructure.slices[0].constraints.length === 2
+    && cfb.inputDataStructure.slices[0].constraints.every(c => c.dimension === undefined)
+    && cfb.inputDataStructure.slices[0].constraints.some(c => c.concept === "Parameter")
+    && cfb.inputDataStructure.slices[0].constraints.some(c => c.concept === "AnalysisVisit"),
+  cfb && JSON.stringify(cfb.inputDataStructure.slices[0].constraints));
+
 check("v06 fields survive untouched",
   t && Array.isArray(t.bindings) && t.bindings.length === 6 && t.oid === "T.CFB_ANCOVA");
 
