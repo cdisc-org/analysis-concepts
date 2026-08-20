@@ -54,6 +54,11 @@ def main() -> int:
             failures.append(f"{oid}: placeholders is not an array")
             continue
 
+        # Check for missing placeholder names and report them.
+        for j, ph in enumerate(placeholders):
+            if ph.get("name") is None:
+                failures.append(f"{oid}: placeholder #{j}: missing name")
+
         names = {ph.get("name") for ph in placeholders if ph.get("name") is not None}
         # A method_ref slot is new in the v07 shape; the old engine never
         # modelled it, so it is deliberately absent from `configurations`.
@@ -68,7 +73,9 @@ def main() -> int:
         # The old engine renders `phrase_template` and substitutes only
         # `configurations`. Any other token would reach the UI literally.
         phrase_template = p.get("phrase_template")
-        if phrase_template is not None:
+        if phrase_template is None:
+            failures.append(f"{oid}: missing phrase_template")
+        else:
             for tok in TOKEN.findall(phrase_template):
                 if tok not in configured:
                     failures.append(
@@ -84,18 +91,23 @@ def main() -> int:
                         f"{oid}: phrase_template_slotted token {{{tok}}} "
                         f"is not a placeholder name")
 
-    deriv_transforms = lib.get("derivationTransformations", [])
-    analysis_transforms = lib.get("analysisTransformations", [])
-    if not isinstance(deriv_transforms, list) or not isinstance(analysis_transforms, list):
-        failures.append("derivationTransformations or analysisTransformations is not an array")
-    else:
-        transformations = deriv_transforms + analysis_transforms
-        for t in transformations:
-            t_oid = t.get("oid", "<unnamed transformation>")
-            for oid in t.get("validSmartPhrases", []):
-                if oid not in defined:
-                    failures.append(
-                        f"{t_oid}: validSmartPhrases references undefined phrase {oid}")
+    deriv_transforms = lib.get("derivationTransformations")
+    if not isinstance(deriv_transforms, list):
+        failures.append("derivationTransformations is missing or not an array")
+        deriv_transforms = []
+
+    analysis_transforms = lib.get("analysisTransformations")
+    if not isinstance(analysis_transforms, list):
+        failures.append("analysisTransformations is missing or not an array")
+        analysis_transforms = []
+
+    transformations = deriv_transforms + analysis_transforms
+    for t in transformations:
+        t_oid = t.get("oid", "<unnamed transformation>")
+        for oid in t.get("validSmartPhrases", []):
+            if oid not in defined:
+                failures.append(
+                    f"{t_oid}: validSmartPhrases references undefined phrase {oid}")
 
     if failures:
         print(f"FAIL — {len(failures)} problem(s):")
