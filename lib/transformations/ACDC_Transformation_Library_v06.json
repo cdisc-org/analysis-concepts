@@ -115,7 +115,26 @@
       "references": [
         "Change",
         "Parameter"
-      ]
+      ],
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "produced_concept": "Change"
+      }
     },
     {
       "oid": "SP_TTE_ENDPOINT",
@@ -127,7 +146,26 @@
       ],
       "references": [
         "TimeToEvent"
-      ]
+      ],
+      "placeholders": [
+        {
+          "name": "event",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Event",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "produced_concept": "TimeToEvent"
+      }
     },
     {
       "oid": "SP_RESPONDER_ENDPOINT",
@@ -140,7 +178,26 @@
       "references": [
         "Flag",
         "Parameter"
-      ]
+      ],
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "produced_concept": "Flag"
+      }
     },
     {
       "oid": "SP_VALUE_ENDPOINT",
@@ -153,7 +210,26 @@
       "references": [
         "Measure",
         "Parameter"
-      ]
+      ],
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "produced_concept": "Measure"
+      }
     },
     {
       "oid": "SP_PEAK_ENDPOINT",
@@ -166,7 +242,26 @@
       "references": [
         "PeakValue",
         "Parameter"
-      ]
+      ],
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "produced_concept": "PeakValue"
+      }
     },
     {
       "oid": "SP_PARAMETER",
@@ -178,7 +273,26 @@
       ],
       "referenceCategories": [
         "ParameterDimension"
-      ]
+      ],
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true,
+          "concept_category": "ParameterDimension"
+        }
+      ],
+      "anchors": {
+        "produced_concept": "Parameter"
+      }
     },
     {
       "oid": "SP_TIMEPOINT",
@@ -190,7 +304,26 @@
       ],
       "referenceCategories": [
         "VisitDimension"
-      ]
+      ],
+      "placeholders": [
+        {
+          "name": "visit",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true,
+          "concept_category": "VisitDimension"
+        }
+      ],
+      "anchors": {
+        "produced_concept": "AnalysisVisit"
+      }
     },
     {
       "oid": "SP_POPULATION",
@@ -202,7 +335,26 @@
       ],
       "references": [
         "Population"
-      ]
+      ],
+      "placeholders": [
+        {
+          "name": "population",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Population",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "produced_concept": "Population"
+      }
     },
     {
       "oid": "SP_GROUPING",
@@ -214,7 +366,26 @@
       ],
       "references": [
         "Treatment"
-      ]
+      ],
+      "placeholders": [
+        {
+          "name": "treatment",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Treatment",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "produced_concept": "Treatment"
+      }
     },
     {
       "oid": "SP_STRATIFICATION",
@@ -224,7 +395,24 @@
       "configurations": [
         "strata"
       ],
-      "references": []
+      "references": [],
+      "placeholders": [
+        {
+          "name": "strata",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": null,
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "label",
+          "required": true
+        }
+      ],
+      "anchors": {}
     },
     {
       "oid": "SP_METHOD_MMRM",
@@ -234,7 +422,26 @@
       "configurations": [],
       "references": [
         "M.MMRM"
-      ]
+      ],
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "intent_constraint": "LongitudinalEstimate",
+          "value_source": "internal_catalogue",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "uses_method": "M.MMRM"
+      },
+      "phrase_template_slotted": "using {method}"
     },
     {
       "oid": "SP_METHOD_ANCOVA",
@@ -244,7 +451,26 @@
       "configurations": [],
       "references": [
         "M.ANCOVA"
-      ]
+      ],
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "intent_constraint": "GroupComparison",
+          "value_source": "internal_catalogue",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "uses_method": "M.ANCOVA"
+      },
+      "phrase_template_slotted": "using {method}"
     },
     {
       "oid": "SP_METHOD_LOGRANK",
@@ -254,7 +480,26 @@
       "configurations": [],
       "references": [
         "M.LogRankTest"
-      ]
+      ],
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "intent_constraint": "TimeToEventEstimate",
+          "value_source": "internal_catalogue",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "label",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "uses_method": "M.LogRankTest"
+      },
+      "phrase_template_slotted": "using the {method} test"
     },
     {
       "oid": "SP_METHOD_KM",
@@ -264,7 +509,26 @@
       "configurations": [],
       "references": [
         "M.KaplanMeier"
-      ]
+      ],
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "intent_constraint": "TimeToEventEstimate",
+          "value_source": "internal_catalogue",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "uses_method": "M.KaplanMeier"
+      },
+      "phrase_template_slotted": "using {method} estimation"
     },
     {
       "oid": "SP_IMPUTATION",
@@ -274,7 +538,23 @@
       "configurations": [
         "imputation"
       ],
-      "references": []
+      "references": [],
+      "placeholders": [
+        {
+          "name": "imputation",
+          "kind": "method_ref",
+          "intent_constraint": "MissingDataHandling",
+          "value_source": "internal_catalogue",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "label",
+          "required": true
+        }
+      ],
+      "anchors": {}
     },
     {
       "oid": "SP_CONFIDENCE_LEVEL",
@@ -284,7 +564,20 @@
       "configurations": [
         "conf_level"
       ],
-      "references": []
+      "references": [],
+      "placeholders": [
+        {
+          "name": "conf_level",
+          "kind": "value",
+          "datatype": "integer",
+          "constraint": {
+            "min": 0,
+            "max": 100
+          },
+          "required": true
+        }
+      ],
+      "anchors": {}
     },
     {
       "oid": "SP_COVARIATE_BASELINE",
@@ -296,7 +589,26 @@
       ],
       "references": [
         "Measure"
-      ]
+      ],
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "produced_concept": "Measure"
+      }
     },
     {
       "oid": "SP_COVARIATE_SITE",
@@ -304,7 +616,159 @@
       "role": "covariate",
       "phrase_template": "adjusting for site",
       "configurations": [],
-      "references": []
+      "references": [],
+      "placeholders": [],
+      "anchors": {
+        "produced_concept": "Site"
+      }
+    },
+    {
+      "oid": "SP_AUC_ENDPOINT",
+      "name": "Area under curve endpoint",
+      "role": "endpoint",
+      "phrase_template": "{parameter} AUC",
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "AreaUnderCurve",
+        "Parameter"
+      ],
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "produced_concept": "AreaUnderCurve"
+      }
+    },
+    {
+      "oid": "SP_SHIFT_ENDPOINT",
+      "name": "Shift endpoint",
+      "role": "endpoint",
+      "phrase_template": "shift from baseline in {parameter}",
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "Parameter",
+        "Shift"
+      ],
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "produced_concept": "Shift"
+      }
+    },
+    {
+      "oid": "SP_PCTCFB_ENDPOINT",
+      "name": "Percent change from baseline endpoint",
+      "role": "endpoint",
+      "phrase_template": "percent change from baseline in {parameter}",
+      "configurations": [
+        "parameter"
+      ],
+      "references": [
+        "Parameter",
+        "PercentChange"
+      ],
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "concept_class": "SharedDimension",
+          "concept_constraint": "Parameter",
+          "value_source": "user_codelist",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "name_with_label",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "produced_concept": "PercentChange"
+      }
+    },
+    {
+      "oid": "SP_METHOD_CHISQ",
+      "name": "Chi-square method",
+      "role": "method",
+      "phrase_template": "using the chi-squared test",
+      "configurations": [],
+      "references": [],
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "intent_constraint": "GroupComparison",
+          "value_source": "internal_catalogue",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "label",
+          "required": true
+        }
+      ],
+      "anchors": {
+        "uses_method": "M.ChiSquaredTest"
+      },
+      "phrase_template_slotted": "using the {method} test"
+    },
+    {
+      "oid": "SP_METHOD_DESCSTATS",
+      "name": "Descriptive statistics",
+      "role": "method",
+      "phrase_template": "summarised by descriptive statistics",
+      "configurations": [],
+      "references": [],
+      "placeholders": [
+        {
+          "name": "statistic",
+          "kind": "method_ref",
+          "intent_constraint": "DescriptiveSummary",
+          "value_source": "internal_catalogue",
+          "render_options": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "default_render": "label",
+          "required": true
+        }
+      ],
+      "anchors": {},
+      "phrase_template_slotted": "summarised by {statistic}"
     }
   ],
   "derivationTransformations": [
