@@ -33,6 +33,8 @@ const { default: E } = await import(
 
 const LIB = globalThis.ACDC_LIBRARY;
 const I18N = globalThis.LANG_OVERLAY;
+// ctxOf's fallback `g.ACDC_LIBRARY_PROPOSED` is unreachable in the ES module
+// form (g is the private __ns, not globalThis), so pass it explicitly.
 const PROPOSED = globalThis.ACDC_LIBRARY_PROPOSED;
 const goldens = JSON.parse(
   fs.readFileSync(path.join(root, "smartphrase", "tools", "goldens.json"), "utf8")

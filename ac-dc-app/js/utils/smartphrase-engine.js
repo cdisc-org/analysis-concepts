@@ -629,8 +629,21 @@ const __ns = {};
 })(__ns);
 
 /* ES-module surface. The engine body above is a verbatim copy of
-   smartphrase/demo/engine.js; only this wrapper differs, and
-   scripts/verify_smartphrase_engine.mjs proves the behaviour is identical. */
+   smartphrase/demo/engine.js. The wrapper differs: g is bound to the private
+   namespace __ns instead of window/globalThis, which stops the module
+   polluting the global scope.
+
+   This creates one deliberate divergence: ctxOf(lib, graph, i18n, proposed)
+   has a fallback `proposed || g.ACDC_LIBRARY_PROPOSED || null;`. In the
+   browser IIFE, g.ACDC_LIBRARY_PROPOSED is available. In this module, g is
+   __ns and will never carry that global — the fallback is unreachable.
+
+   Consequence: callers omitting the 4th argument silently receive a context
+   with no proposed entities and no error. Always pass proposed explicitly:
+   ctxOf(lib, graph, i18n, ACDC_LIBRARY_PROPOSED).
+
+   scripts/verify_smartphrase_engine.mjs reproduces all 69 goldens, passing
+   proposed explicitly to exercise the intended call signature. */
 export default __ns.SP_ENGINE;
 export const {
   availableLangs, langPack, ctxOf, phraseDef, templateDef, concept, method,
