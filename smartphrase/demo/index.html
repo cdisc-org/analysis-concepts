@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smartphrase — one source of truth for the SAP</title>
+<style>
+  :root {
+    --ink: #1c2733; --muted: #5a6a7a; --line: #d8dfe6; --paper: #ffffff;
+    --bg: #f2f5f8; --accent: #0b5fa5; --accent-soft: #e3eef7;
+    --ok: #1e7d45; --warn: #b3261e; --illus: #8a6d1a; --illus-bg: #fdf6e0;
+    --chip-endpoint: #d7ecff; --chip-timepoint: #ffe6d1; --chip-population: #ddf3dd;
+    --chip-grouping: #f3e3f7; --chip-method: #ffe0e6; --chip-method_qualifier: #e8e8fc;
+    --chip-covariate: #e5f4e0; --chip-parameter: #d7ecff;
+    --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.55 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  header.site { background: var(--ink); color: #fff; padding: 28px 24px 22px; }
+  header.site h1 { margin: 0 0 6px; font-size: 24px; font-weight: 650; }
+  header.site p { margin: 0; color: #b9c6d2; max-width: 62em; }
+  nav.stops { position: sticky; top: 0; z-index: 40; background: var(--paper);
+              border-bottom: 1px solid var(--line); padding: 0 24px; display: flex; gap: 4px; }
+  nav.stops a { display: block; padding: 12px 14px; text-decoration: none; color: var(--muted);
+                font-size: 14px; font-weight: 600; border-bottom: 3px solid transparent; }
+  nav.stops a:hover, nav.stops a.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .langsw { margin-left: auto; display: flex; gap: 4px; align-items: center; padding: 8px 0; }
+  .langsw .lg { font-size: 12px; color: var(--muted); margin-right: 4px; }
+  .langsw button { border: 1px solid var(--line); background: #fff; color: var(--muted);
+                   font-size: 12.5px; font-weight: 600; border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+  .langsw button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  main { max-width: 1060px; margin: 0 auto; padding: 8px 24px 80px; }
+  section.stop { margin-top: 40px; }
+  section.stop > h2 { font-size: 20px; margin: 0 0 4px; }
+  section.stop > h2 .stopno { color: var(--accent); margin-right: 8px; }
+  section.stop > p.lede { margin: 0 0 18px; color: var(--muted); max-width: 62em; }
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
+          padding: 18px 20px; }
+  .doc-shell { background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
+               padding: 26px 34px; box-shadow: 0 1px 4px rgba(20,40,60,.06); }
+  .doc-shell .docmeta { font-size: 12px; color: var(--muted); letter-spacing: .04em;
+               text-transform: uppercase; display: flex; justify-content: space-between; gap: 12px;
+               border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: 16px; }
+  .doc-shell h3 { font-size: 16px; margin: 0 0 10px; }
+  .doc-shell h3 .secbadge { font-weight: 500; color: var(--muted); }
+  .prose { font-size: 17px; line-height: 2.05; }
+  .sp { padding: 2px 6px; border-radius: 6px; border-bottom: 2px solid rgba(0,0,0,.18);
+        cursor: pointer; transition: filter .12s; }
+  .sp:hover, .sp:focus { filter: brightness(.93); outline: none; }
+  .sp.endpoint { background: var(--chip-endpoint); } .sp.parameter { background: var(--chip-parameter); }
+  .sp.timepoint { background: var(--chip-timepoint); } .sp.population { background: var(--chip-population); }
+  .sp.grouping { background: var(--chip-grouping); } .sp.method { background: var(--chip-method); }
+  .sp.method_qualifier { background: var(--chip-method_qualifier); } .sp.covariate { background: var(--chip-covariate); }
+  .frame-text { color: var(--muted); border-bottom: 1px dashed var(--line); }
+  .hint { font-size: 13px; color: var(--muted); margin-top: 12px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .legend span { font-size: 12px; padding: 2px 8px; border-radius: 5px; }
+
+  /* popover */
+  #pop { position: absolute; z-index: 60; max-width: 400px; background: var(--paper);
+         border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 28px rgba(15,35,55,.18);
+         padding: 14px 16px; font-size: 13.5px; display: none; }
+  #pop h4 { margin: 0 0 2px; font-size: 13.5px; }
+  #pop .rolebadge { font-size: 11px; padding: 1px 7px; border-radius: 4px; background: var(--accent-soft);
+                    color: var(--accent); font-weight: 600; margin-left: 6px; }
+  #pop .tpl { font-family: var(--mono); font-size: 12px; color: var(--muted); margin: 4px 0 8px; }
+  #pop table { border-collapse: collapse; width: 100%; }
+  #pop td { padding: 3px 6px 3px 0; vertical-align: top; font-size: 12.5px; }
+  #pop td.k { color: var(--muted); white-space: nowrap; }
+  #pop .iri { font-family: var(--mono); font-size: 11.5px; color: var(--accent); word-break: break-all; }
+  #pop .illus { font-size: 10.5px; background: var(--illus-bg); color: var(--illus);
+                border-radius: 4px; padding: 0 5px; margin-left: 5px; }
+  #pop .auth { font-size: 10.5px; background: #e2f3e8; color: var(--ok);
+               border-radius: 4px; padding: 0 5px; margin-left: 5px; }
+  #pop .editrow { display: flex; gap: 6px; align-items: center; margin: 6px 0; }
+  #pop select, #pop button { font-size: 12.5px; padding: 3px 6px; border: 1px solid var(--line);
+                             border-radius: 6px; background: #fff; }
+  #pop button { cursor: pointer; }
+  #pop button.danger { color: var(--warn); }
+  #pop .popact { margin-top: 8px; text-align: right; }
+
+  /* trace drawer */
+  #trace { margin-top: 18px; display: none; }
+  #trace .tiers { display: flex; flex-direction: column; gap: 0; margin-top: 10px; }
+  .tier { border: 1px solid var(--line); border-radius: 9px; background: var(--paper);
+          padding: 12px 16px; display: grid; grid-template-columns: 170px 1fr; gap: 4px 16px; }
+  .tier .tname { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .tier .tid { font-family: var(--mono); font-weight: 600; font-size: 14px; }
+  .tier .tnote { grid-column: 2; font-size: 13px; color: var(--muted); }
+  .tier .twhere { grid-column: 2; font-family: var(--mono); font-size: 12.5px; color: var(--warn); }
+  .tconn { align-self: center; color: var(--muted); font-size: 17px; padding: 1px 0; margin-left: 84px; }
+
+  /* stop 2 layout */
+  .duo { display: grid; grid-template-columns: 400px 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 880px) { .duo { grid-template-columns: 1fr; } }
+  .panel h3 { margin: 0 0 2px; font-size: 15px; }
+  .panel .sub { font-size: 12.5px; color: var(--muted); margin: 0 0 14px; }
+  .fld { margin-bottom: 12px; }
+  .fld label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 3px; }
+  .fld select { width: 100%; font-size: 14px; padding: 6px 8px; border: 1px solid var(--line);
+                border-radius: 7px; background: #fff; }
+  .fld .roleTag { font-weight: 400; color: var(--muted); }
+  .togglerow { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13.5px; }
+  .togglerow select { font-size: 13px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; }
+  .onething { margin: 14px 0 18px; padding: 12px 16px; background: var(--accent-soft);
+              border: 1px solid #bcd7ec; border-radius: 9px; font-size: 14px; color: #143c5c; }
+  .tabs { display: flex; gap: 2px; margin-top: 20px; border-bottom: 1px solid var(--line); }
+  .tabs button { border: none; background: none; padding: 9px 14px; font-size: 13.5px; font-weight: 600;
+                 color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; }
+  .tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tabbody { background: var(--paper); border: 1px solid var(--line); border-top: none;
+             border-radius: 0 0 10px 10px; padding: 16px 18px; }
+  pre.code { font-family: var(--mono); font-size: 12.5px; line-height: 1.55; margin: 0;
+             white-space: pre-wrap; word-break: break-word; }
+  textarea.src { width: 100%; min-height: 250px; font-family: var(--mono); font-size: 12.5px;
+                 border: 1px solid var(--line); border-radius: 8px; padding: 10px; resize: vertical; }
+  .findings { margin: 10px 0 0; padding: 0; list-style: none; font-size: 13px; }
+  .findings li { padding: 4px 8px; border-radius: 6px; margin-bottom: 4px; }
+  .findings li.error { background: #fdecea; color: var(--warn); }
+  .findings li.warning { background: var(--illus-bg); color: var(--illus); }
+  .findings li.ok { background: #e2f3e8; color: var(--ok); }
+  .btn { display: inline-block; border: 1px solid var(--accent); background: var(--accent); color: #fff;
+         font-size: 13.5px; font-weight: 600; border-radius: 7px; padding: 7px 14px; cursor: pointer; }
+  .btn.ghost { background: #fff; color: var(--accent); }
+  .btn:hover { filter: brightness(1.08); }
+
+  /* stop 3 */
+  .reuse-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .reuse-card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
+                display: flex; flex-direction: column; gap: 10px; }
+  .reuse-card h3 { margin: 0; font-size: 15px; }
+  .reuse-card .tplbadge { font-size: 11.5px; font-family: var(--mono); background: var(--accent-soft);
+                          color: var(--accent); padding: 2px 8px; border-radius: 5px; align-self: flex-start; }
+  .reuse-card .rsent { font-size: 13.5px; line-height: 1.7; }
+  .reuse-card table { border-collapse: collapse; font-size: 12.5px; width: 100%; }
+  .reuse-card td { border-top: 1px solid var(--line); padding: 4px 6px 4px 0; }
+  .reuse-card td.k { color: var(--muted); white-space: nowrap; }
+  .reuse-card td.diff { background: var(--illus-bg); font-weight: 600; border-radius: 4px; }
+  .reuse-card .cardact { margin-top: auto; }
+
+  /* stop 4 */
+  table.ids { border-collapse: collapse; width: 100%; font-size: 13px; background: var(--paper); }
+  table.ids th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em;
+                 color: var(--muted); padding: 8px 10px; border-bottom: 2px solid var(--line); }
+  table.ids td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.ids td.iri { font-family: var(--mono); font-size: 11.5px; color: var(--accent); word-break: break-all; }
+  .stat { font-size: 11px; padding: 1px 7px; border-radius: 4px; white-space: nowrap; }
+  .stat.authoritative { background: #e2f3e8; color: var(--ok); }
+  .stat.illustrative { background: var(--illus-bg); color: var(--illus); }
+  .provenance { margin-top: 16px; font-size: 13.5px; }
+  .provenance code { font-family: var(--mono); font-size: 12.5px; background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+  footer { margin-top: 60px; padding: 18px 24px; font-size: 12.5px; color: var(--muted);
+           border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <h1>Smartphrase — the SAP and the AC/DC model as two views of one thing</h1>
+  <p>An interactive proof of concept for the CDISC AC/DC working group. One analysis passage from the
+     CDISC Pilot study (CDISCPILOT01), driven end-to-end by the AC/DC Transformation Library v0.7.
+     Self-contained: no server, no install.</p>
+</header>
+
+<nav class="stops" id="nav">
+  <a href="#stop1">1 · The passage</a>
+  <a href="#stop2">2 · Two views, one thing</a>
+  <a href="#stop3">3 · Template reuse</a>
+  <a href="#stop4">4 · Standards grounding</a>
+  <div class="langsw" id="langsw"><span class="lg">prose language</span></div>
+</nav>
+
+<main>
+
+<!-- ================= STOP 1 ================= -->
+<section class="stop" id="stop1">
+  <h2><span class="stopno">1</span>The passage — inspect the link, trace it to the data</h2>
+  <p class="lede">This looks like ordinary SAP prose. Every highlighted span is a <em>smartphrase</em> —
+     a span of text bound to the AC/DC model. <strong>Hover</strong> any phrase to see the model behind it;
+     <strong>click</strong> one to follow its resolution chain down to the physical dataset.</p>
+
+  <div class="studyswitch" id="studySwitch"
+       style="display:flex;gap:6px;align-items:center;margin:0 0 10px;flex-wrap:wrap;">
+    <span style="font-size:12.5px;color:var(--muted);">Study:</span>
+  </div>
+
+  <div class="doc-shell">
+    <div class="docmeta"><span id="docStudy"></span><span>Statistical Analysis Plan — document shell is illustrative</span></div>
+    <h3><span class="secbadge">4.1.2</span> <span id="docTitle"></span></h3>
+    <p class="prose" id="prose1"></p>
+    <div class="legend" id="legend"></div>
+    <p class="hint">Hover to inspect · click to trace. Switch study above to see the same mechanism over a
+       different therapeutic area and a different endpoint type. The greyed sentence frame is part of the
+       document, not a smartphrase — the linking layer does not depend on the surrounding document structure.</p>
+  </div>
+
+  <div id="trace" class="card">
+    <h3 style="margin:0 0 2px;font-size:15px;">Trace: <span id="traceTitle"></span></h3>
+    <p class="sub" style="font-size:12.5px;color:var(--muted);margin:0;">DataConcept → ADaM class variable → study variable → physical dataset</p>
+    <div class="tiers" id="traceTiers"></div>
+  </div>
+</section>
+
+<!-- ================= STOP 2 ================= -->
+<section class="stop" id="stop2">
+  <h2><span class="stopno">2</span>Two views, one thing — edit either side</h2>
+  <p class="lede">The model panel and the prose are projections of <em>one</em> instance object — there is no
+     second copy to drift. Change the model and the prose rewrites itself; edit the prose (click a phrase, or
+     edit the tag source below) and the model follows.</p>
+
+  <div class="onething">⚡ Everything on this page renders from a single shared state object.
+     The tabs below show three more projections of it: the constructed AC/DC model instance,
+     the authoring tag source (editable — apply it and watch everything else follow), and the JSON-LD graph.
+     Switching the prose language (top right) re-renders that same object through per-language phrase and
+     sentence templates — the tag source, model instance and identifiers do not change. Translations illustrative.</div>
+
+  <div class="duo">
+    <div class="card panel">
+      <h3>AC/DC model instance</h3>
+      <p class="sub">model → SAP: edit these and the prose follows</p>
+      <div id="modelPanel"></div>
+    </div>
+    <div class="card panel">
+      <h3>SAP prose</h3>
+      <p class="sub">SAP → model: click a phrase to edit or remove it; add phrases the template allows</p>
+      <p class="prose" id="prose2" style="font-size:16px;"></p>
+      <div style="margin-top:10px;"><button class="btn ghost" id="addPhraseBtn">+ add phrase</button></div>
+      <ul class="findings" id="liveErrors"></ul>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button data-tab="model" class="active">Constructed model instance</button>
+    <button data-tab="source">Tag source (editable)</button>
+    <button data-tab="jsonld">JSON-LD graph</button>
+  </div>
+  <div class="tabbody">
+    <div data-tabbody="model"><pre class="code" id="modelView"></pre></div>
+    <div data-tabbody="source" style="display:none;">
+      <p style="font-size:13px;color:var(--muted);margin:0 0 8px;">The authoring tag dialect
+         (<code>acdc:macro</code> shape, from the methods_02 authoring experiment). Edit it and apply —
+         a two-pass validator checks references, required slots, template membership and value constraints.</p>
+      <textarea class="src" id="srcArea" spellcheck="false"></textarea>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+        <button class="btn" id="applySrc">Apply to model</button>
+        <button class="btn ghost" id="resetSrc">Regenerate from model</button>
+      </div>
+      <ul class="findings" id="srcFindings"></ul>
+    </div>
+    <div data-tabbody="jsonld" style="display:none;">
+      <p style="font-size:13px;color:var(--muted);margin:0 0 8px;">The semantic layer as a graph fragment.
+         Identifiers are IRIs into USDM, ARS, STATO, NCIt and the AC/DC model — not a private id space.
+         This is what a downstream tool consumes; the prose above is generated, not parsed.</p>
+      <pre class="code" id="jsonldView"></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STOP 3 ================= -->
+<section class="stop" id="stop3">
+  <h2><span class="stopno">3</span>Template reuse — write once, instantiate many</h2>
+  <p class="lede">Reuse works in two directions. <strong>Within</strong> each study, every analysis below
+     instantiates the <em>same</em> library building block — one transformation template with its valid
+     smartphrases — and only the highlighted bindings vary; prose, model structure, method and traceability
+     all come from the template. <strong>Across</strong> studies, a different block is drawn from the same
+     Transformation Library v0.7, so the pattern holds over a different therapeutic area and a different
+     endpoint type. Open any of them in the editor above.</p>
+  <div class="reuse-grid" id="reuseGrid"></div>
+</section>
+
+<!-- ================= STOP 4 ================= -->
+<section class="stop" id="stop4">
+  <h2><span class="stopno">4</span>Standards grounding — no private id space</h2>
+  <p class="lede">Every identifier the passage binds to, and which standard it grounds into. Entities a CDISC
+     standard already covers resolve into that standard (USDM for study structure, ARS for analyses, STATO for
+     statistical methods, NCIt for terminology); AC/DC ids cover only what is genuinely new. Identifiers not yet
+     registered are flagged <span class="stat illustrative">illustrative</span> — the mechanism, not the final ids,
+     is the claim.</p>
+  <table class="ids" id="idTable"></table>
+  <p class="provenance" id="provenance"></p>
+  <div class="card" style="margin-top:16px;">
+    <h3 style="margin:0 0 6px;font-size:15px;">Why this survives a changing SAP structure</h3>
+    <p style="margin:0;font-size:14px;">The semantic layer is <em>standoff</em>: it is a graph fragment whose nodes
+       anchor to spans of prose, not to a document schema. A sister initiative is defining a standard SAP structure
+       (as M11 does for protocols) — whatever structure it lands on, the smartphrase layer attaches to its text
+       unchanged, because nothing here depends on how the surrounding document is organised.</p>
+  </div>
+</section>
+
+</main>
+
+<div id="pop" role="tooltip"></div>
+
+<footer>
+  Smartphrase PoC — CDISC AC/DC issue #9 · library data generated verbatim from branch
+  <code>methods_02</code> (Transformation Library v0.7, Method schema v0.9.1) ·
+  study layer illustrative (CDISC Pilot, CDISCPILOT01) · runs entirely from local files.
+</footer>
+
+<script src="data/acdc-library.js"></script>
+<script src="data/acdc-library-proposed.js"></script>
+<script src="data/study-graph.js"></script>
+<script src="data/study-graph-pre0102.js"></script>
+<script src="data/lang-overlay.js"></script>
+<script src="engine.js"></script>
+<script>
+(function () {
+  "use strict";
+  var E = window.SP_ENGINE;
+  var LIB = window.ACDC_LIBRARY;
+  var I18N = window.LANG_OVERLAY;
+
+  /* ---------- the study registry ---------- */
+  var STUDY_GRAPHS = window.STUDY_GRAPHS || { CDISCPILOT01: window.STUDY_GRAPH };
+  var STUDY_KEYS = Object.keys(STUDY_GRAPHS);
+  var activeStudy = STUDY_KEYS[0];
+
+  var GRAPH = STUDY_GRAPHS[activeStudy];
+  var ctx = E.ctxOf(LIB, GRAPH, I18N);
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  /* ---------- THE single shared state ---------- */
+  var state = clone(GRAPH.instances[0]);
+  var lang = "en";   // prose language — a renderer setting, never part of the state
+
+  var ROLE_LABELS = LIB.roleDefinitions.roles;
+  var TRACEABLE = Object.keys(GRAPH.traceTemplates);
+
+  /*
+   * Switching study swaps the whole study layer: graph, context, state and the
+   * set of traceable roles. The library layer is shared — that is the point of
+   * the cross-study reuse claim.
+   */
+  function switchStudy(key) {
+    if (!STUDY_GRAPHS[key]) return;
+    activeStudy = key;
+    GRAPH = STUDY_GRAPHS[key];
+    ctx = E.ctxOf(LIB, GRAPH, I18N);
+    TRACEABLE = Object.keys(GRAPH.traceTemplates);
+    state = clone(GRAPH.instances[0]);
+    srcDirty = false;
+    hidePop(true);
+    document.getElementById("srcFindings").innerHTML = "";
+    buildStudySwitch();
+    renderAll();
+  }
+
+  function buildStudySwitch() {
+    var sw = document.getElementById("studySwitch");
+    Array.prototype.slice.call(sw.querySelectorAll("button")).forEach(function (b) { b.remove(); });
+    STUDY_KEYS.forEach(function (key) {
+      var gph = STUDY_GRAPHS[key];
+      var b = document.createElement("button");
+      b.className = "btn ghost" + (key === activeStudy ? " active" : "");
+      b.textContent = gph.study.studyId;
+      b.title = gph.study.title;
+      b.addEventListener("click", function () { switchStudy(key); });
+      sw.appendChild(b);
+    });
+  }
+
+  /* ---------- helpers over state ---------- */
+  function findPhrase(oid) { return state.phrases.find(function (p) { return p.phrase === oid; }); }
+  function removePhrase(oid) { state.phrases = state.phrases.filter(function (p) { return p.phrase !== oid; }); }
+  function conceptOptions(ph) {
+    return Object.keys(GRAPH.concepts).filter(function (id) {
+      var c = GRAPH.concepts[id];
+      if (ph.concept_constraint && c.kind !== ph.concept_constraint) return false;
+      if (ph.concept_category && c.conceptCategory !== ph.concept_category) return false;
+      return !ph.concept_constraint && !ph.concept_category ? false : true;
+    });
+  }
+  function defaultBindingsFor(def) {
+    var b = {};
+    (def.placeholders || []).forEach(function (ph) {
+      if (ph.kind === "value") {
+        var co = LIB.configurationOptions[ph.name];
+        b[ph.name] = { value: co ? co.default : "" };
+      } else if (ph.kind === "method_ref") {
+        /* The method comes from the active template, not a fixed default —
+           otherwise a KM analysis would be handed M.ANCOVA. */
+        var tpl = E.templateDef(ctx, state.template);
+        b[ph.name] = { method: (tpl && tpl.usesMethod) || "M.ANCOVA", render: "label" };
+      } else {
+        var opts = conceptOptions(ph);
+        if (opts.length) b[ph.name] = { concept: opts[0], render: ph.default_render };
+      }
+    });
+    return b;
+  }
+
+  /* ---------- popover ---------- */
+  var pop = document.getElementById("pop");
+  var popPinned = false;
+  function showPop(html, anchor) {
+    pop.innerHTML = html;
+    pop.style.display = "block";
+    var r = anchor.getBoundingClientRect();
+    var top = r.bottom + window.scrollY + 8;
+    var left = Math.min(r.left + window.scrollX, window.scrollX + document.documentElement.clientWidth - pop.offsetWidth - 16);
+    pop.style.top = top + "px"; pop.style.left = Math.max(8, left) + "px";
+  }
+  function hidePop(force) {
+    if (popPinned && !force) return;
+    pop.style.display = "none"; popPinned = false;
+  }
+  document.addEventListener("click", function (e) {
+    if (!pop.contains(e.target) && !e.target.classList.contains("sp")) hidePop(true);
+  });
+
+  function statBadge(status) {
+    return status === "authoritative" ? '<span class="auth">authoritative</span>'
+                                      : '<span class="illus">illustrative</span>';
+  }
+
+  function inspectHTML(rp) {
+    var rows = rp.bindings.map(function (b) {
+      var d = b.detail;
+      var iri = d.iri ? '<div class="iri">' + expand(d.iri) + statBadge(d.iri_status || "illustrative") + "</div>" : "";
+      var val = d.kind === "value" ? "= " + d.value
+              : '<b>' + b.text + '</b> <span style="color:var(--muted)">(' + d.id + (d.render ? " · render: " + d.render : "") + ')</span>';
+      return "<tr><td class='k'>{" + b.placeholder + "}</td><td>" + val + iri + "</td></tr>";
+    }).join("");
+    var anchors = rp.anchors && Object.keys(rp.anchors).length
+      ? "<tr><td class='k'>anchors</td><td><span style='font-family:var(--mono);font-size:12px'>" +
+        Object.keys(rp.anchors).map(function (k) { return k + " → " + rp.anchors[k]; }).join(", ") + "</span></td></tr>" : "";
+    return "<h4>" + rp.oid + '<span class="rolebadge">' + (ROLE_LABELS[rp.role] ? ROLE_LABELS[rp.role].label : rp.role) + "</span></h4>" +
+      '<div class="tpl">"' + rp.template + '"</div><table>' + rows + anchors + "</table>" +
+      (TRACEABLE.indexOf(rp.role) !== -1 ? '<div class="popact" style="text-align:left;color:var(--muted);font-size:12px;">click the phrase to trace it to the data ↓</div>' : "");
+  }
+
+  function expand(curie) {
+    if (!curie) return "";
+    var i = curie.indexOf(":");
+    var pfx = curie.slice(0, i);
+    return GRAPH.prefixes[pfx] ? GRAPH.prefixes[pfx] + curie.slice(i + 1) : curie;
+  }
+
+  /* ---------- prose rendering (from engine `parts`) ---------- */
+  function renderProse(el, instance, mode) {
+    var res = E.resolveInstance(ctx, instance, lang);
+    el.innerHTML = "";
+    var first = true;
+    res.parts.forEach(function (part) {
+      if (part.type === "text") {
+        if (part.frame && part.text.trim()) {
+          var frame = document.createElement("span");
+          frame.className = "frame-text";
+          frame.textContent = first ? part.text.charAt(0).toUpperCase() + part.text.slice(1) : part.text;
+          frame.title = "sentence frame — owned by the language's sentence template, not a smartphrase";
+          el.appendChild(frame);
+          first = false;
+        } else {
+          el.appendChild(document.createTextNode(part.text));
+        }
+        return;
+      }
+      var rp = part.phrase;
+      var span = document.createElement("span");
+      span.className = "sp " + rp.role;
+      span.tabIndex = 0;
+      span.textContent = first ? rp.text.charAt(0).toUpperCase() + rp.text.slice(1) : rp.text;
+      first = false;
+      if (mode === "inspect") {
+        span.addEventListener("mouseenter", function () { if (!popPinned) showPop(inspectHTML(rp), span); });
+        span.addEventListener("mouseleave", function () { hidePop(); });
+        span.addEventListener("focus", function () { if (!popPinned) showPop(inspectHTML(rp), span); });
+        span.addEventListener("blur", function () { hidePop(); });
+        span.addEventListener("click", function (e) { e.stopPropagation(); showTrace(rp); });
+      } else {
+        span.title = "click to edit";
+        span.addEventListener("click", function (e) { e.stopPropagation(); popPinned = true; showPop(editHTML(rp), span); wireEditor(rp); });
+      }
+      el.appendChild(span);
+    });
+    return res;
+  }
+
+  /* ---------- language switch (a renderer setting, not state) ---------- */
+  (function () {
+    var sw = document.getElementById("langsw");
+    E.availableLangs(ctx).forEach(function (l) {
+      var b = document.createElement("button");
+      b.textContent = l.toUpperCase();
+      b.title = E.langPack(ctx, l).name;
+      b.className = l === lang ? "active" : "";
+      b.addEventListener("click", function () {
+        lang = l;
+        sw.querySelectorAll("button").forEach(function (x) { x.classList.toggle("active", x === b); });
+        renderAll(true);
+      });
+      sw.appendChild(b);
+    });
+  })();
+
+  /* ---------- stop 1: trace ---------- */
+  var traceBox = document.getElementById("trace");
+  function showTrace(rp) {
+    var chain = E.buildTrace(ctx, state, rp.role);
+    if (!chain) { traceBox.style.display = "none"; return; }
+    document.getElementById("traceTitle").textContent = '"' + rp.text + '" (' + rp.oid + ")";
+    var tiers = document.getElementById("traceTiers");
+    tiers.innerHTML = "";
+    chain.forEach(function (step, i) {
+      if (i > 0) {
+        var conn = document.createElement("div");
+        conn.className = "tconn"; conn.textContent = "↓";
+        tiers.appendChild(conn);
+      }
+      var d = document.createElement("div");
+      d.className = "tier";
+      d.innerHTML = "<div><div class='tname'>" + step.tier + "</div><div class='tid'>" +
+        step.id + (step.file ? " · " + step.file : "") + "</div></div>" +
+        "<div><b style='font-size:13.5px'>" + step.label + "</b>" +
+        (step.iri ? "<div class='iri' style='font-family:var(--mono);font-size:11px;color:var(--accent)'>" + expand(step.iri) + "</div>" : "") + "</div>" +
+        (step.whereClause ? "<div class='twhere'>where " + step.whereClause + "</div>" : "") +
+        (step.note ? "<div class='tnote'>" + step.note + "</div>" : "");
+      tiers.appendChild(d);
+    });
+    traceBox.style.display = "block";
+    traceBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  /* ---------- stop 2: model panel ----------
+   * Derived entirely from the active template and the phrases the instance
+   * currently uses, in library role order. No phrase OID appears here, so a
+   * new template needs no change to this function.
+   */
+  function renderModelPanel() {
+    var mp = document.getElementById("modelPanel");
+    mp.innerHTML = "";
+    var tpl = E.templateDef(ctx, state.template);
+    if (!tpl) return;
+
+    var order = LIB.roleDefinitions.order;
+    var active = state.phrases
+      .map(function (pi) { return { pi: pi, def: E.phraseDef(ctx, pi.phrase) }; })
+      .filter(function (x) { return !!x.def; })
+      .sort(function (a, b) { return order.indexOf(a.def.role) - order.indexOf(b.def.role); });
+
+    active.forEach(function (x) {
+      (x.def.placeholders || []).forEach(function (ph) {
+        if (ph.kind === "method_ref") return;   // method is fixed by the template
+        var b = x.pi.bindings[ph.name];
+        if (!b) return;
+
+        var wrap = document.createElement("div"); wrap.className = "fld";
+        var lab = document.createElement("label");
+        var roleLabel = ROLE_LABELS[x.def.role] ? ROLE_LABELS[x.def.role].label : x.def.role;
+        lab.innerHTML = roleLabel + " — {" + ph.name + "}" +
+          ' <span class="roleTag">(' + x.def.oid + ")</span>";
+        wrap.appendChild(lab);
+
+        if (ph.kind === "value") {
+          var co = LIB.configurationOptions[ph.name];
+          var selV = document.createElement("select");
+          (co ? co.values : [b.value]).forEach(function (v) {
+            var o = document.createElement("option");
+            o.value = v; o.textContent = v;
+            if (String(b.value) === String(v)) o.selected = true;
+            selV.appendChild(o);
+          });
+          selV.addEventListener("change", function () { b.value = selV.value; renderAll(); });
+          wrap.appendChild(selV);
+        } else {
+          var sel = document.createElement("select");
+          conceptOptions(ph).forEach(function (id) {
+            var o = document.createElement("option");
+            o.value = id;
+            o.textContent = GRAPH.concepts[id].label + " — " + GRAPH.concepts[id].name;
+            if (b.concept === id) o.selected = true;
+            sel.appendChild(o);
+          });
+          sel.addEventListener("change", function () {
+            b.concept = sel.value;
+            /* Keep a baseline covariate's parameter in step with the endpoint. */
+            if (x.def.role === "endpoint" && ph.name === "parameter") {
+              var cov = findPhrase("SP_COVARIATE_BASELINE");
+              if (cov && cov.bindings.parameter) cov.bindings.parameter.concept = sel.value;
+            }
+            renderAll();
+          });
+          wrap.appendChild(sel);
+
+          if (ph.render_options) {
+            var selR = document.createElement("select");
+            selR.style.marginTop = "4px";
+            ph.render_options.forEach(function (m) {
+              var o = document.createElement("option");
+              o.value = m; o.textContent = "render: " + m;
+              if ((b.render || ph.default_render) === m) o.selected = true;
+              selR.appendChild(o);
+            });
+            selR.addEventListener("change", function () { b.render = selR.value; renderAll(); });
+            wrap.appendChild(selR);
+          }
+        }
+        mp.appendChild(wrap);
+      });
+    });
+
+    /* Phrases the template allows but the instance omits. */
+    var used = state.phrases.map(function (p) { return p.phrase; });
+    var optional = (tpl.validSmartPhrases || []).filter(function (oid) {
+      return used.indexOf(oid) === -1;
+    });
+
+    var optHead = document.createElement("label");
+    optHead.style.cssText = "display:block;font-size:12.5px;font-weight:600;margin:14px 0 6px;";
+    optHead.textContent = "Phrases template " + tpl.conceptId + " also allows" +
+      (tpl.proposed ? " (proposed template)" : "");
+    mp.appendChild(optHead);
+
+    if (!optional.length) {
+      var none = document.createElement("p");
+      none.style.cssText = "font-size:12.5px;color:var(--muted);margin:0;";
+      none.textContent = "All permitted phrases are in use.";
+      mp.appendChild(none);
+    }
+
+    optional.forEach(function (oid) {
+      var def = E.phraseDef(ctx, oid);
+      if (!def) return;
+      var row = document.createElement("div"); row.className = "togglerow";
+      var cb = document.createElement("input");
+      cb.type = "checkbox"; cb.checked = false; cb.id = "tg_" + oid;
+      cb.addEventListener("change", function () {
+        state.phrases.push({ phrase: oid, bindings: defaultBindingsFor(def) });
+        renderAll();
+      });
+      var lb = document.createElement("label"); lb.htmlFor = cb.id;
+      lb.style.cssText = "font-weight:400;margin:0;";
+      lb.textContent = def.name + " (" + oid + ")";
+      row.appendChild(cb); row.appendChild(lb);
+      mp.appendChild(row);
+    });
+  }
+
+
+  /* ---------- stop 2: chip editor ---------- */
+  function editHTML(rp) {
+    var def = E.phraseDef(ctx, rp.oid);
+    var rows = (def.placeholders || []).map(function (ph) {
+      var pi = findPhrase(rp.oid);
+      var b = pi.bindings[ph.name] || {};
+      var control;
+      if (ph.kind === "value") {
+        var co = LIB.configurationOptions[ph.name];
+        control = co
+          ? "<select data-slot='" + ph.name + "' data-kind='value'>" + co.values.map(function (v) {
+              return "<option value='" + v + "'" + (b.value === v ? " selected" : "") + ">" + v + "</option>"; }).join("") + "</select>"
+          : "<input data-slot='" + ph.name + "' data-kind='value' value='" + (b.value || "") + "' style='width:70px'>";
+      } else if (ph.kind === "method_ref") {
+        control = "<span style='font-family:var(--mono);font-size:12px'>" + b.method + "</span>";
+      } else {
+        control = "<select data-slot='" + ph.name + "' data-kind='concept'>" + conceptOptions(ph).map(function (id) {
+          return "<option value='" + id + "'" + (b.concept === id ? " selected" : "") + ">" + GRAPH.concepts[id].label + "</option>"; }).join("") + "</select>";
+      }
+      var renderSel = ph.render_options
+        ? " <select data-renderslot='" + ph.name + "'>" + ph.render_options.map(function (m) {
+            return "<option value='" + m + "'" + ((b.render || ph.default_render) === m ? " selected" : "") + ">" + m + "</option>"; }).join("") + "</select>"
+        : "";
+      return "<div class='editrow'><span style='color:var(--muted)'>{" + ph.name + "}</span> " + control + renderSel + "</div>";
+    }).join("");
+    /* An analysis must keep an endpoint and a method; everything else is
+       optional. Role-driven so new templates need no edit here. */
+    var removable = ["endpoint", "method"].indexOf(rp.role) === -1;
+    return "<h4>" + rp.oid + '<span class="rolebadge">' + (ROLE_LABELS[rp.role] ? ROLE_LABELS[rp.role].label : rp.role) + "</span></h4>" +
+      '<div class="tpl">"' + rp.template + '"</div>' + rows +
+      "<div class='popact'>" + (removable ? "<button class='danger' data-act='remove'>remove phrase</button> " : "") +
+      "<button data-act='close'>done</button></div>";
+  }
+  function wireEditor(rp) {
+    var pi = findPhrase(rp.oid);
+    pop.querySelectorAll("select[data-slot],input[data-slot]").forEach(function (el) {
+      el.addEventListener("change", function () {
+        var slot = el.getAttribute("data-slot");
+        if (el.getAttribute("data-kind") === "value") pi.bindings[slot].value = el.value;
+        else pi.bindings[slot].concept = el.value;
+        renderAll(true);
+      });
+    });
+    pop.querySelectorAll("select[data-renderslot]").forEach(function (el) {
+      el.addEventListener("change", function () {
+        pi.bindings[el.getAttribute("data-renderslot")].render = el.value;
+        renderAll(true);
+      });
+    });
+    var rm = pop.querySelector("button[data-act='remove']");
+    if (rm) rm.addEventListener("click", function () { removePhrase(rp.oid); hidePop(true); renderAll(); });
+    pop.querySelector("button[data-act='close']").addEventListener("click", function () { hidePop(true); });
+  }
+
+  document.getElementById("addPhraseBtn").addEventListener("click", function (e) {
+    e.stopPropagation();
+    var tpl = E.templateDef(ctx, state.template);
+    var addable = tpl.validSmartPhrases.filter(function (oid) {
+      return !findPhrase(oid) && E.phraseDef(ctx, oid);
+    });
+    if (!addable.length) { alert("All phrases the template allows are already present."); return; }
+    popPinned = true;
+    showPop("<h4>Add a phrase</h4><div class='tpl'>valid for " + state.template + "</div>" +
+      addable.map(function (oid) {
+        var d = E.phraseDef(ctx, oid);
+        return "<div class='editrow'><button data-add='" + oid + "'>" + oid + "</button> <span style='color:var(--muted);font-size:12px'>“" + d.phrase_template + "”</span></div>";
+      }).join("") + "<div class='popact'><button data-act='close'>cancel</button></div>", e.target);
+    pop.querySelectorAll("button[data-add]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var def = E.phraseDef(ctx, b.getAttribute("data-add"));
+        state.phrases.push({ phrase: def.oid, bindings: defaultBindingsFor(def) });
+        hidePop(true); renderAll();
+      });
+    });
+    pop.querySelector("button[data-act='close']").addEventListener("click", function () { hidePop(true); });
+  });
+
+  /* ---------- stop 2: tabs ---------- */
+  document.getElementById("tabs").addEventListener("click", function (e) {
+    var btn = e.target.closest("button"); if (!btn) return;
+    document.querySelectorAll("#tabs button").forEach(function (b) { b.classList.toggle("active", b === btn); });
+    document.querySelectorAll("[data-tabbody]").forEach(function (d) {
+      d.style.display = d.getAttribute("data-tabbody") === btn.getAttribute("data-tab") ? "" : "none";
+    });
+  });
+
+  var srcArea = document.getElementById("srcArea");
+  var srcDirty = false;
+  srcArea.addEventListener("input", function () { srcDirty = true; });
+  document.getElementById("applySrc").addEventListener("click", function () {
+    var r = E.parseMacroText(ctx, srcArea.value, state);
+    var ul = document.getElementById("srcFindings");
+    ul.innerHTML = "";
+    if (!r.findings.length) {
+      ul.innerHTML = "<li class='ok'>valid — model updated, all views re-rendered</li>";
+    }
+    r.findings.forEach(function (f) {
+      var li = document.createElement("li"); li.className = f.level;
+      li.textContent = f.level + ": " + f.message; ul.appendChild(li);
+    });
+    if (r.instancePatch) { state = r.instancePatch; srcDirty = false; renderAll(true); }
+  });
+  document.getElementById("resetSrc").addEventListener("click", function () {
+    srcDirty = false; document.getElementById("srcFindings").innerHTML = ""; renderAll();
+  });
+
+  /* ---------- stop 3: reuse cards ---------- */
+  function renderReuse() {
+    var grid = document.getElementById("reuseGrid");
+    grid.innerHTML = "";
+
+    STUDY_KEYS.forEach(function (key) {
+      var gph = STUDY_GRAPHS[key];
+      var sctx = E.ctxOf(LIB, gph, I18N);
+      /* Diff baseline is the first instance OF THIS STUDY. */
+      var baseMv = E.constructModelView(sctx, gph.instances[0]);
+      var tplIds = gph.instances.map(function (i) { return i.template; })
+        .filter(function (v, i, a) { return a.indexOf(v) === i; });
+
+      var head = document.createElement("h3");
+      head.style.cssText = "grid-column:1/-1;margin:16px 0 0;font-size:14px;";
+      head.innerHTML = gph.study.studyId + " <span style='font-weight:400;color:var(--muted)'>— " +
+        gph.instances.length + " analyses, " +
+        (tplIds.length === 1 ? "one template: " : "templates: ") + tplIds.join(", ") +
+        (key === activeStudy ? " · active" : "") + "</span>";
+      grid.appendChild(head);
+
+      gph.instances.forEach(function (inst, idx) {
+        var res = E.resolveInstance(sctx, inst, lang);   // prose follows the language; model rows stay canonical
+        var mv = E.constructModelView(sctx, inst);
+        var itpl = E.templateDef(sctx, inst.template);
+        var card = document.createElement("div"); card.className = "reuse-card";
+        var rows = mv.sliceKeys.map(function (sk, i) {
+          var baseSk = baseMv.sliceKeys[i];
+          var baseVal = baseSk && baseSk.value && baseSk.value.label;
+          var val = sk.value && sk.value.label;
+          var diff = idx > 0 && val !== baseVal;
+          return "<tr><td class='k'>" + sk.dimension + "</td><td class='" + (diff ? "diff" : "") + "'>" + val + "</td></tr>";
+        }).join("");
+        card.innerHTML = "<h3>" + inst.label + "</h3>" +
+          "<span class='tplbadge'>" + inst.template + " · same library template" +
+          (itpl && itpl.proposed ? " · proposed" : "") + "</span>" +
+          "<div class='rsent'>" + res.sentence + "</div>" +
+          "<table>" + rows +
+          "<tr><td class='k'>method</td><td>" + mv.usesMethod.label + " (" + mv.usesMethod.conceptId + ")</td></tr>" +
+          "<tr><td class='k'>model</td><td style='font-family:var(--mono);font-size:12px'>" + mv.resolvedExpression + "</td></tr></table>" +
+          "<div class='cardact'><button class='btn ghost' data-open-study='" + key +
+          "' data-open='" + idx + "'>Open in editor ↑</button></div>";
+        grid.appendChild(card);
+      });
+    });
+
+    grid.querySelectorAll("button[data-open]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var key = b.getAttribute("data-open-study");
+        if (key !== activeStudy) switchStudy(key);
+        state = clone(STUDY_GRAPHS[key].instances[Number(b.getAttribute("data-open"))]);
+        srcDirty = false;
+        renderAll();
+        document.getElementById("stop2").scrollIntoView({ behavior: "smooth" });
+      });
+    });
+  }
+
+  /* ---------- stop 4: identifier table ---------- */
+  function renderStandards() {
+    var rows = [];
+    function push(entity, id, iri, status) {
+      var std =
+        iri.indexOf("usdm:") === 0 ? "CDISC USDM v4.0" :
+        iri.indexOf("ars:") === 0 ? "CDISC ARS" :
+        iri.indexOf("stato:") === 0 ? "STATO (OBO)" :
+        iri.indexOf("ncit:") === 0 ? "NCI Thesaurus" :
+        iri.indexOf("qb:") === 0 ? "W3C Data Cube" : "AC/DC model";
+      rows.push("<tr><td>" + entity + "</td><td style='font-family:var(--mono);font-size:12px'>" + id +
+        "</td><td class='iri'>" + expand(iri) + "</td><td>" + std +
+        "</td><td><span class='stat " + status + "'>" + status + "</span></td></tr>");
+    }
+    Object.keys(GRAPH.concepts).forEach(function (id) {
+      var c = GRAPH.concepts[id];
+      push(c.kind + " — " + c.label, id, c.iri, c.iri_status);
+    });
+    /* Every method the active study grounds, not just ANCOVA. */
+    Object.keys(GRAPH.methodGrounding).forEach(function (mid) {
+      var mg = GRAPH.methodGrounding[mid];
+      push("Method — " + mg.label, mid, mg.iri, mg.iri_status);
+      push("Method — " + mg.label + " (analysis def)", mid, mg.ars, mg.ars_status);
+    });
+    GRAPH.instances.forEach(function (inst) {
+      push("Analysis instance — " + inst.label, inst.id, inst.iri, "illustrative");
+      push("Objective (" + inst.id + ")", "—", inst.usdmObjective.iri, inst.usdmObjective.iri_status);
+      push("ARS analysis (" + inst.id + ")", "—", inst.arsAnalysis.iri, inst.arsAnalysis.iri_status);
+    });
+    document.getElementById("idTable").innerHTML =
+      "<tr><th>Entity</th><th>AC/DC id</th><th>IRI</th><th>Grounds into</th><th>Status</th></tr>" + rows.join("");
+    var prov = LIB.provenance;
+    /* Proposed additions live on the MERGED library that ctxOf builds, not on
+       the raw generated global — read them from the context. */
+    var proposed = ctx.lib.proposedProvenance;
+    document.getElementById("provenance").innerHTML =
+      "<b>Provenance:</b> phrase templates, transformation templates and the method definition are a verbatim " +
+      "subset of <code>" + prov.files.join("</code>, <code>") + "</code> at <code>" + prov.source_branch +
+      "@" + prov.source_commit + "</code> (Transformation Library v" + LIB.library_version + "). " +
+      "The study layer (concepts, instances, trace tiers) is illustrative." +
+      (proposed
+        ? "<br><br><b>Proposed additions:</b> authored for " + proposed.authored_for +
+          " and <em>not</em> in <code>" + proposed.not_in + "</code>. " +
+          proposed.rationale +
+          " These are badged <span class='tplbadge'>proposed</span> wherever they appear."
+        : "");
+  }
+
+  /* ---------- render everything from the one state ---------- */
+  function renderAll(keepSrc) {
+    var res1 = renderProse(document.getElementById("prose1"), state, "inspect");
+    renderProse(document.getElementById("prose2"), state, "edit");
+    document.getElementById("docStudy").textContent = "Study " + GRAPH.study.studyId;
+    document.getElementById("docTitle").textContent = state.label;
+
+    // legend
+    var seen = {};
+    var legend = document.getElementById("legend");
+    legend.innerHTML = "";
+    res1.phrases.forEach(function (rp) {
+      if (seen[rp.role]) return; seen[rp.role] = true;
+      var s = document.createElement("span");
+      s.className = "sp " + rp.role;
+      s.style.cursor = "default";
+      s.textContent = ROLE_LABELS[rp.role] ? ROLE_LABELS[rp.role].label : rp.role;
+      legend.appendChild(s);
+    });
+
+    renderModelPanel();
+
+    var errs = E.resolveInstance(ctx, state).errors;
+    var ul = document.getElementById("liveErrors");
+    ul.innerHTML = errs.map(function (e) { return "<li class='error'>" + e + "</li>"; }).join("");
+
+    document.getElementById("modelView").textContent =
+      JSON.stringify(E.constructModelView(ctx, state), null, 2);
+    if (!keepSrc || !srcDirty) srcArea.value = E.toMacroText(ctx, state);
+    document.getElementById("jsonldView").textContent =
+      JSON.stringify(E.toJSONLD(ctx, state), null, 2);
+
+    renderReuse();
+    renderStandards();
+    traceBox.style.display = "none";
+  }
+
+  /* nav highlighting */
+  var links = document.querySelectorAll("nav.stops a");
+  window.addEventListener("scroll", function () {
+    var pos = window.scrollY + 120;
+    var current = "";
+    ["stop1", "stop2", "stop3", "stop4"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el.offsetTop <= pos) current = id;
+    });
+    links.forEach(function (a) { a.classList.toggle("active", a.getAttribute("href") === "#" + current); });
+  });
+
+  buildStudySwitch();
+  renderAll();
+})();
+</script>
+</body>
+</html>

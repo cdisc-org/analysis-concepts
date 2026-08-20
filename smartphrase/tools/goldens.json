@@ -1,0 +1,2641 @@
+{
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/sentence/en": "Change from baseline in Alzheimer's Disease Assessment Scale - Cognitive Subscale (11 items) (ADAS-Cog(11)) at Week 24 in the efficacy (intent-to-treat) population comparing treatment groups using ANCOVA with 95% confidence intervals adjusting for baseline ADAS-Cog(11) will be assessed as the primary analysis.",
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/sentence/fr": "La variation de l'échelle d'évaluation de la maladie d'Alzheimer – sous-échelle cognitive (11 items) (ADAS-Cog(11)) par rapport à la valeur initiale à la semaine 24 dans la population d'efficacité (intention de traiter) en comparant les groupes de traitement au moyen d'une ANCOVA avec des intervalles de confiance à 95 % avec ajustement sur la valeur initiale du score ADAS-Cog(11) sera évaluée comme analyse principale.",
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/sentence/de": "Die Veränderung von Alzheimer's Disease Assessment Scale – kognitive Subskala (11 Items) (ADAS-Cog(11)) gegenüber dem Ausgangswert in Woche 24 in der Wirksamkeitspopulation (Intention-to-Treat) wird im Vergleich der Behandlungsgruppen mittels ANCOVA mit 95%-Konfidenzintervallen adjustiert für den Ausgangswert von ADAS-Cog(11) als primäre Analyse untersucht.",
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/modelView": {
+    "instance": "AC.PRIMARY.ADASCOG",
+    "iri": "acdc:instance/AC-PRIMARY-ADASCOG",
+    "template": {
+      "conceptId": "T.CFB_ANCOVA",
+      "label": "Change From Baseline ANCOVA",
+      "transformationType": "analysis",
+      "copiedFrom": "Transformation Library v0.7 (methods_02)"
+    },
+    "usesMethod": {
+      "conceptId": "M.ANCOVA",
+      "label": "ANCOVA",
+      "iri": "stato:STATO_0000176",
+      "ars": "ars:method/MTH-ANCOVA-CFB",
+      "genericExpression": "<response> ~ <covariate>* + <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)* + (<covariate>:<fixed_effect>)*"
+    },
+    "configurationValues": [
+      {
+        "configurationName": "ss_type",
+        "value": "III",
+        "from": "template"
+      },
+      {
+        "configurationName": "alpha",
+        "value": "0.05",
+        "from": "SP_CONFIDENCE_LEVEL"
+      }
+    ],
+    "sliceKeys": [
+      {
+        "dimension": "ParameterDimension",
+        "source": "biomedicalConcept",
+        "value": {
+          "concept": "PARAM.ADASCOG11",
+          "label": "ADAS-Cog(11)",
+          "iri": "ncit:C168804"
+        }
+      },
+      {
+        "dimension": "VisitDimension",
+        "source": "visit",
+        "value": {
+          "concept": "VISIT.WK24",
+          "label": "Week 24",
+          "iri": "usdm:ScheduledActivityInstance/SAI-WK24"
+        }
+      },
+      {
+        "dimension": "Population",
+        "source": "population",
+        "value": {
+          "concept": "POP.EFFICACY",
+          "label": "efficacy (intent-to-treat)",
+          "iri": "usdm:AnalysisPopulation/POP-EFF"
+        }
+      }
+    ],
+    "slices": [
+      {
+        "name": "endpoint",
+        "constraints": [
+          {
+            "dimension": "ParameterDimension",
+            "value": "ADAS-Cog(11)"
+          },
+          {
+            "dimension": "VisitDimension",
+            "value": "Week 24"
+          },
+          {
+            "dimension": "Population",
+            "value": "efficacy (intent-to-treat)"
+          }
+        ]
+      },
+      {
+        "name": "parameter_baseline",
+        "constraints": [
+          {
+            "dimension": "ParameterDimension",
+            "value": "ADAS-Cog(11)"
+          },
+          {
+            "dimension": "VisitDimension",
+            "value": "Baseline"
+          },
+          {
+            "dimension": "Population",
+            "value": "efficacy (intent-to-treat)"
+          }
+        ]
+      }
+    ],
+    "outputMeasures": [
+      {
+        "output": "ls_means",
+        "concept": "LSMeans"
+      },
+      {
+        "output": "contrasts_t",
+        "concept": "Contrasts"
+      },
+      {
+        "output": "type3_tests_f",
+        "concept": "Type3Tests"
+      },
+      {
+        "output": "parameter_estimates_linear",
+        "concept": "ParameterEstimates"
+      },
+      {
+        "output": "fit_statistics_linear",
+        "concept": "FitStatistics"
+      }
+    ],
+    "resolvedExpression": "CHG ~ TRTP + BASE",
+    "usdmObjective": {
+      "iri": "usdm:Objective/OBJ-PRIMARY-1",
+      "iri_status": "illustrative",
+      "text": "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
+    },
+    "arsAnalysis": {
+      "iri": "ars:analysis/AN-3.02.01",
+      "iri_status": "illustrative"
+    },
+    "validSmartPhrases": [
+      "SP_CFB_ENDPOINT",
+      "SP_PARAMETER",
+      "SP_TIMEPOINT",
+      "SP_POPULATION",
+      "SP_GROUPING",
+      "SP_METHOD_ANCOVA",
+      "SP_CONFIDENCE_LEVEL",
+      "SP_COVARIATE_BASELINE",
+      "SP_COVARIATE_SITE"
+    ]
+  },
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/macro": "<acdc:macro id=\"analysis\" ref=\"T.CFB_ANCOVA\" instance=\"AC.PRIMARY.ADASCOG\">\n  <acdc:macro id=\"phrase\" ref=\"SP_CFB_ENDPOINT\" instance=\"p1\" parameter=\"PARAM.ADASCOG11\" render=\"parameter:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_TIMEPOINT\" instance=\"p2\" visit=\"VISIT.WK24\" render=\"visit:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p3\" population=\"POP.EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p4\" treatment=\"TRT.ALL\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_ANCOVA\" instance=\"p5\" method=\"M.ANCOVA\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p6\" conf_level=\"95\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_COVARIATE_BASELINE\" instance=\"p7\" parameter=\"PARAM.ADASCOG11\" render=\"parameter:label\"/>\n</acdc:macro>",
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/jsonld": {
+    "@context": {
+      "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "acdc": "https://w3id.org/cdisc/ac-dc/",
+      "usdm": "https://ddf.cdisc.org/usdm/v4/",
+      "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
+      "stato": "http://purl.obolibrary.org/obo/",
+      "ncit": "http://purl.obolibrary.org/obo/NCIT_",
+      "qb": "http://purl.org/linked-data/cube#"
+    },
+    "@id": "acdc:instance/AC-PRIMARY-ADASCOG",
+    "@type": "acdc:AnalysisConcept",
+    "rdfs:label": "Primary efficacy analysis",
+    "acdc:instantiates": {
+      "@id": "acdc:template/T.CFB_ANCOVA"
+    },
+    "acdc:usesMethod": {
+      "@id": "ars:method/MTH-ANCOVA-CFB",
+      "rdfs:label": "ANCOVA",
+      "acdc:alignedTo": {
+        "@id": "stato:STATO_0000176"
+      }
+    },
+    "usdm:objective": {
+      "@id": "usdm:Objective/OBJ-PRIMARY-1",
+      "rdfs:comment": "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
+    },
+    "ars:analysis": {
+      "@id": "ars:analysis/AN-3.02.01"
+    },
+    "sp:hasPhraseInstance": [
+      {
+        "@id": "#p1",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CFB_ENDPOINT",
+        "sp:role": "endpoint",
+        "sp:binding": [
+          {
+            "sp:slot": "parameter",
+            "@id": "ncit:C168804",
+            "rdfs:label": "ADAS-Cog(11)",
+            "sp:render": "name_with_label"
+          }
+        ]
+      },
+      {
+        "@id": "#p2",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_TIMEPOINT",
+        "sp:role": "timepoint",
+        "sp:binding": [
+          {
+            "sp:slot": "visit",
+            "@id": "usdm:ScheduledActivityInstance/SAI-WK24",
+            "rdfs:label": "Week 24",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p3",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_POPULATION",
+        "sp:role": "population",
+        "sp:binding": [
+          {
+            "sp:slot": "population",
+            "@id": "usdm:AnalysisPopulation/POP-EFF",
+            "rdfs:label": "EFF",
+            "sp:render": "name"
+          }
+        ]
+      },
+      {
+        "@id": "#p4",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_GROUPING",
+        "sp:role": "grouping",
+        "sp:binding": [
+          {
+            "sp:slot": "treatment",
+            "@id": "usdm:StudyArm/ARM-SET-ALL",
+            "rdfs:label": "treatment",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p5",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_METHOD_ANCOVA",
+        "sp:role": "method",
+        "sp:binding": [
+          {
+            "sp:slot": "method",
+            "@id": "ars:method/MTH-ANCOVA-CFB",
+            "acdc:alignedTo": {
+              "@id": "stato:STATO_0000176"
+            }
+          }
+        ]
+      },
+      {
+        "@id": "#p6",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CONFIDENCE_LEVEL",
+        "sp:role": "method_qualifier",
+        "sp:binding": [
+          {
+            "sp:slot": "conf_level",
+            "sp:value": "95"
+          }
+        ]
+      },
+      {
+        "@id": "#p7",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_COVARIATE_BASELINE",
+        "sp:role": "covariate",
+        "sp:binding": [
+          {
+            "sp:slot": "parameter",
+            "@id": "ncit:C168804",
+            "rdfs:label": "ADAS-Cog(11)",
+            "sp:render": "label"
+          }
+        ]
+      }
+    ],
+    "sp:resolvesTo": [
+      {
+        "@value": "Change from baseline in Alzheimer's Disease Assessment Scale - Cognitive Subscale (11 items) (ADAS-Cog(11)) at Week 24 in the efficacy (intent-to-treat) population comparing treatment groups using ANCOVA with 95% confidence intervals adjusting for baseline ADAS-Cog(11) will be assessed as the primary analysis.",
+        "@language": "en"
+      },
+      {
+        "@value": "La variation de l'échelle d'évaluation de la maladie d'Alzheimer – sous-échelle cognitive (11 items) (ADAS-Cog(11)) par rapport à la valeur initiale à la semaine 24 dans la population d'efficacité (intention de traiter) en comparant les groupes de traitement au moyen d'une ANCOVA avec des intervalles de confiance à 95 % avec ajustement sur la valeur initiale du score ADAS-Cog(11) sera évaluée comme analyse principale.",
+        "@language": "fr"
+      },
+      {
+        "@value": "Die Veränderung von Alzheimer's Disease Assessment Scale – kognitive Subskala (11 Items) (ADAS-Cog(11)) gegenüber dem Ausgangswert in Woche 24 in der Wirksamkeitspopulation (Intention-to-Treat) wird im Vergleich der Behandlungsgruppen mittels ANCOVA mit 95%-Konfidenzintervallen adjustiert für den Ausgangswert von ADAS-Cog(11) als primäre Analyse untersucht.",
+        "@language": "de"
+      }
+    ]
+  },
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/endpoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.CHG",
+      "label": "Change from Baseline",
+      "iri": "acdc:dc/ChangeFromBaseline",
+      "iri_status": "illustrative",
+      "note": "Derived analysis value: post-baseline value minus baseline value. Produced by library derivation T.ChangeFromBaseline."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "CHG",
+      "label": "Change from Baseline",
+      "dataStructure": "BDS",
+      "note": "BDS analysis-value variable, ADaMIG v1.3."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADQSADAS.CHG",
+      "label": "CHG in ADQSADAS",
+      "whereClause": "PARAMCD = 'ACTOT' AND AVISITN = 24",
+      "note": "ADAS-Cog(11), Week 24 record."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADQSADAS",
+      "label": "ADaM ADAS-Cog analysis dataset",
+      "file": "adqsadas.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ],
+      "note": "One record per subject per parameter per analysis visit."
+    }
+  ],
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/covariate": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.BASE",
+      "label": "Baseline Value",
+      "iri": "acdc:dc/BaselineValue",
+      "iri_status": "illustrative",
+      "note": "Reference value at the baseline visit. Produced by library derivation T.BaselineSelection."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "BASE",
+      "label": "Baseline Value",
+      "dataStructure": "BDS"
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADQSADAS.BASE",
+      "label": "BASE in ADQSADAS",
+      "whereClause": "PARAMCD = 'ACTOT'",
+      "note": "Baseline ADAS-Cog(11)."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADQSADAS",
+      "label": "ADaM ADAS-Cog analysis dataset",
+      "file": "adqsadas.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/timepoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.AVISIT",
+      "label": "Analysis Visit",
+      "iri": "acdc:dc/AnalysisVisit",
+      "iri_status": "illustrative"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "AVISIT",
+      "label": "Analysis Visit",
+      "dataStructure": "BDS",
+      "note": "Paired with numeric AVISITN for sorting."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADQSADAS.AVISIT",
+      "label": "AVISIT in ADQSADAS",
+      "whereClause": "AVISITN = 24",
+      "note": "Decodes to 'Week 24'."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADQSADAS",
+      "label": "ADaM ADAS-Cog analysis dataset",
+      "file": "adqsadas.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/grouping": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TRT",
+      "label": "Planned Treatment",
+      "iri": "acdc:dc/PlannedTreatment",
+      "iri_status": "illustrative",
+      "usdm": "usdm:StudyArm"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "TRTP",
+      "label": "Planned Treatment",
+      "dataStructure": "ADSL",
+      "note": "Subject-level treatment assignment."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.TRTP",
+      "label": "TRTP in ADSL",
+      "note": "Placebo / Xanomeline Low Dose / Xanomeline High Dose."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ],
+      "note": "One record per subject."
+    }
+  ],
+  "CDISCPILOT01/AC.PRIMARY.ADASCOG/trace/population": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.POP",
+      "label": "Analysis Population",
+      "iri": "acdc:dc/AnalysisPopulation",
+      "iri_status": "illustrative",
+      "usdm": "usdm:AnalysisPopulation"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "ITTFL",
+      "label": "Population Flag",
+      "dataStructure": "ADSL",
+      "note": "Population indicator variable."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.ITTFL",
+      "label": "ITTFL in ADSL",
+      "whereClause": "ITTFL = 'Y'",
+      "note": "Subjects in the efficacy (intent-to-treat) analysis set."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.SEC.NPIX/sentence/en": "Change from baseline in Neuropsychiatric Inventory - Revised, mean domain total score (NPI-X) at Week 24 in the efficacy (intent-to-treat) population comparing treatment groups using ANCOVA adjusting for baseline NPI-X will be assessed as a secondary analysis.",
+  "CDISCPILOT01/AC.SEC.NPIX/sentence/fr": "La variation de l'inventaire neuropsychiatrique révisé, score total moyen des domaines (NPI-X) par rapport à la valeur initiale à la semaine 24 dans la population d'efficacité (intention de traiter) en comparant les groupes de traitement au moyen d'une ANCOVA avec ajustement sur la valeur initiale du score NPI-X sera évaluée comme une analyse secondaire.",
+  "CDISCPILOT01/AC.SEC.NPIX/sentence/de": "Die Veränderung von Neuropsychiatrisches Inventar – revidiert, mittlerer Domänen-Gesamtscore (NPI-X) gegenüber dem Ausgangswert in Woche 24 in der Wirksamkeitspopulation (Intention-to-Treat) wird im Vergleich der Behandlungsgruppen mittels ANCOVA adjustiert für den Ausgangswert von NPI-X als sekundäre Analyse untersucht.",
+  "CDISCPILOT01/AC.SEC.NPIX/modelView": {
+    "instance": "AC.SEC.NPIX",
+    "iri": "acdc:instance/AC-SEC-NPIX",
+    "template": {
+      "conceptId": "T.CFB_ANCOVA",
+      "label": "Change From Baseline ANCOVA",
+      "transformationType": "analysis",
+      "copiedFrom": "Transformation Library v0.7 (methods_02)"
+    },
+    "usesMethod": {
+      "conceptId": "M.ANCOVA",
+      "label": "ANCOVA",
+      "iri": "stato:STATO_0000176",
+      "ars": "ars:method/MTH-ANCOVA-CFB",
+      "genericExpression": "<response> ~ <covariate>* + <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)* + (<covariate>:<fixed_effect>)*"
+    },
+    "configurationValues": [
+      {
+        "configurationName": "ss_type",
+        "value": "III",
+        "from": "template"
+      }
+    ],
+    "sliceKeys": [
+      {
+        "dimension": "ParameterDimension",
+        "source": "biomedicalConcept",
+        "value": {
+          "concept": "PARAM.NPIX",
+          "label": "NPI-X",
+          "iri": "acdc:param/NPIX"
+        }
+      },
+      {
+        "dimension": "VisitDimension",
+        "source": "visit",
+        "value": {
+          "concept": "VISIT.WK24",
+          "label": "Week 24",
+          "iri": "usdm:ScheduledActivityInstance/SAI-WK24"
+        }
+      },
+      {
+        "dimension": "Population",
+        "source": "population",
+        "value": {
+          "concept": "POP.EFFICACY",
+          "label": "efficacy (intent-to-treat)",
+          "iri": "usdm:AnalysisPopulation/POP-EFF"
+        }
+      }
+    ],
+    "slices": [
+      {
+        "name": "endpoint",
+        "constraints": [
+          {
+            "dimension": "ParameterDimension",
+            "value": "NPI-X"
+          },
+          {
+            "dimension": "VisitDimension",
+            "value": "Week 24"
+          },
+          {
+            "dimension": "Population",
+            "value": "efficacy (intent-to-treat)"
+          }
+        ]
+      },
+      {
+        "name": "parameter_baseline",
+        "constraints": [
+          {
+            "dimension": "ParameterDimension",
+            "value": "NPI-X"
+          },
+          {
+            "dimension": "VisitDimension",
+            "value": "Baseline"
+          },
+          {
+            "dimension": "Population",
+            "value": "efficacy (intent-to-treat)"
+          }
+        ]
+      }
+    ],
+    "outputMeasures": [
+      {
+        "output": "ls_means",
+        "concept": "LSMeans"
+      },
+      {
+        "output": "contrasts_t",
+        "concept": "Contrasts"
+      },
+      {
+        "output": "type3_tests_f",
+        "concept": "Type3Tests"
+      },
+      {
+        "output": "parameter_estimates_linear",
+        "concept": "ParameterEstimates"
+      },
+      {
+        "output": "fit_statistics_linear",
+        "concept": "FitStatistics"
+      }
+    ],
+    "resolvedExpression": "CHG ~ TRTP + BASE",
+    "usdmObjective": {
+      "iri": "usdm:Objective/OBJ-SECONDARY-1",
+      "iri_status": "illustrative",
+      "text": "To evaluate the effect of xanomeline TTS on behavioural disturbance"
+    },
+    "arsAnalysis": {
+      "iri": "ars:analysis/AN-3.03.01",
+      "iri_status": "illustrative"
+    },
+    "validSmartPhrases": [
+      "SP_CFB_ENDPOINT",
+      "SP_PARAMETER",
+      "SP_TIMEPOINT",
+      "SP_POPULATION",
+      "SP_GROUPING",
+      "SP_METHOD_ANCOVA",
+      "SP_CONFIDENCE_LEVEL",
+      "SP_COVARIATE_BASELINE",
+      "SP_COVARIATE_SITE"
+    ]
+  },
+  "CDISCPILOT01/AC.SEC.NPIX/macro": "<acdc:macro id=\"analysis\" ref=\"T.CFB_ANCOVA\" instance=\"AC.SEC.NPIX\">\n  <acdc:macro id=\"phrase\" ref=\"SP_CFB_ENDPOINT\" instance=\"p1\" parameter=\"PARAM.NPIX\" render=\"parameter:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_TIMEPOINT\" instance=\"p2\" visit=\"VISIT.WK24\" render=\"visit:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p3\" population=\"POP.EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p4\" treatment=\"TRT.ALL\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_ANCOVA\" instance=\"p5\" method=\"M.ANCOVA\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_COVARIATE_BASELINE\" instance=\"p6\" parameter=\"PARAM.NPIX\" render=\"parameter:label\"/>\n</acdc:macro>",
+  "CDISCPILOT01/AC.SEC.NPIX/jsonld": {
+    "@context": {
+      "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "acdc": "https://w3id.org/cdisc/ac-dc/",
+      "usdm": "https://ddf.cdisc.org/usdm/v4/",
+      "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
+      "stato": "http://purl.obolibrary.org/obo/",
+      "ncit": "http://purl.obolibrary.org/obo/NCIT_",
+      "qb": "http://purl.org/linked-data/cube#"
+    },
+    "@id": "acdc:instance/AC-SEC-NPIX",
+    "@type": "acdc:AnalysisConcept",
+    "rdfs:label": "Secondary efficacy analysis — behaviour",
+    "acdc:instantiates": {
+      "@id": "acdc:template/T.CFB_ANCOVA"
+    },
+    "acdc:usesMethod": {
+      "@id": "ars:method/MTH-ANCOVA-CFB",
+      "rdfs:label": "ANCOVA",
+      "acdc:alignedTo": {
+        "@id": "stato:STATO_0000176"
+      }
+    },
+    "usdm:objective": {
+      "@id": "usdm:Objective/OBJ-SECONDARY-1",
+      "rdfs:comment": "To evaluate the effect of xanomeline TTS on behavioural disturbance"
+    },
+    "ars:analysis": {
+      "@id": "ars:analysis/AN-3.03.01"
+    },
+    "sp:hasPhraseInstance": [
+      {
+        "@id": "#p1",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CFB_ENDPOINT",
+        "sp:role": "endpoint",
+        "sp:binding": [
+          {
+            "sp:slot": "parameter",
+            "@id": "acdc:param/NPIX",
+            "rdfs:label": "NPI-X",
+            "sp:render": "name_with_label"
+          }
+        ]
+      },
+      {
+        "@id": "#p2",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_TIMEPOINT",
+        "sp:role": "timepoint",
+        "sp:binding": [
+          {
+            "sp:slot": "visit",
+            "@id": "usdm:ScheduledActivityInstance/SAI-WK24",
+            "rdfs:label": "Week 24",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p3",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_POPULATION",
+        "sp:role": "population",
+        "sp:binding": [
+          {
+            "sp:slot": "population",
+            "@id": "usdm:AnalysisPopulation/POP-EFF",
+            "rdfs:label": "EFF",
+            "sp:render": "name"
+          }
+        ]
+      },
+      {
+        "@id": "#p4",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_GROUPING",
+        "sp:role": "grouping",
+        "sp:binding": [
+          {
+            "sp:slot": "treatment",
+            "@id": "usdm:StudyArm/ARM-SET-ALL",
+            "rdfs:label": "treatment",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p5",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_METHOD_ANCOVA",
+        "sp:role": "method",
+        "sp:binding": [
+          {
+            "sp:slot": "method",
+            "@id": "ars:method/MTH-ANCOVA-CFB",
+            "acdc:alignedTo": {
+              "@id": "stato:STATO_0000176"
+            }
+          }
+        ]
+      },
+      {
+        "@id": "#p6",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_COVARIATE_BASELINE",
+        "sp:role": "covariate",
+        "sp:binding": [
+          {
+            "sp:slot": "parameter",
+            "@id": "acdc:param/NPIX",
+            "rdfs:label": "NPI-X",
+            "sp:render": "label"
+          }
+        ]
+      }
+    ],
+    "sp:resolvesTo": [
+      {
+        "@value": "Change from baseline in Neuropsychiatric Inventory - Revised, mean domain total score (NPI-X) at Week 24 in the efficacy (intent-to-treat) population comparing treatment groups using ANCOVA adjusting for baseline NPI-X will be assessed as a secondary analysis.",
+        "@language": "en"
+      },
+      {
+        "@value": "La variation de l'inventaire neuropsychiatrique révisé, score total moyen des domaines (NPI-X) par rapport à la valeur initiale à la semaine 24 dans la population d'efficacité (intention de traiter) en comparant les groupes de traitement au moyen d'une ANCOVA avec ajustement sur la valeur initiale du score NPI-X sera évaluée comme une analyse secondaire.",
+        "@language": "fr"
+      },
+      {
+        "@value": "Die Veränderung von Neuropsychiatrisches Inventar – revidiert, mittlerer Domänen-Gesamtscore (NPI-X) gegenüber dem Ausgangswert in Woche 24 in der Wirksamkeitspopulation (Intention-to-Treat) wird im Vergleich der Behandlungsgruppen mittels ANCOVA adjustiert für den Ausgangswert von NPI-X als sekundäre Analyse untersucht.",
+        "@language": "de"
+      }
+    ]
+  },
+  "CDISCPILOT01/AC.SEC.NPIX/trace/endpoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.CHG",
+      "label": "Change from Baseline",
+      "iri": "acdc:dc/ChangeFromBaseline",
+      "iri_status": "illustrative",
+      "note": "Derived analysis value: post-baseline value minus baseline value. Produced by library derivation T.ChangeFromBaseline."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "CHG",
+      "label": "Change from Baseline",
+      "dataStructure": "BDS",
+      "note": "BDS analysis-value variable, ADaMIG v1.3."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADNPIX.CHG",
+      "label": "CHG in ADNPIX",
+      "whereClause": "PARAMCD = 'NPTOT' AND AVISITN = 24",
+      "note": "NPI-X, Week 24 record."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADNPIX",
+      "label": "ADaM NPI-X analysis dataset",
+      "file": "adnpix.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ],
+      "note": "One record per subject per parameter per analysis visit."
+    }
+  ],
+  "CDISCPILOT01/AC.SEC.NPIX/trace/covariate": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.BASE",
+      "label": "Baseline Value",
+      "iri": "acdc:dc/BaselineValue",
+      "iri_status": "illustrative",
+      "note": "Reference value at the baseline visit. Produced by library derivation T.BaselineSelection."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "BASE",
+      "label": "Baseline Value",
+      "dataStructure": "BDS"
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADNPIX.BASE",
+      "label": "BASE in ADNPIX",
+      "whereClause": "PARAMCD = 'NPTOT'",
+      "note": "Baseline NPI-X."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADNPIX",
+      "label": "ADaM NPI-X analysis dataset",
+      "file": "adnpix.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.SEC.NPIX/trace/timepoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.AVISIT",
+      "label": "Analysis Visit",
+      "iri": "acdc:dc/AnalysisVisit",
+      "iri_status": "illustrative"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "AVISIT",
+      "label": "Analysis Visit",
+      "dataStructure": "BDS",
+      "note": "Paired with numeric AVISITN for sorting."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADNPIX.AVISIT",
+      "label": "AVISIT in ADNPIX",
+      "whereClause": "AVISITN = 24",
+      "note": "Decodes to 'Week 24'."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADNPIX",
+      "label": "ADaM NPI-X analysis dataset",
+      "file": "adnpix.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.SEC.NPIX/trace/grouping": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TRT",
+      "label": "Planned Treatment",
+      "iri": "acdc:dc/PlannedTreatment",
+      "iri_status": "illustrative",
+      "usdm": "usdm:StudyArm"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "TRTP",
+      "label": "Planned Treatment",
+      "dataStructure": "ADSL",
+      "note": "Subject-level treatment assignment."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.TRTP",
+      "label": "TRTP in ADSL",
+      "note": "Placebo / Xanomeline Low Dose / Xanomeline High Dose."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ],
+      "note": "One record per subject."
+    }
+  ],
+  "CDISCPILOT01/AC.SEC.NPIX/trace/population": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.POP",
+      "label": "Analysis Population",
+      "iri": "acdc:dc/AnalysisPopulation",
+      "iri_status": "illustrative",
+      "usdm": "usdm:AnalysisPopulation"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "ITTFL",
+      "label": "Population Flag",
+      "dataStructure": "ADSL",
+      "note": "Population indicator variable."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.ITTFL",
+      "label": "ITTFL in ADSL",
+      "whereClause": "ITTFL = 'Y'",
+      "note": "Subjects in the efficacy (intent-to-treat) analysis set."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/sentence/en": "Change from baseline in Alzheimer's Disease Assessment Scale - Cognitive Subscale (11 items) (ADAS-Cog(11)) at Week 16 in the efficacy (intent-to-treat) population comparing treatment groups using ANCOVA with 95% confidence intervals adjusting for baseline ADAS-Cog(11) will be assessed as a supporting analysis.",
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/sentence/fr": "La variation de l'échelle d'évaluation de la maladie d'Alzheimer – sous-échelle cognitive (11 items) (ADAS-Cog(11)) par rapport à la valeur initiale à la semaine 16 dans la population d'efficacité (intention de traiter) en comparant les groupes de traitement au moyen d'une ANCOVA avec des intervalles de confiance à 95 % avec ajustement sur la valeur initiale du score ADAS-Cog(11) sera évaluée comme une analyse complémentaire.",
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/sentence/de": "Die Veränderung von Alzheimer's Disease Assessment Scale – kognitive Subskala (11 Items) (ADAS-Cog(11)) gegenüber dem Ausgangswert in Woche 16 in der Wirksamkeitspopulation (Intention-to-Treat) wird im Vergleich der Behandlungsgruppen mittels ANCOVA mit 95%-Konfidenzintervallen adjustiert für den Ausgangswert von ADAS-Cog(11) als unterstützende Analyse untersucht.",
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/modelView": {
+    "instance": "AC.SUPP.ADASCOG.WK16",
+    "iri": "acdc:instance/AC-SUPP-ADASCOG-WK16",
+    "template": {
+      "conceptId": "T.CFB_ANCOVA",
+      "label": "Change From Baseline ANCOVA",
+      "transformationType": "analysis",
+      "copiedFrom": "Transformation Library v0.7 (methods_02)"
+    },
+    "usesMethod": {
+      "conceptId": "M.ANCOVA",
+      "label": "ANCOVA",
+      "iri": "stato:STATO_0000176",
+      "ars": "ars:method/MTH-ANCOVA-CFB",
+      "genericExpression": "<response> ~ <covariate>* + <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)* + (<covariate>:<fixed_effect>)*"
+    },
+    "configurationValues": [
+      {
+        "configurationName": "ss_type",
+        "value": "III",
+        "from": "template"
+      },
+      {
+        "configurationName": "alpha",
+        "value": "0.05",
+        "from": "SP_CONFIDENCE_LEVEL"
+      }
+    ],
+    "sliceKeys": [
+      {
+        "dimension": "ParameterDimension",
+        "source": "biomedicalConcept",
+        "value": {
+          "concept": "PARAM.ADASCOG11",
+          "label": "ADAS-Cog(11)",
+          "iri": "ncit:C168804"
+        }
+      },
+      {
+        "dimension": "VisitDimension",
+        "source": "visit",
+        "value": {
+          "concept": "VISIT.WK16",
+          "label": "Week 16",
+          "iri": "usdm:ScheduledActivityInstance/SAI-WK16"
+        }
+      },
+      {
+        "dimension": "Population",
+        "source": "population",
+        "value": {
+          "concept": "POP.EFFICACY",
+          "label": "efficacy (intent-to-treat)",
+          "iri": "usdm:AnalysisPopulation/POP-EFF"
+        }
+      }
+    ],
+    "slices": [
+      {
+        "name": "endpoint",
+        "constraints": [
+          {
+            "dimension": "ParameterDimension",
+            "value": "ADAS-Cog(11)"
+          },
+          {
+            "dimension": "VisitDimension",
+            "value": "Week 16"
+          },
+          {
+            "dimension": "Population",
+            "value": "efficacy (intent-to-treat)"
+          }
+        ]
+      },
+      {
+        "name": "parameter_baseline",
+        "constraints": [
+          {
+            "dimension": "ParameterDimension",
+            "value": "ADAS-Cog(11)"
+          },
+          {
+            "dimension": "VisitDimension",
+            "value": "Baseline"
+          },
+          {
+            "dimension": "Population",
+            "value": "efficacy (intent-to-treat)"
+          }
+        ]
+      }
+    ],
+    "outputMeasures": [
+      {
+        "output": "ls_means",
+        "concept": "LSMeans"
+      },
+      {
+        "output": "contrasts_t",
+        "concept": "Contrasts"
+      },
+      {
+        "output": "type3_tests_f",
+        "concept": "Type3Tests"
+      },
+      {
+        "output": "parameter_estimates_linear",
+        "concept": "ParameterEstimates"
+      },
+      {
+        "output": "fit_statistics_linear",
+        "concept": "FitStatistics"
+      }
+    ],
+    "resolvedExpression": "CHG ~ TRTP + BASE",
+    "usdmObjective": {
+      "iri": "usdm:Objective/OBJ-PRIMARY-1",
+      "iri_status": "illustrative",
+      "text": "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
+    },
+    "arsAnalysis": {
+      "iri": "ars:analysis/AN-3.02.02",
+      "iri_status": "illustrative"
+    },
+    "validSmartPhrases": [
+      "SP_CFB_ENDPOINT",
+      "SP_PARAMETER",
+      "SP_TIMEPOINT",
+      "SP_POPULATION",
+      "SP_GROUPING",
+      "SP_METHOD_ANCOVA",
+      "SP_CONFIDENCE_LEVEL",
+      "SP_COVARIATE_BASELINE",
+      "SP_COVARIATE_SITE"
+    ]
+  },
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/macro": "<acdc:macro id=\"analysis\" ref=\"T.CFB_ANCOVA\" instance=\"AC.SUPP.ADASCOG.WK16\">\n  <acdc:macro id=\"phrase\" ref=\"SP_CFB_ENDPOINT\" instance=\"p1\" parameter=\"PARAM.ADASCOG11\" render=\"parameter:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_TIMEPOINT\" instance=\"p2\" visit=\"VISIT.WK16\" render=\"visit:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p3\" population=\"POP.EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p4\" treatment=\"TRT.ALL\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_ANCOVA\" instance=\"p5\" method=\"M.ANCOVA\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p6\" conf_level=\"95\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_COVARIATE_BASELINE\" instance=\"p7\" parameter=\"PARAM.ADASCOG11\" render=\"parameter:label\"/>\n</acdc:macro>",
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/jsonld": {
+    "@context": {
+      "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "acdc": "https://w3id.org/cdisc/ac-dc/",
+      "usdm": "https://ddf.cdisc.org/usdm/v4/",
+      "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
+      "stato": "http://purl.obolibrary.org/obo/",
+      "ncit": "http://purl.obolibrary.org/obo/NCIT_",
+      "qb": "http://purl.org/linked-data/cube#"
+    },
+    "@id": "acdc:instance/AC-SUPP-ADASCOG-WK16",
+    "@type": "acdc:AnalysisConcept",
+    "rdfs:label": "Supporting analysis — earlier timepoint",
+    "acdc:instantiates": {
+      "@id": "acdc:template/T.CFB_ANCOVA"
+    },
+    "acdc:usesMethod": {
+      "@id": "ars:method/MTH-ANCOVA-CFB",
+      "rdfs:label": "ANCOVA",
+      "acdc:alignedTo": {
+        "@id": "stato:STATO_0000176"
+      }
+    },
+    "usdm:objective": {
+      "@id": "usdm:Objective/OBJ-PRIMARY-1",
+      "rdfs:comment": "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
+    },
+    "ars:analysis": {
+      "@id": "ars:analysis/AN-3.02.02"
+    },
+    "sp:hasPhraseInstance": [
+      {
+        "@id": "#p1",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CFB_ENDPOINT",
+        "sp:role": "endpoint",
+        "sp:binding": [
+          {
+            "sp:slot": "parameter",
+            "@id": "ncit:C168804",
+            "rdfs:label": "ADAS-Cog(11)",
+            "sp:render": "name_with_label"
+          }
+        ]
+      },
+      {
+        "@id": "#p2",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_TIMEPOINT",
+        "sp:role": "timepoint",
+        "sp:binding": [
+          {
+            "sp:slot": "visit",
+            "@id": "usdm:ScheduledActivityInstance/SAI-WK16",
+            "rdfs:label": "Week 16",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p3",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_POPULATION",
+        "sp:role": "population",
+        "sp:binding": [
+          {
+            "sp:slot": "population",
+            "@id": "usdm:AnalysisPopulation/POP-EFF",
+            "rdfs:label": "EFF",
+            "sp:render": "name"
+          }
+        ]
+      },
+      {
+        "@id": "#p4",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_GROUPING",
+        "sp:role": "grouping",
+        "sp:binding": [
+          {
+            "sp:slot": "treatment",
+            "@id": "usdm:StudyArm/ARM-SET-ALL",
+            "rdfs:label": "treatment",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p5",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_METHOD_ANCOVA",
+        "sp:role": "method",
+        "sp:binding": [
+          {
+            "sp:slot": "method",
+            "@id": "ars:method/MTH-ANCOVA-CFB",
+            "acdc:alignedTo": {
+              "@id": "stato:STATO_0000176"
+            }
+          }
+        ]
+      },
+      {
+        "@id": "#p6",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CONFIDENCE_LEVEL",
+        "sp:role": "method_qualifier",
+        "sp:binding": [
+          {
+            "sp:slot": "conf_level",
+            "sp:value": "95"
+          }
+        ]
+      },
+      {
+        "@id": "#p7",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_COVARIATE_BASELINE",
+        "sp:role": "covariate",
+        "sp:binding": [
+          {
+            "sp:slot": "parameter",
+            "@id": "ncit:C168804",
+            "rdfs:label": "ADAS-Cog(11)",
+            "sp:render": "label"
+          }
+        ]
+      }
+    ],
+    "sp:resolvesTo": [
+      {
+        "@value": "Change from baseline in Alzheimer's Disease Assessment Scale - Cognitive Subscale (11 items) (ADAS-Cog(11)) at Week 16 in the efficacy (intent-to-treat) population comparing treatment groups using ANCOVA with 95% confidence intervals adjusting for baseline ADAS-Cog(11) will be assessed as a supporting analysis.",
+        "@language": "en"
+      },
+      {
+        "@value": "La variation de l'échelle d'évaluation de la maladie d'Alzheimer – sous-échelle cognitive (11 items) (ADAS-Cog(11)) par rapport à la valeur initiale à la semaine 16 dans la population d'efficacité (intention de traiter) en comparant les groupes de traitement au moyen d'une ANCOVA avec des intervalles de confiance à 95 % avec ajustement sur la valeur initiale du score ADAS-Cog(11) sera évaluée comme une analyse complémentaire.",
+        "@language": "fr"
+      },
+      {
+        "@value": "Die Veränderung von Alzheimer's Disease Assessment Scale – kognitive Subskala (11 Items) (ADAS-Cog(11)) gegenüber dem Ausgangswert in Woche 16 in der Wirksamkeitspopulation (Intention-to-Treat) wird im Vergleich der Behandlungsgruppen mittels ANCOVA mit 95%-Konfidenzintervallen adjustiert für den Ausgangswert von ADAS-Cog(11) als unterstützende Analyse untersucht.",
+        "@language": "de"
+      }
+    ]
+  },
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/endpoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.CHG",
+      "label": "Change from Baseline",
+      "iri": "acdc:dc/ChangeFromBaseline",
+      "iri_status": "illustrative",
+      "note": "Derived analysis value: post-baseline value minus baseline value. Produced by library derivation T.ChangeFromBaseline."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "CHG",
+      "label": "Change from Baseline",
+      "dataStructure": "BDS",
+      "note": "BDS analysis-value variable, ADaMIG v1.3."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADQSADAS.CHG",
+      "label": "CHG in ADQSADAS",
+      "whereClause": "PARAMCD = 'ACTOT' AND AVISITN = 16",
+      "note": "ADAS-Cog(11), Week 16 record."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADQSADAS",
+      "label": "ADaM ADAS-Cog analysis dataset",
+      "file": "adqsadas.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ],
+      "note": "One record per subject per parameter per analysis visit."
+    }
+  ],
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/covariate": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.BASE",
+      "label": "Baseline Value",
+      "iri": "acdc:dc/BaselineValue",
+      "iri_status": "illustrative",
+      "note": "Reference value at the baseline visit. Produced by library derivation T.BaselineSelection."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "BASE",
+      "label": "Baseline Value",
+      "dataStructure": "BDS"
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADQSADAS.BASE",
+      "label": "BASE in ADQSADAS",
+      "whereClause": "PARAMCD = 'ACTOT'",
+      "note": "Baseline ADAS-Cog(11)."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADQSADAS",
+      "label": "ADaM ADAS-Cog analysis dataset",
+      "file": "adqsadas.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/timepoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.AVISIT",
+      "label": "Analysis Visit",
+      "iri": "acdc:dc/AnalysisVisit",
+      "iri_status": "illustrative"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "AVISIT",
+      "label": "Analysis Visit",
+      "dataStructure": "BDS",
+      "note": "Paired with numeric AVISITN for sorting."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADQSADAS.AVISIT",
+      "label": "AVISIT in ADQSADAS",
+      "whereClause": "AVISITN = 16",
+      "note": "Decodes to 'Week 16'."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADQSADAS",
+      "label": "ADaM ADAS-Cog analysis dataset",
+      "file": "adqsadas.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD",
+        "AVISIT"
+      ]
+    }
+  ],
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/grouping": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TRT",
+      "label": "Planned Treatment",
+      "iri": "acdc:dc/PlannedTreatment",
+      "iri_status": "illustrative",
+      "usdm": "usdm:StudyArm"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "TRTP",
+      "label": "Planned Treatment",
+      "dataStructure": "ADSL",
+      "note": "Subject-level treatment assignment."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.TRTP",
+      "label": "TRTP in ADSL",
+      "note": "Placebo / Xanomeline Low Dose / Xanomeline High Dose."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ],
+      "note": "One record per subject."
+    }
+  ],
+  "CDISCPILOT01/AC.SUPP.ADASCOG.WK16/trace/population": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.POP",
+      "label": "Analysis Population",
+      "iri": "acdc:dc/AnalysisPopulation",
+      "iri_status": "illustrative",
+      "usdm": "usdm:AnalysisPopulation"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "ITTFL",
+      "label": "Population Flag",
+      "dataStructure": "ADSL",
+      "note": "Population indicator variable."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.ITTFL",
+      "label": "ITTFL in ADSL",
+      "whereClause": "ITTFL = 'Y'",
+      "note": "Subjects in the efficacy (intent-to-treat) analysis set."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ]
+    }
+  ],
+  "PRE0102/AC.PRIMARY.PFS/sentence/en": "Time to disease progression or death (PFS) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as the primary analysis.",
+  "PRE0102/AC.PRIMARY.PFS/sentence/fr": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme analyse principale.",
+  "PRE0102/AC.PRIMARY.PFS/sentence/de": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als primäre Analyse untersucht.",
+  "PRE0102/AC.PRIMARY.PFS/modelView": {
+    "instance": "AC.PRIMARY.PFS",
+    "iri": "acdc:instance/PRE0102-AC-PRIMARY-PFS",
+    "template": {
+      "conceptId": "T.PFS_KaplanMeier",
+      "label": "Time-to-Event Kaplan-Meier Summary",
+      "transformationType": "analysis",
+      "copiedFrom": "Transformation Library v0.7 (methods_02)"
+    },
+    "usesMethod": {
+      "conceptId": "M.KaplanMeier",
+      "label": "Kaplan-Meier",
+      "iri": "acdc:method/KaplanMeier",
+      "ars": "ars:method/MTH-KM-TTE",
+      "genericExpression": "Surv(<time>, <event>) ~ <fixed_effect>?"
+    },
+    "configurationValues": [
+      {
+        "configurationName": "conf_type",
+        "value": "log-log",
+        "from": "template"
+      },
+      {
+        "configurationName": "alpha",
+        "value": "0.1",
+        "from": "SP_CONFIDENCE_LEVEL"
+      }
+    ],
+    "sliceKeys": [
+      {
+        "dimension": "EventDimension",
+        "source": "event",
+        "value": {
+          "concept": "EVENT.PFS",
+          "label": "PFS",
+          "iri": "ncit:C18215"
+        }
+      },
+      {
+        "dimension": "Population",
+        "source": "population",
+        "value": {
+          "concept": "POP.EVAL_EFFICACY",
+          "label": "eligible, treated",
+          "iri": "usdm:AnalysisPopulation/PRE0102-POP-EFF"
+        }
+      }
+    ],
+    "slices": [
+      {
+        "name": "endpoint",
+        "constraints": [
+          {
+            "dimension": "EventDimension",
+            "value": "PFS"
+          },
+          {
+            "dimension": "Population",
+            "value": "eligible, treated"
+          }
+        ]
+      }
+    ],
+    "outputMeasures": [
+      {
+        "output": "median_survival",
+        "concept": "MedianSurvival"
+      },
+      {
+        "output": "survival_table",
+        "concept": "SurvivalFunction"
+      },
+      {
+        "output": "event_summary",
+        "concept": "EventSummary"
+      },
+      {
+        "output": "landmark_estimates",
+        "concept": "LandmarkEstimate"
+      }
+    ],
+    "resolvedExpression": "Surv(AVAL, 1-CNSR) ~ TRTP",
+    "usdmObjective": {
+      "iri": "usdm:Objective/PRE0102-OBJ-PRIMARY-1",
+      "iri_status": "illustrative",
+      "text": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "arsAnalysis": {
+      "iri": "ars:analysis/PRE0102-AN-7.07.02-PFS",
+      "iri_status": "illustrative"
+    },
+    "validSmartPhrases": [
+      "SP_TTE_ENDPOINT",
+      "SP_POPULATION",
+      "SP_GROUPING",
+      "SP_METHOD_KM",
+      "SP_CONFIDENCE_LEVEL",
+      "SP_STRATIFICATION"
+    ]
+  },
+  "PRE0102/AC.PRIMARY.PFS/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.PRIMARY.PFS\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.PFS\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.EVAL_EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n</acdc:macro>",
+  "PRE0102/AC.PRIMARY.PFS/jsonld": {
+    "@context": {
+      "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "acdc": "https://w3id.org/cdisc/ac-dc/",
+      "usdm": "https://ddf.cdisc.org/usdm/v4/",
+      "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
+      "stato": "http://purl.obolibrary.org/obo/",
+      "ncit": "http://purl.obolibrary.org/obo/NCIT_",
+      "qb": "http://purl.org/linked-data/cube#"
+    },
+    "@id": "acdc:instance/PRE0102-AC-PRIMARY-PFS",
+    "@type": "acdc:AnalysisConcept",
+    "rdfs:label": "Primary efficacy analysis — PFS",
+    "acdc:instantiates": {
+      "@id": "acdc:template/T.PFS_KaplanMeier"
+    },
+    "acdc:usesMethod": {
+      "@id": "ars:method/MTH-KM-TTE",
+      "rdfs:label": "Kaplan-Meier",
+      "acdc:alignedTo": {
+        "@id": "acdc:method/KaplanMeier"
+      }
+    },
+    "usdm:objective": {
+      "@id": "usdm:Objective/PRE0102-OBJ-PRIMARY-1",
+      "rdfs:comment": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "ars:analysis": {
+      "@id": "ars:analysis/PRE0102-AN-7.07.02-PFS"
+    },
+    "sp:hasPhraseInstance": [
+      {
+        "@id": "#p1",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_TTE_ENDPOINT",
+        "sp:role": "endpoint",
+        "sp:binding": [
+          {
+            "sp:slot": "event",
+            "@id": "ncit:C18215",
+            "rdfs:label": "PFS",
+            "sp:render": "name_with_label"
+          }
+        ]
+      },
+      {
+        "@id": "#p2",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_POPULATION",
+        "sp:role": "population",
+        "sp:binding": [
+          {
+            "sp:slot": "population",
+            "@id": "usdm:AnalysisPopulation/PRE0102-POP-EFF",
+            "rdfs:label": "EFF",
+            "sp:render": "name"
+          }
+        ]
+      },
+      {
+        "@id": "#p3",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_GROUPING",
+        "sp:role": "grouping",
+        "sp:binding": [
+          {
+            "sp:slot": "treatment",
+            "@id": "usdm:StudyArm/PRE0102-ARM-SET",
+            "rdfs:label": "treatment",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p4",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_METHOD_KM",
+        "sp:role": "method",
+        "sp:binding": [
+          {
+            "sp:slot": "method",
+            "@id": "ars:method/MTH-KM-TTE",
+            "acdc:alignedTo": {
+              "@id": "acdc:method/KaplanMeier"
+            }
+          }
+        ]
+      },
+      {
+        "@id": "#p5",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CONFIDENCE_LEVEL",
+        "sp:role": "method_qualifier",
+        "sp:binding": [
+          {
+            "sp:slot": "conf_level",
+            "sp:value": "90"
+          }
+        ]
+      }
+    ],
+    "sp:resolvesTo": [
+      {
+        "@value": "Time to disease progression or death (PFS) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as the primary analysis.",
+        "@language": "en"
+      },
+      {
+        "@value": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme analyse principale.",
+        "@language": "fr"
+      },
+      {
+        "@value": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als primäre Analyse untersucht.",
+        "@language": "de"
+      }
+    ]
+  },
+  "PRE0102/AC.PRIMARY.PFS/trace/endpoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TTE",
+      "label": "Time to Event",
+      "iri": "acdc:dc/TimeToEvent",
+      "iri_status": "illustrative",
+      "note": "Elapsed time from the time-origin (randomization) to the event or to censoring. Paired with an event/censoring indicator."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "AVAL",
+      "label": "Analysis Value (time to event)",
+      "dataStructure": "BDS (time-to-event)",
+      "note": "Time-to-event analysis value; CNSR carries the censoring indicator (0 = event, 1 = censored), ADaMIG v1.3."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADTTE.AVAL",
+      "label": "AVAL in ADTTE",
+      "whereClause": "PARAMCD = 'PFS'",
+      "note": "PFS record; censoring in ADTTE.CNSR."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADTTE",
+      "label": "ADaM time-to-event analysis dataset",
+      "file": "adtte.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD"
+      ],
+      "note": "One record per subject per time-to-event parameter."
+    }
+  ],
+  "PRE0102/AC.PRIMARY.PFS/trace/grouping": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TRT",
+      "label": "Planned Treatment",
+      "iri": "acdc:dc/PlannedTreatment",
+      "iri_status": "illustrative",
+      "usdm": "usdm:StudyArm"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "TRTP",
+      "label": "Planned Treatment",
+      "dataStructure": "ADSL",
+      "note": "Subject-level treatment assignment."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.TRTP",
+      "label": "TRTP in ADSL",
+      "note": "Fulvestrant + everolimus / fulvestrant + placebo."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ],
+      "note": "One record per subject."
+    }
+  ],
+  "PRE0102/AC.PRIMARY.PFS/trace/population": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.POP",
+      "label": "Analysis Population",
+      "iri": "acdc:dc/AnalysisPopulation",
+      "iri_status": "illustrative",
+      "usdm": "usdm:AnalysisPopulation"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "EFFIFL",
+      "label": "Population Flag",
+      "dataStructure": "ADSL",
+      "note": "Population indicator variable."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.EFFIFL",
+      "label": "EFFIFL in ADSL",
+      "whereClause": "EFFIFL = 'Y'",
+      "note": "Subjects in the eligible, treated analysis set."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ]
+    }
+  ],
+  "PRE0102/AC.SENS.PFS.ITT/sentence/en": "Time to disease progression or death (PFS) in the intent-to-treat population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a sensitivity analysis.",
+  "PRE0102/AC.SENS.PFS.ITT/sentence/fr": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population en intention de traiter en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme une analyse de sensibilité.",
+  "PRE0102/AC.SENS.PFS.ITT/sentence/de": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der Intention-to-Treat-Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als Sensitivitätsanalyse untersucht.",
+  "PRE0102/AC.SENS.PFS.ITT/modelView": {
+    "instance": "AC.SENS.PFS.ITT",
+    "iri": "acdc:instance/PRE0102-AC-SENS-PFS-ITT",
+    "template": {
+      "conceptId": "T.PFS_KaplanMeier",
+      "label": "Time-to-Event Kaplan-Meier Summary",
+      "transformationType": "analysis",
+      "copiedFrom": "Transformation Library v0.7 (methods_02)"
+    },
+    "usesMethod": {
+      "conceptId": "M.KaplanMeier",
+      "label": "Kaplan-Meier",
+      "iri": "acdc:method/KaplanMeier",
+      "ars": "ars:method/MTH-KM-TTE",
+      "genericExpression": "Surv(<time>, <event>) ~ <fixed_effect>?"
+    },
+    "configurationValues": [
+      {
+        "configurationName": "conf_type",
+        "value": "log-log",
+        "from": "template"
+      },
+      {
+        "configurationName": "alpha",
+        "value": "0.1",
+        "from": "SP_CONFIDENCE_LEVEL"
+      }
+    ],
+    "sliceKeys": [
+      {
+        "dimension": "EventDimension",
+        "source": "event",
+        "value": {
+          "concept": "EVENT.PFS",
+          "label": "PFS",
+          "iri": "ncit:C18215"
+        }
+      },
+      {
+        "dimension": "Population",
+        "source": "population",
+        "value": {
+          "concept": "POP.ITT",
+          "label": "intent-to-treat",
+          "iri": "usdm:AnalysisPopulation/PRE0102-POP-ITT"
+        }
+      }
+    ],
+    "slices": [
+      {
+        "name": "endpoint",
+        "constraints": [
+          {
+            "dimension": "EventDimension",
+            "value": "PFS"
+          },
+          {
+            "dimension": "Population",
+            "value": "intent-to-treat"
+          }
+        ]
+      }
+    ],
+    "outputMeasures": [
+      {
+        "output": "median_survival",
+        "concept": "MedianSurvival"
+      },
+      {
+        "output": "survival_table",
+        "concept": "SurvivalFunction"
+      },
+      {
+        "output": "event_summary",
+        "concept": "EventSummary"
+      },
+      {
+        "output": "landmark_estimates",
+        "concept": "LandmarkEstimate"
+      }
+    ],
+    "resolvedExpression": "Surv(AVAL, 1-CNSR) ~ TRTP",
+    "usdmObjective": {
+      "iri": "usdm:Objective/PRE0102-OBJ-PRIMARY-1",
+      "iri_status": "illustrative",
+      "text": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "arsAnalysis": {
+      "iri": "ars:analysis/PRE0102-AN-7.07.02-PFS-ITT",
+      "iri_status": "illustrative"
+    },
+    "validSmartPhrases": [
+      "SP_TTE_ENDPOINT",
+      "SP_POPULATION",
+      "SP_GROUPING",
+      "SP_METHOD_KM",
+      "SP_CONFIDENCE_LEVEL",
+      "SP_STRATIFICATION"
+    ]
+  },
+  "PRE0102/AC.SENS.PFS.ITT/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.SENS.PFS.ITT\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.PFS\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.ITT\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n</acdc:macro>",
+  "PRE0102/AC.SENS.PFS.ITT/jsonld": {
+    "@context": {
+      "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "acdc": "https://w3id.org/cdisc/ac-dc/",
+      "usdm": "https://ddf.cdisc.org/usdm/v4/",
+      "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
+      "stato": "http://purl.obolibrary.org/obo/",
+      "ncit": "http://purl.obolibrary.org/obo/NCIT_",
+      "qb": "http://purl.org/linked-data/cube#"
+    },
+    "@id": "acdc:instance/PRE0102-AC-SENS-PFS-ITT",
+    "@type": "acdc:AnalysisConcept",
+    "rdfs:label": "Sensitivity analysis — PFS, ITT population",
+    "acdc:instantiates": {
+      "@id": "acdc:template/T.PFS_KaplanMeier"
+    },
+    "acdc:usesMethod": {
+      "@id": "ars:method/MTH-KM-TTE",
+      "rdfs:label": "Kaplan-Meier",
+      "acdc:alignedTo": {
+        "@id": "acdc:method/KaplanMeier"
+      }
+    },
+    "usdm:objective": {
+      "@id": "usdm:Objective/PRE0102-OBJ-PRIMARY-1",
+      "rdfs:comment": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "ars:analysis": {
+      "@id": "ars:analysis/PRE0102-AN-7.07.02-PFS-ITT"
+    },
+    "sp:hasPhraseInstance": [
+      {
+        "@id": "#p1",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_TTE_ENDPOINT",
+        "sp:role": "endpoint",
+        "sp:binding": [
+          {
+            "sp:slot": "event",
+            "@id": "ncit:C18215",
+            "rdfs:label": "PFS",
+            "sp:render": "name_with_label"
+          }
+        ]
+      },
+      {
+        "@id": "#p2",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_POPULATION",
+        "sp:role": "population",
+        "sp:binding": [
+          {
+            "sp:slot": "population",
+            "@id": "usdm:AnalysisPopulation/PRE0102-POP-ITT",
+            "rdfs:label": "ITT",
+            "sp:render": "name"
+          }
+        ]
+      },
+      {
+        "@id": "#p3",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_GROUPING",
+        "sp:role": "grouping",
+        "sp:binding": [
+          {
+            "sp:slot": "treatment",
+            "@id": "usdm:StudyArm/PRE0102-ARM-SET",
+            "rdfs:label": "treatment",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p4",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_METHOD_KM",
+        "sp:role": "method",
+        "sp:binding": [
+          {
+            "sp:slot": "method",
+            "@id": "ars:method/MTH-KM-TTE",
+            "acdc:alignedTo": {
+              "@id": "acdc:method/KaplanMeier"
+            }
+          }
+        ]
+      },
+      {
+        "@id": "#p5",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CONFIDENCE_LEVEL",
+        "sp:role": "method_qualifier",
+        "sp:binding": [
+          {
+            "sp:slot": "conf_level",
+            "sp:value": "90"
+          }
+        ]
+      }
+    ],
+    "sp:resolvesTo": [
+      {
+        "@value": "Time to disease progression or death (PFS) in the intent-to-treat population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a sensitivity analysis.",
+        "@language": "en"
+      },
+      {
+        "@value": "Le délai jusqu'à la progression de la maladie ou le décès (SSP) dans la population en intention de traiter en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme une analyse de sensibilité.",
+        "@language": "fr"
+      },
+      {
+        "@value": "Die Zeit bis zur Krankheitsprogression oder zum Tod (PFS) in der Intention-to-Treat-Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als Sensitivitätsanalyse untersucht.",
+        "@language": "de"
+      }
+    ]
+  },
+  "PRE0102/AC.SENS.PFS.ITT/trace/endpoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TTE",
+      "label": "Time to Event",
+      "iri": "acdc:dc/TimeToEvent",
+      "iri_status": "illustrative",
+      "note": "Elapsed time from the time-origin (randomization) to the event or to censoring. Paired with an event/censoring indicator."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "AVAL",
+      "label": "Analysis Value (time to event)",
+      "dataStructure": "BDS (time-to-event)",
+      "note": "Time-to-event analysis value; CNSR carries the censoring indicator (0 = event, 1 = censored), ADaMIG v1.3."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADTTE.AVAL",
+      "label": "AVAL in ADTTE",
+      "whereClause": "PARAMCD = 'PFS'",
+      "note": "PFS record; censoring in ADTTE.CNSR."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADTTE",
+      "label": "ADaM time-to-event analysis dataset",
+      "file": "adtte.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD"
+      ],
+      "note": "One record per subject per time-to-event parameter."
+    }
+  ],
+  "PRE0102/AC.SENS.PFS.ITT/trace/grouping": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TRT",
+      "label": "Planned Treatment",
+      "iri": "acdc:dc/PlannedTreatment",
+      "iri_status": "illustrative",
+      "usdm": "usdm:StudyArm"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "TRTP",
+      "label": "Planned Treatment",
+      "dataStructure": "ADSL",
+      "note": "Subject-level treatment assignment."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.TRTP",
+      "label": "TRTP in ADSL",
+      "note": "Fulvestrant + everolimus / fulvestrant + placebo."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ],
+      "note": "One record per subject."
+    }
+  ],
+  "PRE0102/AC.SENS.PFS.ITT/trace/population": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.POP",
+      "label": "Analysis Population",
+      "iri": "acdc:dc/AnalysisPopulation",
+      "iri_status": "illustrative",
+      "usdm": "usdm:AnalysisPopulation"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "ITTFL",
+      "label": "Population Flag",
+      "dataStructure": "ADSL",
+      "note": "Population indicator variable."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.ITTFL",
+      "label": "ITTFL in ADSL",
+      "whereClause": "ITTFL = 'Y'",
+      "note": "Subjects in the intent-to-treat analysis set."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ]
+    }
+  ],
+  "PRE0102/AC.SEC.OS/sentence/en": "Time to death from any cause (OS) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a secondary analysis.",
+  "PRE0102/AC.SEC.OS/sentence/fr": "Le délai jusqu'à le décès, toutes causes confondues (SG) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
+  "PRE0102/AC.SEC.OS/sentence/de": "Die Zeit bis zum Tod jeglicher Ursache (OS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
+  "PRE0102/AC.SEC.OS/modelView": {
+    "instance": "AC.SEC.OS",
+    "iri": "acdc:instance/PRE0102-AC-SEC-OS",
+    "template": {
+      "conceptId": "T.PFS_KaplanMeier",
+      "label": "Time-to-Event Kaplan-Meier Summary",
+      "transformationType": "analysis",
+      "copiedFrom": "Transformation Library v0.7 (methods_02)"
+    },
+    "usesMethod": {
+      "conceptId": "M.KaplanMeier",
+      "label": "Kaplan-Meier",
+      "iri": "acdc:method/KaplanMeier",
+      "ars": "ars:method/MTH-KM-TTE",
+      "genericExpression": "Surv(<time>, <event>) ~ <fixed_effect>?"
+    },
+    "configurationValues": [
+      {
+        "configurationName": "conf_type",
+        "value": "log-log",
+        "from": "template"
+      },
+      {
+        "configurationName": "alpha",
+        "value": "0.1",
+        "from": "SP_CONFIDENCE_LEVEL"
+      }
+    ],
+    "sliceKeys": [
+      {
+        "dimension": "EventDimension",
+        "source": "event",
+        "value": {
+          "concept": "EVENT.OS",
+          "label": "OS",
+          "iri": "ncit:C16952"
+        }
+      },
+      {
+        "dimension": "Population",
+        "source": "population",
+        "value": {
+          "concept": "POP.EVAL_EFFICACY",
+          "label": "eligible, treated",
+          "iri": "usdm:AnalysisPopulation/PRE0102-POP-EFF"
+        }
+      }
+    ],
+    "slices": [
+      {
+        "name": "endpoint",
+        "constraints": [
+          {
+            "dimension": "EventDimension",
+            "value": "OS"
+          },
+          {
+            "dimension": "Population",
+            "value": "eligible, treated"
+          }
+        ]
+      }
+    ],
+    "outputMeasures": [
+      {
+        "output": "median_survival",
+        "concept": "MedianSurvival"
+      },
+      {
+        "output": "survival_table",
+        "concept": "SurvivalFunction"
+      },
+      {
+        "output": "event_summary",
+        "concept": "EventSummary"
+      },
+      {
+        "output": "landmark_estimates",
+        "concept": "LandmarkEstimate"
+      }
+    ],
+    "resolvedExpression": "Surv(AVAL, 1-CNSR) ~ TRTP",
+    "usdmObjective": {
+      "iri": "usdm:Objective/PRE0102-OBJ-SECONDARY-1",
+      "iri_status": "illustrative",
+      "text": "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "arsAnalysis": {
+      "iri": "ars:analysis/PRE0102-AN-7.07.02-OS",
+      "iri_status": "illustrative"
+    },
+    "validSmartPhrases": [
+      "SP_TTE_ENDPOINT",
+      "SP_POPULATION",
+      "SP_GROUPING",
+      "SP_METHOD_KM",
+      "SP_CONFIDENCE_LEVEL",
+      "SP_STRATIFICATION"
+    ]
+  },
+  "PRE0102/AC.SEC.OS/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.SEC.OS\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.OS\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.EVAL_EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n</acdc:macro>",
+  "PRE0102/AC.SEC.OS/jsonld": {
+    "@context": {
+      "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "acdc": "https://w3id.org/cdisc/ac-dc/",
+      "usdm": "https://ddf.cdisc.org/usdm/v4/",
+      "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
+      "stato": "http://purl.obolibrary.org/obo/",
+      "ncit": "http://purl.obolibrary.org/obo/NCIT_",
+      "qb": "http://purl.org/linked-data/cube#"
+    },
+    "@id": "acdc:instance/PRE0102-AC-SEC-OS",
+    "@type": "acdc:AnalysisConcept",
+    "rdfs:label": "Secondary analysis — overall survival",
+    "acdc:instantiates": {
+      "@id": "acdc:template/T.PFS_KaplanMeier"
+    },
+    "acdc:usesMethod": {
+      "@id": "ars:method/MTH-KM-TTE",
+      "rdfs:label": "Kaplan-Meier",
+      "acdc:alignedTo": {
+        "@id": "acdc:method/KaplanMeier"
+      }
+    },
+    "usdm:objective": {
+      "@id": "usdm:Objective/PRE0102-OBJ-SECONDARY-1",
+      "rdfs:comment": "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "ars:analysis": {
+      "@id": "ars:analysis/PRE0102-AN-7.07.02-OS"
+    },
+    "sp:hasPhraseInstance": [
+      {
+        "@id": "#p1",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_TTE_ENDPOINT",
+        "sp:role": "endpoint",
+        "sp:binding": [
+          {
+            "sp:slot": "event",
+            "@id": "ncit:C16952",
+            "rdfs:label": "OS",
+            "sp:render": "name_with_label"
+          }
+        ]
+      },
+      {
+        "@id": "#p2",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_POPULATION",
+        "sp:role": "population",
+        "sp:binding": [
+          {
+            "sp:slot": "population",
+            "@id": "usdm:AnalysisPopulation/PRE0102-POP-EFF",
+            "rdfs:label": "EFF",
+            "sp:render": "name"
+          }
+        ]
+      },
+      {
+        "@id": "#p3",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_GROUPING",
+        "sp:role": "grouping",
+        "sp:binding": [
+          {
+            "sp:slot": "treatment",
+            "@id": "usdm:StudyArm/PRE0102-ARM-SET",
+            "rdfs:label": "treatment",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p4",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_METHOD_KM",
+        "sp:role": "method",
+        "sp:binding": [
+          {
+            "sp:slot": "method",
+            "@id": "ars:method/MTH-KM-TTE",
+            "acdc:alignedTo": {
+              "@id": "acdc:method/KaplanMeier"
+            }
+          }
+        ]
+      },
+      {
+        "@id": "#p5",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CONFIDENCE_LEVEL",
+        "sp:role": "method_qualifier",
+        "sp:binding": [
+          {
+            "sp:slot": "conf_level",
+            "sp:value": "90"
+          }
+        ]
+      }
+    ],
+    "sp:resolvesTo": [
+      {
+        "@value": "Time to death from any cause (OS) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a secondary analysis.",
+        "@language": "en"
+      },
+      {
+        "@value": "Le délai jusqu'à le décès, toutes causes confondues (SG) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
+        "@language": "fr"
+      },
+      {
+        "@value": "Die Zeit bis zum Tod jeglicher Ursache (OS) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
+        "@language": "de"
+      }
+    ]
+  },
+  "PRE0102/AC.SEC.OS/trace/endpoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TTE",
+      "label": "Time to Event",
+      "iri": "acdc:dc/TimeToEvent",
+      "iri_status": "illustrative",
+      "note": "Elapsed time from the time-origin (randomization) to the event or to censoring. Paired with an event/censoring indicator."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "AVAL",
+      "label": "Analysis Value (time to event)",
+      "dataStructure": "BDS (time-to-event)",
+      "note": "Time-to-event analysis value; CNSR carries the censoring indicator (0 = event, 1 = censored), ADaMIG v1.3."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADTTE.AVAL",
+      "label": "AVAL in ADTTE",
+      "whereClause": "PARAMCD = 'OS'",
+      "note": "OS record; censoring in ADTTE.CNSR."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADTTE",
+      "label": "ADaM time-to-event analysis dataset",
+      "file": "adtte.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD"
+      ],
+      "note": "One record per subject per time-to-event parameter."
+    }
+  ],
+  "PRE0102/AC.SEC.OS/trace/grouping": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TRT",
+      "label": "Planned Treatment",
+      "iri": "acdc:dc/PlannedTreatment",
+      "iri_status": "illustrative",
+      "usdm": "usdm:StudyArm"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "TRTP",
+      "label": "Planned Treatment",
+      "dataStructure": "ADSL",
+      "note": "Subject-level treatment assignment."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.TRTP",
+      "label": "TRTP in ADSL",
+      "note": "Fulvestrant + everolimus / fulvestrant + placebo."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ],
+      "note": "One record per subject."
+    }
+  ],
+  "PRE0102/AC.SEC.OS/trace/population": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.POP",
+      "label": "Analysis Population",
+      "iri": "acdc:dc/AnalysisPopulation",
+      "iri_status": "illustrative",
+      "usdm": "usdm:AnalysisPopulation"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "EFFIFL",
+      "label": "Population Flag",
+      "dataStructure": "ADSL",
+      "note": "Population indicator variable."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.EFFIFL",
+      "label": "EFFIFL in ADSL",
+      "whereClause": "EFFIFL = 'Y'",
+      "note": "Subjects in the eligible, treated analysis set."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ]
+    }
+  ],
+  "PRE0102/AC.SEC.TTP/sentence/en": "Time to disease progression (TTP) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a secondary analysis.",
+  "PRE0102/AC.SEC.TTP/sentence/fr": "Le délai jusqu'à la progression de la maladie (DJP) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
+  "PRE0102/AC.SEC.TTP/sentence/de": "Die Zeit bis zur Krankheitsprogression (TTP) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
+  "PRE0102/AC.SEC.TTP/modelView": {
+    "instance": "AC.SEC.TTP",
+    "iri": "acdc:instance/PRE0102-AC-SEC-TTP",
+    "template": {
+      "conceptId": "T.PFS_KaplanMeier",
+      "label": "Time-to-Event Kaplan-Meier Summary",
+      "transformationType": "analysis",
+      "copiedFrom": "Transformation Library v0.7 (methods_02)"
+    },
+    "usesMethod": {
+      "conceptId": "M.KaplanMeier",
+      "label": "Kaplan-Meier",
+      "iri": "acdc:method/KaplanMeier",
+      "ars": "ars:method/MTH-KM-TTE",
+      "genericExpression": "Surv(<time>, <event>) ~ <fixed_effect>?"
+    },
+    "configurationValues": [
+      {
+        "configurationName": "conf_type",
+        "value": "log-log",
+        "from": "template"
+      },
+      {
+        "configurationName": "alpha",
+        "value": "0.1",
+        "from": "SP_CONFIDENCE_LEVEL"
+      }
+    ],
+    "sliceKeys": [
+      {
+        "dimension": "EventDimension",
+        "source": "event",
+        "value": {
+          "concept": "EVENT.TTP",
+          "label": "TTP",
+          "iri": "acdc:event/TimeToProgression"
+        }
+      },
+      {
+        "dimension": "Population",
+        "source": "population",
+        "value": {
+          "concept": "POP.EVAL_EFFICACY",
+          "label": "eligible, treated",
+          "iri": "usdm:AnalysisPopulation/PRE0102-POP-EFF"
+        }
+      }
+    ],
+    "slices": [
+      {
+        "name": "endpoint",
+        "constraints": [
+          {
+            "dimension": "EventDimension",
+            "value": "TTP"
+          },
+          {
+            "dimension": "Population",
+            "value": "eligible, treated"
+          }
+        ]
+      }
+    ],
+    "outputMeasures": [
+      {
+        "output": "median_survival",
+        "concept": "MedianSurvival"
+      },
+      {
+        "output": "survival_table",
+        "concept": "SurvivalFunction"
+      },
+      {
+        "output": "event_summary",
+        "concept": "EventSummary"
+      },
+      {
+        "output": "landmark_estimates",
+        "concept": "LandmarkEstimate"
+      }
+    ],
+    "resolvedExpression": "Surv(AVAL, 1-CNSR) ~ TRTP",
+    "usdmObjective": {
+      "iri": "usdm:Objective/PRE0102-OBJ-SECONDARY-1",
+      "iri_status": "illustrative",
+      "text": "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "arsAnalysis": {
+      "iri": "ars:analysis/PRE0102-AN-7.07.02-TTP",
+      "iri_status": "illustrative"
+    },
+    "validSmartPhrases": [
+      "SP_TTE_ENDPOINT",
+      "SP_POPULATION",
+      "SP_GROUPING",
+      "SP_METHOD_KM",
+      "SP_CONFIDENCE_LEVEL",
+      "SP_STRATIFICATION"
+    ]
+  },
+  "PRE0102/AC.SEC.TTP/macro": "<acdc:macro id=\"analysis\" ref=\"T.PFS_KaplanMeier\" instance=\"AC.SEC.TTP\">\n  <acdc:macro id=\"phrase\" ref=\"SP_TTE_ENDPOINT\" instance=\"p1\" event=\"EVENT.TTP\" render=\"event:name_with_label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_POPULATION\" instance=\"p2\" population=\"POP.EVAL_EFFICACY\" render=\"population:name\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_GROUPING\" instance=\"p3\" treatment=\"TRT.PRE0102\" render=\"treatment:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_METHOD_KM\" instance=\"p4\" method=\"M.KaplanMeier\" render=\"method:label\"/>\n  <acdc:macro id=\"phrase\" ref=\"SP_CONFIDENCE_LEVEL\" instance=\"p5\" conf_level=\"90\"/>\n</acdc:macro>",
+  "PRE0102/AC.SEC.TTP/jsonld": {
+    "@context": {
+      "sp": "https://w3id.org/cdisc/ac-dc/smartphrase/",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "acdc": "https://w3id.org/cdisc/ac-dc/",
+      "usdm": "https://ddf.cdisc.org/usdm/v4/",
+      "ars": "https://www.cdisc.org/standards/foundational/ars/1-0/",
+      "stato": "http://purl.obolibrary.org/obo/",
+      "ncit": "http://purl.obolibrary.org/obo/NCIT_",
+      "qb": "http://purl.org/linked-data/cube#"
+    },
+    "@id": "acdc:instance/PRE0102-AC-SEC-TTP",
+    "@type": "acdc:AnalysisConcept",
+    "rdfs:label": "Secondary analysis — time to progression",
+    "acdc:instantiates": {
+      "@id": "acdc:template/T.PFS_KaplanMeier"
+    },
+    "acdc:usesMethod": {
+      "@id": "ars:method/MTH-KM-TTE",
+      "rdfs:label": "Kaplan-Meier",
+      "acdc:alignedTo": {
+        "@id": "acdc:method/KaplanMeier"
+      }
+    },
+    "usdm:objective": {
+      "@id": "usdm:Objective/PRE0102-OBJ-SECONDARY-1",
+      "rdfs:comment": "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+    },
+    "ars:analysis": {
+      "@id": "ars:analysis/PRE0102-AN-7.07.02-TTP"
+    },
+    "sp:hasPhraseInstance": [
+      {
+        "@id": "#p1",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_TTE_ENDPOINT",
+        "sp:role": "endpoint",
+        "sp:binding": [
+          {
+            "sp:slot": "event",
+            "@id": "acdc:event/TimeToProgression",
+            "rdfs:label": "TTP",
+            "sp:render": "name_with_label"
+          }
+        ]
+      },
+      {
+        "@id": "#p2",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_POPULATION",
+        "sp:role": "population",
+        "sp:binding": [
+          {
+            "sp:slot": "population",
+            "@id": "usdm:AnalysisPopulation/PRE0102-POP-EFF",
+            "rdfs:label": "EFF",
+            "sp:render": "name"
+          }
+        ]
+      },
+      {
+        "@id": "#p3",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_GROUPING",
+        "sp:role": "grouping",
+        "sp:binding": [
+          {
+            "sp:slot": "treatment",
+            "@id": "usdm:StudyArm/PRE0102-ARM-SET",
+            "rdfs:label": "treatment",
+            "sp:render": "label"
+          }
+        ]
+      },
+      {
+        "@id": "#p4",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_METHOD_KM",
+        "sp:role": "method",
+        "sp:binding": [
+          {
+            "sp:slot": "method",
+            "@id": "ars:method/MTH-KM-TTE",
+            "acdc:alignedTo": {
+              "@id": "acdc:method/KaplanMeier"
+            }
+          }
+        ]
+      },
+      {
+        "@id": "#p5",
+        "@type": "acdc:SmartPhraseInstance",
+        "sp:phrase": "SP_CONFIDENCE_LEVEL",
+        "sp:role": "method_qualifier",
+        "sp:binding": [
+          {
+            "sp:slot": "conf_level",
+            "sp:value": "90"
+          }
+        ]
+      }
+    ],
+    "sp:resolvesTo": [
+      {
+        "@value": "Time to disease progression (TTP) in the eligible, treated population comparing treatment groups using Kaplan-Meier estimation with 90% confidence intervals will be assessed as a secondary analysis.",
+        "@language": "en"
+      },
+      {
+        "@value": "Le délai jusqu'à la progression de la maladie (DJP) dans la population éligible et traitée en comparant les groupes de traitement au moyen de l'estimation de Kaplan-Meier avec des intervalles de confiance à 90 % sera évaluée comme une analyse secondaire.",
+        "@language": "fr"
+      },
+      {
+        "@value": "Die Zeit bis zur Krankheitsprogression (TTP) in der auswertbaren, behandelten Population wird im Vergleich der Behandlungsgruppen mittels Kaplan-Meier-Schätzung mit 90%-Konfidenzintervallen als sekundäre Analyse untersucht.",
+        "@language": "de"
+      }
+    ]
+  },
+  "PRE0102/AC.SEC.TTP/trace/endpoint": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TTE",
+      "label": "Time to Event",
+      "iri": "acdc:dc/TimeToEvent",
+      "iri_status": "illustrative",
+      "note": "Elapsed time from the time-origin (randomization) to the event or to censoring. Paired with an event/censoring indicator."
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "AVAL",
+      "label": "Analysis Value (time to event)",
+      "dataStructure": "BDS (time-to-event)",
+      "note": "Time-to-event analysis value; CNSR carries the censoring indicator (0 = event, 1 = censored), ADaMIG v1.3."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADTTE.AVAL",
+      "label": "AVAL in ADTTE",
+      "whereClause": "PARAMCD = 'TTP'",
+      "note": "TTP record; censoring in ADTTE.CNSR."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADTTE",
+      "label": "ADaM time-to-event analysis dataset",
+      "file": "adtte.xpt",
+      "keys": [
+        "USUBJID",
+        "PARAMCD"
+      ],
+      "note": "One record per subject per time-to-event parameter."
+    }
+  ],
+  "PRE0102/AC.SEC.TTP/trace/grouping": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.TRT",
+      "label": "Planned Treatment",
+      "iri": "acdc:dc/PlannedTreatment",
+      "iri_status": "illustrative",
+      "usdm": "usdm:StudyArm"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "TRTP",
+      "label": "Planned Treatment",
+      "dataStructure": "ADSL",
+      "note": "Subject-level treatment assignment."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.TRTP",
+      "label": "TRTP in ADSL",
+      "note": "Fulvestrant + everolimus / fulvestrant + placebo."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ],
+      "note": "One record per subject."
+    }
+  ],
+  "PRE0102/AC.SEC.TTP/trace/population": [
+    {
+      "tier": "DataConcept",
+      "id": "DC.POP",
+      "label": "Analysis Population",
+      "iri": "acdc:dc/AnalysisPopulation",
+      "iri_status": "illustrative",
+      "usdm": "usdm:AnalysisPopulation"
+    },
+    {
+      "tier": "ADaM Class Variable",
+      "id": "EFFIFL",
+      "label": "Population Flag",
+      "dataStructure": "ADSL",
+      "note": "Population indicator variable."
+    },
+    {
+      "tier": "Study variable",
+      "id": "ADSL.EFFIFL",
+      "label": "EFFIFL in ADSL",
+      "whereClause": "EFFIFL = 'Y'",
+      "note": "Subjects in the eligible, treated analysis set."
+    },
+    {
+      "tier": "Physical dataset",
+      "id": "ADSL",
+      "label": "Subject-Level Analysis Dataset",
+      "file": "adsl.xpt",
+      "keys": [
+        "USUBJID"
+      ]
+    }
+  ]
+}
