@@ -27,12 +27,21 @@ TOKEN = re.compile(r"\{([a-zA-Z_][a-zA-Z0-9_]*)\}")
 
 def main() -> int:
     lib = json.loads(LIB.read_text(encoding="utf-8"))
-    phrases = lib["smartPhrases"]
-    defined = {p["oid"] for p in phrases}
+    phrases = lib.get("smartPhrases")
+    if not isinstance(phrases, list):
+        print("FAIL — 1 problem(s):")
+        print("  - smartPhrases is missing or not an array")
+        return 1
+
+    defined = set()
     failures = []
 
-    for p in phrases:
-        oid = p["oid"]
+    for i, p in enumerate(phrases):
+        oid = p.get("oid")
+        if oid is None:
+            failures.append(f"phrase #{i}: missing oid")
+            continue
+        defined.add(oid)
 
         if "placeholders" not in p:
             failures.append(f"{oid}: missing placeholders[]")
@@ -40,11 +49,16 @@ def main() -> int:
         if "anchors" not in p:
             failures.append(f"{oid}: missing anchors{{}}")
 
-        names = {ph["name"] for ph in p["placeholders"]}
+        placeholders = p.get("placeholders", [])
+        if not isinstance(placeholders, list):
+            failures.append(f"{oid}: placeholders is not an array")
+            continue
+
+        names = {ph.get("name") for ph in placeholders if ph.get("name") is not None}
         # A method_ref slot is new in the v07 shape; the old engine never
         # modelled it, so it is deliberately absent from `configurations`.
-        non_method = {ph["name"] for ph in p["placeholders"]
-                      if ph.get("kind") != "method_ref"}
+        non_method = {ph.get("name") for ph in placeholders
+                      if ph.get("name") is not None and ph.get("kind") != "method_ref"}
         configured = set(p.get("configurations", []))
         if non_method != configured:
             failures.append(
@@ -53,11 +67,13 @@ def main() -> int:
 
         # The old engine renders `phrase_template` and substitutes only
         # `configurations`. Any other token would reach the UI literally.
-        for tok in TOKEN.findall(p["phrase_template"]):
-            if tok not in configured:
-                failures.append(
-                    f"{oid}: phrase_template token {{{tok}}} is not in "
-                    f"configurations — the existing engine would render it literally")
+        phrase_template = p.get("phrase_template")
+        if phrase_template is not None:
+            for tok in TOKEN.findall(phrase_template):
+                if tok not in configured:
+                    failures.append(
+                        f"{oid}: phrase_template token {{{tok}}} is not in "
+                        f"configurations — the existing engine would render it literally")
 
         # The ported engine renders the slotted template against placeholders.
         slotted = p.get("phrase_template_slotted")
@@ -68,13 +84,18 @@ def main() -> int:
                         f"{oid}: phrase_template_slotted token {{{tok}}} "
                         f"is not a placeholder name")
 
-    transformations = (lib["derivationTransformations"]
-                       + lib["analysisTransformations"])
-    for t in transformations:
-        for oid in t.get("validSmartPhrases", []):
-            if oid not in defined:
-                failures.append(
-                    f"{t['oid']}: validSmartPhrases references undefined phrase {oid}")
+    deriv_transforms = lib.get("derivationTransformations", [])
+    analysis_transforms = lib.get("analysisTransformations", [])
+    if not isinstance(deriv_transforms, list) or not isinstance(analysis_transforms, list):
+        failures.append("derivationTransformations or analysisTransformations is not an array")
+    else:
+        transformations = deriv_transforms + analysis_transforms
+        for t in transformations:
+            t_oid = t.get("oid", "<unnamed transformation>")
+            for oid in t.get("validSmartPhrases", []):
+                if oid not in defined:
+                    failures.append(
+                        f"{t_oid}: validSmartPhrases references undefined phrase {oid}")
 
     if failures:
         print(f"FAIL — {len(failures)} problem(s):")
