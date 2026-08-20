@@ -14,7 +14,6 @@ export function renderStudySelect(container) {
 
     <div class="study-grid">
       ${studies.map((study, i) => renderStudyCard(study, i)).join('')}
-      ${renderComingSoonCard()}
     </div>
   `;
 
@@ -69,30 +68,6 @@ function renderStudyCard(study, index) {
           <div class="stat-value">${totalEndpoints}</div>
           <div class="stat-label">Endpoints</div>
         </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderComingSoonCard() {
-  return `
-    <div class="card coming-soon">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Breast Cancer Study</div>
-          <div class="card-subtitle">Oncology USDM study</div>
-        </div>
-      </div>
-      <div class="study-card-meta">
-        <span class="badge badge-blue">TBD</span>
-      </div>
-      <p style="margin-top:12px; font-size:12px; color:var(--cdisc-text-secondary);">
-        A breast cancer study will be available in a future update.
-      </p>
-      <div class="study-card-stats">
-        <div class="stat-item"><div class="stat-value">-</div><div class="stat-label">Arms</div></div>
-        <div class="stat-item"><div class="stat-value">-</div><div class="stat-label">Objectives</div></div>
-        <div class="stat-item"><div class="stat-value">-</div><div class="stat-label">Endpoints</div></div>
       </div>
     </div>
   `;
