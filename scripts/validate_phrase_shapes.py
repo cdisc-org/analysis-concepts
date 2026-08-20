@@ -60,15 +60,19 @@ def main() -> int:
                 failures.append(f"{oid}: placeholder #{j}: missing name")
 
         names = {ph.get("name") for ph in placeholders if ph.get("name") is not None}
-        # A method_ref slot is new in the v07 shape; the old engine never
-        # modelled it, so it is deliberately absent from `configurations`.
-        non_method = {ph.get("name") for ph in placeholders
-                      if ph.get("name") is not None and ph.get("kind") != "method_ref"}
+        # `configurations` is what the OLD engine can substitute; `placeholders`
+        # is what the NEW engine knows about. Every slot the old engine fills must
+        # exist as a placeholder — but a placeholder need not appear in
+        # `configurations`. SP_IMPUTATION is the motivating case: its slot is both
+        # a configuration (the old engine renders {imputation}) and a method_ref
+        # (LOCF/BOCF/WOCF are catalogue methods). Requiring equality would force a
+        # false choice between mis-typing the slot and leaking a raw token to the UI.
         configured = set(p.get("configurations", []))
-        if non_method != configured:
+        missing_slots = configured - names
+        if missing_slots:
             failures.append(
-                f"{oid}: non-method placeholders {sorted(non_method)} "
-                f"!= configurations {sorted(configured)}")
+                f"{oid}: configurations {sorted(missing_slots)} have no matching "
+                f"placeholder — the ported engine cannot resolve them")
 
         # The old engine renders `phrase_template` and substitutes only
         # `configurations`. Any other token would reach the UI literally.
