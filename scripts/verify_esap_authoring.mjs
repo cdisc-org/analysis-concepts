@@ -64,8 +64,24 @@ check("frame text is rendered outside chips",
 check("visit renders as its label only",
   html.includes("Week 24") && !html.includes("Week 24 (Week 24)"), html);
 
-/* HTML-escaping: a label containing a bracket must not break the markup. */
-check("labels are escaped", !html.includes("<script"), "unexpected raw markup");
+/* Escaping must survive a label containing markup characters. Real study labels are tame, so
+   this needs a synthetic one — otherwise the check passes whether esc() is called or not.
+   The mutated concept must be the one this instance's visit slot actually binds: the graph
+   holds one AnalysisVisit concept per study encounter, and the first one in insertion order
+   (Screening 1) is not the one SP_TIMEPOINT's binding points at (Week 24, Encounter_11) — mutating
+   an unreferenced concept would leave the rendered sentence, and this check, unaffected
+   regardless of whether esc() runs. */
+const visitConceptId = instance.phrases
+  .map((p) => p.bindings && p.bindings.visit && p.bindings.visit.concept)
+  .find(Boolean);
+const hostileGraph = JSON.parse(JSON.stringify(context.graph));
+hostileGraph.concepts[visitConceptId].label = '<script>alert("x")</script> & "quoted"';
+const hostileCtx = { ...context, graph: hostileGraph,
+  ctx: E.ctxOf(context.lib, hostileGraph, null, null) };
+const hostileHtml = renderAuthoredSentenceHtml(hostileCtx.ctx, instance, ep.id);
+check("markup characters in a label are escaped",
+  !hostileHtml.includes("<script>") && hostileHtml.includes("&lt;script&gt;"),
+  hostileHtml.slice(0, 300));
 
 /* --- the whole section --- */
 const section = renderAuthoringSectionHtml(context, spec, ep);
@@ -73,6 +89,28 @@ check("section includes the sentence", section.includes("phrase-chip"));
 check("section shows the seeded transformation",
   section.includes("T.CFB_ANCOVA"), section.slice(0, 400));
 check("section offers to add a phrase", section.includes("data-add-phrase"));
+
+/* A spec that already carries a chosen transformation is resolved, not open. */
+const chosenSection = renderAuthoringSectionHtml(context, spec, ep);
+check("a chosen transformation is shown as resolved",
+  chosenSection.includes("sp-seed-one") && chosenSection.includes("T.CFB_ANCOVA"),
+  chosenSection.slice(0, 400));
+check("a chosen transformation is not listed as candidates",
+  !chosenSection.includes("sp-seed-many"), chosenSection.slice(0, 400));
+
+/* A chosen transformation the sentence no longer supports must say so. */
+const staleSpec = JSON.parse(JSON.stringify(spec));
+staleSpec.selectedTransformationOid = "T.OS_LogRank";
+check("a stale choice is flagged, not silently shown as resolved",
+  renderAuthoringSectionHtml(context, staleSpec, ep).includes("sp-seed-stale"),
+  renderAuthoringSectionHtml(context, staleSpec, ep).slice(0, 400));
+
+/* With no choice recorded, the candidate list stands. */
+const openSpec = JSON.parse(JSON.stringify(spec));
+openSpec.selectedTransformationOid = null;
+const openSection = renderAuthoringSectionHtml(context, openSpec, ep);
+check("with no choice, candidates are listed", openSection.includes("sp-seed-many"),
+  openSection.slice(0, 400));
 
 /* --- an endpoint with no phrase instances gets a prompt, not a crash --- */
 const emptySection = renderAuthoringSectionHtml(context, {}, ep);

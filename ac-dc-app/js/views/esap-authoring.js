@@ -90,12 +90,28 @@ export function renderAuthoringSectionHtml(context, spec, ep) {
 
   const oids = instance.phrases.map((p) => p.phrase);
   const candidates = resolveCandidates(oids, context.lib);
-  const seeded = candidates.length === 1
-    ? `<span class="sp-seed-one">${esc(candidates[0].conceptId)}</span>`
-    : candidates.length
-      ? `<span class="sp-seed-many">${candidates.length} candidates: ` +
-        `${candidates.map((c) => esc(c.conceptId)).join(", ")}</span>`
-      : `<span class="sp-seed-none">no matching transformation</span>`;
+
+  /* What the sentence resolves to. A chosen transformation wins over a recomputed candidate
+     list: spec §11.1 allows the choice to come from Step 4, so a spec that already carries one
+     is resolved, not open. The fourth case matters most — if the author has since edited the
+     sentence so the chosen analysis no longer matches, saying so is the whole point of showing
+     this line at all. */
+  const chosen = spec.selectedTransformationOid || null;
+  const chosenIsCandidate = chosen && candidates.some((c) => c.conceptId === chosen);
+
+  let seeded;
+  if (chosen && chosenIsCandidate) {
+    seeded = `<span class="sp-seed-one">${esc(chosen)}</span>`;
+  } else if (chosen) {
+    seeded = `<span class="sp-seed-stale">${esc(chosen)} &mdash; no longer matches the sentence</span>`;
+  } else if (candidates.length === 1) {
+    seeded = `<span class="sp-seed-one">${esc(candidates[0].conceptId)}</span>`;
+  } else if (candidates.length) {
+    seeded = `<span class="sp-seed-many">${candidates.length} candidates: ` +
+      `${candidates.map((c) => esc(c.conceptId)).join(", ")}</span>`;
+  } else {
+    seeded = `<span class="sp-seed-none">no matching transformation</span>`;
+  }
 
   const pipeline = Array.isArray(spec.derivationChain) && spec.derivationChain.length
     ? `<span class="sp-pipeline-done">derivations specified (${spec.derivationChain.length})</span>`
