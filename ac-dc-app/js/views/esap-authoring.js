@@ -52,7 +52,15 @@ export function renderAuthoredSentenceHtml(ctx, instance, epId) {
         : esc(text);
     }
     const rp = part.phrase;
-    const slot = (rp.bindings && rp.bindings[0] && rp.bindings[0].placeholder) || "";
+    const def = SPEngine.phraseDef(ctx, rp.oid);
+    /* The slot comes from the phrase DEFINITION, not from resolved bindings: the engine only
+       pushes into `bindings[]` once a placeholder resolves, so a phrase that was just added has
+       none — and it is exactly that phrase the author needs to click in order to bind it.
+       Taking the slot from `bindings[0]` rendered `data-slot=""` and left the chip inert, with
+       no other route to a binding. The resolved binding stays as a fallback for a phrase whose
+       definition declares no placeholder. */
+    const slot = (def && def.placeholders && def.placeholders[0] && def.placeholders[0].name) ||
+      (rp.bindings && rp.bindings[0] && rp.bindings[0].placeholder) || "";
     const label = first ? rp.text.charAt(0).toUpperCase() + rp.text.slice(1) : rp.text;
     first = false;
     const broken = (rp.errors || []).length ? " sp-unresolved" : "";

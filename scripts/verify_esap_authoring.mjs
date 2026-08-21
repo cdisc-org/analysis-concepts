@@ -214,6 +214,24 @@ check("removing drops the phrase",
 removePhraseFromSpec(building, "SP_NOT_PRESENT");
 check("removing an absent phrase is a no-op", building.phraseInstances.length === 1);
 
+/* A phrase the author has only just added has no resolved binding yet, so every other check in
+   this file — all of which run against Scenario 1 AFTER backfill — renders a spec whose bindings
+   are already populated. That is the gap this covers: the chip must carry the slot the author
+   needs to click, taken from the phrase definition rather than from a binding that does not
+   exist yet. */
+const fresh = {};
+addPhraseToSpec(fresh, context, "SP_CFB_ENDPOINT");
+const freshHtml = renderAuthoredSentenceHtml(context.ctx,
+  specToInstance(fresh, ep, context.lib), ep.id);
+check("a freshly added phrase renders a usable slot",
+  /data-phrase="SP_CFB_ENDPOINT"[^>]*data-slot="parameter"/.test(freshHtml),
+  freshHtml.slice(0, 400));
+check("and its slot editor offers real options",
+  (renderSlotEditorHtml(context, fresh, ep, "SP_CFB_ENDPOINT", "parameter")
+    .match(/<option /g) || []).length > 100,
+  String((renderSlotEditorHtml(context, fresh, ep, "SP_CFB_ENDPOINT", "parameter")
+    .match(/<option /g) || []).length));
+
 /* The endpoint phrase is what makes a sentence a sentence — it must not be removable. */
 removePhraseFromSpec(building, "SP_CFB_ENDPOINT");
 check("the endpoint phrase cannot be removed",
