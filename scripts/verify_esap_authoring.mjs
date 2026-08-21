@@ -150,6 +150,27 @@ check("the section names the analysis the sentence seeded, not the mirror",
     && !bothSection.includes("T.CFB_ANCOVA"),
   bothSection.slice(0, 500));
 
+/* A single candidate that is a DERIVATION is not seeded, so the line must not claim it is.
+   SP_PEAK_ENDPOINT's sole candidate is T.PeakConcentration, a derivation. */
+const derivSpec = { phraseInstances: [{ phrase: "SP_PEAK_ENDPOINT", bindings: {} }] };
+const derivSection = renderAuthoringSectionHtml(context, derivSpec, ep);
+check("a lone derivation candidate is not reported as seeded",
+  !derivSection.includes("sp-seed-one"), derivSection.slice(0, 500));
+check("and it is named as a derivation belonging to Step 6",
+  derivSection.includes("T.PeakConcentration is a derivation, specified in Step 6")
+    && derivSection.includes("sp-seed-none"),
+  derivSection.slice(0, 500));
+
+/* The single-ANALYSIS case is untouched: it still reports as resolved. */
+const oneAnalysisSpec = { phraseInstances: [
+  { phrase: "SP_CFB_ENDPOINT", bindings: {} },
+  { phrase: "SP_METHOD_ANCOVA", bindings: {} }
+] };
+const oneAnalysisSection = renderAuthoringSectionHtml(context, oneAnalysisSpec, ep);
+check("a lone analysis candidate is still reported as seeded",
+  oneAnalysisSection.includes(`<span class="sp-seed-one">T.CFB_ANCOVA</span>`),
+  oneAnalysisSection.slice(0, 500));
+
 /* --- an endpoint with no phrase instances gets a prompt, not a crash --- */
 const emptySection = renderAuthoringSectionHtml(context, {}, ep);
 check("an unauthored endpoint renders a prompt",

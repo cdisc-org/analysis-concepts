@@ -99,6 +99,17 @@ export function renderAuthoredSentenceHtml(ctx, instance, epId) {
 }
 
 /**
+ * Whether a resolved candidate is something Step 4 can hold.
+ *
+ * The library types every transformation as exactly `"analysis"` or `"derivation"`, and only an
+ * analysis is ever seeded (applyPhraseChange uses the same discriminator). A derivation among
+ * the candidates is a real match for the sentence — it is simply Step 6's business, not Step 4's.
+ */
+function isAnalysisCandidate(c) {
+  return !!c && c.transformationType === "analysis";
+}
+
+/**
  * The whole §4.1.2 body for one endpoint: the sentence, what it seeds, and the add control.
  *
  * @param {{lib: object, graph: object, ctx: object}} context
@@ -143,8 +154,14 @@ export function renderAuthoringSectionHtml(context, spec, ep) {
     seeded = `<span class="sp-seed-one">${esc(chosen)}</span>`;
   } else if (chosen) {
     seeded = `<span class="sp-seed-stale">${esc(chosen)} &mdash; no longer matches the sentence</span>`;
-  } else if (candidates.length === 1) {
+  } else if (candidates.length === 1 && isAnalysisCandidate(candidates[0])) {
     seeded = `<span class="sp-seed-one">${esc(candidates[0].conceptId)}</span>`;
+  } else if (candidates.length === 1) {
+    /* A single candidate that is a DERIVATION seeds nothing — saying "Seeds into Step 4" here
+       asserted something false, and on a surface whose whole value is that the SAP prose can be
+       trusted, a label that overstates the state is a defect in its own right. */
+    seeded = `<span class="sp-seed-none">no analysis yet &mdash; ` +
+      `${esc(candidates[0].conceptId)} is a derivation, specified in Step 6</span>`;
   } else if (candidates.length) {
     seeded = `<span class="sp-seed-many">${candidates.length} candidates: ` +
       `${candidates.map((c) => esc(c.conceptId)).join(", ")}</span>`;
