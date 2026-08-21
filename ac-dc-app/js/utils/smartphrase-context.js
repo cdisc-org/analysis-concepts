@@ -128,7 +128,20 @@ export function applyPhraseChange(spec, lib) {
   const oids = (spec.phraseInstances || []).map((p) => p.phrase);
   const candidates = resolveCandidates(oids, lib);
   const slots = deriveSlots(candidates, lib);
-  if (!Array.isArray(spec.selectedAnalyses)) spec.selectedAnalyses = [];
+  if (!Array.isArray(spec.selectedAnalyses)) {
+    /* A spec from a pre-multi-analysis build carries one analysis in the legacy top-level
+       fields. ensureSpec (endpoint-spec.js:1015-1028) migrates this shape, but Step 7 reaches a
+       spec through prepareSpec and a saved `preferences.currentStep: 7` can land the author here
+       first — so migrate rather than zero, or the author's interactions and estimand pattern are
+       destroyed on their first click, irreversibly (ensureSpec's own guard is falsy-checked, and
+       `[]` is truthy). The migrated record carries no flag: it is the author's. */
+    spec.selectedAnalyses = spec.selectedTransformationOid
+      ? [{ transformationOid: spec.selectedTransformationOid,
+           resolvedBindings: spec.resolvedBindings || null,
+           activeInteractions: spec.activeInteractions || [],
+           estimandSummaryPattern: spec.estimandSummaryPattern || null }]
+      : [];
+  }
 
   if (candidates.length === 1) {
     const only = candidates[0].conceptId;

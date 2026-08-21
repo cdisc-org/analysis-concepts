@@ -312,6 +312,33 @@ applyPhraseChange(carriesOldMark, context.lib);
 check("the superseded spec-level mark is removed",
   !("phraseSeededOid" in carriesOldMark), JSON.stringify(carriesOldMark.phraseSeededOid));
 
+/* A spec from a pre-multi-analysis build carries its one analysis in the legacy top-level
+   fields and has no selectedAnalyses array at all. Step 7 reaches specs through prepareSpec,
+   never ensureSpec, and a saved currentStep can land the author on Step 7 first — so this
+   function has to migrate the shape. Zeroing it destroyed the author's interactions and
+   estimand pattern on their first click, and mirrorLegacyFields then wrote the loss back over
+   the originals. */
+const preMulti = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }],
+  selectedTransformationOid: "T.CFB_ANCOVA",
+  resolvedBindings: [{ concept: "author-binding" }],
+  activeInteractions: ["TRT*BASE"], estimandSummaryPattern: "AUTHOR_PATTERN" };
+applyPhraseChange(preMulti, context.lib);
+check("a legacy single-analysis spec is migrated, not zeroed",
+  preMulti.selectedAnalyses.length === 1
+    && preMulti.selectedAnalyses[0].transformationOid === "T.CFB_ANCOVA"
+    && preMulti.selectedAnalyses[0].activeInteractions.join(",") === "TRT*BASE"
+    && preMulti.selectedAnalyses[0].estimandSummaryPattern === "AUTHOR_PATTERN",
+  JSON.stringify(preMulti.selectedAnalyses));
+check("and the legacy fields it mirrors back are unharmed",
+  preMulti.selectedTransformationOid === "T.CFB_ANCOVA"
+    && preMulti.activeInteractions.join(",") === "TRT*BASE"
+    && preMulti.estimandSummaryPattern === "AUTHOR_PATTERN",
+  JSON.stringify([preMulti.selectedTransformationOid, preMulti.activeInteractions,
+                  preMulti.estimandSummaryPattern]));
+check("the migrated record is the author's, not the sentence's",
+  preMulti.selectedAnalyses.length === 1 && !preMulti.selectedAnalyses[0].seededByPhrase,
+  JSON.stringify(preMulti.selectedAnalyses));
+
 /* Re-running on an unchanged sentence must not churn state. */
 const idem = { phraseInstances: [
   { phrase: "SP_CFB_ENDPOINT", bindings: {} },
