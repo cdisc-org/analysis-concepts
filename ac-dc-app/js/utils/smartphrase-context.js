@@ -11,6 +11,7 @@ import { adaptV06Library } from "./smartphrase-lib-adapter.js";
 import { buildConceptGraph } from "./smartphrase-graph.js";
 import { ensureUnresolvedConcepts, backfillPhraseInstances } from "./phrase-bindings.js";
 import SPEngine from "./smartphrase-engine.js";
+import { resolveCandidates, deriveSlots } from "./phrase-slots.js";
 
 /**
  * Build the adapted library, the concept graph, and the engine context.
@@ -49,6 +50,29 @@ export function buildSmartphraseContext(study, v06, methods = {}) {
 export function prepareSpec(spec, context, lib) {
   ensureUnresolvedConcepts(spec, context.graph, lib);
   backfillPhraseInstances(spec, context.graph, lib);
+}
+
+/**
+ * Re-derive what the current phrase set means, and seed the analysis when it is unambiguous.
+ *
+ * The transformation is derived from the phrases, never chosen independently of them, so this
+ * runs after every phrase change. A phrase set matching several transformations is a valid
+ * state, not an error — narrowing is the downstream selection Step 4 owns (spec §11.1) — so
+ * `selectedTransformationOid` is set only when exactly one candidate remains, and cleared when
+ * the set widens again so a stale choice cannot linger.
+ *
+ * Touches nothing else on the spec.
+ *
+ * @param {object} spec  endpointSpecs[epId]
+ * @param {object} lib   adapted library
+ * @returns {{candidates: Array, required: Array, pending: Array}}
+ */
+export function applyPhraseChange(spec, lib) {
+  const oids = (spec.phraseInstances || []).map((p) => p.phrase);
+  const candidates = resolveCandidates(oids, lib);
+  const slots = deriveSlots(candidates, lib);
+  spec.selectedTransformationOid = candidates.length === 1 ? candidates[0].conceptId : null;
+  return { candidates, required: slots.required, pending: slots.pending };
 }
 
 /** "Primary Endpoint" -> "the primary analysis". Falls back to a neutral phrase. */

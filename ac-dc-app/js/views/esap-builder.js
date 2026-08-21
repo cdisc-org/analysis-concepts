@@ -15,7 +15,7 @@ import { buildDefineXml } from '../utils/define-xml-generator.js';
 import { ESAP_SECTION_PREFIXES, ESAP_SECTION_LABELS } from '../utils/esap-constants.js';
 import { resolveTitle, buildResolverContext } from './template-resolver.js';
 import { renderAuthoringSectionHtml, renderSlotEditorHtml } from './esap-authoring.js';
-import { getSmartphraseContext } from '../utils/smartphrase-context.js';
+import { getSmartphraseContext, applyPhraseChange } from '../utils/smartphrase-context.js';
 import { setDimensionBinding } from '../utils/phrase-bindings.js';
 
 // ===== Helper: build contentItemId → section mapping =====
@@ -367,6 +367,7 @@ export async function renderEsapBuilder(container) {
           editor.dataset.phrase, editor.dataset.slot, editor.dataset.dimension,
           ev.target.value,
           editor.dataset.slot === 'population' ? 'name' : 'label');
+        applyPhraseChange(appState.endpointSpecs[epId], context.lib);
         renderEsapBuilder(container);
       });
     });

@@ -99,6 +99,54 @@ const resRendered = E.resolveInstance(context.ctx, instance, "en");
 check("the sentence no longer duplicates the visit",
   !resRendered.sentence.includes("Week 24 (Week 24)"), resRendered.sentence);
 
+/* ---------- seeding Step 4 ---------- */
+
+const { applyPhraseChange } = await load("ac-dc-app/js/utils/smartphrase-context.js");
+
+/* One candidate: the transformation is seeded. */
+const seeded = { phraseInstances: [
+  { phrase: "SP_CFB_ENDPOINT", bindings: {} },
+  { phrase: "SP_METHOD_ANCOVA", bindings: {} }
+] };
+const r1 = applyPhraseChange(seeded, context.lib);
+check("one candidate seeds selectedTransformationOid",
+  seeded.selectedTransformationOid === "T.CFB_ANCOVA", seeded.selectedTransformationOid);
+check("the result reports the candidate", r1.candidates.length === 1);
+check("the result reports the required slots",
+  r1.required.map((s) => s.dimension).sort().join(",") === "AnalysisVisit,Parameter,Population",
+  JSON.stringify(r1.required));
+
+/* Several candidates: nothing is chosen, and that is a valid state (spec §11.1). */
+const ambiguous = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }] };
+const r2 = applyPhraseChange(ambiguous, context.lib);
+check("several candidates leave the transformation unset",
+  ambiguous.selectedTransformationOid === null, String(ambiguous.selectedTransformationOid));
+check("several candidates are still reported", r2.candidates.length === 3,
+  String(r2.candidates.length));
+check("the intersection is still bindable",
+  r2.required.map((s) => s.dimension).sort().join(",") === "Parameter,Population",
+  JSON.stringify(r2.required));
+check("the rest is pending", r2.pending.some((s) => s.dimension === "AnalysisVisit"),
+  JSON.stringify(r2.pending));
+
+/* Narrowing then widening clears a stale choice rather than leaving it. */
+const narrowed = { phraseInstances: [
+  { phrase: "SP_CFB_ENDPOINT", bindings: {} },
+  { phrase: "SP_METHOD_ANCOVA", bindings: {} }
+] };
+applyPhraseChange(narrowed, context.lib);
+narrowed.phraseInstances = [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }];
+applyPhraseChange(narrowed, context.lib);
+check("widening clears a stale transformation",
+  narrowed.selectedTransformationOid === null, String(narrowed.selectedTransformationOid));
+
+/* It must not disturb anything else on the spec. */
+const guarded = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }],
+                  dimensionValues: { Parameter: "keep me" }, derivationChain: [1, 2, 3] };
+applyPhraseChange(guarded, context.lib);
+check("dimensionValues untouched", guarded.dimensionValues.Parameter === "keep me");
+check("derivationChain untouched", guarded.derivationChain.length === 3);
+
 if (failures.length) {
   console.error(`FAIL — ${failures.length} check(s):`);
   failures.forEach((f) => console.error("  -", f));
