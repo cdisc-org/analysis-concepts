@@ -139,3 +139,42 @@ export function buildConceptGraph(study, lib, methods = {}) {
     traceTemplates: {}
   };
 }
+
+/* The vocabulary each source contributes, reused when synthesising an unresolved concept
+   so it matches sliceKeys exactly as an anchored one would. */
+const SOURCE_VOCABULARY = {
+  biomedicalConcept: { kind: "Parameter", conceptCategory: "ParameterDimension" },
+  visit: { kind: "AnalysisVisit", conceptCategory: "VisitDimension" },
+  population: { kind: "Population" }
+};
+
+function slug(label) {
+  return String(label).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+/**
+ * Add a concept for a fixture whose declared source has not been satisfied — a typed label
+ * with no USDM object behind it (spec §7.4). It matches sliceKeys exactly as an anchored
+ * concept does, so the sentence renders and the cube still slices; `anchored: false` is what
+ * lets the UI say the fixture is unresolved.
+ *
+ * Idempotent: the same source and label always yield the same id.
+ *
+ * @param {object} graph   graph to add to (mutated — the caller owns it)
+ * @param {string} source  a declared sliceKey source
+ * @param {string} label   the typed label
+ * @returns {string} the concept id
+ */
+export function addUnresolvedConcept(graph, source, label) {
+  const id = `UNRESOLVED.${source}.${slug(label)}`;
+  if (!graph.concepts[id]) {
+    graph.concepts[id] = {
+      ...(SOURCE_VOCABULARY[source] || {}),
+      label: label,
+      name: label,
+      anchored: false,
+      source: source
+    };
+  }
+  return id;
+}

@@ -144,6 +144,47 @@ check("visit concept name is the human name, not the timing",
 check("sentence does not contain a raw timing string",
   !res.sentence.includes("Day 168"), res.sentence);
 
+/* ---------- unresolved fixtures (spec 7.4) ---------- */
+
+const { addUnresolvedConcept } = await load("ac-dc-app/js/utils/smartphrase-graph.js");
+
+const g2 = buildConceptGraph(pilot, libWithMethods, methods);
+const unresolvedId = addUnresolvedConcept(g2, "biomedicalConcept", "Adas-Cog(11) Subscore");
+
+check("unresolved id is stable and namespaced",
+  unresolvedId === "UNRESOLVED.biomedicalConcept.adas-cog-11-subscore", unresolvedId);
+const u = g2.concepts[unresolvedId];
+check("unresolved concept exists", !!u);
+check("unresolved concept is flagged", u?.anchored === false, JSON.stringify(u));
+check("unresolved concept keeps the typed label", u?.label === "Adas-Cog(11) Subscore", u?.label);
+check("unresolved concept still carries the matching vocabulary",
+  u?.kind === "Parameter" && u?.conceptCategory === "ParameterDimension", JSON.stringify(u));
+check("unresolved concept has no iri", u?.iri === undefined, u?.iri);
+
+check("calling twice returns the same id",
+  addUnresolvedConcept(g2, "biomedicalConcept", "Adas-Cog(11) Subscore") === unresolvedId);
+
+/* An unresolved fixture must still render and still fill its sliceKey — it is incomplete,
+   not invalid (spec 7.4). */
+const ctx2 = E.ctxOf(libWithMethods, g2, null, null);
+const inst2 = {
+  id: "AC.UNRESOLVED", template: "T.CFB_ANCOVA", sentenceRole: "primary",
+  phrases: [
+    { phrase: "SP_CFB_ENDPOINT", bindings: { parameter: { concept: unresolvedId } } },
+    { phrase: "SP_TIMEPOINT", bindings: { visit: { concept: visitId } } },
+    { phrase: "SP_POPULATION", bindings: { population: { concept: popId } } },
+    { phrase: "SP_METHOD_ANCOVA", bindings: { method: { method: "M.ANCOVA" } } }
+  ]
+};
+const res2 = E.resolveInstance(ctx2, inst2, "en");
+check("unresolved fixture still resolves", res2.errors.length === 0, JSON.stringify(res2.errors));
+check("unresolved label appears in the sentence",
+  res2.sentence.includes("Adas-Cog(11) Subscore"), res2.sentence);
+const view2 = E.constructModelView(ctx2, inst2);
+check("unresolved fixture still fills its sliceKey",
+  view2.sliceKeys.every((sk) => sk.value !== null),
+  JSON.stringify(view2.sliceKeys.map((sk) => [sk.dimension, sk.value && sk.value.label])));
+
 if (failures.length) {
   console.error(`FAIL — ${failures.length} check(s):`);
   failures.forEach((f) => console.error("  -", f));
