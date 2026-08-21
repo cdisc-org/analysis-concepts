@@ -363,7 +363,7 @@ export async function renderEndpointHow(container) {
             <div style="margin-bottom:4px;">${originalText}</div>
             ${syntax ? `<div style="margin-top:8px; font-size:13px; line-height:1.6;">${syntax.resolved}</div>` : `
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
-              <span class="badge badge-teal">${spec.conceptCategory}</span>
+              ${spec.conceptCategory ? `<span class="badge badge-teal">${spec.conceptCategory}</span>` : ''}
               ${paramValue ? `<span style="font-size:12px; color:var(--cdisc-text-secondary);">Parameter: <strong>${paramValue}</strong></span>` : ''}
             </div>`}
           </div>
