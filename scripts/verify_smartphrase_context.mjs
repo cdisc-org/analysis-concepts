@@ -339,6 +339,32 @@ check("the migrated record is the author's, not the sentence's",
   preMulti.selectedAnalyses.length === 1 && !preMulti.selectedAnalyses[0].seededByPhrase,
   JSON.stringify(preMulti.selectedAnalyses));
 
+/* Only an analysis may be seeded. SP_PEAK_ENDPOINT's sole candidate is T.PeakConcentration, a
+   DERIVATION: seeding it wrote a record Step 4 renders no card for and offers no way to remove,
+   while Steps 6, 8 and Define-XML read it — and Step 7 cannot undo it either, because the
+   endpoint phrase is the last one and refuses to be removed. The candidate list itself must
+   still report the derivation: §11.1's reporting is about what the sentence matches. */
+const derivationOnly = { phraseInstances: [{ phrase: "SP_PEAK_ENDPOINT", bindings: {} }] };
+const rDeriv = applyPhraseChange(derivationOnly, context.lib);
+check("a sentence whose only match is a derivation seeds nothing",
+  derivationOnly.selectedAnalyses.length === 0
+    && derivationOnly.selectedTransformationOid === null,
+  JSON.stringify([derivationOnly.selectedTransformationOid, derivationOnly.selectedAnalyses]));
+check("but the derivation is still reported as a candidate",
+  rDeriv.candidates.some((c) => c.conceptId === "T.PeakConcentration"),
+  JSON.stringify(rDeriv.candidates.map((c) => c.conceptId)));
+/* And the filter must not suppress seeding when the sole ANALYSIS match sits beside a
+   derivation — SP_CFB_ENDPOINT + SP_IMPUTATION matches T.ChangeFromBaseline (derivation) and
+   T.CFB_MMRM_Primary (analysis), and the sentence unambiguously names the latter. */
+const besideDerivation = { phraseInstances: [
+  { phrase: "SP_CFB_ENDPOINT", bindings: {} },
+  { phrase: "SP_IMPUTATION", bindings: {} }
+] };
+applyPhraseChange(besideDerivation, context.lib);
+check("a single analysis matching alongside a derivation is still seeded",
+  besideDerivation.selectedTransformationOid === "T.CFB_MMRM_Primary",
+  String(besideDerivation.selectedTransformationOid));
+
 /* Re-running on an unchanged sentence must not churn state. */
 const idem = { phraseInstances: [
   { phrase: "SP_CFB_ENDPOINT", bindings: {} },

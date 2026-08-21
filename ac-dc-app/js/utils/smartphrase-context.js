@@ -128,6 +128,13 @@ export function applyPhraseChange(spec, lib) {
   const oids = (spec.phraseInstances || []).map((p) => p.phrase);
   const candidates = resolveCandidates(oids, lib);
   const slots = deriveSlots(candidates, lib);
+  /* Only an analysis may be seeded. A sentence can match a derivation — SP_PEAK_ENDPOINT's sole
+     candidate is T.PeakConcentration — and seeding one wrote a record no UI could reach:
+     getTransformationByOid searches analysisTransformations only, so Step 4 renders no card and
+     offers no way to remove it, while Steps 6, 8 and Define-XML read it. A derivation is Step 6's
+     business. The returned `candidates` stays the full list: §11.1's candidate reporting is about
+     what the sentence matches, not about what may be seeded. */
+  const analyses = candidates.filter((c) => c.transformationType === "analysis");
   if (!Array.isArray(spec.selectedAnalyses)) {
     /* A spec from a pre-multi-analysis build carries one analysis in the legacy top-level
        fields. ensureSpec (endpoint-spec.js:1015-1028) migrates this shape, but Step 7 reaches a
@@ -143,8 +150,8 @@ export function applyPhraseChange(spec, lib) {
       : [];
   }
 
-  if (candidates.length === 1) {
-    const only = candidates[0].conceptId;
+  if (analyses.length === 1) {
+    const only = analyses[0].conceptId;
     const at = spec.selectedAnalyses.findIndex((a) => a.transformationOid === only);
     if (at === -1) {
       /* Withdraw whatever the sentence created before — wherever it sits — so a superseded
