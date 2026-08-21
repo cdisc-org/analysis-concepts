@@ -30,14 +30,30 @@ export function resolveLabelToConceptId(graph, source, label) {
 /**
  * Bind one dimension, updating both representations.
  *
+ * `conceptId` must already be in `graph.concepts` — the id and the label it writes to
+ * `dimensionValues` must always be written together, from the same concept, or not at all.
+ * An unknown id throws rather than writing the id side while leaving `dimensionValues[dimension]`
+ * stale: the concept id is expected to always originate from the graph, so an unknown id here is
+ * a programming error, not user input, and a raised error is far cheaper to recover from than a
+ * wrong parameter silently baked into `dimensionValues` — the field Steps 6 and 8 execute from.
+ *
  * @param {object} spec        endpointSpecs[epId]
  * @param {object} graph
  * @param {string} phraseOid   e.g. "SP_TIMEPOINT"
  * @param {string} slot        the placeholder name, e.g. "visit"
  * @param {string} dimension   the dimensionValues key, e.g. "AnalysisVisit"
- * @param {string} conceptId
+ * @param {string} conceptId   must exist in graph.concepts
+ * @throws {Error} if conceptId is not in graph.concepts
  */
 export function setDimensionBinding(spec, graph, phraseOid, slot, dimension, conceptId) {
+  const concept = (graph.concepts || {})[conceptId];
+  if (!concept) {
+    throw new Error(
+      `setDimensionBinding: concept "${conceptId}" is not in the graph. ` +
+      `Bindings and dimensionValues must be written together or not at all — ` +
+      `writing only the id would leave dimensionValues[${dimension}] stale.`);
+  }
+
   if (!Array.isArray(spec.phraseInstances)) spec.phraseInstances = [];
   if (!spec.dimensionValues) spec.dimensionValues = {};
 
@@ -49,8 +65,7 @@ export function setDimensionBinding(spec, graph, phraseOid, slot, dimension, con
   if (!instance.bindings) instance.bindings = {};
   instance.bindings[slot] = { concept: conceptId };
 
-  const concept = (graph.concepts || {})[conceptId];
-  if (concept) spec.dimensionValues[dimension] = concept.label;
+  spec.dimensionValues[dimension] = concept.label;
 }
 
 /* Which phrase slot and dimensionValues key each source pairs with, for the backfill. */

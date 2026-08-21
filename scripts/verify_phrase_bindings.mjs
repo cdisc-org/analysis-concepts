@@ -94,6 +94,22 @@ check("the unresolved concept was added to the graph",
   paramBinding && graph.concepts[paramBinding.concept]?.anchored === false,
   JSON.stringify(paramBinding && graph.concepts[paramBinding.concept]));
 
+/* An id the graph does not know must fail loudly rather than write one side and leave the
+   other stale — the drift this module exists to prevent. */
+let threw = false;
+try {
+  setDimensionBinding({ dimensionValues: {}, phraseInstances: [] }, graph,
+    "SP_TIMEPOINT", "visit", "AnalysisVisit", "V.NoSuchEncounter");
+} catch (e) { threw = /not in the graph/.test(e.message); }
+check("an unknown concept id throws rather than drifting", threw);
+
+/* An empty array means "already backfilled, nothing was derivable" — not "needs backfilling". */
+const emptySpec = { phraseInstances: [], dimensionValues: { AnalysisVisit: "Baseline" },
+                    selectedEndpointPhrase: "SP_CFB_ENDPOINT", selectedDimPhrases: ["SP_TIMEPOINT"] };
+backfillPhraseInstances(emptySpec, graph);
+check("an empty phraseInstances array is left alone", emptySpec.phraseInstances.length === 0,
+  JSON.stringify(emptySpec.phraseInstances));
+
 if (failures.length) {
   console.error(`FAIL — ${failures.length} check(s):`);
   failures.forEach((f) => console.error("  -", f));
