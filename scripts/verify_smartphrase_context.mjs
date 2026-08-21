@@ -221,6 +221,56 @@ check("and preserves their hand edits",
     ?.activeInteractions || []).join(",") === "TRT*VISIT",
   JSON.stringify(multi.selectedAnalyses));
 
+/* An analysis the author created in Step 4 is never claimed by the sentence agreeing with it.
+   Regression guard: claiming it let a later phrase deletion delete the author's work. The
+   earlier "manual pick survives" check misses this because T.Responder_ChiSq is never a
+   candidate, so the sentence never had the chance to claim it. */
+const agreed = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }],
+  selectedAnalyses: [{ transformationOid: "T.CFB_ANCOVA",
+                       resolvedBindings: [{ concept: "hand-edited" }],
+                       activeInteractions: ["TRT*VISIT"], estimandSummaryPattern: "LSMeanDiff" }] };
+agreed.phraseInstances.push({ phrase: "SP_METHOD_ANCOVA", bindings: {} });
+applyPhraseChange(agreed, context.lib);
+check("agreeing with a Step 4 analysis does not claim it",
+  !agreed.phraseSeededOid, String(agreed.phraseSeededOid));
+agreed.phraseInstances = [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }];
+applyPhraseChange(agreed, context.lib);
+check("so deleting the phrase leaves the author's analysis intact",
+  agreed.selectedAnalyses.length === 1
+    && agreed.selectedAnalyses[0].resolvedBindings[0].concept === "hand-edited"
+    && agreed.selectedAnalyses[0].activeInteractions.join(",") === "TRT*VISIT",
+  JSON.stringify(agreed.selectedAnalyses));
+
+/* Swapping the method withdraws the old seeded analysis even when the new one already exists. */
+const swapped = { phraseInstances: [
+  { phrase: "SP_CFB_ENDPOINT", bindings: {} },
+  { phrase: "SP_METHOD_ANCOVA", bindings: {} }
+] };
+applyPhraseChange(swapped, context.lib);
+swapped.selectedAnalyses.push({ transformationOid: "T.CFB_MMRM_Primary",
+  resolvedBindings: [], activeInteractions: [], estimandSummaryPattern: null });
+swapped.phraseInstances[1] = { phrase: "SP_METHOD_MMRM", bindings: {} };
+applyPhraseChange(swapped, context.lib);
+check("swapping the method does not orphan the analysis it replaces",
+  !swapped.selectedAnalyses.some((a) => a.transformationOid === "T.CFB_ANCOVA"),
+  JSON.stringify(swapped.selectedAnalyses.map((a) => a.transformationOid)));
+check("and the surviving analysis is the one the prose names",
+  swapped.selectedAnalyses.some((a) => a.transformationOid === "T.CFB_MMRM_Primary"),
+  JSON.stringify(swapped.selectedAnalyses.map((a) => a.transformationOid)));
+
+/* Seeding alongside an author's analysis must not steal index 0, which the legacy fields
+   mirror as the primary. */
+const alongside = { phraseInstances: [
+    { phrase: "SP_CFB_ENDPOINT", bindings: {} },
+    { phrase: "SP_METHOD_ANCOVA", bindings: {} }
+  ],
+  selectedAnalyses: [{ transformationOid: "T.CFB_MMRM_Primary", resolvedBindings: [],
+                       activeInteractions: [], estimandSummaryPattern: null }] };
+applyPhraseChange(alongside, context.lib);
+check("the author's analysis keeps the primary position",
+  alongside.selectedAnalyses[0].transformationOid === "T.CFB_MMRM_Primary",
+  JSON.stringify(alongside.selectedAnalyses.map((a) => a.transformationOid)));
+
 /* Re-running on an unchanged sentence must not churn state. */
 const idem = { phraseInstances: [
   { phrase: "SP_CFB_ENDPOINT", bindings: {} },

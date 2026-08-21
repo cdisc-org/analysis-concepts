@@ -90,17 +90,28 @@ function mirrorLegacyFields(spec) {
  * writes both — writing only the legacy field is invisible to Step 4 and is reset by the next
  * sync.
  *
- * **Ownership rule.** This function owns exactly the one analysis entry it seeded, identified
- * by `spec.phraseSeededOid`; every other entry in `selectedAnalyses` belongs to Step 4 and is
- * never touched. Step 4 is genuinely multi-select (endpoint-how.js:522-536 pushes and splices
- * entries and renders a card each), so replacing the array — as this function used to — deleted
- * an author's sensitivity analysis and every hand edit on it, silently and with no undo.
+ * **Ownership rule.** `spec.phraseSeededOid` means precisely *this entry exists because the
+ * sentence put it there*. This function owns that one entry and nothing else; every other entry
+ * in `selectedAnalyses` belongs to Step 4 and is never touched. Step 4 is genuinely multi-select
+ * (endpoint-how.js:522-536 pushes and splices entries and renders a card each), so replacing the
+ * array — as this function once did — deleted an author's sensitivity analysis and every hand
+ * edit on it, silently and with no undo.
  *
- * That provenance mark is also what makes withdrawal safe. Deleting the method phrase is
- * precisely how an author says "I no longer mean ANCOVA", so the entry the prose put there is
- * withdrawn as soon as the prose stops naming exactly one analysis — while a pick the author
- * made in Step 4 carries no mark and survives, which was the reason the earlier, narrower
- * clearing rule existed at all.
+ * Two consequences, and both are load-bearing:
+ *
+ * - The mark is set **only when an entry is actually inserted**. An analysis already in the
+ *   array was created in Step 4, and the sentence agreeing with it is not the sentence owning
+ *   it. Claiming it let a later phrase deletion carry the author's hand-edited analysis away
+ *   with it.
+ * - When the sentence's single candidate **changes**, the previously seeded entry is withdrawn
+ *   first, wherever it sits — otherwise swapping the method phrase leaves the old analysis
+ *   orphaned into Step 4 and into the run with nothing naming it.
+ *
+ * That mark is also what makes withdrawal safe. Deleting the method phrase is precisely how an
+ * author says "I no longer mean ANCOVA", so the entry the prose put there is withdrawn as soon
+ * as the prose stops naming exactly one analysis — while a pick the author made in Step 4
+ * carries no mark and survives, which was the reason the earlier, narrower clearing rule
+ * existed at all.
  *
  * @param {object} spec  endpointSpecs[epId]
  * @param {object} lib   adapted library
@@ -115,17 +126,26 @@ export function applyPhraseChange(spec, lib) {
 
   if (candidates.length === 1) {
     const only = candidates[0].conceptId;
-    const at = spec.selectedAnalyses.findIndex((a) => a.transformationOid === only);
-    /* Already present — from an earlier seed or from Step 4 — so leave it exactly as it is.
-       Re-running on an unchanged sentence must not discard bindings edited since. */
-    if (at === -1) {
-      const wasAt = seeded
-        ? spec.selectedAnalyses.findIndex((a) => a.transformationOid === seeded) : -1;
-      /* Replace what we seeded before; otherwise take index 0 without displacing anything. */
-      if (wasAt >= 0) spec.selectedAnalyses[wasAt] = analysisRecordFor(only, lib);
-      else spec.selectedAnalyses.unshift(analysisRecordFor(only, lib));
+
+    /* The sentence now names a different analysis than the one it seeded. Withdraw the old one
+       first, wherever it sits — otherwise it is orphaned into Step 4 with nothing naming it. */
+    if (seeded && seeded !== only) {
+      spec.selectedAnalyses = spec.selectedAnalyses.filter((a) => a.transformationOid !== seeded);
+      spec.phraseSeededOid = null;
     }
-    spec.phraseSeededOid = only;
+
+    const at = spec.selectedAnalyses.findIndex((a) => a.transformationOid === only);
+    if (at === -1) {
+      /* Take index 0 only when there is nothing to displace: selectedAnalyses[0] is the
+         "primary" the legacy fields mirror, and that position belongs to the author's own
+         Step 4 choice when they have made one. */
+      if (spec.selectedAnalyses.length === 0) spec.selectedAnalyses.unshift(analysisRecordFor(only, lib));
+      else spec.selectedAnalyses.push(analysisRecordFor(only, lib));
+      spec.phraseSeededOid = only;
+    }
+    /* Already present: the author created it in Step 4 and it stays theirs, edits and all. The
+       sentence agreeing with a choice is not the sentence owning it — claiming it here is what
+       let a later phrase deletion take an author's hand-edited analysis with it. */
   } else {
     /* The sentence no longer names one analysis, so withdraw the one it put there — and only
        that one. A pick the author made in Step 4 carries no provenance mark and survives. */
