@@ -13,7 +13,8 @@ const root = path.join(here, "..");
 const load = (rel) => import(pathToFileURL(path.join(root, rel)).href);
 
 const { adaptV06Library } = await load("ac-dc-app/js/utils/smartphrase-lib-adapter.js");
-const { resolveCandidates, deriveSlots } = await load("ac-dc-app/js/utils/phrase-slots.js");
+const { resolveCandidates, deriveSlots, phraseSlotForDimension } =
+  await load("ac-dc-app/js/utils/phrase-slots.js");
 
 const v06 = JSON.parse(fs.readFileSync(
   path.join(root, "lib/transformations/ACDC_Transformation_Library_v06.json"), "utf8"));
@@ -118,6 +119,36 @@ const conflicting = [...sourcesByDimension.entries()]
   .map(([d, s]) => `${d}: ${[...s].join("/")}`);
 check("each dimension declares exactly one source library-wide",
   conflicting.length === 0, conflicting.join(", "));
+
+/* --- dimension -> (phrase, slot): the map that lets deriveSlots' output be bound ---
+   `deriveSlots` says WHICH dimensions need a value; `setDimensionBinding` needs the phrase and
+   placeholder that carry it. This closes that gap from the library, so no caller keeps its own
+   copy of the table. */
+const visitRoute = phraseSlotForDimension("AnalysisVisit", lib);
+check("AnalysisVisit routes to SP_TIMEPOINT/visit",
+  visitRoute?.phrase === "SP_TIMEPOINT" && visitRoute?.slot === "visit",
+  JSON.stringify(visitRoute));
+const popRoute = phraseSlotForDimension("Population", lib);
+check("Population routes to SP_POPULATION/population",
+  popRoute?.phrase === "SP_POPULATION" && popRoute?.slot === "population",
+  JSON.stringify(popRoute));
+const paramRoute = phraseSlotForDimension("Parameter", lib);
+check("Parameter routes to SP_PARAMETER/parameter",
+  paramRoute?.phrase === "SP_PARAMETER" && paramRoute?.slot === "parameter",
+  JSON.stringify(paramRoute));
+
+/* The route comes from `anchors.produced_concept`, not from a list here: a dimension no phrase
+   produces has no route, and says so rather than inventing one. */
+check("a dimension no phrase produces yields null",
+  phraseSlotForDimension("NoSuchDimension", lib) === null,
+  JSON.stringify(phraseSlotForDimension("NoSuchDimension", lib)));
+check("an absent dimension yields null", phraseSlotForDimension(undefined, lib) === null);
+
+/* Every dimension the library can require must be bindable — otherwise the UI derives a slot
+   it has no way to write. */
+const unroutable = [...sourcesByDimension.keys()].filter((d) => !phraseSlotForDimension(d, lib));
+check("every declared sliceKey dimension has a phrase/slot route",
+  unroutable.length === 0, unroutable.join(", "));
 
 if (failures.length) {
   console.error(`FAIL — ${failures.length} check(s):`);

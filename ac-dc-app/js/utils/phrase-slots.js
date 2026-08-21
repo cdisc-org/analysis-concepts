@@ -86,3 +86,29 @@ export function deriveSlots(candidates, lib) {
   }
   return { required, pending };
 }
+
+/**
+ * The phrase and placeholder that carry a given slice dimension.
+ *
+ * `deriveSlots` answers "which dimensions need binding"; `setDimensionBinding` needs
+ * "(phraseOid, slot)". This closes that gap, so nothing downstream has to keep its own
+ * dimension → phrase/slot table.
+ *
+ * Derived from the library, not declared here: a phrase's `anchors.produced_concept` names the
+ * dimension it fills, and its `placeholders[].name` is the slot. Returns null when no phrase
+ * carries that dimension.
+ *
+ * @param {string} dimension  e.g. "AnalysisVisit"
+ * @param {object} lib  adapted library
+ * @returns {{phrase: string, slot: string}|null}
+ */
+export function phraseSlotForDimension(dimension, lib) {
+  if (!dimension) return null;
+  for (const p of lib.smartPhrases || []) {
+    if (!p || !p.anchors || p.anchors.produced_concept !== dimension) continue;
+    const slot = ((p.placeholders || [])[0] || {}).name;
+    /* A phrase that produces the dimension but declares no placeholder has nothing to bind. */
+    if (slot) return { phrase: p.oid, slot };
+  }
+  return null;
+}

@@ -41,13 +41,21 @@ export function collectDeclaredSources(lib) {
   return out;
 }
 
+/* The vocabulary each source contributes. Single source of truth: the builders below spread it,
+   and `addUnresolvedConcept` spreads the same entry, so a synthesised concept matches sliceKeys
+   exactly as an anchored one does. */
+const SOURCE_VOCABULARY = {
+  biomedicalConcept: { kind: "Parameter", conceptCategory: "ParameterDimension" },
+  visit: { kind: "AnalysisVisit", conceptCategory: "VisitDimension" },
+  population: { kind: "Population" }
+};
+
 /* One builder per declared source. Keyed by the source name the library uses. */
 const BUILDERS = {
   biomedicalConcept(study, concepts) {
     for (const bc of study.biomedicalConcepts || []) {
       concepts["P." + bc.id] = {
-        kind: "Parameter",
-        conceptCategory: "ParameterDimension",
+        ...SOURCE_VOCABULARY.biomedicalConcept,
         label: bc.label || bc.name,
         name: bc.name || bc.label,
         iri: "usdm:BiomedicalConcept/" + bc.id,
@@ -60,8 +68,7 @@ const BUILDERS = {
   visit(study, concepts) {
     for (const enc of study.encounters || []) {
       concepts["V." + enc.id] = {
-        kind: "AnalysisVisit",
-        conceptCategory: "VisitDimension",
+        ...SOURCE_VOCABULARY.visit,
         label: enc.label || enc.name,
         /* The encounter's description is timing (e.g., "Day 168"), not a display name.
            Using it for `name` would render "at Day 168 (Week 24)" in sentences. */
@@ -79,7 +86,7 @@ const BUILDERS = {
   population(study, concepts) {
     const add = (p, isAnalysis) => {
       concepts["POP." + p.id] = {
-        kind: "Population",
+        ...SOURCE_VOCABULARY.population,
         label: p.label || p.name,
         name: p.text || p.description || p.label || p.name,
         iri: (isAnalysis ? "usdm:AnalysisPopulation/" : "usdm:StudyDesignPopulation/") + p.id,
@@ -93,9 +100,24 @@ const BUILDERS = {
 };
 
 /**
- * Ground the methods the engine may render. The engine reads `label`, `name` and `formula`
- * off a method; `name` is lower-cased for prose ("analysis of covariance"), so the display
- * name comes from the method's own `name` and the short form from `label` where present.
+ * Ground the methods the engine may render.
+ *
+ * The engine renders a method as `grounding.name || def.name.toLowerCase()` — it lower-cases the
+ * library's name ONLY when the grounding supplies none. Supplying `name` here therefore suppresses
+ * that `toLowerCase()` fallback for EVERY method, not just the ones anyone has looked at. That is
+ * deliberate: none of the 39 files in `lib/methods/analyses` carries a `label` at all, so `label`
+ * below falls through to `name` — a Title-Case string that is often an acronym or a proper noun,
+ * and v06 method JSON has no expanded prose form to lower-case safely. Lower-casing would render
+ * "using ancova" and "using cochran-mantel-haenszel test"; mangling an acronym is worse than a
+ * method name reading slightly formally mid-sentence.
+ *
+ * The consequence, stated plainly so nobody rediscovers it as a bug: rendered sentences carry
+ * Title-Case method names ("using Mixed Model for Repeated Measures"). Getting genuinely
+ * lower-caseable prose would mean adding an expanded prose name to the method library itself,
+ * which is a later question and not one this module can answer.
+ *
+ * `label` here duplicates what `adaptV06Method` already computes from the same fields; the
+ * grounding's one genuinely new contribution is the `iri`.
  *
  * @param {object} methods  { [oid]: method JSON, schema 0.8.0 }
  * @returns {object} { [oid]: { label, name, iri } }
@@ -124,14 +146,22 @@ export function buildConceptGraph(study, lib, methods = {}) {
   const concepts = {};
   for (const source of collectDeclaredSources(lib)) {
     const build = BUILDERS[source];
-    if (build) build(study, concepts);
+    if (build) { build(study, concepts); continue; }
     /* An undeclared builder is not an error here: the library may name a source this phase
        does not yet populate. The slot for it simply has no options, which surfaces in the UI
-       as an unbindable slot rather than as a crash. */
+       as an unbindable slot rather than as a crash.
+       It is also, however, the only place a typo in a `sliceKeys[].source` goes undetected —
+       a misspelt source is indistinguishable from an unimplemented one — so it warns. */
+    console.warn(
+      `buildConceptGraph: no builder for declared sliceKey source "${source}" — ` +
+      `slots on that dimension will have no options. Unimplemented source, or a typo in ` +
+      `the library's sliceKeys[].source?`);
   }
 
   return {
     prefixes: { ...PREFIXES },
+    /* `study` and `instances` are carried for fidelity with the reference graph shape the
+       smartphrase library ships; the engine reads neither. */
     study: { studyId: study.name || "", title: study.description || study.name || "" },
     concepts,
     methodGrounding: buildMethodGrounding(methods),
@@ -140,16 +170,29 @@ export function buildConceptGraph(study, lib, methods = {}) {
   };
 }
 
-/* The vocabulary each source contributes, reused when synthesising an unresolved concept
-   so it matches sliceKeys exactly as an anchored one would. */
-const SOURCE_VOCABULARY = {
-  biomedicalConcept: { kind: "Parameter", conceptCategory: "ParameterDimension" },
-  visit: { kind: "AnalysisVisit", conceptCategory: "VisitDimension" },
-  population: { kind: "Population" }
-};
-
 function slug(label) {
   return String(label).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+/**
+ * A short, deterministic discriminator for a label.
+ *
+ * `slug()` is lossy — "Weight (cm)" and "Weight cm" both reduce to "weight-cm" — so two distinct
+ * labels can claim one id, and the presence guard in `addUnresolvedConcept` would then hand the
+ * second caller the FIRST label's concept. This suffix separates them. FNV-1a over the raw label,
+ * base36: the same label always yields the same suffix, so ids stay stable across sessions.
+ *
+ * @param {string} label
+ * @returns {string}
+ */
+function labelDiscriminator(label) {
+  let h = 0x811c9dc5;
+  const s = String(label);
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(36);
 }
 
 /**
@@ -160,13 +203,21 @@ function slug(label) {
  *
  * Idempotent: the same source and label always yield the same id.
  *
+ * Distinct labels never share an id. `slug()` alone cannot promise that — "Weight (cm)" and
+ * "Weight cm" both slug to "weight-cm" — so when the slug is already taken by a DIFFERENT label,
+ * the newcomer gets a deterministic suffix instead of silently inheriting the incumbent's concept.
+ *
  * @param {object} graph   graph to add to (mutated — the caller owns it)
  * @param {string} source  a declared sliceKey source
  * @param {string} label   the typed label
  * @returns {string} the concept id
  */
 export function addUnresolvedConcept(graph, source, label) {
-  const id = `UNRESOLVED.${source}.${slug(label)}`;
+  const base = `UNRESOLVED.${source}.${slug(label)}`;
+  const incumbent = graph.concepts[base];
+  const id = incumbent && incumbent.label !== label
+    ? `${base}-${labelDiscriminator(label)}`
+    : base;
   if (!graph.concepts[id]) {
     graph.concepts[id] = {
       ...(SOURCE_VOCABULARY[source] || {}),
