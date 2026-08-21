@@ -52,16 +52,40 @@ export function prepareSpec(spec, context, lib) {
   backfillPhraseInstances(spec, context.graph, lib);
 }
 
+/** The analysis record Step 4 reads, built the same way endpoint-spec.js:653-665 builds it. */
+function analysisRecordFor(oid, lib) {
+  const t = (lib.transformations || []).find((x) => x.conceptId === oid);
+  return {
+    transformationOid: oid,
+    resolvedBindings: t
+      ? JSON.parse(JSON.stringify((t.bindings || []).filter((b) => b.direction !== "output")))
+      : null,
+    activeInteractions: [],
+    estimandSummaryPattern: null
+  };
+}
+
+/** Mirror the first analysis onto the legacy top-level fields, as syncLegacyTransformationOid does. */
+function mirrorLegacyFields(spec) {
+  const first = (spec.selectedAnalyses || [])[0] || null;
+  spec.selectedTransformationOid = first ? first.transformationOid : null;
+  spec.resolvedBindings = first ? first.resolvedBindings : null;
+  spec.activeInteractions = first ? first.activeInteractions || [] : [];
+  spec.estimandSummaryPattern = first ? first.estimandSummaryPattern : null;
+}
+
 /**
  * Re-derive what the current phrase set means, and seed the analysis when it is unambiguous.
  *
- * The transformation is derived from the phrases, never chosen independently of them, so this
- * runs after every phrase change. A phrase set matching several transformations is a valid
- * state, not an error — narrowing is the downstream selection Step 4 owns (spec §11.1) — so
- * `selectedTransformationOid` is set only when exactly one candidate remains, and cleared when
- * the set widens again so a stale choice cannot linger.
+ * Step 4 renders its analysis cards from `selectedAnalyses` (endpoint-how.js:76) and derives
+ * the legacy `selectedTransformationOid` from that array (endpoint-spec.js:1036), so seeding
+ * writes both — writing only the legacy field is invisible to Step 4 and is reset by the next
+ * sync.
  *
- * Touches nothing else on the spec.
+ * Clearing is narrow on purpose. This runs on binding changes too, which do not alter the
+ * phrase set, so clearing unconditionally would destroy a transformation the author chose in
+ * Step 4 — a choice spec §11.1 explicitly permits. A selection still among the candidates is
+ * consistent with the prose and is left alone; only one the prose no longer permits is cleared.
  *
  * @param {object} spec  endpointSpecs[epId]
  * @param {object} lib   adapted library
@@ -71,7 +95,25 @@ export function applyPhraseChange(spec, lib) {
   const oids = (spec.phraseInstances || []).map((p) => p.phrase);
   const candidates = resolveCandidates(oids, lib);
   const slots = deriveSlots(candidates, lib);
-  spec.selectedTransformationOid = candidates.length === 1 ? candidates[0].conceptId : null;
+  const ids = new Set(candidates.map((c) => c.conceptId));
+  const current = spec.selectedTransformationOid || null;
+
+  if (candidates.length === 1) {
+    const only = candidates[0].conceptId;
+    /* Idempotent: re-running on an unchanged sentence must not discard bindings the author
+       has since edited in Step 4. */
+    if (current !== only || !(spec.selectedAnalyses || []).some((a) => a.transformationOid === only)) {
+      spec.selectedAnalyses = [analysisRecordFor(only, lib)];
+      mirrorLegacyFields(spec);
+    }
+  } else if (current && !ids.has(current)) {
+    spec.selectedAnalyses = [];
+    mirrorLegacyFields(spec);
+  } else if (!current) {
+    /* Keep the field well-defined rather than undefined for callers that compare against null. */
+    spec.selectedTransformationOid = null;
+  }
+
   return { candidates, required: slots.required, pending: slots.pending };
 }
 

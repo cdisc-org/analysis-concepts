@@ -103,7 +103,7 @@ check("the sentence no longer duplicates the visit",
 
 const { applyPhraseChange } = await load("ac-dc-app/js/utils/smartphrase-context.js");
 
-/* One candidate: the transformation is seeded. */
+/* One candidate: the transformation is seeded, in the shape Step 4 actually renders from. */
 const seeded = { phraseInstances: [
   { phrase: "SP_CFB_ENDPOINT", bindings: {} },
   { phrase: "SP_METHOD_ANCOVA", bindings: {} }
@@ -111,6 +111,15 @@ const seeded = { phraseInstances: [
 const r1 = applyPhraseChange(seeded, context.lib);
 check("one candidate seeds selectedTransformationOid",
   seeded.selectedTransformationOid === "T.CFB_ANCOVA", seeded.selectedTransformationOid);
+check("one candidate seeds selectedAnalyses, which is what Step 4 renders",
+  (seeded.selectedAnalyses || []).length === 1
+    && seeded.selectedAnalyses[0].transformationOid === "T.CFB_ANCOVA",
+  JSON.stringify(seeded.selectedAnalyses));
+check("the seeded analysis carries the transformation's non-output bindings",
+  Array.isArray(seeded.selectedAnalyses[0].resolvedBindings)
+    && seeded.selectedAnalyses[0].resolvedBindings.length === 6
+    && seeded.selectedAnalyses[0].resolvedBindings.every((b) => b.direction !== "output"),
+  JSON.stringify((seeded.selectedAnalyses[0].resolvedBindings || []).length));
 check("the result reports the candidate", r1.candidates.length === 1);
 check("the result reports the required slots",
   r1.required.map((s) => s.dimension).sort().join(",") === "AnalysisVisit,Parameter,Population",
@@ -129,18 +138,60 @@ check("the intersection is still bindable",
 check("the rest is pending", r2.pending.some((s) => s.dimension === "AnalysisVisit"),
   JSON.stringify(r2.pending));
 
-/* Narrowing then widening clears a stale choice rather than leaving it. */
-const narrowed = { phraseInstances: [
+/* A selection the prose no longer permits is cleared — from BOTH fields. */
+const stale = { phraseInstances: [
   { phrase: "SP_CFB_ENDPOINT", bindings: {} },
   { phrase: "SP_METHOD_ANCOVA", bindings: {} }
 ] };
-applyPhraseChange(narrowed, context.lib);
-narrowed.phraseInstances = [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }];
-applyPhraseChange(narrowed, context.lib);
-check("widening clears a stale transformation",
-  narrowed.selectedTransformationOid === null, String(narrowed.selectedTransformationOid));
+applyPhraseChange(stale, context.lib);
+stale.phraseInstances[1] = { phrase: "SP_METHOD_MMRM", bindings: {} };
+applyPhraseChange(stale, context.lib);
+check("swapping the method re-seeds rather than stranding the old choice",
+  stale.selectedTransformationOid === "T.CFB_MMRM_Primary", stale.selectedTransformationOid);
+check("re-seeding replaces selectedAnalyses too",
+  stale.selectedAnalyses.length === 1
+    && stale.selectedAnalyses[0].transformationOid === "T.CFB_MMRM_Primary",
+  JSON.stringify(stale.selectedAnalyses));
 
-/* It must not disturb anything else on the spec. */
+/* A manual Step 4 pick still permitted by the prose SURVIVES an unrelated binding edit.
+   This is the regression this round exists to prevent: applyPhraseChange also runs on
+   dimension-value changes, which do not alter the phrase set. */
+const manual = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }],
+                 selectedTransformationOid: "T.CFB_MMRM_Primary",
+                 selectedAnalyses: [{ transformationOid: "T.CFB_MMRM_Primary",
+                                      resolvedBindings: [{ concept: "hand-edited" }],
+                                      activeInteractions: [], estimandSummaryPattern: null }] };
+applyPhraseChange(manual, context.lib);
+check("a manual pick consistent with the prose is preserved",
+  manual.selectedTransformationOid === "T.CFB_MMRM_Primary", manual.selectedTransformationOid);
+check("and its hand-edited bindings are not discarded",
+  manual.selectedAnalyses[0].resolvedBindings[0].concept === "hand-edited",
+  JSON.stringify(manual.selectedAnalyses[0].resolvedBindings));
+
+/* A manual pick the prose forbids IS cleared. */
+const contradicted = { phraseInstances: [
+  { phrase: "SP_CFB_ENDPOINT", bindings: {} },
+  { phrase: "SP_METHOD_ANCOVA", bindings: {} }
+], selectedTransformationOid: "T.Responder_ChiSq",
+   selectedAnalyses: [{ transformationOid: "T.Responder_ChiSq" }] };
+applyPhraseChange(contradicted, context.lib);
+check("a contradicted pick is replaced by the single candidate",
+  contradicted.selectedTransformationOid === "T.CFB_ANCOVA",
+  contradicted.selectedTransformationOid);
+
+/* Re-running on an unchanged sentence must not churn state. */
+const idem = { phraseInstances: [
+  { phrase: "SP_CFB_ENDPOINT", bindings: {} },
+  { phrase: "SP_METHOD_ANCOVA", bindings: {} }
+] };
+applyPhraseChange(idem, context.lib);
+idem.selectedAnalyses[0].activeInteractions = ["TRT*VISIT"];
+applyPhraseChange(idem, context.lib);
+check("re-running on an unchanged sentence preserves edited analysis state",
+  idem.selectedAnalyses[0].activeInteractions.join(",") === "TRT*VISIT",
+  JSON.stringify(idem.selectedAnalyses[0].activeInteractions));
+
+/* It must not disturb unrelated spec fields. */
 const guarded = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }],
                   dimensionValues: { Parameter: "keep me" }, derivationChain: [1, 2, 3] };
 applyPhraseChange(guarded, context.lib);
