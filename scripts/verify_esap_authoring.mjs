@@ -149,8 +149,11 @@ check("editor options carry concept ids",
   editor.includes('value="V.Encounter_11"'), editor.slice(0, 300));
 check("editor marks the current binding selected",
   /value="V\.Encounter_11"[^>]*selected/.test(editor), editor.slice(0, 400));
+/* Anchored on the rendered element and its text, not on the bare word "visit" — which also
+   occurs in `data-slot="visit"`, so deleting the whole sp-slot-source element left the old
+   form of this check green. */
 check("editor names the declared source",
-  editor.includes("visit"), editor.slice(0, 200));
+  editor.includes("sp-slot-source") && editor.includes("from visit"), editor.slice(0, 300));
 check("editor carries the write target",
   editor.includes('data-phrase="SP_TIMEPOINT"') && editor.includes('data-slot="visit"'));
 
@@ -212,8 +215,15 @@ const { renderAddPhraseHtml, addPhraseToSpec, removePhraseFromSpec } =
 /* From nothing, only endpoint phrases can start a sentence. */
 const blank = {};
 const startList = renderAddPhraseHtml(context, blank, ep);
-check("a blank spec offers endpoint phrases",
-  startList.includes("SP_CFB_ENDPOINT"), startList.slice(0, 300));
+/* The count and the exclusion together are the gate: asserting only that SP_CFB_ENDPOINT is
+   present left the check green when the role filter was replaced by `filter(() => true)`,
+   which offers "using ANCOVA" as a sentence STARTER. v06 declares 8 endpoint-role phrases. */
+const startOids = [...startList.matchAll(/data-add-oid="([^"]+)"/g)].map((m) => m[1]);
+check("a blank spec offers exactly the endpoint phrases",
+  startOids.length === 8 && startOids.every((oid) => /_ENDPOINT$/.test(oid)),
+  JSON.stringify(startOids));
+check("and offers no method phrase as a sentence starter",
+  !startOids.some((oid) => /^SP_METHOD_/.test(oid)), JSON.stringify(startOids));
 check("options carry the add action", startList.includes("data-add-oid"));
 
 /* With an endpoint phrase chosen, the offers narrow to what its candidates allow. */
@@ -281,9 +291,22 @@ check("the remove control carries the endpoint id",
   html.slice(0, 400));
 check("the endpoint phrase carries no remove control",
   !/data-remove-phrase="SP_CFB_ENDPOINT"/.test(html), html.slice(0, 400));
+/* Counted on markup rendered AFTER a mutation. The old form re-evaluated the identical
+   expression on the identical `html` string as the "renders a chip per phrase" check far
+   above, and `html` predates every add and remove in this file — so it restated a passing
+   check rather than gating anything. */
+const mutated = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }] };
+addPhraseToSpec(mutated, context, "SP_TIMEPOINT");
+addPhraseToSpec(mutated, context, "SP_METHOD_ANCOVA");
+removePhraseFromSpec(mutated, "SP_TIMEPOINT");
+const mutatedHtml = renderAuthoredSentenceHtml(context.ctx,
+  specToInstance(mutated, ep, context.lib), ep.id);
 check("the remove control does not disturb the chip count",
-  (html.match(/class="phrase-chip/g) || []).length === instance.phrases.length,
-  String((html.match(/class="phrase-chip/g) || []).length));
+  (mutatedHtml.match(/class="phrase-chip/g) || []).length === mutated.phraseInstances.length,
+  `${(mutatedHtml.match(/class="phrase-chip/g) || []).length} chips for ` +
+  JSON.stringify(mutated.phraseInstances.map((p) => p.phrase)));
+check("and the surviving removable phrase keeps its control",
+  (mutatedHtml.match(/data-remove-phrase="/g) || []).length === 1, mutatedHtml);
 
 if (failures.length) {
   console.error(`FAIL — ${failures.length} check(s):`);
