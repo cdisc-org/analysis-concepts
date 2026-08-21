@@ -142,14 +142,33 @@ const paramEditor = renderSlotEditorHtml(context, spec, ep, "SP_CFB_ENDPOINT", "
 check("parameter editor draws from biomedical concepts",
   (paramEditor.match(/<option /g) || []).length === 183,
   String((paramEditor.match(/<option /g) || []).length));
+/* Anchored on the id followed by `selected`, matching the visit check's pattern above — not
+   merely that the id appears somewhere in a 183-option string. The diagnostic slices around
+   the id's own position rather than the string's first 300 characters, which on this
+   much-larger option list never reaches the fragment in question. */
+const unresolvedIdx = paramEditor.indexOf("UNRESOLVED.biomedicalConcept.adas-cog-11-subscore");
+const unresolvedContext = unresolvedIdx >= 0
+  ? paramEditor.slice(Math.max(0, unresolvedIdx - 40), unresolvedIdx + 250)
+  : paramEditor.slice(0, 300);
 check("an unresolved current value is offered and selected",
-  paramEditor.includes("UNRESOLVED.biomedicalConcept.adas-cog-11-subscore"),
-  paramEditor.slice(0, 300));
+  /value="UNRESOLVED\.biomedicalConcept\.adas-cog-11-subscore"[^>]*selected/.test(paramEditor),
+  unresolvedContext);
 
 /* An unknown slot must not crash. */
 const noSlot = renderSlotEditorHtml(context, spec, ep, "SP_TIMEPOINT", "nosuchslot");
 check("an unknown slot renders an empty editor, not a crash", typeof noSlot === "string");
 check("an unknown slot offers no options", !noSlot.includes("<option "));
+
+/* A slot whose dimension has no declared source must offer nothing rather than an empty
+   picker — and must not carry a dimension that could be written. */
+for (const [oid, slotName] of [["SP_GROUPING", "treatment"], ["SP_TTE_ENDPOINT", "event"]]) {
+  const unbindable = renderSlotEditorHtml(context, spec, ep, oid, slotName);
+  check(`${oid}/${slotName} renders as unbindable`,
+    unbindable.includes("sp-slot-unbindable"), unbindable.slice(0, 200));
+  check(`${oid}/${slotName} offers no options`, !unbindable.includes("<option "), unbindable.slice(0, 200));
+  check(`${oid}/${slotName} carries no dimension to write`,
+    !unbindable.includes("data-dimension"), unbindable.slice(0, 200));
+}
 
 if (failures.length) {
   console.error(`FAIL — ${failures.length} check(s):`);

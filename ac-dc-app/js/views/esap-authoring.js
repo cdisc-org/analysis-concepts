@@ -159,6 +159,12 @@ export function renderSlotEditorHtml(context, spec, ep, phraseOid, slot) {
      is kept only as a fallback for phrases whose placeholder has no concept_constraint. Neither
      name is hardcoded here: both are read off the phrase, and matched against whichever
      dimension a sliceKey actually declares. */
+  /* This inline scan duplicates the unexported declaredDimensionSources() in phrase-bindings.js
+     — that file is on the do-not-modify list, so importing its internals isn't an option, and
+     this is the compliant alternative. It is only safe to duplicate because
+     verify_phrase_slots.mjs pins the invariant this logic relies on (no dimension declares two
+     different sources anywhere in the library); a future change relaxing that invariant would
+     not be caught by anything local to this file. */
   const dimensionCandidates = [placeholder.concept_constraint, def.anchors && def.anchors.produced_concept]
     .filter(Boolean);
   let dimension = null;
@@ -170,6 +176,19 @@ export function renderSlotEditorHtml(context, spec, ep, phraseOid, slot) {
         if (sk.dimension === cand) { dimension = cand; source = sk.source; break outer; }
       }
     }
+  }
+
+  if (!source) {
+    /* The slot's dimension is not one the library declares a sliceKey source for —
+       SP_GROUPING's `treatment` and SP_TTE_ENDPOINT's `event` are both in this position under
+       v06. There is nothing to offer, so offer nothing rather than an empty <select>: an empty
+       picker invites a change event that would write dimensionValues[""] via the empty
+       data-dimension, putting a junk key into the object Steps 6 and 8 execute from. */
+    return `<div class="sp-slot-editor sp-slot-unbindable" data-ep-id="${esc(ep.id)}" ` +
+      `data-phrase="${esc(phraseOid)}" data-slot="${esc(slot)}">` +
+      `<span class="sp-slot-label">${esc(slot)}</span>` +
+      `<span class="sp-slot-note">no source declared for this dimension &mdash; ` +
+      `nothing in the study can bind it yet</span></div>`;
   }
 
   const current = (spec.phraseInstances || [])
