@@ -29,8 +29,14 @@ export async function renderEndpointHow(container) {
 
   const allEndpoints = getAllEndpoints(study);
   const selectedEps = allEndpoints.filter(ep => appState.selectedEndpoints.includes(ep.id));
-  // Only show endpoints that have conceptCategory set (configured in step 3)
-  const configuredEps = selectedEps.filter(ep => appState.endpointSpecs[ep.id]?.conceptCategory);
+  // Configured in Step 3 (conceptCategory) or authored in Step 7 (an analysis was seeded).
+  // An endpoint written entirely from prose never passes through Step 3, so gating on
+  // conceptCategory alone left it showing "No endpoints configured" with its seeded analysis
+  // already in selectedAnalyses.
+  const configuredEps = selectedEps.filter(ep => {
+    const s = appState.endpointSpecs[ep.id];
+    return s?.conceptCategory || (s?.selectedAnalyses || []).length > 0;
+  });
   if (configuredEps.length === 0) {
     container.innerHTML = '<div class="card" style="text-align:center; padding:40px;"><h3>No endpoints configured</h3><p style="margin-top:8px; color:var(--cdisc-text-secondary);">Please configure endpoint specifications in Step 3 first.</p></div>';
     return;
