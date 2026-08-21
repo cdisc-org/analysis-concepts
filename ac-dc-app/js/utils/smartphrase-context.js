@@ -69,7 +69,10 @@ function analysisRecordFor(oid, lib) {
       ? JSON.parse(JSON.stringify((t.bindings || []).filter((b) => b.direction !== "output")))
       : null,
     activeInteractions: [],
-    estimandSummaryPattern: null
+    estimandSummaryPattern: null,
+    /* The sentence created this record, so the sentence may withdraw it. A record Step 4
+       creates carries no such flag and is never touched. */
+    seededByPhrase: true
   };
 }
 
@@ -90,28 +93,32 @@ function mirrorLegacyFields(spec) {
  * writes both — writing only the legacy field is invisible to Step 4 and is reset by the next
  * sync.
  *
- * **Ownership rule.** `spec.phraseSeededOid` means precisely *this entry exists because the
- * sentence put it there*. This function owns that one entry and nothing else; every other entry
- * in `selectedAnalyses` belongs to Step 4 and is never touched. Step 4 is genuinely multi-select
- * (endpoint-how.js:522-536 pushes and splices entries and renders a card each), so replacing the
- * array — as this function once did — deleted an author's sensitivity analysis and every hand
- * edit on it, silently and with no undo.
+ * **Ownership rule — the flag travels with the record.** A record this function builds carries
+ * `seededByPhrase: true`, and that flag is the only thing it will ever delete. A record Step 4
+ * creates never carries it, so it can never be mistaken for ours no matter how many times
+ * entries are deleted and re-created. Step 4 is genuinely multi-select (endpoint-how.js:522-536
+ * pushes and splices entries and renders a card each), so replacing the array — as this function
+ * once did — deleted an author's sensitivity analysis and every hand edit on it, silently and
+ * with no undo.
  *
- * Two consequences, and both are load-bearing:
+ * The flag lives on the record because a spec-level mark could not do the job. `phraseSeededOid`
+ * recorded *which transformation* the sentence had seeded, and an oid cannot distinguish the
+ * record this function created from one the author later created for the same transformation.
+ * Five other writers clear or splice `selectedAnalyses` without touching a spec-level mark
+ * (endpoint-how.js:532, :708; endpoint-spec.js:548, :638, :658), so the array could be emptied,
+ * the author could re-pick and hand-edit the same analysis, and the stale mark would then let a
+ * phrase deletion destroy their work. Ownership has to travel with the thing owned.
  *
- * - The mark is set **only when an entry is actually inserted**. An analysis already in the
- *   array was created in Step 4, and the sentence agreeing with it is not the sentence owning
- *   it. Claiming it let a later phrase deletion carry the author's hand-edited analysis away
- *   with it.
- * - When the sentence's single candidate **changes**, the previously seeded entry is withdrawn
- *   first, wherever it sits — otherwise swapping the method phrase leaves the old analysis
- *   orphaned into Step 4 and into the run with nothing naming it.
+ * Deleting the method phrase is precisely how an author says "I no longer mean ANCOVA", so a
+ * record the prose created is withdrawn as soon as the prose stops naming exactly one analysis —
+ * while a pick the author made in Step 4 carries no flag and survives, which was the reason the
+ * earliest, narrower clearing rule existed at all.
  *
- * That mark is also what makes withdrawal safe. Deleting the method phrase is precisely how an
- * author says "I no longer mean ANCOVA", so the entry the prose put there is withdrawn as soon
- * as the prose stops naming exactly one analysis — while a pick the author made in Step 4
- * carries no mark and survives, which was the reason the earlier, narrower clearing rule
- * existed at all.
+ * **Migration is deliberately conservative.** A spec saved before the flag existed has records
+ * without flags, so every record reads as the author's and none is ever deleted. The cost is
+ * that a pre-existing phrase-seeded record can be orphaned once, surviving into Step 4 after the
+ * prose stops naming it. That is the right trade: losing an orphan into Step 4, where it is
+ * visible and removable, beats deleting work we cannot prove we own.
  *
  * @param {object} spec  endpointSpecs[epId]
  * @param {object} lib   adapted library
@@ -122,39 +129,32 @@ export function applyPhraseChange(spec, lib) {
   const candidates = resolveCandidates(oids, lib);
   const slots = deriveSlots(candidates, lib);
   if (!Array.isArray(spec.selectedAnalyses)) spec.selectedAnalyses = [];
-  const seeded = spec.phraseSeededOid || null;
 
   if (candidates.length === 1) {
     const only = candidates[0].conceptId;
-
-    /* The sentence now names a different analysis than the one it seeded. Withdraw the old one
-       first, wherever it sits — otherwise it is orphaned into Step 4 with nothing naming it. */
-    if (seeded && seeded !== only) {
-      spec.selectedAnalyses = spec.selectedAnalyses.filter((a) => a.transformationOid !== seeded);
-      spec.phraseSeededOid = null;
-    }
-
     const at = spec.selectedAnalyses.findIndex((a) => a.transformationOid === only);
     if (at === -1) {
-      /* Take index 0 only when there is nothing to displace: selectedAnalyses[0] is the
-         "primary" the legacy fields mirror, and that position belongs to the author's own
-         Step 4 choice when they have made one. */
+      /* Withdraw whatever the sentence created before — wherever it sits — so a superseded
+         analysis is never orphaned into Step 4 with nothing naming it. */
+      spec.selectedAnalyses = spec.selectedAnalyses.filter((a) => !a.seededByPhrase);
+      /* Index 0 is the primary the legacy fields mirror; it belongs to the author's own Step 4
+         choice whenever they have made one. */
       if (spec.selectedAnalyses.length === 0) spec.selectedAnalyses.unshift(analysisRecordFor(only, lib));
       else spec.selectedAnalyses.push(analysisRecordFor(only, lib));
-      spec.phraseSeededOid = only;
+    } else {
+      /* The analysis is already there. If the author created it, the sentence merely agrees and
+         it stays theirs — but anything else the sentence created is still withdrawn. */
+      spec.selectedAnalyses = spec.selectedAnalyses.filter(
+        (a) => !a.seededByPhrase || a.transformationOid === only);
     }
-    /* Already present: the author created it in Step 4 and it stays theirs, edits and all. The
-       sentence agreeing with a choice is not the sentence owning it — claiming it here is what
-       let a later phrase deletion take an author's hand-edited analysis with it. */
   } else {
-    /* The sentence no longer names one analysis, so withdraw the one it put there — and only
-       that one. A pick the author made in Step 4 carries no provenance mark and survives. */
-    if (seeded) {
-      spec.selectedAnalyses = spec.selectedAnalyses
-        .filter((a) => a.transformationOid !== seeded);
-    }
-    spec.phraseSeededOid = null;
+    /* The sentence no longer names one analysis, so it withdraws what it created and nothing else. */
+    spec.selectedAnalyses = spec.selectedAnalyses.filter((a) => !a.seededByPhrase);
   }
+
+  /* Superseded by the per-record flag: an oid cannot distinguish the entry this function created
+     from one the author later created for the same transformation. */
+  delete spec.phraseSeededOid;
 
   mirrorLegacyFields(spec);
   return { candidates, required: slots.required, pending: slots.pending };

@@ -165,8 +165,8 @@ applyPhraseChange(manual, context.lib);
 check("a manual pick consistent with the prose is preserved",
   manual.selectedTransformationOid === "T.CFB_MMRM_Primary", manual.selectedTransformationOid);
 check("and its hand-edited bindings are not discarded",
-  manual.selectedAnalyses[0].resolvedBindings[0].concept === "hand-edited",
-  JSON.stringify(manual.selectedAnalyses[0].resolvedBindings));
+  manual.selectedAnalyses[0]?.resolvedBindings?.[0]?.concept === "hand-edited",
+  JSON.stringify(manual.selectedAnalyses));
 
 /* Withdrawing the method phrase withdraws the analysis it seeded. Deleting "using ANCOVA" is
    precisely how an author says they no longer mean ANCOVA, and the earlier rule — clear only
@@ -232,7 +232,8 @@ const agreed = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }],
 agreed.phraseInstances.push({ phrase: "SP_METHOD_ANCOVA", bindings: {} });
 applyPhraseChange(agreed, context.lib);
 check("agreeing with a Step 4 analysis does not claim it",
-  !agreed.phraseSeededOid, String(agreed.phraseSeededOid));
+  agreed.selectedAnalyses.length === 1 && !agreed.selectedAnalyses[0].seededByPhrase,
+  JSON.stringify(agreed.selectedAnalyses.map((a) => [a.transformationOid, !!a.seededByPhrase])));
 agreed.phraseInstances = [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }];
 applyPhraseChange(agreed, context.lib);
 check("so deleting the phrase leaves the author's analysis intact",
@@ -270,6 +271,46 @@ applyPhraseChange(alongside, context.lib);
 check("the author's analysis keeps the primary position",
   alongside.selectedAnalyses[0].transformationOid === "T.CFB_MMRM_Primary",
   JSON.stringify(alongside.selectedAnalyses.map((a) => a.transformationOid)));
+
+/* An entry the author re-created in Step 4 is theirs, even when the sentence once seeded the same
+   transformation. Regression guard: the old spec-level mark could not tell the two apart, and a
+   later phrase deletion destroyed the author's hand-edited analysis. */
+const recreated = { phraseInstances: [
+  { phrase: "SP_CFB_ENDPOINT", bindings: {} },
+  { phrase: "SP_METHOD_ANCOVA", bindings: {} }
+] };
+applyPhraseChange(recreated, context.lib);
+check("the sentence's own record is marked",
+  recreated.selectedAnalyses[0].seededByPhrase === true,
+  JSON.stringify(recreated.selectedAnalyses));
+recreated.selectedAnalyses = [];                       /* Step 3 or Step 4 clears it */
+recreated.selectedAnalyses.push({ transformationOid: "T.CFB_ANCOVA",
+  resolvedBindings: [{ concept: "hand-edited" }],
+  activeInteractions: ["TRT*VISIT"], estimandSummaryPattern: "LSMeanDiff" });
+recreated.phraseInstances = [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }];
+applyPhraseChange(recreated, context.lib);
+check("deleting the phrase does not destroy the author's re-created analysis",
+  recreated.selectedAnalyses.length === 1
+    && recreated.selectedAnalyses[0].resolvedBindings[0].concept === "hand-edited"
+    && recreated.selectedAnalyses[0].activeInteractions.join(",") === "TRT*VISIT",
+  JSON.stringify(recreated.selectedAnalyses));
+
+/* A legacy spec — saved before the flag existed — is treated as entirely the author's. */
+const legacy = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }],
+  selectedAnalyses: [{ transformationOid: "T.CFB_ANCOVA", resolvedBindings: [{ concept: "old" }],
+                       activeInteractions: [], estimandSummaryPattern: null }] };
+applyPhraseChange(legacy, context.lib);
+check("a spec saved before the flag existed loses nothing",
+  legacy.selectedAnalyses.length === 1
+    && legacy.selectedAnalyses[0].resolvedBindings[0].concept === "old",
+  JSON.stringify(legacy.selectedAnalyses));
+
+/* The superseded spec-level mark is dropped from any spec that still carries one. */
+const carriesOldMark = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }],
+  phraseSeededOid: "T.CFB_ANCOVA", selectedAnalyses: [] };
+applyPhraseChange(carriesOldMark, context.lib);
+check("the superseded spec-level mark is removed",
+  !("phraseSeededOid" in carriesOldMark), JSON.stringify(carriesOldMark.phraseSeededOid));
 
 /* Re-running on an unchanged sentence must not churn state. */
 const idem = { phraseInstances: [
