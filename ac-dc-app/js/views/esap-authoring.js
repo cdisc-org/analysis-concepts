@@ -63,7 +63,22 @@ export function renderAuthoredSentenceHtml(ctx, instance, epId) {
       (rp.bindings && rp.bindings[0] && rp.bindings[0].placeholder) || "";
     const label = first ? rp.text.charAt(0).toUpperCase() + rp.text.slice(1) : rp.text;
     first = false;
-    const broken = (rp.errors || []).length ? " sp-unresolved" : "";
+    /* Spec §7.4 wants the fixture shown as unresolved against its declared source, and engine
+       errors do not say that: an `UNRESOLVED.*` concept resolves perfectly cleanly — it is a
+       real graph concept, distinguished only by `anchored: false` — so the unanchored parameter
+       rendered identically to the anchored visit. The graph is already on the engine context
+       (`ctxOf` returns it), so this needs no extra parameter to read it.
+
+       A resolved binding is not shaped like a saved one: it carries
+       `{placeholder, text, detail: {kind, id, render}}`, so the concept id is `detail.id` and
+       not `concept`. */
+    const concepts = (ctx && ctx.graph && ctx.graph.concepts) || {};
+    const unanchored = (rp.bindings || []).some((b) => {
+      const d = b && b.detail;
+      const c = d && d.kind === "concept" && d.id && concepts[d.id];
+      return !!c && c.anchored === false;
+    });
+    const broken = ((rp.errors || []).length || unanchored) ? " sp-unresolved" : "";
     /* Every phrase but the endpoint one may be removed. The endpoint phrase is what makes the
        sentence an analysis at all, and removePhraseFromSpec refuses to drop the last one, so
        rendering a control for it would offer an action that silently does nothing. */
@@ -146,6 +161,38 @@ export function renderAuthoringSectionHtml(context, spec, ep) {
 }
 
 /**
+ * The dimension key this slot writes.
+ *
+ * The library's sliceKeys name one member of a concept category (`AnalysisVisit`); the
+ * endpoint's `dimensionCategoryPicks` names which member of that category the rest of the app
+ * reads, and endpoint-how.js renames the `dimensionValues` key when that pick changes. Writing
+ * the library's name regardless would create a second key that Steps 6 and 8 never read — the
+ * prose would say Week 12 while the run used Week 24.
+ *
+ * Resolution is by category MEMBERSHIP, not by name. The `${dimension}Dimension` convention
+ * holds for only one of the three dimensions the library declares: `Parameter` sits in
+ * `ParameterDimension`, but `AnalysisVisit` sits in `VisitDimension` (there is no
+ * `AnalysisVisitDimension`) and `Population` sits in no category at all — and `AnalysisVisit`
+ * is precisely the case this fix exists for.
+ *
+ * With no categories map, no owning category, or no pick recorded, the library's own name
+ * stands: that is today's behaviour, and it is right when no pick has been made.
+ *
+ * @param {object} categories  context.categories — concept_categories.json's `categories`
+ * @param {object} spec        endpointSpecs[epId]
+ * @param {string} dimension   the sliceKey's dimension name
+ * @returns {string}
+ */
+function concreteDimension(categories, spec, dimension) {
+  const picks = (spec && spec.dimensionCategoryPicks) || {};
+  for (const [catName, cat] of Object.entries(categories || {})) {
+    const owns = ((cat && cat.members) || []).some((m) => m.concept === dimension);
+    if (owns && picks[catName]) return picks[catName];
+  }
+  return dimension;
+}
+
+/**
  * The picker for one slot.
  *
  * Which concepts are offered is not a decision made here: the slot belongs to a dimension, the
@@ -223,7 +270,7 @@ export function renderSlotEditorHtml(context, spec, ep, phraseOid, slot) {
 
   return `<div class="sp-slot-editor" data-ep-id="${esc(ep.id)}" ` +
     `data-phrase="${esc(phraseOid)}" data-slot="${esc(slot)}" ` +
-    `data-dimension="${esc(dimension || "")}">
+    `data-dimension="${esc(dimension ? concreteDimension(context.categories, spec, dimension) : "")}">
     <label class="sp-slot-label">${esc(slot)} <span class="sp-slot-source">from ${esc(source || "—")}</span></label>
     <select class="sp-slot-select">${options}</select>
   </div>`;

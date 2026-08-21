@@ -16,18 +16,26 @@ import { resolveCandidates, deriveSlots } from "./phrase-slots.js";
 /**
  * Build the adapted library, the concept graph, and the engine context.
  *
+ * `categories` is the concept-category map (`concept_categories.json`'s `categories` object).
+ * It is carried on the context rather than read from app state so the authoring surface can
+ * stay pure: resolving a library dimension to the endpoint's concrete `dimensionCategoryPicks`
+ * choice needs category membership, and nothing else in the library carries it. Omitting it
+ * degrades to using the library's own dimension name, which is what happens when no pick has
+ * been made anyway.
+ *
  * @param {object} study    parsed study from parseUSDM()
  * @param {object} v06      the raw ACDC_Transformation_Library_v06.json
  * @param {object} methods  { [oid]: method JSON }
- * @returns {{lib: object, graph: object, ctx: object}}
+ * @param {object} categories  appState.conceptCategories?.categories
+ * @returns {{lib: object, graph: object, ctx: object, categories: object}}
  */
-export function buildSmartphraseContext(study, v06, methods = {}) {
+export function buildSmartphraseContext(study, v06, methods = {}, categories = {}) {
   const lib = adaptV06Library(v06, methods);
   const graph = buildConceptGraph(study, lib, methods);
   /* `proposed` is null: the demo's proposed-overlay entities are not part of this app's
      library, and the ES-module engine has no global fallback for them. */
   const ctx = SPEngine.ctxOf(lib, graph, null, null);
-  return { lib, graph, ctx };
+  return { lib, graph, ctx, categories: categories || {} };
 }
 
 /**
@@ -212,7 +220,11 @@ export function getSmartphraseContext(appState) {
      is rebuilt as they land, instead of freezing an empty method table for the session. */
   const key = `${appState.selectedStudyIndex}:${Object.keys(methods).length}`;
   if (cache.key === key && cache.value) return cache.value;
-  cache = { key, value: buildSmartphraseContext(appState.selectedStudy, appState.transformationLibrary, methods) };
+  /* conceptCategories is assigned in the same block of data-loader.js that assigns
+     transformationLibrary, so it is never missing once the guard above has passed. */
+  cache = { key, value: buildSmartphraseContext(
+    appState.selectedStudy, appState.transformationLibrary, methods,
+    (appState.conceptCategories && appState.conceptCategories.categories) || {}) };
   return cache.value;
 }
 

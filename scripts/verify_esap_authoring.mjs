@@ -31,7 +31,9 @@ const manifest = JSON.parse(fs.readFileSync(
   path.join(root, "ac-dc-app/data/usdm/studies.json"), "utf8"));
 const study = parseUSDM(JSON.parse(fs.readFileSync(
   path.join(root, "ac-dc-app/data/usdm", manifest[0].file), "utf8")));
-const context = buildSmartphraseContext(study, v06, methods);
+const categories = JSON.parse(fs.readFileSync(
+  path.join(root, "model/concept/concept_categories.json"), "utf8")).categories;
+const context = buildSmartphraseContext(study, v06, methods, categories);
 
 const scenario = JSON.parse(fs.readFileSync(path.join(root,
   "ac-dc-app/data/study_ac_spec/Scenario 1_cdisc-pilot-lzzt-merged.study-instance-adas-cog-analysis-only.json"),
@@ -55,6 +57,21 @@ check("chips carry their slot", html.includes('data-slot="parameter"'));
 check("chips carry the endpoint id", html.includes(`data-ep-id="${ep.id}"`));
 check("chips carry their role for the stylesheet", html.includes('data-role="endpoint"'));
 check("the parameter label is rendered", html.includes("Adas-Cog(11) Subscore"), html.slice(0, 200));
+
+/* Spec §7.4: a fixture concept must be shown as unresolved. An `UNRESOLVED.*` concept resolves
+   with no engine error at all — it is a real graph concept with `anchored: false` — so this has
+   to be read off the graph. Scenario 1 binds an unanchored parameter and an anchored visit, so
+   both directions are pinned: marking everything, or nothing, fails one of these. */
+const chipOpenTag = (h, oid) => {
+  const at = h.indexOf(`data-phrase="${oid}"`);
+  return at < 0 ? "" : h.slice(h.lastIndexOf("<span", at), at);
+};
+const cfbChip = chipOpenTag(html, "SP_CFB_ENDPOINT");
+const timepointChip = chipOpenTag(html, "SP_TIMEPOINT");
+check("an unanchored binding marks its chip unresolved",
+  cfbChip.includes("sp-unresolved"), cfbChip);
+check("an anchored binding does not",
+  !timepointChip.includes("sp-unresolved"), timepointChip);
 
 /* Frame text must not be a chip — it belongs to the sentence template, not to any phrase. */
 check("frame text is rendered outside chips",
@@ -136,6 +153,23 @@ check("editor names the declared source",
   editor.includes("visit"), editor.slice(0, 200));
 check("editor carries the write target",
   editor.includes('data-phrase="SP_TIMEPOINT"') && editor.includes('data-slot="visit"'));
+
+/* `data-dimension` is the key the picker writes into dimensionValues, and Steps 6 and 8 read
+   the key the endpoint's dimensionCategoryPicks names — endpoint-how.js renames it when the
+   pick changes. With no pick, the library's own name stands. Note the pick is on
+   `VisitDimension`, not on an `AnalysisVisitDimension` that does not exist: resolution is by
+   category membership, so a name-suffix convention would not find it. */
+check("with no pick, the library's dimension name stands",
+  editor.includes('data-dimension="AnalysisVisit"'), editor.slice(0, 300));
+const ocPicked = { ...spec, dimensionCategoryPicks: { VisitDimension: "Visit" } };
+const ocEditor = renderSlotEditorHtml(context, ocPicked, ep, "SP_TIMEPOINT", "visit");
+check("a category pick redirects the dimension the picker writes",
+  ocEditor.includes('data-dimension="Visit"')
+    && !ocEditor.includes('data-dimension="AnalysisVisit"'), ocEditor.slice(0, 300));
+/* Population belongs to no category, so no pick can ever redirect it. */
+const popEditor = renderSlotEditorHtml(context, ocPicked, ep, "SP_POPULATION", "population");
+check("a dimension in no category is never redirected",
+  popEditor.includes('data-dimension="Population"'), popEditor.slice(0, 300));
 
 /* A parameter slot draws from biomedical concepts — a different, much larger set. */
 const paramEditor = renderSlotEditorHtml(context, spec, ep, "SP_CFB_ENDPOINT", "parameter");
