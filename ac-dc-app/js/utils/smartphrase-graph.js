@@ -63,7 +63,9 @@ const BUILDERS = {
         kind: "AnalysisVisit",
         conceptCategory: "VisitDimension",
         label: enc.label || enc.name,
-        name: enc.description || enc.label || enc.name,
+        /* The encounter's description is timing (e.g., "Day 168"), not a display name.
+           Using it for `name` would render "at Day 168 (Week 24)" in sentences. */
+        name: enc.label || enc.name,
         iri: "usdm:Encounter/" + enc.id,
         anchored: true,
         source: "visit"

@@ -136,6 +136,14 @@ check("all three sliceKeys resolve",
   view.sliceKeys.length === 3 && view.sliceKeys.every((sk) => sk.value !== null),
   JSON.stringify(view.sliceKeys.map((sk) => [sk.dimension, sk.value && sk.value.label])));
 
+/* The visit's name must be its human name, not its timing. A previous version set
+   name = enc.description, which rendered "at Day 168 (Week 24)". */
+check("visit concept name is the human name, not the timing",
+  gPilot.concepts["V.Encounter_11"]?.name === "Week 24",
+  JSON.stringify(gPilot.concepts["V.Encounter_11"]));
+check("sentence does not contain a raw timing string",
+  !res.sentence.includes("Day 168"), res.sentence);
+
 if (failures.length) {
   console.error(`FAIL — ${failures.length} check(s):`);
   failures.forEach((f) => console.error("  -", f));
