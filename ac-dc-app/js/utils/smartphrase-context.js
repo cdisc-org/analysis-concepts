@@ -32,10 +32,15 @@ export function buildSmartphraseContext(study, v06, methods = {}) {
 /**
  * Bring a saved spec up to date with the freshly-built graph.
  *
- * Order matters. `ensureUnresolvedConcepts` re-adds the synthesised concepts a saved binding
- * refers to — the graph is rebuilt from USDM on every load and has never heard of them —
- * and must run before anything resolves. `backfillPhraseInstances` then no-ops for specs that
- * already have `phraseInstances`, and derives them for older saves.
+ * Rehydration must happen before anything resolves: the graph is rebuilt from USDM on every
+ * study load and has never heard of a saved `UNRESOLVED.*` concept, so `ensureUnresolvedConcepts`
+ * re-adds the synthesised concepts a saved binding refers to before that binding is used.
+ *
+ * `backfillPhraseInstances` happens to call `ensureUnresolvedConcepts` itself as its own first
+ * line today, so the explicit call here is not load-bearing — it is defensive insurance against
+ * relying on an internal of a module this call does not own, and it is idempotent, so the
+ * redundancy costs nothing. `backfillPhraseInstances` then no-ops for specs that already have
+ * `phraseInstances`, and derives them for older saves.
  *
  * @param {object} spec     endpointSpecs[epId]
  * @param {{graph: object}} context

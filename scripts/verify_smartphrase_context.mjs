@@ -75,10 +75,19 @@ check("the sentence names the parameter",
 check("an empty spec yields no instance",
   specToInstance({}, ep, context.lib) === null);
 
-/* --- prepareSpec is safe to call twice --- */
-const before = JSON.stringify(spec.phraseInstances);
-prepareSpec(spec, context, context.lib);
-check("prepareSpec is idempotent", JSON.stringify(spec.phraseInstances) === before);
+/* A spec that already carries phrase instances is authoritative — prepareSpec must not
+   re-derive them from dimensionValues and overwrite an author's work. */
+const authored = {
+  dimensionValues: { AnalysisVisit: "Baseline", Parameter: "Adas-Cog(11) Subscore" },
+  selectedEndpointPhrase: "SP_CFB_ENDPOINT",
+  selectedDimPhrases: ["SP_TIMEPOINT"],
+  phraseInstances: [{ phrase: "SP_TIMEPOINT", bindings: { visit: { concept: "V.Encounter_11" } } }]
+};
+prepareSpec(authored, context, context.lib);
+check("an existing phraseInstances array is never re-derived",
+  authored.phraseInstances.length === 1 &&
+  authored.phraseInstances[0].bindings.visit.concept === "V.Encounter_11",
+  JSON.stringify(authored.phraseInstances));
 
 /* The document's render policy is applied to bindings that lack one, without mutating the spec. */
 const rendered = instance.phrases.find((p) => p.phrase === "SP_TIMEPOINT").bindings.visit;
