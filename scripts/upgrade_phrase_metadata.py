@@ -15,6 +15,12 @@ Existing phrases keep their v06 `phrase_template`, `configurations`,
 verbatim from v07, plus `phrase_template_slotted` when v07's template differs
 (which happens only for the four method phrases, where v06 bakes the method
 name into the sentence and v07 makes it a slot).
+
+The script also appends five new phrase entries that v06 does not define at
+all (see NEW_PHRASES) — including SP_METHOD_CHISQ, which T.Responder_ChiSq
+already references and which the phrase-shape guard flags as missing until
+this script runs. So the merge is not purely in-place: the phrase count in
+smartPhrases[] grows by five.
 """
 import copy
 import json
@@ -54,10 +60,25 @@ FROZEN_KEYS = [
 ]
 
 
+SOURCE_BRANCH = "methods_02"
+
+
 def load_v07():
-    raw = subprocess.run(
-        ["git", "show", f"{SOURCE_COMMIT}:{SOURCE_FILE}"],
-        cwd=ROOT, capture_output=True, text=True, check=True).stdout
+    try:
+        raw = subprocess.run(
+            ["git", "show", f"{SOURCE_COMMIT}:{SOURCE_FILE}"],
+            cwd=ROOT, capture_output=True, text=True, check=True).stdout
+    except subprocess.CalledProcessError as exc:
+        raise SystemExit(
+            f"FAIL — could not read {SOURCE_FILE} from commit {SOURCE_COMMIT}.\n"
+            f"This script needs that commit present locally; it is not fetched "
+            f"by a shallow or branch-filtered clone.\n"
+            f"git stderr: {exc.stderr.strip()}\n\n"
+            f"Fix: fetch the branch that carries it, then retry:\n"
+            f"  git fetch origin {SOURCE_BRANCH}\n"
+            f"  python3 {pathlib.Path(__file__).name} " +
+            ("--check" if "--check" in sys.argv else "")
+        ) from None
     return json.loads(raw)
 
 

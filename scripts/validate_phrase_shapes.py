@@ -8,8 +8,13 @@ Two engines read this block at once and they read different fields:
 
   * the existing engine (ac-dc-app/js/utils/phrase-engine.js) substitutes only
     the tokens listed in `configurations`, from `phrase_template`;
-  * the ported engine (ac-dc-app/js/utils/smartphrase-engine.js) substitutes
-    `placeholders[].name`, from `phrase_template_slotted` when present.
+  * the ported engine (ac-dc-app/js/utils/smartphrase-engine.js) always
+    substitutes from `phrase_template` too — it never reads
+    `phrase_template_slotted` directly. It is the read-only adapter
+    (ac-dc-app/js/utils/smartphrase-lib-adapter.js) that maps
+    `phrase_template_slotted` onto `phrase_template` before handing the
+    library to the ported engine, so that engine sees the slotted form
+    where one exists.
 
 The checks below are exactly the invariants that let both be correct at once.
 Stdlib only; no test framework in this repo by design.
@@ -119,8 +124,9 @@ def main() -> int:
             print("  -", f)
         return 1
 
-    print(f"PASS — {len(phrases)} phrases: placeholders and configurations agree, "
-          f"anchors present, no unsubstitutable tokens, no dangling references.")
+    print(f"PASS — {len(phrases)} phrases: every configuration has a matching "
+          f"placeholder, anchors present, no unsubstitutable tokens, no dangling "
+          f"references.")
     return 0
 
 

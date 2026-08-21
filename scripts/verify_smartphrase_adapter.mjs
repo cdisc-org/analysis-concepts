@@ -89,6 +89,43 @@ check("phrases carry placeholders after Task 3",
 check("roleDefinitions pass through", lib.roleDefinitions === v06.roleDefinitions);
 check("configurationOptions pass through", lib.configurationOptions === v06.configurationOptions);
 
+// Pinned, deliberate gap (see the "NOT adapted" note in
+// smartphrase-lib-adapter.js's header): tpl.sliceKeys passes through with
+// v06's raw `dimension` values, not the v07 category vocabulary
+// ("ParameterDimension", "VisitDimension", …) the engine matches against
+// (smartphrase-engine.js constructModelView). This assertion records
+// today's v06 values so a change to either side is visible here, not
+// silently absorbed. It is deliberately NOT a claim that sliceKeys resolve
+// correctly at runtime — that resolution is deferred to the later
+// slice-resolution phase and is out of scope here.
+check("sliceKeys carry v06's raw dimension vocabulary (pinned, not v07 categories)",
+  t && JSON.stringify((t.sliceKeys || []).map(sk => sk.dimension))
+    === JSON.stringify(["Parameter", "AnalysisVisit", "Population"]),
+  t && JSON.stringify(t.sliceKeys));
+
+// --- Engine smoke test: prove the adapter's output actually satisfies the
+// engine end to end, not just field-by-field. This is what would have
+// caught the phrase_template_slotted gap (fixed above) before it shipped. ---
+const { ctxOf, constructModelView } = await import(
+  pathToFileURL(path.join(root, "ac-dc-app", "js", "utils", "smartphrase-engine.js")).href
+);
+
+const graph = { prefixes: {}, study: {}, concepts: {}, methodGrounding: {}, instances: [], traceTemplates: {} };
+const ctx = ctxOf(lib, graph, null, null);
+const view = constructModelView(ctx, { template: "T.CFB_ANCOVA", phrases: [] });
+
+check("engine accepts the adapted library and returns a view with no errors",
+  view && typeof view === "object" && !("errors" in view),
+  view && JSON.stringify(view.errors));
+
+// Regression test for the phrase_template_slotted fix: without the mapping,
+// the engine would render v06's plain "using analysis of covariance" and
+// silently drop the resolved {method} binding.
+const ancovaPhrase = lib.smartPhrases.find(p => p.oid === "SP_METHOD_ANCOVA");
+check("adapted SP_METHOD_ANCOVA.phrase_template carries the {method} slot",
+  ancovaPhrase && ancovaPhrase.phrase_template.includes("{method}"),
+  ancovaPhrase && ancovaPhrase.phrase_template);
+
 if (failures.length) {
   console.error(`FAIL — ${failures.length} check(s):`);
   failures.forEach(f => console.error("  -", f));
