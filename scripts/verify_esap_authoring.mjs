@@ -170,6 +170,56 @@ for (const [oid, slotName] of [["SP_GROUPING", "treatment"], ["SP_TTE_ENDPOINT",
     !unbindable.includes("data-dimension"), unbindable.slice(0, 200));
 }
 
+/* ---------- add and remove ---------- */
+
+const { renderAddPhraseHtml, addPhraseToSpec, removePhraseFromSpec } =
+  await load("ac-dc-app/js/views/esap-authoring.js");
+
+/* From nothing, only endpoint phrases can start a sentence. */
+const blank = {};
+const startList = renderAddPhraseHtml(context, blank, ep);
+check("a blank spec offers endpoint phrases",
+  startList.includes("SP_CFB_ENDPOINT"), startList.slice(0, 300));
+check("options carry the add action", startList.includes("data-add-oid"));
+
+/* With an endpoint phrase chosen, the offers narrow to what its candidates allow. */
+const building = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }] };
+const nextList = renderAddPhraseHtml(context, building, ep);
+check("a method phrase is offerable next", nextList.includes("SP_METHOD_ANCOVA"),
+  nextList.slice(0, 400));
+check("an already-used phrase is not offered again",
+  !nextList.includes('data-add-oid="SP_CFB_ENDPOINT"'), nextList.slice(0, 400));
+check("a phrase no candidate allows is not offered",
+  !nextList.includes("SP_METHOD_LOGRANK"), nextList.slice(0, 400));
+
+/* Adding, then removing. */
+addPhraseToSpec(building, context, "SP_METHOD_ANCOVA");
+check("adding appends the phrase",
+  building.phraseInstances.some((p) => p.phrase === "SP_METHOD_ANCOVA"),
+  JSON.stringify(building.phraseInstances.map((p) => p.phrase)));
+check("adding a method phrase binds its method",
+  building.phraseInstances.find((p) => p.phrase === "SP_METHOD_ANCOVA")
+    ?.bindings?.method?.method === "M.ANCOVA",
+  JSON.stringify(building.phraseInstances));
+
+addPhraseToSpec(building, context, "SP_METHOD_ANCOVA");
+check("adding twice does not duplicate",
+  building.phraseInstances.filter((p) => p.phrase === "SP_METHOD_ANCOVA").length === 1,
+  String(building.phraseInstances.length));
+
+removePhraseFromSpec(building, "SP_METHOD_ANCOVA");
+check("removing drops the phrase",
+  !building.phraseInstances.some((p) => p.phrase === "SP_METHOD_ANCOVA"),
+  JSON.stringify(building.phraseInstances.map((p) => p.phrase)));
+removePhraseFromSpec(building, "SP_NOT_PRESENT");
+check("removing an absent phrase is a no-op", building.phraseInstances.length === 1);
+
+/* The endpoint phrase is what makes a sentence a sentence — it must not be removable. */
+removePhraseFromSpec(building, "SP_CFB_ENDPOINT");
+check("the endpoint phrase cannot be removed",
+  building.phraseInstances.some((p) => p.phrase === "SP_CFB_ENDPOINT"),
+  JSON.stringify(building.phraseInstances.map((p) => p.phrase)));
+
 if (failures.length) {
   console.error(`FAIL — ${failures.length} check(s):`);
   failures.forEach((f) => console.error("  -", f));

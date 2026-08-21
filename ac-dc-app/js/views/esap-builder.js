@@ -14,7 +14,10 @@ import { buildEsapSpecification } from '../utils/instance-serializer.js';
 import { buildDefineXml } from '../utils/define-xml-generator.js';
 import { ESAP_SECTION_PREFIXES, ESAP_SECTION_LABELS } from '../utils/esap-constants.js';
 import { resolveTitle, buildResolverContext } from './template-resolver.js';
-import { renderAuthoringSectionHtml, renderSlotEditorHtml } from './esap-authoring.js';
+import {
+  renderAuthoringSectionHtml, renderSlotEditorHtml,
+  renderAddPhraseHtml, addPhraseToSpec, removePhraseFromSpec
+} from './esap-authoring.js';
 import { getSmartphraseContext, applyPhraseChange } from '../utils/smartphrase-context.js';
 import { setDimensionBinding } from '../utils/phrase-bindings.js';
 
@@ -369,6 +372,29 @@ export async function renderEsapBuilder(container) {
           editor.dataset.slot === 'population' ? 'name' : 'label');
         applyPhraseChange(appState.endpointSpecs[epId], context.lib);
         renderEsapBuilder(container);
+      });
+    });
+  });
+
+  /* "+ add phrase" and "Write the analysis" both open the same offer list. */
+  container.querySelectorAll('[data-add-phrase], [data-start-authoring]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const epId = btn.dataset.epId;
+      const context = getSmartphraseContext(appState);
+      if (!context) return;
+      const ep = getAllEndpoints(appState.selectedStudy).find(x => x.id === epId);
+      if (!appState.endpointSpecs[epId]) appState.endpointSpecs[epId] = {};
+      const host = btn.closest('.sp-authoring');
+      host.querySelector('.sp-add-list')?.remove();
+      host.insertAdjacentHTML('beforeend',
+        renderAddPhraseHtml(context, appState.endpointSpecs[epId], ep));
+      host.querySelectorAll('.sp-add-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          addPhraseToSpec(appState.endpointSpecs[epId], context, opt.dataset.addOid);
+          applyPhraseChange(appState.endpointSpecs[epId], context.lib);
+          renderEsapBuilder(container);
+        });
       });
     });
   });

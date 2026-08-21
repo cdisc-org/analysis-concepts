@@ -212,3 +212,81 @@ export function renderSlotEditorHtml(context, spec, ep, phraseOid, slot) {
     <select class="sp-slot-select">${options}</select>
   </div>`;
 }
+
+/**
+ * The phrases that may be added next.
+ *
+ * The library decides, not this file. With nothing written, only endpoint-role phrases can
+ * start a sentence. Once an endpoint phrase exists, the offers are the union of what the
+ * current candidate transformations declare in `validSmartPhrases`, minus what is already
+ * used — so a phrase no candidate can express is never offered.
+ */
+export function renderAddPhraseHtml(context, spec, ep) {
+  const used = new Set((spec.phraseInstances || []).map((p) => p.phrase));
+  let offerable;
+
+  if (!used.size) {
+    offerable = (context.lib.smartPhrases || [])
+      .filter((p) => p.role === "endpoint")
+      .map((p) => p.oid);
+  } else {
+    const candidates = resolveCandidates([...used], context.lib);
+    const allowed = new Set();
+    for (const c of candidates) {
+      const t = (context.lib.transformations || []).find((x) => x.conceptId === c.conceptId);
+      for (const oid of (t && t.validSmartPhrases) || []) allowed.add(oid);
+    }
+    offerable = [...allowed].filter((oid) => !used.has(oid));
+  }
+
+  if (!offerable.length) {
+    return `<div class="sp-add-list sp-add-empty">Every phrase the analysis allows is present.</div>`;
+  }
+
+  const rows = offerable.map((oid) => {
+    const def = SPEngine.phraseDef(context.ctx, oid);
+    if (!def) return "";
+    return `<button class="sp-add-option" data-add-oid="${esc(oid)}" data-ep-id="${esc(ep.id)}">` +
+      `<span class="sp-add-role" data-role="${esc(def.role)}">${esc(def.role)}</span> ` +
+      `<span class="sp-add-template">${esc(def.phrase_template)}</span></button>`;
+  }).join("");
+
+  return `<div class="sp-add-list">${rows}</div>`;
+}
+
+/**
+ * Add a phrase to the spec, with its method pre-bound when the library names one.
+ *
+ * A method phrase's `anchors.uses_method` names the method it stands for, so the binding is
+ * derivable rather than asked for. Concept slots stay empty — those are the author's to fill.
+ *
+ * Idempotent: adding a phrase already present does nothing.
+ */
+export function addPhraseToSpec(spec, context, phraseOid) {
+  if (!Array.isArray(spec.phraseInstances)) spec.phraseInstances = [];
+  if (spec.phraseInstances.some((p) => p.phrase === phraseOid)) return;
+
+  const def = SPEngine.phraseDef(context.ctx, phraseOid);
+  const bindings = {};
+  const usesMethod = def && def.anchors && def.anchors.uses_method;
+  if (usesMethod) {
+    const slot = (def.placeholders || []).find((p) => p.kind === "method_ref");
+    if (slot) bindings[slot.name] = { method: usesMethod };
+  }
+  spec.phraseInstances.push({ phrase: phraseOid, bindings });
+}
+
+/**
+ * Remove a phrase.
+ *
+ * The endpoint phrase is what makes the sentence an analysis at all — removing it would leave
+ * a spec that resolves to nothing — so it is refused. Everything else is optional.
+ */
+export function removePhraseFromSpec(spec, phraseOid) {
+  if (!Array.isArray(spec.phraseInstances)) return;
+  const keep = spec.phraseInstances.filter((p) => p.phrase !== phraseOid);
+  const removedEndpoint = spec.phraseInstances.length !== keep.length &&
+    !keep.some((p) => /_ENDPOINT$/.test(p.phrase));
+  if (removedEndpoint && /_ENDPOINT$/.test(phraseOid)) return;
+  spec.phraseInstances = keep;
+}

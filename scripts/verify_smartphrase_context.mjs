@@ -179,6 +179,27 @@ check("a contradicted pick is replaced by the single candidate",
   contradicted.selectedTransformationOid === "T.CFB_ANCOVA",
   contradicted.selectedTransformationOid);
 
+/* The clear branch: several candidates, and a selection none of them permits. Removing a
+   phrase is how this is reached from the UI (Task 5), and it is the only branch that
+   destroys state, so it is checked explicitly rather than inferred from the reseed case. */
+const stranded = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }],
+                   selectedTransformationOid: "T.Responder_ChiSq",
+                   selectedAnalyses: [{ transformationOid: "T.Responder_ChiSq" }],
+                   resolvedBindings: [{ concept: "stale" }],
+                   activeInteractions: ["TRT*VISIT"],
+                   estimandSummaryPattern: "P" };
+applyPhraseChange(stranded, context.lib);
+check("a selection no candidate permits is cleared",
+  stranded.selectedTransformationOid === null, String(stranded.selectedTransformationOid));
+check("clearing empties selectedAnalyses too",
+  Array.isArray(stranded.selectedAnalyses) && stranded.selectedAnalyses.length === 0,
+  JSON.stringify(stranded.selectedAnalyses));
+check("clearing resets the mirrored legacy fields",
+  stranded.resolvedBindings === null && stranded.activeInteractions.length === 0
+    && stranded.estimandSummaryPattern === null,
+  JSON.stringify([stranded.resolvedBindings, stranded.activeInteractions,
+                  stranded.estimandSummaryPattern]));
+
 /* Re-running on an unchanged sentence must not churn state. */
 const idem = { phraseInstances: [
   { phrase: "SP_CFB_ENDPOINT", bindings: {} },
