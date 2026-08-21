@@ -220,6 +220,19 @@ check("the endpoint phrase cannot be removed",
   building.phraseInstances.some((p) => p.phrase === "SP_CFB_ENDPOINT"),
   JSON.stringify(building.phraseInstances.map((p) => p.phrase)));
 
+/* ---------- the remove control ---------- */
+
+check("a removable phrase carries a remove control",
+  /data-remove-phrase="SP_TIMEPOINT"/.test(html), html.slice(0, 400));
+check("the remove control carries the endpoint id",
+  new RegExp(`data-remove-phrase="SP_TIMEPOINT"[^>]*data-ep-id="${ep.id}"`).test(html),
+  html.slice(0, 400));
+check("the endpoint phrase carries no remove control",
+  !/data-remove-phrase="SP_CFB_ENDPOINT"/.test(html), html.slice(0, 400));
+check("the remove control does not disturb the chip count",
+  (html.match(/class="phrase-chip/g) || []).length === instance.phrases.length,
+  String((html.match(/class="phrase-chip/g) || []).length));
+
 if (failures.length) {
   console.error(`FAIL — ${failures.length} check(s):`);
   failures.forEach((f) => console.error("  -", f));

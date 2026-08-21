@@ -376,6 +376,21 @@ export async function renderEsapBuilder(container) {
     });
   });
 
+  /* Removing a phrase. stopPropagation because the control sits inside the chip, whose own
+     click handler opens the slot editor — without it, removing would also open an editor for
+     the phrase just removed. */
+  container.querySelectorAll('[data-remove-phrase]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const epId = btn.dataset.epId;
+      const context = getSmartphraseContext(appState);
+      if (!context || !appState.endpointSpecs[epId]) return;
+      removePhraseFromSpec(appState.endpointSpecs[epId], btn.dataset.removePhrase);
+      applyPhraseChange(appState.endpointSpecs[epId], context.lib);
+      renderEsapBuilder(container);
+    });
+  });
+
   /* "+ add phrase" and "Write the analysis" both open the same offer list. */
   container.querySelectorAll('[data-add-phrase], [data-start-authoring]').forEach(btn => {
     btn.addEventListener('click', (e) => {

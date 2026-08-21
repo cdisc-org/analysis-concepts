@@ -11,6 +11,7 @@
  *   data-phrase     the smartphrase oid
  *   data-slot       the placeholder name within that phrase
  *   data-add-phrase / data-start-authoring   actions rather than edits
+ *   data-remove-phrase   drops that phrase from the sentence
  */
 
 import SPEngine from "../utils/smartphrase-engine.js";
@@ -55,9 +56,16 @@ export function renderAuthoredSentenceHtml(ctx, instance, epId) {
     const label = first ? rp.text.charAt(0).toUpperCase() + rp.text.slice(1) : rp.text;
     first = false;
     const broken = (rp.errors || []).length ? " sp-unresolved" : "";
+    /* Every phrase but the endpoint one may be removed. The endpoint phrase is what makes the
+       sentence an analysis at all, and removePhraseFromSpec refuses to drop the last one, so
+       rendering a control for it would offer an action that silently does nothing. */
+    const removeBtn = rp.role === "endpoint" ? "" :
+      `<span class="phrase-remove" data-remove-phrase="${esc(rp.oid)}" ` +
+      `data-ep-id="${esc(epId)}" role="button" tabindex="0" ` +
+      `title="Remove this phrase">×</span>`;
     return `<span class="phrase-chip${broken}" data-role="${esc(rp.role)}" ` +
       `data-phrase="${esc(rp.oid)}" data-slot="${esc(slot)}" data-ep-id="${esc(epId)}" ` +
-      `title="${esc(rp.template || rp.oid)}">${esc(label)}</span>`;
+      `title="${esc(rp.template || rp.oid)}">${esc(label)}${removeBtn}</span>`;
   }).join("");
 
   const errs = res.errors.length
