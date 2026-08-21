@@ -119,6 +119,38 @@ check("an unauthored endpoint renders a prompt",
   emptySection.slice(0, 200));
 check("an unauthored endpoint renders no chips", !emptySection.includes("phrase-chip"));
 
+/* ---------- slot editor ---------- */
+
+const { renderSlotEditorHtml } = await load("ac-dc-app/js/views/esap-authoring.js");
+
+const editor = renderSlotEditorHtml(context, spec, ep, "SP_TIMEPOINT", "visit");
+check("editor is a string", typeof editor === "string", typeof editor);
+check("editor offers every encounter as an option",
+  (editor.match(/<option /g) || []).length === 12,
+  String((editor.match(/<option /g) || []).length));
+check("editor options carry concept ids",
+  editor.includes('value="V.Encounter_11"'), editor.slice(0, 300));
+check("editor marks the current binding selected",
+  /value="V\.Encounter_11"[^>]*selected/.test(editor), editor.slice(0, 400));
+check("editor names the declared source",
+  editor.includes("visit"), editor.slice(0, 200));
+check("editor carries the write target",
+  editor.includes('data-phrase="SP_TIMEPOINT"') && editor.includes('data-slot="visit"'));
+
+/* A parameter slot draws from biomedical concepts — a different, much larger set. */
+const paramEditor = renderSlotEditorHtml(context, spec, ep, "SP_CFB_ENDPOINT", "parameter");
+check("parameter editor draws from biomedical concepts",
+  (paramEditor.match(/<option /g) || []).length === 183,
+  String((paramEditor.match(/<option /g) || []).length));
+check("an unresolved current value is offered and selected",
+  paramEditor.includes("UNRESOLVED.biomedicalConcept.adas-cog-11-subscore"),
+  paramEditor.slice(0, 300));
+
+/* An unknown slot must not crash. */
+const noSlot = renderSlotEditorHtml(context, spec, ep, "SP_TIMEPOINT", "nosuchslot");
+check("an unknown slot renders an empty editor, not a crash", typeof noSlot === "string");
+check("an unknown slot offers no options", !noSlot.includes("<option "));
+
 if (failures.length) {
   console.error(`FAIL — ${failures.length} check(s):`);
   failures.forEach((f) => console.error("  -", f));

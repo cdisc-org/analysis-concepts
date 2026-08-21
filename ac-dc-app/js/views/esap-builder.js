@@ -14,8 +14,9 @@ import { buildEsapSpecification } from '../utils/instance-serializer.js';
 import { buildDefineXml } from '../utils/define-xml-generator.js';
 import { ESAP_SECTION_PREFIXES, ESAP_SECTION_LABELS } from '../utils/esap-constants.js';
 import { resolveTitle, buildResolverContext } from './template-resolver.js';
-import { renderAuthoringSectionHtml } from './esap-authoring.js';
+import { renderAuthoringSectionHtml, renderSlotEditorHtml } from './esap-authoring.js';
 import { getSmartphraseContext } from '../utils/smartphrase-context.js';
+import { setDimensionBinding } from '../utils/phrase-bindings.js';
 
 // ===== Helper: build contentItemId → section mapping =====
 function buildNciToSectionMap(study) {
@@ -343,6 +344,31 @@ export async function renderEsapBuilder(container) {
         spec.datasetAssignments[key] = val;
       }
       spec.targetDataset = val;
+    });
+  });
+
+  /* Clicking a phrase chip opens its slot editor inline, directly beneath the sentence. */
+  container.querySelectorAll('.phrase-chip[data-slot]').forEach(chip => {
+    chip.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const { epId, phrase, slot } = chip.dataset;
+      if (!slot) return;
+      const context = getSmartphraseContext(appState);
+      if (!context) return;
+      const ep = getAllEndpoints(appState.selectedStudy).find(x => x.id === epId);
+      const host = chip.closest('.sp-authoring');
+      host.querySelector('.sp-slot-editor')?.remove();
+      host.insertAdjacentHTML('beforeend',
+        renderSlotEditorHtml(context, appState.endpointSpecs[epId] || {}, ep, phrase, slot));
+      host.querySelector('.sp-slot-select')?.addEventListener('change', (ev) => {
+        const editor = ev.target.closest('.sp-slot-editor');
+        setDimensionBinding(
+          appState.endpointSpecs[epId], context.graph,
+          editor.dataset.phrase, editor.dataset.slot, editor.dataset.dimension,
+          ev.target.value,
+          editor.dataset.slot === 'population' ? 'name' : 'label');
+        renderEsapBuilder(container);
+      });
     });
   });
 }

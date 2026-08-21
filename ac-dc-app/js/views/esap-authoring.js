@@ -128,3 +128,68 @@ export function renderAuthoringSectionHtml(context, spec, ep) {
     </button>
   </div>`;
 }
+
+/**
+ * The picker for one slot.
+ *
+ * Which concepts are offered is not a decision made here: the slot belongs to a dimension, the
+ * dimension's sliceKey declares its `source`, and the graph tags every concept with the source
+ * it came from. So the option list is exactly the concepts of that source (spec §7.1).
+ *
+ * The currently-bound concept is always offered even when it is unresolved, so an
+ * `UNRESOLVED.*` binding stays visible and re-selectable rather than silently disappearing.
+ *
+ * @returns {string} HTML — a select plus its label
+ */
+export function renderSlotEditorHtml(context, spec, ep, phraseOid, slot) {
+  const def = SPEngine.phraseDef(context.ctx, phraseOid);
+  const placeholder = def && (def.placeholders || []).find((p) => p.name === slot);
+  if (!placeholder) {
+    return `<div class="sp-slot-editor sp-slot-unknown">` +
+      `<span class="sp-slot-label">${esc(slot)}</span>` +
+      `<span class="sp-slot-note">no such slot on ${esc(phraseOid)}</span></div>`;
+  }
+
+  /* The dimension this SLOT is constrained to, and therefore the source its values come from.
+     The placeholder's own `concept_constraint` is tried first — it names the SharedDimension
+     the slot itself refers to (e.g. SP_CFB_ENDPOINT's "parameter" is constrained to
+     "Parameter"). `anchors.produced_concept` describes what the phrase's SENTENCE produces
+     (e.g. "Change" for SP_CFB_ENDPOINT), which is a different thing and only coincides with the
+     slot's own dimension for single-purpose phrases like SP_TIMEPOINT ("AnalysisVisit") — so it
+     is kept only as a fallback for phrases whose placeholder has no concept_constraint. Neither
+     name is hardcoded here: both are read off the phrase, and matched against whichever
+     dimension a sliceKey actually declares. */
+  const dimensionCandidates = [placeholder.concept_constraint, def.anchors && def.anchors.produced_concept]
+    .filter(Boolean);
+  let dimension = null;
+  let source = null;
+  outer:
+  for (const cand of dimensionCandidates) {
+    for (const t of context.lib.transformations || []) {
+      for (const sk of t.sliceKeys || []) {
+        if (sk.dimension === cand) { dimension = cand; source = sk.source; break outer; }
+      }
+    }
+  }
+
+  const current = (spec.phraseInstances || [])
+    .find((p) => p.phrase === phraseOid)?.bindings?.[slot]?.concept || "";
+
+  const ids = Object.keys(context.graph.concepts)
+    .filter((id) => context.graph.concepts[id].source === source);
+  if (current && !ids.includes(current)) ids.unshift(current);
+
+  const options = ids.map((id) => {
+    const c = context.graph.concepts[id];
+    const flag = c && c.anchored === false ? " (unresolved)" : "";
+    return `<option value="${esc(id)}"${id === current ? " selected" : ""}>` +
+      `${esc((c && c.label) || id)}${flag}</option>`;
+  }).join("");
+
+  return `<div class="sp-slot-editor" data-ep-id="${esc(ep.id)}" ` +
+    `data-phrase="${esc(phraseOid)}" data-slot="${esc(slot)}" ` +
+    `data-dimension="${esc(dimension || "")}">
+    <label class="sp-slot-label">${esc(slot)} <span class="sp-slot-source">from ${esc(source || "—")}</span></label>
+    <select class="sp-slot-select">${options}</select>
+  </div>`;
+}
