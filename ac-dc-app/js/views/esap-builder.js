@@ -14,6 +14,8 @@ import { buildEsapSpecification } from '../utils/instance-serializer.js';
 import { buildDefineXml } from '../utils/define-xml-generator.js';
 import { ESAP_SECTION_PREFIXES, ESAP_SECTION_LABELS } from '../utils/esap-constants.js';
 import { resolveTitle, buildResolverContext } from './template-resolver.js';
+import { renderAuthoringSectionHtml } from './esap-authoring.js';
+import { getSmartphraseContext } from '../utils/smartphrase-context.js';
 
 // ===== Helper: build contentItemId → section mapping =====
 function buildNciToSectionMap(study) {
@@ -446,7 +448,7 @@ function dispatchFromSpec(fromSpec, ctx) {
     case 'analyses.primary.definition':
       return renderEndpointDefinitions(selectedEps, study, /Primary/i);
     case 'analyses.primary.main':
-      return renderMainAnalyses(selectedEps, study, /Primary/i);
+      return renderAuthoredAnalyses(selectedEps, study, /Primary/i);
     case 'analyses.primary.sensitivity':
       return renderPlaceholderSection('Sensitivity analyses for primary endpoint(s). Configure variants in Step 4 (Endpoint How) — flag analyses as "sensitivity" to surface here.');
     case 'analyses.primary.supplementary':
@@ -455,7 +457,7 @@ function dispatchFromSpec(fromSpec, ctx) {
       return renderEndpointLevelAnalysis(selectedEps, study, /Secondary/i);
     case 'analyses.secondary.key':
     case 'analyses.secondary.key.main':
-      return renderMainAnalyses(selectedEps, study, /Secondary/i);
+      return renderAuthoredAnalyses(selectedEps, study, /Secondary/i);
     case 'analyses.secondary.key.definition':
       return renderEndpointDefinitions(selectedEps, study, /Secondary/i);
     case 'analyses.secondary.key.sensitivity':
@@ -527,6 +529,24 @@ function renderEndpointDefinitions(selectedEps, study, levelRe) {
   const eps = (selectedEps || []).filter(ep => levelRe.test(ep.level));
   if (!eps.length) return renderPlaceholderSection('No endpoints configured at this level.');
   return eps.map(ep => renderEndpointCard(ep)).join('');
+}
+
+/**
+ * §4.1.2 and its secondary equivalent: the smartphrase authoring surface, one block per
+ * endpoint at this level. Falls back to the previous read-only cards when the engine context
+ * cannot be built (no study selected, or the library has not loaded).
+ */
+function renderAuthoredAnalyses(selectedEps, study, levelRe) {
+  const eps = (selectedEps || []).filter(ep => levelRe.test(ep.level));
+  if (!eps.length) return renderPlaceholderSection('No analyses configured at this level.');
+
+  const context = getSmartphraseContext(appState);
+  if (!context) return renderMainAnalyses(selectedEps, study, levelRe);
+
+  return eps.map(ep => {
+    if (!appState.endpointSpecs[ep.id]) appState.endpointSpecs[ep.id] = {};
+    return renderAuthoringSectionHtml(context, appState.endpointSpecs[ep.id], ep);
+  }).join('');
 }
 
 function renderMainAnalyses(selectedEps, study, levelRe) {

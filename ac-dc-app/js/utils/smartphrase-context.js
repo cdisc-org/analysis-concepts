@@ -125,9 +125,12 @@ let cache = { key: null, value: null };
  */
 export function getSmartphraseContext(appState) {
   if (!appState || !appState.selectedStudy || !appState.transformationLibrary) return null;
-  const key = String(appState.selectedStudyIndex);
-  if (cache.key === key && cache.value) return cache.value;
   const methods = appState.methodsCache || {};
+  /* Methods load lazily (data-loader.js:loadMethod), so a context built before they arrive
+     resolves no method references. Keying on the count as well as the study means the context
+     is rebuilt as they land, instead of freezing an empty method table for the session. */
+  const key = `${appState.selectedStudyIndex}:${Object.keys(methods).length}`;
+  if (cache.key === key && cache.value) return cache.value;
   cache = { key, value: buildSmartphraseContext(appState.selectedStudy, appState.transformationLibrary, methods) };
   return cache.value;
 }
