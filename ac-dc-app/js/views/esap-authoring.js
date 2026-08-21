@@ -127,7 +127,15 @@ export function renderAuthoringSectionHtml(context, spec, ep) {
      is resolved, not open. The fourth case matters most — if the author has since edited the
      sentence so the chosen analysis no longer matches, saying so is the whole point of showing
      this line at all. */
-  const chosen = spec.selectedTransformationOid || null;
+  /* The flagged record is the one the SENTENCE put there, and it is what this line reports on.
+     `selectedTransformationOid` mirrors selectedAnalyses[0], which by design belongs to the
+     author's own Step 4 choice when they have made one — so with [author ANCOVA, seeded MMRM]
+     the legacy field says ANCOVA while the sentence unambiguously names MMRM. Reporting the
+     mirror there named the wrong analysis. The state is right; only the report was wrong, so
+     this reads past the mirror rather than changing it. */
+  const seededRecord = (spec.selectedAnalyses || []).find((a) => a.seededByPhrase);
+  const chosen = (seededRecord && seededRecord.transformationOid) ||
+    spec.selectedTransformationOid || null;
   const chosenIsCandidate = chosen && candidates.some((c) => c.conceptId === chosen);
 
   let seeded;

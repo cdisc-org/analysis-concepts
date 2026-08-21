@@ -129,6 +129,27 @@ const openSection = renderAuthoringSectionHtml(context, openSpec, ep);
 check("with no choice, candidates are listed", openSection.includes("sp-seed-many"),
   openSection.slice(0, 400));
 
+/* The section reports the analysis the SENTENCE names, not selectedAnalyses[0]. Index 0 belongs
+   to the author's own Step 4 choice by design, so with [author ANCOVA, seeded MMRM] the legacy
+   mirror says ANCOVA while the sentence unambiguously names MMRM. */
+const bothSpec = JSON.parse(JSON.stringify(spec));
+bothSpec.phraseInstances = [
+  { phrase: "SP_CFB_ENDPOINT", bindings: {} },
+  { phrase: "SP_METHOD_MMRM", bindings: {} }
+];
+bothSpec.selectedAnalyses = [
+  { transformationOid: "T.CFB_ANCOVA", resolvedBindings: [], activeInteractions: [],
+    estimandSummaryPattern: null },
+  { transformationOid: "T.CFB_MMRM_Primary", resolvedBindings: [], activeInteractions: [],
+    estimandSummaryPattern: null, seededByPhrase: true }
+];
+bothSpec.selectedTransformationOid = "T.CFB_ANCOVA";   /* the mirror, per the index-0 policy */
+const bothSection = renderAuthoringSectionHtml(context, bothSpec, ep);
+check("the section names the analysis the sentence seeded, not the mirror",
+  /sp-seed-one">T\.CFB_MMRM_Primary</.test(bothSection)
+    && !bothSection.includes("T.CFB_ANCOVA"),
+  bothSection.slice(0, 500));
+
 /* --- an endpoint with no phrase instances gets a prompt, not a crash --- */
 const emptySection = renderAuthoringSectionHtml(context, {}, ep);
 check("an unauthored endpoint renders a prompt",
