@@ -65,15 +65,22 @@ export function deriveSlots(candidates, lib) {
     return { conceptId: c.conceptId, slots };
   });
 
+  /* A candidate declaring no sliceKeys has no opinion about slots — 14 of the library's 25
+     transformations are in that position, every derivation among them. Counting them toward
+     unanimity would make it unreachable whenever one shares a candidate set with analyses,
+     which is the common case, so agreement is measured over slot-bearing candidates only. */
+  const slotBearing = perCandidate.filter((p) => p.slots.size > 0);
+  if (slotBearing.length === 0) return { required: [], pending: [] };
+
   const required = [];
   const pending = [];
   const seen = new Set();
-  for (const { slots } of perCandidate) {
+  for (const { slots } of slotBearing) {
     for (const [dimension, source] of slots) {
       if (seen.has(dimension)) continue;
       seen.add(dimension);
-      const neededBy = perCandidate.filter((p) => p.slots.has(dimension)).map((p) => p.conceptId);
-      if (neededBy.length === perCandidate.length) required.push({ dimension, source });
+      const neededBy = slotBearing.filter((p) => p.slots.has(dimension)).map((p) => p.conceptId);
+      if (neededBy.length === slotBearing.length) required.push({ dimension, source });
       else pending.push({ dimension, source, neededBy });
     }
   }

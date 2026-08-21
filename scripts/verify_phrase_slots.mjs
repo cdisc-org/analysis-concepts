@@ -82,6 +82,43 @@ check("no sliceKeys -> no pending slots", noSlots.pending.length === 0);
 check("no phrases -> no candidates", resolveCandidates([], lib).length === 0);
 check("no candidates -> no slots", deriveSlots([], lib).required.length === 0);
 
+/* --- The spec's headline multi-candidate case, UNFILTERED — a slot-less derivation shares
+     the candidate set with two analyses and must not empty `required`. --- */
+const unfiltered = resolveCandidates(["SP_CFB_ENDPOINT"], lib);
+check("unfiltered CFB yields 3 candidates including the derivation",
+  unfiltered.length === 3, JSON.stringify(ids(unfiltered)));
+const unfilteredSlots = deriveSlots(unfiltered, lib);
+check("a slot-less derivation does not empty required",
+  JSON.stringify(unfilteredSlots.required.map((s) => s.dimension).sort()) ===
+    JSON.stringify(["Parameter", "Population"]),
+  JSON.stringify(unfilteredSlots.required));
+check("AnalysisVisit stays pending in the unfiltered set",
+  unfilteredSlots.pending.some((s) => s.dimension === "AnalysisVisit"),
+  JSON.stringify(unfilteredSlots.pending));
+
+/* --- All-slot-less candidates: nothing to bind, and no crash. --- */
+const allSlotless = deriveSlots(
+  [{ conceptId: "T.BaselineSelection", transformationType: "derivation", coverage: 1 },
+   { conceptId: "T.ChangeFromBaseline", transformationType: "derivation", coverage: 1 }], lib);
+check("all-slot-less candidates yield no slots",
+  allSlotless.required.length === 0 && allSlotless.pending.length === 0,
+  JSON.stringify(allSlotless));
+
+/* --- Pin the source invariant: each dimension declares exactly one source library-wide. --- */
+const sourcesByDimension = new Map();
+for (const t of lib.transformations || []) {
+  for (const sk of t.sliceKeys || []) {
+    if (!sk.dimension) continue;
+    if (!sourcesByDimension.has(sk.dimension)) sourcesByDimension.set(sk.dimension, new Set());
+    sourcesByDimension.get(sk.dimension).add(sk.source);
+  }
+}
+const conflicting = [...sourcesByDimension.entries()]
+  .filter(([, s]) => s.size > 1)
+  .map(([d, s]) => `${d}: ${[...s].join("/")}`);
+check("each dimension declares exactly one source library-wide",
+  conflicting.length === 0, conflicting.join(", "));
+
 if (failures.length) {
   console.error(`FAIL — ${failures.length} check(s):`);
   failures.forEach((f) => console.error("  -", f));
