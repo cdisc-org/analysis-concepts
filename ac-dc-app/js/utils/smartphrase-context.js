@@ -76,6 +76,47 @@ function analysisRecordFor(oid, lib) {
   };
 }
 
+/**
+ * A record the sentence created but the author has since edited is no longer purely ours: the
+ * edits are Step 4 vocabulary the sentence cannot express or regenerate. Compare against a
+ * freshly minted record and disown anything that has diverged, so withdrawal can never destroy
+ * work the sentence could not rebuild.
+ *
+ * `estimandSummaryPattern` is deliberately NOT compared — Step 4 writes it during render
+ * (endpoint-how.js:96-100), and it is regenerated from the transformation, so treating it as
+ * authorship would disown every record the author merely looked at.
+ */
+function stillAsMinted(record, lib) {
+  const minted = analysisRecordFor(record.transformationOid, lib);
+  return JSON.stringify(record.resolvedBindings) === JSON.stringify(minted.resolvedBindings)
+    && (record.activeInteractions || []).length === 0;
+}
+
+/**
+ * Withdraw the records the sentence created, keeping `keepOid` if the sentence still names it.
+ *
+ * A flagged record the author has edited is not deleted: its flag is cleared and it stays. That
+ * is the flag decaying on authorship — once disowned the record is the author's for good. The
+ * consequence is deliberate: an edited record lingers in Step 4 after its phrase is removed,
+ * where it is visible and removable in one click, whereas destroyed configuration is not
+ * recoverable at all.
+ *
+ * @param {Array} analyses  spec.selectedAnalyses
+ * @param {object} lib
+ * @param {string|null} keepOid  the oid the sentence still names, if any
+ * @returns {Array} a new array
+ */
+function withdrawSeeded(analyses, lib, keepOid) {
+  const kept = [];
+  for (const a of analyses) {
+    if (!a.seededByPhrase || a.transformationOid === keepOid) { kept.push(a); continue; }
+    if (stillAsMinted(a, lib)) continue;   // untouched since we minted it — ours to withdraw
+    delete a.seededByPhrase;               // the author has edited it — disown it and keep it
+    kept.push(a);
+  }
+  return kept;
+}
+
 /** Mirror the first analysis onto the legacy top-level fields, as syncLegacyTransformationOid does. */
 function mirrorLegacyFields(spec) {
   const first = (spec.selectedAnalyses || [])[0] || null;
@@ -113,6 +154,14 @@ function mirrorLegacyFields(spec) {
  * record the prose created is withdrawn as soon as the prose stops naming exactly one analysis —
  * while a pick the author made in Step 4 carries no flag and survives, which was the reason the
  * earliest, narrower clearing rule existed at all.
+ *
+ * **The flag decays on authorship.** Provenance alone is not ownership forever: once the author
+ * edits a record the sentence created, its covariate bindings and interactions are Step 4
+ * vocabulary the sentence cannot express or regenerate, so re-adding the phrase would not
+ * restore them. Only a record still identical to what `analysisRecordFor` minted is withdrawn;
+ * an edited one has its flag cleared and is kept (see `withdrawSeeded`). The consequence is
+ * deliberate — an edited record lingers in Step 4 after its phrase is removed, where it is
+ * visible and removable in one click, whereas destroyed configuration is not recoverable at all.
  *
  * **Migration is deliberately conservative.** A spec saved before the flag existed has records
  * without flags, so every record reads as the author's and none is ever deleted. The cost is
@@ -156,7 +205,7 @@ export function applyPhraseChange(spec, lib) {
     if (at === -1) {
       /* Withdraw whatever the sentence created before — wherever it sits — so a superseded
          analysis is never orphaned into Step 4 with nothing naming it. */
-      spec.selectedAnalyses = spec.selectedAnalyses.filter((a) => !a.seededByPhrase);
+      spec.selectedAnalyses = withdrawSeeded(spec.selectedAnalyses, lib, null);
       /* Index 0 is the primary the legacy fields mirror; it belongs to the author's own Step 4
          choice whenever they have made one. */
       if (spec.selectedAnalyses.length === 0) spec.selectedAnalyses.unshift(analysisRecordFor(only, lib));
@@ -164,12 +213,11 @@ export function applyPhraseChange(spec, lib) {
     } else {
       /* The analysis is already there. If the author created it, the sentence merely agrees and
          it stays theirs — but anything else the sentence created is still withdrawn. */
-      spec.selectedAnalyses = spec.selectedAnalyses.filter(
-        (a) => !a.seededByPhrase || a.transformationOid === only);
+      spec.selectedAnalyses = withdrawSeeded(spec.selectedAnalyses, lib, only);
     }
   } else {
     /* The sentence no longer names one analysis, so it withdraws what it created and nothing else. */
-    spec.selectedAnalyses = spec.selectedAnalyses.filter((a) => !a.seededByPhrase);
+    spec.selectedAnalyses = withdrawSeeded(spec.selectedAnalyses, lib, null);
   }
 
   /* Superseded by the per-record flag: an oid cannot distinguish the entry this function created

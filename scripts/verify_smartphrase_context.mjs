@@ -365,6 +365,57 @@ check("a single analysis matching alongside a derivation is still seeded",
   besideDerivation.selectedTransformationOid === "T.CFB_MMRM_Primary",
   String(besideDerivation.selectedTransformationOid));
 
+/* The flag decays on authorship. A record the sentence created but the author has since edited
+   in Step 4 carries covariate bindings and interactions the sentence cannot express or
+   regenerate, so withdrawing it would destroy work that re-adding the phrase could not restore.
+   Such a record is disowned and kept instead of deleted. */
+const edited = { phraseInstances: [
+  { phrase: "SP_CFB_ENDPOINT", bindings: {} },
+  { phrase: "SP_METHOD_ANCOVA", bindings: {} }
+] };
+applyPhraseChange(edited, context.lib);
+check("the sentence's fresh record is still its own",
+  edited.selectedAnalyses[0].seededByPhrase === true,
+  JSON.stringify(edited.selectedAnalyses.map((a) => !!a.seededByPhrase)));
+edited.selectedAnalyses[0].activeInteractions = ["TRT*BASE"];
+edited.phraseInstances = [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }];
+applyPhraseChange(edited, context.lib);
+check("an edited record survives its phrase being removed",
+  edited.selectedAnalyses.length === 1
+    && edited.selectedAnalyses[0].activeInteractions.join(",") === "TRT*BASE",
+  JSON.stringify(edited.selectedAnalyses.map((a) => a.transformationOid)));
+check("and is disowned, so it is the author's from now on",
+  edited.selectedAnalyses.length === 1 && !edited.selectedAnalyses[0].seededByPhrase,
+  JSON.stringify(edited.selectedAnalyses.map((a) => [a.transformationOid, !!a.seededByPhrase])));
+
+/* Trimming a covariate binding counts as authorship too, not only interactions. */
+const trimmed = { phraseInstances: [
+  { phrase: "SP_CFB_ENDPOINT", bindings: {} },
+  { phrase: "SP_METHOD_ANCOVA", bindings: {} }
+] };
+applyPhraseChange(trimmed, context.lib);
+trimmed.selectedAnalyses[0].resolvedBindings.pop();
+trimmed.phraseInstances = [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }];
+applyPhraseChange(trimmed, context.lib);
+check("a record whose bindings were edited also survives",
+  trimmed.selectedAnalyses.length === 1 && !trimmed.selectedAnalyses[0].seededByPhrase,
+  JSON.stringify(trimmed.selectedAnalyses.map((a) => a.transformationOid)));
+
+/* An UNEDITED record must still withdraw cleanly — the decay must not disable withdrawal.
+   estimandSummaryPattern is deliberately excluded from the comparison: Step 4 writes it during
+   render, so counting it as authorship would disown every record the author merely looked at. */
+const untouchedButRendered = { phraseInstances: [
+  { phrase: "SP_CFB_ENDPOINT", bindings: {} },
+  { phrase: "SP_METHOD_ANCOVA", bindings: {} }
+] };
+applyPhraseChange(untouchedButRendered, context.lib);
+untouchedButRendered.selectedAnalyses[0].estimandSummaryPattern = "LSMeanDiff";  /* Step 4 render */
+untouchedButRendered.phraseInstances = [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }];
+applyPhraseChange(untouchedButRendered, context.lib);
+check("a record only rendered, never edited, still withdraws",
+  untouchedButRendered.selectedAnalyses.length === 0,
+  JSON.stringify(untouchedButRendered.selectedAnalyses.map((a) => a.transformationOid)));
+
 /* Re-running on an unchanged sentence must not churn state. */
 const idem = { phraseInstances: [
   { phrase: "SP_CFB_ENDPOINT", bindings: {} },
