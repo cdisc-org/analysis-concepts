@@ -350,6 +350,12 @@ export async function renderEsapBuilder(container) {
     });
   });
 
+  /* Re-rendering is async (it awaits loadMethod before writing innerHTML), so a rejection from
+     an unawaited call becomes an unhandled rejection: the UI freezes mid-edit and the console
+     says nothing. Every authoring handler re-renders through this. */
+  const rerender = () => renderEsapBuilder(container)
+    .catch(err => console.error('re-render failed', err));
+
   /* Clicking a phrase chip opens its slot editor inline, directly beneath the sentence. */
   container.querySelectorAll('.phrase-chip[data-slot]').forEach(chip => {
     chip.addEventListener('click', (e) => {
@@ -365,29 +371,42 @@ export async function renderEsapBuilder(container) {
         renderSlotEditorHtml(context, appState.endpointSpecs[epId] || {}, ep, phrase, slot));
       host.querySelector('.sp-slot-select')?.addEventListener('change', (ev) => {
         const editor = ev.target.closest('.sp-slot-editor');
+        /* No `render` argument: render policy is the document's decision, applied at render
+           time by specToInstance's RENDER_BY_SLOT, and must not be written into the saved spec
+           — an invariant verify_smartphrase_context.mjs already gates for the backfilled path.
+           Passing 'name'/'label' here persisted it, so the one UI that writes was bypassing the
+           invariant its own gate protects. */
         setDimensionBinding(
           appState.endpointSpecs[epId], context.graph,
           editor.dataset.phrase, editor.dataset.slot, editor.dataset.dimension,
-          ev.target.value,
-          editor.dataset.slot === 'population' ? 'name' : 'label');
+          ev.target.value);
         applyPhraseChange(appState.endpointSpecs[epId], context.lib);
-        renderEsapBuilder(container);
+        rerender();
       });
     });
   });
 
   /* Removing a phrase. stopPropagation because the control sits inside the chip, whose own
      click handler opens the slot editor — without it, removing would also open an editor for
-     the phrase just removed. */
+     the phrase just removed.
+
+     The control renders as role="button" tabindex="0", so Enter and Space must do what a click
+     does; without them it is reachable by keyboard but not operable by one. */
+  const removePhrase = (btn, e) => {
+    e.stopPropagation();
+    const epId = btn.dataset.epId;
+    const context = getSmartphraseContext(appState);
+    if (!context || !appState.endpointSpecs[epId]) return;
+    removePhraseFromSpec(appState.endpointSpecs[epId], btn.dataset.removePhrase);
+    applyPhraseChange(appState.endpointSpecs[epId], context.lib);
+    rerender();
+  };
   container.querySelectorAll('[data-remove-phrase]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const epId = btn.dataset.epId;
-      const context = getSmartphraseContext(appState);
-      if (!context || !appState.endpointSpecs[epId]) return;
-      removePhraseFromSpec(appState.endpointSpecs[epId], btn.dataset.removePhrase);
-      applyPhraseChange(appState.endpointSpecs[epId], context.lib);
-      renderEsapBuilder(container);
+    btn.addEventListener('click', (e) => removePhrase(btn, e));
+    btn.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+      e.preventDefault();   // Space would otherwise scroll the page.
+      removePhrase(btn, e);
     });
   });
 
@@ -408,7 +427,7 @@ export async function renderEsapBuilder(container) {
         opt.addEventListener('click', () => {
           addPhraseToSpec(appState.endpointSpecs[epId], context, opt.dataset.addOid);
           applyPhraseChange(appState.endpointSpecs[epId], context.lib);
-          renderEsapBuilder(container);
+          rerender();
         });
       });
     });

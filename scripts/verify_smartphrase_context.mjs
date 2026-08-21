@@ -233,6 +233,24 @@ check("re-running on an unchanged sentence preserves edited analysis state",
   idem.selectedAnalyses[0].activeInteractions.join(",") === "TRT*VISIT",
   JSON.stringify(idem.selectedAnalyses[0].activeInteractions));
 
+/* The Step 7 picker writes through setDimensionBinding with no `render` argument, because
+   render policy is this document's decision and must not reach the saved spec — the invariant
+   the "saved spec is not mutated" check above pins for the backfilled path. This pins it for
+   the write path the UI actually uses: the spec stays clean, and RENDER_BY_SLOT still supplies
+   the render mode at resolve time. */
+const { setDimensionBinding } = await load("ac-dc-app/js/utils/phrase-bindings.js");
+const written = {};
+setDimensionBinding(written, context.graph, "SP_TIMEPOINT", "visit", "AnalysisVisit",
+  "V.Encounter_11");
+check("a picker write leaves no render mode in the saved spec",
+  written.phraseInstances[0].bindings.visit.render === undefined,
+  JSON.stringify(written.phraseInstances[0].bindings.visit));
+check("and it records the dimension value under the key it was handed",
+  written.dimensionValues.AnalysisVisit === "Week 24", JSON.stringify(written.dimensionValues));
+check("while the render policy still supplies the mode at resolve time",
+  specToInstance(written, ep, context.lib).phrases[0].bindings.visit.render === "label",
+  JSON.stringify(specToInstance(written, ep, context.lib).phrases[0].bindings));
+
 /* It must not disturb unrelated spec fields. */
 const guarded = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }],
                   dimensionValues: { Parameter: "keep me" }, derivationChain: [1, 2, 3] };
