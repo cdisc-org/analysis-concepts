@@ -182,7 +182,7 @@ check("unresolved label appears in the sentence",
   res2.sentence.includes("Adas-Cog(11) Subscore"), res2.sentence);
 const view2 = E.constructModelView(ctx2, inst2);
 check("unresolved fixture still fills its sliceKey",
-  view2.sliceKeys.every((sk) => sk.value !== null),
+  view2.sliceKeys.length === 3 && view2.sliceKeys.every((sk) => sk.value !== null),
   JSON.stringify(view2.sliceKeys.map((sk) => [sk.dimension, sk.value && sk.value.label])));
 
 if (failures.length) {
