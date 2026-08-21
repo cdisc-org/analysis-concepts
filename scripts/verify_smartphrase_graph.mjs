@@ -82,6 +82,60 @@ const before = JSON.stringify(pilot);
 buildConceptGraph(pilot, lib);
 check("parsed study not mutated", JSON.stringify(pilot) === before);
 
+/* ---------- end-to-end: study -> graph -> adapter -> engine ---------- */
+
+const E = (await load("ac-dc-app/js/utils/smartphrase-engine.js")).default;
+
+/* The library adapter needs the method JSON or method references cannot resolve. */
+const methodsDir = path.join(root, "lib/methods/analyses");
+const methods = {};
+for (const f of fs.readdirSync(methodsDir)) {
+  if (!f.endsWith(".json")) continue;
+  const m = JSON.parse(fs.readFileSync(path.join(methodsDir, f), "utf8"));
+  methods[m.oid] = m;
+}
+check("M.ANCOVA loaded", !!methods["M.ANCOVA"]);
+
+const libWithMethods = adaptV06Library(v06, methods);
+const graph = buildConceptGraph(pilot, libWithMethods, methods);
+
+check("methodGrounding populated", Object.keys(graph.methodGrounding).length > 0,
+  String(Object.keys(graph.methodGrounding).length));
+check("M.ANCOVA grounded", !!graph.methodGrounding["M.ANCOVA"]);
+
+/* Bind against real study objects: ADAS-Cog BC, Week 24 encounter, the analysis population. */
+const paramId = Object.keys(graph.concepts).find((k) =>
+  graph.concepts[k].kind === "Parameter" && /ADAS/i.test(graph.concepts[k].name || ""));
+const visitId = Object.keys(graph.concepts).find((k) =>
+  graph.concepts[k].kind === "AnalysisVisit" && graph.concepts[k].label === "Week 24");
+const popId = Object.keys(graph.concepts).find((k) => graph.concepts[k].kind === "Population");
+check("found an ADAS parameter concept", !!paramId, paramId);
+check("found the Week 24 visit concept", !!visitId, visitId);
+check("found a population concept", !!popId, popId);
+
+const ctx = E.ctxOf(libWithMethods, graph, null, null);
+const instance = {
+  id: "AC.VERIFY", template: "T.CFB_ANCOVA", sentenceRole: "primary",
+  phrases: [
+    { phrase: "SP_CFB_ENDPOINT", bindings: { parameter: { concept: paramId } } },
+    { phrase: "SP_TIMEPOINT", bindings: { visit: { concept: visitId } } },
+    { phrase: "SP_POPULATION", bindings: { population: { concept: popId } } },
+    { phrase: "SP_METHOD_ANCOVA", bindings: { method: { method: "M.ANCOVA" } } }
+  ]
+};
+
+const res = E.resolveInstance(ctx, instance, "en");
+check("instance resolves with no errors", res.errors.length === 0, JSON.stringify(res.errors));
+check("sentence mentions change from baseline", /change from baseline/i.test(res.sentence), res.sentence);
+check("sentence renders the method, not a raw token",
+  !res.sentence.includes("{") && res.sentence.includes("ANCOVA"), res.sentence);
+
+const view = E.constructModelView(ctx, instance);
+check("model view has no errors", !("errors" in view), JSON.stringify(view.errors));
+check("all three sliceKeys resolve",
+  view.sliceKeys.length === 3 && view.sliceKeys.every((sk) => sk.value !== null),
+  JSON.stringify(view.sliceKeys.map((sk) => [sk.dimension, sk.value && sk.value.label])));
+
 if (failures.length) {
   console.error(`FAIL — ${failures.length} check(s):`);
   failures.forEach((f) => console.error("  -", f));

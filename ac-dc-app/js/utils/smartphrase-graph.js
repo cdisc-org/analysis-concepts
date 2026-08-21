@@ -91,13 +91,34 @@ const BUILDERS = {
 };
 
 /**
+ * Ground the methods the engine may render. The engine reads `label`, `name` and `formula`
+ * off a method; `name` is lower-cased for prose ("analysis of covariance"), so the display
+ * name comes from the method's own `name` and the short form from `label` where present.
+ *
+ * @param {object} methods  { [oid]: method JSON, schema 0.8.0 }
+ * @returns {object} { [oid]: { label, name, iri } }
+ */
+export function buildMethodGrounding(methods) {
+  const out = {};
+  for (const [oid, m] of Object.entries(methods || {})) {
+    out[oid] = {
+      label: m.label || m.name,
+      name: m.name,
+      iri: "acdc:method/" + oid
+    };
+  }
+  return out;
+}
+
+/**
  * Build the graph. Does not mutate `study`.
  *
- * @param {object} study  parsed study from parseUSDM()
- * @param {object} lib    adapted library from adaptV06Library()
+ * @param {object} study    parsed study from parseUSDM()
+ * @param {object} lib      adapted library from adaptV06Library()
+ * @param {object} methods  optional { [oid]: method JSON, schema 0.8.0 }
  * @returns {object} ctx.graph
  */
-export function buildConceptGraph(study, lib) {
+export function buildConceptGraph(study, lib, methods = {}) {
   const concepts = {};
   for (const source of collectDeclaredSources(lib)) {
     const build = BUILDERS[source];
@@ -111,7 +132,7 @@ export function buildConceptGraph(study, lib) {
     prefixes: { ...PREFIXES },
     study: { studyId: study.name || "", title: study.description || study.name || "" },
     concepts,
-    methodGrounding: {},
+    methodGrounding: buildMethodGrounding(methods),
     instances: [],
     traceTemplates: {}
   };
