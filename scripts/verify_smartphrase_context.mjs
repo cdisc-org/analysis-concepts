@@ -168,37 +168,58 @@ check("and its hand-edited bindings are not discarded",
   manual.selectedAnalyses[0].resolvedBindings[0].concept === "hand-edited",
   JSON.stringify(manual.selectedAnalyses[0].resolvedBindings));
 
-/* A manual pick the prose forbids IS cleared. */
-const contradicted = { phraseInstances: [
+/* Withdrawing the method phrase withdraws the analysis it seeded. Deleting "using ANCOVA" is
+   precisely how an author says they no longer mean ANCOVA, and the earlier rule — clear only
+   when no candidate permits the selection — left it seeded, because the three remaining
+   candidates still include it. */
+const withdrawn = { phraseInstances: [
   { phrase: "SP_CFB_ENDPOINT", bindings: {} },
   { phrase: "SP_METHOD_ANCOVA", bindings: {} }
-], selectedTransformationOid: "T.Responder_ChiSq",
-   selectedAnalyses: [{ transformationOid: "T.Responder_ChiSq" }] };
-applyPhraseChange(contradicted, context.lib);
-check("a contradicted pick is replaced by the single candidate",
-  contradicted.selectedTransformationOid === "T.CFB_ANCOVA",
-  contradicted.selectedTransformationOid);
+] };
+applyPhraseChange(withdrawn, context.lib);
+check("the sentence seeds the analysis",
+  withdrawn.selectedTransformationOid === "T.CFB_ANCOVA", withdrawn.selectedTransformationOid);
+withdrawn.phraseInstances = [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }];
+applyPhraseChange(withdrawn, context.lib);
+check("removing the method phrase withdraws the seeded analysis",
+  withdrawn.selectedTransformationOid === null
+    && withdrawn.selectedAnalyses.length === 0,
+  JSON.stringify([withdrawn.selectedTransformationOid, withdrawn.selectedAnalyses]));
+check("withdrawing resets the mirrored legacy fields",
+  withdrawn.resolvedBindings === null && withdrawn.activeInteractions.length === 0
+    && withdrawn.estimandSummaryPattern === null,
+  JSON.stringify([withdrawn.resolvedBindings, withdrawn.activeInteractions,
+                  withdrawn.estimandSummaryPattern]));
 
-/* The clear branch: several candidates, and a selection none of them permits. Removing a
-   phrase is how this is reached from the UI (Task 5), and it is the only branch that
-   destroys state, so it is checked explicitly rather than inferred from the reseed case. */
-const stranded = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }],
-                   selectedTransformationOid: "T.Responder_ChiSq",
-                   selectedAnalyses: [{ transformationOid: "T.Responder_ChiSq" }],
-                   resolvedBindings: [{ concept: "stale" }],
-                   activeInteractions: ["TRT*VISIT"],
-                   estimandSummaryPattern: "P" };
-applyPhraseChange(stranded, context.lib);
-check("a selection no candidate permits is cleared",
-  stranded.selectedTransformationOid === null, String(stranded.selectedTransformationOid));
-check("clearing empties selectedAnalyses too",
-  Array.isArray(stranded.selectedAnalyses) && stranded.selectedAnalyses.length === 0,
-  JSON.stringify(stranded.selectedAnalyses));
-check("clearing resets the mirrored legacy fields",
-  stranded.resolvedBindings === null && stranded.activeInteractions.length === 0
-    && stranded.estimandSummaryPattern === null,
-  JSON.stringify([stranded.resolvedBindings, stranded.activeInteractions,
-                  stranded.estimandSummaryPattern]));
+/* A Step 4 pick the author made is never withdrawn — it carries no provenance mark. */
+const handPicked = { phraseInstances: [{ phrase: "SP_CFB_ENDPOINT", bindings: {} }],
+  selectedAnalyses: [{ transformationOid: "T.Responder_ChiSq",
+                       resolvedBindings: [{ concept: "hand-edited" }],
+                       activeInteractions: [], estimandSummaryPattern: null }] };
+applyPhraseChange(handPicked, context.lib);
+check("a manual pick survives even when the prose does not imply it",
+  handPicked.selectedAnalyses.length === 1
+    && handPicked.selectedAnalyses[0].resolvedBindings[0].concept === "hand-edited",
+  JSON.stringify(handPicked.selectedAnalyses));
+
+/* Seeding never displaces analyses the author added in Step 4. Step 4 is multi-select, so
+   replacing the array — as this function used to — deleted a sensitivity analysis outright. */
+const multi = { phraseInstances: [
+    { phrase: "SP_CFB_ENDPOINT", bindings: {} },
+    { phrase: "SP_METHOD_ANCOVA", bindings: {} }
+  ],
+  selectedAnalyses: [{ transformationOid: "T.CFB_MMRM_Primary",
+                       resolvedBindings: [{ concept: "sensitivity" }],
+                       activeInteractions: ["TRT*VISIT"], estimandSummaryPattern: "LSMeanDiff" }] };
+applyPhraseChange(multi, context.lib);
+check("seeding preserves the author's other analyses",
+  multi.selectedAnalyses.length === 2
+    && multi.selectedAnalyses.some((a) => a.transformationOid === "T.CFB_MMRM_Primary"),
+  JSON.stringify(multi.selectedAnalyses.map((a) => a.transformationOid)));
+check("and preserves their hand edits",
+  (multi.selectedAnalyses.find((a) => a.transformationOid === "T.CFB_MMRM_Primary")
+    ?.activeInteractions || []).join(",") === "TRT*VISIT",
+  JSON.stringify(multi.selectedAnalyses));
 
 /* Re-running on an unchanged sentence must not churn state. */
 const idem = { phraseInstances: [
