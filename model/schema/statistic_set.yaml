@@ -1,0 +1,57 @@
+id: https://cdisc.org/acdc/statistic_set
+name: statistic_set
+version: "0.9.0"
+title: ACDC Statistic Set Model
+description: >-
+  Schema for ACDC (Analysis Concepts / Derivation Concepts) predefined 
+  statistic set definitions.
+
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  acdc: https://cdisc.org/acdc/
+  linkml: https://w3id.org/linkml/
+  obo: http://purl.obolibrary.org/obo/
+
+default_prefix: acdc
+default_range: string
+
+imports:
+  - linkml:types
+  - acdc:shared_slots
+  - acdc:statistic
+
+classes:
+
+  StatisticSet:
+    description: A predefined set of statistics produced by a method or sub-method.
+    slots:      
+      - conceptId
+      - name
+      - label
+      - description
+      - ncitCode
+      - codings
+      - statistics
+    slot_usage:
+      conceptId:
+        description: Unique statistic set identifier.
+        pattern: "^SS\\..+$"
+      name:
+        description: The Statistic set identifier.
+      description:
+        description: What this statistic set contains.
+
+# ──────────────────────────────────────────────
+# Slots
+# ──────────────────────────────────────────────
+
+slots:
+
+  statisticSets:
+    exact_mappings:
+      - obo:OBI_0000299 # "has specified output"
+    description: The predefined set of statistics produced by this method, referencing the statistic set vocabulary.
+    range: StatisticSet
+    inlined: false
+    multivalued: true

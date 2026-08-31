@@ -1,0 +1,60 @@
+id: https://cdisc.org/acdc/statistic
+name: statistic
+version: "0.5.0"
+title: ACDC Statistic Model
+description: >-
+  Schema for ACDC (Analysis Concepts / Derivation Concepts) statistic definitions.
+
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  acdc: https://cdisc.org/acdc/
+  linkml: https://w3id.org/linkml/
+
+default_prefix: acdc
+default_range: string
+
+imports:
+  - linkml:types
+  - acdc:shared_slots
+
+# ──────────────────────────────────────────────
+# Classes
+# ──────────────────────────────────────────────
+
+classes:
+
+  Statistic:
+    exact_mappings:
+      - obo:STATO_0000039 # "statistic"
+    description: A reusable statistic/measure definition in the vocabulary
+    slots:
+      - conceptId
+      - name
+      - label
+      - description
+      - ncitCode
+      - codings
+    slot_usage:
+      conceptId:
+        description: Unique statistic identifier, e.g., S.AIC, S.BIC
+        pattern: "^S\\..+$"
+      name:
+        description: Statistic identifier, e.g., estimate, p_value, F_statistic
+      description:
+        description: What this statistic measures
+
+# ──────────────────────────────────────────────
+# Slots
+# ──────────────────────────────────────────────
+
+slots:
+
+  statistics:
+    exact_mappings:
+      - obo:OBI_0000299 # "has specified output"
+    description: The statistics produced by this method, referencing the statistics vocabulary.
+    multivalued: true
+    range: Statistic
+    inlined: false
+

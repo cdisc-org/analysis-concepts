@@ -1,0 +1,694 @@
+id: https://cdisc.org/acdc/method
+name: method
+version: "0.9.0"
+title: ACDC Method Model
+description: >-
+  Schema for ACDC (Analysis Concepts / Derivation Concepts) method definitions.
+  Covers statistical analysis methods (e.g., ANCOVA, Cox PH) and derivation
+  methods (e.g., Subtraction, LOCF imputation). Methods are the reusable
+  building blocks that AC and DC definitions reference.
+
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  acdc: https://cdisc.org/acdc/
+  linkml: https://w3id.org/linkml/
+  obo: http://purl.obolibrary.org/obo/
+
+default_prefix: acdc
+default_range: string
+
+imports:
+  - linkml:types
+  - acdc:shared_slots
+  - acdc:statistic
+  - acdc:statistic_set
+
+# ──────────────────────────────────────────────
+# Slots
+# ──────────────────────────────────────────────
+
+slots:
+
+  # ── Method slots ───────────────────────────
+
+  methodType:
+    description: Indicates whether this is a model-based, aggregation or derivation method
+    comments:
+      - The value of methodType must match the name of one of the sub-classes of Method
+        (i.e., CompositeMethod, ModelBasedMethod, AggregationMethod, DerivationMethod).
+    range: string
+    required: true
+    designates_type: true
+
+  formula:
+    exact_mappings:
+      - obo:STATO_0000205 # "is denoted by"
+    description: Formula specification including notation and expressions.
+    range: FormulaSpec
+    required: true
+
+  configurations:
+    description: Configurable parameters for the method.
+    multivalued: true
+    range: Configuration
+    inlined_as_list: true
+
+  inputs:
+    exact_mappings:
+      - obo:OBI_0000293 # "has specified input"
+    description: Input data specifications for roles defined in the formula for the method.
+    multivalued: true
+    range: Input
+    inlined_as_list: true
+
+  output:
+    exact_mappings:
+      - obo:OBI_0000299 # "has specified output"
+    description: Specification of the output of a single method or sub-method.
+    comments:
+      - The output of a method or sub-method is a set of one or more statistics
+        that are related to a component of the method.
+    range: Output
+    inlined_as_list: true
+
+  statisticalModel:
+    exact_mappings:
+      - obo:OBI_0000293 # "has specified input"
+    description: The statistical model associated with this method, if applicable.
+    range: StatisticalModel
+    required: true
+    inlined: true
+
+  isModelFor:
+    exact_mappings:
+      - obo:STATO_0000341 # "is model for"
+    description: The input study design dependent variable that this model is intended to describe.
+    required: true
+    range: InputVariable
+    inlined: false
+    multivalued: true
+
+  modelTerms:
+    exact_mappings:
+      - obo:BFO_0000051 # "has part"
+    description: The terms (variables) used in the statistical model, if applicable.
+    required: true
+    minimum_cardinality: 1
+    multivalued: true
+    range: ModelTerm
+    inlined_as_list: true
+
+  forInputs:
+    exact_mappings:
+      - obo:IAO_0000136 # "is about"
+    description: >-
+      The input study design independent variable(s) or value(s) that this
+      model term is intended to describe.
+    required: false
+    multivalued: true
+    range: Input
+    inlined: false
+
+  parameters:
+    exact_mappings:
+      - obo:BFO_0000051 # "has part"
+    description: The parameters associated with the model term.
+    required: true
+    minimum_cardinality: 1
+    multivalued: true
+    range: ModelParameter
+    inlined_as_list: true
+
+  forModelTerms:
+    exact_mappings:
+      - obo:IAO_0000136 # "is about"
+    description: The model term(s) with which the output is associated.
+    multivalued: true
+    range: ModelTerm
+    inlined: false
+
+  forModelParameters:
+    exact_mappings:
+      - obo:IAO_0000136 # "is about"
+    description: The model parameter(s) with which the output is associated.
+    multivalued: true
+    range: ModelParameter
+    inlined: false
+
+  forInputVariables:
+    exact_mappings:
+      - obo:IAO_0000136 # "is about"
+    description: >-
+      The input variable(s) with which this model component is associated.
+    required: false
+    multivalued: true
+    range: InputVariable
+    inlined: false
+
+  forFactorLevels:
+    exact_mappings:
+      - obo:IAO_0000136 # "is about"
+    description: >-
+      The factor level(s) with which this model component is associated.
+    required: false
+    multivalued: true
+    range: FactorLevel
+    inlined: false
+
+  forFactorLevelCombination:
+    exact_mappings:
+      - obo:IAO_0000136 # "is about"
+    description: >-
+      The factor level combination(s) with which the model parameter is associated.
+    required: false
+    range: FactorLevelCombination
+    inlined_as_list: true
+
+  factorLevelCombination:
+    exact_mappings:
+      - obo:STATO_0000205 # "is denoted by"
+    description: >-
+      The combination of factor levels that denote the study group population.
+    required: true
+    range: FactorLevelCombination
+    inlined_as_list: true
+
+  forStudyGroupPopulation:
+    exact_mappings:
+      - obo:IAO_0000136 # "is about"
+    description: >-
+      The study group population with which this model component is associated.
+    required: false
+    range: StudyGroupPopulation
+    inlined: false
+
+  subMethods:
+    exact_mappings:
+      - obo:BFO_0000051 # "has part"
+    description: Sub-methods that are part of this method.
+    multivalued: true
+    range: SubMethod
+    inlined_as_list: true
+
+  # ── FormulaSpec slots ──────────────────────
+
+  notation:
+    description: The formula notation system used
+    required: true
+
+  text:
+    description: Template formula expression with role-tagged placeholders, e.g., <response> ~ <covariate>
+    required: true
+
+  # ── Input slots ────────────────────────
+
+  inputType:
+    description: The type of input, either a variable or a value.
+    comments:
+      - The value of inputType must match the name of one of the sub-classes
+        of Input (i.e., InputValue, InputVariable, ContinuousVariable, CategoricalVariable).
+    range: string
+    required: true
+    designates_type: true
+  
+  role:
+    description: The role specified in the formula for the method that is performed by this input.
+    comments:
+      - The value must be one of the role names defined in the formula for the method.
+      - The role name must be unique within the method definition.
+    range: string
+    required: true
+    identifier: true
+
+  required:
+    slot_uri: linkml:required
+    description: Indicates whether this input is mandatory
+    range: boolean
+    required: true
+
+  dataType:
+    description: The data type of the input variable or value.
+    range: DataType
+    required: true
+
+  multivalued:
+    slot_uri: linkml:multivalued
+    description: Indicates whether there can be multiple occurrences of the input.
+    range: boolean
+    required: true
+
+  value:
+    exact_mappings:
+      - obo:OBI_0001933 # "has value specification"
+    description: The value specified for the input value.
+    comments:
+      - The data type of the specified value must match the dataType of the input value.
+      - If enumValues is specified for the input value, the value must be one of the allowed enumValues.
+    range: Any
+    any_of:
+      - range: string
+      - range: integer
+      - range: float
+      - range: boolean
+
+  levels:
+    exact_mappings:
+      - obo:OBI_0001938 # "has value specification"
+    description: The levels of a categorical input variable (factor).
+    multivalued: true
+    range: FactorLevel
+    inlined_as_list: true
+
+  factors:    
+    exact_mappings:
+      - obo:IAO_0000136 # "is about"
+    description: The role(s) of the input categorical variable (factor) whose levels are combined in this factor level combination.
+    required: true
+    range: CategoricalVariable
+    multivalued: true
+    inlined: false
+
+  combinedLevels:
+    exact_mappings:
+      - obo:BFO_0000051 # "has part"
+    description: The factor levels that are combined in this factor level combination.
+    range: FactorLevel
+    multivalued: true
+    inlined: false
+
+  subMethodId:
+    description: The sub-method that produces the referenced output statistic.
+    range: SubMethod
+    inlined: false
+    required: true
+
+  statisticId:
+    description: The statistic produced by the referenced sub-method that performs the input role.
+    range: Statistic
+    inlined: false
+    required: true
+    
+  # ── Configuration slots ────────────────────
+
+  configuredSubMethods:
+    exact_mappings:
+      - obo:OBI_0000295 # "is specified input of"
+    description: The specific sub-method(s) that are configured by this configuration parameter.
+    multivalued: true
+    range: SubMethod
+    inlined: false
+  
+  defaultValue:
+    description: Default value if not specified.
+    comments: 
+      - The data type of the specified default value must match the dataType of
+        the configuration parameter or input value.
+      - If enumValues is specified for the configuration parameter or input value,
+        the defaultValue must be one of the allowed enumValues.
+    range: Any
+    any_of:
+      - range: string
+      - range: integer
+      - range: float
+      - range: boolean
+
+  enumValues:
+    description: Allowed values for the configuration parameter or input value.
+    multivalued: true
+    comments: 
+      - The data type of the specified enum values must match the dataType of the configuration parameter or input value.
+
+# ──────────────────────────────────────────────
+# Classes
+# ──────────────────────────────────────────────
+
+classes:
+
+  Any:
+    class_uri: linkml:Any
+    description: Class defined to allow any value for a slot, used for flexible configuration values
+
+  NameAsIdentifier:
+    description: >-
+      A mixin class for any named method component that is referenced by name.
+    mixin: true
+    slots:
+      - name
+    slot_usage:
+      name:
+        identifier: true
+
+  Method:
+    tree_root: true
+    class_uri: obo:OBI_0200000 # "data transformation"
+    description: >-
+      A reusable statistical or derivation method definition.
+    slots:
+      - conceptId
+      - name
+      - label
+      - description
+      - ncitCode
+      - codings
+      - methodType
+      - configurations
+      - inputs
+      - subMethods
+      - output
+    slot_usage:
+      conceptId:
+        description: Unique method identifier, e.g., M.ANCOVA, M.Subtraction
+        pattern: "^M\\..+$"
+      name:
+        description: Human-readable method name
+      description:
+        description: Free-text explanation of what the method does
+
+  SubMethod:
+    exact_mappings:
+      - obo:OBI_0200000 # "data transformation"
+    description: A method that is part of a composite method
+    is_a: Method
+    slot_usage:
+      conceptId:
+        description: Unique sub-method identifier, e.g., M.ANCOVA, M.Subtraction
+        pattern: "^(S)?M\\..+$"
+      name:
+        description: Human-readable sub-method name.
+      description:
+        description: Free-text explanation of what the sub-method does.
+      configurations:
+        value_presence: ABSENT
+        comments:
+          - Sub-methods do not have their own configurations.
+          - All configurations are defined in the top-level method, where
+            `configuredSubMethods` is used to specify the sub-method(s)
+            affected by the configuration.
+      inputs:
+        description: >-
+          Statistic value(s) produced by other sub-method(s) within the same
+          composite method used for roles defined in the formula for the sub-method.
+        range: InputStatistic
+
+  CompositeMethod:
+    description: >-
+      A method that is composed of multiple sub-methods.
+    is_a: Method
+    slots:
+      - subMethods
+    slot_usage:
+      subMethods:
+        required: true
+
+  ModelBasedMethod:
+    description: >-
+      A method that is based on a statistical model, such as ANCOVA or Cox PH.
+    comments:
+      - These methods have a statistical model and are typically composed of
+        sub-methods that all relate to the fitting of the same model.
+    is_a: CompositeMethod
+    slots:
+      - statisticalModel
+
+  AggregationMethod:
+    description: >-
+      A method that aggregates or summarizes data, such as mean, median, or sum.
+    comments:
+      - These methods typically take all values for a specified input variable
+        and produce a single output value.
+      - Values of the input variable may be grouped by one or more additional
+        input variables, in which case as single output value is produced for
+        each unique combination of values of the grouping variables.
+    is_a: Method
+    slots:
+      - formula
+    slot_usage:
+      formula:
+        range: AggregationFormulaSpec
+
+  DerivationMethod:
+    description: >-
+      A method that derives new variables from existing data, such as subtraction,
+      imputation, or transformation.
+    comments:
+      - These methods typically produce a single output value for each value
+        of a specified input variable.
+    is_a: Method
+    slots:
+      - formula
+    slot_usage:
+      formula:
+        range: DerivationFormulaSpec
+
+  Configuration:
+    description: A configurable parameter for a method
+    mixins:
+      - NameAsIdentifier
+    slots:
+      - description
+      - dataType
+      - defaultValue
+      - enumValues
+      - configuredSubMethods
+    slot_usage:
+      name:
+        description: Configuration parameter name
+        identifier: true
+      dataType:
+        description: Data type of the configuration value
+      description:
+        description: Explanation of this configuration parameter
+
+  StatisticalModel:
+    exact_mappings:
+      - obo:STATO_0000107 # "statistical model"
+    description: >-
+      A statistical model that describes the relationship between variables.
+      Examples include linear regression, logistic regression, and Cox proportional hazards models.
+    mixins:
+      - NameAsIdentifier
+    slots:
+      - description
+      - codings
+      - formula
+      - isModelFor
+      - modelTerms    
+    slot_usage:
+      formula:
+        range: ModelBasedFormulaSpec
+
+  ModelTerm:
+    exact_mappings:
+      - obo:STATO_0000466 # "model term"
+    description: >-
+      A term (variable) used in a statistical model.
+    mixins:
+      - NameAsIdentifier
+    slots:
+      - description
+      - codings
+      - forInputs
+      - parameters
+
+  ModelParameter:
+    exact_mappings:
+      - obo:STATO_0000034 # "model parameter"
+    description: >-
+      A parameter associated with a model term.
+    mixins:
+      - NameAsIdentifier
+    slots:
+      - description
+      - codings
+      - forInputVariables
+      - forFactorLevels
+      - forFactorLevelCombination
+    slot_usage:
+      forInputVariables:
+        description: The input variable(s) with which this model parameter is associated.
+      forFactorLevels:
+        description: The factor level(s) with which this model parameter is associated.
+
+  FormulaSpec:
+    abstract: true
+    description: Specifies the formula notation and text for a method
+    slots:
+      - notation
+      - text
+
+  ModelBasedFormulaSpec:
+    description: Specifies the formula notation and text for a model-based method
+    is_a: FormulaSpec
+    slot_usage:
+      notation:
+        range: ModelBasedFormulaNotation
+
+  AggregationFormulaSpec:
+    description: Specifies the formula notation and text for an aggregation method
+    is_a: FormulaSpec
+    slot_usage:
+      notation:
+        range: AggregationFormulaNotation
+
+  DerivationFormulaSpec:
+    description: Specifies the formula notation and text for a derivation method
+    is_a: FormulaSpec
+    slot_usage:
+      notation:
+        range: DerivationFormulaNotation
+
+  Input:
+    description: Specification of one input variable or value referenced by name in the formula for the method.
+    abstract: true
+    slots:
+      - inputType
+      - role
+      - label
+      - description
+      - codings
+      - dataType
+      - required
+      - multivalued
+
+  InputValue:
+    exact_mappings:
+      - obo:OBI_0001933 # "value specification"
+    description: An input value that performs one of the roles defined in the formula for the method.
+    is_a: Input
+    slots:
+      - defaultValue
+      - enumValues
+
+  InputVariable:
+    exact_mappings:
+      - obo:STATO_0000258 # "variable"
+    description: An input variable that performs one of the roles defined in the formula for the method.
+    is_a: Input
+
+  ContinuousVariable:
+    exact_mappings:
+      - obo:STATO_0000251 # "continuous variable"
+    description: An input variable that is continuous (numeric)
+    is_a: InputVariable
+
+  CategoricalVariable:
+    exact_mappings:
+      - obo:STATO_0000252 # "categorical variable"
+    description: An input variable that is categorical.
+    is_a: InputVariable
+    slots:
+      - levels
+
+  FactorLevel:
+    exact_mappings:
+      - obo:OBI_0001930 # "categorical value specification"
+      - obo:STATO_0000265 # "factor level"
+    description: A level of a categorical input variable (factor).
+    mixins:
+      - NameAsIdentifier
+    slots:
+      - description
+      - codings
+
+  FactorLevelCombination:
+    exact_mappings:
+      - obo:STATO_0000264 # "factor level combination"
+    description: A combination of levels of one or more categorical input variables (factors).
+    comments:
+      - A factor level combination represents one of the possible combinations of levels for the categorical variable(s) (factors).
+    mixins:
+      - NameAsIdentifier
+    slots:
+      - description
+      - codings
+      - factors
+      - combinedLevels
+
+  StudyGroupPopulation:
+    exact_mappings:
+      - obo:STATO_0000193 # "study group population"
+    description: >-
+      A study group population that is denoted by a combination of input categorical variable
+      values (factor levels).
+    mixins:
+      - NameAsIdentifier
+    slots:
+      - description
+      - codings
+      - factorLevelCombination
+
+  InputStatistic:
+    description: >-
+      An input statistic that performs one of the roles defined
+      in the formula for the sub-method.
+    slots:
+      - role
+      - description
+      - subMethodId
+      - statisticId
+
+  Output:
+    exact_mappings:
+      - obo:IAO_0000100 # "data set"
+    description: >-
+      A set of statistics produced by a method or sub-method that is associated with one
+      or more components of the method.
+    comments:
+      - Statistics may be referenced via a predefined statistic set,
+        individually by statistic identifier, or through a combination of both..
+    slots:
+      - codings
+      - statisticSets
+      - statistics
+      - forInputVariables
+      - forModelTerms
+      - forModelParameters
+      - forStudyGroupPopulation
+
+# ──────────────────────────────────────────────
+# Enums
+# ──────────────────────────────────────────────
+
+enums:
+
+  ModelBasedFormulaNotation:
+    description: The notation system used for model-based formulas
+    permissible_values:
+      wilkinson_rogers:
+        description: "Analysis notation: response ~ predictor1 + predictor2"
+      survival:
+        description: "Survival analysis notation: Surv(time, event) ~ predictors"
+
+  AggregationFormulaNotation:
+    description: The notation system used for aggregation formulas
+    permissible_values:
+      aggregation:
+        description: "Aggregation notation: output_var := expression OVER partition"
+
+  DerivationFormulaNotation:
+    description: The notation system used for derivation formulas
+    permissible_values:
+      derivation:
+        description: "Derivation notation: output_var := expression"
+
+  DataType:
+    description: FHIR primitive data types for method inputs and outputs
+    permissible_values:
+      decimal:
+        description: Decimal number (FHIR decimal)
+      integer:
+        description: Integer number (FHIR integer)
+      code:
+        description: Coded value from a controlled vocabulary (FHIR code)
+      string:
+        description: Character/text (FHIR string)
+      boolean:
+        description: True/false (FHIR boolean)
+      date:
+        description: Date value (FHIR date)
+      datetime:
+        description: Date-time value (FHIR dateTime)
+      id:
+        description: Identifier value (FHIR id)
+

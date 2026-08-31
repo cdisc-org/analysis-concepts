@@ -1,0 +1,81 @@
+id: https://cdisc.org/acdc/shared_slots
+name: shared_slots
+version: "0.9.0"
+title: ACDC Shared Slots Model
+description: >-
+  Schema for ACDC (Analysis Concepts / Derivation Concepts) shared slot definitions.
+
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  acdc: https://cdisc.org/acdc/
+  linkml: https://w3id.org/linkml/
+  NCIT: https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/
+
+default_prefix: acdc
+default_range: string
+
+imports:
+  - linkml:types
+
+# ──────────────────────────────────────────────
+# Slots
+# ──────────────────────────────────────────────
+
+slots:
+
+  # ── Shared slots ───────────────────────────
+
+  conceptId:
+    description: Unique identifier
+    identifier: true
+    required: true
+
+  name:
+    description: Human-readable name
+    required: true
+
+  label:
+    description: Short label for display
+
+  description:
+    description: Free-text explanation or description
+
+  codings:
+    description: Mappings to external terminology or ontology codes
+    multivalued: true
+    range: Coding
+    inlined_as_list: true
+
+  ncitCode:
+    description: NCIt code
+    range: string
+    pattern: "^(C[0-9]+(_NEW)?)$"
+    implicit_prefix: NCIT
+
+  # ── Coding slots ───────────────────────────
+
+  system:
+    description: URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)
+    range: uri
+    required: true
+
+  code:
+    description: The code value within the system (e.g., STATO_0000179)
+    required: true
+
+  display:
+    description: Human-readable label for the code
+
+# ──────────────────────────────────────────────
+# Classes
+# ──────────────────────────────────────────────
+
+classes:
+
+  Coding:
+    description: A reference to a code in a terminology or ontology
+    slots:
+      - system
+      - code
+      - display

@@ -1,0 +1,138 @@
+{
+  "conceptId": "M.ANOVA",
+  "name": "ANOVA",
+  "description": "Analysis of Variance - compares means across multiple groups",
+  "methodType": "ModelBasedMethod",
+  "configurations": [
+    {
+      "name": "ss_type",
+      "description": "Sum of squares type",
+      "dataType": "code",
+      "defaultValue": "III",
+      "enumValues": ["I", "II", "III", "IV"],
+      "configuredSubMethods": ["SM.ANOVA.FactorSignificanceTests"]
+    },
+    {
+      "name": "multiplicity_adjustment",
+      "description": "Multiplicity adjustment method applied to p-values",
+      "dataType": "code",
+      "configuredSubMethods": ["SM.ANOVA.FactorSignificanceTests", "SM.ANOVA.Contrasts"]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "response",
+      "description": "The response variable",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "fixed_effect",
+      "description": "Grouping/factor variable(s)",
+      "dataType": "code",
+      "required": true,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "fixed_effect_level",
+          "description": "A level of the fixed_effect factor"
+        }
+      ]
+    }
+  ],
+  "statisticalModel": {
+    "name": "General Linear Model",
+    "description": "One or more factors; interactions can be added with ':' or '*' operator",
+    "formula": {
+      "notation": "wilkinson_rogers",
+      "text": "<response> ~ <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)*"
+    },
+    "isModelFor": ["response"],
+    "modelTerms": [
+      {
+        "name": "fixed_effect",
+        "description": "Main effect of a factor variable",
+        "forInputs": ["fixed_effect"],
+        "parameters": [
+          {
+            "name": "fixed_effect_ls_mean",
+            "description": "Least-squares mean for a level of the fixed_effect factor",
+            "forFactorLevels": ["fixed_effect_level"]
+          },
+          {
+            "name": "fixed_effect_contrast",
+            "description": "Pairwise contrast between levels of the fixed_effect factor",
+            "forFactorLevels": ["fixed_effect_level"]
+          }
+        ]
+      },
+      {
+        "name": "fixed_effect:fixed_effect",
+        "description": "Interaction between fixed effect factors",
+        "forInputs": ["fixed_effect"],
+        "parameters": [
+          {
+            "name": "fixed_effect_interaction_effect",
+            "description": "Effect of a combination of levels of the interacting fixed_effect factors",
+            "forFactorLevelCombination": {
+              "name": "fixed_effect_interaction_combination",
+              "description": "A combination of levels of the interacting fixed_effect factors",
+              "factors": ["fixed_effect"]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "subMethods": [
+    {
+      "conceptId": "SM.ANOVA.FitStatistics",
+      "name": "Fit Statistics",
+      "description": "Model fit measures",
+      "methodType": "SubMethod",
+      "output": {
+        "statistics": ["S.R_squared", "S.AIC"]
+      }
+    },
+    {
+      "conceptId": "SM.ANOVA.FactorSignificanceTests",
+      "name": "Factor Significance Tests",
+      "description": "ANOVA table: one row per model term",
+      "methodType": "SubMethod",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000048",
+          "display": "ANOVA"
+        }
+      ],
+      "output": {
+        "statistics": ["S.SS", "S.df", "S.MS", "S.F_statistic", "S.p_value"],
+        "forModelTerms": ["fixed_effect", "fixed_effect:fixed_effect"]
+      }
+    },
+    {
+      "conceptId": "SM.ANOVA.LSMeans",
+      "name": "LS Means",
+      "description": "Marginal means per factor level",
+      "methodType": "SubMethod",
+      "output": {
+        "statisticSets": ["SS.ci_estimate_t_distribution"],
+        "forModelParameters": ["fixed_effect_ls_mean"]
+      }
+    },
+    {
+      "conceptId": "SM.ANOVA.Contrasts",
+      "name": "Contrasts",
+      "description": "Pairwise differences between group means",
+      "methodType": "SubMethod",
+      "output": {
+        "statisticSets": ["SS.ci_estimate_t_distribution", "SS.hypothesis_test_t_distribution"],
+        "forModelParameters": ["fixed_effect_contrast"]
+      }
+    }
+  ]
+}
