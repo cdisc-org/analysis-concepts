@@ -1,6 +1,6 @@
 id: https://cdisc.org/acdc/method
 name: method
-version: "0.9.1"
+version: "0.9.2"
 title: ACDC Method Model
 description: >-
   Schema for ACDC (Analysis Concepts / Derivation Concepts) method definitions.
@@ -161,10 +161,10 @@ slots:
     exact_mappings:
       - obo:IAO_0000136 # "is about"
     description: >-
-      The factor level combination(s) with which the model parameter is associated.
+      The factor level combination with which the model parameter is associated.
     required: false
     range: FactorLevelCombination
-    inlined_as_list: true
+    inlined: true
 
   factorLevelCombination:
     exact_mappings:
@@ -173,7 +173,7 @@ slots:
       The combination of factor levels that denote the study group population.
     required: true
     range: FactorLevelCombination
-    inlined_as_list: true
+    inlined: true
 
   forStudyGroupPopulation:
     exact_mappings:
@@ -182,7 +182,7 @@ slots:
       The study group population with which this model component is associated.
     required: false
     range: StudyGroupPopulation
-    inlined: false
+    inlined: true
 
   subMethods:
     exact_mappings:
