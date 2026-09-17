@@ -1,0 +1,184 @@
+dataset,variable,label,type,length
+AE,STUDYID,Study Identifier,Char,200
+AE,DOMAIN,Domain Abbreviation,Char,2
+AE,USUBJID,Unique Subject Identifier,Char,200
+AE,AESEQ,Sequence Number,Num,8
+AE,AETERM,Reported Term for the Adverse Event,Char,200
+AE,AEDECOD,Dictionary-Derived Term,Char,200
+AE,AEBODSYS,Body System or Organ Class,Char,200
+AE,AESTDTC,Start Date/Time of Adverse Event,Char,10
+AE,AEENDTC,End Date/Time of Adverse Event,Char,10
+AE,AESTDY,Study Day of Start of Adverse Event,Num,8
+AE,AEENDY,Study Day of End of Adverse Event,Num,8
+AE,AESEV,Severity/Intensity,Char,200
+AE,AESER,Serious Event,Char,1
+AE,AESDTH,Results in Death,Char,1
+AE,AEREL,Causality,Char,200
+AE,AEACN,Action Taken with Study Treatment,Char,200
+AE,AEOUT,Outcome of Adverse Event,Char,200
+AE,EPOCH,Epoch,Char,200
+DM,STUDYID,Study Identifier,Char,200
+DM,DOMAIN,Domain Abbreviation,Char,2
+DM,USUBJID,Unique Subject Identifier,Char,200
+DM,SUBJID,Subject Identifier for the Study,Char,50
+DM,RFSTDTC,Subject Reference Start Date/Time,Char,19
+DM,RFENDTC,Date/Time of End of Reference Period,Char,19
+DM,RFXSTDTC,Date/Time of First Study Treatment,Char,19
+DM,RFXENDTC,Date/Time of Last Study Treatment,Char,19
+DM,RFICDTC,Date/Time of Informed Consent,Char,19
+DM,RFPENDTC,Date/Time of End of Participation,Char,19
+DM,DTHDTC,Date/Time of Death,Char,19
+DM,DTHFL,Subject Death Flag,Char,1
+DM,SITEID,Study Site Identifier,Char,20
+DM,AGE,Age,Num,8
+DM,AGEU,Age Units,Char,10
+DM,SEX,Sex,Char,2
+DM,RACE,Race,Char,200
+DM,ETHNIC,Ethnicity,Char,200
+DM,ARMCD,Planned Arm Code,Char,20
+DM,ARM,Description of Planned Arm,Char,200
+DM,ACTARMCD,Actual Arm Code,Char,20
+DM,ACTARM,Description of Actual Arm,Char,200
+DM,COUNTRY,Country,Char,3
+DS,STUDYID,Study Identifier,Char,200
+DS,DOMAIN,Domain Abbreviation,Char,2
+DS,USUBJID,Unique Subject Identifier,Char,200
+DS,DSSEQ,Sequence Number,Num,8
+DS,DSCAT,Category for Disposition Event,Char,200
+DS,DSSCAT,Subcategory for Disposition Event,Char,200
+DS,DSTERM,Reported Term for the Disposition Event,Char,200
+DS,DSDECOD,Standardized Disposition Term,Char,200
+DS,EPOCH,Epoch,Char,200
+DS,DSSTDTC,Date/Time of Collection,Char,19
+DS,DSSTDY,Study Day of Collection,Num,8
+EX,STUDYID,Study Identifier,Char,200
+EX,DOMAIN,Domain Abbreviation,Char,2
+EX,USUBJID,Unique Subject Identifier,Char,200
+EX,EXSEQ,Sequence Number,Num,8
+EX,EXTRT,Name of Actual Treatment,Char,200
+EX,EXDOSE,Dose per Administration,Num,8
+EX,EXDOSU,Units of Dose,Char,50
+EX,EXDOSFRM,Pharmaceutical Dose Form,Char,200
+EX,EXDOSFRQ,Dosing Frequency per Interval,Char,200
+EX,EXROUTE,Route of Administration,Char,200
+EX,EXSTDTC,Start Date/Time of Treatment,Char,19
+EX,EXENDTC,End Date/Time of Treatment,Char,19
+EX,EXSTDY,Study Day of Start of Treatment,Num,8
+EX,EXENDY,Study Day of End of Treatment,Num,8
+EX,EPOCH,Epoch,Char,200
+FA,STUDYID,Study Identifier,Char,200
+FA,DOMAIN,Domain Abbreviation,Char,2
+FA,USUBJID,Unique Subject Identifier,Char,200
+FA,FASEQ,Sequence Number,Num,8
+FA,FATESTCD,Findings About Test Short Name,Char,8
+FA,FATEST,Findings About Test Name,Char,40
+FA,FAOBJ,Object of the Observation,Char,200
+FA,FAORRES,Result or Finding in Original Units,Char,200
+FA,FASTRESC,Character Result/Finding in Standard Format,Char,200
+FA,EPOCH,Epoch,Char,200
+FA,FADTC,Date/Time of Collection,Char,19
+RELREC,STUDYID,Study Identifier,Char,200
+RELREC,RDOMAIN,Related Domain Abbreviation,Char,2
+RELREC,USUBJID,Unique Subject Identifier,Char,200
+RELREC,IDVAR,Identifying Variable,Char,200
+RELREC,IDVARVAL,Identifying Variable Value,Char,200
+RELREC,RELTYPE,Relationship Type,Char,200
+RELREC,RELID,Relationship Identifier,Char,200
+RS,STUDYID,Study Identifier,Char,200
+RS,DOMAIN,Domain Abbreviation,Char,2
+RS,USUBJID,Unique Subject Identifier,Char,200
+RS,RSSEQ,Sequence Number,Num,8
+RS,RSTESTCD,Response Assessment Short Name,Char,8
+RS,RSTEST,Response Assessment Name,Char,40
+RS,RSCAT,Category for Response Assessment,Char,200
+RS,RSORRES,Result or Finding in Original Units,Char,200
+RS,RSSTRESC,Character Result/Finding in Standard Format,Char,200
+RS,RSDRVFL,Derived Flag,Char,1
+RS,RSDTC,Date/Time of Assessment,Char,19
+RS,VISITNUM,Visit Number,Num,8
+RS,VISIT,Visit Name,Char,200
+RS,RSDY,Study Day of Assessment,Num,8
+RS,EPOCH,Epoch,Char,200
+TA,STUDYID,Study Identifier,Char,200
+TA,DOMAIN,Domain Abbreviation,Char,2
+TA,ARMCD,Planned Arm Code,Char,20
+TA,ARM,Description of Planned Arm,Char,200
+TA,TAETORD,Planned Order of Element within Arm,Num,8
+TA,ETCD,Element Code,Char,8
+TA,ELEMENT,Description of Element,Char,200
+TA,TABRANCH,Branch,Char,200
+TA,TATRANS,Transition Rule,Char,200
+TA,EPOCH,Epoch,Char,200
+TR,STUDYID,Study Identifier,Char,200
+TR,DOMAIN,Domain Abbreviation,Char,2
+TR,USUBJID,Unique Subject Identifier,Char,200
+TR,TRSEQ,Sequence Number,Num,8
+TR,TRGRPID,Group ID,Char,40
+TR,TRLNKID,Link ID,Char,40
+TR,TRTESTCD,Tumor Result Test Short Name,Char,8
+TR,TRTEST,Tumor Result Test Name,Char,40
+TR,TRORRES,Result or Finding in Original Units,Char,200
+TR,TRSTRESC,Character Result/Finding in Standard Format,Char,200
+TR,TRSTRESN,Numeric Result/Finding in Standard Format,Num,8
+TR,TRSTRESU,Units of Numeric Result/Finding,Char,50
+TR,TRSTAT,Completion Status,Char,2
+TR,TRREASND,Reason Not Done,Char,200
+TR,TRMETHOD,Method of Measurement,Char,200
+TR,TREVAL,Evaluator,Char,200
+TR,TRDTC,Date/Time of Assessment,Char,19
+TR,VISITNUM,Visit Number,Num,8
+TR,VISIT,Visit Name,Char,200
+TR,TRDY,Study Day of Assessment,Num,8
+TR,TRLOBXFL,Last Observation Before Exposure Flag,Char,1
+TR,EPOCH,Epoch,Char,200
+TU,STUDYID,Study Identifier,Char,200
+TU,DOMAIN,Domain Abbreviation,Char,2
+TU,USUBJID,Unique Subject Identifier,Char,200
+TU,TUSEQ,Sequence Number,Num,8
+TU,TUTESTCD,Tumor Identification Test Short Name,Char,8
+TU,TUTEST,Tumor Identification Test Name,Char,40
+TU,TULNKID,Link ID,Char,40
+TU,TUORRES,Result or Finding in Original Units,Char,200
+TU,TUSTRESC,Character Result/Finding in Standard Format,Char,200
+TU,TULOC,Location of the Tumor,Char,200
+TU,TULAT,Laterality,Char,20
+TU,TUMETHOD,Method of Identification,Char,200
+TU,TUEVAL,Evaluator,Char,200
+TU,EPOCH,Epoch,Char,200
+TU,VISITNUM,Visit Number,Num,8
+TU,VISIT,Visit Name,Char,200
+TU,TUDTC,Date/Time of Assessment,Char,19
+TU,TUDY,Study Day of Assessment,Num,8
+TV,STUDYID,Study Identifier,Char,200
+TV,DOMAIN,Domain Abbreviation,Char,2
+TV,VISITNUM,Visit Number,Num,8
+TV,VISIT,Visit Name,Char,200
+TV,VISITDY,Planned Study Day of Visit,Num,8
+TV,ARMCD,Planned Arm Code,Char,20
+TV,ARM,Description of Planned Arm,Char,200
+TV,TVSTRL,Visit Start Rule,Char,200
+TV,TVENRL,Visit End Rule,Char,200
+TV,EPOCH,Epoch,Char,200
+ADSL,STUDYID,Study Identifier,Char,200
+ADSL,USUBJID,Unique Subject Identifier,Char,200
+ADSL,TRT01P,Planned Treatment for Period 01,Char,200
+ADSL,TRT01A,Actual Treatment for Period 01,Char,200
+ADSL,AGE,Age,Num,8
+ADSL,BESTRESP,Best Overall Response,Char,200
+ADSL,DCSREAS,Reason for Discontinuation of Study,Char,200
+ADSL,ITTFL,Intent-To-Treat Population Flag,Char,1
+ADSL,SAFFL,Safety Population Flag,Char,1
+ADSL,PPROTFL,Per-Protocol Population Flag,Char,1
+ADTTE,STUDYID,Study Identifier,Char,200
+ADTTE,USUBJID,Unique Subject Identifier,Char,200
+ADTTE,PARAMCD,Parameter Code,Char,8
+ADTTE,PARAM,Parameter,Char,200
+ADTTE,AVAL,Analysis Value,Num,8
+ADTTE,STARTDT,Time-to-Event Analysis Start Date,Char,10
+ADTTE,ADT,Analysis Date,Char,10
+ADTTE,CNSR,Censoring Indicator,Num,8
+ADTTE,EVNTDESC,Event or Censoring Description,Char,200
+ADTTE,TRT01A,Actual Treatment for Period 01,Char,200
+ADTTE,ITTFL,Intent-To-Treat Population Flag,Char,1
+ADTTE,SAFFL,Safety Population Flag,Char,1
+ADTTE,PPROTFL,Per-Protocol Population Flag,Char,1

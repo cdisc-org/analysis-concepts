@@ -253,6 +253,24 @@ export function serializeStudyInstance(appState) {
 
     endpointSpecs: appState.endpointSpecs || {},
 
+    // Execution bindings: which variable realises a concept, which dataset
+    // supplies a dimension, per-slice overrides, and the chosen dataset. These
+    // are SPECIFICATION decisions — "Treatment comes from dm, joined on
+    // USUBJID" is a fact about the study's data, not a transient UI state — but
+    // they lived only in appState.endpointResults and were lost on every
+    // reload, so the same choices had to be remade each session. Analysis
+    // RESULTS are deliberately excluded: those are outputs, not spec.
+    executionBindings: Object.fromEntries(
+      Object.entries(appState.endpointResults || {})
+        .map(([epId, r]) => [epId, {
+          ...(r?.varOverrides && Object.keys(r.varOverrides).length ? { varOverrides: r.varOverrides } : {}),
+          ...(r?.sliceOverrides && Object.keys(r.sliceOverrides).length ? { sliceOverrides: r.sliceOverrides } : {}),
+          ...(r?.auxiliarySources && Object.keys(r.auxiliarySources).length ? { auxiliarySources: r.auxiliarySources } : {}),
+          ...(r?.datasetOverride ? { datasetOverride: r.datasetOverride } : {})
+        }])
+        .filter(([, v]) => Object.keys(v).length > 0)
+    ),
+
     unitConversions: appState.unitConversions || null,
 
     preferences: {
@@ -537,7 +555,11 @@ export function buildResolvedSpecification(appState, selectedEps, study) {
       id: ep.id,
       name: ep.name,
       level: ep.level,
-      originalText: ep.text || '',
+      // Every view falls back ep.text -> ep.description -> ep.name; the
+      // serializer did not, so a study that carries its protocol wording in
+      // `description` (text empty) showed a blank "ORIGINAL (PROTOCOL)" in the
+      // Step 5 summary while Steps 3 and 4 displayed it.
+      originalText: ep.text || ep.description || ep.name || '',
       targetDataset: spec.targetDataset || null,
       estimand,
       derivationPipeline: pipeline,
@@ -1146,6 +1168,23 @@ export function deserializeStudyInstance(json, appState) {
   // Restore eSAP linked narratives
   if (json.esapLinkedNarratives) {
     appState.esapLinkedNarratives = json.esapLinkedNarratives;
+  }
+
+  // Restore execution bindings (variable / source-dataset / slice choices).
+  // Merged into any existing result state rather than replacing it, so a load
+  // during a live session keeps results already computed.
+  if (json.executionBindings) {
+    appState.endpointResults = appState.endpointResults || {};
+    for (const [epId, saved] of Object.entries(json.executionBindings)) {
+      const cur = appState.endpointResults[epId] || {};
+      appState.endpointResults[epId] = {
+        ...cur,
+        ...(saved.varOverrides ? { varOverrides: { ...(cur.varOverrides || {}), ...saved.varOverrides } } : {}),
+        ...(saved.sliceOverrides ? { sliceOverrides: { ...(cur.sliceOverrides || {}), ...saved.sliceOverrides } } : {}),
+        ...(saved.auxiliarySources ? { auxiliarySources: { ...(cur.auxiliarySources || {}), ...saved.auxiliarySources } } : {}),
+        ...(saved.datasetOverride ? { datasetOverride: saved.datasetOverride } : {})
+      };
+    }
   }
 
   // Restore endpoint analyses

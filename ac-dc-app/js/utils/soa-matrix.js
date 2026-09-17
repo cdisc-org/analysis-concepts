@@ -8,7 +8,8 @@
  *   {
  *     encounters:          [{ id, name, label }...],   // in main-timeline order
  *     activities:          [{ id, name, label, biomedicalConceptIds, _onMain }...],
- *     offMainActivityIds:  [activity ids that never appear on the main timeline],
+ *     offMainActivityIds:      [activity ids that never appear on the main timeline],
+ *     unscheduledActivityIds:  [activity ids on no timeline at all — main or sub],
  *     cells:               Map<activityId, Set<encounterId>>,
  *     mainTimelineId:      string | null,
  *     isScheduled:         (activityId, encounterId) => boolean
@@ -116,6 +117,19 @@ export function buildSoaMatrix(rawUsdm) {
     }
   }
 
+  // --- Which activities appear on a NON-main timeline? ---
+  // "off the main timeline" and "on a sub-timeline" are different claims: a
+  // study may have no sub-timelines at all, in which case an unscheduled
+  // activity is simply unscheduled. Read the other timelines so the caller can
+  // tell the two apart instead of inferring one from the other.
+  const onSubTimeline = new Set();
+  for (const tl of (design.scheduleTimelines || [])) {
+    if (tl === mainTimeline) continue;
+    for (const inst of (tl.instances || [])) {
+      for (const actId of (inst.activityIds || [])) onSubTimeline.add(actId);
+    }
+  }
+
   // --- Order activities by previousId/nextId walk; include off-main activities at the end ---
   const activitiesRaw = design.activities || [];
   const orderedActivities = walkChain(
@@ -126,15 +140,19 @@ export function buildSoaMatrix(rawUsdm) {
   );
 
   const offMainActivityIds = [];
+  const unscheduledActivityIds = [];
   const activitiesOut = orderedActivities.map(a => {
     const onMain = cells.has(a.id);
+    const onSub = onSubTimeline.has(a.id);
     if (!onMain) offMainActivityIds.push(a.id);
+    if (!onMain && !onSub) unscheduledActivityIds.push(a.id);
     return {
       id: a.id,
       name: a.name || a.label || a.id,
       label: a.label || a.name || a.id,
       biomedicalConceptIds: a.biomedicalConceptIds || [],
-      _onMain: onMain
+      _onMain: onMain,
+      _onSub: onSub
     };
   });
 
@@ -142,6 +160,7 @@ export function buildSoaMatrix(rawUsdm) {
     encounters: encountersOrdered,
     activities: activitiesOut,
     offMainActivityIds,
+    unscheduledActivityIds,
     cells,
     mainTimelineId: mainTimeline.id,
     encounterOffset,
@@ -158,6 +177,7 @@ function emptyMatrix() {
     encounters: [],
     activities: [],
     offMainActivityIds: [],
+    unscheduledActivityIds: [],
     cells: new Map(),
     mainTimelineId: null,
     encounterOffset: new Map(),

@@ -16,8 +16,8 @@
   "description": "Non-parametric survival function estimation with optional grouping",
   "formula": {
     "notation": "survival",
-    "default_expression": "Surv(time, event) ~ fixed_effect",
-    "generic_expression": "Surv(<time>, <event>) ~ <fixed_effect>?",
+    "default_expression": "Surv(time, event) ~ group",
+    "generic_expression": "Surv(<time>, <event>) ~ <group>?",
     "notes": "If no group is specified, estimates a single survival curve. With a group variable, produces stratified curves."
   },
   "configurations": [
@@ -32,6 +32,16 @@
         "arcsin"
       ],
       "description": "Confidence interval transformation type"
+    },
+    {
+      "name": "event_indicator",
+      "dataType": "enum",
+      "defaultValue": "censor_1",
+      "enumValues": [
+        "censor_1",
+        "event_1"
+      ],
+      "description": "Polarity of the event role. 'censor_1' reads ADaM CNSR (1 = censored, 0 = event observed); 'event_1' reads the opposite convention (1 = event observed)."
     }
   ],
   "output_specification": {
@@ -40,7 +50,7 @@
         "class": "event_summary",
         "description": "Summary of events and censoring per group",
         "dimensions": [
-          "fixed_effect"
+          "group"
         ],
         "statistics": [
           "n_risk",
@@ -52,7 +62,7 @@
         "class": "survival_table",
         "description": "Life table with survival estimates at each event time",
         "dimensions": [
-          "fixed_effect",
+          "group",
           "time"
         ],
         "statistics": [
@@ -69,7 +79,7 @@
         "class": "median_survival",
         "description": "Median survival time per group with confidence interval",
         "dimensions": [
-          "fixed_effect"
+          "group"
         ],
         "statistics": [
           "median",
@@ -81,7 +91,7 @@
         "class": "landmark_estimates",
         "description": "Survival probability at specific landmark times",
         "dimensions": [
-          "fixed_effect",
+          "group",
           "time"
         ],
         "statistics": [
@@ -115,12 +125,12 @@
       "description": "Event indicator (1=event, 0=censored)"
     },
     {
-      "name": "fixed_effect",
-      "statisticalRole": "fixed_effect",
+      "name": "group",
+      "statisticalRole": "group",
       "dataType": "code",
       "required": false,
       "cardinality": "single",
-      "description": "Optional grouping variable for stratified curves"
+      "description": "The factor whose levels are estimated separately for \u2014 typically treatment. Not a fixed effect: this method fits no model, so there is no effect to estimate."
     }
   ]
 }

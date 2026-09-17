@@ -1,0 +1,301 @@
+{
+  "$schema": "acdc-study-instance.schema.json",
+  "instanceId": "SI_NCT01797120-PrE0102_pfs-with-derivation",
+  "formatVersion": "1.0",
+  "createdAt": "2026-09-17T00:00:00.000Z",
+  "updatedAt": "2026-09-17T00:00:00.000Z",
+  "$references": {
+    "transformationLibrary": {
+      "file": "lib/transformations/ACDC_Transformation_Library_v06.json",
+      "version": "0.6"
+    },
+    "acConceptModel": {
+      "file": "model/concept/AC_Concept_Model_v016.json",
+      "version": "0.16"
+    },
+    "dcConceptModel": {
+      "file": "model/concept/Option_D_Clinical_with_Dimensions.json",
+      "version": "0.20b"
+    }
+  },
+  "studyRef": {
+    "selectedStudyIndex": 1,
+    "studyName": "Breast Cancer Study PrE0102"
+  },
+  "selectedEndpointIds": [
+    "Endpoint_1"
+  ],
+  "esapLinkedNarratives": {
+    "abbreviations": [],
+    "introduction": [],
+    "objectives": [],
+    "studyDesign": [],
+    "protocolChanges": [],
+    "estimands": [],
+    "endpoints": [],
+    "analysisSets": [],
+    "statMethods": [],
+    "statAnalysis": [],
+    "software": [],
+    "references": [],
+    "shells": [],
+    "appendices": []
+  },
+  "endpointAnalyses": {},
+  "endpointSpecs": {
+    "Endpoint_1": {
+      "conceptCategory": "TimeToEvent",
+      "dataType": "Duration",
+      "parameterSource": "manual",
+      "parameterName": "Progression-Free Survival",
+      "linkedBCIds": [],
+      "dimensionValues": {},
+      "derivationNote": "Derived from collected SDTM: randomisation (DS), overall response (RS) and fatal adverse events (AE). No ADaM input.",
+      "selectedTransformationOid": "T.OS_LogRank",
+      "selectedDerivationOid": null,
+      "targetDataset": null,
+      "useInEsap": true,
+      "writeBackToUsdm": false,
+      "estimandSummaryPattern": "TestResult",
+      "selectedOcFacet": null,
+      "derivationConfigValues": {},
+      "derivationDimensionValues": {},
+      "derivationChain": [
+        {
+          "slotKey": "T.OS_LogRank/TimeToEvent/0",
+          "concept": "TimeToEvent",
+          "derivationOid": "T.TimeToFirstEvent"
+        },
+        {
+          "slotKey": "T.OS_LogRank/TimeToEvent/0/Measure/0",
+          "concept": "Measure",
+          "derivationOid": "T.AnalysisEventDate"
+        },
+        {
+          "slotKey": "T.OS_LogRank/TimeToEvent/0/Measure/0/FirstValue/0",
+          "concept": "FirstValue",
+          "derivationOid": "T.EarliestEventDate"
+        },
+        {
+          "slotKey": "T.OS_LogRank/TimeToEvent/0/Measure/0/FirstValue/0/FirstValue/0",
+          "concept": "FirstValue",
+          "derivationOid": "T.FirstProgressionDate"
+        },
+        {
+          "slotKey": "T.OS_LogRank/TimeToEvent/0/Measure/0/FirstValue/0/FirstValue/1",
+          "concept": "FirstValue",
+          "derivationOid": "T.FirstDeathDate"
+        },
+        {
+          "slotKey": "T.OS_LogRank/TimeToEvent/0/Measure/0/LastValue/0",
+          "concept": "LastValue",
+          "derivationOid": "T.LastTumorAssessmentDate"
+        },
+        {
+          "slotKey": "T.OS_LogRank/Flag/1",
+          "concept": "Flag",
+          "derivationOid": "T.CensorFlag"
+        },
+        {
+          "slotKey": "T.OS_LogRank/Flag/1/FirstValue/0",
+          "concept": "FirstValue",
+          "derivationOid": "T.EarliestEventDate"
+        },
+        {
+          "slotKey": "T.OS_LogRank/Flag/1/FirstValue/0/FirstValue/0",
+          "concept": "FirstValue",
+          "derivationOid": "T.FirstProgressionDate"
+        },
+        {
+          "slotKey": "T.OS_LogRank/Flag/1/FirstValue/0/FirstValue/1",
+          "concept": "FirstValue",
+          "derivationOid": "T.FirstDeathDate"
+        }
+      ],
+      "selectedDerivations": {
+        "T.OS_LogRank/Flag/1": "T.CensorFlag",
+        "T.OS_LogRank/Flag/1/FirstValue/0": "T.EarliestEventDate",
+        "T.OS_LogRank/Flag/1/FirstValue/0/FirstValue/0": "T.FirstProgressionDate",
+        "T.OS_LogRank/Flag/1/FirstValue/0/FirstValue/1": "T.FirstDeathDate",
+        "T.OS_LogRank/TimeToEvent/0/Measure/0": "T.AnalysisEventDate",
+        "T.OS_LogRank/TimeToEvent/0/Measure/0/FirstValue/0": "T.EarliestEventDate",
+        "T.OS_LogRank/TimeToEvent/0/Measure/0/FirstValue/0/FirstValue/0": "T.FirstProgressionDate",
+        "T.OS_LogRank/TimeToEvent/0/Measure/0/FirstValue/0/FirstValue/1": "T.FirstDeathDate"
+      },
+      "confirmedTerminals": [
+        {
+          "slotKey": "T.OS_LogRank/TimeToEvent/0/Timing/0",
+          "concept": "Timing",
+          "roleLabel": "start_date",
+          "linkedBCIds": [
+            "BiomedicalConcept_145"
+          ]
+        },
+        {
+          "slotKey": "T.OS_LogRank/Treatment/2",
+          "concept": "Treatment",
+          "roleLabel": "group"
+        },
+        {
+          "slotKey": "T.OS_LogRank/Subject/3",
+          "concept": "Subject",
+          "roleLabel": "partition"
+        },
+        {
+          "slotKey": "T.OS_LogRank/TimeToEvent/0/Measure/0/LastValue/0/Timing/0",
+          "concept": "Timing",
+          "roleLabel": "value",
+          "linkedBCIds": [
+            "BiomedicalConcept_141"
+          ]
+        },
+        {
+          "slotKey": "T.OS_LogRank/TimeToEvent/0/Measure/0/FirstValue/0/FirstValue/0/Timing/0",
+          "concept": "Timing",
+          "roleLabel": "value",
+          "linkedBCIds": [
+            "BiomedicalConcept_141"
+          ]
+        },
+        {
+          "slotKey": "T.OS_LogRank/TimeToEvent/0/Measure/0/FirstValue/0/FirstValue/1/Timing/0",
+          "concept": "Timing",
+          "roleLabel": "value",
+          "linkedBCIds": [
+            "BiomedicalConcept_127"
+          ]
+        },
+        {
+          "slotKey": "T.OS_LogRank/Flag/1/FirstValue/0/FirstValue/0/Timing/0",
+          "concept": "Timing",
+          "roleLabel": "value",
+          "linkedBCIds": [
+            "BiomedicalConcept_141"
+          ]
+        },
+        {
+          "slotKey": "T.OS_LogRank/Flag/1/FirstValue/0/FirstValue/1/Timing/0",
+          "concept": "Timing",
+          "roleLabel": "value",
+          "linkedBCIds": [
+            "BiomedicalConcept_127"
+          ]
+        }
+      ],
+      "selectedAnalyses": [
+        {
+          "transformationOid": "T.OS_LogRank",
+          "resolvedBindings": [
+            {
+              "methodRole": "time",
+              "concept": "TimeToEvent",
+              "qualifierType": null,
+              "qualifierValue": null,
+              "requiredValueType": "Quantity",
+              "direction": "input",
+              "dataStructureRole": "measure"
+            },
+            {
+              "methodRole": "event",
+              "concept": "Flag",
+              "qualifierType": null,
+              "qualifierValue": null,
+              "requiredValueType": "CodeableConcept",
+              "direction": "input",
+              "dataStructureRole": "measure"
+            },
+            {
+              "methodRole": "group",
+              "concept": "Treatment",
+              "qualifierType": "IntentType",
+              "qualifierValue": "Planned",
+              "requiredValueType": "CodeableConcept",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            },
+            {
+              "concept": "Subject",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            }
+          ],
+          "activeInteractions": [],
+          "estimandSummaryPattern": "TestResult",
+          "outputConfig": {
+            "test_result": {
+              "selectedDimensions": [
+                "Treatment"
+              ]
+            }
+          }
+        }
+      ],
+      "cubeDimensions": [
+        {
+          "dimension": "Parameter",
+          "sliceValue": ""
+        },
+        {
+          "dimension": "Treatment",
+          "sliceValue": ""
+        }
+      ],
+      "cubeSlices": [],
+      "selectedEndpointPhrase": "SP_TTE_FULL_ENDPOINT",
+      "selectedDimPhrases": [
+        "SP_GROUPING"
+      ],
+      "resolvedSlices": [],
+      "sliceKeyDimensions": [],
+      "dimensionCategoryPicks": {
+        "ParameterDimension": "Parameter"
+      },
+      "resolvedBindings": [
+        {
+          "methodRole": "time",
+          "concept": "TimeToEvent",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "event",
+          "concept": "Flag",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "group",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Planned",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "activeInteractions": [],
+      "dimensionOverrides": {},
+      "pipelineReferences": [],
+      "sliceDimensionOverrides": {}
+    }
+  },
+  "unitConversions": [],
+  "preferences": {
+    "modelViewMode": "concepts",
+    "currentStep": 6
+  },
+  "_notes": "Full-derivation counterpart to Scenario 4: PFS derived from collected SDTM rather than read from ADTTE. Eight-node chain, four BC-linked terminals \u2014 randomisation (BiomedicalConcept_145, DS/RAND), overall response (BiomedicalConcept_141, RS/OVRLRESP) for both progression and last assessment, and adverse event (BiomedicalConcept_127) for death. Censoring follows the study's rule: the censoring date is the last tumour assessment, since progression is only detectable at an assessment.\n\nVERIFIED IN R against the real PrE0102 data: all 179 progression events reproduce ADTTE's AVAL exactly (179/179), and CNSR agrees on 199/200. The 20 censored subjects differ from ADTTE by design \u2014 the reference censors at the disposition date, this chain at the last assessment (median 33 days earlier); the log-rank and Kaplan-Meier results are identical either way.\n\nNOT YET EXECUTABLE IN STEP 8. The leaves read measures from three datasets (DS, RS, AE) and the engine sources measures from the primary dataset only \u2014 enrich_dimensions joins DIMENSIONS across datasets, not measures. Needs either one stacked event source or an extension of auxiliarySources to record-level measures.\n\nKNOWN DATA DEFECT: AE.csv records one fatal adverse event while DM, DS and ADSL all agree on 131 deaths. Subject NCT01797120-0009 died without progressing, so the reference counts a death event and this chain censors them \u2014 the single CNSR disagreement. The chain is correct; the AE domain is short."
+}

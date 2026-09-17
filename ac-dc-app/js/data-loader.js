@@ -3,7 +3,14 @@ import { buildUsdmIndex } from './utils/usdm-ref-resolver.js';
 
 const BASE = getBasePath();
 
-function getBasePath() {
+/**
+ * Prefix every same-origin data URL with this. Returns an ABSOLUTE path
+ * ('/' or '/repo/'), never a relative one — a bare relative fetch of
+ * 'ac-dc-app/data/x' from a page served at '/ac-dc-app/index.html' resolves
+ * to '/ac-dc-app/ac-dc-app/data/x' and 404s. Exported so views that fetch
+ * data directly compose URLs the same way loadAllData does.
+ */
+export function getBasePath() {
   // If served from repo root, paths resolve from there
   // If served from ac-dc-app/, we need to go up one level
   const path = location.pathname;
@@ -109,6 +116,17 @@ export async function loadAllData(state) {
     parsed.isSoaEnriched = (parsed.biomedicalConcepts || []).some(bc => bc.sdtmSpec != null);
     return parsed;
   });
+
+  // Per-study dataset manifest: which SDTM/ADaM files ship with each study,
+  // so Step 8 can offer the ACTIVE study's datasets instead of requiring an
+  // upload. Fetched separately from the aligned Promise.all above, and a
+  // failure here must not break bootstrap — the upload path still works.
+  try {
+    state.datasetManifest = await fetchJSON('ac-dc-app/data/datasets.json');
+  } catch (err) {
+    console.warn('[data-loader] dataset manifest unavailable — upload only', err);
+    state.datasetManifest = {};
+  }
 
   state.rawUsdm = state.rawUsdmFiles[0] || null;
   state.usdmIndex = state.rawUsdmFiles[0] ? buildUsdmIndex(state.rawUsdmFiles[0]) : null;

@@ -1,0 +1,350 @@
+{
+  "breast-cancer-pre0102": {
+    "sdtm": [
+      {
+        "name": "AE",
+        "file": "AE.csv",
+        "path": "data/sdtm/breast-cancer-pre0102/AE.csv",
+        "format": "csv",
+        "label": "Adverse Events"
+      },
+      {
+        "name": "DM",
+        "file": "DM.csv",
+        "path": "data/sdtm/breast-cancer-pre0102/DM.csv",
+        "format": "csv",
+        "label": "Demographics"
+      },
+      {
+        "name": "DS",
+        "file": "DS.csv",
+        "path": "data/sdtm/breast-cancer-pre0102/DS.csv",
+        "format": "csv",
+        "label": "Disposition"
+      },
+      {
+        "name": "EX",
+        "file": "EX.csv",
+        "path": "data/sdtm/breast-cancer-pre0102/EX.csv",
+        "format": "csv",
+        "label": "Exposure"
+      },
+      {
+        "name": "FA",
+        "file": "FA.csv",
+        "path": "data/sdtm/breast-cancer-pre0102/FA.csv",
+        "format": "csv",
+        "label": "Findings About"
+      },
+      {
+        "name": "RELREC",
+        "file": "RELREC.csv",
+        "path": "data/sdtm/breast-cancer-pre0102/RELREC.csv",
+        "format": "csv",
+        "label": "Related Records"
+      },
+      {
+        "name": "RS",
+        "file": "RS.csv",
+        "path": "data/sdtm/breast-cancer-pre0102/RS.csv",
+        "format": "csv",
+        "label": "Disease Response"
+      },
+      {
+        "name": "TA",
+        "file": "TA.csv",
+        "path": "data/sdtm/breast-cancer-pre0102/TA.csv",
+        "format": "csv",
+        "label": "Trial Arms"
+      },
+      {
+        "name": "TR",
+        "file": "TR.csv",
+        "path": "data/sdtm/breast-cancer-pre0102/TR.csv",
+        "format": "csv",
+        "label": "Tumor Results"
+      },
+      {
+        "name": "TU",
+        "file": "TU.csv",
+        "path": "data/sdtm/breast-cancer-pre0102/TU.csv",
+        "format": "csv",
+        "label": "Tumor Identification"
+      },
+      {
+        "name": "TV",
+        "file": "TV.csv",
+        "path": "data/sdtm/breast-cancer-pre0102/TV.csv",
+        "format": "csv",
+        "label": "Trial Visits"
+      },
+      {
+        "name": "ZE",
+        "file": "ZE.csv",
+        "path": "data/sdtm/breast-cancer-pre0102/ZE.csv",
+        "format": "csv",
+        "label": ""
+      }
+    ],
+    "adam": [
+      {
+        "name": "ADSL",
+        "file": "ADSL.csv",
+        "path": "data/adam/breast-cancer-pre0102/ADSL.csv",
+        "format": "csv",
+        "label": "Subject-Level Analysis Dataset"
+      },
+      {
+        "name": "ADTTE",
+        "file": "ADTTE.csv",
+        "path": "data/adam/breast-cancer-pre0102/ADTTE.csv",
+        "format": "csv",
+        "label": "Time-to-Event Analysis Dataset"
+      }
+    ]
+  },
+  "cdisc-pilot-lzzt": {
+    "sdtm": [
+      {
+        "name": "AE",
+        "file": "ae.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/ae.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "CM",
+        "file": "cm.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/cm.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "DM",
+        "file": "dm.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/dm.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "DS",
+        "file": "ds.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/ds.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "EX",
+        "file": "ex.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/ex.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "LB",
+        "file": "lb.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/lb.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "MH",
+        "file": "mh.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/mh.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "QS",
+        "file": "qs.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/qs.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "QS_USDM_ALIGNED",
+        "file": "qs_usdm_aligned.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/qs_usdm_aligned.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "RELREC",
+        "file": "relrec.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/relrec.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "SC",
+        "file": "sc.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/sc.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "SE",
+        "file": "se.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/se.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "SUPPAE",
+        "file": "suppae.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/suppae.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "SUPPDM",
+        "file": "suppdm.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/suppdm.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "SUPPDS",
+        "file": "suppds.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/suppds.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "SUPPLB",
+        "file": "supplb.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/supplb.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "SV",
+        "file": "sv.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/sv.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "TA",
+        "file": "ta.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/ta.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "TE",
+        "file": "te.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/te.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "TI",
+        "file": "ti.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/ti.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "TS",
+        "file": "ts.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/ts.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "TV",
+        "file": "tv.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/tv.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "VS",
+        "file": "vs.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/vs.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "VS_OBSERVED",
+        "file": "vs_observed.xpt",
+        "path": "data/sdtm/cdisc-pilot-lzzt/vs_observed.xpt",
+        "format": "xpt",
+        "label": ""
+      }
+    ],
+    "adam": [
+      {
+        "name": "ADAE",
+        "file": "adae.xpt",
+        "path": "data/adam/cdisc-pilot-lzzt/adae.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "ADLBC",
+        "file": "adlbc.xpt",
+        "path": "data/adam/cdisc-pilot-lzzt/adlbc.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "ADLBH",
+        "file": "adlbh.xpt",
+        "path": "data/adam/cdisc-pilot-lzzt/adlbh.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "ADLBHY",
+        "file": "adlbhy.xpt",
+        "path": "data/adam/cdisc-pilot-lzzt/adlbhy.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "ADQSADAS",
+        "file": "adqsadas.xpt",
+        "path": "data/adam/cdisc-pilot-lzzt/adqsadas.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "ADQSCIBC",
+        "file": "adqscibc.xpt",
+        "path": "data/adam/cdisc-pilot-lzzt/adqscibc.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "ADQSNPIX",
+        "file": "adqsnpix.xpt",
+        "path": "data/adam/cdisc-pilot-lzzt/adqsnpix.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "ADSL",
+        "file": "adsl.xpt",
+        "path": "data/adam/cdisc-pilot-lzzt/adsl.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "ADTTE",
+        "file": "adtte.xpt",
+        "path": "data/adam/cdisc-pilot-lzzt/adtte.xpt",
+        "format": "xpt",
+        "label": ""
+      },
+      {
+        "name": "ADVS",
+        "file": "advs.xpt",
+        "path": "data/adam/cdisc-pilot-lzzt/advs.xpt",
+        "format": "xpt",
+        "label": ""
+      }
+    ]
+  }
+}

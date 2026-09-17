@@ -345,15 +345,27 @@ export function computeColumnMap(slots, chain, pipelineReferences = []) {
         if (!binding) return;
         const role = binding.methodRole || '';
         if (!role) return;
+        // A role can carry SEVERAL bindings — M.Aggregation with axis=roles
+        // takes the earliest of two dates, both bound to `value`. Assigning
+        // rather than accumulating let the second silently overwrite the
+        // first, so "earliest of progression and death" saw only death and
+        // every subject without a death came out censored.
+        const addCol = (col) => {
+          if (!col) return;
+          const prev = inputColumns[role];
+          if (prev === undefined) inputColumns[role] = col;
+          else if (Array.isArray(prev)) { if (!prev.includes(col)) prev.push(col); }
+          else if (prev !== col) inputColumns[role] = [prev, col];
+        };
         if (chainKeys.has(child.key)) {
-          inputColumns[role] = outputCol[child.key];
+          addCol(outputCol[child.key]);
           return;
         }
         // Follow pipelineReferences: child slot may be a reference into an
         // already-computed subtree (subtrahend/covariate reusing minuend).
         const referent = resolveRef(child.key);
         if (referent && outputCol[referent]) {
-          inputColumns[role] = outputCol[referent];
+          addCol(outputCol[referent]);
         }
         // else: terminal — leave out so R falls back to concept-keyed name
       });
@@ -574,7 +586,12 @@ export function getUnresolvedConcepts(transformation, derivationChain, library) 
       const ic = normalizeConcept(inputBindings[i]);
       const idx = conceptCount.get(ic) || 0;
       conceptCount.set(ic, idx + 1);
-      const childSlotKey = `${deriv.oid}/${ic}/${idx}`;
+      // Path-accumulated, exactly as buildPipelineGraph keys them. Keying by
+      // the derivation's OID instead made every slot below the first level
+      // unmatchable against a saved derivationChain — isDerivationComplete
+      // reported a fully specified pipeline as incomplete, because the two
+      // functions in this file disagreed about what a slotKey is.
+      const childSlotKey = `${entry.slotKey}/${ic}/${idx}`;
 
       // Use binding's methodRole as role label
       const roleLabel = inputBindings[i].methodRole || '';
@@ -585,6 +602,96 @@ export function getUnresolvedConcepts(transformation, derivationChain, library) 
 
   // Filter to unresolved: slot not in resolvedKeys and not a confirmed terminal
   return allSlots.filter(slot => !resolvedKeys.has(slot.slotKey));
+}
+
+/**
+ * Resolve SmartPhrase slots from the derivation chain.
+ *
+ * A phrase slot like {event} names something the CHAIN decides, not a word the
+ * author types: the event of a time-to-event endpoint is whichever derivation
+ * the user selected for the event role. Transformations declare which of their
+ * input slots plays which role via `phraseSlot` on the binding, and each
+ * derivation offers a `phraseLabel` (a noun phrase for prose) — so this reads
+ * the two off the library rather than hardcoding any oid.
+ *
+ * Change the derivation in Step 6 and the sentence follows.
+ *
+ * @param {Array}  derivationChain - [{ slotKey, concept, derivationOid }]
+ * @param {Object} library         - The transformation library
+ * @param {Array}  [terminals]     - confirmedTerminals; a slot read from source
+ *                                   rather than derived is answered by its BC
+ * @param {Object} [study]         - parsed study, for biomedical concept labels
+ * @returns {Object<string, string>} e.g. { event: "disease progression or death" }
+ */
+export function resolvePhraseSlotsFromChain(derivationChain, library, terminals, study) {
+  const derivations = library?.derivationTransformations || [];
+  const byOid = new Map();
+  for (const t of derivations) byOid.set(t.oid, t);
+  for (const t of (library?.analysisTransformations || [])) byOid.set(t.oid, t);
+
+  // A slotKey is "<...parent path>/<concept>/<index>". Re-walk the parent's
+  // measure bindings with the same per-concept index logic getUnresolvedConcepts
+  // uses, so slot identity matches exactly.
+  const chainByKey = new Map((derivationChain || []).map((e) => [e.slotKey, e.derivationOid]));
+  const bindingFor = (slotKey) => {
+    const parts = String(slotKey || '').split('/');
+    if (parts.length < 3) return null;
+    const index = Number(parts[parts.length - 1]);
+    const concept = parts[parts.length - 2];
+    // The parent is whatever the chain selected at the ancestor key. Reading a
+    // path segment as an oid only works for the root, since every deeper
+    // segment is a concept name.
+    const parentKey = parts.slice(0, -2).join('/');
+    const parent = byOid.get(chainByKey.get(parentKey)) || byOid.get(parentKey);
+    if (!parent || !Number.isInteger(index)) return null;
+    const seen = new Map();
+    for (const b of getMeasureBindings(parent)) {
+      const ic = normalizeConcept(b);
+      const idx = seen.get(ic) || 0;
+      seen.set(ic, idx + 1);
+      if (ic === concept && idx === index) return b;
+    }
+    return null;
+  };
+
+  const collected = {};   // role -> [label]
+
+  // Terminals answer slots too. A risk origin is read from source rather than
+  // derived, so it is a CONFIRMED TERMINAL, not a chain entry — walking only the
+  // chain leaves {risk_origin} permanently unresolved. Its label is the linked
+  // biomedical concept, which is what the terminal binds.
+  const bcIndex = new Map((study?.biomedicalConcepts || []).map((b) => [b.id, b]));
+  for (const term of (terminals || [])) {
+    const role = bindingFor(term?.slotKey)?.phraseSlot;
+    if (!role) continue;
+    for (const id of (term.linkedBCIds || [])) {
+      const bc = bcIndex.get(id);
+      const label = bc ? (bc.label || bc.name || id) : id;
+      (collected[role] = collected[role] || []).push(label);
+    }
+  }
+
+  for (const entry of (derivationChain || [])) {
+    if (!entry?.slotKey || !entry.derivationOid) continue;
+
+    const role = bindingFor(entry.slotKey)?.phraseSlot;
+    if (!role) continue;
+
+    const chosen = byOid.get(entry.derivationOid);
+    const label = chosen?.phraseLabel || chosen?.name || entry.derivationOid;
+    (collected[role] = collected[role] || []).push(label);
+  }
+
+  // Several derivations can fill one role (progression AND death are both the
+  // event). Join them the way the protocol sentence reads.
+  const out = {};
+  for (const [role, labels] of Object.entries(collected)) {
+    const uniq = [...new Set(labels)];
+    out[role] = uniq.length > 1
+      ? uniq.slice(0, -1).join(', ') + ' or ' + uniq[uniq.length - 1]
+      : uniq[0];
+  }
+  return out;
 }
 
 /**

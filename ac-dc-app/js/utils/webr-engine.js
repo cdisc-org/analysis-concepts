@@ -60,26 +60,37 @@ export async function initWebR(onProgress) {
 }
 
 /**
- * Load an XPT file into the R environment.
+ * Load a dataset file into the R environment. XPT or CSV.
  *
  * Captures distinct values for low-cardinality character/factor columns so the
  * UI can populate slice-value dropdowns from real data (e.g. EFFFL → ["N","Y"]).
  *
  * @param {ArrayBuffer} arrayBuffer - Raw bytes of the XPT file
  * @param {string} datasetName - Name for the dataset (e.g. "ADSL")
+ * @param {string} [format='xpt'] - 'xpt' or 'csv'
  * @returns {Promise<{name: string, nrow: number, ncol: number, columns: string[], distinctValues: Object<string, string[]>}>}
  */
-export async function loadXptFile(arrayBuffer, datasetName) {
+export async function loadXptFile(arrayBuffer, datasetName, format = 'xpt') {
   const webR = await ensureInitialized();
   const rName = datasetName.toLowerCase();
-  const tmpPath = `/tmp/${rName}.xpt`;
+  const ext = String(format).toLowerCase() === 'csv' ? 'csv' : 'xpt';
+  const tmpPath = `/tmp/${rName}.${ext}`;
 
   // Write bytes to the virtual filesystem
   const uint8 = new Uint8Array(arrayBuffer);
   await webR.FS.writeFile(tmpPath, uint8);
 
-  // Read XPT and assign to global environment
-  await webR.evalR(`${rName} <- haven::read_xpt("${tmpPath}")`);
+  // Read into the global environment. CSV is read as character throughout:
+  // the ingest layer and the derivation templates decide what is numeric, and
+  // letting read.csv guess would silently turn an ISO-8601 date into a factor
+  // or a zero-padded id into an integer. Blank and "NA" are both missing.
+  if (ext === 'csv') {
+    await webR.evalR(
+      `${rName} <- utils::read.csv("${tmpPath}", stringsAsFactors = FALSE, ` +
+      `colClasses = "character", na.strings = c("", "NA"), check.names = FALSE)`);
+  } else {
+    await webR.evalR(`${rName} <- haven::read_xpt("${tmpPath}")`);
+  }
 
   // Extract metadata + distinct values for categorical columns (≤50 unique values).
   // auto_unbox=FALSE keeps single-element vectors as JSON arrays so the JS side

@@ -1,0 +1,71 @@
+{
+  "$schema": "../../model/method/acdc_methods.schema.json",
+  "schema_version": "0.8.0",
+  "$vocabulary": {
+    "statistics": "../../model/method/statistics_vocabulary.json",
+    "output_classes": "../../model/method/output_class_templates.json",
+    "formula_grammar": "../../model/method/formula_grammar.json"
+  },
+  "oid": "M.FirstMatch",
+  "name": "First Match",
+  "type": "derivation",
+  "class": "Classification",
+  "intent": [
+    "ValueClassification"
+  ],
+  "description": "Returns the first of several candidate inputs that equals a given value. Where M.ThresholdCompare compares a value against a constant and M.Categorization against declared conditions, this compares it against other columns \u2014 so it answers which input a value came from without re-deriving how it was chosen. Configured labels render the answer. Covers the time-to-event reason (ADTTE EVNTDESC: which of progression, death, lost-to-follow-up or last assessment supplied the analysis date) and any other 'which rule fired' indicator.",
+  "formula": {
+    "notation": "assignment",
+    "default_expression": "result := FIRST(label_i WHERE candidate_i = value)",
+    "generic_expression": "result := FIRST(<labels>[i] WHERE <candidate>[i] = <selected>) ELSE <default_label>",
+    "notes": "Candidates are evaluated in binding order, so ties resolve by declared priority. Comparison is on the value as stored, which for ISO-8601 dates is exact."
+  },
+  "configurations": [
+    {
+      "name": "labels",
+      "dataType": "string",
+      "defaultValue": null,
+      "description": "Label per candidate, in the same order as the candidate bindings, pipe-separated (e.g. \"Disease Progression|Death\"). DataType admits only FHIR primitives, so a list is carried as a delimited string; the implementation also accepts a real vector when one is bound through env$configs. When unset, the candidate column names are used."
+    },
+    {
+      "name": "default_label",
+      "dataType": "code",
+      "defaultValue": "",
+      "description": "Emitted when no candidate matches the selected value."
+    }
+  ],
+  "output_specification": {
+    "output_classes": [
+      {
+        "class": "computed_value",
+        "role_name": "result",
+        "dataType": "code",
+        "description": "Label of the candidate that supplied the selected value.",
+        "statistics": [
+          "value"
+        ],
+        "dimensions": null
+      }
+    ]
+  },
+  "assumptions": [
+    "Each candidate is comparable to the selected value as stored",
+    "labels has one entry per candidate binding"
+  ],
+  "input_roles": [
+    {
+      "name": "selected",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "single",
+      "description": "The value whose origin is being reported. Compared as stored, so ISO-8601 dates match exactly without parsing."
+    },
+    {
+      "name": "candidate",
+      "dataType": "string",
+      "required": true,
+      "cardinality": "multiple",
+      "description": "The candidate inputs the value may have come from, in priority order. Compared as stored."
+    }
+  ]
+}

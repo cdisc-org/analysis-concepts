@@ -1,0 +1,210 @@
+{
+  "$schema": "acdc-study-instance.schema.json",
+  "instanceId": "SI_NCT01797120-PrE0102_pfs-analysis-only",
+  "formatVersion": "1.0",
+  "createdAt": "2026-09-17T00:00:00.000Z",
+  "updatedAt": "2026-09-17T00:00:00.000Z",
+  "$references": {
+    "transformationLibrary": {
+      "file": "lib/transformations/ACDC_Transformation_Library_v06.json",
+      "version": "0.6"
+    },
+    "acConceptModel": {
+      "file": "model/concept/AC_Concept_Model_v016.json",
+      "version": "0.16"
+    },
+    "dcConceptModel": {
+      "file": "model/concept/Option_D_Clinical_with_Dimensions.json",
+      "version": "0.20b"
+    }
+  },
+  "studyRef": {
+    "selectedStudyIndex": 1,
+    "studyName": "Breast Cancer Study PrE0102"
+  },
+  "selectedEndpointIds": [
+    "Endpoint_1"
+  ],
+  "esapLinkedNarratives": {
+    "abbreviations": [],
+    "introduction": [],
+    "objectives": [],
+    "studyDesign": [],
+    "protocolChanges": [],
+    "estimands": [],
+    "endpoints": [],
+    "analysisSets": [],
+    "statMethods": [],
+    "statAnalysis": [],
+    "software": [],
+    "references": [],
+    "shells": [],
+    "appendices": []
+  },
+  "endpointAnalyses": {},
+  "endpointSpecs": {
+    "Endpoint_1": {
+      "conceptCategory": "TimeToEvent",
+      "dataType": "Duration",
+      "parameterSource": "manual",
+      "parameterName": "",
+      "linkedBCIds": [],
+      "dimensionValues": {
+        "Parameter": "Progression-Free Survival (Days)",
+        "Population": "Y"
+      },
+      "derivationNote": "",
+      "selectedTransformationOid": "T.OS_LogRank",
+      "selectedDerivationOid": null,
+      "useInEsap": true,
+      "writeBackToUsdm": false,
+      "estimandSummaryPattern": "TestResult",
+      "selectedOcFacet": null,
+      "derivationConfigValues": {},
+      "derivationDimensionValues": {},
+      "derivationChain": [],
+      "confirmedTerminals": [],
+      "selectedAnalyses": [
+        {
+          "transformationOid": "T.OS_LogRank",
+          "resolvedBindings": [
+            {
+              "methodRole": "time",
+              "concept": "TimeToEvent",
+              "qualifierType": null,
+              "qualifierValue": null,
+              "requiredValueType": "Quantity",
+              "direction": "input",
+              "dataStructureRole": "measure"
+            },
+            {
+              "methodRole": "event",
+              "concept": "Flag",
+              "qualifierType": null,
+              "qualifierValue": null,
+              "requiredValueType": "CodeableConcept",
+              "direction": "input",
+              "dataStructureRole": "measure"
+            },
+            {
+              "methodRole": "group",
+              "concept": "Treatment",
+              "qualifierType": "IntentType",
+              "qualifierValue": "Actual",
+              "requiredValueType": "CodeableConcept",
+              "direction": "input",
+              "dataStructureRole": "dimension",
+              "note": "This study's ADTTE carries only TRT01A. Planned treatment would be preferable for an ITT analysis but is absent from the data."
+            },
+            {
+              "concept": "Subject",
+              "methodRole": "partition",
+              "direction": "input",
+              "dataStructureRole": "dimension"
+            }
+          ],
+          "activeInteractions": [],
+          "estimandSummaryPattern": "TestResult",
+          "outputConfig": {
+            "test_result": {
+              "selectedDimensions": [
+                "Treatment"
+              ]
+            }
+          }
+        }
+      ],
+      "cubeDimensions": [
+        {
+          "dimension": "Parameter",
+          "sliceValue": "Progression-Free Survival (Days)"
+        },
+        {
+          "dimension": "Treatment",
+          "sliceValue": ""
+        },
+        {
+          "dimension": "Population",
+          "sliceValue": "Y"
+        }
+      ],
+      "cubeSlices": [],
+      "selectedEndpointPhrase": "SP_TTE_FULL_ENDPOINT",
+      "selectedDimPhrases": [
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ],
+      "phraseSlotBindings": {
+        "risk_origin": [
+          "BiomedicalConcept_145"
+        ],
+        "event": [
+          "BiomedicalConcept_141",
+          "BiomedicalConcept_127"
+        ],
+        "censoring_event": [
+          "BiomedicalConcept_141"
+        ]
+      },
+      "resolvedSlices": [
+        {
+          "name": "endpoint",
+          "fixedDimensions": {
+            "Parameter": "Progression-Free Survival (Days)",
+            "Population": "Y"
+          }
+        }
+      ],
+      "sliceKeyDimensions": [
+        "Parameter",
+        "Population"
+      ],
+      "dimensionCategoryPicks": {
+        "ParameterDimension": "Parameter"
+      },
+      "resolvedBindings": [
+        {
+          "methodRole": "time",
+          "concept": "TimeToEvent",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "Quantity",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "event",
+          "concept": "Flag",
+          "qualifierType": null,
+          "qualifierValue": null,
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "measure"
+        },
+        {
+          "methodRole": "group",
+          "concept": "Treatment",
+          "qualifierType": "IntentType",
+          "qualifierValue": "Actual",
+          "requiredValueType": "CodeableConcept",
+          "direction": "input",
+          "dataStructureRole": "dimension",
+          "note": "This study's ADTTE carries only TRT01A. Planned treatment would be preferable for an ITT analysis but is absent from the data."
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "activeInteractions": []
+    }
+  },
+  "unitConversions": [],
+  "preferences": {
+    "modelViewMode": "adam",
+    "currentStep": 8
+  },
+  "_notes": "Analysis-only scenario for PrE0102, mirroring Scenario 1: the endpoint is specified and an analysis chosen, with no derivation chain \u2014 PFS is already derived in ADTTE. Load ac-dc-app/data/adam/breast-cancer-pre0102/ADTTE.csv in Step 8. Two variable overrides are needed there because ADTTE's columns are non-standard: Flag -> CNSR and, if Treatment does not resolve, Treatment -> TRT01A. Expected: log-rank chisq 18.92, df 1, p 1.36e-05; KM medians 169 d (Placebo) and 337 d (Treatment)."
+}

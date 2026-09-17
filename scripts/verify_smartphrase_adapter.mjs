@@ -25,8 +25,11 @@ const check = (name, cond, detail) => { if (!cond) failures.push(name + (detail 
 
 const lib = adaptV06Library(v06);
 
-check("all 25 transformations are merged into one array",
-  lib.transformations.length === 25, `got ${lib.transformations.length}`);
+const v06Count = (v06.derivationTransformations || []).length
+  + (v06.analysisTransformations || []).length;
+check("both transformation arrays are merged into one",
+  lib.transformations.length === v06Count,
+  `got ${lib.transformations.length}, expected ${v06Count}`);
 check("every transformation has conceptId",
   lib.transformations.every(t => typeof t.conceptId === "string"));
 check("every transformation has label",

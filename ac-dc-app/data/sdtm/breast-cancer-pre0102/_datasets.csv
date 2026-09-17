@@ -1,0 +1,14 @@
+Filename,Label
+AE.csv,Adverse Events
+DM.csv,Demographics
+DS.csv,Disposition
+EX.csv,Exposure
+FA.csv,Findings About
+RELREC.csv,Related Records
+RS.csv,Disease Response
+TA.csv,Trial Arms
+TR.csv,Tumor Results
+TU.csv,Tumor Identification
+TV.csv,Trial Visits
+ADSL.csv,Subject-Level Analysis Dataset
+ADTTE.csv,Time-to-Event Analysis Dataset

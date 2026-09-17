@@ -372,20 +372,52 @@ export function getDerivationBCTopicDecode(endpointSpec, slotKey, parsedStudy) {
   const bcIndex = new Map((parsedStudy.biomedicalConcepts || []).map(b => [b.id, b]));
   const decodes = [];
   const bcNames = [];
+  const sourceVars = [];
   for (const id of bcIds) {
     const bc = bcIndex.get(id);
     if (!bc) continue;
 
     let decode = null;
+    // The variable whose value `decode` is. null means the historical Topic
+    // pathway (a --TESTCD-shaped code), which callers treat as Topic.
+    let sourceVar = null;
     // (1) Synonyms[0] when it matches a CT-code shape.
     const syn0 = (bc.synonyms || [])[0];
     if (isCtCode(syn0)) decode = syn0;
-    // (2) Reference URL last segment.
+    // (2) A property's responseCode. An Events-class BC (DS/AE) identifies its
+    // records through an assigned value rather than a Topic: the randomisation
+    // BC is "the DS record whose DSDECOD is RANDOMIZED". That value lives on
+    // the property's responseCodes, which neither the synonym nor the
+    // reference-slug path reads — the slug would yield the NCI concept code
+    // (C114209), which matches no data row. Prefer a coded term property
+    // (--DECOD / --TERM / --TRT) so a category response can't win.
+    if (!decode) {
+      const rcDecode = (prop) => {
+        const rc = (prop?.responseCodes || [])[0];
+        if (!rc) return null;
+        return typeof rc === 'string' ? rc : (rc.decode || rc.name || rc.code?.decode || null);
+      };
+      // Anchored to the SDTM shape — two-letter domain plus the topic suffix.
+      // An unanchored /TRT$/ also matches AECONTRT ("concomitant treatment
+      // given"), whose responseCode is Yes/No, and a Yes/No answer is not an
+      // identity.
+      const TOPIC_VAR = /^[A-Z]{2}(TERM|DECOD|TRT)$/i;
+      const coded = (bc.properties || []).filter(p =>
+        TOPIC_VAR.test(p.name || '') || TOPIC_VAR.test(p.label || ''));
+      for (const prop of coded) {
+        const v = rcDecode(prop);
+        // Record WHICH variable carried the identity. An Events-class BC is
+        // identified by --DECOD, not --TESTCD, so a caller that assumes Topic
+        // would filter a column the record leaves empty and select no rows.
+        if (v) { decode = v; sourceVar = prop.name || prop.label || null; break; }
+      }
+    }
+    // (3) Reference URL last segment.
     if (!decode) {
       const slug = refSlug(bc.reference);
       if (isCtCode(slug)) decode = slug;
     }
-    // (3) Historical property-decode path (kept for BCs that explicitly populated it).
+    // (4) Historical property-decode path (kept for BCs that explicitly populated it).
     if (!decode) {
       const topicProp = (bc.properties || []).find(p =>
         /TESTCD/i.test(p.name || '') || /TESTCD/i.test(p.label || '')
@@ -398,9 +430,22 @@ export function getDerivationBCTopicDecode(endpointSpec, slotKey, parsedStudy) {
       }
     }
 
+    // Which variable the identity belongs to is a property of the BC, not of
+    // whichever lookup path happened to yield the value. A synonym like
+    // "RANDOMIZED" is CT-code-shaped, so path (1) wins and leaves sourceVar
+    // unset even for a DS-shaped BC whose identity lives in --DECOD. Decide
+    // from the BC's own properties: a Findings BC declares --TESTCD; an
+    // Events BC (DS, AE) declares --DECOD/--TERM and no --TESTCD at all.
+    if (decode && !sourceVar) {
+      const names = (bc.properties || []).map(pr => pr.name || pr.label || '');
+      const testcd = names.find(n => /^[A-Z]{2}TESTCD$/i.test(n));
+      sourceVar = testcd || names.find(n => /^[A-Z]{2}(DECOD|TERM|TRT)$/i.test(n)) || null;
+    }
+
     if (decode) {
       decodes.push(decode);
       bcNames.push(bc.label || bc.name || id);
+      sourceVars.push(sourceVar);
     }
   }
   if (decodes.length === 0) return null;
@@ -411,8 +456,93 @@ export function getDerivationBCTopicDecode(endpointSpec, slotKey, parsedStudy) {
   return {
     bcName: bcNames[0],
     decode: decodes[0],
+    sourceVariable: sourceVars[0] || null,
     bcNames,
-    decodes
+    decodes,
+    sourceVariables: sourceVars
+  };
+}
+
+/**
+ * Every constraint a BC imposes on the records that realise it.
+ *
+ * A BC property carrying a responseCode is an ASSIGNED value: the RAND
+ * specialization says DSDECOD is RANDOMIZED and DSCAT is PROTOCOL MILESTONE.
+ * Those are the filter, and reading them here is what lets a transformation
+ * link the BC instead of restating them as hand-written slice constraints.
+ *
+ * @returns {{bcId, bcName, property, code, value}[]}
+ */
+export function getBCIdentifyingConstraints(endpointSpec, slotKey, parsedStudy) {
+  if (!endpointSpec || !parsedStudy) return [];
+  let bcIds = [];
+  if (slotKey && Array.isArray(endpointSpec.confirmedTerminals)) {
+    const term = endpointSpec.confirmedTerminals.find(t => t.slotKey === slotKey);
+    if (term?.linkedBCIds?.length) bcIds = [...term.linkedBCIds];
+  }
+  if (bcIds.length === 0 && endpointSpec.linkedBCIds?.length) bcIds = [...endpointSpec.linkedBCIds];
+
+  const bcIndex = new Map((parsedStudy.biomedicalConcepts || []).map(b => [b.id, b]));
+  const out = [];
+  for (const id of bcIds) {
+    const bc = bcIndex.get(id);
+    if (!bc) continue;
+    for (const prop of (bc.properties || [])) {
+      if (prop.isEnabled === false) continue;   // declared but not implemented by the spec
+      const codes = prop.responseCodes || [];
+      // A property offering a Yes/No CHOICE is a qualifier the record may carry,
+      // not a value that identifies it. An identifying constraint is a single
+      // assigned term (DSDECOD = RANDOMIZED), so require exactly one response.
+      if (codes.length !== 1) continue;
+      const rc = codes[0];
+      const value = typeof rc === 'string' ? rc : (rc.decode || rc.name || rc.code?.decode || null);
+      if (!value || /^(yes|no)$/i.test(value)) continue;
+      out.push({
+        bcId: id,
+        bcName: bc.label || bc.name || id,
+        property: prop.name || prop.label,
+        code: prop.code?.standardCode?.code || null,
+        value
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * The BC property holding the observation's date, and the variable that carries
+ * it. Matched on the property's own datatype first — an authored BC states
+ * `datetime` — falling back to the DEC decode, so a BC that omits the datatype
+ * still resolves. This is what supplies a time-to-event risk origin: the
+ * randomisation BC's DSSTDTC.
+ *
+ * @returns {{bcId, bcName, property, code, decode}|null}
+ */
+export function getBCDateProperty(endpointSpec, slotKey, parsedStudy, kind = 'start') {
+  if (!endpointSpec || !parsedStudy) return null;
+  let bcId = null;
+  if (slotKey && Array.isArray(endpointSpec.confirmedTerminals)) {
+    const term = endpointSpec.confirmedTerminals.find(t => t.slotKey === slotKey);
+    if (term?.linkedBCIds?.length) bcId = term.linkedBCIds[0];
+  }
+  if (!bcId && endpointSpec.linkedBCIds?.length) bcId = endpointSpec.linkedBCIds[0];
+  if (!bcId) return null;
+  const bc = (parsedStudy.biomedicalConcepts || []).find(b => b.id === bcId);
+  if (!bc) return null;
+
+  const wanted = kind === 'end' ? /ENDTC$|End Date/i : /STDTC$|DTC$|Start Date|Collection Date/i;
+  const dated = (bc.properties || []).filter(p =>
+    /^datetime$|^date$/i.test(p.datatype || '')
+    || wanted.test(p.name || '') || wanted.test(p.code?.standardCode?.decode || ''));
+  // Prefer the requested end of the interval when the BC carries both.
+  const prop = dated.find(p => wanted.test(p.name || '')) || dated[0];
+  if (!prop) return null;
+  return {
+    bcId,
+    bcName: bc.label || bc.name || bcId,
+    property: prop.name || prop.label,
+    code: prop.code?.standardCode?.code || null,
+    decode: prop.code?.standardCode?.decode || null
   };
 }
 

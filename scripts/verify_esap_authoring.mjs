@@ -257,13 +257,20 @@ const { renderAddPhraseHtml, addPhraseToSpec, removePhraseFromSpec } =
 /* From nothing, only endpoint phrases can start a sentence. */
 const blank = {};
 const startList = renderAddPhraseHtml(context, blank, ep);
-/* The count and the exclusion together are the gate: asserting only that SP_CFB_ENDPOINT is
-   present left the check green when the role filter was replaced by `filter(() => true)`,
-   which offers "using ANCOVA" as a sentence STARTER. v06 declares 8 endpoint-role phrases. */
+/* The completeness and the exclusion together are the gate: asserting only that
+   SP_CFB_ENDPOINT is present left the check green when the role filter was replaced by
+   `filter(() => true)`, which offers "using ANCOVA" as a sentence STARTER. The expected
+   set is derived from the library by role rather than pinned to a count, so adding an
+   endpoint phrase does not fail an unrelated check — but offering a non-endpoint one
+   still does. */
 const startOids = [...startList.matchAll(/data-add-oid="([^"]+)"/g)].map((m) => m[1]);
-check("a blank spec offers exactly the endpoint phrases",
-  startOids.length === 8 && startOids.every((oid) => /_ENDPOINT$/.test(oid)),
-  JSON.stringify(startOids));
+const endpointRoleOids = (v06.smartPhrases || [])
+  .filter((sp) => sp.role === "endpoint").map((sp) => sp.oid);
+const sameSet = startOids.length === endpointRoleOids.length
+  && endpointRoleOids.every((oid) => startOids.includes(oid));
+check("a blank spec offers exactly the endpoint-role phrases",
+  sameSet && startOids.every((oid) => /_ENDPOINT$/.test(oid)),
+  `${JSON.stringify(startOids)} vs ${JSON.stringify(endpointRoleOids)}`);
 check("and offers no method phrase as a sentence starter",
   !startOids.some((oid) => /^SP_METHOD_/.test(oid)), JSON.stringify(startOids));
 check("options carry the add action", startList.includes("data-add-oid"));

@@ -30,9 +30,11 @@
         "<=",
         "<",
         "==",
-        "!="
+        "!=",
+        "is_na",
+        "not_na"
       ],
-      "description": "Comparison operator"
+      "description": "Comparison operator. 'is_na' / 'not_na' test the presence of the value itself and ignore threshold \u2014 this is how an event-observed / censored indicator is derived from an event date that may be absent."
     },
     {
       "name": "threshold",
@@ -74,7 +76,7 @@
       "dataType": "decimal",
       "required": true,
       "cardinality": "single",
-      "description": "Value to compare"
+      "description": "The value to compare. The ordering operators evaluate it numerically; is_na / not_na test only whether it is present, so they apply to a value of any type \u2014 a date column included."
     }
   ]
 }

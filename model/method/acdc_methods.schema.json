@@ -49,7 +49,7 @@
     },
     "Configuration": {
       "additionalProperties": false,
-      "description": "A configurable parameter for a method. A Configuration has two legitimate shapes: (1) LONG FORM — declares name + dataType locally, plus any of description, defaultValue, enumValues, codings; used when the Configuration is method-specific and owns its definition directly. (2) SHORT FORM — declares conforms_to pointing at a concept id in model/method/configuration_concepts.json (e.g., multiplicity_adjustment, alpha, conf_level); used when the Configuration inherits its definition from a shared registry concept. The choice is a per-Configuration design decision made in the method file. A load-time expander resolves conforms_to references to populate missing fields from the registry; local fields always override inherited ones.",
+      "description": "A configurable parameter for a method. A Configuration has two legitimate shapes: (1) LONG FORM \u2014 declares name + dataType locally, plus any of description, defaultValue, enumValues, codings; used when the Configuration is method-specific and owns its definition directly. (2) SHORT FORM \u2014 declares conforms_to pointing at a concept id in model/method/configuration_concepts.json (e.g., multiplicity_adjustment, alpha, conf_level); used when the Configuration inherits its definition from a shared registry concept. The choice is a per-Configuration design decision made in the method file. A load-time expander resolves conforms_to references to populate missing fields from the registry; local fields always override inherited ones.",
       "properties": {
         "codings": {
           "description": "Mappings from configuration values (or from the configuration itself) to external terminology or ontology codes, e.g., STATO codes for statistical methods. When dataType is enum, each Coding.display is expected to match one entry in enumValues.",
@@ -127,11 +127,16 @@
       "anyOf": [
         {
           "description": "Short form: inherits name and dataType from the registry concept referenced by conforms_to.",
-          "required": ["conforms_to"]
+          "required": [
+            "conforms_to"
+          ]
         },
         {
           "description": "Long form: self-contained configuration with local name and dataType.",
-          "required": ["name", "dataType"]
+          "required": [
+            "name",
+            "dataType"
+          ]
         }
       ],
       "title": "Configuration",
@@ -231,26 +236,46 @@
         },
         "qualifierType": {
           "description": "Qualifier type (e.g., IntentType, DerivationStatus, ReferenceFrame)",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "qualifierValue": {
           "description": "Qualifier value (e.g., Planned, Analysis, Relative)",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "requiredValueType": {
           "description": "FHIR value type constraint (e.g., Quantity, CodeableConcept, Identifier)",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "description": {
           "description": "Human-readable description of what this binding represents",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "note": {
           "description": "Additional context or clarification for this binding",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
-      "required": ["concept", "methodRole", "direction", "dataStructureRole"],
+      "required": [
+        "concept",
+        "methodRole",
+        "direction",
+        "dataStructureRole"
+      ],
       "title": "InputBinding",
       "type": "object"
     },
@@ -458,7 +483,7 @@
           "type": "string"
         },
         "configurations": {
-          "description": "Configurations attached to this output class. Used when a configuration is per-family rather than global to the method — e.g., multiplicity_adjustment attaches to the contrasts output_class because adjustment is bound to the p-value family it produces, not to the model fit. Expands via conforms_to the same way as method-level Configuration entries.",
+          "description": "Configurations attached to this output class. Used when a configuration is per-family rather than global to the method \u2014 e.g., multiplicity_adjustment attaches to the contrasts output_class because adjustment is bound to the p-value family it produces, not to the model fit. Expands via conforms_to the same way as method-level Configuration entries.",
           "items": {
             "$ref": "#/$defs/Configuration"
           },
@@ -490,7 +515,7 @@
           ]
         },
         "dimensions": {
-          "description": "Dimensions (role names from input_roles) that index the output rows — defines the structural axes of this output class",
+          "description": "Dimensions (role names from input_roles) that index the output rows \u2014 defines the structural axes of this output class",
           "items": {
             "type": "string"
           },
@@ -697,11 +722,12 @@
       "type": "object"
     },
     "StatisticalRole": {
-      "description": "The statistical role of an input variable",
+      "description": "The statistical role of an input variable. 'fixed_effect' belongs to methods that FIT A MODEL (ANCOVA, ANOVA, MMRM, Cox, logistic); 'group' is the comparison factor of a method that fits none \u2014 a nonparametric test or estimator such as the log-rank test or a Kaplan-Meier curve, which compares observed against expected rather than estimating an effect.",
       "enum": [
         "response",
         "covariate",
         "fixed_effect",
+        "group",
         "repeated_factor",
         "repeated_subject",
         "strata",

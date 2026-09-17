@@ -12,6 +12,69 @@ import {
 import {
   findEndpointContextPhraseForConcept, getEndpointContextRoles
 } from '../utils/phrase-engine.js';
+import { resolvePhraseSlotsFromChain } from '../utils/transformation-linker.js';
+
+/**
+ * Slots a SmartPhrase gets from the derivation chain rather than from typed
+ * text: {event} is whichever derivation fills the event role, and it changes
+ * when the user re-picks in Step 6. Chain wins over any typed config value.
+ */
+function chainPhraseSlots(spec, study) {
+  return resolvePhraseSlotsFromChain(
+    spec?.derivationChain, appState.transformationLibrary,
+    spec?.confirmedTerminals, study || appState.selectedStudy) || {};
+}
+
+/**
+ * Value for one phrase slot. A placeholder declaring value_source
+ * "derivation_chain" is answered by the chain ALONE: falling back to a typed
+ * config would resurrect a stale value the author can no longer see a field
+ * for, and show it as resolved. An unbound chain slot must read as unresolved.
+ */
+function slotSources(placeholder) {
+  return String(placeholder?.value_source || '').split('|').map((x) => x.trim()).filter(Boolean);
+}
+
+/**
+ * Labels for the biomedical concepts bound to a slot on this spec. Several may
+ * fill one slot — progression-free survival is timed to progression OR death —
+ * so they read out the way the protocol sentence does.
+ */
+function slotBcLabels(slot, spec, study) {
+  const ids = (spec?.phraseSlotBindings || {})[slot];
+  const list = Array.isArray(ids) ? ids : (ids ? [ids] : []);
+  if (list.length === 0) return null;
+  // The study's full BC list. getBiomedicalConcepts() filters to a single
+  // endpoint's linked BCs, which is not what a definition slot draws on — the
+  // risk origin is a randomisation BC that no endpoint links.
+  const bcs = study?.biomedicalConcepts || [];
+  const labels = list
+    .map((id) => bcs.find((b) => b.id === id))
+    .map((b, i) => (b ? (b.label || b.name) : list[i]))
+    .filter(Boolean);
+  if (labels.length === 0) return null;
+  return labels.length > 1
+    ? labels.slice(0, -1).join(', ') + ' or ' + labels[labels.length - 1]
+    : labels[0];
+}
+
+function phraseSlotValue(slot, spec, phraseDef, configVals, dimValues, study) {
+  const ph = (phraseDef?.placeholders || []).find((p) => p.name === slot);
+  const sources = slotSources(ph);
+  const fromChain = chainPhraseSlots(spec, study)[slot] || null;
+  if (sources.includes('derivation_chain') || sources.includes('biomedicalConcept')) {
+    // Chain wins: a spec that derives the endpoint states it from its own
+    // evidence. A BC binding answers only when there is no chain — an
+    // analysis-only spec over data derived upstream. Typed config never
+    // applies to these slots.
+    return fromChain || slotBcLabels(slot, spec, study || appState.selectedStudy);
+  }
+  return fromChain
+    || (configVals || {})[slot]
+    || (dimValues || {})[slot]
+    || (dimValues || {})[slot.charAt(0).toUpperCase() + slot.slice(1)]
+    || null;
+}
 
 export const DATA_TYPES = ['Quantity', 'CodeableConcept', 'Ordinal', 'Boolean', 'DateTime', 'Duration'];
 
@@ -141,17 +204,15 @@ export function getDimensionOptions(dimName, study) {
     case 'AnalysisVisit':
     case 'Timing':
       return getVisitLabels(study);
-    case 'Treatment': {
-      const arms = getArmNames(study);
-      const combos = [];
-      for (let i = 0; i < arms.length; i++) {
-        for (let j = i + 1; j < arms.length; j++) {
-          combos.push(`${arms[i]} vs ${arms[j]}`);
-        }
-      }
-      if (arms.length > 2) combos.push(arms.join(' vs '));
-      return [...arms, ...combos];
-    }
+    case 'Treatment':
+      // Individual arms only. A cube dimension value is a COORDINATE, and it
+      // becomes an equality filter downstream (TRTP == value) — a combined
+      // "A vs B" string matches no rows and yields an empty cube. A between-arm
+      // comparison is expressed by leaving this unset ("(all values)") so both
+      // arms stay in the cube, and letting the analysis bind Treatment as its
+      // fixed_effect. Legacy specs saved with a combined value still parse:
+      // the " vs " splitters downstream are retained deliberately.
+      return getArmNames(study);
     case 'Population':
       return getPopulationNames(study);
     default:
@@ -299,8 +360,15 @@ function buildTransformationSyntaxTemplate(ep, spec, study, analysisTransform, d
   const configVals = spec.derivationConfigValues || {};
   const paramValue = getSpecParameterValue(ep.id, spec, study);
 
-  // Find the endpoint-context SmartPhrase — prefer derivation, fall back to analysis
-  let endpointPhrase = getDerivationEndpointPhrase(derivTransform);
+  // The author's own choice wins. Without this the preview picked the FIRST
+  // endpoint-role phrase the analysis happens to list, so a spec that selected
+  // "time from {risk_origin} to {event}, censored at {censoring_event}" was
+  // previewed as "time to {event}" — the panel contradicting its own
+  // "Smart phrase:" line directly beneath it.
+  let endpointPhrase = spec?.selectedEndpointPhrase
+    ? (lib?.smartPhrases || []).find(sp => sp.oid === spec.selectedEndpointPhrase)
+    : null;
+  if (!endpointPhrase) endpointPhrase = getDerivationEndpointPhrase(derivTransform);
   if (!endpointPhrase && analysisTransform) {
     const endpointRoles = getEndpointContextRoles(lib);
     endpointPhrase = (lib?.smartPhrases || []).find(sp =>
@@ -324,9 +392,21 @@ function buildTransformationSyntaxTemplate(ep, spec, study, analysisTransform, d
         : resolved.replace('{parameter}', '<span class="placeholder">{Parameter}</span>');
     }
 
+    // Resolve the remaining chain/BC-bound slots the same way. Previously only
+    // {event} was substituted, so {risk_origin} and {censoring_event} rendered
+    // as raw placeholders even when the spec could answer them.
+    for (const slot of ['risk_origin', 'censoring_event']) {
+      const token = `{${slot}}`;
+      if (!tpl.includes(token)) continue;
+      const val = phraseSlotValue(slot, spec, endpointPhrase, configVals, dimValues, study);
+      resolved = val
+        ? resolved.replace(token, `<strong>${val}</strong>`)
+        : resolved.replace(token, `<span class="placeholder">${token}</span>`);
+    }
+
     // Resolve {event} placeholder
     if (tpl.includes('{event}')) {
-      const eventVal = configVals.event || dimValues.event || dimValues.Event || null;
+      const eventVal = phraseSlotValue('event', spec, endpointPhrase, configVals, dimValues, study);
       tpl = tpl.replace('{event}', '{Event}');
       resolved = eventVal
         ? resolved.replace('{event}', `<strong>${eventVal}</strong>`)
@@ -733,6 +813,23 @@ function wireEventHandlers(container, study) {
           }
         }
       });
+      updateSyntaxPreview(container, epId, study);
+    });
+  });
+
+  // Definition-slot BC bindings
+  container.querySelectorAll('.ep-phrase-slot-bc').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const epId = sel.dataset.epId;
+      const slot = sel.dataset.slot;
+      const spec = appState.endpointSpecs[epId];
+      if (!spec) return;
+      if (!spec.phraseSlotBindings) spec.phraseSlotBindings = {};
+      const picked = sel.multiple
+        ? [...sel.selectedOptions].map(o => o.value).filter(Boolean)
+        : (sel.value ? [sel.value] : []);
+      if (picked.length === 0) delete spec.phraseSlotBindings[slot];
+      else spec.phraseSlotBindings[slot] = picked;
       updateSyntaxPreview(container, epId, study);
     });
   });
@@ -1151,9 +1248,22 @@ export function buildFormalizedDescription(ep, spec, study) {
   }
 
   // Resolve the base phrase
+  const configVals = spec.derivationConfigValues || {};
+  const dimValues = spec.dimensionValues || {};
   let desc = epPhrase.phrase_template;
   if (desc.includes('{parameter}')) desc = desc.replace('{parameter}', paramValue || '{parameter}');
-  if (desc.includes('{event}')) desc = desc.replace('{event}', paramValue || '{event}');
+  // {event} is NOT the parameter. For a time-to-event endpoint the parameter is
+  // the endpoint label ("Progression-Free Survival") while the event is what is
+  // being timed ("disease progression or death") — substituting one for the
+  // other yields "time to progression-free survival", which states that PFS is
+  // its own event. Resolve from the event config, matching the other two
+  // substitution sites in this file, and leave the slot visible when unset.
+  for (const slot of ['risk_origin', 'event', 'censoring_event']) {
+    const token = `{${slot}}`;
+    if (!desc.includes(token)) continue;
+    const val = phraseSlotValue(slot, spec, epPhrase, configVals, dimValues, study);
+    desc = desc.replace(token, val || token);
+  }
 
   // Append only variable-relevant dimension phrases (visit-axis + Timing);
   // Population/Treatment don't belong in a variable name.
@@ -1231,7 +1341,8 @@ export function buildEstimandDescription(ep, spec, study) {
       whatPart = whatPart.replace('{parameter}', paramValue || '{parameter}');
     }
     if (whatPart.includes('{event}')) {
-      whatPart = whatPart.replace('{event}', configVals.event || dimValues.event || dimValues.Event || '{event}');
+      whatPart = whatPart.replace('{event}', chainPhraseSlots(spec).event
+        || configVals.event || dimValues.event || dimValues.Event || '{event}');
     }
     // Resolve all remaining derivation config placeholders
     for (const [key, val] of Object.entries(configVals)) {
@@ -1491,10 +1602,52 @@ export function renderDataCube(ep, spec, study) {
   const selectedPhrase = spec.selectedEndpointPhrase
     ? allSmartPhrases.find(sp => sp.oid === spec.selectedEndpointPhrase)
     : conceptPhrases[0] || null;
+  // Definition slots: the parts of the endpoint sentence that name study
+  // objects rather than values. Offered only for slots the phrase declares
+  // BC-bindable, and only while no derivation chain answers them — a spec that
+  // derives the endpoint states it from the chain, and an editable picker
+  // there would invite a contradiction.
+  const chainAnswers = chainPhraseSlots(spec, study);
+  const bcOptions = (study?.biomedicalConcepts || []);
+  const slotRows = (selectedPhrase?.placeholders || [])
+    .filter(ph => slotSources(ph).includes('biomedicalConcept'))
+    .map(ph => {
+      const slot = ph.name;
+      const bound = (spec.phraseSlotBindings || {})[slot] || [];
+      const boundList = Array.isArray(bound) ? bound : [bound];
+      if (chainAnswers[slot]) {
+        return `<tr>
+          <td style="padding:4px 8px;"><span class="badge badge-teal" style="font-size:10px;">${slot}</span></td>
+          <td style="padding:4px 8px; font-size:11px;"><strong>${chainAnswers[slot]}</strong>
+            <span style="color:var(--cdisc-text-secondary);">&mdash; from the derivation chain</span></td>
+        </tr>`;
+      }
+      const multiple = ph.cardinality === 'multiple';
+      const opts = bcOptions.map(b =>
+        `<option value="${b.id}" ${boundList.includes(b.id) ? 'selected' : ''}>${b.label || b.name}</option>`
+      ).join('');
+      return `<tr>
+        <td style="padding:4px 8px; vertical-align:top;"><span class="badge badge-teal" style="font-size:10px;">${slot}</span></td>
+        <td style="padding:4px 8px;">
+          <select class="ep-phrase-slot-bc" data-ep-id="${ep.id}" data-slot="${slot}"
+            ${multiple ? 'multiple size="4"' : ''} style="width:100%; font-size:11px;">
+            ${multiple ? '' : '<option value="">(not specified)</option>'}${opts}
+          </select>
+          ${multiple ? '<div style="font-size:10px; color:var(--cdisc-text-secondary);">ctrl/cmd-click for more than one</div>' : ''}
+        </td>
+      </tr>`;
+    }).join('');
+
   const phraseInfo = selectedPhrase
     ? `<div style="font-size:11px; color:var(--cdisc-text-secondary); margin-top:10px; padding:6px 10px; background:var(--cdisc-background); border-radius:var(--radius);">
         Smart phrase: <em>${selectedPhrase.phrase_template}</em>
-       </div>`
+       </div>
+       ${slotRows ? `<div style="margin-top:10px;">
+         <div style="font-weight:600; font-size:12px; margin-bottom:6px; color:var(--cdisc-text-secondary);">Definition Slots</div>
+         <table style="width:100%; border-collapse:collapse; border:1px solid var(--cdisc-border); border-radius:var(--radius);">
+           <tbody>${slotRows}</tbody>
+         </table>
+       </div>` : ''}`
     : '';
 
   // Observation-specific: OC facet selection and BC picker
@@ -1956,9 +2109,14 @@ export function renderDerivationConfigPanel(derivation, spec, study, ep) {
               options = getPopulationNames(study);
             } else {
               // Check library-level configurationOptions
+              // configurationOptions entries are { values: [...], default? } —
+              // never bare arrays. Testing Array.isArray() against the wrapper
+              // never matched, so every configuration slot silently degraded to
+              // a free-text input. Read .values, and still accept a bare array.
               const configOpts = appState.transformationLibrary?.configurationOptions?.[ph];
-              if (Array.isArray(configOpts) && configOpts.length > 0) {
-                options = configOpts;
+              const configVals_ = Array.isArray(configOpts) ? configOpts : configOpts?.values;
+              if (Array.isArray(configVals_) && configVals_.length > 0) {
+                options = configVals_;
               }
             }
 

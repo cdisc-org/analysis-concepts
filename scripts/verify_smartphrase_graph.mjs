@@ -33,8 +33,12 @@ for (const s of ["biomedicalConcept", "visit", "population"]) {
 /* --- both real studies --- */
 const studies = JSON.parse(fs.readFileSync(
   path.join(root, "ac-dc-app/data/usdm/studies.json"), "utf8"));
-const parsed = studies.map((e) =>
-  parseUSDM(JSON.parse(fs.readFileSync(path.join(root, "ac-dc-app/data/usdm", e.file), "utf8"))));
+const rawStudies = studies.map((e) =>
+  JSON.parse(fs.readFileSync(path.join(root, "ac-dc-app/data/usdm", e.file), "utf8")));
+const parsed = rawStudies.map(parseUSDM);
+/* One Parameter concept per biomedical concept — assert the invariant, not a literal,
+   so adding a BC to a study doesn't fail an unrelated check. */
+const bcCount = (raw) => (raw?.study?.versions?.[0]?.biomedicalConcepts || []).length;
 
 const [pilot, breast] = parsed;
 const gPilot = buildConceptGraph(pilot, lib);
@@ -42,11 +46,13 @@ const gBreast = buildConceptGraph(breast, lib);
 
 const count = (g, kind) => Object.values(g.concepts).filter((c) => c.kind === kind).length;
 
-check("pilot: 182 Parameter concepts", count(gPilot, "Parameter") === 182, String(count(gPilot, "Parameter")));
+check("pilot: one Parameter concept per BC", count(gPilot, "Parameter") === bcCount(rawStudies[0]),
+  `${count(gPilot, "Parameter")} of ${bcCount(rawStudies[0])}`);
 check("pilot: 12 AnalysisVisit concepts", count(gPilot, "AnalysisVisit") === 12, String(count(gPilot, "AnalysisVisit")));
 check("pilot: 2 Population concepts", count(gPilot, "Population") === 2, String(count(gPilot, "Population")));
 
-check("breast: 84 Parameter concepts", count(gBreast, "Parameter") === 84, String(count(gBreast, "Parameter")));
+check("breast: one Parameter concept per BC", count(gBreast, "Parameter") === bcCount(rawStudies[1]),
+  `${count(gBreast, "Parameter")} of ${bcCount(rawStudies[1])}`);
 check("breast: 17 AnalysisVisit concepts", count(gBreast, "AnalysisVisit") === 17, String(count(gBreast, "AnalysisVisit")));
 /* zero analysisPopulations — must still yield the study-design population, not an empty set */
 check("breast: 1 Population concept despite 0 analysisPopulations",

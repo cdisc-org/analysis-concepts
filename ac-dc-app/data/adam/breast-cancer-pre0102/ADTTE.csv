@@ -1,0 +1,201 @@
+STUDYID,USUBJID,PARAMCD,PARAM,AVAL,STARTDT,ADT,CNSR,EVNTDESC,TRT01A,ITTFL,SAFFL,PPROTFL
+NCT01797120,NCT01797120-0001,PFS,Progression-Free Survival (Days),551.0,2021-08-05,2023-02-07,1,Lost to Follow-up,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0002,PFS,Progression-Free Survival (Days),85.0,2022-01-17,2022-04-12,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0003,PFS,Progression-Free Survival (Days),85.0,2021-01-25,2021-04-20,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0004,PFS,Progression-Free Survival (Days),85.0,2021-03-09,2021-06-02,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0005,PFS,Progression-Free Survival (Days),421.0,2021-08-23,2022-10-18,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0006,PFS,Progression-Free Survival (Days),85.0,2022-12-18,2023-03-13,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0007,PFS,Progression-Free Survival (Days),169.0,2021-10-19,2022-04-06,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0008,PFS,Progression-Free Survival (Days),85.0,2022-12-28,2023-03-23,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0009,PFS,Progression-Free Survival (Days),922.0,2022-12-03,2025-06-12,0,Death,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0010,PFS,Progression-Free Survival (Days),589.0,2022-12-11,2024-07-22,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0011,PFS,Progression-Free Survival (Days),282.0,2022-12-29,2023-10-07,1,Lost to Follow-up,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0012,PFS,Progression-Free Survival (Days),673.0,2022-07-10,2024-05-13,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0013,PFS,Progression-Free Survival (Days),85.0,2021-02-02,2021-04-28,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0014,PFS,Progression-Free Survival (Days),253.0,2021-01-12,2021-09-22,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0015,PFS,Progression-Free Survival (Days),253.0,2022-09-09,2023-05-20,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0016,PFS,Progression-Free Survival (Days),169.0,2021-08-01,2022-01-17,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0017,PFS,Progression-Free Survival (Days),505.0,2021-05-19,2022-10-06,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0018,PFS,Progression-Free Survival (Days),169.0,2022-11-26,2023-05-14,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0019,PFS,Progression-Free Survival (Days),1345.0,2022-02-26,2025-11-02,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0020,PFS,Progression-Free Survival (Days),253.0,2022-09-30,2023-06-10,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0021,PFS,Progression-Free Survival (Days),85.0,2022-10-31,2023-01-24,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0022,PFS,Progression-Free Survival (Days),85.0,2022-09-16,2022-12-10,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0023,PFS,Progression-Free Survival (Days),85.0,2022-05-04,2022-07-28,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0024,PFS,Progression-Free Survival (Days),169.0,2022-06-24,2022-12-10,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0025,PFS,Progression-Free Survival (Days),85.0,2021-08-06,2021-10-30,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0026,PFS,Progression-Free Survival (Days),169.0,2022-10-26,2023-04-13,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0027,PFS,Progression-Free Survival (Days),169.0,2021-11-04,2022-04-22,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0028,PFS,Progression-Free Survival (Days),85.0,2021-06-24,2021-09-17,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0029,PFS,Progression-Free Survival (Days),253.0,2021-05-29,2022-02-06,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0030,PFS,Progression-Free Survival (Days),253.0,2022-06-26,2023-03-06,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0031,PFS,Progression-Free Survival (Days),85.0,2022-08-03,2022-10-27,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0032,PFS,Progression-Free Survival (Days),1093.0,2022-07-02,2025-06-29,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0033,PFS,Progression-Free Survival (Days),421.0,2022-01-29,2023-03-26,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0034,PFS,Progression-Free Survival (Days),337.0,2021-03-15,2022-02-15,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0035,PFS,Progression-Free Survival (Days),421.0,2021-10-25,2022-12-20,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0036,PFS,Progression-Free Survival (Days),253.0,2022-01-30,2022-10-10,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0037,PFS,Progression-Free Survival (Days),583.0,2022-06-24,2024-01-28,1,Withdrawal by Subject,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0038,PFS,Progression-Free Survival (Days),841.0,2022-03-06,2024-06-24,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0039,PFS,Progression-Free Survival (Days),253.0,2021-07-19,2022-03-29,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0040,PFS,Progression-Free Survival (Days),169.0,2022-02-28,2022-08-16,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0041,PFS,Progression-Free Survival (Days),169.0,2021-03-03,2021-08-19,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0042,PFS,Progression-Free Survival (Days),85.0,2021-12-08,2022-03-03,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0043,PFS,Progression-Free Survival (Days),757.0,2021-02-14,2023-03-13,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0044,PFS,Progression-Free Survival (Days),85.0,2021-03-30,2021-06-23,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0045,PFS,Progression-Free Survival (Days),85.0,2021-02-03,2021-04-29,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0046,PFS,Progression-Free Survival (Days),85.0,2022-10-08,2023-01-01,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0047,PFS,Progression-Free Survival (Days),588.0,2021-08-21,2023-04-01,1,Withdrawal by Subject,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0048,PFS,Progression-Free Survival (Days),169.0,2021-02-06,2021-07-25,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0049,PFS,Progression-Free Survival (Days),589.0,2022-04-05,2023-11-15,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0050,PFS,Progression-Free Survival (Days),253.0,2021-10-18,2022-06-28,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0051,PFS,Progression-Free Survival (Days),591.0,2021-07-17,2023-02-28,1,Lost to Follow-up,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0052,PFS,Progression-Free Survival (Days),85.0,2021-09-12,2021-12-06,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0053,PFS,Progression-Free Survival (Days),85.0,2021-03-22,2021-06-15,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0054,PFS,Progression-Free Survival (Days),1093.0,2022-03-23,2025-03-20,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0055,PFS,Progression-Free Survival (Days),85.0,2021-05-17,2021-08-10,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0056,PFS,Progression-Free Survival (Days),85.0,2021-07-09,2021-10-02,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0057,PFS,Progression-Free Survival (Days),925.0,2021-05-10,2023-11-21,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0058,PFS,Progression-Free Survival (Days),421.0,2021-07-29,2022-09-23,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0059,PFS,Progression-Free Survival (Days),841.0,2022-01-04,2024-04-24,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0060,PFS,Progression-Free Survival (Days),169.0,2021-10-19,2022-04-06,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0061,PFS,Progression-Free Survival (Days),169.0,2022-01-12,2022-06-30,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0062,PFS,Progression-Free Survival (Days),85.0,2021-12-14,2022-03-09,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0063,PFS,Progression-Free Survival (Days),85.0,2021-06-18,2021-09-11,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0064,PFS,Progression-Free Survival (Days),85.0,2021-06-26,2021-09-19,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0065,PFS,Progression-Free Survival (Days),370.0,2022-06-22,2023-06-27,1,Lost to Follow-up,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0066,PFS,Progression-Free Survival (Days),169.0,2021-11-20,2022-05-08,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0067,PFS,Progression-Free Survival (Days),757.0,2022-05-24,2024-06-19,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0068,PFS,Progression-Free Survival (Days),253.0,2021-04-25,2022-01-03,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0069,PFS,Progression-Free Survival (Days),505.0,2021-01-30,2022-06-19,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0070,PFS,Progression-Free Survival (Days),337.0,2021-10-17,2022-09-19,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0071,PFS,Progression-Free Survival (Days),85.0,2021-05-27,2021-08-20,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0072,PFS,Progression-Free Survival (Days),253.0,2021-10-01,2022-06-11,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0073,PFS,Progression-Free Survival (Days),169.0,2021-08-10,2022-01-26,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0074,PFS,Progression-Free Survival (Days),169.0,2021-12-07,2022-05-25,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0075,PFS,Progression-Free Survival (Days),169.0,2022-05-25,2022-11-10,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0076,PFS,Progression-Free Survival (Days),421.0,2022-05-30,2023-07-25,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0077,PFS,Progression-Free Survival (Days),189.0,2021-03-11,2021-09-16,1,Lost to Follow-up,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0078,PFS,Progression-Free Survival (Days),169.0,2021-12-24,2022-06-11,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0079,PFS,Progression-Free Survival (Days),1177.0,2022-07-11,2025-09-30,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0080,PFS,Progression-Free Survival (Days),85.0,2021-11-19,2022-02-12,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0081,PFS,Progression-Free Survival (Days),589.0,2022-09-16,2024-04-27,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0082,PFS,Progression-Free Survival (Days),505.0,2021-04-02,2022-08-20,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0083,PFS,Progression-Free Survival (Days),589.0,2021-12-08,2023-07-20,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0084,PFS,Progression-Free Survival (Days),337.0,2022-02-28,2023-01-31,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0085,PFS,Progression-Free Survival (Days),85.0,2022-07-06,2022-09-29,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0086,PFS,Progression-Free Survival (Days),673.0,2022-10-25,2024-08-28,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0087,PFS,Progression-Free Survival (Days),85.0,2022-02-19,2022-05-15,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0088,PFS,Progression-Free Survival (Days),169.0,2022-10-20,2023-04-07,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0089,PFS,Progression-Free Survival (Days),253.0,2022-12-12,2023-08-22,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0090,PFS,Progression-Free Survival (Days),85.0,2021-10-02,2021-12-26,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0091,PFS,Progression-Free Survival (Days),505.0,2021-02-13,2022-07-03,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0092,PFS,Progression-Free Survival (Days),169.0,2021-03-25,2021-09-10,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0093,PFS,Progression-Free Survival (Days),85.0,2022-03-10,2022-06-03,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0094,PFS,Progression-Free Survival (Days),169.0,2021-04-04,2021-09-20,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0095,PFS,Progression-Free Survival (Days),169.0,2021-06-24,2021-12-10,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0096,PFS,Progression-Free Survival (Days),253.0,2022-02-10,2022-10-21,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0097,PFS,Progression-Free Survival (Days),85.0,2021-07-21,2021-10-14,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0098,PFS,Progression-Free Survival (Days),85.0,2022-05-14,2022-08-07,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0099,PFS,Progression-Free Survival (Days),256.0,2022-04-26,2023-01-07,1,Lost to Follow-up,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0100,PFS,Progression-Free Survival (Days),85.0,2021-11-26,2022-02-19,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0101,PFS,Progression-Free Survival (Days),85.0,2022-06-25,2022-09-18,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0102,PFS,Progression-Free Survival (Days),169.0,2021-07-29,2022-01-14,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0103,PFS,Progression-Free Survival (Days),393.0,2022-09-10,2023-10-08,1,Lost to Follow-up,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0104,PFS,Progression-Free Survival (Days),253.0,2022-07-30,2023-04-09,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0105,PFS,Progression-Free Survival (Days),169.0,2021-01-17,2021-07-05,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0106,PFS,Progression-Free Survival (Days),85.0,2021-04-17,2021-07-11,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0107,PFS,Progression-Free Survival (Days),169.0,2021-06-14,2021-11-30,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0108,PFS,Progression-Free Survival (Days),169.0,2022-08-30,2023-02-15,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0109,PFS,Progression-Free Survival (Days),85.0,2022-06-21,2022-09-14,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0110,PFS,Progression-Free Survival (Days),337.0,2022-09-21,2023-08-24,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0111,PFS,Progression-Free Survival (Days),85.0,2021-07-11,2021-10-04,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0112,PFS,Progression-Free Survival (Days),337.0,2021-07-15,2022-06-17,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0113,PFS,Progression-Free Survival (Days),85.0,2021-11-04,2022-01-28,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0114,PFS,Progression-Free Survival (Days),169.0,2021-05-17,2021-11-02,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0115,PFS,Progression-Free Survival (Days),1261.0,2021-04-04,2024-09-16,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0116,PFS,Progression-Free Survival (Days),169.0,2021-03-29,2021-09-14,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0117,PFS,Progression-Free Survival (Days),505.0,2021-06-10,2022-10-28,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0118,PFS,Progression-Free Survival (Days),169.0,2021-05-28,2021-11-13,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0119,PFS,Progression-Free Survival (Days),85.0,2022-08-08,2022-11-01,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0120,PFS,Progression-Free Survival (Days),85.0,2022-04-01,2022-06-25,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0121,PFS,Progression-Free Survival (Days),589.0,2021-03-29,2022-11-08,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0122,PFS,Progression-Free Survival (Days),85.0,2021-01-14,2021-04-09,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0123,PFS,Progression-Free Survival (Days),169.0,2021-11-11,2022-04-29,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0124,PFS,Progression-Free Survival (Days),337.0,2022-08-17,2023-07-20,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0125,PFS,Progression-Free Survival (Days),85.0,2021-05-01,2021-07-25,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0126,PFS,Progression-Free Survival (Days),169.0,2022-12-17,2023-06-04,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0127,PFS,Progression-Free Survival (Days),1009.0,2021-10-09,2024-07-14,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0128,PFS,Progression-Free Survival (Days),505.0,2022-03-03,2023-07-21,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0129,PFS,Progression-Free Survival (Days),589.0,2022-04-16,2023-11-26,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0130,PFS,Progression-Free Survival (Days),253.0,2021-10-12,2022-06-22,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0131,PFS,Progression-Free Survival (Days),468.0,2021-10-04,2023-01-15,1,Lost to Follow-up,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0132,PFS,Progression-Free Survival (Days),85.0,2021-11-21,2022-02-14,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0133,PFS,Progression-Free Survival (Days),385.0,2022-06-19,2023-07-09,1,Withdrawal by Subject,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0134,PFS,Progression-Free Survival (Days),337.0,2021-08-16,2022-07-19,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0135,PFS,Progression-Free Survival (Days),253.0,2022-08-19,2023-04-29,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0136,PFS,Progression-Free Survival (Days),169.0,2022-10-10,2023-03-28,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0137,PFS,Progression-Free Survival (Days),85.0,2022-07-28,2022-10-21,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0138,PFS,Progression-Free Survival (Days),1009.0,2022-10-16,2025-07-21,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0139,PFS,Progression-Free Survival (Days),757.0,2022-06-02,2024-06-28,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0140,PFS,Progression-Free Survival (Days),337.0,2021-09-14,2022-08-17,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0141,PFS,Progression-Free Survival (Days),85.0,2021-05-17,2021-08-10,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0142,PFS,Progression-Free Survival (Days),85.0,2021-07-27,2021-10-20,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0143,PFS,Progression-Free Survival (Days),169.0,2022-04-09,2022-09-25,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0144,PFS,Progression-Free Survival (Days),115.0,2021-05-20,2021-09-12,1,Lost to Follow-up,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0145,PFS,Progression-Free Survival (Days),421.0,2021-01-05,2022-03-02,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0146,PFS,Progression-Free Survival (Days),169.0,2022-02-28,2022-08-16,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0147,PFS,Progression-Free Survival (Days),85.0,2021-12-15,2022-03-10,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0148,PFS,Progression-Free Survival (Days),169.0,2021-10-10,2022-03-28,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0149,PFS,Progression-Free Survival (Days),421.0,2022-08-10,2023-10-05,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0150,PFS,Progression-Free Survival (Days),337.0,2022-03-10,2023-02-10,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0151,PFS,Progression-Free Survival (Days),505.0,2021-08-08,2022-12-26,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0152,PFS,Progression-Free Survival (Days),169.0,2022-01-09,2022-06-27,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0153,PFS,Progression-Free Survival (Days),169.0,2021-10-18,2022-04-05,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0154,PFS,Progression-Free Survival (Days),337.0,2022-07-18,2023-06-20,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0155,PFS,Progression-Free Survival (Days),169.0,2022-11-02,2023-04-20,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0156,PFS,Progression-Free Survival (Days),200.0,2022-03-14,2022-09-30,1,Withdrawal by Subject,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0157,PFS,Progression-Free Survival (Days),505.0,2022-05-24,2023-10-11,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0158,PFS,Progression-Free Survival (Days),337.0,2022-03-26,2023-02-26,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0159,PFS,Progression-Free Survival (Days),253.0,2021-11-23,2022-08-03,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0160,PFS,Progression-Free Survival (Days),169.0,2022-05-06,2022-10-22,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0161,PFS,Progression-Free Survival (Days),169.0,2021-02-23,2021-08-11,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0162,PFS,Progression-Free Survival (Days),210.0,2021-04-05,2021-11-01,1,Lost to Follow-up,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0163,PFS,Progression-Free Survival (Days),85.0,2021-03-01,2021-05-25,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0164,PFS,Progression-Free Survival (Days),85.0,2021-12-03,2022-02-26,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0165,PFS,Progression-Free Survival (Days),169.0,2022-10-29,2023-04-16,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0166,PFS,Progression-Free Survival (Days),169.0,2022-09-29,2023-03-17,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0167,PFS,Progression-Free Survival (Days),337.0,2021-06-13,2022-05-16,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0168,PFS,Progression-Free Survival (Days),169.0,2022-07-25,2023-01-10,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0169,PFS,Progression-Free Survival (Days),85.0,2021-04-17,2021-07-11,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0170,PFS,Progression-Free Survival (Days),85.0,2021-07-21,2021-10-14,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0171,PFS,Progression-Free Survival (Days),421.0,2021-10-28,2022-12-23,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0172,PFS,Progression-Free Survival (Days),505.0,2022-07-05,2023-11-22,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0173,PFS,Progression-Free Survival (Days),421.0,2022-11-11,2024-01-06,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0174,PFS,Progression-Free Survival (Days),169.0,2022-10-11,2023-03-29,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0175,PFS,Progression-Free Survival (Days),85.0,2021-01-14,2021-04-09,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0176,PFS,Progression-Free Survival (Days),421.0,2022-12-22,2024-02-16,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0177,PFS,Progression-Free Survival (Days),589.0,2022-06-19,2024-01-29,1,Lost to Follow-up,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0178,PFS,Progression-Free Survival (Days),337.0,2022-05-20,2023-04-22,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0179,PFS,Progression-Free Survival (Days),505.0,2021-07-29,2022-12-16,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0180,PFS,Progression-Free Survival (Days),673.0,2022-04-01,2024-02-03,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0181,PFS,Progression-Free Survival (Days),572.0,2022-04-14,2023-11-07,1,Lost to Follow-up,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0182,PFS,Progression-Free Survival (Days),317.0,2022-04-19,2023-03-02,1,Lost to Follow-up,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0183,PFS,Progression-Free Survival (Days),594.0,2022-07-27,2024-03-12,1,Lost to Follow-up,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0184,PFS,Progression-Free Survival (Days),169.0,2022-02-05,2022-07-24,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0185,PFS,Progression-Free Survival (Days),253.0,2021-02-26,2021-11-06,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0186,PFS,Progression-Free Survival (Days),337.0,2022-10-26,2023-09-28,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0187,PFS,Progression-Free Survival (Days),1345.0,2021-10-08,2025-06-14,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0188,PFS,Progression-Free Survival (Days),673.0,2021-01-05,2022-11-09,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0189,PFS,Progression-Free Survival (Days),203.0,2022-09-05,2023-03-27,1,Withdrawal by Subject,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0190,PFS,Progression-Free Survival (Days),337.0,2021-11-02,2022-10-05,0,Disease Progression,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0191,PFS,Progression-Free Survival (Days),253.0,2021-12-10,2022-08-20,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0192,PFS,Progression-Free Survival (Days),596.0,2022-06-27,2024-02-13,1,Lost to Follow-up,Treatment,Y,Y,N
+NCT01797120,NCT01797120-0193,PFS,Progression-Free Survival (Days),85.0,2022-07-21,2022-10-14,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0194,PFS,Progression-Free Survival (Days),673.0,2021-06-03,2023-04-07,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0195,PFS,Progression-Free Survival (Days),421.0,2021-12-20,2023-02-14,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0196,PFS,Progression-Free Survival (Days),337.0,2021-12-24,2022-11-26,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0197,PFS,Progression-Free Survival (Days),85.0,2022-11-29,2023-02-22,0,Disease Progression,Placebo,Y,Y,N
+NCT01797120,NCT01797120-0198,PFS,Progression-Free Survival (Days),337.0,2022-02-12,2023-01-15,0,Disease Progression,Placebo,Y,Y,Y
+NCT01797120,NCT01797120-0199,PFS,Progression-Free Survival (Days),169.0,2022-02-16,2022-08-04,0,Disease Progression,Treatment,Y,Y,Y
+NCT01797120,NCT01797120-0200,PFS,Progression-Free Survival (Days),85.0,2021-01-30,2021-04-25,0,Disease Progression,Placebo,Y,Y,Y

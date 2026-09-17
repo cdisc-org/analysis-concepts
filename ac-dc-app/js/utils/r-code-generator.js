@@ -92,7 +92,10 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
     `result$console <- paste(console_log, collapse = "\\n")`,
     ``,
     `# Return results as JSON`,
-    `jsonlite::toJSON(result, auto_unbox = TRUE, pretty = TRUE)`,
+    // digits = NA preserves full precision. jsonlite defaults to 4 decimal
+    // places, so a log-rank p-value of 1.6e-05 serialised as exactly 0 —
+    // the number was computed correctly and lost on the way out of R.
+    `jsonlite::toJSON(result, auto_unbox = TRUE, pretty = TRUE, digits = NA)`,
   ].join('\n');
 
   return { specJson, mappingJson, methodJson, rImplJson, overridesJson,
@@ -458,9 +461,14 @@ export function getDefaultVariable(concept, dataStructureRole, adam, binding) {
     const qualifierTable = entry[qualifierTypeKey];
     const subTable = qualifierTable?.[binding.qualifierValue];
     if (subTable && typeof subTable === 'object') {
+      // Dimensions: STRING first, matching ingest_to_concepts' primary_types
+      // (string > code > id > decimal > integer). The UI previously tried code
+      // first, so for SDTM it proposed ARMCD while the engine had ingested ARM —
+      // the panel's default disagreed with the column the engine actually built.
+      // (For ADaM the two coincide, TRTP being both, which is why it never showed.)
       const pick = dataStructureRole === 'measure'
         ? (subTable.decimal || subTable.code || subTable.string || Object.values(subTable)[0])
-        : (subTable.code || subTable.string || subTable.decimal || Object.values(subTable)[0]);
+        : (subTable.string || subTable.code || subTable.id || subTable.decimal || Object.values(subTable)[0]);
       if (pick) return pick;
     }
   }
@@ -469,5 +477,6 @@ export function getDefaultVariable(concept, dataStructureRole, adam, binding) {
   if (dataStructureRole === 'measure') {
     return bt.decimal || bt.code || bt.string || Object.values(bt)[0];
   }
-  return bt.code || bt.string || bt.decimal || Object.values(bt)[0];
+  // Same string-first order as the engine's dimension ingest.
+  return bt.string || bt.code || bt.id || bt.decimal || Object.values(bt)[0];
 }

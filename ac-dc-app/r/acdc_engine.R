@@ -562,19 +562,16 @@ acdc_derive_only <- function(spec, mappings, dataset,
       if (!is.null(deriv$constraintValues) && length(deriv$constraintValues) > 0) {
         for (cv in deriv$constraintValues) {
           col <- cv$dimension; val <- cv$value
+          # `%in%` for the single case too, not `==`. A stacked source leaves a
+          # column empty on rows that belong to another record type, and
+          # `NA == "X"` is NA — subsetting by NA returns a row of NAs rather
+          # than dropping it, so a constraint that should match nothing instead
+          # yielded one all-NA row per non-matching record.
           if (!is.null(col) && !is.null(val) && col %in% colnames(step_leaf)) {
-            if (length(val) > 1) {
-              step_leaf <- step_leaf[step_leaf[[col]] %in% val, , drop = FALSE]
-            } else {
-              step_leaf <- step_leaf[step_leaf[[col]] == val, , drop = FALSE]
-            }
+            step_leaf <- step_leaf[step_leaf[[col]] %in% val, , drop = FALSE]
           }
           if (!is.null(col) && !is.null(val) && col %in% colnames(dataset)) {
-            if (length(val) > 1) {
-              dataset <- dataset[dataset[[col]] %in% val, , drop = FALSE]
-            } else {
-              dataset <- dataset[dataset[[col]] == val, , drop = FALSE]
-            }
+            dataset <- dataset[dataset[[col]] %in% val, , drop = FALSE]
           }
         }
       }
@@ -606,8 +603,11 @@ acdc_derive_only <- function(spec, mappings, dataset,
       }
       if (!is.null(deriv$inputColumns) && length(deriv$inputColumns) > 0) {
         for (role in names(deriv$inputColumns)) {
-          col <- deriv$inputColumns[[role]]
-          if (!is.null(col) && nzchar(col)) var_map$by_role[[role]] <- col
+          col <- unlist(deriv$inputColumns[[role]], use.names = FALSE)
+          # A role can carry SEVERAL columns (axis=roles takes the earliest of
+          # two dates, both bound to `value`). nzchar() on a vector returns a
+          # vector, which `&&` cannot evaluate — so guard with all().
+          if (!is.null(col) && length(col) > 0 && all(nzchar(col))) var_map$by_role[[role]] <- col
         }
       }
 
@@ -741,7 +741,13 @@ acdc_derive_only <- function(spec, mappings, dataset,
       # endpoint's identity), then dedup on the effective partition.
       # Stamp category-siblings too so OC-side columns inherit the slice
       # value rather than retaining stale leaf labels post-dedup.
-      if (!is.null(endpoint_slice)) {
+      # Assigning a length-1 value to a column of a zero-row data frame is an
+      # error in R ("replacement has 1 row, data has 0"), which masked the real
+      # problem: the chain selected nothing. Report that instead of crashing.
+      if (nrow(dataset) == 0) {
+        message("[post-chain rollup] chain produced 0 rows — check each step's ",
+                "constraints and slices against the source columns")
+      } else if (!is.null(endpoint_slice)) {
         for (dim in names(endpoint_slice)) {
           sval <- endpoint_slice[[dim]]
           if (is.null(sval) || length(sval) != 1 || !nzchar(as.character(sval))) next
@@ -1546,12 +1552,18 @@ apply_derivations <- function(dataset, derivations, r_impls, unit_conversions, m
             dataset <- dataset[dataset[[col]] %in% val, , drop = FALSE]
             cat("    Constraint:", col, "IN [", paste(val, collapse=","), "] →", nrow(dataset), "of", pre_n, "rows\n")
           } else {
-            filtered <- dataset[dataset[[col]] == val, , drop = FALSE]
+            # NA-safe throughout. A stacked source leaves a column empty on rows
+            # belonging to another record type; `NA == "X"` is NA, and subsetting
+            # by NA yields an all-NA ROW rather than dropping it — so a constraint
+            # matching nothing silently produced one empty row per foreign record,
+            # and nrow(filtered) > 0 then accepted them as a match.
+            present <- !is.na(dataset[[col]])
+            filtered <- dataset[dataset[[col]] %in% val, , drop = FALSE]
             if (nrow(filtered) > 0) {
               dataset <- filtered
             } else {
               # Case-insensitive fallback
-              filtered <- dataset[tolower(dataset[[col]]) == tolower(val), , drop = FALSE]
+              filtered <- dataset[present & tolower(dataset[[col]]) == tolower(val), , drop = FALSE]
               if (nrow(filtered) > 0) {
                 dataset <- filtered
                 cat("    Constraint:", col, "~=", val, "(case-insensitive)")
@@ -1559,7 +1571,7 @@ apply_derivations <- function(dataset, derivations, r_impls, unit_conversions, m
                 # Partial match: "Weight" matches "Weight (kg)" etc.
                 lv <- tolower(val)
                 lc <- tolower(dataset[[col]])
-                filtered <- dataset[startsWith(lc, lv) | startsWith(lv, lc), , drop = FALSE]
+                filtered <- dataset[present & (startsWith(lc, lv) | startsWith(lv, lc)), , drop = FALSE]
                 if (nrow(filtered) > 0) {
                   dataset <- filtered
                   cat("    Constraint:", col, "~", val, "(partial)")
@@ -1602,10 +1614,11 @@ apply_derivations <- function(dataset, derivations, r_impls, unit_conversions, m
     }
     if (!is.null(deriv$inputColumns) && length(deriv$inputColumns) > 0) {
       for (role in names(deriv$inputColumns)) {
-        col <- deriv$inputColumns[[role]]
-        if (!is.null(col) && nzchar(col)) {
+        col <- unlist(deriv$inputColumns[[role]], use.names = FALSE)
+        if (!is.null(col) && length(col) > 0 && all(nzchar(col))) {
           var_map$by_role[[role]] <- col
-          cat("    [chain-lookup] override input role", role, "->", col, "\n")
+          cat("    [chain-lookup] override input role", role, "->",
+              paste(col, collapse = " + "), "\n")
         }
       }
     }
@@ -1669,7 +1682,15 @@ apply_derivations <- function(dataset, derivations, r_impls, unit_conversions, m
         # row — a slice constraint Parameter == "<endpoint label>" would
         # match nothing even though the partition (Subject) and Visit
         # constraints can still pick out the baseline row correctly.
-        slice_data <- dataset
+        # A slice selects SOURCE records, so it reads the unfiltered leaf master
+        # rather than the running cube. The cube is narrowed cumulatively by each
+        # step's own BC constraint, so after a leaf restricted it to one topic a
+        # sibling leaf looking for a different record type (a fatal adverse event
+        # beside a response assessment) found nothing left to select.
+        slice_data <- if (exists("dataset_leaf_master") && !is.null(dataset_leaf_master)
+                          && all(partition_cols %in% colnames(dataset_leaf_master))) {
+          dataset_leaf_master
+        } else dataset
         skipped_any <- FALSE
         for (dim_name in names(constraints)) {
           val <- constraints[[dim_name]]
@@ -1678,9 +1699,12 @@ apply_derivations <- function(dataset, derivations, r_impls, unit_conversions, m
             cat("    [slice] dim", dim_name, "not in data — skipping constraint\n")
             next
           }
-          filtered <- slice_data[slice_data[[dim_name]] == val, , drop = FALSE]
+          # NA-safe: a stacked source leaves a column empty on foreign record
+          # types, and `NA == "X"` indexes an all-NA row rather than dropping it.
+          present <- !is.na(slice_data[[dim_name]])
+          filtered <- slice_data[slice_data[[dim_name]] %in% val, , drop = FALSE]
           if (nrow(filtered) == 0) {
-            filtered <- slice_data[tolower(slice_data[[dim_name]]) == tolower(val), , drop = FALSE]
+            filtered <- slice_data[present & tolower(slice_data[[dim_name]]) == tolower(val), , drop = FALSE]
           }
           if (nrow(filtered) == 0) {
             cat("    [slice] no rows match", dim_name, "==", val, "— skipping THIS constraint (other constraints still apply)\n")
@@ -1718,6 +1742,14 @@ apply_derivations <- function(dataset, derivations, r_impls, unit_conversions, m
         slice_subset <- slice_subset[!duplicated(slice_subset[, join_cols, drop = FALSE]), , drop = FALSE]
         joined_col <- paste0(base_col, "__", slice_name)
         colnames(slice_subset)[colnames(slice_subset) == base_col] <- joined_col
+        # Drop any previous column of this name before merging. Path-unique
+        # slotKeys mean the SAME derivation can appear in two branches of one
+        # chain (progression feeds both the analysis date and the censoring
+        # flag), so the same slice pre-joins twice. merge() would then suffix
+        # both to .x/.y, and the call template — which refers to the plain
+        # name — would find neither. Same guard the aggregation already applies
+        # to its result column.
+        if (joined_col %in% colnames(dataset)) dataset[[joined_col]] <- NULL
         dataset <- merge(dataset, slice_subset, by = join_cols, all.x = TRUE)
         var_map$by_role[[role]] <- joined_col
         cat("    [slice] role", role, "→", joined_col, "(slice", slice_name, ", joined by",
@@ -1814,8 +1846,18 @@ execute_cube <- function(dataset, bindings, slices, concept_vars, overrides = NU
       binding_slice_names <- c(binding_slice_names, b$slice)
     }
   }
+  # A spec may legitimately declare NO slices — an endpoint whose parameter is
+  # STAMPED on the output rather than filtered on the input has nothing to
+  # constrain. names(list()) is NULL, so setdiff() returns NULL and NULL[1] is
+  # zero-length: `if (is.na(...))` then errors with "argument is of length zero"
+  # rather than falling through.
   default_slice_name <- setdiff(names(slice_lookup), binding_slice_names)[1]
-  if (is.na(default_slice_name)) default_slice_name <- names(slice_lookup)[1]
+  if (length(default_slice_name) == 0 || is.na(default_slice_name)) {
+    default_slice_name <- names(slice_lookup)[1]
+  }
+  if (length(default_slice_name) == 0 || is.na(default_slice_name)) {
+    default_slice_name <- NULL   # no slices at all — the whole cube is the data
+  }
 
   # Merge slice-level variable overrides into the global override map.
   # Slice variables take precedence (most specific wins).
@@ -1827,15 +1869,22 @@ execute_cube <- function(dataset, bindings, slices, concept_vars, overrides = NU
   }
 
   # Query default slice — dimension names are column names in concept-keyed data
-  default_constraints <- slice_lookup[[default_slice_name]]
-  default_overrides <- merge_overrides(overrides, slice_var_lookup[[default_slice_name]])
-  main_data <- filter_by_constraints(dataset, default_constraints, default_overrides, rollup_dims)
-  cat("  Default slice '", default_slice_name, "':", nrow(main_data), "rows\n")
+  if (is.null(default_slice_name)) {
+    main_data <- dataset
+    cat("  No slices declared — using all", nrow(main_data), "rows\n")
+  } else {
+    default_constraints <- slice_lookup[[default_slice_name]]
+    default_overrides <- merge_overrides(overrides, slice_var_lookup[[default_slice_name]])
+    main_data <- filter_by_constraints(dataset, default_constraints, default_overrides, rollup_dims)
+    cat("  Default slice '", default_slice_name, "':", nrow(main_data), "rows\n")
+  }
 
   # For each binding with a different slice, query and join
   for (b in bindings) {
     slice_name <- b$slice
-    if (is.null(slice_name) || slice_name == "" || slice_name == default_slice_name) next
+    # identical() rather than ==: with no slices declared default_slice_name is
+    # NULL, and `x == NULL` is logical(0), which `if` cannot evaluate.
+    if (is.null(slice_name) || !nzchar(slice_name) || identical(slice_name, default_slice_name)) next
     if (identical(b$direction, "output")) next
 
     # Build full concept key for lookup in by_concept map

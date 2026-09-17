@@ -477,7 +477,8 @@
           "boolean": "xxxFL",
           "string": "AVALC"
         },
-        "notes": "Flag indicator variable"
+        "notes": "Flag indicator variable. AVALC/xxxFL cover BDS and subject-level flags. CNSR is the ADaM time-to-event censoring indicator (0 = event observed, 1 = censored) and is listed as an alternative rather than a byDataType primary, because a BDS dataset's flag is AVALC while only ADTTE carries CNSR \u2014 one concept, two dataset-class conventions.",
+        "alternativeVariables": ["CNSR"]
       },
       "Category": {
         "variable": "AVALC",

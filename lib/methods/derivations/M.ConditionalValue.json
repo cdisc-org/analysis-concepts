@@ -18,14 +18,15 @@
   "formula": {
     "notation": "assignment",
     "default_expression": "result := IF(IS_NA(value), alternate, base)",
-    "generic_expression": "result := IF(IS_NA(<value>), <alternate>, <base>)"
+    "generic_expression": "result := IF(IS_NA(<value>), <alternate>, <base>)",
+    "notes": "base='value' turns the expression into coalesce(value, alternate) and preserves the input type, so it is usable on dates as well as numbers."
   },
   "configurations": [
     {
       "name": "base",
-      "dataType": "decimal",
-      "defaultValue": 0,
-      "description": "Value emitted when the input is NOT missing"
+      "dataType": "string",
+      "defaultValue": "0",
+      "description": "Value emitted when value is present. A number masks the row with that constant (the existing behaviour). The literal 'value' emits value itself, making the method a coalesce: take value, fall back to alternate."
     }
   ],
   "output_specification": {
@@ -49,14 +50,14 @@
       "dataType": "decimal",
       "required": true,
       "cardinality": "single",
-      "description": "Per-row value tested for missingness (NA)"
+      "description": "The value tested for presence. Evaluated numerically when base is a number; with base='value' the method only passes it through, so the input keeps whatever type it has \u2014 this is how the coalesce form works on dates."
     },
     {
       "name": "alternate",
       "dataType": "decimal",
       "required": true,
       "cardinality": "single",
-      "description": "Per-row replacement value used when value is NA"
+      "description": "The fallback emitted when value is missing. Same type as value."
     }
   ]
 }

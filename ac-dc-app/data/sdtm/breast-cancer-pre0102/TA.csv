@@ -1,0 +1,9 @@
+STUDYID,DOMAIN,ARMCD,ARM,TAETORD,ETCD,ELEMENT,TABRANCH,TATRANS,EPOCH
+NCT01797120,TA,TRT,Fulvestrant + Everolimus,1,SCRN,Screen,,Subject randomised,SCREENING
+NCT01797120,TA,TRT,Fulvestrant + Everolimus,2,INDA,Fulvestrant + Everolimus,,"If PD or unacceptable toxicity, go to Follow-Up",INDUCTION
+NCT01797120,TA,TRT,Fulvestrant + Everolimus,3,CONTA,Fulvestrant + Everolimus,,"If PD or unacceptable toxicity, go to Follow-Up",CONTINUATION
+NCT01797120,TA,TRT,Fulvestrant + Everolimus,4,FLWP,Follow-Up,,,FOLLOW-UP
+NCT01797120,TA,PLC,Fulvestrant + Placebo,1,SCRN,Screen,,Subject randomised,SCREENING
+NCT01797120,TA,PLC,Fulvestrant + Placebo,2,INDB,Fulvestrant + Placebo,,"If PD or unacceptable toxicity, go to Follow-Up",INDUCTION
+NCT01797120,TA,PLC,Fulvestrant + Placebo,3,CONTB,Fulvestrant,,"If PD or unacceptable toxicity, go to Follow-Up",CONTINUATION
+NCT01797120,TA,PLC,Fulvestrant + Placebo,4,FLWP,Follow-Up,,,FOLLOW-UP

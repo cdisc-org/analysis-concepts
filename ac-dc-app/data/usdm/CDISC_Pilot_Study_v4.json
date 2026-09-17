@@ -1,8 +1,8 @@
 {
   "study": {
     "id": null,
-    "name": "CDISC PILOT - LZZT V4",
-    "description": "Used for CDISC 360i",
+    "name": "CDISC PILOT - LZZT",
+    "description": null,
     "label": null,
     "versions": [
       {

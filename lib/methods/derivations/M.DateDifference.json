@@ -16,8 +16,8 @@
   "description": "Computes the difference between two dates in specified units",
   "formula": {
     "notation": "assignment",
-    "default_expression": "result := date_diff(end_date, start_date, unit)",
-    "generic_expression": "result := date_diff(<end_date>, <start_date>, <unit>)"
+    "default_expression": "result := date_diff(end_date, start_date, unit) + offset",
+    "generic_expression": "result := date_diff(<end_date>, <start_date>, <unit>) + <offset>"
   },
   "configurations": [
     {
@@ -31,6 +31,12 @@
         "years"
       ],
       "description": "Unit for the result"
+    },
+    {
+      "name": "offset",
+      "dataType": "decimal",
+      "defaultValue": 0,
+      "description": "Constant added to the difference. 0 counts elapsed time; 1 applies the day-one convention that counts the origin day itself (common in oncology time-to-event endpoints)."
     }
   ],
   "output_specification": {

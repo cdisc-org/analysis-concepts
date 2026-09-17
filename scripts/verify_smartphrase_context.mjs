@@ -38,8 +38,11 @@ const check = (name, cond, detail) => { if (!cond) failures.push(name + (detail 
 const context = buildSmartphraseContext(study, v06, methods);
 check("context exposes lib, graph and ctx",
   !!context.lib && !!context.graph && !!context.ctx, Object.keys(context).join(","));
-check("library has all 25 transformations", context.lib.transformations.length === 25,
-  String(context.lib.transformations.length));
+const v06Count = (v06.derivationTransformations || []).length
+  + (v06.analysisTransformations || []).length;
+check("library carries every transformation",
+  context.lib.transformations.length === v06Count,
+  `${context.lib.transformations.length} of ${v06Count}`);
 check("graph carries the pilot's concepts",
   Object.keys(context.graph.concepts).length === 196,
   String(Object.keys(context.graph.concepts).length));

@@ -5,10 +5,10 @@
     "vocabulary": "https://www.w3.org/TR/vocab-data-cube/",
     "mapping": {
       "bindings[]": "The DSD (qb:DataStructureDefinition) of the transformation's input/output cubes. direction='input|output' distinguishes. dataStructureRole maps to qb:dimension | qb:measure | qb:attribute.",
-      "slices[]": "qb:Slice (https://www.w3.org/TR/vocab-data-cube/#slice) — fixed-dimension views of an input cube.",
-      "sliceKeys[]": "qb:SliceKey (https://www.w3.org/TR/vocab-data-cube/#slice-key) — declares which dimensions are fixed in a slice.",
+      "slices[]": "qb:Slice (https://www.w3.org/TR/vocab-data-cube/#slice) \u2014 fixed-dimension views of an input cube.",
+      "sliceKeys[]": "qb:SliceKey (https://www.w3.org/TR/vocab-data-cube/#slice-key) \u2014 declares which dimensions are fixed in a slice.",
       "bindings[].slice": "AC/DC extension: pre-filter this binding's cube to the named qb:Slice before the method sees it.",
-      "bindings[].methodRole": "AC/DC extension: maps a cube slot to the method's role (value, partition, minuend, subtrahend, result, …).",
+      "bindings[].methodRole": "AC/DC extension: maps a cube slot to the method's role (value, partition, minuend, subtrahend, result, \u2026).",
       "bindings[].conceptCategory": "AC/DC extension: references a category (e.g. VisitDimension) rather than a concrete concept; the user picks a member at study-spec time."
     }
   },
@@ -151,21 +151,76 @@
         {
           "name": "event",
           "kind": "concept_ref",
-          "concept_class": "SharedDimension",
-          "concept_constraint": "Event",
-          "value_source": "user_codelist",
+          "value_source": "derivation_chain|biomedicalConcept",
           "render_options": [
-            "label",
-            "name",
-            "name_with_label"
+            "label"
           ],
-          "default_render": "name_with_label",
-          "required": true
+          "default_render": "label",
+          "required": true,
+          "description": "What is being timed. Accepts several \u2014 progression-free survival has two. Resolved from the derivation chain when the spec derives the endpoint; from a biomedical concept when it does not (an analysis-only spec over already-derived data). The chain wins when both are present.",
+          "cardinality": "multiple"
         }
       ],
       "anchors": {
         "produced_concept": "TimeToEvent"
-      }
+      },
+      "_slotBinding": "Slots resolve chain-first, then biomedical concept. A spec that derives the endpoint gets the sentence from its own evidence; an analysis-only spec authors it against the study's BCs. Never free text."
+    },
+    {
+      "oid": "SP_TTE_FULL_ENDPOINT",
+      "name": "Time-to-event endpoint (origin, event and censoring)",
+      "role": "endpoint",
+      "phrase_template": "time from {risk_origin} to {event}, censored at {censoring_event}",
+      "configurations": [
+        "risk_origin",
+        "event",
+        "censoring_event"
+      ],
+      "references": [
+        "TimeToEvent"
+      ],
+      "placeholders": [
+        {
+          "name": "risk_origin",
+          "kind": "concept_ref",
+          "value_source": "derivation_chain|biomedicalConcept",
+          "render_options": [
+            "label"
+          ],
+          "default_render": "label",
+          "required": true,
+          "description": "The date the clock starts. Resolved from the derivation chain when the spec derives the endpoint; from a biomedical concept when it does not (an analysis-only spec over already-derived data). The chain wins when both are present.",
+          "cardinality": "single"
+        },
+        {
+          "name": "event",
+          "kind": "concept_ref",
+          "value_source": "derivation_chain|biomedicalConcept",
+          "render_options": [
+            "label"
+          ],
+          "default_render": "label",
+          "required": true,
+          "description": "What is being timed. Accepts several \u2014 progression-free survival has two. Resolved from the derivation chain when the spec derives the endpoint; from a biomedical concept when it does not (an analysis-only spec over already-derived data). The chain wins when both are present.",
+          "cardinality": "multiple"
+        },
+        {
+          "name": "censoring_event",
+          "kind": "concept_ref",
+          "value_source": "derivation_chain|biomedicalConcept",
+          "render_options": [
+            "label"
+          ],
+          "default_render": "label",
+          "required": true,
+          "description": "Where observation stopped for a subject with no event. Resolved from the derivation chain when the spec derives the endpoint; from a biomedical concept when it does not (an analysis-only spec over already-derived data). The chain wins when both are present.",
+          "cardinality": "multiple"
+        }
+      ],
+      "anchors": {
+        "produced_concept": "TimeToEvent"
+      },
+      "_slotBinding": "Slots resolve chain-first, then biomedical concept. A spec that derives the endpoint gets the sentence from its own evidence; an analysis-only spec authors it against the study's BCs. Never free text."
     },
     {
       "oid": "SP_RESPONDER_ENDPOINT",
@@ -802,7 +857,7 @@
         {
           "concept": "Measure",
           "requiredValueType": null,
-          "note": "RecordSelection operates on records, not values — no value type constraint",
+          "note": "RecordSelection operates on records, not values \u2014 no value type constraint",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "value"
@@ -938,7 +993,7 @@
         {
           "concept": "Measure",
           "requiredValueType": null,
-          "note": "LOCF operates on records — value type is pass-through",
+          "note": "LOCF operates on records \u2014 value type is pass-through",
           "direction": "input",
           "dataStructureRole": "measure",
           "methodRole": "value"
@@ -1450,7 +1505,7 @@
       "oid": "T.UnitConversion",
       "name": "Unit Conversion",
       "transformationType": "derivation",
-      "description": "Convert a numeric Observation from its per-row source unit to a standardised target unit using the unit_conversions vocabulary. Generic — works for any numeric Observation whose BC carries a Result.Value + Result.Unit facet pair. Produces a derived Measure with both value and unit facets populated.",
+      "description": "Convert a numeric Observation from its per-row source unit to a standardised target unit using the unit_conversions vocabulary. Generic \u2014 works for any numeric Observation whose BC carries a Result.Value + Result.Unit facet pair. Produces a derived Measure with both value and unit facets populated.",
       "instanceOf": "Measure",
       "usesMethod": "M.UnitConversion",
       "validSmartPhrases": [
@@ -1491,7 +1546,7 @@
           "concept": "Measure",
           "qualifierType": "facet",
           "qualifierValue": "result.unit",
-          "note": "Unit of the derived Measure — equals the target_unit configuration. Propagated so downstream derivations/analyses can read the Measure's unit without re-reading config.",
+          "note": "Unit of the derived Measure \u2014 equals the target_unit configuration. Propagated so downstream derivations/analyses can read the Measure's unit without re-reading config.",
           "direction": "output",
           "dataStructureRole": "attribute",
           "methodRole": "result_unit"
@@ -1509,14 +1564,14 @@
           "methodRole": "constraint",
           "direction": "input",
           "dataStructureRole": "dimension",
-          "note": "BC identifier — resolves to --TESTCD in SDTM (e.g., VSTESTCD). The constraint value comes from the endpoint's linked BC specialization."
+          "note": "BC identifier \u2014 resolves to --TESTCD in SDTM (e.g., VSTESTCD). The constraint value comes from the endpoint's linked BC specialization."
         },
         {
           "conceptCategory": "ParameterDimension",
           "direction": "output",
           "dataStructureRole": "dimension",
           "methodRole": "parameter_label",
-          "note": "Output parameter label — value comes from the endpoint specification (Step 3), not from the source data. Replaces the SDTM Topic identifier with the clinically meaningful endpoint label (e.g., 'Weight (kg)')."
+          "note": "Output parameter label \u2014 value comes from the endpoint specification (Step 3), not from the source data. Replaces the SDTM Topic identifier with the clinically meaningful endpoint label (e.g., 'Weight (kg)')."
         }
       ],
       "slices": [],
@@ -1524,7 +1579,7 @@
         {
           "configurationName": "on_missing_factor",
           "value": "fail",
-          "description": "Fail loudly if a factor is missing — CDISC convention prefers errors over silent NAs."
+          "description": "Fail loudly if a factor is missing \u2014 CDISC convention prefers errors over silent NAs."
         }
       ]
     },
@@ -1532,7 +1587,7 @@
       "oid": "T.DeriveAnalysisVisit",
       "name": "Derive Analysis Visit",
       "transformationType": "derivation",
-      "description": "Assign each observation to a scheduled analysis visit (AVISIT) via day-windows and a target-day tie-break. Default windows are for LZZT ADAS-Cog (≤1 Baseline, 2-84 Week 8, 85-140 Week 16, >140 Week 24). Consumes a pre-computed study day (SDTM --DY) relative to the randomization anchor BC.",
+      "description": "Assign each observation to a scheduled analysis visit (AVISIT) via day-windows and a target-day tie-break. Default windows are for LZZT ADAS-Cog (\u22641 Baseline, 2-84 Week 8, 85-140 Week 16, >140 Week 24). Consumes a pre-computed study day (SDTM --DY) relative to the randomization anchor BC.",
       "instanceOf": "AnalysisVisit",
       "usesMethod": "M.WindowedVisitAssignment",
       "validSmartPhrases": [],
@@ -1613,7 +1668,469 @@
         {
           "configurationName": "tieBreak",
           "value": "closest-to-target-then-earliest",
-          "description": "Tie-break: among windows matching a day, pick min |day−targetDay|, then min visitNumber."
+          "description": "Tie-break: among windows matching a day, pick min |day\u2212targetDay|, then min visitNumber."
+        }
+      ]
+    },
+    {
+      "oid": "T.FirstProgressionDate",
+      "name": "First Disease Progression Date",
+      "transformationType": "derivation",
+      "description": "Earliest date on which overall response was observed as progressive disease. The response BC supplies the assessment identity and its collection date; the slice carries only the observed result, which the BC does not assign.",
+      "instanceOf": "FirstValue",
+      "usesMethod": "M.Aggregation",
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "min"
+        },
+        {
+          "configurationName": "axis",
+          "value": "rows"
+        }
+      ],
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "Timing",
+          "methodRole": "value",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "note": "Collection date of an overall-response assessment recorded as progressive disease",
+          "slice": "progression",
+          "bcSupplied": "Link the biomedical concept on this terminal. The BC supplies the identifying filter and the date column; only what the BC cannot express remains as a slice constraint."
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "FirstValue",
+          "methodRole": "result",
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "concept": "Subject",
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": [
+        {
+          "name": "progression",
+          "constraints": [
+            {
+              "concept": "Observation.Result.Value",
+              "value": "PD"
+            }
+          ]
+        }
+      ],
+      "phraseLabel": "disease progression"
+    },
+    {
+      "oid": "T.FirstDeathDate",
+      "name": "First Death Date",
+      "transformationType": "derivation",
+      "description": "Earliest date of an adverse event recorded with a fatal outcome. Death is collected as an adverse event, not as a disposition record; DM.DTHDTC is a mapping of this same fact and is deliberately not read as a second source.",
+      "instanceOf": "FirstValue",
+      "usesMethod": "M.Aggregation",
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "min"
+        },
+        {
+          "configurationName": "axis",
+          "value": "rows"
+        }
+      ],
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "Timing",
+          "methodRole": "value",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "note": "Date of the adverse event whose outcome is fatal.",
+          "slice": "fatal_outcome",
+          "bcSupplied": "Link the biomedical concept on this terminal in Step 6. The BC supplies the identifying filter and the date column; only constraints the BC cannot express are left as slice constraints below."
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "FirstValue",
+          "methodRole": "result",
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "concept": "Subject",
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": [
+        {
+          "name": "fatal_outcome",
+          "constraints": [
+            {
+              "concept": "EventTerm.Outcome",
+              "value": "FATAL"
+            }
+          ]
+        }
+      ],
+      "phraseLabel": "death"
+    },
+    {
+      "oid": "T.LastTumorAssessmentDate",
+      "name": "Last Tumour Assessment Date",
+      "transformationType": "derivation",
+      "description": "Latest date on which overall response was assessed, regardless of the response recorded. This is the last date on which the subject is known to have been progression-free, and is therefore the censoring date for a subject with no event.",
+      "instanceOf": "LastValue",
+      "usesMethod": "M.Aggregation",
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "max"
+        },
+        {
+          "configurationName": "axis",
+          "value": "rows"
+        }
+      ],
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "Timing",
+          "methodRole": "value",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "note": "Collection date of any overall-response assessment",
+          "bcSupplied": "Link the biomedical concept on this terminal. The BC supplies the identifying filter and the date column; only what the BC cannot express remains as a slice constraint."
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "LastValue",
+          "methodRole": "result",
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "concept": "Subject",
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "phraseLabel": "last tumour assessment"
+    },
+    {
+      "oid": "T.EarliestEventDate",
+      "name": "Earliest PFS Event Date",
+      "transformationType": "derivation",
+      "description": "The earlier of the progression date and the death date. Missing when neither occurred, which is what marks the subject as censored.",
+      "instanceOf": "FirstValue",
+      "usesMethod": "M.Aggregation",
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "min"
+        },
+        {
+          "configurationName": "axis",
+          "value": "roles"
+        }
+      ],
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "FirstValue",
+          "methodRole": "value",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "note": "Date of first disease progression",
+          "phraseSlot": "event"
+        },
+        {
+          "concept": "FirstValue",
+          "methodRole": "value",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "note": "Date of death",
+          "phraseSlot": "event"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "FirstValue",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "phraseLabel": "disease progression or death"
+    },
+    {
+      "oid": "T.AnalysisEventDate",
+      "name": "PFS Analysis Date",
+      "transformationType": "derivation",
+      "description": "The date the time-to-event clock stops: the event date when an event was observed, otherwise the last tumour assessment. Progression is only detectable at an assessment, so that is the last date the subject is known to be progression-free \u2014 a later administrative date would imply knowledge the study does not have.",
+      "instanceOf": "Measure",
+      "usesMethod": "M.ConditionalValue",
+      "methodConfigurations": [
+        {
+          "configurationName": "base",
+          "value": "value"
+        }
+      ],
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "FirstValue",
+          "methodRole": "value",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "note": "Earliest event date; missing when censored"
+        },
+        {
+          "concept": "LastValue",
+          "methodRole": "alternate",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "note": "Last tumour assessment \u2014 the last date the subject is known to have been progression-free",
+          "phraseSlot": "censoring_event"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Measure",
+          "methodRole": "result",
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "concept": "Subject",
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ]
+    },
+    {
+      "oid": "T.CensorFlag",
+      "name": "PFS Censoring Indicator",
+      "transformationType": "derivation",
+      "description": "ADaM CNSR: 1 when no event date exists, meaning progression-free survival is known only to exceed the analysis date; 0 when progression or death was observed. Derived from the presence of the event date alone, so it can never disagree with the analysis date about which date won.",
+      "instanceOf": "Flag",
+      "usesMethod": "M.ThresholdCompare",
+      "methodConfigurations": [
+        {
+          "configurationName": "operator",
+          "value": "is_na"
+        },
+        {
+          "configurationName": "true_value",
+          "value": "1"
+        },
+        {
+          "configurationName": "false_value",
+          "value": "0"
+        },
+        {
+          "configurationName": "threshold",
+          "value": 0
+        }
+      ],
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "FirstValue",
+          "methodRole": "value",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "note": "Earliest PFS event date; missing when censored"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Flag",
+          "direction": "output",
+          "dataStructureRole": "measure",
+          "methodRole": "result"
+        },
+        {
+          "concept": "Subject",
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ]
+    },
+    {
+      "oid": "T.TimeToFirstEvent",
+      "name": "Time to First Event",
+      "transformationType": "derivation",
+      "description": "Duration from a risk origin to the analysis date \u2014 the date of the first qualifying event, or the censoring date when no event was observed. Named for the operation, not the endpoint: bound to progression and death it yields progression-free survival, bound to death alone it yields overall survival. The endpoint's identity lives in the output Parameter label, not in this oid.",
+      "instanceOf": "TimeToEvent",
+      "usesMethod": "M.DateDifference",
+      "methodConfigurations": [
+        {
+          "configurationName": "unit",
+          "value": "days"
+        },
+        {
+          "configurationName": "offset",
+          "value": 0
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_TTE_ENDPOINT",
+        "SP_TTE_FULL_ENDPOINT"
+      ],
+      "composedPhrase": "time from {risk_origin} to {event}, censored at {censoring_event}",
+      "bindings": [
+        {
+          "concept": "Timing",
+          "methodRole": "start_date",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "note": "Risk-origin date, read from the linked biomedical concept's start-date property.",
+          "phraseSlot": "risk_origin",
+          "bcSupplied": "The linked biomedical concept states this filter (DSDECOD = RANDOMIZED, DSCAT = PROTOCOL MILESTONE). It is repeated as a slice because only a slice triggers the engine's pre-join, which fetches one value per subject from a record type other than the one the running cube holds. A BC constraint narrows the cube instead, which cannot serve two record types at once.",
+          "slice": "risk_origin"
+        },
+        {
+          "concept": "Measure",
+          "methodRole": "end_date",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "note": "Analysis date: the event date, else the censoring date"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "TimeToEvent",
+          "methodRole": "result",
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "concept": "Subject",
+          "direction": "output",
+          "dataStructureRole": "dimension"
+        }
+      ],
+      "slices": [
+        {
+          "name": "risk_origin",
+          "constraints": [
+            {
+              "concept": "EventTerm.Coding.PreferredTerm",
+              "value": "RANDOMIZED"
+            },
+            {
+              "concept": "Category",
+              "value": "PROTOCOL MILESTONE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "oid": "T.CensoringReason",
+      "name": "Time-to-Event Reason",
+      "transformationType": "derivation",
+      "description": "Which candidate supplied the analysis date \u2014 the ADTTE EVNTDESC. Derived from the same inputs as the censoring indicator, so the reason can never disagree with the date or with CNSR. `labels` is positional: entry i names candidate binding i.",
+      "instanceOf": "Category",
+      "usesMethod": "M.FirstMatch",
+      "methodConfigurations": [
+        {
+          "configurationName": "labels",
+          "value": "Disease Progression|Death|Last Tumour Assessment"
+        },
+        {
+          "configurationName": "default_label",
+          "value": ""
+        }
+      ],
+      "validSmartPhrases": [],
+      "bindings": [
+        {
+          "concept": "Measure",
+          "methodRole": "selected",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "note": "The analysis date whose origin is being reported"
+        },
+        {
+          "concept": "FirstValue",
+          "methodRole": "candidate",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "note": "Date of first disease progression"
+        },
+        {
+          "concept": "FirstValue",
+          "methodRole": "candidate",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "note": "Date of death"
+        },
+        {
+          "concept": "LastValue",
+          "methodRole": "candidate",
+          "direction": "input",
+          "dataStructureRole": "measure",
+          "note": "Last tumour assessment date"
+        },
+        {
+          "concept": "Subject",
+          "methodRole": "partition",
+          "direction": "input",
+          "dataStructureRole": "dimension"
+        },
+        {
+          "concept": "Category",
+          "methodRole": "result",
+          "direction": "output",
+          "dataStructureRole": "measure"
+        },
+        {
+          "concept": "Subject",
+          "direction": "output",
+          "dataStructureRole": "dimension"
         }
       ]
     }
@@ -1874,6 +2391,7 @@
       ],
       "validSmartPhrases": [
         "SP_TTE_ENDPOINT",
+        "SP_TTE_FULL_ENDPOINT",
         "SP_POPULATION",
         "SP_GROUPING",
         "SP_METHOD_LOGRANK",
@@ -1905,7 +2423,7 @@
           "dataStructureRole": "measure"
         },
         {
-          "methodRole": "fixed_effect",
+          "methodRole": "group",
           "concept": "Treatment",
           "qualifierType": "IntentType",
           "qualifierValue": "Planned",

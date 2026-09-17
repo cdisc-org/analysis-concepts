@@ -27,7 +27,8 @@ export function renderProtocolSoa(container, study, rawUsdm) {
     <div class="soa-header">
       <div>
         <div class="soa-subtitle">${matrix.activities.length} activities &middot; ${matrix.encounters.length} encounters
-          ${matrix.offMainActivityIds.length ? ` &middot; <span class="soa-warn">${matrix.offMainActivityIds.length} off-main-timeline</span>` : ''}
+          ${matrix.unscheduledActivityIds.length ? ` &middot; <span class="soa-warn">${matrix.unscheduledActivityIds.length} not scheduled</span>` : ''}
+          ${matrix.offMainActivityIds.length > matrix.unscheduledActivityIds.length ? ` &middot; <span class="soa-warn">${matrix.offMainActivityIds.length - matrix.unscheduledActivityIds.length} sub-timeline only</span>` : ''}
         </div>
       </div>
       <div class="soa-toolbar">
@@ -125,7 +126,14 @@ function renderActivityRows(activity, matrix, encounters, bcById, showBcs, q, ac
   if (!vis.visible) return '';
   const cellSet = matrix.cells.get(activity.id) || new Set();
   const onMain = activity._onMain;
-  const offBadge = onMain ? '' : ' <span class="soa-badge soa-badge-muted">sub-timeline only</span>';
+  // Only claim "sub-timeline" when the activity is actually on one; an activity
+  // on no timeline at all is unscheduled, and saying otherwise invents a
+  // timeline the study does not have.
+  const offBadge = onMain
+    ? ''
+    : (activity._onSub
+      ? ' <span class="soa-badge soa-badge-muted">sub-timeline only</span>'
+      : ' <span class="soa-badge soa-badge-muted">not scheduled</span>');
   const cells = encounters.map(e => `<td class="${cellSet.has(e.id) ? 'soa-cell-mark' : ''}">${cellSet.has(e.id) ? '&times;' : ''}</td>`).join('');
   const label = highlight(escapeHtml(activity.label), q);
   const matchClass = vis.matches && q ? ' soa-row-matched' : '';

@@ -97,6 +97,11 @@ export function classifyBindings(customBindings, method) {
 
   const result = {
     response: [], covariate: [], fixed_effect: [],
+    // `group` is the comparison factor of a method that fits no model (log-rank,
+    // Kaplan-Meier). Without a bucket here a binding carrying it was silently
+    // dropped — `statRole && result[statRole]` failed both branches — so the
+    // survival formula rendered "Surv(time, event) ~ 1", the null model.
+    group: [],
     repeated_subject: [], repeated_factor: [], strata: [],
     // For assignment notation: roles without statisticalRole
     untyped: []
@@ -146,7 +151,7 @@ export function buildExpressionString(customBindings, method, interactions) {
 
 export function buildWilkinsonExpression(cls, interactions) {
   const lhs = cls.response.join(' + ') || '?';
-  const rhsParts = [...cls.covariate, ...cls.fixed_effect];
+  const rhsParts = [...cls.covariate, ...cls.fixed_effect, ...(cls.group || [])];
   let rhs = rhsParts.join(' + ') || '1';
 
   if (interactions?.length > 0) {
@@ -173,7 +178,7 @@ export function buildSurvivalExpression(cls, interactions) {
       ? `Surv(${cls.response[0]})`
       : 'Surv(?)';
 
-  const rhsParts = [...cls.covariate, ...cls.fixed_effect];
+  const rhsParts = [...cls.covariate, ...cls.fixed_effect, ...(cls.group || [])];
 
   if (interactions?.length > 0) {
     rhsParts.push(...interactions);
@@ -326,7 +331,8 @@ export function renderWilkinsonFormula(cls, interactions, colorSpan, op, concept
   const lhs = cls.response.map(c => colorSpan(c)).join(` ${op('+')} `) || '?';
   const rhsParts = [
     ...cls.covariate.map(c => colorSpan(c)),
-    ...cls.fixed_effect.map(c => colorSpan(c))
+    ...cls.fixed_effect.map(c => colorSpan(c)),
+    ...(cls.group || []).map(c => colorSpan(c))
   ];
 
   const interParts = (interactions || []).map(inter => {
@@ -362,7 +368,11 @@ export function renderSurvivalFormula(cls, interactions, colorSpan, op, conceptR
 
   const rhsParts = [
     ...cls.covariate.map(c => colorSpan(c)),
-    ...cls.fixed_effect.map(c => colorSpan(c))
+    ...cls.fixed_effect.map(c => colorSpan(c)),
+    // The grouping factor of a model-free method. Without it the RHS is empty
+    // and the renderer falls back to '1' — reading as an intercept-only null
+    // model, which is not what a log-rank test does.
+    ...(cls.group || []).map(c => colorSpan(c))
   ];
 
   const interParts = (interactions || []).map(inter => {
@@ -717,9 +727,10 @@ export function renderInteractiveBindingsByRole(customBindings, method, dcModel,
     // For dimension filter, only show roles whose bindings are dimensions
     // For measure filter, only show roles whose bindings are measures
     // Also show roles that have no bindings yet but would match (based on statisticalRole)
+    const DIMENSION_ROLES = new Set(['fixed_effect', 'group', 'strata']);
     const roleMatchesFilter = roleFilter === 'dimension'
-      ? (role.statisticalRole === 'fixed_effect' || role.statisticalRole === 'strata')
-      : (role.statisticalRole !== 'fixed_effect' && role.statisticalRole !== 'strata');
+      ? DIMENSION_ROLES.has(role.statisticalRole)
+      : !DIMENSION_ROLES.has(role.statisticalRole);
 
     if (bindings.length === 0 && !roleMatchesFilter) continue;
 

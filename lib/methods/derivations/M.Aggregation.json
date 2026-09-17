@@ -17,7 +17,8 @@
   "formula": {
     "notation": "assignment",
     "default_expression": "result := AGG(value) OVER (partition)",
-    "generic_expression": "result := <agg_func>(<value>) OVER (<partition>+)"
+    "generic_expression": "result := <agg_func>(<value>) OVER (<partition>+)",
+    "notes": "With axis='rows' the aggregate is taken over the records of each partition. With axis='roles' it is taken over the values bound to the value role on one record; partition is then ignored."
   },
   "configurations": [
     {
@@ -35,6 +36,16 @@
         "last"
       ],
       "description": "Aggregation function to apply"
+    },
+    {
+      "name": "axis",
+      "dataType": "enum",
+      "defaultValue": "rows",
+      "enumValues": [
+        "rows",
+        "roles"
+      ],
+      "description": "Direction of aggregation. 'rows' collapses multiple records within each partition to one value (the existing behaviour). 'roles' combines the several values bound to the value role on a single record \u2014 e.g. the earliest of a progression date and a death date \u2014 leaving record cardinality unchanged."
     }
   ],
   "output_specification": {
@@ -59,8 +70,8 @@
       "name": "value",
       "dataType": "decimal",
       "required": true,
-      "cardinality": "single",
-      "description": "Values to aggregate"
+      "cardinality": "multiple",
+      "description": "The values to aggregate. Single for axis='rows'; two or more for axis='roles'."
     },
     {
       "name": "partition",

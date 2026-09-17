@@ -6,7 +6,7 @@ import {
 } from '../utils/webr-engine.js';
 import { generateExecutionPayload, getVariableOptions, getDefaultVariable, resolveCallTemplate, resolveDerivationCallTemplate } from '../utils/r-code-generator.js';
 import { buildPipelineGraph, orderChainPostOrder, computeColumnMap, computeAnalysisInputColumns } from '../utils/transformation-linker.js';
-import { loadMethod } from '../data-loader.js';
+import { loadMethod, getBasePath } from '../data-loader.js';
 import { getSpecParameterValue } from './endpoint-spec.js';
 import { substituteTokens, buildDimensionTokenSource, TOKEN_DEFAULTS } from '../utils/concept-display.js';
 
@@ -116,6 +116,112 @@ function _getSubjectJoinConcept() {
     if (def?.relationship === 'aboutSubject') return name;
   }
   return null;
+}
+
+/**
+ * Which concept-mapping store best fits a loaded dataset, by counting how many
+ * of its columns the store declares. Mirrors detect_store() in acdc_engine.R,
+ * including the SDTM "--" domain-code substitution, so the Execute panel offers
+ * the same variables the engine will actually resolve.
+ *
+ * @param {string} datasetName - the selected dataset (case-insensitive)
+ * @returns {string|null} store key ('sdtm' | 'adam' | …), or null when unknown
+ */
+function _detectStoreForDataset(datasetName) {
+  const mappings = appState.conceptMappings;
+  if (!mappings || !datasetName) return null;
+  const ds = (getLoadedDatasets() || [])
+    .find(d => String(d.name).toUpperCase() === String(datasetName).toUpperCase());
+  const cols = new Set(ds?.columns || []);
+  if (cols.size === 0) return null;
+
+  // SDTM mappings use "--" placeholders; recover the 2-character domain the way
+  // .detect_sdtm_domain does — a declared suffix matched against a column.
+  const domainFor = (store) => {
+    const suffixes = new Set();
+    const walk = (entry) => {
+      for (const v of Object.values(entry?.byDataType || {})) {
+        if (typeof v === 'string' && v.startsWith('--')) suffixes.add(v.slice(2));
+      }
+      for (const v of Object.values(entry?.facets || {})) {
+        if (typeof v === 'string' && v.startsWith('--')) suffixes.add(v.slice(2));
+      }
+    };
+    Object.values(store.concepts || {}).forEach(walk);
+    Object.values(store.dimensions || {}).forEach(walk);
+    for (const sfx of suffixes) {
+      for (const c of cols) {
+        const m = c.match(new RegExp(`^([A-Z]{2})${sfx}$`));
+        if (m) return m[1];
+      }
+    }
+    return null;
+  };
+
+  let best = null, bestCount = 0;
+  for (const [key, store] of Object.entries(mappings)) {
+    if (!store || typeof store !== 'object') continue;
+    const domain = key === 'sdtm' ? domainFor(store) : null;
+    const resolve = (v) => (typeof v === 'string' && v.startsWith('--') && domain)
+      ? domain + v.slice(2) : v;
+    let count = 0;
+    const tally = (entry) => {
+      const seen = new Set();
+      for (const v of Object.values(entry?.byDataType || {})) seen.add(resolve(v));
+      for (const v of Object.values(entry?.facets || {})) seen.add(resolve(v));
+      for (const v of (entry?.alternativeVariables || [])) seen.add(resolve(v));
+      for (const v of seen) if (typeof v === 'string' && cols.has(v)) count++;
+    };
+    Object.values(store.concepts || {}).forEach(tally);
+    Object.values(store.dimensions || {}).forEach(tally);
+    if (count > bestCount) { best = key; bestCount = count; }
+  }
+  return best;
+}
+
+/**
+ * Which concept key a BC's identifying value constrains.
+ *
+ * A Findings-class BC is identified by --TESTCD, whose concept is
+ * Observation.Identification.Topic. An Events-class BC (DS, AE) has no
+ * --TESTCD at all — its identity is an assigned value in --DECOD/--TERM, so
+ * constraining Topic filters a column those records leave empty and selects
+ * nothing. Resolve the concept from the SDTM mappings rather than assuming.
+ *
+ * `--DECOD` is declared by more than one concept (EventTerm, Intervention), so
+ * when several match, prefer one this transformation already mentions in its
+ * bindings or slices; otherwise fall back to Topic, the historical behaviour.
+ *
+ * @param {string|null} sourceVariable - e.g. 'DSDECOD', or null for the Topic path
+ * @param {object} transform - the derivation transformation, for disambiguation
+ * @returns {string} concept key to constrain
+ */
+function _conceptForBcVariable(sourceVariable, transform) {
+  const TOPIC = 'Observation.Identification.Topic';
+  if (!sourceVariable) return TOPIC;
+  const sdtm = appState.conceptMappings?.sdtm;
+  if (!sdtm) return TOPIC;
+  // 'DSDECOD' -> '--DECOD'; an already-generic '--DECOD' passes through.
+  const generic = /^--/.test(sourceVariable)
+    ? sourceVariable
+    : `--${String(sourceVariable).replace(/^[A-Z]{2}/i, '').toUpperCase()}`;
+
+  const candidates = [];
+  for (const [name, entry] of Object.entries(sdtm.concepts || {})) {
+    for (const [facet, v] of Object.entries(entry?.facets || {})) {
+      if (v === generic) candidates.push(`${name}.${facet}`);
+    }
+  }
+  if (candidates.length === 0) return TOPIC;
+  if (candidates.length === 1) return candidates[0];
+
+  const mentioned = new Set();
+  for (const b of (transform?.bindings || [])) if (b?.concept) mentioned.add(b.concept);
+  for (const sl of (transform?.slices || [])) {
+    for (const c of (sl?.constraints || [])) if (c?.concept) mentioned.add(c.concept);
+  }
+  return candidates.find(c => mentioned.has(c) || mentioned.has(c.split('.')[0]))
+    || TOPIC;
 }
 
 function _findDatasetsProvidingConcept(concept, qualifierType, qualifierValue, conceptMappings, loadedDatasets) {
@@ -335,13 +441,14 @@ export function renderExecuteAnalysis(container) {
       <h3 style="font-size:14px; font-weight:600; margin-bottom:12px;">Analysis / Source Datasets</h3>
       <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
         <label class="btn btn-secondary" style="cursor:pointer;">
-          Upload .xpt files
-          <input type="file" id="xpt-file-input" accept=".xpt" multiple style="display:none;">
+          Upload .xpt / .csv files
+          <input type="file" id="xpt-file-input" accept=".xpt,.csv" multiple style="display:none;">
         </label>
         <span id="upload-status" style="font-size:12px; color:var(--cdisc-text-secondary);"></span>
       </div>
+      ${_renderStudyDatasetPicker(datasets)}
       ${datasets.length > 0 ? _renderDatasetTable(datasets) : `
-      <div style="font-size:12px; color:var(--cdisc-text-secondary);">No datasets loaded. Upload SDTM or ADaM .xpt files to begin.</div>`}
+      <div style="font-size:12px; color:var(--cdisc-text-secondary);">No datasets loaded. Upload SDTM or ADaM .xpt or .csv files to begin.</div>`}
       ${(() => {
         const expectedDs = _getExpectedDatasets(configuredEps);
         if (expectedDs.length === 0) return '';
@@ -376,6 +483,63 @@ export function renderExecuteAnalysis(container) {
 // Dataset table
 // ---------------------------------------------------------------------------
 
+/**
+ * The datasets shipped with the SELECTED study, from data/datasets.json.
+ * Keyed by the study's `data` folder in studies.json, so adding a study means
+ * adding a folder and two manifest entries — no code change here.
+ *
+ * @returns {{store:string, name:string, path:string, format:string, label:string}[]}
+ */
+function _studyDatasetCatalogue() {
+  const manifest = appState.datasetManifest;
+  const key = appState.studyManifest?.[appState.selectedStudyIndex]?.data;
+  const entry = key && manifest ? manifest[key] : null;
+  if (!entry) return [];
+  return ['sdtm', 'adam'].flatMap(store =>
+    (entry[store] || []).map(d => ({ ...d, store })));
+}
+
+/**
+ * Chips for the selected study's shipped datasets — click one to load it, or
+ * "Load all". Uploading still works; this just removes the hand-picking of
+ * twelve files from disk on every reload. Studies with no manifest entry
+ * render nothing, so the panel degrades to upload-only.
+ */
+function _renderStudyDatasetPicker(datasets) {
+  const catalogue = _studyDatasetCatalogue();
+  if (catalogue.length === 0) return '';
+  const loaded = new Set((datasets || []).map(d => String(d.name).toUpperCase()));
+  const pending = catalogue.filter(d => !loaded.has(d.name.toUpperCase()));
+  const chip = (d) => {
+    const isLoaded = loaded.has(d.name.toUpperCase());
+    return `<button class="exec-study-dataset" data-path="${d.path}" data-name="${d.name}"
+      data-format="${d.format}" ${isLoaded ? 'disabled' : ''}
+      title="${d.label || d.store.toUpperCase()}"
+      style="padding:1px 7px; border-radius:3px; font-size:11px; cursor:${isLoaded ? 'default' : 'pointer'};
+             border:1px solid ${isLoaded ? 'var(--cdisc-primary)' : 'var(--cdisc-border)'};
+             background:${isLoaded ? 'var(--cdisc-primary-light)' : 'transparent'};
+             color:inherit;">${d.name}${isLoaded ? ' \u2713' : ''}</button>`;
+  };
+  const group = (store) => {
+    const items = catalogue.filter(d => d.store === store);
+    if (items.length === 0) return '';
+    return `<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:4px;">
+      <span style="font-weight:600; font-size:11px; min-width:42px;">${store.toUpperCase()}</span>
+      ${items.map(chip).join('')}
+    </div>`;
+  };
+  return `<div style="margin-bottom:12px; font-size:11px; color:var(--cdisc-text-secondary);">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="font-weight:600;">Study datasets</span>
+      ${pending.length > 0
+        ? `<button id="exec-load-all-datasets" class="btn btn-secondary" style="padding:1px 8px; font-size:11px;">Load all (${pending.length})</button>`
+        : `<span>all loaded</span>`}
+    </div>
+    ${group('sdtm')}
+    ${group('adam')}
+  </div>`;
+}
+
 function _renderDatasetTable(datasets) {
   return `<table style="width:100%; font-size:12px; border-collapse:collapse;">
     <thead><tr style="text-align:left; border-bottom:1px solid var(--cdisc-border);">
@@ -399,7 +563,15 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
   const spec = appState.endpointSpecs[ep.id];
   const resolvedEp = appState.resolvedSpec?.endpoints?.find(r => r.id === ep.id);
   const result = _ensureEndpointResult(ep.id);
-  const adam = appState.conceptMappings?.adam || {};
+  // Which store's variables are offered is a property of THE DATA, not of the
+  // view toggle. modelViewMode is presentation — it decides how names are
+  // displayed — so driving the options from it meant merely *looking* at ADaM
+  // changed what you could *pick* against SDTM data. Detect the store from the
+  // loaded dataset's columns, exactly as the engine's detect_store does, so the
+  // panel and the engine cannot disagree.
+  const activeStore = _detectStoreForDataset(result.datasetOverride || resolvedEp?.targetDataset)
+    || 'adam';
+  const adam = appState.conceptMappings?.[activeStore] || appState.conceptMappings?.adam || {};
   const selectedDataset = (result.datasetOverride || resolvedEp?.targetDataset || '').toLowerCase();
   const analyses = resolvedEp?.analyses || [];
 
@@ -1134,7 +1306,44 @@ function _renderARDResults(results, analysis, adam, varOverrides, analysisInputC
         ${Object.entries(results.fit_statistics).map(([k, v]) => `<tr><td>${k}</td><td>${_fmt(v)}</td></tr>`).join('')}
       </tbody></table>` });
   }
-  if (sections.length === 0) return '';
+  // Survival output classes. Without these the log-rank test ran, produced its
+  // chi-square and p-value, and rendered nothing — `sections` stayed empty and
+  // the function returned '' while the analysis reported Complete.
+  if (results.test_result) {
+    const r = results.test_result;
+    const rows = Array.isArray(r) ? r : [r];
+    sections.push({ id: 'test', label: 'Test Result',
+      html: _renderTable(_toRows(rows), ['chi_squared', 'df', 'p_value']) });
+  }
+  if (results.event_summary) {
+    sections.push({ id: 'events', label: 'Event Summary',
+      html: _renderTable(_toRows(results.event_summary), ['Group', 'n_risk', 'n_event', 'n_censored']) });
+  }
+  if (results.median_survival) {
+    sections.push({ id: 'median', label: 'Median Survival',
+      html: _renderTable(_toRows(results.median_survival), ['Group', 'median', 'CI_lower', 'CI_upper']) });
+  }
+  if (results.survival_table) {
+    sections.push({ id: 'survtab', label: 'Survival Table',
+      html: _renderTable(_toRows(results.survival_table),
+        ['Group', 'time', 'n_risk', 'n_event', 'n_censored', 'survival_prob', 'SE', 'CI_lower', 'CI_upper']) });
+  }
+  if (results.landmark_estimates) {
+    sections.push({ id: 'landmark', label: 'Landmark Estimates',
+      html: _renderTable(_toRows(results.landmark_estimates),
+        ['Group', 'time', 'survival_prob', 'SE', 'CI_lower', 'CI_upper']) });
+  }
+  if (sections.length === 0) {
+    // Say so rather than rendering nothing: an analysis that completed but
+    // produced no displayable class is a gap in this renderer, not an empty result.
+    const keys = Object.keys(results || {}).filter(k => k !== 'derived_data_preview');
+    return keys.length
+      ? `<div class="exec-bindings-section"><div class="exec-bindings-title">RESULTS</div>
+         <div style="font-size:12px; color:var(--cdisc-text-secondary);">
+           The analysis returned ${keys.map(k => `<code>${k}</code>`).join(', ')},
+           which this view cannot render yet.</div></div>`
+      : '';
+  }
 
   return `
     <div class="exec-ard-tabs">${sections.map((s, i) =>
@@ -1410,16 +1619,60 @@ function _wireEvents(container, configuredEps, study) {
     if (!isInitialized()) { if (status) status.textContent = 'Initialize WebR first.'; return; }
 
     for (const file of files) {
-      const name = file.name.replace(/\.xpt$/i, '').toUpperCase();
+      const format = /\.csv$/i.test(file.name) ? 'csv' : 'xpt';
+      const name = file.name.replace(/\.(xpt|csv)$/i, '').toUpperCase();
       if (status) status.textContent = `Loading ${name}...`;
       try {
-        await loadXptFile(await file.arrayBuffer(), name);
+        await loadXptFile(await file.arrayBuffer(), name, format);
         appState.loadedDatasets = getLoadedDatasets();
       } catch (err) {
         if (status) status.textContent = `Error: ${err.message}`;
       }
     }
     renderExecuteAnalysis(container);
+  });
+
+  // Study dataset chips — fetch from the manifest path instead of hand-picking
+  // the same twelve files off disk on every reload.
+  const loadStudyDatasets = async (specs) => {
+    // Re-query the node every time: renderExecuteAnalysis replaces innerHTML,
+    // so a reference captured before the re-render points at a detached node
+    // and the message silently goes nowhere.
+    const setStatus = (msg) => {
+      const el = container.querySelector('#upload-status');
+      if (el) el.textContent = msg;
+    };
+    if (!isInitialized()) { setStatus('Initialize WebR first.'); return; }
+    const failed = [];
+    for (const { path, name, format } of specs) {
+      setStatus(`Loading ${name}...`);
+      try {
+        // getBasePath() is absolute. A bare relative `ac-dc-app/${path}` is
+        // resolved against the document URL, so serving the app from
+        // /ac-dc-app/index.html asked for /ac-dc-app/ac-dc-app/data/... .
+        const res = await fetch(`${getBasePath()}ac-dc-app/${path}`);
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        await loadXptFile(await res.arrayBuffer(), name.toUpperCase(), format);
+        appState.loadedDatasets = getLoadedDatasets();
+      } catch (err) {
+        console.error('[execute] dataset load failed', path, err);
+        failed.push(`${name} (${err.message})`);
+      }
+    }
+    renderExecuteAnalysis(container);
+    // AFTER the re-render — the old status node is gone by now.
+    setStatus(failed.length ? `Could not load ${failed.join(', ')}` : '');
+  };
+
+  container.querySelectorAll('.exec-study-dataset').forEach(btn => {
+    btn.addEventListener('click', () => loadStudyDatasets([{
+      path: btn.dataset.path, name: btn.dataset.name, format: btn.dataset.format
+    }]));
+  });
+
+  container.querySelector('#exec-load-all-datasets')?.addEventListener('click', () => {
+    const loaded = new Set((getLoadedDatasets() || []).map(d => String(d.name).toUpperCase()));
+    loadStudyDatasets(_studyDatasetCatalogue().filter(d => !loaded.has(d.name.toUpperCase())));
   });
 
   // Slice value/variable overrides
@@ -1824,22 +2077,47 @@ async function _executeAnalysis(container, epId, aIdx) {
       // questionnaire TESTCD (NPI, DAS, ADAS, …) into the same sums/counts.
       const constraintValues = [];
       let bcInfo = getDerivationBCTopicDecode(endpointSpec, entry.slotKey, study);
+      const terminalList = endpointSpec?.confirmedTerminals || [];
       if (!bcInfo) {
-        const terminals = endpointSpec?.confirmedTerminals || [];
-        for (const term of terminals) {
-          if (term.linkedBCIds?.length) {
-            bcInfo = getDerivationBCTopicDecode(endpointSpec, term.slotKey, study);
-            if (bcInfo) break;
-          }
+        // A terminal sits BELOW the derivation that reads it: a leaf's BC is on its
+        // child slot (.../FirstValue/0/Timing/0), never on the leaf itself. Only a
+        // DIRECT child counts — a derivation whose inputs are all chain outputs reads
+        // no source rows, so inheriting a descendant leaf's filter would constrain
+        // derived columns by a topic they never carried.
+        const depth = String(entry.slotKey).split('/').length;
+        const below = terminalList.filter(t => t.linkedBCIds?.length
+          && String(t.slotKey).startsWith(entry.slotKey + '/')
+          && String(t.slotKey).split('/').length === depth + 2);
+        if (below.length) bcInfo = getDerivationBCTopicDecode(endpointSpec, below[0].slotKey, study);
+      }
+      if (!bcInfo) {
+        // Chain-wide fallback, valid ONLY when every BC terminal names the same
+        // topic set — one family of concepts, as with the 11 ADAS items, where
+        // narrowing downstream steps to that family is a no-op. When a chain draws
+        // on several distinct BCs (progression, randomisation, death) borrowing one
+        // leaf's filter for an unrelated derivation is simply wrong: it filtered the
+        // progression leaf to randomisation records and left nothing to aggregate.
+        const sets = terminalList
+          .filter(t => t.linkedBCIds?.length)
+          .map(t => (getDerivationBCTopicDecode(endpointSpec, t.slotKey, study)?.decodes || []).join('|'))
+          .filter(Boolean);
+        if (new Set(sets).size === 1) {
+          const first = terminalList.find(t => t.linkedBCIds?.length);
+          bcInfo = getDerivationBCTopicDecode(endpointSpec, first.slotKey, study);
         }
       }
       if (bcInfo) {
         // Single-BC path keeps scalar (back-compat); multi-BC emits array
         // which R's filter loop handles via %in%.
         const value = (bcInfo.decodes && bcInfo.decodes.length > 1) ? bcInfo.decodes : bcInfo.decode;
-        if (value) {
+        // A BC identifying a FAMILY of records (one per subject, reason varies)
+        // carries no assigned value, so the resolver returns the NCI concept
+        // code. That never appears in a Topic column — filtering on it selects
+        // nothing. Such a BC constrains through its slice instead.
+        const isConceptCode = (v) => typeof v === 'string' && /^C\d+$/.test(v);
+        if (value && !(Array.isArray(value) ? value.every(isConceptCode) : isConceptCode(value))) {
           constraintValues.push({
-            dimension: 'Observation.Identification.Topic',
+            dimension: _conceptForBcVariable(bcInfo.sourceVariable, transform),
             value
           });
         }
@@ -2065,20 +2343,45 @@ async function _executeDerivationOnly(container, epId) {
     // the analyse-path constraint construction.
     const constraintValues = [];
     let bcInfo = getDerivationBCTopicDecode(endpointSpec, entry.slotKey, study);
+    const terminalList = endpointSpec?.confirmedTerminals || [];
     if (!bcInfo) {
-      const terminals = endpointSpec?.confirmedTerminals || [];
-      for (const term of terminals) {
-        if (term.linkedBCIds?.length) {
-          bcInfo = getDerivationBCTopicDecode(endpointSpec, term.slotKey, study);
-          if (bcInfo) break;
-        }
+      // A terminal sits BELOW the derivation that reads it: a leaf's BC is on its
+      // child slot (.../FirstValue/0/Timing/0), never on the leaf itself. Only a
+      // DIRECT child counts — a derivation whose inputs are all chain outputs reads
+      // no source rows, so inheriting a descendant leaf's filter would constrain
+      // derived columns by a topic they never carried.
+      const depth = String(entry.slotKey).split('/').length;
+      const below = terminalList.filter(t => t.linkedBCIds?.length
+        && String(t.slotKey).startsWith(entry.slotKey + '/')
+        && String(t.slotKey).split('/').length === depth + 2);
+      if (below.length) bcInfo = getDerivationBCTopicDecode(endpointSpec, below[0].slotKey, study);
+    }
+    if (!bcInfo) {
+      // Chain-wide fallback, valid ONLY when every BC terminal names the same
+      // topic set — one family of concepts, as with the 11 ADAS items, where
+      // narrowing downstream steps to that family is a no-op. When a chain draws
+      // on several distinct BCs (progression, randomisation, death) borrowing one
+      // leaf's filter for an unrelated derivation is simply wrong: it filtered the
+      // progression leaf to randomisation records and left nothing to aggregate.
+      const sets = terminalList
+        .filter(t => t.linkedBCIds?.length)
+        .map(t => (getDerivationBCTopicDecode(endpointSpec, t.slotKey, study)?.decodes || []).join('|'))
+        .filter(Boolean);
+      if (new Set(sets).size === 1) {
+        const first = terminalList.find(t => t.linkedBCIds?.length);
+        bcInfo = getDerivationBCTopicDecode(endpointSpec, first.slotKey, study);
       }
     }
     if (bcInfo) {
       const value = (bcInfo.decodes && bcInfo.decodes.length > 1) ? bcInfo.decodes : bcInfo.decode;
-      if (value) {
+      // A BC that identifies a FAMILY of records rather than one type carries no
+      // assigned value, so the resolver falls back to the NCI concept code. That
+      // code never appears in a Topic column — emitting it as a filter would
+      // select nothing. Such a BC constrains via its slice instead.
+      const isConceptCode = (v) => typeof v === 'string' && /^C\d+$/.test(v);
+      if (value && !(Array.isArray(value) ? value.every(isConceptCode) : isConceptCode(value))) {
         constraintValues.push({
-          dimension: 'Observation.Identification.Topic',
+          dimension: _conceptForBcVariable(bcInfo.sourceVariable, transform),
           value
         });
       }
@@ -2154,7 +2457,8 @@ async function _executeDerivationOnly(container, epId) {
       `available_datasets <- c(${allDatasetNames.map(d => `"${d}"`).join(', ')})`,
       `presentation_store <- ${presentationStore ? `"${presentationStore}"` : 'NULL'}`,
       `result <- acdc_derive_only(spec, mappings, dataset, derivations, unit_conversions, r_impls, all_mappings, available_datasets, presentation_store = presentation_store)`,
-      `jsonlite::toJSON(result, auto_unbox = TRUE, pretty = TRUE)`
+      `jsonlite::toJSON(result, auto_unbox = TRUE, pretty = TRUE, digits = NA)`  // digits = NA keeps full precision: jsonlite defaults to 4 decimal
+      // places, which serialises a p-value of 1.6e-05 as 0.
     ].join('\n');
 
     const result = await executeR(code);
