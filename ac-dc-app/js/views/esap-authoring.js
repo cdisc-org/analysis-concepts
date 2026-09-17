@@ -115,11 +115,17 @@ function isAnalysisCandidate(c) {
  * @param {{lib: object, graph: object, ctx: object}} context
  * @param {object} spec  endpointSpecs[epId] (may be empty)
  * @param {object} ep    endpoint from getAllEndpoints()
+ * @param {object} [chainSlots]  { slotName: label } for placeholders the
+ *   derivation chain answers. Passed in rather than read from app state so
+ *   this module stays pure and verifiable under Node.
  * @returns {string} HTML
  */
-export function renderAuthoringSectionHtml(context, spec, ep) {
+export function renderAuthoringSectionHtml(context, spec, ep, chainSlots) {
   prepareSpec(spec, context, context.lib);
-  const instance = specToInstance(spec, ep, context.lib);
+  // Chain-answered slots ({event}, {censoring_event}, {risk_origin}) are
+  // resolved from the derivation chain, not authored — pass them in so the
+  // eSAP renders the same sentence Step 3 does.
+  const instance = specToInstance(spec, ep, context.lib, chainSlots);
 
   if (!instance) {
     return `<div class="sp-authoring sp-empty">

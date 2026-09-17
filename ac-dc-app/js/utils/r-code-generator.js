@@ -85,7 +85,12 @@ export function generateExecutionPayload(endpointResolvedSpec, conceptMappings, 
     `  result <- tryCatch(`,
     `    acdc_execute(spec, mappings, dataset, overrides, method_def, r_impl,`,
     `                 derivations, unit_conversions, r_impls, all_mappings, available_datasets,`,
-    `                 concept_categories, presentation_store = presentation_store),`,
+    // The variable the author picked also names the preview column. Without
+    // this the preview headed the column with the store default — ARMCD while
+    // the author chose ARM, TRTA while they chose TRT01P — over the chosen
+    // column's own values.
+    `                 concept_categories, presentation_store = presentation_store,`,
+    `                 presentation_overrides = overrides),`,
     `    error = function(e) list(engine_error = e$message)`,
     `  )`,
     `})`,

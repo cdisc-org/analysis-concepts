@@ -1,4 +1,5 @@
-import { appState, navigateTo } from '../app.js';
+import { appState, navigateTo, switchStudy } from '../app.js';
+import { clearLoadedDatasets } from '../utils/webr-engine.js';
 import { setActiveStudy } from '../data-loader.js';
 
 export function renderStudySelect(container) {
@@ -20,10 +21,17 @@ export function renderStudySelect(container) {
   container.querySelectorAll('.study-card').forEach(card => {
     card.addEventListener('click', () => {
       const idx = parseInt(card.dataset.index, 10);
-      appState.selectedStudyIndex = idx;
-      appState.selectedStudy = appState.studies[idx];
-      appState.selectedEndpoints = [];
-      appState.esapAnalyses = {};
+      // Park the outgoing study's workspace and restore this one's. Specs and
+      // results are keyed by USDM endpoint id, and every study has an
+      // "Endpoint_1" — swapping workspaces is what keeps one study's results
+      // from rendering under another's endpoint of the same id.
+      switchStudy(idx);
+      // Datasets are the exception: they live in one R global environment under
+      // bare names (dm, adsl), so two studies cannot hold theirs simultaneously.
+      // Drop them rather than pretend the new study's DM is loaded.
+      appState.loadedDatasets = [];
+      clearLoadedDatasets().catch(err =>
+        console.warn('[study-select] could not clear loaded datasets', err));
       // Update rawUsdm and usdmIndex for the selected study
       setActiveStudy(appState, idx);
       navigateTo(2);

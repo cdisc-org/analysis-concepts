@@ -1,3 +1,4 @@
+import { resolvePhraseSlotsFromChain } from '../utils/transformation-linker.js';
 import { appState, navigateTo, rebuildSpec } from '../app.js';
 import { getAllEndpoints, getVisitLabels } from '../utils/usdm-parser.js';
 import {
@@ -632,7 +633,14 @@ function renderAuthoredAnalyses(selectedEps, study, levelRe) {
 
   return eps.map(ep => {
     if (!appState.endpointSpecs[ep.id]) appState.endpointSpecs[ep.id] = {};
-    return renderAuthoringSectionHtml(context, appState.endpointSpecs[ep.id], ep);
+    // {event} / {censoring_event} / {risk_origin} are answered by the chain,
+    // not authored by hand. Step 3 resolves them this way; without passing them
+    // the eSAP reported "no binding for required placeholder".
+    const epSpec = appState.endpointSpecs[ep.id];
+    const chainSlots = resolvePhraseSlotsFromChain(
+      epSpec?.derivationChain, appState.transformationLibrary,
+      epSpec?.confirmedTerminals, appState.selectedStudy) || {};
+    return renderAuthoringSectionHtml(context, epSpec, ep, chainSlots);
   }).join('');
 }
 

@@ -277,14 +277,50 @@ function withRenderPolicy(phrase) {
  * @param {object} lib   adapted library
  * @returns {object|null} null when the spec carries no phrase instances
  */
-export function specToInstance(spec, ep, lib) {
+export function specToInstance(spec, ep, lib, chainSlots) {
   if (!spec || !Array.isArray(spec.phraseInstances) || !spec.phraseInstances.length) return null;
   return {
     id: (ep && ep.id) || "instance",
     template: spec.selectedTransformationOid || null,
     sentenceRole: sentenceRoleFor(ep),
-    phrases: spec.phraseInstances.map(withRenderPolicy)
+    phrases: spec.phraseInstances.map(withRenderPolicy).map((pi) => withChainSlots(pi, lib, chainSlots))
   };
+}
+
+/**
+ * Seed bindings for placeholders the DERIVATION CHAIN answers.
+ *
+ * A placeholder declaring value_source "derivation_chain" is never authored by
+ * hand — Step 3 resolves it from the chain. The eSAP renderer only maps
+ * authored phraseInstances, so those slots arrived with no binding at all and
+ * reported "no binding for required placeholder 'event'" even though the chain
+ * had an answer. An authored binding still wins; this only fills the gap.
+ *
+ * @param {object} pi          one phrase instance
+ * @param {object} lib         adapted library (for the phrase's placeholders)
+ * @param {object} chainSlots  { slotName: label } from resolvePhraseSlotsFromChain
+ */
+function withChainSlots(pi, lib, chainSlots) {
+  if (!chainSlots || !pi || !pi.phrase) return pi;
+  const def = (lib?.smartPhrases || []).find((p) => p.oid === pi.phrase);
+  const placeholders = def?.placeholders || [];
+  if (!placeholders.length) return pi;
+  const bindings = { ...(pi.bindings || {}) };
+  let added = false;
+  for (const ph of placeholders) {
+    const sources = String(ph.value_source || '').split('|').map((x) => x.trim());
+    if (!sources.includes('derivation_chain')) continue;
+    const label = chainSlots[ph.name];
+    if (typeof label !== 'string' || !label) continue;
+    // The chain WINS over a stored binding, matching Step 3: such a slot is
+    // answered by the chain alone, so a stale seeded binding must not survive.
+    // risk_origin had been seeded with the endpoint parameter and rendered
+    // "Time from Progression-Free Survival to …" instead of the randomisation.
+    if (bindings[ph.name]?.value === label) continue;
+    bindings[ph.name] = { value: label };
+    added = true;
+  }
+  return added ? { ...pi, bindings } : pi;
 }
 
 /* ---------------------------------------------------------------- cached accessor */

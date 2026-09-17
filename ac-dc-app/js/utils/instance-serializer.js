@@ -1,4 +1,4 @@
-import { appState } from '../app.js';
+import { appState, switchStudy } from '../app.js';
 import { composeFullSentence, findMatchingTransformations, getEndpointContextRoles } from './phrase-engine.js';
 import { getOutputMapping, getMethodConfigurations } from './transformation-linker.js';
 import { buildResolvedExpressionObject } from '../views/transformation-config.js';
@@ -1133,8 +1133,11 @@ export function deserializeStudyInstance(json, appState) {
     warnings.push(`Saved file referenced study "${savedName || '(unnamed)'}" — selecting the only available study "${studies[0]?.name || '(unnamed)'}" instead.`);
   }
   if (resolvedIdx >= 0 && appState.selectedStudyIndex !== resolvedIdx) {
-    appState.selectedStudyIndex = resolvedIdx;
-    appState.selectedStudy = studies[resolvedIdx];
+    // Go through switchStudy so the outgoing study's specs and results are
+    // parked rather than left in place: they are keyed by USDM endpoint id and
+    // every study has an "Endpoint_1", so assigning selectedStudy on its own
+    // left the previous study's results to render under this file's endpoint.
+    switchStudy(resolvedIdx);
     warnings.push(`Switched to study "${appState.selectedStudy?.name || '(unnamed)'}" referenced by the saved file`);
   } else if (resolvedIdx === -1 && savedName && appState.selectedStudy) {
     const currentName = appState.selectedStudy.name || appState.selectedStudy.studyTitle;
@@ -1170,9 +1173,22 @@ export function deserializeStudyInstance(json, appState) {
     appState.esapLinkedNarratives = json.esapLinkedNarratives;
   }
 
+  // Computed results are never serialized, so they must not survive a load:
+  // they belong to whatever spec was last executed. endpointResults is keyed by
+  // endpoint id and every scenario here uses "Endpoint_1", so keeping them made
+  // the previous scenario's output render under the newly loaded one — with a
+  // different study's subjects and treatment arms. The user's execution CHOICES
+  // (variable / dataset / slice picks) are restored just below; only the
+  // computed output is dropped.
+  for (const res of Object.values(appState.endpointResults || {})) {
+    delete res.analysisResults;
+    delete res.derivationOnly;
+    delete res.derivationOnlyMessage;
+  }
+
   // Restore execution bindings (variable / source-dataset / slice choices).
-  // Merged into any existing result state rather than replacing it, so a load
-  // during a live session keeps results already computed.
+  // Merged into any existing result state so a load during a live session keeps
+  // the picks the user already made for endpoints this instance doesn't mention.
   if (json.executionBindings) {
     appState.endpointResults = appState.endpointResults || {};
     for (const [epId, saved] of Object.entries(json.executionBindings)) {

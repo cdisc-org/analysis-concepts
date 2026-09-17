@@ -81,7 +81,6 @@
       "dimensionValues": {
         "Parameter": "Adas-Cog(11) Subscore",
         "Visit": "WEEK 24",
-        "AnalysisVisit": "Week 24",
         "Population": "AP_1"
       },
       "derivationNote": "",
@@ -188,7 +187,6 @@
           "fixedDimensions": {
             "Parameter": "Adas-Cog(11) Subscore",
             "Visit": "WEEK 24",
-            "AnalysisVisit": "Week 24",
             "Population": "AP_1"
           }
         }
@@ -196,7 +194,6 @@
       "sliceKeyDimensions": [
         "Parameter",
         "Visit",
-        "AnalysisVisit",
         "Population"
       ],
       "resolvedBindings": [
@@ -256,7 +253,8 @@
       ],
       "activeInteractions": [],
       "dimensionCategoryPicks": {
-        "ParameterDimension": "Parameter"
+        "ParameterDimension": "Parameter",
+        "VisitDimension": "Visit"
       },
       "sliceDimensionOverrides": {
         "parameter_baseline": {

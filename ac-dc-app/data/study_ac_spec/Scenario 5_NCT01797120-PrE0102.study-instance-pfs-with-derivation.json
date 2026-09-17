@@ -49,7 +49,9 @@
       "parameterSource": "manual",
       "parameterName": "Progression-Free Survival",
       "linkedBCIds": [],
-      "dimensionValues": {},
+      "dimensionValues": {
+        "Parameter": "Progression-Free Survival"
+      },
       "derivationNote": "Derived from collected SDTM: randomisation (DS), overall response (RS) and fatal adverse events (AE). No ADaM input.",
       "selectedTransformationOid": "T.OS_LogRank",
       "selectedDerivationOid": null,
@@ -234,7 +236,7 @@
       "cubeDimensions": [
         {
           "dimension": "Parameter",
-          "sliceValue": ""
+          "sliceValue": "Progression-Free Survival"
         },
         {
           "dimension": "Treatment",
@@ -297,5 +299,5 @@
     "modelViewMode": "concepts",
     "currentStep": 6
   },
-  "_notes": "Full-derivation counterpart to Scenario 4: PFS derived from collected SDTM rather than read from ADTTE. Eight-node chain, four BC-linked terminals \u2014 randomisation (BiomedicalConcept_145, DS/RAND), overall response (BiomedicalConcept_141, RS/OVRLRESP) for both progression and last assessment, and adverse event (BiomedicalConcept_127) for death. Censoring follows the study's rule: the censoring date is the last tumour assessment, since progression is only detectable at an assessment.\n\nVERIFIED IN R against the real PrE0102 data: all 179 progression events reproduce ADTTE's AVAL exactly (179/179), and CNSR agrees on 199/200. The 20 censored subjects differ from ADTTE by design \u2014 the reference censors at the disposition date, this chain at the last assessment (median 33 days earlier); the log-rank and Kaplan-Meier results are identical either way.\n\nNOT YET EXECUTABLE IN STEP 8. The leaves read measures from three datasets (DS, RS, AE) and the engine sources measures from the primary dataset only \u2014 enrich_dimensions joins DIMENSIONS across datasets, not measures. Needs either one stacked event source or an extension of auxiliarySources to record-level measures.\n\nKNOWN DATA DEFECT: AE.csv records one fatal adverse event while DM, DS and ADSL all agree on 131 deaths. Subject NCT01797120-0009 died without progressing, so the reference counts a death event and this chain censors them \u2014 the single CNSR disagreement. The chain is correct; the AE domain is short."
+  "_notes": "Full-derivation counterpart to Scenario 4: PFS derived from collected SDTM rather than read from ADTTE. Eight-node chain, four BC-linked terminals — randomisation (BiomedicalConcept_145, DS/RAND), overall response (BiomedicalConcept_141, RS/OVRLRESP) for both progression and last assessment, and adverse event (BiomedicalConcept_127) for death. Censoring follows the study's rule: the censoring date is the last tumour assessment, since progression is only detectable at an assessment.\n\nVERIFIED IN R against the real PrE0102 data: all 179 progression events reproduce ADTTE's AVAL exactly (179/179), and CNSR agrees on 199/200. The 20 censored subjects differ from ADTTE by design — the reference censors at the disposition date, this chain at the last assessment (median 33 days earlier); the log-rank and Kaplan-Meier results are identical either way.\n\nNOT YET EXECUTABLE IN STEP 8. The leaves read measures from three datasets (DS, RS, AE) and the engine sources measures from the primary dataset only — enrich_dimensions joins DIMENSIONS across datasets, not measures. Needs either one stacked event source or an extension of auxiliarySources to record-level measures.\n\nKNOWN DATA DEFECT: AE.csv records one fatal adverse event while DM, DS and ADSL all agree on 131 deaths. Subject NCT01797120-0009 died without progressing, so the reference counts a death event and this chain censors them — the single CNSR disagreement. The chain is correct; the AE domain is short."
 }

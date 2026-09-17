@@ -32,7 +32,17 @@
   entry <- mappings$concepts[[base]] %||% mappings$dimensions[[base]]
   if (is.null(entry)) return(NULL)
   if (!is.null(entry$byDataType)) {
-    for (dtype in c("decimal", "code", "string", "integer", "id")) {
+    # Presentation must use the SAME priority as ingest, or the header names a
+    # variable whose values are not in the column. ingest_to_concepts and
+    # present_as_store are both string-first for dimensions, so a Parameter
+    # column holds the label ("Adas-Cog(11) Subscore") and must be headed PARAM,
+    # not PARAMCD — PARAMCD holds ACTOT. Likewise a Visit column holding
+    # "WEEK 24" is VISIT, not VISITNUM. Measures stay decimal-first.
+    is_dimension <- is.null(mappings$concepts[[base]]) &&
+                    !is.null(mappings$dimensions[[base]])
+    order <- if (is_dimension) c("string", "code", "id", "decimal", "integer")
+             else c("decimal", "code", "string", "integer", "id")
+    for (dtype in order) {
       v <- entry$byDataType[[dtype]]
       if (!is.null(v) && nzchar(v)) return(v)
     }
@@ -438,7 +448,8 @@ ingest_to_concepts <- function(dataset, store_mappings, domain_code = NULL,
 
 #' Rename concept-keyed columns back to store-specific names for display.
 #' Inverse of ingest_to_concepts.
-present_as_store <- function(dataset, store_mappings, domain_code = NULL) {
+present_as_store <- function(dataset, store_mappings, domain_code = NULL,
+                             overrides = NULL) {
   forward_map <- list()
 
   # Dimensions (string-first priority, matching ingest_to_concepts)
@@ -493,6 +504,20 @@ present_as_store <- function(dataset, store_mappings, domain_code = NULL) {
           forward_map[[concept_name]] <- store_col
           break
         }
+      }
+    }
+  }
+
+  # The spec's own answer wins over the store default. present_as_store used to
+  # derive every name from the mappings alone, so a concept the author had bound
+  # to a specific variable was still displayed under the store's default: the
+  # preview column read ARMCD (or TRTA) while holding the values of ARM (TRT01P)
+  # and while the model used the chosen column. Same concept, three names.
+  if (!is.null(overrides)) {
+    for (concept_key in names(overrides)) {
+      v <- overrides[[concept_key]]
+      if (is.character(v) && length(v) == 1 && nzchar(v) && !grepl("^--", v)) {
+        forward_map[[concept_key]] <- v
       }
     }
   }
@@ -570,8 +595,39 @@ acdc_derive_only <- function(spec, mappings, dataset,
           if (!is.null(col) && !is.null(val) && col %in% colnames(step_leaf)) {
             step_leaf <- step_leaf[step_leaf[[col]] %in% val, , drop = FALSE]
           }
-          if (!is.null(col) && !is.null(val) && col %in% colnames(dataset)) {
+          # An aggregation must NOT narrow the shared running cube. It reads
+          # its input from step_leaf and broadcasts the per-group result back
+          # by partition, so the cube's cardinality is irrelevant to it — but
+          # narrowing is cumulative and destroys later steps. Over a stacked
+          # source (one row per event type) successive steps select DISJOINT
+          # record types: narrowing to the response records left the
+          # randomisation step nothing, and the cube collapsed to zero rows.
+          # Row-wise methods do read cube columns directly, so their
+          # constraints still apply to it.
+          if (!identical(method_oid, "M.Aggregation")
+              && !is.null(col) && !is.null(val) && col %in% colnames(dataset)) {
             dataset <- dataset[dataset[[col]] %in% val, , drop = FALSE]
+          }
+        }
+      }
+
+      # An aggregation's slice restricts WHAT IT AGGREGATES: "first date where
+      # response is PD" is min(Timing) over the PD rows, not over all of them.
+      # Only constraintValues filtered before this, so the PD and FATAL slices
+      # were inert and every date aggregation returned the same value.
+      # Aggregation only: for a method like M.ChangeFromBaseline the baseline
+      # slice SELECTS one of several values it needs, and filtering its input
+      # down to that slice would leave nothing to compare against.
+      if (identical(method_oid, "M.Aggregation") && !is.null(deriv$resolvedSlices)) {
+        for (s in deriv$resolvedSlices) {
+          rv <- s$resolvedValues
+          if (is.null(rv) || length(rv) == 0) next
+          for (dim_name in names(rv)) {
+            val <- rv[[dim_name]]
+            if (is.null(val) || !nzchar(as.character(val)[1])) next
+            if (dim_name %in% colnames(step_leaf)) {
+              step_leaf <- step_leaf[step_leaf[[dim_name]] %in% val, , drop = FALSE]
+            }
           }
         }
       }
@@ -988,7 +1044,8 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
                          method_def = NULL, r_impl = NULL,
                          derivations = NULL, unit_conversions = NULL, r_impls = NULL,
                          all_mappings = NULL, available_datasets = NULL,
-                         concept_categories = NULL, presentation_store = NULL) {
+                         concept_categories = NULL, presentation_store = NULL,
+                         presentation_overrides = NULL) {
   analysis <- spec$analyses[[1]]
   if (is.null(analysis)) stop("No analysis found in specification")
   if (is.null(r_impl)) stop("No R implementation provided for this method")
@@ -1341,6 +1398,21 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
         }
       }
 
+      # The spec's own binding wins. Everything above derives a name from the
+      # mappings, so a Treatment the author bound to ARM was still headed ARMCD
+      # (and TRT01P still headed TRTA) while the column held the bound
+      # variable's values and the model used the bound column — one concept
+      # under three different names across formula, bindings and preview.
+      spec_name <- NULL
+      if (!is.null(presentation_overrides)) {
+        spec_name <- presentation_overrides[[base]]
+        if (is.null(spec_name)) spec_name <- presentation_overrides[[src]]
+      }
+      if (is.character(spec_name) && length(spec_name) == 1 && nzchar(spec_name)
+          && !grepl("^--", spec_name)) {
+        tgt <- spec_name
+      }
+
       add_rename(src, tgt %||% base)
     }
 
@@ -1687,7 +1759,14 @@ apply_derivations <- function(dataset, derivations, r_impls, unit_conversions, m
         # step's own BC constraint, so after a leaf restricted it to one topic a
         # sibling leaf looking for a different record type (a fatal adverse event
         # beside a response assessment) found nothing left to select.
+        # ...but only when the leaf master actually HOLDS the column being
+        # sliced. A sliced role can be a DERIVED column produced earlier in the
+        # chain (the ANCOVA covariate is the derived total score taken at
+        # baseline), and those exist only in the running cube — reading the leaf
+        # master then pre-joined a column that wasn't there, and the dependent
+        # step received numeric(0) ("replacement has 0 rows").
         slice_data <- if (exists("dataset_leaf_master") && !is.null(dataset_leaf_master)
+                          && base_col %in% colnames(dataset_leaf_master)
                           && all(partition_cols %in% colnames(dataset_leaf_master))) {
           dataset_leaf_master
         } else dataset

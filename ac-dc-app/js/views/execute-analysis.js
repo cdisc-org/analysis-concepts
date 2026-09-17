@@ -224,6 +224,244 @@ function _conceptForBcVariable(sourceVariable, transform) {
     || TOPIC;
 }
 
+/**
+ * "Where does this dimension come from" — the per-binding auxiliary-source row.
+ *
+ * Choosing the dataset that supplies a dimension is an EXECUTION binding, not a
+ * store-specific display detail, so the row must render in every view mode.
+ * Concept mode used to omit it, and with it the only way to say where Treatment
+ * comes from: the engine refused the run with "no auxiliarySource is declared"
+ * while the panel offered no control to fix it.
+ *
+ * @returns {string} a <tr>, or '' when the primary dataset already provides it
+ */
+/**
+ * The chain node that supplies an analysis role, if any.
+ *
+ * A time-to-event duration and a censoring flag have no SDTM representation —
+ * correctly, since SDTM records observations and these are analysis-layer
+ * concepts. When the endpoint derives them, the column comes from the chain
+ * (__col_…), not from a source variable, so reporting "no mapping" against the
+ * source store describes a lookup that was never meant to succeed.
+ *
+ * Chain root slot keys are `<analysisOid>/<concept>/<index>`; matching on the
+ * concept alone is enough to identify the node and tolerates a binding list
+ * that has been filtered for display.
+ *
+ * @returns {{derivationOid: string, column: string}|null}
+ */
+function _chainNodeForRole(ep, analysisTransformOid, concept) {
+  if (!concept) return null;
+  const chain = appState.endpointSpecs?.[ep?.id]?.derivationChain || [];
+  // Root keys are `<analysisOid>/<concept>/<index>`. Match the analysis oid
+  // when the caller knows it, and otherwise any root slot for this concept —
+  // a root key has exactly three segments, so this cannot match a nested node.
+  const entry = chain.find(e => {
+    if (typeof e.slotKey !== 'string') return false;
+    const parts = e.slotKey.split('/');
+    if (parts.length !== 3 || parts[1] !== concept) return false;
+    return analysisTransformOid ? parts[0] === analysisTransformOid : true;
+  });
+  if (entry) {
+    return {
+      derivationOid: entry.derivationOid,
+      column: '__col_' + String(entry.slotKey).replace(/[^A-Za-z0-9]/g, '_'),
+      via: null
+    };
+  }
+
+  // A role can also be supplied by a pipeline REFERENCE rather than its own
+  // chain node: the ANCOVA covariate is not a fresh reading of the source, it
+  // IS the derived total score taken at baseline. The execute path already
+  // resolves these (computeAnalysisInputColumns), so showing the raw source
+  // variable here contradicted what the run actually uses.
+  const refs = appState.endpointSpecs?.[ep?.id]?.pipelineReferences || [];
+  const ref = refs.find(r => {
+    const parts = String(r.slotKey || '').split('/');
+    if (parts.length !== 3 || parts[1] !== concept) return false;
+    return analysisTransformOid ? parts[0] === analysisTransformOid : true;
+  });
+  if (ref) {
+    const target = chain.find(e => e.slotKey === ref.referenceSlotKey);
+    if (target) {
+      return {
+        derivationOid: target.derivationOid,
+        column: '__col_' + String(target.slotKey).replace(/[^A-Za-z0-9]/g, '_'),
+        via: ref.referenceLabel || null
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * Does the derivation chain PRODUCE this dimension?
+ *
+ * The endpoint's parameter identity ("Adas-Cog(11) Subscore") is the label of
+ * what the chain computed — it is not a value any source row carries, so
+ * resolving it to QSTEST and filtering on it is wrong in both directions: the
+ * label isn't in the data, and the rows the chain must read are the individual
+ * items. A chain step that declares an output dimension (directly or through a
+ * conceptCategory the endpoint has picked) owns that dimension downstream.
+ *
+ * @returns {{derivationOid: string}|null}
+ */
+function _chainProducesDimension(ep, concept) {
+  if (!concept) return null;
+  const spec = appState.endpointSpecs?.[ep?.id];
+  const chain = spec?.derivationChain || [];
+  if (chain.length === 0) return null;
+  const picks = spec?.dimensionCategoryPicks || {};
+  const lib = appState.transformationLibrary || {};
+  const byOid = new Map([...(lib.derivationTransformations || []),
+                         ...(lib.analysisTransformations || [])].map(t => [t.oid, t]));
+  // Only the PARAMETER identity, not every output dimension. Subject and Visit
+  // are declared as outputs too, but the chain passes their values through
+  // unchanged and USUBJID/VISIT really are the columns behind them — calling
+  // those "from the derivation chain" would trade one wrong label for another.
+  // The parameter is different in kind: its value is the endpoint's label for
+  // what was computed, and no source row carries it.
+  const paramConcept = picks.ParameterDimension || 'Parameter';
+  if (concept !== paramConcept) return null;
+  // An endpoint WITH a chain has a minted parameter by construction: the
+  // analysed measure is computed, so its identity is the endpoint's label for
+  // the result. ZE carries no ZETEST column at all and no row says
+  // "Progression-Free Survival", yet the panel offered ZETEST as the
+  // implementation variable. Not every chain step declares an explicit output
+  // ParameterDimension binding, so the chain's existence is the signal.
+  if (chain.length > 0) {
+    return { derivationOid: chain[chain.length - 1].derivationOid, minted: true };
+  }
+  for (const entry of chain) {
+    const tx = byOid.get(entry.derivationOid);
+    for (const b of (tx?.bindings || [])) {
+      if (b.direction !== 'output' || b.dataStructureRole !== 'dimension') continue;
+      const produced = b.concept || picks[b.conceptCategory];
+      if (produced && produced === concept) return { derivationOid: entry.derivationOid };
+    }
+  }
+  return null;
+}
+
+function _auxSourceRow(b, concept, ep, resultState, selectedDataset, loadedDatasets, hasLoadedColumns) {
+  let auxRow = '';
+  const isAuxCandidate = b.direction !== 'output'
+                      && b.dataStructureRole === 'dimension'
+                      && b.methodRole !== 'constraint'
+                      && !!concept;
+  if (isAuxCandidate && hasLoadedColumns) {
+    const providers = _findDatasetsProvidingConcept(concept, b.qualifierType, b.qualifierValue, appState.conceptMappings, loadedDatasets);
+    const primary = (selectedDataset || '').toUpperCase();
+    const hasPrimary = providers.some(n => n.toUpperCase() === primary);
+    // Only show the picker when the primary doesn't provide the concept.
+    // enrich_dimensions (acdc_engine.R) skips any concept already in the
+    // primary's columns — so a picker whose answer the engine will ignore
+    // creates the illusion of a decision the user must make. Hide it.
+    // When the primary lacks the concept and ≥1 aux dataset provides it,
+    // the picker still appears (and disambiguates between aux candidates
+    // when there's more than one).
+    const showPicker = !hasPrimary && providers.length > 0;
+    if (showPicker) {
+      // Eager auto-fill: the picker's displayed default is the
+      // metadata's only logical answer when providers.length === 1
+      // (one dataset provides the concept) or when the primary
+      // doesn't provide it (only one non-primary candidate). A
+      // <select> without a change-event leaves resultState empty
+      // — the engine then errors at enrich_dimensions because no
+      // auxiliarySource is declared. Persist the default here so
+      // the spec sent to the engine matches the UI display.
+      if (!resultState.auxiliarySources) resultState.auxiliarySources = {};
+      const subjectKey = _getSubjectJoinConcept();
+      if (!resultState.auxiliarySources[concept]?.dataset) {
+        resultState.auxiliarySources[concept] = {
+          ...(resultState.auxiliarySources[concept] || {}),
+          dataset: hasPrimary ? selectedDataset : providers[0],
+          joinKey: resultState.auxiliarySources[concept]?.joinKey || subjectKey
+        };
+      }
+      const auxOverrides = resultState.auxiliarySources;
+      const currentDs = auxOverrides[concept].dataset;
+      const currentJoin = auxOverrides[concept].joinKey;
+      const opts = providers.map(n =>
+        `<option value="${n}" ${n === currentDs ? 'selected' : ''}>${n}${n.toUpperCase() === primary ? ' (primary)' : ''}</option>`
+      ).join('');
+      auxRow = `<tr class="exec-aux-source-row" style="background:rgba(0,0,0,0.02);">
+        <td colspan="2" style="padding-left:24px; color:var(--cdisc-text-secondary); font-size:10px; font-style:italic;">↳ source dataset</td>
+        <td colspan="3" style="font-size:11px;">
+          <select class="exec-aux-source-select" data-ep-id="${ep.id}" data-concept="${concept}"
+              style="font-size:11px; padding:2px 4px;">${opts}</select>
+          <span style="font-size:10px; color:var(--cdisc-text-secondary); margin-left:8px;">join key:</span>
+          <input class="exec-aux-source-join" data-ep-id="${ep.id}" data-concept="${concept}"
+              value="${currentJoin}" style="font-size:11px; padding:2px 4px; width:80px; font-family:monospace;">
+        </td>
+      </tr>`;
+    }
+  }
+  return auxRow;
+}
+
+/**
+ * The SDTM domain code for a loaded dataset ("QS" for qs_usdm_aligned), by
+ * matching a mapping's "--" suffix against the dataset's columns. Mirrors
+ * .detect_sdtm_domain() in acdc_engine.R.
+ *
+ * @returns {string|null} two-letter domain, or null for non-SDTM stores
+ */
+function _detectSdtmDomain(store, datasetName) {
+  if (!store || !datasetName) return null;
+  const ds = (getLoadedDatasets() || [])
+    .find(d => String(d.name).toUpperCase() === String(datasetName).toUpperCase());
+  const cols = new Set(ds?.columns || []);
+  if (cols.size === 0) return null;
+  const suffixes = new Set();
+  const walk = (entry) => {
+    for (const v of Object.values(entry?.byDataType || {}))
+      if (typeof v === 'string' && v.startsWith('--')) suffixes.add(v.slice(2));
+    for (const v of Object.values(entry?.facets || {}))
+      if (typeof v === 'string' && v.startsWith('--')) suffixes.add(v.slice(2));
+  };
+  Object.values(store.concepts || {}).forEach(walk);
+  Object.values(store.dimensions || {}).forEach(walk);
+  for (const sfx of suffixes) {
+    for (const c of cols) {
+      const m = c.match(new RegExp(`^([A-Z]{2})${sfx}$`));
+      if (m) return m[1];
+    }
+  }
+  return null;
+}
+
+/**
+ * A copy of the store's mappings with every "--" placeholder replaced by the
+ * dataset's actual domain, so the panel shows QSSTRESN and QSTEST rather than
+ * --STRESN and --TEST — the latter is a template, not a variable any dataset
+ * has, and it leaked into the displayed model statement too. Non-SDTM stores
+ * and datasets whose domain can't be determined pass through untouched.
+ */
+function _withDomainResolved(store, datasetName) {
+  const domain = _detectSdtmDomain(store, datasetName);
+  if (!domain) return store;
+  const sub = (v) => (typeof v === 'string' && v.startsWith('--')) ? domain + v.slice(2) : v;
+  const mapEntry = (entry) => {
+    if (!entry || typeof entry !== 'object') return entry;
+    const out = { ...entry };
+    if (entry.variable) out.variable = String(entry.variable).split('/').map(sub).join('/');
+    for (const key of ['byDataType', 'facets', 'intentType']) {
+      if (!entry[key]) continue;
+      out[key] = Object.fromEntries(Object.entries(entry[key]).map(([k, v]) =>
+        [k, (v && typeof v === 'object') ? Object.fromEntries(
+              Object.entries(v).map(([k2, v2]) => [k2, Array.isArray(v2) ? v2.map(sub) : sub(v2)]))
+           : sub(v)]));
+    }
+    if (Array.isArray(entry.alternativeVariables)) out.alternativeVariables = entry.alternativeVariables.map(sub);
+    return out;
+  };
+  const mapSection = (sec) => sec
+    ? Object.fromEntries(Object.entries(sec).map(([k, v]) => [k, mapEntry(v)]))
+    : sec;
+  return { ...store, concepts: mapSection(store.concepts), dimensions: mapSection(store.dimensions) };
+}
+
 function _findDatasetsProvidingConcept(concept, qualifierType, qualifierValue, conceptMappings, loadedDatasets) {
   if (!concept || !conceptMappings) return [];
   const stores = Object.keys(conceptMappings);
@@ -571,7 +809,10 @@ function _renderEndpointCard(ep, study, datasets, webRReady) {
   // panel and the engine cannot disagree.
   const activeStore = _detectStoreForDataset(result.datasetOverride || resolvedEp?.targetDataset)
     || 'adam';
-  const adam = appState.conceptMappings?.[activeStore] || appState.conceptMappings?.adam || {};
+  const activeDataset = result.datasetOverride || resolvedEp?.targetDataset;
+  const adam = _withDomainResolved(
+    appState.conceptMappings?.[activeStore] || appState.conceptMappings?.adam || {},
+    activeDataset);
   const selectedDataset = (result.datasetOverride || resolvedEp?.targetDataset || '').toLowerCase();
   const analyses = resolvedEp?.analyses || [];
 
@@ -783,29 +1024,60 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
                 '<td><code>' + conceptKey + '</code></td>' +
                 '<td>' + b.dataStructureRole + '</td>' +
                 '<td>' + (b.slice || '--') + '</td>' +
-              '</tr>';
+              '</tr>' + _auxSourceRow(b, concept, ep, resultState, selectedDataset, loadedDatasets, hasLoadedColumns);
             }
-            const allOptions = getVariableOptions(concept, adam, b.requiredValueType, b.dataStructureRole);
+            // Resolve against the store of the dataset this binding actually
+            // comes from. With an SDTM primary and an ADaM auxiliary, the
+            // Treatment row showed ARM (the SDTM answer) while reading ADSL,
+            // whose planned-treatment variable is TRT01P. ADSL happens to carry
+            // ARM too, so the run was right and the label was not — the kind of
+            // coincidence that hides the bug until a study without ARM appears.
+            const auxDs = resultState.auxiliarySources?.[concept]?.dataset;
+            const bindingStore = auxDs
+              ? _withDomainResolved(
+                  appState.conceptMappings?.[_detectStoreForDataset(auxDs)] || adam, auxDs)
+              : adam;
+            const allOptions = getVariableOptions(concept, bindingStore, b.requiredValueType, b.dataStructureRole);
             // Always offer every model-declared option, plus displayVar as
             // fallback. (Earlier removed the loadedColumnSet filter so chained
             // derivations whose model columns get produced downstream still
             // render the dropdown — see commit history for context.)
             const overrides = resultState.varOverrides || {};
             const displayVar = overrides[concept]
-              || getDefaultVariable(concept, b.dataStructureRole, adam, b);
+              || getDefaultVariable(concept, b.dataStructureRole, bindingStore, b);
             const options = [...new Set([...allOptions, displayVar].filter(Boolean))];
             // displayVar may be null when the concept has no mapping in the
             // active data store (e.g. user picked Observation.Identification.Topic
             // (OC) for ParameterDimension but the dataset is ADaM, where the
             // matching column is Parameter (PARAM/PARAMCD)).
-            const varCell = displayVar
+            // A chain-supplied role wins over any source variable. The engine
+            // binds these to the derived __col_, so showing QSSTRESN because
+            // Measure happens to map there described a column the run never
+            // reads. Checking this only in the unmapped fallback caught the
+            // roles with no store mapping at all (TimeToEvent, Flag) and
+            // missed the ones that do map — the ANCOVA covariate above all.
+            const chainNode = _chainNodeForRole(ep, analysis?.basedOn?.transformationId, concept)
+              || (b.dataStructureRole === 'dimension' ? _chainProducesDimension(ep, concept) : null);
+            const varCell = chainNode
+              ? (() => {
+                  // The covariate is not the derived column itself but a SLICE
+                  // of it (that score at baseline), so name the slice when the
+                  // binding declares one — the engine pre-joins "<col>__<slice>".
+                  const sliceNote = b.slice ? ` sliced at ${b.slice}` : '';
+                  const label = chainNode.via
+                    ? `from the derivation chain (${chainNode.via})`
+                    : 'from the derivation chain';
+                  return `<span style="font-size:11px; font-style:italic; color:var(--cdisc-text-secondary);"
+                    title="Produced by ${chainNode.derivationOid} in the derivation pipeline as ${chainNode.column}${sliceNote ? ', ' + sliceNote.trim() : ''} — no source variable is read for this role.">&#8627; ${label}${sliceNote}</span>`;
+                })()
+              : displayVar
               ? (options.length > 1
                 ? '<select class="exec-var-override" data-ep-id="' + ep.id + '" data-concept="' + concept + '"' +
                   ' style="font-size:11px; padding:2px 4px; font-family:monospace;">' +
                   options.map(v => '<option value="' + v + '"' + (v === displayVar ? ' selected' : '') + '>' + v + '</option>').join('') +
                   '</select>'
                 : '<code>' + displayVar + '</code>')
-              : '<span style="color:var(--cdisc-error); font-size:11px; font-style:italic;" title="Concept has no mapping in the active data store. Check the conceptCategory pick (e.g. switch ParameterDimension OC → DC for ADaM data).">— (no mapping)</span>';
+              : '<span style="color:var(--cdisc-error); font-size:11px; font-style:italic;" title="Concept has no mapping in the active data store, and no chain node or pipeline reference supplies it.">— (no mapping)</span>';
 
             // Auxiliary-source picker row: explicit per-binding "where does
             // this column come from" choice. Shown for non-constraint
@@ -814,59 +1086,8 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
             // than one loaded dataset provides it (user has a real choice).
             // Storage: resultState.auxiliarySources[concept] = {dataset, joinKey}
             // The engine reads this map at execute time; no auto-scan.
-            let auxRow = '';
-            const isAuxCandidate = b.direction !== 'output'
-                                && b.dataStructureRole === 'dimension'
-                                && b.methodRole !== 'constraint'
-                                && !!concept;
-            if (isAuxCandidate && hasLoadedColumns) {
-              const providers = _findDatasetsProvidingConcept(concept, b.qualifierType, b.qualifierValue, appState.conceptMappings, loadedDatasets);
-              const primary = (selectedDataset || '').toUpperCase();
-              const hasPrimary = providers.some(n => n.toUpperCase() === primary);
-              // Only show the picker when the primary doesn't provide the concept.
-              // enrich_dimensions (acdc_engine.R) skips any concept already in the
-              // primary's columns — so a picker whose answer the engine will ignore
-              // creates the illusion of a decision the user must make. Hide it.
-              // When the primary lacks the concept and ≥1 aux dataset provides it,
-              // the picker still appears (and disambiguates between aux candidates
-              // when there's more than one).
-              const showPicker = !hasPrimary && providers.length > 0;
-              if (showPicker) {
-                // Eager auto-fill: the picker's displayed default is the
-                // metadata's only logical answer when providers.length === 1
-                // (one dataset provides the concept) or when the primary
-                // doesn't provide it (only one non-primary candidate). A
-                // <select> without a change-event leaves resultState empty
-                // — the engine then errors at enrich_dimensions because no
-                // auxiliarySource is declared. Persist the default here so
-                // the spec sent to the engine matches the UI display.
-                if (!resultState.auxiliarySources) resultState.auxiliarySources = {};
-                const subjectKey = _getSubjectJoinConcept();
-                if (!resultState.auxiliarySources[concept]?.dataset) {
-                  resultState.auxiliarySources[concept] = {
-                    ...(resultState.auxiliarySources[concept] || {}),
-                    dataset: hasPrimary ? selectedDataset : providers[0],
-                    joinKey: resultState.auxiliarySources[concept]?.joinKey || subjectKey
-                  };
-                }
-                const auxOverrides = resultState.auxiliarySources;
-                const currentDs = auxOverrides[concept].dataset;
-                const currentJoin = auxOverrides[concept].joinKey;
-                const opts = providers.map(n =>
-                  `<option value="${n}" ${n === currentDs ? 'selected' : ''}>${n}${n.toUpperCase() === primary ? ' (primary)' : ''}</option>`
-                ).join('');
-                auxRow = `<tr class="exec-aux-source-row" style="background:rgba(0,0,0,0.02);">
-                  <td colspan="2" style="padding-left:24px; color:var(--cdisc-text-secondary); font-size:10px; font-style:italic;">↳ source dataset</td>
-                  <td colspan="3" style="font-size:11px;">
-                    <select class="exec-aux-source-select" data-ep-id="${ep.id}" data-concept="${concept}"
-                        style="font-size:11px; padding:2px 4px;">${opts}</select>
-                    <span style="font-size:10px; color:var(--cdisc-text-secondary); margin-left:8px;">join key:</span>
-                    <input class="exec-aux-source-join" data-ep-id="${ep.id}" data-concept="${concept}"
-                        value="${currentJoin}" style="font-size:11px; padding:2px 4px; width:80px; font-family:monospace;">
-                  </td>
-                </tr>`;
-              }
-            }
+            const auxRow = _auxSourceRow(b, concept, ep, resultState, selectedDataset, loadedDatasets, hasLoadedColumns);
+
 
             return '<tr>' +
               '<td>' + b.methodRole + '</td>' +
@@ -937,13 +1158,29 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
           <tbody>${slices.map(s => {
             const dims = s.resolvedValues || {};
             return Object.entries(dims).map(([dim, val]) => {
-              const allDimOptions = getVariableOptions(dim, adam, null, 'dimension');
+              // Resolve the dimension against a store that can actually
+              // represent it. Population has NO SDTM mapping — analysis-set
+              // flags are an ADaM construct — so with an SDTM primary the cell
+              // showed "null" and offered USDM population ids as values. An id
+              // identifies which population is meant; the implementation is a
+              // flag variable plus "Y", which lives in the loaded ADSL.
+              const dimStore = (adam?.dimensions?.[dim] || adam?.concepts?.[dim])
+                ? adam
+                : (() => {
+                    const provs = _findDatasetsProvidingConcept(
+                      dim, null, null, appState.conceptMappings, loadedDatasets);
+                    const ds = provs[0];
+                    if (!ds) return adam;
+                    return _withDomainResolved(
+                      appState.conceptMappings?.[_detectStoreForDataset(ds)] || adam, ds);
+                  })();
+              const allDimOptions = getVariableOptions(dim, dimStore, null, 'dimension');
               // For domain-keyed dimensions like Population (whose byDataType uses
               // clinical descriptors instead of standard data-type keys), the model's
               // enumerated variables only cover CDISC-standard names. Augment with
               // every Y/N flag column detected in the loaded data so study-specific
               // flags appear in the dropdown.
-              const dimEntry = adam?.dimensions?.[dim] || adam?.concepts?.[dim];
+              const dimEntry = dimStore?.dimensions?.[dim] || dimStore?.concepts?.[dim];
               const isDomainKeyed = dimEntry?.byDataType
                 && !Object.keys(dimEntry.byDataType).some(k => ['string', 'code', 'id', 'decimal', 'integer'].includes(k));
               const augmentedDimOptions = isDomainKeyed
@@ -953,7 +1190,7 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
               const overrideKey = `${s.name}|${dim}`;
               const currentVal = sliceOverrides[overrideKey]?.value ?? val;
               const currentVar = sliceOverrides[overrideKey]?.variable;
-              const defaultVar = getDefaultVariable(dim, 'dimension', adam);
+              const defaultVar = getDefaultVariable(dim, 'dimension', dimStore);
               // For domain-keyed dimensions, prefer a flag column that ACTUALLY
               // exists in loaded data over the model's first-listed default
               // (which may be a CDISC standard the study doesn't use).
@@ -979,7 +1216,10 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
               return `<tr>
                 <td>${s.name}</td>
                 <td>${dim}</td>
-                <td>${isConceptMode
+                <td>${_chainProducesDimension(ep, dim)
+                  ? `<span style="font-size:11px; font-style:italic; color:var(--cdisc-text-secondary);"
+                      title="Minted on the endpoint: the label for what the chain computed. No source row carries this value — ZE has no ZETEST column — so it cannot filter the input. On ADaM output it lands in PARAM.">&#8627; minted on the endpoint</span>`
+                  : isConceptMode
                   ? `<code>${dim}</code>`
                   : (dimOptions.length > 1 ? `
                   <select class="exec-slice-var-override" data-ep-id="${ep.id}" data-slice="${s.name}" data-dim="${dim}"
@@ -1020,11 +1260,18 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
           if (b.direction === 'output') continue;
           const concept = (b.concept || '').replace(/@.*/, '');
           const userOverride = resultState.varOverrides?.[concept];
-          const defaultVar = getDefaultVariable(concept, b.dataStructureRole, adam, b);
-          // Fall back to concept name if no override and no mapping — keeps the
-          // expression display readable rather than emitting "null" when the
-          // user has picked a layer-mismatched concept (handled separately).
-          varMap[concept] = userOverride || defaultVar || concept;
+          // Same precedence as the bindings, slices and results tables:
+          // the user's pick, then the store the view asks for, then — only for
+          // a role the chain does NOT supply — the source-store default. The
+          // formula used to read the source store unconditionally and printed
+          // QSSTRESN for a covariate that is a derived column.
+          const chainSupplied = !!_chainNodeForRole(ep, analysis?.basedOn?.transformationId, concept)
+            || (b.dataStructureRole === 'dimension' && !!_chainProducesDimension(ep, concept));
+          const presentVar = _presentationVarStrict(concept, b);
+          const sourceVar = chainSupplied
+            ? null
+            : getDefaultVariable(concept, b.dataStructureRole, adam, b);
+          varMap[concept] = userOverride || presentVar || sourceVar || concept;
         }
         let resolved = expression.resolved || '';
         const keys = Object.keys(varMap).sort((a, b) => b.length - a.length);
@@ -1150,6 +1397,79 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
  * to the `byDataType.baseline` variable (BASE), not the default
  * `byDataType.decimal` (AVAL).
  */
+/**
+ * A readable name for a chain-produced column in the results tables.
+ *
+ * `__col_T_CFB_ANCOVA_Change_0_Measure_0__parameter_baseline` is the derived
+ * ADAS total score taken at baseline. Naming it after a store variable
+ * (QSSTRESN) described a column the model never used — the fitted formula
+ * really is the derived column — so the Type III table attributed the
+ * covariate to raw source data.
+ *
+ * @param {string} col - a `__col_…` column name, optionally slice-suffixed
+ * @returns {string|null} e.g. "ADAS-Cog (11) Total Score at parameter_baseline"
+ */
+function _labelForChainColumn(col) {
+  if (typeof col !== 'string' || !col.startsWith('__col_')) return null;
+  const lib = appState.transformationLibrary || {};
+  const byOid = new Map([...(lib.derivationTransformations || []),
+                         ...(lib.analysisTransformations || [])].map(t => [t.oid, t]));
+  const sanitize = k => '__col_' + String(k).replace(/[^A-Za-z0-9]/g, '_');
+  let best = null;
+  for (const spec of Object.values(appState.endpointSpecs || {})) {
+    for (const entry of (spec?.derivationChain || [])) {
+      const base = sanitize(entry.slotKey);
+      // Longest match wins: one slot key can be a prefix of a deeper one.
+      if (col === base || col.startsWith(base + '__')) {
+        if (!best || base.length > best.base.length) best = { base, entry };
+      }
+    }
+  }
+  if (!best) return null;
+  const name = byOid.get(best.entry.derivationOid)?.name || best.entry.derivationOid;
+  const slice = col.length > best.base.length ? col.slice(best.base.length + 2) : '';
+  return slice ? `${name} at ${slice}` : name;
+}
+
+/**
+ * The variable naming a concept in the store the VIEW is set to — strictly.
+ *
+ * "Strictly" means no falling through to another data type: a baseline-sliced
+ * measure resolves only via the store's `baseline` key. ADaM declares
+ * Measure.baseline = BASE and Change = CHG; SDTM declares neither, because it
+ * does not represent derived values. Falling through in SDTM produced
+ * --STRESN, a raw source column the analysis never read.
+ *
+ * Returns null in concept view (the caller then shows the derivation) and
+ * whenever the presentation store has no representation for the concept.
+ */
+function _presentationVarStrict(concept, binding) {
+  const store = _resolvePresentationStore(appState.modelViewMode);
+  if (!store || !concept) return null;
+  const maps = appState.conceptMappings?.[store];
+  const entry = maps?.concepts?.[concept] || maps?.dimensions?.[concept];
+  const bt = entry?.byDataType;
+  if (!bt) return null;
+  // Honour the binding's qualifier first: Treatment@IntentType=Planned is TRTP
+  // in ADaM, not TRTA. byDataType carries the UNqualified default, which is why
+  // a planned-treatment binding kept surfacing the actual-treatment variable.
+  if (binding?.qualifierType && binding?.qualifierValue) {
+    const qkey = binding.qualifierType.charAt(0).toLowerCase() + binding.qualifierType.slice(1);
+    const q = entry?.[qkey]?.[binding.qualifierValue];
+    const qv = q && (q.string || q.code || q.decimal);
+    if (typeof qv === 'string' && !qv.startsWith('--')) return qv;
+  }
+  const wantsBaseline = /baseline/i.test(binding?.slice || '');
+  const v = wantsBaseline
+    ? bt.baseline
+    : (binding?.dataStructureRole === 'measure' ? (bt.decimal || bt.code || bt.string)
+                                                : (bt.code || bt.string || bt.decimal));
+  // A "--" placeholder means SDTM, where this concept is domain-prefixed; the
+  // term tables have no dataset context to resolve it, so decline rather than
+  // print a template.
+  return (typeof v === 'string' && !v.startsWith('--')) ? v : null;
+}
+
 function _buildTermRoleMap(analysisBindings, adam, varOverrides, analysisInputColumns) {
   const map = {};
   if (!analysisBindings) return map;
@@ -1187,7 +1507,15 @@ function _buildTermRoleMap(analysisBindings, adam, varOverrides, analysisInputCo
         b.methodRole === role && b.direction !== 'output');
       if (!binding) continue;
       const concept = (binding.concept || '').replace(/@.*/, '');
-      const displayName = resolveAdamVar(binding, concept) || concept.toUpperCase();
+      // Name it in the store the VIEW asks for, and only when that store really
+      // represents this concept. ADaM has BASE for a baseline measure and CHG
+      // for a change, so "ADaM variables only" should say BASE. SDTM has
+      // neither — no baseline key, no Change mapping at all — so there the
+      // honest name is the derivation that produced it. The old code fell
+      // through to --STRESN, naming a raw source column for a derived value.
+      const displayName = _presentationVarStrict(concept, binding)
+        || _labelForChainColumn(col)
+        || resolveAdamVar(binding, concept) || concept.toUpperCase();
       const roleLabel = role.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
       map[col] = { role, roleLabel, concept, displayName };
     }

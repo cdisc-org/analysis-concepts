@@ -182,6 +182,27 @@ export function isInitialized() {
  *
  * @returns {{name: string, nrow: number, ncol: number, columns: string[]}[]}
  */
+/**
+ * Drop every loaded dataset, from the registry AND from R's global environment.
+ *
+ * Datasets are keyed by name only, so two studies that both ship a DM or an
+ * ADSL collide: the second study's panel shows them as already loaded and the
+ * engine silently reads the first study's rows. Call this whenever the active
+ * study changes.
+ *
+ * @returns {Promise<string[]>} the names that were removed
+ */
+export async function clearLoadedDatasets() {
+  const names = Array.from(loadedDatasets.keys());
+  loadedDatasets.clear();
+  if (initialized && webRInstance && names.length > 0) {
+    // suppressWarnings: rm() warns for a name R no longer has.
+    await webRInstance.evalR(
+      `suppressWarnings(rm(list = c(${names.map(n => `"${n}"`).join(', ')}), envir = .GlobalEnv))`);
+  }
+  return names;
+}
+
 export function getLoadedDatasets() {
   return Array.from(loadedDatasets.values());
 }

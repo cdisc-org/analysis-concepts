@@ -14,6 +14,86 @@ import { getAllEndpoints } from './utils/usdm-parser.js';
 
 // ===== Application State =====
 // Expose on window for console debugging
+/** eSAP narrative sections, in document order. */
+const ESAP_SECTIONS = [
+  'abbreviations', 'introduction', 'objectives', 'studyDesign', 'protocolChanges',
+  'estimands', 'endpoints', 'analysisSets', 'statMethods', 'statAnalysis',
+  'software', 'references', 'shells', 'appendices'
+];
+
+function emptyNarrativeLinks() {
+  return Object.fromEntries(ESAP_SECTIONS.map(k => [k, []]));
+}
+
+/**
+ * The slice of appState that belongs to ONE study.
+ *
+ * Everything here is keyed by, or derived from, a USDM endpoint — and USDM ids
+ * are document-local: "Endpoint_1" is simply the first endpoint of whichever
+ * file you opened, so both studies have one. That is correct USDM; the app is
+ * what has to know which study is selected. These fields therefore live in a
+ * per-study workspace that switchStudy() swaps in and out. They keep their
+ * names on appState, so every view goes on reading appState.endpointSpecs as
+ * before and nothing else needs to know workspaces exist.
+ *
+ * Loaded data is deliberately NOT here: datasets live in one R global
+ * environment keyed by bare name (dm, adsl), so two studies cannot hold theirs
+ * at once. Switching clears them instead — see clearLoadedDatasets().
+ */
+function freshStudyWorkspace() {
+  return {
+    selectedEndpoints: [],
+    esapAnalyses: {},
+    currentEndpointId: null,
+    activeEndpointId: null,
+    composedPhrases: [],
+    matchedTransformations: [],
+    selectedTransformation: null,
+    selectedDerivations: {},
+    derivationChain: [],
+    confirmedTerminals: [],
+    resolvedBindings: null,
+    dimensionalSliceValues: null,
+    methodConfig: null,
+    activeInteractions: [],
+    endpointSpecs: {},
+    esapLinkedNarratives: emptyNarrativeLinks(),
+    resolvedSpec: null,
+    endpointResults: {}
+  };
+}
+
+const STUDY_WORKSPACE_FIELDS = Object.keys(freshStudyWorkspace());
+const studyWorkspaces = new Map();
+
+/**
+ * Stable identity for a study, independent of list position. The manifest file
+ * name is unique per entry; the index is a last resort for studies that were
+ * not loaded from the manifest.
+ */
+export function studyKey(index = appState.selectedStudyIndex) {
+  if (index === null || index === undefined) return null;
+  return appState.studyManifest?.[index]?.file || `study-${index}`;
+}
+
+/**
+ * Make `index` the selected study, parking the outgoing study's workspace and
+ * restoring the incoming one. Returns to a study you visited earlier and its
+ * endpoints, specs and results are exactly as you left them — without ever
+ * letting one study's results render under another's endpoint of the same id.
+ */
+export function switchStudy(index) {
+  const prevKey = studyKey(appState.selectedStudyIndex);
+  if (prevKey !== null) {
+    const parked = {};
+    for (const f of STUDY_WORKSPACE_FIELDS) parked[f] = appState[f];
+    studyWorkspaces.set(prevKey, parked);
+  }
+  appState.selectedStudyIndex = index;
+  appState.selectedStudy = appState.studies[index] || null;
+  Object.assign(appState, studyWorkspaces.get(studyKey(index)) || freshStudyWorkspace());
+}
+
 export const appState = window.appState = {
   currentStep: 1,
   studies: [],
@@ -39,22 +119,7 @@ export const appState = window.appState = {
   rawUsdmFiles: [],
   usdmIndex: null,
   // eSAP narrative linking: sectionKey → array of NarrativeContentItem IDs
-  esapLinkedNarratives: {
-    abbreviations: [],
-    introduction: [],
-    objectives: [],
-    studyDesign: [],
-    protocolChanges: [],
-    estimands: [],
-    endpoints: [],
-    analysisSets: [],
-    statMethods: [],
-    statAnalysis: [],
-    software: [],
-    references: [],
-    shells: [],
-    appendices: []
-  },
+  esapLinkedNarratives: emptyNarrativeLinks(),
   // Concept-to-variable mapping
   conceptMappings: null,
   configPanelOpen: false,
