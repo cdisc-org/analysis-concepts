@@ -1318,18 +1318,31 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
                 <td>${hasAnyValueOptions ? `
                   <select class="exec-slice-val-override" data-ep-id="${ep.id}" data-slice="${s.name}" data-dim="${dim}"
                     style="font-size:11px; padding:2px 6px; width:200px;">
-                    ${dataVals.length > 0 ? `<optgroup label="${displayVar} values">
-                      ${dataVals.map(v => `<option value="${_escapeAttr(v)}" ${v === currentVal ? 'selected' : ''}>${v}</option>`).join('')}
-                    </optgroup>` : ''}
-                    ${ctOpts.length > 0 ? `<optgroup label="CT (NY codelist)">
-                      ${ctOpts.map(v => `<option value="${_escapeAttr(v)}" ${v === currentVal ? 'selected' : ''}>${v}</option>`).join('')}
-                    </optgroup>` : ''}
-                    ${usdmOpts.length > 0 ? `<optgroup label="USDM">
-                      ${usdmOpts.map(v => `<option value="${_escapeAttr(v)}" ${v === currentVal ? 'selected' : ''}>${v}</option>`).join('')}
-                    </optgroup>` : ''}
-                    <optgroup label="Template">
-                      <option value="${_escapeAttr(val)}" ${val === currentVal && !usdmOpts.includes(val) && !dataVals.includes(val) && !ctOpts.includes(val) ? 'selected' : ''}>${val}</option>
-                    </optgroup>
+                    ${(() => {
+                      // One option per VALUE. The same value legitimately comes
+                      // from several places — "Y" is both a value present in
+                      // ITTFL and a member of the NY codelist — but emitting it
+                      // twice makes two options indistinguishable to the user
+                      // and only one of them can carry `selected`, so picking
+                      // the other appeared to do nothing. First source wins and
+                      // names the group.
+                      const groups = [
+                        [dataVals.length > 0 ? `${displayVar} values` : null, dataVals],
+                        ['CT (NY codelist)', ctOpts],
+                        ['USDM', usdmOpts],
+                        ['Template', [val]]
+                      ];
+                      const seen = new Set();
+                      return groups.map(([label, vals]) => {
+                        const fresh = (vals || []).filter(v =>
+                          v !== undefined && v !== null && v !== '' && !seen.has(String(v)));
+                        fresh.forEach(v => seen.add(String(v)));
+                        if (!label || fresh.length === 0) return '';
+                        return `<optgroup label="${_escapeAttr(label)}">${fresh.map(v =>
+                          `<option value="${_escapeAttr(v)}" ${String(v) === String(currentVal) ? 'selected' : ''}>${v}</option>`
+                        ).join('')}</optgroup>`;
+                      }).join('');
+                    })()}
                   </select>`
                   : `<input class="exec-slice-val-override" data-ep-id="${ep.id}" data-slice="${s.name}" data-dim="${dim}"
                   value="${_escapeAttr(currentVal)}" style="font-size:11px; padding:2px 6px; width:180px;
@@ -2384,6 +2397,19 @@ async function _executeAnalysis(container, epId, aIdx) {
   // chosen column away — so leave the override empty and let the engine use the
   // concept-key column directly.
   const effectiveOverrides = { ...(overrides || {}) };
+  // A dimension's implementing variable can also be chosen in the SLICES table
+  // (Population → ITTFL). That is the same statement as a binding override —
+  // "this concept is this column" — and the engine needs it to join the
+  // dimension from an auxiliary dataset, because Population's byDataType is
+  // keyed by analysis set rather than by data type and the generic ingest
+  // cannot resolve it.
+  for (const sl of (singleAnalysis?.resolvedSlices || [])) {
+    for (const [dim, v] of Object.entries(sl?.resolvedVariables || {})) {
+      if (typeof v === 'string' && v && effectiveOverrides[dim] === undefined) {
+        effectiveOverrides[dim] = v;
+      }
+    }
+  }
   for (const b of (singleAnalysis?.resolvedBindings || [])) {
     if (b.direction === 'output') continue;
     const concept = (b.concept || '').replace(/@.*/, '');

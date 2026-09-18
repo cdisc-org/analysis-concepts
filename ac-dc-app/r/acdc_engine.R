@@ -985,8 +985,22 @@ enrich_dimensions <- function(dataset, bindings, all_mappings, available_dataset
                    join_key, aux_name, concept))
     }
     if (!(concept %in% colnames(aux))) {
-      stop(sprintf("Auxiliary dataset '%s' does not provide column '%s' after ingest. Check the concept-variable mapping.",
-                   aux_name, concept))
+      # The generic ingest maps a concept through byDataType keyed by DATA TYPE
+      # (string/code/decimal). Population's byDataType is keyed by analysis set
+      # instead — intent_to_treat = ITTFL, safety = SAFFL — so ingest has
+      # nothing to match and the column never appears. The author's own pick in
+      # the slices table says which variable implements it; honour that before
+      # giving up.
+      picked <- if (!is.null(overrides)) overrides[[concept]] else NULL
+      if (is.character(picked) && length(picked) == 1 && picked %in% colnames(aux)) {
+        aux[[concept]] <- aux[[picked]]
+        cat("  Enrich:", concept, "<-", picked, "from", aux_name,
+            "(author's variable pick; no byDataType match)\n")
+      }
+    }
+    if (!(concept %in% colnames(aux))) {
+      stop(sprintf("Auxiliary dataset '%s' does not provide column '%s' after ingest.\n  No byDataType mapping matched and no variable was picked for it.\n  Pick the implementing variable for '%s' in the Execute panel.",
+                   aux_name, concept, concept))
     }
 
     # Keep the concept-keyed column AND a column under the user's override
