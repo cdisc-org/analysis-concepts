@@ -1,0 +1,6 @@
+# Artefacts from running the probes / recorder in place
+__pycache__/
+*.webm
+beat*.png
+chk_*.jpg
+*.tmp-out.mp4

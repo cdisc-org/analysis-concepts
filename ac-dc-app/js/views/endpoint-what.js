@@ -4,7 +4,7 @@ import { getPhraseResolvedRefs, displayConcept } from '../utils/concept-display.
 import {
   ensureSpec, getConceptCategoryOptions,
   buildSyntaxTemplate, updateSyntaxPreview,
-  DATA_TYPES, renderDataCube
+  DATA_TYPES, renderDataCube, wirePhraseSlotHandlers
 } from './endpoint-spec.js';
 
 export function renderEndpointWhat(container) {
@@ -261,6 +261,11 @@ function renderSmartPhrasePanel(spec) {
 }
 
 function wireEndpointWhatEvents(container, study, selectedEps) {
+  // Definition Slot pickers. Their markup comes from endpoint-spec.js, and so
+  // does their handler -- this view has to ask for it, or the slots render
+  // inert on the very screen that exists to author them.
+  wirePhraseSlotHandlers(container, study);
+
   // Accordion toggles
   container.querySelectorAll('.ep-accordion-header').forEach(header => {
     header.addEventListener('click', () => {

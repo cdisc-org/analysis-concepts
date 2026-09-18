@@ -72,20 +72,18 @@ export async function renderEndpointHow(container) {
     const isActive = ep.id === appState.activeEndpointId;
     const spec = appState.endpointSpecs[ep.id] || {};
     const originalText = ep.text || ep.description || ep.name;
-    // Use pre-computed display values from resolved spec where available
-    const resolvedEp = appState.resolvedSpec?.endpoints?.find(r => r.id === ep.id);
-    const ui = resolvedEp?.$ui || {};
-    const syntax = ui.syntax || buildSyntaxTemplate(ep, spec, study);
-    const formalized = ui.formalized || buildFormalizedDescription(ep, spec, study);
-    const estimandDesc = ui.estimandDescription || buildEstimandDescription(ep, spec, study);
-    const paramValue = ui.parameterValue ?? getSpecParameterValue(ep.id, spec, study);
     const analyses = spec.selectedAnalyses || [];
 
-    // Get derivation name for carry-forward display
-    const derivation = spec.selectedDerivationOid
-      ? getDerivationTransformationByOid(spec.selectedDerivationOid) : null;
-
-    // Initialize per-analysis custom input bindings if needed
+    // Seed per-analysis bindings and infer the summary measure BEFORE the
+    // estimand text is derived below.
+    //
+    // This loop used to sit after `estimandDesc`, which made the first render
+    // of a freshly authored endpoint show "not specified" and no estimand
+    // sentence at all: the pattern is inferred onto the ANALYSIS here, while
+    // `buildEstimandDescription` reads the SPEC-level mirror that
+    // `syncLegacyTransformationOid` copied on click -- when it was still null.
+    // Inferring first, then re-mirroring, closes that one-render gap.
+    let inferredSummary = false;
     for (const analysis of analyses) {
       const transform = getTransformationByOid(analysis.transformationOid);
       if (transform && !analysis.resolvedBindings) {
@@ -97,9 +95,22 @@ export async function renderEndpointHow(container) {
       // Auto-infer summary measure per analysis
       if (transform && !analysis.estimandSummaryPattern) {
         const inferred = inferDefaultSummaryPattern(transform);
-        if (inferred) analysis.estimandSummaryPattern = inferred;
+        if (inferred) { analysis.estimandSummaryPattern = inferred; inferredSummary = true; }
       }
     }
+    if (inferredSummary) syncLegacyTransformationOid(ep.id);
+
+    // Use pre-computed display values from resolved spec where available
+    const resolvedEp = appState.resolvedSpec?.endpoints?.find(r => r.id === ep.id);
+    const ui = resolvedEp?.$ui || {};
+    const syntax = ui.syntax || buildSyntaxTemplate(ep, spec, study);
+    const formalized = ui.formalized || buildFormalizedDescription(ep, spec, study);
+    const estimandDesc = ui.estimandDescription || buildEstimandDescription(ep, spec, study);
+    const paramValue = ui.parameterValue ?? getSpecParameterValue(ep.id, spec, study);
+
+    // Get derivation name for carry-forward display
+    const derivation = spec.selectedDerivationOid
+      ? getDerivationTransformationByOid(spec.selectedDerivationOid) : null;
 
     // Build per-analysis cards HTML
     const analysisCardsHtml = analyses.map((analysis, aIdx) => {

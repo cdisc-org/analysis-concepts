@@ -1,0 +1,56 @@
+[
+  {
+    "beat": 1,
+    "name": "Select study",
+    "start": 2.0,
+    "end": 16.0
+  },
+  {
+    "beat": 2,
+    "name": "USDM tabs",
+    "start": 16.0,
+    "end": 42.0
+  },
+  {
+    "beat": 3,
+    "name": "Pick PFS endpoint",
+    "start": 42.0,
+    "end": 60.0
+  },
+  {
+    "beat": 4,
+    "name": "Author endpoint",
+    "start": 60.0,
+    "end": 122.0
+  },
+  {
+    "beat": 5,
+    "name": "Analysis",
+    "start": 122.0,
+    "end": 192.0
+  },
+  {
+    "beat": 6,
+    "name": "Summary",
+    "start": 192.0,
+    "end": 208.0
+  },
+  {
+    "beat": 7,
+    "name": "eSAP builder",
+    "start": 208.0,
+    "end": 294.0
+  },
+  {
+    "beat": 8,
+    "name": "Derivations + load Scenario 5",
+    "start": 294.0,
+    "end": 340.0
+  },
+  {
+    "beat": 9,
+    "name": "Execute",
+    "start": 340.0,
+    "end": 394.0
+  }
+]

@@ -338,11 +338,23 @@ export function buildSyntaxTemplate(ep, spec, study) {
     const token = `{${cfg}}`;
     if (!templateBase.includes(token)) continue;
 
-    // Map config name to dimension/value
+    // A slot the phrase declares is answered by the spec's own bindings first.
+    // This used to map {event} onto the PARAMETER value and resolve nothing
+    // else, so a freshly authored endpoint previewed as "time from
+    // {risk_origin} to <the parameter>, censored at {censoring_event}" --
+    // contradicting the Definition Slots rendered directly above it. The
+    // transformation-driven builder already resolved slots this way; only this
+    // path, the one shown BEFORE an analysis is chosen, did not.
     let val = '';
-    if (cfg === 'parameter') val = getSpecParameterValue(ep.id, spec, study) || '';
-    else if (cfg === 'event') val = getSpecParameterValue(ep.id, spec, study) || '';
-    else val = getCubeSliceValue(cfg.charAt(0).toUpperCase() + cfg.slice(1)) || '';
+    if (cfg === 'parameter') {
+      val = getSpecParameterValue(ep.id, spec, study) || '';
+    } else {
+      val = phraseSlotValue(cfg, spec, endpointPhrase,
+                            spec.derivationConfigValues, spec.dimensionValues, study)
+        || (cfg === 'event' ? getSpecParameterValue(ep.id, spec, study) : '')
+        || getCubeSliceValue(cfg.charAt(0).toUpperCase() + cfg.slice(1))
+        || '';
+    }
 
     resolvedBase = val
       ? resolvedBase.replace(token, `<strong>${val}</strong>`)
@@ -649,6 +661,34 @@ export function renderEndpointSpec(container) {
   wireEventHandlers(container, study);
 }
 
+/**
+ * Wire the Definition Slot pickers.
+ *
+ * Exported because the slot <select>s are rendered into BOTH endpoint views but
+ * only this module used to attach their handler -- and it did so from
+ * `renderEndpointSpec`, which the Endpoint step (Step 3, `renderEndpointWhat`)
+ * never calls. The selects were therefore inert on the one screen built for
+ * authoring them: the dropdown moved and `phraseSlotBindings` stayed empty.
+ * Step 3 now calls this after its own render.
+ */
+export function wirePhraseSlotHandlers(container, study) {
+  container.querySelectorAll('.ep-phrase-slot-bc').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const epId = sel.dataset.epId;
+      const slot = sel.dataset.slot;
+      const spec = appState.endpointSpecs[epId];
+      if (!spec) return;
+      if (!spec.phraseSlotBindings) spec.phraseSlotBindings = {};
+      const picked = sel.multiple
+        ? [...sel.selectedOptions].map(o => o.value).filter(Boolean)
+        : (sel.value ? [sel.value] : []);
+      if (picked.length === 0) delete spec.phraseSlotBindings[slot];
+      else spec.phraseSlotBindings[slot] = picked;
+      updateSyntaxPreview(container, epId, study);
+    });
+  });
+}
+
 function wireEventHandlers(container, study) {
   // Accordion toggles
   container.querySelectorAll('.ep-spec-header').forEach(header => {
@@ -859,21 +899,7 @@ function wireEventHandlers(container, study) {
   });
 
   // Definition-slot BC bindings
-  container.querySelectorAll('.ep-phrase-slot-bc').forEach(sel => {
-    sel.addEventListener('change', () => {
-      const epId = sel.dataset.epId;
-      const slot = sel.dataset.slot;
-      const spec = appState.endpointSpecs[epId];
-      if (!spec) return;
-      if (!spec.phraseSlotBindings) spec.phraseSlotBindings = {};
-      const picked = sel.multiple
-        ? [...sel.selectedOptions].map(o => o.value).filter(Boolean)
-        : (sel.value ? [sel.value] : []);
-      if (picked.length === 0) delete spec.phraseSlotBindings[slot];
-      else spec.phraseSlotBindings[slot] = picked;
-      updateSyntaxPreview(container, epId, study);
-    });
-  });
+  wirePhraseSlotHandlers(container, study);
 
   // Derivation config placeholder inputs
   container.querySelectorAll('.ep-deriv-config-value').forEach(el => {
@@ -999,7 +1025,7 @@ export function buildEstimandFrameworkHtml(ep, spec, study, estimandDesc) {
     ? getTransformationByOid(spec.selectedTransformationOid) : null;
   let summaryPhrase = null;
   if (spec?.estimandSummaryPattern && transform) {
-    summaryPhrase = getSummaryMeasurePhrase(spec.estimandSummaryPattern, transform.usesMethod);
+    summaryPhrase = getSummaryMeasureLabel(spec.estimandSummaryPattern, transform.usesMethod);
   }
 
   // Estimator (the method)
@@ -1344,6 +1370,24 @@ export function getSummaryMeasurePhrase(patternName, methodId) {
     if (SUMMARY_MEASURE_PHRASES[qualified]) return SUMMARY_MEASURE_PHRASES[qualified];
   }
   return SUMMARY_MEASURE_PHRASES[patternName] || null;
+}
+
+/**
+ * The summary measure as a standalone label.
+ *
+ * `SUMMARY_MEASURE_PHRASES` are COMPOSITION fragments: each ends in the
+ * connective that joins it to the variable it describes ("hazard ratio for",
+ * "comparison of survival distributions for", "test of"). That is right for
+ * `buildEstimandDescription`, which continues the sentence.
+ *
+ * The estimand's Population-level Summary attribute is not a sentence -- under
+ * ICH E9(R1) it names the MEASURE -- so rendering the fragment there left it
+ * hanging on a preposition ("comparison of survival distributions for"). The
+ * connective is trimmed for that use, and only for that use.
+ */
+export function getSummaryMeasureLabel(patternName, methodId) {
+  const phrase = getSummaryMeasurePhrase(patternName, methodId);
+  return phrase ? phrase.replace(/\s+(for|of|in|to|with)$/i, '') : null;
 }
 
 /**
