@@ -5,6 +5,7 @@ import {
   getEndpointParameterOptions
 } from '../utils/usdm-parser.js';
 import { buildSliceLookup, getPhraseResolvedRefs, displayConcept } from '../utils/concept-display.js';
+import { populationLabel, normalizePopulation } from '../utils/population-concept.js';
 import { groupBCsByActivity } from '../utils/bc-domain-grouper.js';
 import {
   isObservationCategory, derivationProxyFor, isNumericOutputConcept
@@ -214,10 +215,48 @@ export function getDimensionOptions(dimName, study) {
       // the " vs " splitters downstream are retained deliberately.
       return getArmNames(study);
     case 'Population':
-      return getPopulationNames(study);
+      return populationDimensionOptions(study);
     default:
       return null;
   }
+}
+
+/**
+ * The store the current view mode reads against ('concepts_adam' -> 'adam').
+ * Concept-only mode still resolves populations against ADaM, because a
+ * population flag is where the identity lives in every clinical store.
+ */
+function activeStoreName() {
+  const mode = appState.modelViewMode || 'adam';
+  return mode.replace(/^concepts_?/, '') || 'adam';
+}
+
+/**
+ * Render a stored dimension value for display.
+ *
+ * Population is the one dimension whose stored value is a concept rather than
+ * a literal, so it is the one that needs resolving before it reaches a screen.
+ */
+export function displayDimensionValue(dim, val) {
+  if (dim !== 'Population') return val;
+  const key = normalizePopulation(val);
+  // A stored bare "Y" names no population; say so rather than echoing it.
+  return key
+    ? populationLabel(key, appState.conceptMappings, activeStoreName())
+    : `${val} (population unresolved)`;
+}
+
+/**
+ * Selectable populations for the SPECIFICATION layer: the study's own USDM
+ * populations, and only those.
+ *
+ * The spec names the population the protocol means; it does not name the
+ * column that implements it. Binding that concept to a flag variable is the
+ * execution layer's job -- Step 8 offers the variable and its value -- which
+ * is why no ADaM flag identity is offered here.
+ */
+function populationDimensionOptions(study) {
+  return getPopulationNames(study) || [];
 }
 
 /**
@@ -334,9 +373,10 @@ export function buildSyntaxTemplate(ep, spec, study) {
       const refs = getPhraseResolvedRefs(sp, spec);
       const dimRef = refs[0] || sp.references?.[0] || '';
       const val = getCubeSliceValue(dimRef) || '';
+      const shown = val ? displayDimensionValue(dimRef, val) : '';
 
-      resolvedPh = val
-        ? resolvedPh.replace(token, `<strong>${val}</strong>`)
+      resolvedPh = shown
+        ? resolvedPh.replace(token, `<strong>${shown}</strong>`)
         : resolvedPh.replace(token, `<span class="placeholder">${token}</span>`);
     }
     resolvedSuffix += ` ${resolvedPh}`;
@@ -469,7 +509,8 @@ function buildTransformationSyntaxTemplate(ep, spec, study, analysisTransform, d
 
     const fullTemplate = `${prep} {${dim}}${suffix ? ' ' + suffix : ''}`;
     templateParts.push(fullTemplate);
-    resolvedParts.push(`${prep} <strong>${value}</strong>${suffix ? ' ' + suffix : ''}`);
+    resolvedParts.push(
+      `${prep} <strong>${displayDimensionValue(dim, value)}</strong>${suffix ? ' ' + suffix : ''}`);
   }
 
   const conceptLabel = spec.conceptCategory;
@@ -1280,8 +1321,9 @@ export function buildFormalizedDescription(ep, spec, study) {
     let phrase = sp.phrase_template;
     const dimEntry = cubeDims.find(d => d.dimension === ref);
     const val = dimEntry?.sliceValue || spec.dimensionValues?.[ref] || '';
+    const shown = val ? displayDimensionValue(ref, val) : '';
     for (const cfg of (sp.configurations || [])) {
-      phrase = phrase.replace(`{${cfg}}`, val || `{${cfg}}`);
+      phrase = phrase.replace(`{${cfg}}`, shown || `{${cfg}}`);
     }
     desc += ` ${phrase}`;
   }
@@ -1379,9 +1421,10 @@ export function buildEstimandDescription(ep, spec, study) {
     }
   }
 
-  // Population
-  const popVal = dimValues.Population || null;
-  if (popVal) contextParts.push(`in the ${popVal} population`);
+  // Population -- rendered from the identity, never from the flag's Y/N value.
+  const popVal = normalizePopulation(dimValues.Population);
+  if (popVal) contextParts.push(
+    `in the ${populationLabel(popVal, appState.conceptMappings, activeStoreName())} population`);
 
   // Compose: "The {phrase} {what} {context}"
   let sentence = `The ${phrase} ${whatPart}`;
@@ -1421,7 +1464,7 @@ export function getDimensionOptionsForSlice(dimName, sliceDef, study, epId) {
     case 'visit':
       return getVisitLabels(study);
     case 'population':
-      return getPopulationNames(study);
+      return populationDimensionOptions(study);
     default:
       if (source) console.warn(`getDimensionOptionsForSlice: unrecognized source "${source}" for ${dimName}`);
       return getDimensionOptions(dimName, study);
@@ -1572,7 +1615,8 @@ export function renderDataCube(ep, spec, study) {
           <option value="">(all values)</option>
           ${options.map(opt => {
             const v = typeof opt === 'object' ? opt.value : opt;
-            return `<option value="${v}" ${v === val ? 'selected' : ''}>${v}</option>`;
+            const l = typeof opt === 'object' ? opt.label : opt;
+            return `<option value="${v}" ${v === val ? 'selected' : ''}>${l}</option>`;
           }).join('')}
         </select>`;
     } else {
@@ -1893,7 +1937,7 @@ export function renderDataCube(ep, spec, study) {
             <div style="padding:6px 10px; border:1px solid var(--cdisc-border); border-radius:var(--radius); margin-bottom:4px; font-size:12px;">
               <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 ${Object.entries(s.fixedDimensions || {}).map(([dim, val]) =>
-                  `<span><span class="badge badge-teal" style="font-size:10px;">${dim}</span> = <strong>${val}</strong></span>`
+                  `<span><span class="badge badge-teal" style="font-size:10px;">${dim}</span> = <strong>${displayDimensionValue(dim, val)}</strong></span>`
                 ).join('<span style="color:var(--cdisc-text-secondary);">&middot;</span>')}
               </div>
             </div>
@@ -2132,7 +2176,7 @@ export function renderDerivationConfigPanel(derivation, spec, study, ep) {
                       const v = typeof opt === 'object' ? opt.value : opt;
                       const l = typeof opt === 'object' ? opt.label : opt;
                       const tip = typeof opt === 'object' && opt.label !== opt.value ? ` title="${l}"` : '';
-                      return `<option value="${v}"${tip} ${v === currentVal ? 'selected' : ''}>${v}</option>`;
+                      return `<option value="${v}"${tip} ${v === currentVal ? 'selected' : ''}>${l}</option>`;
                     }).join('')}
                   </select>
                 ` : `
@@ -2171,7 +2215,7 @@ export function renderDerivationConfigPanel(derivation, spec, study, ep) {
                       const v = typeof opt === 'object' ? opt.value : opt;
                       const l = typeof opt === 'object' ? opt.label : opt;
                       const tip = typeof opt === 'object' && opt.label !== opt.value ? ` title="${l}"` : '';
-                      return `<option value="${v}"${tip} ${v === currentVal ? 'selected' : ''}>${v}</option>`;
+                      return `<option value="${v}"${tip} ${v === currentVal ? 'selected' : ''}>${l}</option>`;
                     }).join('')}
                   </select>
                 ` : `
@@ -2565,7 +2609,7 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
                             const v = typeof opt === 'object' ? opt.value : opt;
                             const l = typeof opt === 'object' ? opt.label : opt;
                             const tip = typeof opt === 'object' && opt.label !== opt.value ? ` title="${l}"` : '';
-                            return `<option value="${v}"${tip} ${v === currentVal ? 'selected' : ''}>${v}</option>`;
+                            return `<option value="${v}"${tip} ${v === currentVal ? 'selected' : ''}>${l}</option>`;
                           }).join('')}
                         </select>
                       ` : `
@@ -2605,7 +2649,7 @@ function renderEndpointCard(ep, expanded, conceptOptions, study) {
                           const v = typeof opt === 'object' ? opt.value : opt;
                           const l = typeof opt === 'object' ? opt.label : opt;
                           const tip = typeof opt === 'object' && opt.label !== opt.value ? ` title="${l}"` : '';
-                          return `<option value="${v}"${tip} ${v === currentVal ? 'selected' : ''}>${v}</option>`;
+                          return `<option value="${v}"${tip} ${v === currentVal ? 'selected' : ''}>${l}</option>`;
                         }).join('')}
                       </select>
                     ` : `

@@ -50,7 +50,8 @@
       "parameterName": "Progression-Free Survival",
       "linkedBCIds": [],
       "dimensionValues": {
-        "Parameter": "Progression-Free Survival"
+        "Parameter": "Progression-Free Survival",
+        "Population": "Population_1"
       },
       "derivationNote": "Derived from collected SDTM: randomisation (DS), overall response (RS) and fatal adverse events (AE). No ADaM input.",
       "selectedTransformationOid": "T.OS_LogRank",
@@ -241,11 +242,16 @@
         {
           "dimension": "Treatment",
           "sliceValue": ""
+        },
+        {
+          "dimension": "Population",
+          "sliceValue": "Population_1"
         }
       ],
       "cubeSlices": [],
       "selectedEndpointPhrase": "SP_TTE_FULL_ENDPOINT",
       "selectedDimPhrases": [
+        "SP_POPULATION",
         "SP_GROUPING"
       ],
       "resolvedSlices": [],

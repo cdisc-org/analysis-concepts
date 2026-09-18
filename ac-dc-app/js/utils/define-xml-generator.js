@@ -1,3 +1,4 @@
+import { populationWhereClause, normalizePopulation } from './population-concept.js';
 // ============================================================================
 // Define-XML 2.1 + Analysis Results Metadata (ARM v1.0) generator
 // ============================================================================
@@ -499,15 +500,32 @@ export async function buildDefineXml(appState, selectedEps, study, options = {})
       const wcOID = `WC.${epId}.R.${ai + 1}.${dsName}`;
       const checks = [];
       for (const [dim, val] of Object.entries(slice)) {
-        const wcVar = sliceDimVar(dim, adamMap);
-        if (!wcVar || val == null || val === '') continue;
+        if (val == null || val === '') continue;
+        let wcVar = sliceDimVar(dim, adamMap);
+        let wcVal = val;
+        if (dim === 'Population') {
+          // The identity picks the column; "Y" is the codelist constant.
+          // Without this the first token of "ITTFL/SAFFL/FASFL" was used for
+          // every population, so a safety slice emitted ITTFL.
+          const wc = populationWhereClause(normalizePopulation(val), adamMap);
+          if (!wc) {
+            note('arm', `${wcOID} population flag`,
+              `population "${val}" is a flag value, not a population identity — no flag column could be resolved`);
+            continue;
+          }
+          ({ variable: wcVar, value: wcVal } = wc);
+          if (wc.assumed) {
+            note('arm', `${wcOID} population flag`,
+              `population "${val}" names the study's own population; "${wc.variable}" is the dimension's default flag, not a specified one — confirm it at execution`);
+          }
+        }
+        if (!wcVar) continue;
         if (dim === 'Parameter') note('arm', `${wcOID} PARAMCD value`, `slice holds the parameter label "${val}", not the PARAMCD submission value (needs BC/CT resolution)`);
         checks.push(
           `         <RangeCheck Comparator="EQ" SoftHard="Soft" def:ItemOID="IT.${dsName}.${wcVar}">\n` +
-          `            <CheckValue>${xmlEsc(val)}</CheckValue>\n` +
+          `            <CheckValue>${xmlEsc(wcVal)}</CheckValue>\n` +
           `         </RangeCheck>`);
       }
-      if (slice.Population) note('arm', `${wcOID} population flag`, `population "${slice.Population}" not resolved to an ADaM flag (e.g. EFFFL/ITTFL)`);
       if (checks.length) whereClauseDefs.push(`   <def:WhereClauseDef OID="${wcOID}">\n${checks.join('\n')}\n   </def:WhereClauseDef>`);
 
       // Analysis variable — the response/analysed variable.

@@ -51,7 +51,7 @@
       "linkedBCIds": [],
       "dimensionValues": {
         "Parameter": "Progression-Free Survival (Days)",
-        "Population": "Y"
+        "Population": "Population_1"
       },
       "derivationNote": "",
       "selectedTransformationOid": "T.OS_LogRank",
@@ -125,7 +125,7 @@
         },
         {
           "dimension": "Population",
-          "sliceValue": "Y"
+          "sliceValue": "Population_1"
         }
       ],
       "cubeSlices": [],
@@ -151,7 +151,7 @@
           "name": "endpoint",
           "fixedDimensions": {
             "Parameter": "Progression-Free Survival (Days)",
-            "Population": "Y"
+            "Population": "Population_1"
           }
         }
       ],
