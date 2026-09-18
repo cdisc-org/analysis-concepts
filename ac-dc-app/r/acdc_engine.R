@@ -26,6 +26,33 @@
 # (CHG) so the preview reads as a real analysis dataset.
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Constraints the run could not apply.
+#
+# A declared slice constraint whose column is absent from the cube used to be a
+# console warning and nothing else, on the assumption that the user would see a
+# runtime symptom. There is none: the analysis completes and the restriction is
+# simply not in force, so the specification claims a restriction the result does
+# not honour (Population == "AP_1" against SDTM, which has no population flags).
+# Collect them instead and return them with the results so the UI can say so.
+# ---------------------------------------------------------------------------
+.acdc_unapplied <- new.env(parent = emptyenv())
+
+.reset_unapplied <- function() {
+  assign("items", list(), envir = .acdc_unapplied)
+}
+
+.note_unapplied <- function(dimension, value, reason) {
+  items <- tryCatch(get("items", envir = .acdc_unapplied), error = function(e) list())
+  items[[length(items) + 1]] <- list(
+    dimension = dimension, value = as.character(value), reason = reason)
+  assign("items", items, envir = .acdc_unapplied)
+}
+
+.get_unapplied <- function() {
+  tryCatch(get("items", envir = .acdc_unapplied), error = function(e) list())
+}
+
 .adam_var_for_concept <- function(concept_name, mappings) {
   if (is.null(concept_name) || !nzchar(concept_name)) return(NULL)
   base <- sub("@.*", "", concept_name)
@@ -545,6 +572,7 @@ acdc_derive_only <- function(spec, mappings, dataset,
                               derivations = NULL, unit_conversions = NULL, r_impls = NULL,
                               all_mappings = NULL, available_datasets = NULL,
                               concept_categories = NULL, presentation_store = NULL) {
+  .reset_unapplied()
   # Strip haven labels
   dataset <- as.data.frame(lapply(dataset, function(col) {
     if (inherits(col, "haven_labelled")) as.vector(col) else col
@@ -876,7 +904,8 @@ acdc_derive_only <- function(spec, mappings, dataset,
     derivation_log = deriv_log,
     enriched_dimensions = enriched_dims,
     data_preview = preview,
-    data_preview_store = preview_store
+    data_preview_store = preview_store,
+    unapplied_constraints = .get_unapplied()
   )
 }
 
@@ -1046,6 +1075,7 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
                          all_mappings = NULL, available_datasets = NULL,
                          concept_categories = NULL, presentation_store = NULL,
                          presentation_overrides = NULL) {
+  .reset_unapplied()
   analysis <- spec$analyses[[1]]
   if (is.null(analysis)) stop("No analysis found in specification")
   if (is.null(r_impl)) stop("No R implementation provided for this method")
@@ -1094,8 +1124,39 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
   #    and joins by the declared key. No auto-scan.
   if (!is.null(available_datasets) && length(available_datasets) > 0) {
     primary_name <- tolower(spec$targetDataset %||% "")
+    # A dimension used only by a SLICE needs enriching too. Population is never
+    # an analysis binding — it appears solely as a cube constraint — so it was
+    # never joined, and the constraint could not be applied whatever variable
+    # the author picked. Enrich for slice dimensions as well, so the author's
+    # choice (ITTFL / SAFFL / EFFFL from the loaded ADSL) can actually take
+    # effect rather than being silently dropped.
+    enrich_bindings <- analysis$resolvedBindings
+    seen_dims <- character(0)
+    for (b in enrich_bindings) {
+      if (identical(b$dataStructureRole, "dimension") && !is.null(b$concept)) {
+        seen_dims <- c(seen_dims, b$concept)
+      }
+    }
+    aux_decl <- analysis$auxiliarySources %||% list()
+    for (sl in (analysis$resolvedSlices %||% list())) {
+      for (dim_name in names(sl$resolvedValues %||% list())) {
+        if (dim_name %in% seen_dims) next
+        # Only when the author has actually named a source. enrich_dimensions
+        # STOPS on a needed dimension with no declaration, and a slice-only
+        # dimension has no binding row to declare one on — so enriching
+        # unconditionally would turn a running analysis into a hard failure with
+        # no control to fix it. Declared: join it, and the constraint applies.
+        # Undeclared: leave it, and it is reported as not applied.
+        d <- aux_decl[[dim_name]]
+        if (is.null(d) || is.null(d$dataset) || !nzchar(d$dataset)) next
+        seen_dims <- c(seen_dims, dim_name)
+        enrich_bindings <- c(enrich_bindings, list(list(
+          concept = dim_name, direction = "input", dataStructureRole = "dimension"
+        )))
+      }
+    }
     dataset <- enrich_dimensions(
-      dataset, analysis$resolvedBindings, all_mappings,
+      dataset, enrich_bindings, all_mappings,
       available_datasets, primary_name,
       analysis$auxiliarySources,
       overrides
@@ -1145,6 +1206,20 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
         if (identical(b$direction, "input") && identical(b$methodRole, "partition")
             && !is.null(b$concept) && nzchar(b$concept)) {
           chain_rollup_dims <- c(chain_rollup_dims, b$concept)
+        }
+      }
+    }
+    # A chain also MINTS the endpoint's parameter identity: the analysed measure
+    # is computed, so no source row carries its label and the value is stamped
+    # onto the rolled-up cube. That is the same contract as a rollup dim — not a
+    # restriction that failed — so it must not be filtered on and must not be
+    # reported as unapplied. The endpoint names the dimension; the chain's
+    # existence is what makes it minted.
+    for (sl in (analysis$resolvedSlices %||% list())) {
+      for (dim_name in names(sl$resolvedValues %||% list())) {
+        if (identical(dim_name, "Parameter") ||
+            identical(dim_name, analysis$parameterDimension %||% "Parameter")) {
+          chain_rollup_dims <- c(chain_rollup_dims, dim_name)
         }
       }
     }
@@ -1472,6 +1547,12 @@ acdc_execute <- function(spec, mappings, dataset, overrides = NULL,
     result$derived_data_store <- derived_data_store
     result$derived_data_total <- derived_data_total
   }
+
+  # Constraints the spec declared but the run could not apply. Returned so the
+  # UI can say the analysis does not honour part of its own specification,
+  # rather than the divergence being visible only in console output.
+  unapplied <- .get_unapplied()
+  if (length(unapplied) > 0) result$unapplied_constraints <- unapplied
 
   return(result)
 }
@@ -2138,6 +2219,12 @@ filter_by_constraints <- function(dataset, constraints, overrides = NULL, rollup
       # diagnostic is the runtime symptom, not this filter call.
       cat("    Warning: column", col_name, "not found for constraint", dim_name,
           if (is_rollup_target) " (chain rollup target)" else "", "\n")
+      # A rollup target is stamped after the cube, so it IS honoured; anything
+      # else is a stated restriction the result does not apply.
+      if (!is_rollup_target) {
+        .note_unapplied(dim_name, value,
+          sprintf("no column '%s' in the analysis data — the restriction was not applied", col_name))
+      }
     }
   }
   return(dataset)

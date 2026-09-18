@@ -1184,11 +1184,21 @@ export function deserializeStudyInstance(json, appState) {
     delete res.analysisResults;
     delete res.derivationOnly;
     delete res.derivationOnlyMessage;
+    // Execution CHOICES belong to the spec that was loaded, not to the endpoint
+    // id. Two scenarios for one endpoint (analysis-only over ADTTE, then a
+    // derivation over ZE) would otherwise inherit each other's picks: the
+    // second run failed with "Auxiliary dataset 'adtte' does not provide column
+    // 'Treatment'" because the first scenario's source was still declared.
+    // Whatever the incoming file declares is restored just below.
+    delete res.auxiliarySources;
+    delete res.varOverrides;
+    delete res.sliceOverrides;
+    delete res.datasetOverride;
   }
 
-  // Restore execution bindings (variable / source-dataset / slice choices).
-  // Merged into any existing result state so a load during a live session keeps
-  // the picks the user already made for endpoints this instance doesn't mention.
+  // Restore execution bindings (variable / source-dataset / slice choices) that
+  // the incoming file declares. State for endpoints this file does not mention
+  // is left alone; state for the ones it does was cleared just above.
   if (json.executionBindings) {
     appState.endpointResults = appState.endpointResults || {};
     for (const [epId, saved] of Object.entries(json.executionBindings)) {

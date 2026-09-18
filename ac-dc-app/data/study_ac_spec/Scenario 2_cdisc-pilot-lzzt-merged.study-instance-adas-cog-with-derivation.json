@@ -81,7 +81,8 @@
       "dimensionValues": {
         "Parameter": "Adas-Cog(11) Subscore",
         "Visit": "WEEK 24",
-        "Population": "AP_1"
+        "Population": "AP_1",
+        "AnalysisVisit": "Week 24"
       },
       "derivationNote": "",
       "selectedTransformationOid": "T.CFB_ANCOVA",
@@ -187,14 +188,16 @@
           "fixedDimensions": {
             "Parameter": "Adas-Cog(11) Subscore",
             "Visit": "WEEK 24",
-            "Population": "AP_1"
+            "Population": "AP_1",
+            "AnalysisVisit": "Week 24"
           }
         }
       ],
       "sliceKeyDimensions": [
         "Parameter",
         "Visit",
-        "Population"
+        "Population",
+        "AnalysisVisit"
       ],
       "resolvedBindings": [
         {

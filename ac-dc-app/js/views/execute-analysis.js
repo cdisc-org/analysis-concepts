@@ -343,6 +343,87 @@ function _chainProducesDimension(ep, concept) {
   return null;
 }
 
+/**
+ * "Where does this slice dimension come from" — the source-dataset cell.
+ *
+ * A dimension used only as a cube constraint (Population) has no binding row,
+ * so it had nowhere to declare a source and the engine could never join it: the
+ * constraint was unapplicable whatever variable was picked. The engine enriches
+ * a slice dimension only when a source is declared here.
+ *
+ * @returns {string} a <td> body: a picker, or why none is needed/possible
+ */
+/**
+ * Order candidate source datasets so the most plausible one is first — the
+ * eager auto-fill takes providers[0], so this decides what gets picked.
+ *
+ * Same store as the primary wins. Analysing SDTM ZE with ADTTE also loaded, the
+ * unranked list put ADTTE first and the run failed with "Auxiliary dataset
+ * 'adtte' does not provide column 'Treatment' after ingest" — DM is the SDTM
+ * answer and was sitting right there.
+ */
+function _rankProviders(providers, primaryDataset) {
+  const primaryStore = _detectStoreForDataset(primaryDataset);
+  if (!primaryStore) return providers;
+  return [...providers].sort((a, b) =>
+    (_detectStoreForDataset(a) === primaryStore ? 0 : 1) -
+    (_detectStoreForDataset(b) === primaryStore ? 0 : 1));
+}
+
+function _sliceAuxCell(dim, dimStore, ep, resultState, selectedDataset, loadedDatasets) {
+  if (!dim) return '';
+  const primary = (loadedDatasets || []).find(
+    d => String(d.name).toUpperCase() === String(selectedDataset || '').toUpperCase());
+  // Already in the primary (as a concept column or its store variable)? Nothing to pick.
+  const entry = dimStore?.dimensions?.[dim] || dimStore?.concepts?.[dim];
+  const cols = new Set(primary?.columns || []);
+  const declaredVars = new Set([
+    ...Object.values(entry?.byDataType || {}),
+    ...(entry?.alternativeVariables || [])
+  ].filter(v => typeof v === 'string'));
+  if (cols.has(dim) || [...declaredVars].some(v => cols.has(v))) {
+    return '<span style="font-size:10px; color:var(--cdisc-text-secondary);">primary</span>';
+  }
+  const providers = _rankProviders(_findDatasetsProvidingConcept(
+    dim, null, null, appState.conceptMappings, loadedDatasets), selectedDataset);
+  if (providers.length === 0) {
+    return '<span style="font-size:10px; color:var(--cdisc-text-secondary);" ' +
+      'title="No loaded dataset declares a variable for this dimension, so the constraint cannot be applied.">none loaded</span>';
+  }
+  const current = resultState?.auxiliarySources?.[dim]?.dataset || '';
+  const opts = ['<option value="">— not joined —</option>']
+    .concat(providers.map(n =>
+      `<option value="${n}" ${n === current ? 'selected' : ''}>${n}</option>`)).join('');
+  return `<select class="exec-slice-aux-select" data-ep-id="${ep.id}" data-concept="${dim}"
+    style="font-size:11px; padding:2px 4px;"
+    title="Join this dimension from another loaded dataset so the constraint can be applied.">${opts}</select>`;
+}
+
+/**
+ * The variable a binding should default to, preferring one that EXISTS in the
+ * dataset being analysed.
+ *
+ * The model's default is the canonical variable for a concept, not necessarily
+ * the one this dataset uses. ADTTE stores the censoring flag in CNSR and the
+ * treatment in TRT01A, while the canonical defaults are AVALC and TRTA — so an
+ * analysis-only run defaulted to two columns the dataset does not contain and
+ * needed both corrected by hand before it would execute. When the canonical
+ * default is absent but a declared alternative is present, take the one that is
+ * actually there.
+ *
+ * @returns {string|null} variable name, or null when nothing resolves
+ */
+function _preferredVariable(concept, binding, store, datasetColumns) {
+  const modelDefault = getDefaultVariable(concept, binding?.dataStructureRole, store, binding);
+  const cols = datasetColumns instanceof Set ? datasetColumns : new Set(datasetColumns || []);
+  if (cols.size === 0) return modelDefault;
+  if (modelDefault && cols.has(modelDefault)) return modelDefault;
+  const candidates = getVariableOptions(
+    concept, store, binding?.requiredValueType, binding?.dataStructureRole) || [];
+  const present = candidates.find(v => cols.has(v));
+  return present || modelDefault;
+}
+
 function _auxSourceRow(b, concept, ep, resultState, selectedDataset, loadedDatasets, hasLoadedColumns) {
   let auxRow = '';
   const isAuxCandidate = b.direction !== 'output'
@@ -350,7 +431,10 @@ function _auxSourceRow(b, concept, ep, resultState, selectedDataset, loadedDatas
                       && b.methodRole !== 'constraint'
                       && !!concept;
   if (isAuxCandidate && hasLoadedColumns) {
-    const providers = _findDatasetsProvidingConcept(concept, b.qualifierType, b.qualifierValue, appState.conceptMappings, loadedDatasets);
+    const providers = _rankProviders(
+      _findDatasetsProvidingConcept(concept, b.qualifierType, b.qualifierValue,
+        appState.conceptMappings, loadedDatasets),
+      selectedDataset);
     const primary = (selectedDataset || '').toUpperCase();
     const hasPrimary = providers.some(n => n.toUpperCase() === primary);
     // Only show the picker when the primary doesn't provide the concept.
@@ -1043,8 +1127,12 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
             // derivations whose model columns get produced downstream still
             // render the dropdown — see commit history for context.)
             const overrides = resultState.varOverrides || {};
+            const primaryCols = new Set(
+              (loadedDatasets || []).find(d =>
+                String(d.name).toUpperCase() === String(selectedDataset || '').toUpperCase()
+              )?.columns || []);
             const displayVar = overrides[concept]
-              || getDefaultVariable(concept, b.dataStructureRole, bindingStore, b);
+              || _preferredVariable(concept, b, bindingStore, primaryCols);
             const options = [...new Set([...allOptions, displayVar].filter(Boolean))];
             // displayVar may be null when the concept has no mapping in the
             // active data store (e.g. user picked Observation.Identification.Topic
@@ -1154,7 +1242,7 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
       <div class="exec-bindings-section">
         <div class="exec-bindings-title">RESOLVED SLICES (cube constraints)</div>
         <table class="exec-bindings-table">
-          <thead><tr><th>Slice</th><th>Dimension</th><th>${isConceptMode ? 'Concept Key' : 'Implementation Variable'}</th><th>Value</th></tr></thead>
+          <thead><tr><th>Slice</th><th>Dimension</th><th>${isConceptMode ? 'Concept Key' : 'Implementation Variable'}</th><th>Source</th><th>Value</th></tr></thead>
           <tbody>${slices.map(s => {
             const dims = s.resolvedValues || {};
             return Object.entries(dims).map(([dim, val]) => {
@@ -1226,6 +1314,7 @@ function _renderAnalysisSubcard(ep, analysis, aIdx, resultState, adam, selectedL
                     style="font-size:11px; padding:2px 4px; font-family:monospace;">
                     ${dimOptions.map(v => `<option value="${v}" ${v === displayVar ? 'selected' : ''}>${v}</option>`).join('')}
                   </select>` : `<code>${displayVar}</code>`)}</td>
+                <td>${_sliceAuxCell(dim, dimStore, ep, resultState, selectedDataset, loadedDatasets)}</td>
                 <td>${hasAnyValueOptions ? `
                   <select class="exec-slice-val-override" data-ep-id="${ep.id}" data-slice="${s.name}" data-dim="${dim}"
                     style="font-size:11px; padding:2px 6px; width:200px;">
@@ -1598,6 +1687,30 @@ function _renderDerivedDataPreview(results) {
 
 function _renderARDResults(results, analysis, adam, varOverrides, analysisInputColumns) {
   const sections = [];
+
+  // Constraints the spec declared that the run could not apply. Shown first and
+  // in warning colours: the result is valid arithmetic over a WIDER set than
+  // the specification asked for, and that is not something to discover by
+  // reading console output. Population == "AP_1" against SDTM is the example —
+  // SDTM has no analysis-set flags, so the restriction silently did nothing.
+  const unapplied = results?.unapplied_constraints || [];
+  const unappliedHtml = unapplied.length === 0 ? '' : `
+      <div class="exec-bindings-section" style="border-left:3px solid var(--cdisc-error); padding-left:10px;">
+        <div class="exec-bindings-title" style="color:var(--cdisc-error);">
+          NOT APPLIED — the result does not honour ${unapplied.length}
+          declared ${unapplied.length === 1 ? 'constraint' : 'constraints'}
+        </div>
+        <table class="exec-bindings-table">
+          <thead><tr><th>Dimension</th><th>Declared value</th><th>Why not applied</th></tr></thead>
+          <tbody>${unapplied.map(u => `
+            <tr>
+              <td><code>${_escapeHtml(u.dimension || '')}</code></td>
+              <td><code>${_escapeHtml(u.value || '')}</code></td>
+              <td style="font-size:11px;">${_escapeHtml(u.reason || '')}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
   const roleMap = _buildTermRoleMap(
     analysis?.resolvedBindings, adam, varOverrides,
     analysisInputColumns || analysis?.analysisInputColumns
@@ -1674,6 +1787,7 @@ function _renderARDResults(results, analysis, adam, varOverrides, analysisInputC
   }
 
   return `
+    ${unappliedHtml}
     <div class="exec-ard-tabs">${sections.map((s, i) =>
       `<div class="exec-ard-tab ${i === 0 ? 'active' : ''}" data-tab="${s.id}">${s.label}</div>`
     ).join('')}</div>
@@ -2031,6 +2145,27 @@ function _wireEvents(container, configuredEps, study) {
     });
   });
 
+  // Source picker for a SLICE dimension (Population). Writes to the same
+  // auxiliarySources map the binding picker uses, which is what the engine
+  // reads to decide whether to join a slice-only dimension.
+  container.querySelectorAll('.exec-slice-aux-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const res = _ensureEndpointResult(sel.dataset.epId);
+      if (!res.auxiliarySources) res.auxiliarySources = {};
+      const concept = sel.dataset.concept;
+      if (!sel.value) {
+        delete res.auxiliarySources[concept];
+      } else {
+        res.auxiliarySources[concept] = {
+          ...(res.auxiliarySources[concept] || {}),
+          dataset: sel.value,
+          joinKey: res.auxiliarySources[concept]?.joinKey || _getSubjectJoinConcept()
+        };
+      }
+      renderExecuteAnalysis(container);
+    });
+  });
+
   // Auxiliary-source picker (dataset + joinKey) — explicit per-binding
   // declaration of "this concept comes from this loaded dataset". Replaces
   // the old runtime auto-scan in the engine. Stored on the per-endpoint
@@ -2257,7 +2392,9 @@ async function _executeAnalysis(container, epId, aIdx) {
     const entry = _adamForExec.dimensions?.[concept] || _adamForExec.concepts?.[concept];
     const bt = entry?.byDataType;
     if (!bt) continue;
-    const def = getDefaultVariable(concept, b.dataStructureRole, _adamForExec, b);
+    // Same preference as the panel shows: a canonical default the dataset does
+    // not contain is no use to the engine either.
+    const def = _preferredVariable(concept, b, _adamForExec, _loadedColsForExec);
     if (!def || def === concept || !_loadedColsForExec.has(def)) continue;
     // canonical primary that ingest will rename: first byDataType value
     const ingestPrimary = Object.values(bt)[0];
