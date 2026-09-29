@@ -18,7 +18,7 @@ ffmpeg -y -loglevel error -i "$WEBM" -c:v libx264 -preset slow -crf 20 \
 OUT_DUR=$(ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 .tmp-out.mp4)
 [ "${OUT_DUR%.*}" -lt 300 ] && { echo "REFUSING: output only ${OUT_DUR%.*}s"; rm -f .tmp-out.mp4; exit 1; }
 
-mv .tmp-out.mp4 esap-pfs-demo.mp4
-printf "OK  esap-pfs-demo.mp4  %d:%02d  %.1f MB\n" \
+mv .tmp-out.mp4 "esap-pfs-demo-${VOICE_LABEL:-lessac}.mp4"
+printf "OK  esap-pfs-demo-${VOICE_LABEL:-lessac}.mp4  %d:%02d  %.1f MB\n" \
   $((${OUT_DUR%.*}/60)) $((${OUT_DUR%.*}%60)) \
-  "$(echo "$(stat -f%z esap-pfs-demo.mp4)/1048576" | bc -l)"
+  "$(echo "$(stat -f%z esap-pfs-demo-${VOICE_LABEL:-lessac}.mp4)/1048576" | bc -l)"

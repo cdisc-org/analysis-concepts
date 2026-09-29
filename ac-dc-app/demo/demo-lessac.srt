@@ -1,0 +1,231 @@
+1
+00:00:01,880 --> 00:00:07,348
+This is eSAP — an editor for building a statistical analysis plan a machine can actually run.
+
+2
+00:00:07,803 --> 00:00:11,158
+We start with a study: a phase two breast cancer trial.
+
+3
+00:00:11,611 --> 00:00:19,146
+Nothing here was typed by hand. Every tab is read from the study's USDM — the CDISC Unified Study Definition Model.
+
+4
+00:00:20,942 --> 00:00:21,859
+The arms.
+
+5
+00:00:23,597 --> 00:00:26,418
+The objectives, and the endpoints they declare.
+
+6
+00:00:28,182 --> 00:00:29,842
+The schedule of activities.
+
+7
+00:00:31,716 --> 00:00:33,051
+The protocol narrative.
+
+8
+00:00:34,790 --> 00:00:39,492
+This is the protocol as structured data, and the plan extends it rather than restating it.
+
+9
+00:00:41,541 --> 00:00:49,053
+The primary objective is progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer.
+
+10
+00:00:49,517 --> 00:00:51,978
+We take the primary endpoint it declares.
+
+11
+00:00:53,654 --> 00:00:57,520
+The protocol text is precise English — but it is still prose.
+
+12
+00:00:57,973 --> 00:01:04,405
+To make it computable we say what kind of thing the endpoint is: a time-to-event, measured as a duration.
+
+13
+00:01:04,860 --> 00:01:12,615
+Now the sentence. We choose the fuller time-to-event phrase — the one naming an origin, an event and a censoring rule — and watch.
+
+14
+00:01:13,068 --> 00:01:17,538
+Three definition slots appear. We don't add them; the phrase asks for them.
+
+15
+00:01:17,994 --> 00:01:20,885
+The clock starts when the subject is randomised.
+
+16
+00:01:21,337 --> 00:01:27,072
+The event is disease progression or death — two concepts, not one, so the slot takes both.
+
+17
+00:01:27,525 --> 00:01:29,754
+And we censor at the last tumour assessment.
+
+18
+00:01:30,206 --> 00:01:35,744
+Then the dimensions the analysis will cut by: the population, and the treatment groups compared.
+
+19
+00:01:39,245 --> 00:01:44,551
+Notice the sentence rewriting itself as we go. It is not a caption. It is the specification.
+
+20
+00:01:46,961 --> 00:01:51,106
+An endpoint says what is measured. An analysis says what is done with it.
+
+21
+00:01:51,563 --> 00:01:57,182
+The library offers only methods that fit a time-to-event endpoint — here, the log-rank test.
+
+22
+00:01:57,634 --> 00:02:01,442
+The specification reads in three parts. First, what goes in.
+
+23
+00:02:02,584 --> 00:02:12,127
+The bindings resolve themselves: time, event, treatment, subject — each a concept, with its role in the method, and whether it is a measure or a dimension.
+
+24
+00:02:13,276 --> 00:02:19,824
+Second, what is done. The model expression, written in concepts and shown against the variables that implement them.
+
+25
+00:02:20,279 --> 00:02:25,248
+And the method's own configuration: the weight that makes this a log-rank rather than a Wilcoxon.
+
+26
+00:02:26,394 --> 00:02:33,372
+Third, what comes out. The outputs are declared by the method itself: chi-squared, p-value, degrees of freedom.
+
+27
+00:02:34,517 --> 00:02:37,652
+And from those three, the estimand assembles itself.
+
+28
+00:02:38,106 --> 00:02:43,377
+Population. Treatment. The endpoint variable. A comparison of survival distributions.
+
+29
+00:02:43,830 --> 00:02:47,940
+The attributes ICH E9 asks for — none of them typed in.
+
+30
+00:02:50,312 --> 00:02:58,311
+Everything specified so far, in one place — endpoint, method, slices, and every concept the analysis binds to.
+
+31
+00:02:59,541 --> 00:03:00,911
+Nothing written twice.
+
+32
+00:03:03,598 --> 00:03:09,473
+Now the plan assembles itself, section by section. And each section can reach back into the protocol.
+
+33
+00:03:09,936 --> 00:03:12,455
+This is the study's own USDM narrative.
+
+34
+00:03:12,907 --> 00:03:18,840
+We want the protocol's primary objective against the section on objectives, endpoints and estimands.
+
+35
+00:03:21,200 --> 00:03:26,761
+There it is — the text as the protocol wrote it, with the identifier it carries in the USDM.
+
+36
+00:03:28,716 --> 00:03:29,331
+Link it.
+
+37
+00:03:31,217 --> 00:03:39,704
+The section now carries the protocol's own words, by reference. Not copied — linked. If the protocol changes, this points at the change.
+
+38
+00:03:41,612 --> 00:03:45,641
+And the analysis is not attached to the document — it is embedded in it.
+
+39
+00:03:46,093 --> 00:03:53,140
+The formalised endpoint. The method. The model expression, in concepts and in variables. The outputs it will produce.
+
+40
+00:03:53,593 --> 00:03:56,124
+Which means the plan is machine-readable too.
+
+41
+00:03:57,003 --> 00:04:05,397
+The same document as JSON, with its provenance: the USDM, the AC/DC transformation model, the Analysis Results Standard.
+
+42
+00:04:05,885 --> 00:04:09,832
+A human reads the document; a system reads this. One source.
+
+43
+00:04:12,224 --> 00:04:15,753
+Progression-free survival is not collected. It is derived.
+
+44
+00:04:16,207 --> 00:04:19,771
+And a derivation is rarely one step — it is a pipeline.
+
+45
+00:04:21,742 --> 00:04:24,401
+Eleven steps, in the order they must run.
+
+46
+00:04:25,537 --> 00:04:33,571
+First progression date, first death date, the earliest of the two. The last tumour assessment. Time to first event. The censoring indicator.
+
+47
+00:04:34,032 --> 00:04:37,840
+Each names the concept it produces, not the column it writes.
+
+48
+00:04:38,991 --> 00:04:41,162
+And they are not a list — they are a graph.
+
+49
+00:04:42,289 --> 00:04:48,117
+The analysis at the top, its inputs beneath, and beneath those the observations they resolve from.
+
+50
+00:04:48,568 --> 00:04:53,049
+Every dependency declared, so the chain can be checked before anything runs.
+
+51
+00:04:55,448 --> 00:04:59,395
+A specification that cannot run is just a document. So let us run it.
+
+52
+00:04:59,852 --> 00:05:03,776
+The R engine starts inside the browser — no server, no install.
+
+53
+00:05:10,984 --> 00:05:18,426
+We give it the collected data: demographics, the event records, and the subject-level dataset carrying the population flags.
+
+54
+00:05:18,878 --> 00:05:23,313
+One primary dataset, because the engine reads one — the others join to it.
+
+55
+00:05:23,765 --> 00:05:31,044
+The population is bound to the data here, at execution: the plan names the population, the run decides which column expresses it.
+
+56
+00:05:31,497 --> 00:05:35,212
+The derivation pipeline runs first, then the analysis.
+
+57
+00:05:36,658 --> 00:05:48,245
+Progression-free survival, derived from collected data, compared between arms: chi-squared eighteen point six, one degree of freedom, p equals one point six times ten to the minus five.
+
+58
+00:05:48,705 --> 00:05:53,314
+And the R that produced it was generated from the specification — not written by hand.

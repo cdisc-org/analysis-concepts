@@ -3,4 +3,16 @@ __pycache__/
 *.webm
 beat*.png
 chk_*.jpg
+sync_*.jpg
+playwright_intro.png
 *.tmp-out.mp4
+
+# Rendered narration clips and the standalone audio track — both regenerate
+# from narration.py:  build_voiceover.py synth   /   build_voiceover.py mux
+vo-clips-*/
+voiceover-*.m4a
+
+# Piper voice models, ~60-110 MB each. Re-download rather than commit:
+#   python -m piper.download_voices --download-dir voices \
+#          en_US-lessac-high en_GB-jenny_dioco-medium
+voices/

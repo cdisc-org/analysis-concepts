@@ -6,8 +6,13 @@ primary endpoint, progression-free survival.
 
 | File | What it is |
 |---|---|
-| `esap-pfs-demo.mp4` | The recording — 6 min 34 s, 1440×900, silent |
-| `demo-script.md` | Voiceover script: per-beat timecodes, measured pace, production notes |
+| `esap-pfs-demo.mp4` | The recording — 6 min 17 s, 1440×900, silent |
+| `esap-pfs-demo-vo.mp4` | Same picture with a synthesised guide track, exactly on the cues |
+| `demo-script.md` | Voiceover script — **one timecode per line**, not per beat |
+| `demo.srt` | The same narration as subtitles |
+| `narration.py` | The narration itself, as data — the single source of truth |
+| `build_voiceover.py` | Renders the lines, muxes the track, writes the script and .srt |
+| `cues.json` / `durations.json` | When each line starts; how long each takes to speak |
 | `record_demo.py` | Drives the browser and produces the recording |
 | `convert.sh` | Converts the captured `.webm` to mp4, with guards |
 | `beats.json` | Beat boundaries emitted by the last recording |
@@ -30,6 +35,43 @@ primary endpoint, progression-free survival.
 9. **Execute** — WebR in the browser, DM + ZE + ADSL, bind the population, run
 
 Beat 9 produces `CHI_SQUARED 18.5776, DF 1, P_VALUE 1.631e-5`.
+
+## Keeping voice and picture in sync
+
+An earlier version of this script gave **beat-level** timecodes — nine windows.
+That was not enough: beat 5 is a 70-second window with ten sentences and four
+scrolls in it, so a narrator has no cue for *when* the page reaches the estimand,
+and any small lead or lag compounds. The first human read drifted for exactly
+that reason.
+
+It now works the other way round. **The picture is cut to the voice:**
+
+1. `build_voiceover.py synth` renders every line in `narration.py` and measures
+   its real duration.
+2. `record_demo.py` calls `d.line("5_9")` at the moment that line should begin.
+   The recorder holds the screen for the measured duration and logs the exact
+   timestamp to `cues.json`.
+3. `build_voiceover.py mux` places the same audio at those same timestamps.
+
+Because both come from one measurement, they cannot drift. Narration is also
+kept strictly serial — a line may play *over* an action, but the next line waits
+for the previous one to finish. Without that guard 12 lines collided, one by six
+seconds.
+
+Full cycle after any wording change:
+
+```bash
+python build_voiceover.py synth      # render + measure
+python record_demo.py                # record to those durations
+./convert.sh                         # webm -> mp4
+python build_voiceover.py mux        # audio onto the mp4
+python build_voiceover.py script     # demo-script.md + demo.srt
+```
+
+The guide voice is the macOS `Samantha` system voice — exactly on time, audibly
+synthetic. It is a temp track and a pacing reference for a real narrator, not a
+finished voiceover. Swap `VOICE`/`RATE` in `narration.py` if a better voice is
+installed.
 
 ## Re-recording
 
