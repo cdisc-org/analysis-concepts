@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+
+<html data-bs-theme="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="None" name="description"/>
+<link href="https://cdisc-org.github.io/analysis-concepts/" rel="canonical"/>
+<link href="img/favicon.ico" rel="shortcut icon"/>
+<title>Analysis Concepts Model</title>
+<link href="css/bootstrap.min.css" rel="stylesheet"/>
+<link href="css/fontawesome.min.css" rel="stylesheet"/>
+<link href="css/brands.min.css" rel="stylesheet"/>
+<link href="css/solid.min.css" rel="stylesheet"/>
+<link href="css/v4-font-face.min.css" rel="stylesheet"/>
+<link href="css/base.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" id="hljs-light" rel="stylesheet"/>
+<link disabled="" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" id="hljs-dark" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</head>
+<body class="homepage">
+<div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+<div class="container">
+<a class="navbar-brand" href=".">Analysis Concepts Model</a>
+<!-- Expanded navigation -->
+<div class="navbar-collapse collapse" id="navbar-collapse">
+<ul class="nav navbar-nav ms-md-auto">
+<li class="nav-item">
+<a class="nav-link" data-bs-target="#mkdocs_search_modal" data-bs-toggle="modal" href="#">
+<i class="fa fa-search"></i> Search
+                            </a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="container">
+<div class="row">
+<div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+<div class="navbar-header">
+<button class="navbar-toggler collapsed" data-bs-target="#toc-collapse" data-bs-toggle="collapse" title="Table of Contents" type="button">
+<span class="fa fa-angle-down"></span>
+</button>
+</div>
+<div class="navbar-collapse collapse card bg-body-tertiary" id="toc-collapse">
+<ul class="nav flex-column">
+<li class="nav-item" data-bs-level="1"><a class="nav-link" href="#ac-method-model">AC Method Model</a>
+<ul class="nav flex-column">
+<li class="nav-item" data-bs-level="2"><a class="nav-link" href="#schema-diagram">Schema Diagram</a>
+<ul class="nav flex-column">
+</ul>
+</li>
+<li class="nav-item" data-bs-level="2"><a class="nav-link" href="#classes">Classes</a>
+<ul class="nav flex-column">
+</ul>
+</li>
+<li class="nav-item" data-bs-level="2"><a class="nav-link" href="#slots">Slots</a>
+<ul class="nav flex-column">
+</ul>
+</li>
+<li class="nav-item" data-bs-level="2"><a class="nav-link" href="#enumerations">Enumerations</a>
+<ul class="nav flex-column">
+</ul>
+</li>
+<li class="nav-item" data-bs-level="2"><a class="nav-link" href="#types">Types</a>
+<ul class="nav flex-column">
+</ul>
+</li>
+<li class="nav-item" data-bs-level="2"><a class="nav-link" href="#subsets">Subsets</a>
+<ul class="nav flex-column">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div></div>
+<div class="col-md-9" role="main">
+<h1 id="ac-method-model">AC Method Model<a class="headerlink" href="#ac-method-model" title="Permanent link">¶</a></h1>
+<p>Schema for AC (Analysis Concepts) method definitions. Covers statistical analysis methods (e.g., ANCOVA, Cox PH) and derivation methods (e.g., Subtraction, LOCF imputation). Methods are the reusable building blocks that AC and DC definitions reference.</p>
+<p>URI: https://cdisc.org/ac/method</p>
+<p>Name: ac_method</p>
+<h2 id="schema-diagram">Schema Diagram<a class="headerlink" href="#schema-diagram" title="Permanent link">¶</a></h2>
+<pre class="mermaid"><code>erDiagram
+Any {
+
+}
+CategoricalVariable {
+    string description  
+    DataTypeEnum dataType  
+    string inputType  
+    string label  
+    boolean multivalued  
+    boolean required  
+    string role  
+}
+Coding {
+    string code  
+    string display  
+    uri system  
+}
+Configuration {
+    string name  
+    string description  
+    DataTypeEnum dataType  
+    stringList enumValues  
+}
+FactorLevel {
+    string description  
+    string name  
+}
+FactorLevelCombinationSpec {
+    string description  
+    string name  
+}
+Input {
+    string description  
+    DataTypeEnum dataType  
+    string inputType  
+    string label  
+    boolean multivalued  
+    boolean required  
+    string role  
+}
+InputStatistic {
+    string description  
+    string role  
+}
+InputVariable {
+    string description  
+    DataTypeEnum dataType  
+    string inputType  
+    string label  
+    boolean multivalued  
+    boolean required  
+    string role  
+}
+Method {
+    string name  
+    string description  
+    string conceptId  
+    string label  
+    string methodType  
+    string ncitCode  
+}
+ModelParameter {
+    string description  
+    string name  
+}
+ModelTerm {
+    string description  
+    string name  
+}
+OutputSpec {
+
+}
+Statistic {
+    string name  
+    string description  
+    string conceptId  
+    string label  
+    string ncitCode  
+}
+StatisticSet {
+    string name  
+    string description  
+    string conceptId  
+    string label  
+    string ncitCode  
+}
+StudyGroupPopulation {
+    string description  
+    string name  
+}
+SubMethod {
+    string name  
+    string description  
+    string conceptId  
+    string label  
+    string methodType  
+    string ncitCode  
+}
+
+CategoricalVariable ||--}o Coding : "codings"
+CategoricalVariable ||--}o FactorLevel : "levels"
+Configuration ||--|o Any : "defaultValue"
+Configuration ||--}o SubMethod : "configuredSubMethods"
+FactorLevel ||--}o Coding : "codings"
+FactorLevelCombinationSpec ||--}o Coding : "codings"
+FactorLevelCombinationSpec ||--}o FactorLevel : "combinedLevels"
+FactorLevelCombinationSpec ||--}| CategoricalVariable : "factors"
+Input ||--}o Coding : "codings"
+InputStatistic ||--|| Statistic : "statisticId"
+InputStatistic ||--|| SubMethod : "subMethodId"
+InputVariable ||--}o Coding : "codings"
+Method ||--|o OutputSpec : "output"
+Method ||--}o Coding : "codings"
+Method ||--}o Configuration : "configurations"
+Method ||--}o Input : "inputs"
+Method ||--}o SubMethod : "subMethods"
+ModelParameter ||--|o FactorLevelCombinationSpec : "forFactorLevelCombination"
+ModelParameter ||--}o Coding : "codings"
+ModelParameter ||--}o FactorLevel : "forFactorLevels"
+ModelParameter ||--}o InputVariable : "forInputVariables"
+ModelTerm ||--}o Coding : "codings"
+ModelTerm ||--}o Input : "forInputs"
+ModelTerm ||--}| ModelParameter : "parameters"
+OutputSpec ||--|o StudyGroupPopulation : "forStudyGroupPopulation"
+OutputSpec ||--}o Coding : "codings"
+OutputSpec ||--}o InputVariable : "forInputVariables"
+OutputSpec ||--}o ModelParameter : "forModelParameters"
+OutputSpec ||--}o ModelTerm : "forModelTerms"
+OutputSpec ||--}o Statistic : "statistics"
+OutputSpec ||--}o StatisticSet : "statisticSets"
+Statistic ||--}o Coding : "codings"
+StatisticSet ||--}o Coding : "codings"
+StatisticSet ||--}o Statistic : "statistics"
+StudyGroupPopulation ||--|| FactorLevelCombinationSpec : "factorLevelCombination"
+StudyGroupPopulation ||--}o Coding : "codings"
+SubMethod ||--|o OutputSpec : "output"
+SubMethod ||--}o Coding : "codings"
+SubMethod ||--}o Configuration : "configurations"
+SubMethod ||--}o InputStatistic : "inputs"
+SubMethod ||--}o SubMethod : "subMethods"
+</code></pre>
+<h2 id="classes">Classes<a class="headerlink" href="#classes" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="Any/">Any</a></td>
+<td>Class defined to allow any value for a slot, used for flexible configuration ...</td>
+</tr>
+<tr>
+<td><a href="Coding/">Coding</a></td>
+<td>A reference to a code in a terminology or ontology</td>
+</tr>
+<tr>
+<td><a href="Configuration/">Configuration</a></td>
+<td>A configurable parameter for a method</td>
+</tr>
+<tr>
+<td><a href="FactorLevel/">FactorLevel</a></td>
+<td>A level of a categorical input variable (factor)</td>
+</tr>
+<tr>
+<td><a href="FactorLevelCombinationSpec/">FactorLevelCombinationSpec</a></td>
+<td>A combination of levels of one or more categorical input variables (factors)</td>
+</tr>
+<tr>
+<td><a href="FormulaSpec/">FormulaSpec</a></td>
+<td>Specifies the formula notation and text for a method</td>
+</tr>
+<tr>
+<td>        <a href="AggregationFormulaSpec/">AggregationFormulaSpec</a></td>
+<td>Specifies the formula notation and text for an aggregation method</td>
+</tr>
+<tr>
+<td>        <a href="DerivationFormulaSpec/">DerivationFormulaSpec</a></td>
+<td>Specifies the formula notation and text for a derivation method</td>
+</tr>
+<tr>
+<td>        <a href="ModelBasedFormulaSpec/">ModelBasedFormulaSpec</a></td>
+<td>Specifies the formula notation and text for a model-based method</td>
+</tr>
+<tr>
+<td><a href="Input/">Input</a></td>
+<td>Specification of one input variable or value referenced by name in the formul...</td>
+</tr>
+<tr>
+<td>        <a href="InputValue/">InputValue</a></td>
+<td>An input value that performs one of the roles defined in the formula for the ...</td>
+</tr>
+<tr>
+<td>        <a href="InputVariable/">InputVariable</a></td>
+<td>An input variable that performs one of the roles defined in the formula for t...</td>
+</tr>
+<tr>
+<td>                <a href="CategoricalVariable/">CategoricalVariable</a></td>
+<td>An input variable that is categorical</td>
+</tr>
+<tr>
+<td>                <a href="ContinuousVariable/">ContinuousVariable</a></td>
+<td>An input variable that is continuous (numeric)</td>
+</tr>
+<tr>
+<td><a href="InputStatistic/">InputStatistic</a></td>
+<td>An input statistic that performs one of the roles defined in the formula for ...</td>
+</tr>
+<tr>
+<td><a href="Method/">Method</a></td>
+<td>A reusable statistical or derivation method definition</td>
+</tr>
+<tr>
+<td>        <a href="AggregationMethod/">AggregationMethod</a></td>
+<td>A method that aggregates or summarizes data, such as mean, median, or sum</td>
+</tr>
+<tr>
+<td>        <a href="CompositeMethod/">CompositeMethod</a></td>
+<td>A method that is composed of multiple sub-methods</td>
+</tr>
+<tr>
+<td>                <a href="ModelBasedMethod/">ModelBasedMethod</a></td>
+<td>A method that is based on a statistical model, such as ANCOVA or Cox PH</td>
+</tr>
+<tr>
+<td>        <a href="DerivationMethod/">DerivationMethod</a></td>
+<td>A method that derives new variables from existing data, such as subtraction, ...</td>
+</tr>
+<tr>
+<td>        <a href="SubMethod/">SubMethod</a></td>
+<td>A method that is part of a composite method</td>
+</tr>
+<tr>
+<td><a href="ModelParameter/">ModelParameter</a></td>
+<td>A parameter associated with a model term</td>
+</tr>
+<tr>
+<td><a href="ModelTerm/">ModelTerm</a></td>
+<td>A term (variable) used in a statistical model</td>
+</tr>
+<tr>
+<td><a href="NameAsIdentifier/">NameAsIdentifier</a></td>
+<td>A mixin class for any named method component that is referenced by name</td>
+</tr>
+<tr>
+<td><a href="OutputSpec/">OutputSpec</a></td>
+<td>A set of statistics produced by a method or sub-method that is associated wit...</td>
+</tr>
+<tr>
+<td><a href="Statistic/">Statistic</a></td>
+<td>A reusable statistic/measure definition in the vocabulary</td>
+</tr>
+<tr>
+<td><a href="StatisticalModelSpec/">StatisticalModelSpec</a></td>
+<td>A statistical model that describes the relationship between variables</td>
+</tr>
+<tr>
+<td><a href="StatisticSet/">StatisticSet</a></td>
+<td>A predefined set of statistics produced by a method or sub-method</td>
+</tr>
+<tr>
+<td><a href="StudyGroupPopulation/">StudyGroupPopulation</a></td>
+<td>A study group population that is denoted by a combination of input categorica...</td>
+</tr>
+</tbody>
+</table>
+<h2 id="slots">Slots<a class="headerlink" href="#slots" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>Slot</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="methodType/">methodType</a></td>
+<td>Indicates whether this is a model-based, aggregation or derivation method</td>
+</tr>
+<tr>
+<td><a href="formula/">formula</a></td>
+<td>Formula specification including notation and expressions</td>
+</tr>
+<tr>
+<td><a href="configurations/">configurations</a></td>
+<td>Configurable parameters for the method</td>
+</tr>
+<tr>
+<td><a href="inputs/">inputs</a></td>
+<td>Input data specifications for roles defined in the formula for the method</td>
+</tr>
+<tr>
+<td><a href="output/">output</a></td>
+<td>Specification of the output of a single method or sub-method</td>
+</tr>
+<tr>
+<td><a href="statisticalModel/">statisticalModel</a></td>
+<td>The statistical model associated with this method, if applicable</td>
+</tr>
+<tr>
+<td><a href="isModelFor/">isModelFor</a></td>
+<td>The input study design dependent variable that this model is intended to desc...</td>
+</tr>
+<tr>
+<td><a href="modelTerms/">modelTerms</a></td>
+<td>The terms (variables) used in the statistical model, if applicable</td>
+</tr>
+<tr>
+<td><a href="forInputs/">forInputs</a></td>
+<td>The input study design independent variable(s) or value(s) that this model te...</td>
+</tr>
+<tr>
+<td><a href="parameters/">parameters</a></td>
+<td>The parameters associated with the model term</td>
+</tr>
+<tr>
+<td><a href="forModelTerms/">forModelTerms</a></td>
+<td>The model term(s) with which the output is associated</td>
+</tr>
+<tr>
+<td><a href="forModelParameters/">forModelParameters</a></td>
+<td>The model parameter(s) with which the output is associated</td>
+</tr>
+<tr>
+<td><a href="forInputVariables/">forInputVariables</a></td>
+<td>The input variable(s) with which this model component is associated</td>
+</tr>
+<tr>
+<td><a href="forFactorLevels/">forFactorLevels</a></td>
+<td>The factor level(s) with which this model component is associated</td>
+</tr>
+<tr>
+<td><a href="forFactorLevelCombination/">forFactorLevelCombination</a></td>
+<td>The factor level combination with which the model parameter is associated</td>
+</tr>
+<tr>
+<td><a href="factorLevelCombination/">factorLevelCombination</a></td>
+<td>The combination of factor levels that denote the study group population</td>
+</tr>
+<tr>
+<td><a href="forStudyGroupPopulation/">forStudyGroupPopulation</a></td>
+<td>The study group population with which this model component is associated</td>
+</tr>
+<tr>
+<td><a href="subMethods/">subMethods</a></td>
+<td>Sub-methods that are part of this method</td>
+</tr>
+<tr>
+<td><a href="notation/">notation</a></td>
+<td>The formula notation system used</td>
+</tr>
+<tr>
+<td><a href="text/">text</a></td>
+<td>Template formula expression with role-tagged placeholders, e</td>
+</tr>
+<tr>
+<td><a href="inputType/">inputType</a></td>
+<td>The type of input, either a variable or a value</td>
+</tr>
+<tr>
+<td><a href="role/">role</a></td>
+<td>The role specified in the formula for the method that is performed by this in...</td>
+</tr>
+<tr>
+<td><a href="required/">required</a></td>
+<td>Indicates whether this input is mandatory</td>
+</tr>
+<tr>
+<td><a href="dataType/">dataType</a></td>
+<td>The data type of the input variable or value</td>
+</tr>
+<tr>
+<td><a href="multivalued/">multivalued</a></td>
+<td>Indicates whether there can be multiple occurrences of the input</td>
+</tr>
+<tr>
+<td><a href="value/">value</a></td>
+<td>The value specified for the input value</td>
+</tr>
+<tr>
+<td><a href="levels/">levels</a></td>
+<td>The levels of a categorical input variable (factor)</td>
+</tr>
+<tr>
+<td><a href="factors/">factors</a></td>
+<td>The role(s) of the input categorical variable (factor) whose levels are combi...</td>
+</tr>
+<tr>
+<td><a href="combinedLevels/">combinedLevels</a></td>
+<td>The factor levels that are combined in this factor level combination</td>
+</tr>
+<tr>
+<td><a href="subMethodId/">subMethodId</a></td>
+<td>The sub-method that produces the referenced output statistic</td>
+</tr>
+<tr>
+<td><a href="statisticId/">statisticId</a></td>
+<td>The statistic produced by the referenced sub-method that performs the input r...</td>
+</tr>
+<tr>
+<td><a href="configuredSubMethods/">configuredSubMethods</a></td>
+<td>The specific sub-method(s) that are configured by this configuration paramete...</td>
+</tr>
+<tr>
+<td><a href="defaultValue/">defaultValue</a></td>
+<td>Default value if not specified</td>
+</tr>
+<tr>
+<td><a href="enumValues/">enumValues</a></td>
+<td>Allowed values for the configuration parameter or input value</td>
+</tr>
+<tr>
+<td><a href="conceptId/">conceptId</a></td>
+<td>Unique identifier</td>
+</tr>
+<tr>
+<td><a href="name/">name</a></td>
+<td>Human-readable name</td>
+</tr>
+<tr>
+<td><a href="label/">label</a></td>
+<td>Short label for display</td>
+</tr>
+<tr>
+<td><a href="description/">description</a></td>
+<td>Free-text explanation or description</td>
+</tr>
+<tr>
+<td><a href="codings/">codings</a></td>
+<td>Mappings to external terminology or ontology codes</td>
+</tr>
+<tr>
+<td><a href="ncitCode/">ncitCode</a></td>
+<td>NCIt code</td>
+</tr>
+<tr>
+<td><a href="system/">system</a></td>
+<td>URI identifying the coding system (e</td>
+</tr>
+<tr>
+<td><a href="code/">code</a></td>
+<td>The code value within the system (e</td>
+</tr>
+<tr>
+<td><a href="display/">display</a></td>
+<td>Human-readable label for the code</td>
+</tr>
+<tr>
+<td><a href="statistics/">statistics</a></td>
+<td>The statistics produced by this method, referencing the statistics vocabulary</td>
+</tr>
+<tr>
+<td><a href="statisticSets/">statisticSets</a></td>
+<td>The predefined set of statistics produced by this method, referencing the sta...</td>
+</tr>
+</tbody>
+</table>
+<h2 id="enumerations">Enumerations<a class="headerlink" href="#enumerations" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>Enumeration</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="ModelBasedFormulaNotation/">ModelBasedFormulaNotation</a></td>
+<td>The notation system used for model-based formulas</td>
+</tr>
+<tr>
+<td><a href="AggregationFormulaNotation/">AggregationFormulaNotation</a></td>
+<td>The notation system used for aggregation formulas</td>
+</tr>
+<tr>
+<td><a href="DerivationFormulaNotation/">DerivationFormulaNotation</a></td>
+<td>The notation system used for derivation formulas</td>
+</tr>
+<tr>
+<td><a href="DataTypeEnum/">DataTypeEnum</a></td>
+<td>FHIR primitive data types for method inputs and outputs</td>
+</tr>
+</tbody>
+</table>
+<h2 id="types">Types<a class="headerlink" href="#types" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="String/">String</a></td>
+<td>A character string</td>
+</tr>
+<tr>
+<td><a href="Integer/">Integer</a></td>
+<td>An integer</td>
+</tr>
+<tr>
+<td><a href="Boolean/">Boolean</a></td>
+<td>A binary (true or false) value</td>
+</tr>
+<tr>
+<td><a href="Float/">Float</a></td>
+<td>A real number that conforms to the xsd:float specification</td>
+</tr>
+<tr>
+<td><a href="Double/">Double</a></td>
+<td>A real number that conforms to the xsd:double specification</td>
+</tr>
+<tr>
+<td><a href="Decimal/">Decimal</a></td>
+<td>A real number with arbitrary precision that conforms to the xsd:decimal speci...</td>
+</tr>
+<tr>
+<td><a href="Time/">Time</a></td>
+<td>A time object represents a (local) time of day, independent of any particular...</td>
+</tr>
+<tr>
+<td><a href="Date/">Date</a></td>
+<td>a date (year, month and day) in an idealized calendar</td>
+</tr>
+<tr>
+<td><a href="Datetime/">Datetime</a></td>
+<td>The combination of a date and time</td>
+</tr>
+<tr>
+<td><a href="DateOrDatetime/">DateOrDatetime</a></td>
+<td>Either a date or a datetime</td>
+</tr>
+<tr>
+<td><a href="Uriorcurie/">Uriorcurie</a></td>
+<td>a URI or a CURIE</td>
+</tr>
+<tr>
+<td><a href="Curie/">Curie</a></td>
+<td>a compact URI</td>
+</tr>
+<tr>
+<td><a href="Uri/">Uri</a></td>
+<td>a complete URI</td>
+</tr>
+<tr>
+<td><a href="Ncname/">Ncname</a></td>
+<td>Prefix part of CURIE</td>
+</tr>
+<tr>
+<td><a href="Objectidentifier/">Objectidentifier</a></td>
+<td>A URI or CURIE that represents an object in the model</td>
+</tr>
+<tr>
+<td><a href="Nodeidentifier/">Nodeidentifier</a></td>
+<td>A URI, CURIE or BNODE that represents a node in a model</td>
+</tr>
+<tr>
+<td><a href="Jsonpointer/">Jsonpointer</a></td>
+<td>A string encoding a JSON Pointer</td>
+</tr>
+<tr>
+<td><a href="Jsonpath/">Jsonpath</a></td>
+<td>A string encoding a JSON Path</td>
+</tr>
+<tr>
+<td><a href="Sparqlpath/">Sparqlpath</a></td>
+<td>A string encoding a SPARQL Property Path</td>
+</tr>
+</tbody>
+</table>
+<h2 id="subsets">Subsets<a class="headerlink" href="#subsets" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>Subset</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<footer class="col-md-12">
+<hr/>
+<p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+</footer>
+<script src="js/bootstrap.bundle.min.js"></script>
+<script>
+            var base_url = ".",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+<script src="js/base.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@9.1.3/dist/mermaid.min.js"></script>
+<script src="js/enable_zoom.js"></script>
+<script src="search/main.js"></script>
+<div aria-hidden="true" aria-labelledby="searchModalLabel" class="modal" id="mkdocs_search_modal" role="dialog" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header">
+<h4 class="modal-title" id="searchModalLabel">Search</h4>
+<button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+</div>
+<div class="modal-body">
+<p>From here you can search these documents. Enter your search terms below.</p>
+<form>
+<div class="form-group">
+<input class="form-control" id="mkdocs-search-query" placeholder="Search..." title="Type search term here" type="search"/>
+</div>
+</form>
+<div data-no-results-text="No results found" id="mkdocs-search-results"></div>
+</div>
+<div class="modal-footer">
+</div>
+</div>
+</div>
+</div><div aria-hidden="true" aria-labelledby="keyboardModalLabel" class="modal" id="mkdocs_keyboard_modal" role="dialog" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+<h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+<button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+</div>
+<div class="modal-body">
+<table class="table">
+<thead>
+<tr>
+<th style="width: 20%;">Keys</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="help shortcut"><kbd>?</kbd></td>
+<td>Open this help</td>
+</tr>
+<tr>
+<td class="next shortcut"><kbd>n</kbd></td>
+<td>Next page</td>
+</tr>
+<tr>
+<td class="prev shortcut"><kbd>p</kbd></td>
+<td>Previous page</td>
+</tr>
+<tr>
+<td class="search shortcut"><kbd>s</kbd></td>
+<td>Search</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="modal-footer">
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
+<!--
+MkDocs version : 1.6.1
+Build Date UTC : 2026-10-19 13:48:37.899224+00:00
+-->

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html data-bs-theme="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://cdisc-org.github.io/analysis-concepts/description/" rel="canonical"/>
+<link href="../img/favicon.ico" rel="shortcut icon"/>
+<title>Slot: description - Analysis Concepts Model</title>
+<link href="../css/bootstrap.min.css" rel="stylesheet"/>
+<link href="../css/fontawesome.min.css" rel="stylesheet"/>
+<link href="../css/brands.min.css" rel="stylesheet"/>
+<link href="../css/solid.min.css" rel="stylesheet"/>
+<link href="../css/v4-font-face.min.css" rel="stylesheet"/>
+<link href="../css/base.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" id="hljs-light" rel="stylesheet"/>
+<link disabled="" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" id="hljs-dark" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</head>
+<body>
+<div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+<div class="container">
+<a class="navbar-brand" href="..">Analysis Concepts Model</a>
+<!-- Expanded navigation -->
+<div class="navbar-collapse collapse" id="navbar-collapse">
+<ul class="nav navbar-nav ms-md-auto">
+<li class="nav-item">
+<a class="nav-link" data-bs-target="#mkdocs_search_modal" data-bs-toggle="modal" href="#">
+<i class="fa fa-search"></i> Search
+                            </a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="container">
+<div class="row">
+<div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+<div class="navbar-header">
+<button class="navbar-toggler collapsed" data-bs-target="#toc-collapse" data-bs-toggle="collapse" title="Table of Contents" type="button">
+<span class="fa fa-angle-down"></span>
+</button>
+</div>
+<div class="navbar-collapse collapse card bg-body-tertiary" id="toc-collapse">
+<ul class="nav flex-column">
+<li class="nav-item" data-bs-level="1"><a class="nav-link" href="#slot-description">Slot: description</a>
+<ul class="nav flex-column">
+<li class="nav-item" data-bs-level="2"><a class="nav-link" href="#applicable-classes">Applicable Classes</a>
+<ul class="nav flex-column">
+</ul>
+</li>
+<li class="nav-item" data-bs-level="2"><a class="nav-link" href="#properties">Properties</a>
+<ul class="nav flex-column">
+</ul>
+</li>
+<li class="nav-item" data-bs-level="2"><a class="nav-link" href="#identifier-and-mapping-information">Identifier and Mapping Information</a>
+<ul class="nav flex-column">
+</ul>
+</li>
+<li class="nav-item" data-bs-level="2"><a class="nav-link" href="#mappings">Mappings</a>
+<ul class="nav flex-column">
+</ul>
+</li>
+<li class="nav-item" data-bs-level="2"><a class="nav-link" href="#linkml-source">LinkML Source</a>
+<ul class="nav flex-column">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div></div>
+<div class="col-md-9" role="main">
+<h1 id="slot-description">Slot: description<a class="headerlink" href="#slot-description" title="Permanent link">¶</a></h1>
+<p><em>Free-text explanation or description</em></p>
+<div data-search-exclude="data-search-exclude">
+<p>URI: <a href="https://cdisc.org/ac/description">ac:description</a></p>
+<!-- no inheritance hierarchy -->
+<h2 id="applicable-classes">Applicable Classes<a class="headerlink" href="#applicable-classes" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Modifies Slot</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../Method/">Method</a></td>
+<td>A reusable statistical or derivation method definition</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><a href="../Configuration/">Configuration</a></td>
+<td>A configurable parameter for a method</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><a href="../StatisticalModelSpec/">StatisticalModelSpec</a></td>
+<td>A statistical model that describes the relationship between variables</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../ModelTerm/">ModelTerm</a></td>
+<td>A term (variable) used in a statistical model</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../ModelParameter/">ModelParameter</a></td>
+<td>A parameter associated with a model term</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../Input/">Input</a></td>
+<td>Specification of one input variable or value referenced by name in the formul...</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../FactorLevel/">FactorLevel</a></td>
+<td>A level of a categorical input variable (factor)</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../FactorLevelCombinationSpec/">FactorLevelCombinationSpec</a></td>
+<td>A combination of levels of one or more categorical input variables (factors)</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../StudyGroupPopulation/">StudyGroupPopulation</a></td>
+<td>A study group population that is denoted by a combination of input categorica...</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../InputStatistic/">InputStatistic</a></td>
+<td>An input statistic that performs one of the roles defined in the formula for ...</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../Statistic/">Statistic</a></td>
+<td>A reusable statistic/measure definition in the vocabulary</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><a href="../StatisticSet/">StatisticSet</a></td>
+<td>A predefined set of statistics produced by a method or sub-method</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><a href="../SubMethod/">SubMethod</a></td>
+<td>A method that is part of a composite method</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><a href="../CompositeMethod/">CompositeMethod</a></td>
+<td>A method that is composed of multiple sub-methods</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../ModelBasedMethod/">ModelBasedMethod</a></td>
+<td>A method that is based on a statistical model, such as ANCOVA or Cox PH</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../AggregationMethod/">AggregationMethod</a></td>
+<td>A method that aggregates or summarizes data, such as mean, median, or sum</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../DerivationMethod/">DerivationMethod</a></td>
+<td>A method that derives new variables from existing data, such as subtraction, ...</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../InputValue/">InputValue</a></td>
+<td>An input value that performs one of the roles defined in the formula for the ...</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../InputVariable/">InputVariable</a></td>
+<td>An input variable that performs one of the roles defined in the formula for t...</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../ContinuousVariable/">ContinuousVariable</a></td>
+<td>An input variable that is continuous (numeric)</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="../CategoricalVariable/">CategoricalVariable</a></td>
+<td>An input variable that is categorical</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">¶</a></h2>
+<h3 id="type-and-range">Type and Range<a class="headerlink" href="#type-and-range" title="Permanent link">¶</a></h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Range</td>
+<td><a href="../String/">String</a></td>
+</tr>
+<tr>
+<td>Domain Of</td>
+<td><a href="../Method/">Method</a>, <a href="../Configuration/">Configuration</a>, <a href="../StatisticalModelSpec/">StatisticalModelSpec</a>, <a href="../ModelTerm/">ModelTerm</a>, <a href="../ModelParameter/">ModelParameter</a>, <a href="../Input/">Input</a>, <a href="../FactorLevel/">FactorLevel</a>, <a href="../FactorLevelCombinationSpec/">FactorLevelCombinationSpec</a>, <a href="../StudyGroupPopulation/">StudyGroupPopulation</a>, <a href="../InputStatistic/">InputStatistic</a>, <a href="../Statistic/">Statistic</a>, <a href="../StatisticSet/">StatisticSet</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="identifier-and-mapping-information">Identifier and Mapping Information<a class="headerlink" href="#identifier-and-mapping-information" title="Permanent link">¶</a></h2>
+<h3 id="schema-source">Schema Source<a class="headerlink" href="#schema-source" title="Permanent link">¶</a></h3>
+<ul>
+<li>from schema: https://cdisc.org/ac/method</li>
+</ul>
+<h2 id="mappings">Mappings<a class="headerlink" href="#mappings" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>Mapping Type</th>
+<th>Mapped Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>self</td>
+<td>ac:description</td>
+</tr>
+<tr>
+<td>native</td>
+<td>ac:description</td>
+</tr>
+</tbody>
+</table>
+<h2 id="linkml-source">LinkML Source<a class="headerlink" href="#linkml-source" title="Permanent link">¶</a></h2>
+<details>
+<div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">description</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Free-text explanation or description</span>
+<span class="nt">from_schema</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://cdisc.org/ac/method</span>
+<span class="nt">rank</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
+<span class="nt">domain_of</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Method</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Configuration</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StatisticalModelSpec</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ModelTerm</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ModelParameter</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Input</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FactorLevel</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FactorLevelCombinationSpec</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StudyGroupPopulation</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">InputStatistic</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Statistic</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StatisticSet</span>
+<span class="nt">range</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+</code></pre></div>
+</details>
+</div></div>
+</div>
+</div>
+<footer class="col-md-12">
+<hr/>
+<p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+</footer>
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+<script src="../js/base.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@9.1.3/dist/mermaid.min.js"></script>
+<script src="../js/enable_zoom.js"></script>
+<script src="../search/main.js"></script>
+<div aria-hidden="true" aria-labelledby="searchModalLabel" class="modal" id="mkdocs_search_modal" role="dialog" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header">
+<h4 class="modal-title" id="searchModalLabel">Search</h4>
+<button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+</div>
+<div class="modal-body">
+<p>From here you can search these documents. Enter your search terms below.</p>
+<form>
+<div class="form-group">
+<input class="form-control" id="mkdocs-search-query" placeholder="Search..." title="Type search term here" type="search"/>
+</div>
+</form>
+<div data-no-results-text="No results found" id="mkdocs-search-results"></div>
+</div>
+<div class="modal-footer">
+</div>
+</div>
+</div>
+</div><div aria-hidden="true" aria-labelledby="keyboardModalLabel" class="modal" id="mkdocs_keyboard_modal" role="dialog" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+<h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+<button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+</div>
+<div class="modal-body">
+<table class="table">
+<thead>
+<tr>
+<th style="width: 20%;">Keys</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="help shortcut"><kbd>?</kbd></td>
+<td>Open this help</td>
+</tr>
+<tr>
+<td class="next shortcut"><kbd>n</kbd></td>
+<td>Next page</td>
+</tr>
+<tr>
+<td class="prev shortcut"><kbd>p</kbd></td>
+<td>Previous page</td>
+</tr>
+<tr>
+<td class="search shortcut"><kbd>s</kbd></td>
+<td>Search</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="modal-footer">
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
