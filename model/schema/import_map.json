@@ -1,5 +1,5 @@
 {
-    "acdc:shared_slots": "shared_slots",
-    "acdc:statistic": "statistic",
-    "acdc:statistic_set": "statistic_set"
+    "ac:shared_slots": "shared_slots",
+    "ac:statistic": "statistic",
+    "ac:statistic_set": "statistic_set"
 }

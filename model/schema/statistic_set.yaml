@@ -1,25 +1,25 @@
-id: https://cdisc.org/acdc/statistic_set
-name: statistic_set
+id: https://cdisc.org/ac/statistic_set
+name: ac_statistic_set
 version: "0.9.0"
-title: ACDC Statistic Set Model
+title: AC Statistic Set Model
 description: >-
-  Schema for ACDC (Analysis Concepts / Derivation Concepts) predefined 
+  Schema for AC (Analysis Concepts) predefined 
   statistic set definitions.
 
 license: https://creativecommons.org/licenses/by/4.0/
 
 prefixes:
-  acdc: https://cdisc.org/acdc/
+  ac: https://cdisc.org/ac/
   linkml: https://w3id.org/linkml/
   obo: http://purl.obolibrary.org/obo/
 
-default_prefix: acdc
+default_prefix: ac
 default_range: string
 
 imports:
   - linkml:types
-  - acdc:shared_slots
-  - acdc:statistic
+  - ac:shared_slots
+  - ac:statistic
 
 classes:
 

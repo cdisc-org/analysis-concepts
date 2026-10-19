@@ -1,18 +1,18 @@
-id: https://cdisc.org/acdc/shared_slots
-name: shared_slots
+id: https://cdisc.org/ac/shared_slots
+name: ac_shared_slots
 version: "0.9.0"
-title: ACDC Shared Slots Model
+title: AC Shared Slots Model
 description: >-
-  Schema for ACDC (Analysis Concepts / Derivation Concepts) shared slot definitions.
+  Schema for AC (Analysis Concepts) shared slot definitions.
 
 license: https://creativecommons.org/licenses/by/4.0/
 
 prefixes:
-  acdc: https://cdisc.org/acdc/
+  ac: https://cdisc.org/ac/
   linkml: https://w3id.org/linkml/
   NCIT: https://evsexplore.semantics.cancer.gov/evsexplore/concept/ncit/
 
-default_prefix: acdc
+default_prefix: ac
 default_range: string
 
 imports:

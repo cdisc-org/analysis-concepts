@@ -1,22 +1,22 @@
-id: https://cdisc.org/acdc/statistic
-name: statistic
+id: https://cdisc.org/ac/statistic
+name: ac_statistic
 version: "0.5.0"
-title: ACDC Statistic Model
+title: AC Statistic Model
 description: >-
-  Schema for ACDC (Analysis Concepts / Derivation Concepts) statistic definitions.
+  Schema for AC (Analysis Concepts) statistic definitions.
 
 license: https://creativecommons.org/licenses/by/4.0/
 
 prefixes:
-  acdc: https://cdisc.org/acdc/
+  ac: https://cdisc.org/ac/
   linkml: https://w3id.org/linkml/
 
-default_prefix: acdc
+default_prefix: ac
 default_range: string
 
 imports:
   - linkml:types
-  - acdc:shared_slots
+  - ac:shared_slots
 
 # ──────────────────────────────────────────────
 # Classes
