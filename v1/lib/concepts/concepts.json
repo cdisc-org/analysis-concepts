@@ -4,15 +4,16 @@
   "entries": [
     {
       "conceptId": "C.Observation",
+      "status": "released",
       "name": "Observation",
       "conceptRole": "collected",
       "definitionForm": "none",
       "abstract": true,
-      "description": "The atomic abstract act of recording one fact about a subject. Root of the observation tree. Every General Observation Class (Finding, Event, Intervention) inherits this spine.",
-      "status": "released"
+      "description": "The atomic abstract act of recording one fact about a subject. Root of the observation tree. Every General Observation Class (Finding, Event, Intervention) inherits this spine."
     },
     {
       "conceptId": "C.FindingObservation",
+      "status": "released",
       "name": "Finding observation",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -20,11 +21,11 @@
       "broader": [
         "C.Observation"
       ],
-      "description": "A measurement, test or examination (lab, vital sign, ECG, questionnaire).",
-      "status": "released"
+      "description": "A measurement, test or examination (lab, vital sign, ECG, questionnaire)."
     },
     {
       "conceptId": "C.EventObservation",
+      "status": "released",
       "name": "Event observation",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -32,11 +33,11 @@
       "broader": [
         "C.Observation"
       ],
-      "description": "An occurrence or incident independent of planned study evaluations (adverse event, medical history, disposition).",
-      "status": "released"
+      "description": "An occurrence or incident independent of planned study evaluations (adverse event, medical history, disposition)."
     },
     {
       "conceptId": "C.InterventionObservation",
+      "status": "released",
       "name": "Intervention observation",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -44,113 +45,113 @@
       "broader": [
         "C.Observation"
       ],
-      "description": "An investigational, therapeutic or other treatment intentionally administered (exposure, concomitant medication, procedure, substance use).",
-      "status": "released"
+      "description": "An investigational, therapeutic or other treatment intentionally administered (exposure, concomitant medication, procedure, substance use)."
     },
     {
       "conceptId": "C.PointComputation",
+      "status": "released",
       "name": "PointComputation",
       "conceptRole": "derived",
       "definitionForm": "none",
       "abstract": true,
-      "description": "A value computed at a specific point, without reference comparison, temporal aggregation, event aggregation, or classification. Input pattern: Method-driven. The concept defines output shape only; the method determines what inputs are needed.",
-      "status": "released"
+      "description": "A value computed at a specific point, without reference comparison, temporal aggregation, event aggregation, or classification. Input pattern: Method-driven. The concept defines output shape only; the method determines what inputs are needed."
     },
     {
       "conceptId": "C.Comparison",
+      "status": "released",
       "name": "Comparison",
       "conceptRole": "derived",
       "definitionForm": "none",
       "abstract": true,
-      "description": "Data expressing the relationship between two values of the same parameter. Input pattern: Concept-driven. Requires 2× Measure inputs, intrinsic to the category.",
-      "status": "released"
+      "description": "Data expressing the relationship between two values of the same parameter. Input pattern: Concept-driven. Requires 2× Measure inputs, intrinsic to the category."
     },
     {
       "conceptId": "C.SequenceAggregate",
+      "status": "released",
       "name": "SequenceAggregate",
       "conceptRole": "derived",
       "definitionForm": "none",
       "abstract": true,
-      "description": "A summary of an ordered series of the same parameter over time. Input pattern: Concept-driven. Requires 1× Measure input; the ordered series emerges from dimensional scoping.",
-      "status": "released"
+      "description": "A summary of an ordered series of the same parameter over time. Input pattern: Concept-driven. Requires 1× Measure input; the ordered series emerges from dimensional scoping."
     },
     {
       "conceptId": "C.EventAggregate",
+      "status": "released",
       "name": "EventAggregate",
       "conceptRole": "derived",
       "definitionForm": "none",
       "abstract": true,
-      "description": "A summary of discrete event occurrences on a timeline. Input pattern: Concept-driven. Requires 1× Observation (OC layer); the event set emerges from dimensional scoping.",
-      "status": "released"
+      "description": "A summary of discrete event occurrences on a timeline. Input pattern: Concept-driven. Requires 1× Observation (OC layer); the event set emerges from dimensional scoping."
     },
     {
       "conceptId": "C.Classification",
+      "status": "released",
       "name": "Classification",
       "conceptRole": "derived",
       "definitionForm": "none",
       "abstract": true,
-      "description": "A derivation mapping value(s) to a categorical assignment. Input pattern: Concept-driven. Requires 1× any concept as input (the value being classified).",
-      "status": "released"
+      "description": "A derivation mapping value(s) to a categorical assignment. Input pattern: Concept-driven. Requires 1× any concept as input (the value being classified)."
     },
     {
       "conceptId": "C.TreatmentComparison",
+      "status": "released",
       "name": "TreatmentComparison",
       "conceptRole": "analysis",
       "definitionForm": "none",
       "abstract": true,
-      "description": "A comparison of an outcome between treatment groups, producing estimated treatment effects with inference.",
-      "status": "released"
+      "description": "A comparison of an outcome between treatment groups, producing estimated treatment effects with inference."
     },
     {
       "conceptId": "C.SurvivalAnalysis",
+      "status": "released",
       "name": "SurvivalAnalysis",
       "conceptRole": "analysis",
       "definitionForm": "none",
       "abstract": true,
-      "description": "An analysis of time-to-event outcomes, estimating survival patterns and comparing them between groups.",
-      "status": "released"
+      "description": "An analysis of time-to-event outcomes, estimating survival patterns and comparing them between groups."
     },
     {
       "conceptId": "C.DescriptiveSummary",
+      "status": "released",
       "name": "DescriptiveSummary",
       "conceptRole": "analysis",
       "definitionForm": "none",
       "abstract": true,
-      "description": "A statistical summary of a distribution within a group. No comparison between groups required. After the FHIR-datatype retargeting pass, descriptive methods produce FHIR Quantity (or Count/Duration) atomic values directly rather than structured ResultPatterns; typicallyInvolves is empty because the per-row output isn't a multi-statistic table.",
-      "status": "released"
+      "description": "A statistical summary of a distribution within a group. No comparison between groups required. After the FHIR-datatype retargeting pass, descriptive methods produce FHIR Quantity (or Count/Duration) atomic values directly rather than structured ResultPatterns; typicallyInvolves is empty because the per-row output isn't a multi-statistic table."
     },
     {
       "conceptId": "C.ParameterDimension",
+      "status": "released",
       "name": "Parameter dimension",
       "conceptRole": "collected",
       "axis": "dimension",
       "definitionForm": "none",
       "abstract": true,
-      "description": "Any concept that says which measurement an observation is of.",
-      "status": "released"
+      "description": "Any concept that says which measurement an observation is of."
     },
     {
       "conceptId": "C.VisitDimension",
+      "status": "released",
       "name": "Visit dimension",
       "conceptRole": "collected",
       "axis": "dimension",
       "definitionForm": "none",
       "abstract": true,
-      "description": "Any concept that says at which visit or timepoint an observation applies.",
-      "status": "released"
+      "description": "Any concept that says at which visit or timepoint an observation applies."
     },
     {
       "conceptId": "C.EventDimension",
+      "status": "released",
       "name": "Event dimension",
       "conceptRole": "collected",
       "axis": "dimension",
       "definitionForm": "none",
       "abstract": true,
-      "description": "Any concept that says which clinical event an observation is about.",
-      "status": "released"
+      "description": "Any concept that says which clinical event an observation is about."
     },
     {
       "conceptId": "C.Subject",
+      "status": "released",
       "name": "Subject",
       "conceptRole": "collected",
       "axis": "dimension",
@@ -161,11 +162,11 @@
         "valueTypes": [
           "Identifier"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Study",
+      "status": "released",
       "name": "Study",
       "conceptRole": "collected",
       "axis": "dimension",
@@ -176,11 +177,11 @@
         "valueTypes": [
           "Identifier"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Site",
+      "status": "released",
       "name": "Site",
       "conceptRole": "collected",
       "axis": "dimension",
@@ -191,11 +192,11 @@
         "valueTypes": [
           "Identifier"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Visit",
+      "status": "released",
       "name": "Visit",
       "conceptRole": "collected",
       "axis": "dimension",
@@ -209,11 +210,11 @@
       },
       "broader": [
         "C.VisitDimension"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Timepoint",
+      "status": "released",
       "name": "Timepoint",
       "conceptRole": "collected",
       "axis": "dimension",
@@ -227,11 +228,11 @@
       },
       "broader": [
         "C.VisitDimension"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Treatment",
+      "status": "released",
       "name": "Treatment",
       "conceptRole": "collected",
       "axis": "dimension",
@@ -242,11 +243,11 @@
         "valueTypes": [
           "CodeableConcept"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Population",
+      "status": "released",
       "name": "Population",
       "conceptRole": "derived",
       "axis": "dimension",
@@ -257,11 +258,11 @@
         "valueTypes": [
           "CodeableConcept"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Parameter",
+      "status": "released",
       "name": "Parameter",
       "conceptRole": "collected",
       "axis": "dimension",
@@ -275,11 +276,11 @@
       },
       "broader": [
         "C.ParameterDimension"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Period",
+      "status": "released",
       "name": "Period",
       "conceptRole": "collected",
       "axis": "dimension",
@@ -290,11 +291,11 @@
         "valueTypes": [
           "CodeableConcept"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Event",
+      "status": "released",
       "name": "Event",
       "conceptRole": "collected",
       "axis": "dimension",
@@ -307,11 +308,11 @@
       },
       "broader": [
         "C.EventDimension"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Identity",
+      "status": "released",
       "name": "Identity",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -319,11 +320,11 @@
       "description": "The identity of the record and its subject",
       "broader": [
         "C.Observation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Sequence",
+      "status": "released",
       "name": "Sequence",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -343,11 +344,11 @@
       },
       "broader": [
         "C.Identity"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.GroupId",
+      "status": "released",
       "name": "GroupId",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -367,11 +368,11 @@
       },
       "broader": [
         "C.Identity"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.ReferenceId",
+      "status": "released",
       "name": "ReferenceId",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -391,11 +392,11 @@
       },
       "broader": [
         "C.Identity"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.LinkId",
+      "status": "released",
       "name": "LinkId",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -418,11 +419,11 @@
       },
       "broader": [
         "C.Identity"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Topic",
+      "status": "released",
       "name": "Topic",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -435,11 +436,11 @@
       },
       "broader": [
         "C.Observation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.TopicCode",
+      "status": "released",
       "name": "TopicCode",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -452,11 +453,11 @@
       },
       "broader": [
         "C.Topic"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.TopicDecode",
+      "status": "released",
       "name": "TopicDecode",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -469,11 +470,11 @@
       },
       "broader": [
         "C.Topic"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.DictionaryCoding",
+      "status": "released",
       "name": "DictionaryCoding",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -486,11 +487,11 @@
       },
       "broader": [
         "C.Topic"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.PreferredTerm",
+      "status": "released",
       "name": "PreferredTerm",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -503,11 +504,11 @@
       },
       "broader": [
         "C.DictionaryCoding"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.HierarchyLevel",
+      "status": "released",
       "name": "HierarchyLevel",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -520,11 +521,11 @@
       },
       "broader": [
         "C.DictionaryCoding"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Timing",
+      "status": "released",
       "name": "Timing",
       "conceptRole": "collected",
       "axis": "dimension",
@@ -539,11 +540,11 @@
       "cardinality": "1",
       "broader": [
         "C.Observation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Duration",
+      "status": "released",
       "name": "Duration",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -556,11 +557,11 @@
       },
       "broader": [
         "C.Timing"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.StudyDay",
+      "status": "released",
       "name": "StudyDay",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -573,11 +574,11 @@
       },
       "broader": [
         "C.Timing"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.RelativeTiming",
+      "status": "released",
       "name": "RelativeTiming",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -604,11 +605,11 @@
       },
       "broader": [
         "C.Timing"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.ObservationCategory",
+      "status": "released",
       "name": "Category",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -628,11 +629,11 @@
       },
       "broader": [
         "C.Observation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.ObservationSubcategory",
+      "status": "released",
       "name": "Subcategory",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -652,11 +653,11 @@
       },
       "broader": [
         "C.ObservationCategory"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.CollectionMethod",
+      "status": "released",
       "name": "Method",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -676,11 +677,11 @@
       },
       "broader": [
         "C.Observation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Location",
+      "status": "released",
       "name": "Location",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -700,11 +701,11 @@
       },
       "broader": [
         "C.Observation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Laterality",
+      "status": "released",
       "name": "Laterality",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -724,11 +725,11 @@
       },
       "broader": [
         "C.Location"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Directionality",
+      "status": "released",
       "name": "Directionality",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -748,11 +749,11 @@
       },
       "broader": [
         "C.Location"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Specimen",
+      "status": "released",
       "name": "Specimen",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -772,11 +773,11 @@
       },
       "broader": [
         "C.Observation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.EvaluatorRole",
+      "status": "released",
       "name": "EvaluatorRole",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -796,11 +797,11 @@
       },
       "broader": [
         "C.Observation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Position",
+      "status": "released",
       "name": "Position",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -823,11 +824,11 @@
       },
       "broader": [
         "C.Observation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.FastingStatus",
+      "status": "released",
       "name": "FastingStatus",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -840,11 +841,11 @@
       },
       "broader": [
         "C.Observation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Result",
+      "status": "released",
       "name": "Result",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -866,11 +867,11 @@
       ],
       "broader": [
         "C.FindingObservation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.NormalRange",
+      "status": "released",
       "name": "NormalRange",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -878,11 +879,11 @@
       "description": "Expected range for healthy individuals",
       "broader": [
         "C.Result"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Reference",
+      "status": "released",
       "name": "Reference",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -895,11 +896,11 @@
       },
       "broader": [
         "C.Result"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Occurrence",
+      "status": "released",
       "name": "Occurrence",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -919,11 +920,11 @@
       },
       "broader": [
         "C.EventObservation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.PreSpecified",
+      "status": "released",
       "name": "PreSpecified",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -943,11 +944,11 @@
       },
       "broader": [
         "C.EventObservation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Severity",
+      "status": "released",
       "name": "Severity",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -967,11 +968,11 @@
       },
       "broader": [
         "C.EventObservation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.ToxicityGrade",
+      "status": "released",
       "name": "ToxicityGrade",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -984,11 +985,11 @@
       },
       "broader": [
         "C.Severity"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Seriousness",
+      "status": "released",
       "name": "Seriousness",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -1008,11 +1009,11 @@
       },
       "broader": [
         "C.EventObservation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Outcome",
+      "status": "released",
       "name": "Outcome",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -1032,11 +1033,11 @@
       },
       "broader": [
         "C.EventObservation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.ActionTaken",
+      "status": "released",
       "name": "ActionTaken",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -1059,11 +1060,11 @@
       },
       "broader": [
         "C.EventObservation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Dose",
+      "status": "released",
       "name": "Dose",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -1090,11 +1091,11 @@
       },
       "broader": [
         "C.InterventionObservation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.DoseUnit",
+      "status": "released",
       "name": "DoseUnit",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -1107,11 +1108,11 @@
       },
       "broader": [
         "C.Dose"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.DoseFrequency",
+      "status": "released",
       "name": "Frequency",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -1134,11 +1135,11 @@
       },
       "broader": [
         "C.Dose"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.DoseForm",
+      "status": "released",
       "name": "DoseForm",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -1151,11 +1152,11 @@
       },
       "broader": [
         "C.Dose"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Route",
+      "status": "released",
       "name": "Route",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -1175,11 +1176,11 @@
       },
       "broader": [
         "C.InterventionObservation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Indication",
+      "status": "released",
       "name": "Indication",
       "conceptRole": "collected",
       "definitionForm": "none",
@@ -1192,11 +1193,11 @@
       },
       "broader": [
         "C.InterventionObservation"
-      ],
-      "status": "released"
+      ]
     },
     {
       "conceptId": "C.Measure",
+      "status": "released",
       "name": "Measure",
       "conceptRole": "derived",
       "description": "A value produced by applying a computation to one or more source values.",
@@ -1234,11 +1235,11 @@
           }
         ],
         "identity": "result = source"
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Change",
+      "status": "released",
       "name": "Change",
       "conceptRole": "derived",
       "description": "The arithmetic difference between two values of the same parameter.",
@@ -1280,11 +1281,11 @@
           }
         ],
         "identity": "result = value - reference"
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.PercentChange",
+      "status": "released",
       "name": "PercentChange",
       "label": "Percent change from baseline",
       "shortLabel": "%CFB",
@@ -1327,11 +1328,11 @@
           }
         ],
         "identity": "result = 100 * (value - reference) / reference"
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Ratio",
+      "status": "released",
       "name": "Ratio",
       "conceptRole": "derived",
       "description": "The quotient of two values of the same parameter.",
@@ -1372,11 +1373,11 @@
           }
         ],
         "identity": "result = value / reference"
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.LogRatio",
+      "status": "released",
       "name": "LogRatio",
       "conceptRole": "derived",
       "description": "The logarithm of the quotient of two values. Symmetric, additive scale.",
@@ -1417,11 +1418,11 @@
           }
         ],
         "identity": "result = ln(value / reference)"
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Shift",
+      "status": "released",
       "name": "Shift",
       "conceptRole": "derived",
       "description": "The categorical movement between two values of the same parameter.",
@@ -1462,11 +1463,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.PeakValue",
+      "status": "released",
       "name": "PeakValue",
       "conceptRole": "derived",
       "description": "The highest value in an ordered series.",
@@ -1499,11 +1500,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.TroughValue",
+      "status": "released",
       "name": "TroughValue",
       "conceptRole": "derived",
       "description": "The lowest value in an ordered series.",
@@ -1536,11 +1537,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.TimeToPeak",
+      "status": "released",
       "name": "TimeToPeak",
       "conceptRole": "derived",
       "description": "The time at which the highest value occurs.",
@@ -1572,11 +1573,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.TimeToTrough",
+      "status": "released",
       "name": "TimeToTrough",
       "conceptRole": "derived",
       "description": "The time at which the lowest value occurs.",
@@ -1608,11 +1609,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.AreaUnderCurve",
+      "status": "released",
       "name": "AreaUnderCurve",
       "label": "Area under the curve",
       "shortLabel": "AUC",
@@ -1648,11 +1649,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.CumulativeTotal",
+      "status": "released",
       "name": "CumulativeTotal",
       "conceptRole": "derived",
       "description": "The running total accumulated over time.",
@@ -1684,11 +1685,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.RateOfChange",
+      "status": "released",
       "name": "RateOfChange",
       "conceptRole": "derived",
       "description": "The rate at which a value changes over a time segment.",
@@ -1722,11 +1723,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.HalfLife",
+      "status": "released",
       "name": "HalfLife",
       "conceptRole": "derived",
       "description": "The time for a value to decline by half.",
@@ -1759,11 +1760,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.LastValue",
+      "status": "released",
       "name": "LastValue",
       "conceptRole": "derived",
       "description": "The last observed value in an ordered series.",
@@ -1795,11 +1796,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.FirstValue",
+      "status": "released",
       "name": "FirstValue",
       "conceptRole": "derived",
       "description": "The first value in an ordered series.",
@@ -1831,11 +1832,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.TimeInState",
+      "status": "released",
       "name": "TimeInState",
       "conceptRole": "derived",
       "description": "The total time spent above or below a threshold.",
@@ -1869,11 +1870,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.TimeToThreshold",
+      "status": "released",
       "name": "TimeToThreshold",
       "conceptRole": "derived",
       "description": "The time at which a series first crosses a defined threshold.",
@@ -1906,11 +1907,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Range",
+      "status": "released",
       "name": "Range",
       "conceptRole": "derived",
       "description": "The difference between the highest and lowest values in a series.",
@@ -1942,11 +1943,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.EventCount",
+      "status": "released",
       "name": "EventCount",
       "label": "Event count",
       "shortLabel": "n events",
@@ -1981,11 +1982,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.EventRate",
+      "status": "released",
       "name": "EventRate",
       "label": "Event rate",
       "shortLabel": "rate",
@@ -2020,11 +2021,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.TimeToEvent",
+      "status": "released",
       "name": "TimeToEvent",
       "label": "Time to event",
       "shortLabel": "TTE",
@@ -2060,11 +2061,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.TimeBetweenEvents",
+      "status": "released",
       "name": "TimeBetweenEvents",
       "conceptRole": "derived",
       "description": "The duration between consecutive recurrent events.",
@@ -2097,11 +2098,11 @@
             }
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Flag",
+      "status": "released",
       "name": "Flag",
       "conceptRole": "derived",
       "description": "A binary indicator evaluating a criterion (Y/N).",
@@ -2130,11 +2131,11 @@
             "name": "value"
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Category",
+      "status": "released",
       "name": "Category",
       "conceptRole": "derived",
       "description": "A categorical grouping derived from rules.",
@@ -2162,11 +2163,11 @@
             "name": "value"
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.AnalysisVisit",
+      "status": "released",
       "name": "AnalysisVisit",
       "conceptRole": "derived",
       "description": "A scheduled analysis visit (label and visit number) assigned to an observation by a windowing rule that maps each observation's study day to a planned-visit category.",
@@ -2195,11 +2196,11 @@
             "name": "value"
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Rank",
+      "status": "released",
       "name": "Rank",
       "conceptRole": "derived",
       "description": "The ordinal position of a value within a defined scope.",
@@ -2226,11 +2227,11 @@
             "name": "value"
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.QuantileGroup",
+      "status": "released",
       "name": "QuantileGroup",
       "conceptRole": "derived",
       "description": "A distributional bin assignment (tertiles, quartiles, quintiles).",
@@ -2257,11 +2258,11 @@
             "name": "value"
           }
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.LSMeans",
+      "status": "released",
       "name": "LSMeans",
       "conceptRole": "analysis",
       "axis": "measure",
@@ -2288,11 +2289,11 @@
         "satisfiedBy": [
           "OC.ls_means"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Contrasts",
+      "status": "released",
       "name": "Contrasts",
       "conceptRole": "analysis",
       "axis": "measure",
@@ -2325,11 +2326,11 @@
         "satisfiedBy": [
           "OC.contrasts_t"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.Type3Tests",
+      "status": "released",
       "name": "Type3Tests",
       "conceptRole": "analysis",
       "axis": "measure",
@@ -2355,11 +2356,11 @@
           "OC.type3_tests_f",
           "OC.type3_tests_mixed"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.ParameterEstimates",
+      "status": "released",
       "name": "ParameterEstimates",
       "conceptRole": "analysis",
       "axis": "measure",
@@ -2390,11 +2391,11 @@
         "satisfiedBy": [
           "OC.parameter_estimates_linear"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.FitStatistics",
+      "status": "released",
       "name": "FitStatistics",
       "conceptRole": "analysis",
       "axis": "measure",
@@ -2414,11 +2415,11 @@
           "OC.fit_statistics_linear",
           "OC.fit_statistics_concordance"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.CovarianceParameters",
+      "status": "released",
       "name": "CovarianceParameters",
       "conceptRole": "analysis",
       "axis": "measure",
@@ -2439,11 +2440,11 @@
         "satisfiedBy": [
           "OC.covariance_parameters"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.TestResult",
+      "status": "released",
       "name": "TestResult",
       "conceptRole": "analysis",
       "axis": "measure",
@@ -2465,11 +2466,11 @@
           "OC.chi_squared_test_result",
           "OC.homogeneity_test"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.SurvivalTable",
+      "status": "released",
       "name": "SurvivalTable",
       "conceptRole": "analysis",
       "axis": "measure",
@@ -2498,11 +2499,11 @@
         "satisfiedBy": [
           "OC.survival_table"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.MedianSurvival",
+      "status": "released",
       "name": "MedianSurvival",
       "conceptRole": "analysis",
       "axis": "measure",
@@ -2526,11 +2527,11 @@
         "satisfiedBy": [
           "OC.median_survival"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.EventSummary",
+      "status": "released",
       "name": "EventSummary",
       "conceptRole": "analysis",
       "axis": "measure",
@@ -2551,11 +2552,11 @@
         "satisfiedBy": [
           "OC.event_summary"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.HazardRatioEstimates",
+      "status": "released",
       "name": "HazardRatioEstimates",
       "conceptRole": "analysis",
       "axis": "measure",
@@ -2580,11 +2581,11 @@
         "satisfiedBy": [
           "OC.hazard_ratio_estimates"
         ]
-      },
-      "status": "released"
+      }
     },
     {
       "conceptId": "C.OddsRatioEstimates",
+      "status": "released",
       "name": "OddsRatioEstimates",
       "conceptRole": "analysis",
       "axis": "measure",
@@ -2607,8 +2608,37 @@
           "OC.odds_ratio_estimates",
           "OC.odds_ratio_measures"
         ]
-      },
-      "status": "released"
+      }
+    },
+    {
+      "conceptId": "C.LandmarkEstimates",
+      "status": "provisional",
+      "name": "LandmarkEstimates",
+      "conceptRole": "analysis",
+      "axis": "measure",
+      "definitionForm": "methodBound",
+      "description": "Estimated survival probability at stated landmark times, per group.",
+      "broader": [
+        "C.SurvivalAnalysis"
+      ],
+      "methodBoundDefinition": {
+        "constituents": [
+          "S.CI_lower",
+          "S.CI_upper",
+          "S.estimate",
+          "S.SE"
+        ],
+        "statisticSets": [
+          "SS.ci_estimate_normal"
+        ],
+        "resultDimensions": [
+          "group",
+          "time"
+        ],
+        "satisfiedBy": [
+          "OC.landmark_estimates"
+        ]
+      }
     }
   ]
 }

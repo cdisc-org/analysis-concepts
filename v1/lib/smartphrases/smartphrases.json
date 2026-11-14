@@ -1,0 +1,1179 @@
+{
+  "libraryVersion": "1.0.0-candidate",
+  "description": "SmartPhrase library. 23 phrases from the Transformation Library v0.7 on methods_02 (81a04b1); 8 phrases, two roles and the language packs from estimands_01 (11ab94d), marked provisional.",
+  "roleOrder": [
+    "endpoint",
+    "parameter",
+    "timepoint",
+    "population",
+    "grouping",
+    "ice_handling",
+    "method",
+    "method_qualifier",
+    "covariate",
+    "summary_measure"
+  ],
+  "roles": [
+    {
+      "name": "endpoint",
+      "label": "Endpoint Type",
+      "contextSource": "endpoint",
+      "estimandAttribute": "Variable",
+      "status": "released"
+    },
+    {
+      "name": "parameter",
+      "label": "Parameter",
+      "contextSource": "endpoint",
+      "estimandAttribute": "Variable",
+      "status": "released"
+    },
+    {
+      "name": "timepoint",
+      "label": "Timepoint",
+      "contextSource": "endpoint",
+      "estimandAttribute": "Variable",
+      "status": "released"
+    },
+    {
+      "name": "population",
+      "label": "Population",
+      "description": "Binds an analysis population (analysis set). The target population of an estimand is a USDM matter; a production model may need to distinguish the two.",
+      "contextSource": "endpoint",
+      "estimandAttribute": "Population",
+      "status": "released"
+    },
+    {
+      "name": "grouping",
+      "label": "Grouping",
+      "contextSource": "endpoint",
+      "estimandAttribute": "Treatment",
+      "status": "released"
+    },
+    {
+      "name": "method",
+      "label": "Statistical Method",
+      "contextSource": "manual",
+      "status": "released"
+    },
+    {
+      "name": "method_qualifier",
+      "label": "Method Qualifier",
+      "contextSource": "manual",
+      "repeating": true,
+      "status": "released"
+    },
+    {
+      "name": "covariate",
+      "label": "Covariates",
+      "contextSource": "manual",
+      "repeating": true,
+      "status": "released"
+    },
+    {
+      "name": "ice_handling",
+      "label": "ICE Handling",
+      "description": "ICH E9(R1) attribute 4 — the strategy applied to an intercurrent event. Repeating: one phrase per declared ICE.",
+      "contextSource": "manual",
+      "repeating": true,
+      "estimandAttribute": "IntercurrentEvent",
+      "status": "provisional"
+    },
+    {
+      "name": "summary_measure",
+      "label": "Summary Measure",
+      "description": "ICH E9(R1) attribute 5 — the population-level summary, bound to a method output class.",
+      "contextSource": "manual",
+      "estimandAttribute": "PopulationLevelSummary",
+      "status": "provisional"
+    }
+  ],
+  "configurationOptions": [
+    {
+      "name": "imputation",
+      "values": [
+        "LOCF",
+        "BOCF",
+        "WOCF",
+        "Mean",
+        "Median",
+        "MMRM (implicit)"
+      ],
+      "default": "LOCF"
+    },
+    {
+      "name": "event",
+      "values": [
+        "death",
+        "discontinuation",
+        "first AE",
+        "disease progression"
+      ]
+    },
+    {
+      "name": "strata",
+      "values": [
+        "site",
+        "region",
+        "baseline severity"
+      ]
+    },
+    {
+      "name": "conf_level",
+      "values": [
+        "90",
+        "95",
+        "97.5",
+        "99"
+      ],
+      "default": "95"
+    }
+  ],
+  "phrases": [
+    {
+      "conceptId": "SP_CFB_ENDPOINT",
+      "name": "Change from baseline endpoint",
+      "status": "released",
+      "role": "endpoint",
+      "phraseTemplate": "change from baseline in {parameter}",
+      "anchors": {
+        "producedConcept": "C.Change"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "Parameter",
+          "conceptClass": "SharedDimension",
+          "valueSource": "user_codelist",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name_with_label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_PCTCFB_ENDPOINT",
+      "name": "Percent change from baseline endpoint",
+      "status": "released",
+      "role": "endpoint",
+      "phraseTemplate": "percent change from baseline in {parameter}",
+      "anchors": {
+        "producedConcept": "C.PercentChange"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "Parameter",
+          "conceptClass": "SharedDimension",
+          "valueSource": "user_codelist",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name_with_label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_TTE_ENDPOINT",
+      "name": "Time-to-event endpoint",
+      "status": "released",
+      "role": "endpoint",
+      "phraseTemplate": "time to {event}",
+      "anchors": {
+        "producedConcept": "C.TimeToEvent"
+      },
+      "placeholders": [
+        {
+          "name": "event",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "Event",
+          "conceptClass": "SharedDimension",
+          "valueSource": "user_codelist",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name_with_label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_RESPONDER_ENDPOINT",
+      "name": "Responder endpoint",
+      "status": "released",
+      "role": "endpoint",
+      "phraseTemplate": "proportion of responders in {parameter}",
+      "anchors": {
+        "producedConcept": "C.Flag"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "Parameter",
+          "conceptClass": "SharedDimension",
+          "valueSource": "user_codelist",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name_with_label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_VALUE_ENDPOINT",
+      "name": "Analysis value endpoint",
+      "status": "released",
+      "role": "endpoint",
+      "phraseTemplate": "{parameter} value",
+      "anchors": {
+        "producedConcept": "C.Measure"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "Parameter",
+          "conceptClass": "SharedDimension",
+          "valueSource": "user_codelist",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name_with_label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_SHIFT_ENDPOINT",
+      "name": "Shift endpoint",
+      "status": "released",
+      "role": "endpoint",
+      "phraseTemplate": "shift from baseline in {parameter}",
+      "anchors": {
+        "producedConcept": "C.Shift"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "Parameter",
+          "conceptClass": "SharedDimension",
+          "valueSource": "user_codelist",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name_with_label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_PEAK_ENDPOINT",
+      "name": "Peak value endpoint",
+      "status": "released",
+      "role": "endpoint",
+      "phraseTemplate": "peak {parameter}",
+      "anchors": {
+        "producedConcept": "C.PeakValue"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "Parameter",
+          "conceptClass": "SharedDimension",
+          "valueSource": "user_codelist",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name_with_label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_AUC_ENDPOINT",
+      "name": "Area under curve endpoint",
+      "status": "released",
+      "role": "endpoint",
+      "phraseTemplate": "{parameter} AUC",
+      "anchors": {
+        "producedConcept": "C.AreaUnderCurve"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "Parameter",
+          "conceptClass": "SharedDimension",
+          "valueSource": "user_codelist",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name_with_label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_PARAMETER",
+      "name": "Parameter",
+      "status": "released",
+      "role": "parameter",
+      "phraseTemplate": "for {parameter}",
+      "anchors": {
+        "producedConcept": "C.Parameter"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptCategory": "C.ParameterDimension",
+          "conceptClass": "SharedDimension",
+          "valueSource": "user_codelist",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name_with_label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_TIMEPOINT",
+      "name": "Timepoint",
+      "status": "released",
+      "role": "timepoint",
+      "phraseTemplate": "at {visit}",
+      "anchors": {
+        "producedConcept": "C.AnalysisVisit"
+      },
+      "placeholders": [
+        {
+          "name": "visit",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptCategory": "C.VisitDimension",
+          "conceptClass": "SharedDimension",
+          "valueSource": "user_codelist",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name_with_label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_POPULATION",
+      "name": "Population",
+      "status": "released",
+      "role": "population",
+      "phraseTemplate": "in the {population} population",
+      "anchors": {
+        "producedConcept": "C.Population"
+      },
+      "placeholders": [
+        {
+          "name": "population",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "Population",
+          "conceptClass": "SharedDimension",
+          "valueSource": "user_codelist",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name_with_label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_GROUPING",
+      "name": "Treatment grouping",
+      "status": "released",
+      "role": "grouping",
+      "phraseTemplate": "comparing {treatment} groups",
+      "anchors": {
+        "producedConcept": "C.Treatment"
+      },
+      "placeholders": [
+        {
+          "name": "treatment",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "Treatment",
+          "conceptClass": "SharedDimension",
+          "valueSource": "user_codelist",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name_with_label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_STRATIFICATION",
+      "name": "Stratification",
+      "status": "released",
+      "role": "grouping",
+      "phraseTemplate": "stratified by {strata}",
+      "placeholders": [
+        {
+          "name": "strata",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptClass": "SharedDimension",
+          "valueSource": "user_codelist",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_METHOD_MMRM",
+      "name": "MMRM method",
+      "status": "released",
+      "role": "method",
+      "phraseTemplate": "using {method}",
+      "anchors": {
+        "usesMethod": "M.MMRM"
+      },
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "required": true,
+          "intentConstraint": "LongitudinalEstimate",
+          "valueSource": "internal_catalogue",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_METHOD_ANCOVA",
+      "name": "ANCOVA method",
+      "status": "released",
+      "role": "method",
+      "phraseTemplate": "using {method}",
+      "anchors": {
+        "usesMethod": "M.ANCOVA"
+      },
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "required": true,
+          "intentConstraint": "GroupComparison",
+          "valueSource": "internal_catalogue",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_METHOD_LOGRANK",
+      "name": "Log-rank method",
+      "status": "released",
+      "role": "method",
+      "phraseTemplate": "using the {method} test",
+      "anchors": {
+        "usesMethod": "M.LogRankTest"
+      },
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "required": true,
+          "intentConstraint": "TimeToEventEstimate",
+          "valueSource": "internal_catalogue",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_METHOD_KM",
+      "name": "Kaplan-Meier method",
+      "status": "released",
+      "role": "method",
+      "phraseTemplate": "using {method} estimation",
+      "anchors": {
+        "usesMethod": "M.KaplanMeier"
+      },
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "required": true,
+          "intentConstraint": "TimeToEventEstimate",
+          "valueSource": "internal_catalogue",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_METHOD_CHISQ",
+      "name": "Chi-square method",
+      "status": "released",
+      "role": "method",
+      "phraseTemplate": "using the {method} test",
+      "anchors": {
+        "usesMethod": "M.ChiSquaredTest"
+      },
+      "placeholders": [
+        {
+          "name": "method",
+          "kind": "method_ref",
+          "required": true,
+          "intentConstraint": "GroupComparison",
+          "valueSource": "internal_catalogue",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_METHOD_DESCSTATS",
+      "name": "Descriptive statistics",
+      "status": "released",
+      "role": "method",
+      "phraseTemplate": "summarised by {statistic}",
+      "placeholders": [
+        {
+          "name": "statistic",
+          "kind": "method_ref",
+          "required": true,
+          "intentConstraint": "DescriptiveSummary",
+          "valueSource": "internal_catalogue",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_IMPUTATION",
+      "name": "Imputation qualifier",
+      "status": "released",
+      "role": "method_qualifier",
+      "phraseTemplate": "with {imputation} imputation for missing data",
+      "placeholders": [
+        {
+          "name": "imputation",
+          "kind": "method_ref",
+          "required": true,
+          "intentConstraint": "MissingDataHandling",
+          "valueSource": "internal_catalogue",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_CONFIDENCE_LEVEL",
+      "name": "Confidence level qualifier",
+      "status": "released",
+      "role": "method_qualifier",
+      "phraseTemplate": "with {conf_level}% confidence intervals",
+      "placeholders": [
+        {
+          "name": "conf_level",
+          "kind": "value",
+          "required": true,
+          "datatype": "integer",
+          "constraint": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_COVARIATE_BASELINE",
+      "name": "Baseline covariate",
+      "status": "released",
+      "role": "covariate",
+      "phraseTemplate": "adjusting for baseline {parameter}",
+      "anchors": {
+        "producedConcept": "C.Measure"
+      },
+      "placeholders": [
+        {
+          "name": "parameter",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "Parameter",
+          "conceptClass": "SharedDimension",
+          "valueSource": "user_codelist",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name_with_label"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_COVARIATE_SITE",
+      "name": "Site covariate",
+      "status": "released",
+      "role": "covariate",
+      "phraseTemplate": "adjusting for site",
+      "anchors": {
+        "producedConcept": "C.Site"
+      }
+    },
+    {
+      "conceptId": "SP_ICE_TREATMENT_POLICY",
+      "name": "Intercurrent event — treatment policy strategy",
+      "status": "provisional",
+      "role": "ice_handling",
+      "phraseTemplate": "regardless of {ice}",
+      "anchors": {
+        "icheStrategy": "TreatmentPolicy",
+        "implementation": "none"
+      },
+      "placeholders": [
+        {
+          "name": "ice",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "IntercurrentEvent",
+          "conceptClass": "IntercurrentEvent",
+          "valueSource": "study_registry",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_ICE_HYPOTHETICAL",
+      "name": "Intercurrent event — hypothetical strategy",
+      "status": "provisional",
+      "role": "ice_handling",
+      "phraseTemplate": "as if {ice} had not occurred",
+      "anchors": {
+        "icheStrategy": "Hypothetical",
+        "implementation": "imputation"
+      },
+      "placeholders": [
+        {
+          "name": "ice",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "IntercurrentEvent",
+          "conceptClass": "IntercurrentEvent",
+          "valueSource": "study_registry",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_ICE_COMPOSITE",
+      "name": "Intercurrent event — composite strategy",
+      "status": "provisional",
+      "role": "ice_handling",
+      "phraseTemplate": "with {ice} treated as {outcome}",
+      "anchors": {
+        "icheStrategy": "Composite",
+        "implementation": "derivation"
+      },
+      "placeholders": [
+        {
+          "name": "ice",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "IntercurrentEvent",
+          "conceptClass": "IntercurrentEvent",
+          "valueSource": "study_registry",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name"
+        },
+        {
+          "name": "outcome",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "Outcome",
+          "conceptClass": "Outcome",
+          "valueSource": "study_registry",
+          "renderOptions": [
+            "label",
+            "name"
+          ],
+          "defaultRender": "name"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_ICE_WHILE_ON_TREATMENT",
+      "name": "Intercurrent event — while on treatment strategy",
+      "status": "provisional",
+      "role": "ice_handling",
+      "phraseTemplate": "using measurements taken prior to {ice}",
+      "anchors": {
+        "icheStrategy": "WhileOnTreatment",
+        "implementation": "censoring"
+      },
+      "placeholders": [
+        {
+          "name": "ice",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "IntercurrentEvent",
+          "conceptClass": "IntercurrentEvent",
+          "valueSource": "study_registry",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_ICE_PRINCIPAL_STRATUM",
+      "name": "Intercurrent event — principal stratum strategy",
+      "status": "provisional",
+      "role": "ice_handling",
+      "phraseTemplate": "in the stratum of participants in whom {ice} would not occur",
+      "anchors": {
+        "icheStrategy": "PrincipalStratum",
+        "implementation": "population_subsetting"
+      },
+      "placeholders": [
+        {
+          "name": "ice",
+          "kind": "concept_ref",
+          "required": true,
+          "conceptConstraint": "IntercurrentEvent",
+          "conceptClass": "IntercurrentEvent",
+          "valueSource": "study_registry",
+          "renderOptions": [
+            "label",
+            "name",
+            "name_with_label"
+          ],
+          "defaultRender": "name"
+        }
+      ]
+    },
+    {
+      "conceptId": "SP_CENSOR_LTFU",
+      "name": "Censoring rule — lost to follow-up",
+      "status": "provisional",
+      "role": "method_qualifier",
+      "phraseTemplate": "censoring subjects lost to follow-up"
+    },
+    {
+      "conceptId": "SP_KM_CURVES",
+      "name": "Reporting qualifier — Kaplan-Meier survival curves",
+      "status": "provisional",
+      "role": "method_qualifier",
+      "phraseTemplate": "displayed as Kaplan-Meier survival curves by treatment arm"
+    },
+    {
+      "conceptId": "SP_SUMMARY_MEASURE",
+      "name": "Population-level summary measure",
+      "status": "provisional",
+      "role": "summary_measure",
+      "phraseTemplate": "summarised as {summary}",
+      "anchors": {
+        "estimandAttribute": "PopulationLevelSummary"
+      },
+      "placeholders": [
+        {
+          "name": "summary",
+          "kind": "output_ref",
+          "description": "A MethodOutput the bound method produces — the model hook is Analysis.summarizedByOutputClass.",
+          "required": true,
+          "valueSource": "method_outputs",
+          "renderOptions": [
+            "label",
+            "name"
+          ],
+          "defaultRender": "name"
+        }
+      ]
+    }
+  ],
+  "languagePacks": [
+    {
+      "language": "en",
+      "name": "English",
+      "sentenceTemplate": "{endpoint} {parameter} {timepoint} {population} {grouping}[, {ice_handling},] {method} {method_qualifier} {covariate}[, {summary_measure},] will be assessed as {sentenceRole}.",
+      "roleConjunctions": [
+        {
+          "key": "ice_handling",
+          "text": " and "
+        },
+        {
+          "key": "method_qualifier",
+          "text": ", "
+        }
+      ],
+      "outputNames": [
+        {
+          "key": "OC.median_survival",
+          "name": "the median time to event"
+        },
+        {
+          "key": "OC.contrasts_t",
+          "name": "the difference in least-squares means"
+        }
+      ]
+    },
+    {
+      "language": "fr",
+      "name": "Français",
+      "sentenceTemplate": "{endpoint} {parameter} {timepoint} {population} {grouping}[, {ice_handling},] {method} {method_qualifier} {covariate}[, {summary_measure},] sera évaluée comme {sentenceRole}.",
+      "roleConjunctions": [
+        {
+          "key": "ice_handling",
+          "text": " et "
+        },
+        {
+          "key": "method_qualifier",
+          "text": ", "
+        }
+      ],
+      "phraseTemplates": [
+        {
+          "key": "SP_CFB_ENDPOINT",
+          "text": "la variation de {parameter} par rapport à la valeur initiale"
+        },
+        {
+          "key": "SP_PARAMETER",
+          "text": "pour {parameter}"
+        },
+        {
+          "key": "SP_TIMEPOINT",
+          "text": "à la {visit}"
+        },
+        {
+          "key": "SP_POPULATION",
+          "text": "dans la population {population}"
+        },
+        {
+          "key": "SP_GROUPING",
+          "text": "en comparant les groupes de {treatment}"
+        },
+        {
+          "key": "SP_METHOD_ANCOVA",
+          "text": "au moyen d'une {method}"
+        },
+        {
+          "key": "SP_CONFIDENCE_LEVEL",
+          "text": "avec des intervalles de confiance à {conf_level} %"
+        },
+        {
+          "key": "SP_COVARIATE_BASELINE",
+          "text": "avec ajustement sur la valeur initiale du score {parameter}"
+        },
+        {
+          "key": "SP_COVARIATE_SITE",
+          "text": "avec ajustement sur le centre"
+        },
+        {
+          "key": "SP_TTE_ENDPOINT",
+          "text": "le délai jusqu'à {event}"
+        },
+        {
+          "key": "SP_METHOD_KM",
+          "text": "au moyen de l'estimation de {method}"
+        },
+        {
+          "key": "SP_STRATIFICATION",
+          "text": "stratifié selon {strata}"
+        },
+        {
+          "key": "SP_ICE_TREATMENT_POLICY",
+          "text": "indépendamment de {ice}"
+        },
+        {
+          "key": "SP_ICE_HYPOTHETICAL",
+          "text": "comme si {ice} ne s'était pas produit"
+        },
+        {
+          "key": "SP_ICE_COMPOSITE",
+          "text": "avec {ice} considéré comme {outcome}"
+        },
+        {
+          "key": "SP_ICE_WHILE_ON_TREATMENT",
+          "text": "en utilisant les mesures recueillies avant {ice}"
+        },
+        {
+          "key": "SP_ICE_PRINCIPAL_STRATUM",
+          "text": "dans la strate des participants chez qui {ice} ne se produirait pas"
+        },
+        {
+          "key": "SP_SUMMARY_MEASURE",
+          "text": "résumé par {summary}"
+        },
+        {
+          "key": "SP_CENSOR_LTFU",
+          "text": "en censurant les participants perdus de vue"
+        },
+        {
+          "key": "SP_KM_CURVES",
+          "text": "présenté sous forme de courbes de survie de Kaplan-Meier par bras de traitement"
+        }
+      ],
+      "methodNames": [
+        {
+          "key": "M.ANCOVA",
+          "name": "analyse de covariance"
+        },
+        {
+          "key": "M.KaplanMeier",
+          "label": "Kaplan-Meier",
+          "name": "Kaplan-Meier"
+        }
+      ],
+      "outputNames": [
+        {
+          "key": "OC.median_survival",
+          "name": "le délai médian jusqu'à l'événement"
+        },
+        {
+          "key": "OC.contrasts_t",
+          "name": "la différence des moyennes des moindres carrés"
+        }
+      ],
+      "sentenceRoles": [
+        {
+          "key": "the primary analysis",
+          "text": "analyse principale"
+        },
+        {
+          "key": "a secondary analysis",
+          "text": "une analyse secondaire"
+        },
+        {
+          "key": "a supporting analysis",
+          "text": "une analyse complémentaire"
+        },
+        {
+          "key": "a sensitivity analysis",
+          "text": "une analyse de sensibilité"
+        }
+      ],
+      "validated": false
+    },
+    {
+      "language": "de",
+      "name": "Deutsch",
+      "sentenceTemplate": "{endpoint} {parameter} {timepoint} {population} wird {grouping}[, {ice_handling},] {method} {method_qualifier} {covariate}[, {summary_measure},] als {sentenceRole} untersucht.",
+      "roleConjunctions": [
+        {
+          "key": "ice_handling",
+          "text": " und "
+        },
+        {
+          "key": "method_qualifier",
+          "text": ", "
+        }
+      ],
+      "phraseTemplates": [
+        {
+          "key": "SP_CFB_ENDPOINT",
+          "text": "die Veränderung von {parameter} gegenüber dem Ausgangswert"
+        },
+        {
+          "key": "SP_PARAMETER",
+          "text": "für {parameter}"
+        },
+        {
+          "key": "SP_TIMEPOINT",
+          "text": "in {visit}"
+        },
+        {
+          "key": "SP_POPULATION",
+          "text": "in der {population}"
+        },
+        {
+          "key": "SP_GROUPING",
+          "text": "im Vergleich der {treatment}sgruppen"
+        },
+        {
+          "key": "SP_METHOD_ANCOVA",
+          "text": "mittels {method}"
+        },
+        {
+          "key": "SP_CONFIDENCE_LEVEL",
+          "text": "mit {conf_level}%-Konfidenzintervallen"
+        },
+        {
+          "key": "SP_COVARIATE_BASELINE",
+          "text": "adjustiert für den Ausgangswert von {parameter}"
+        },
+        {
+          "key": "SP_COVARIATE_SITE",
+          "text": "adjustiert für das Zentrum"
+        },
+        {
+          "key": "SP_TTE_ENDPOINT",
+          "text": "die Zeit bis {event}"
+        },
+        {
+          "key": "SP_METHOD_KM",
+          "text": "mittels {method}-Schätzung"
+        },
+        {
+          "key": "SP_STRATIFICATION",
+          "text": "stratifiziert nach {strata}"
+        },
+        {
+          "key": "SP_ICE_TREATMENT_POLICY",
+          "text": "unabhängig davon, ob {ice} vorlag"
+        },
+        {
+          "key": "SP_ICE_HYPOTHETICAL",
+          "text": "als ob {ice} nicht aufgetreten wäre"
+        },
+        {
+          "key": "SP_ICE_COMPOSITE",
+          "text": "wobei {ice} als {outcome} gewertet wird"
+        },
+        {
+          "key": "SP_ICE_WHILE_ON_TREATMENT",
+          "text": "sofern {ice} zum Zeitpunkt der Messung noch nicht vorlag"
+        },
+        {
+          "key": "SP_ICE_PRINCIPAL_STRATUM",
+          "text": "in der Schicht der Teilnehmenden, bei denen {ice} nicht aufträte"
+        },
+        {
+          "key": "SP_SUMMARY_MEASURE",
+          "text": "zusammengefasst als {summary}"
+        },
+        {
+          "key": "SP_CENSOR_LTFU",
+          "text": "unter Zensierung der für die Nachbeobachtung verlorenen Teilnehmenden"
+        },
+        {
+          "key": "SP_KM_CURVES",
+          "text": "dargestellt als Kaplan-Meier-Überlebenskurven nach Behandlungsarm"
+        }
+      ],
+      "methodNames": [
+        {
+          "key": "M.ANCOVA",
+          "name": "Kovarianzanalyse"
+        },
+        {
+          "key": "M.KaplanMeier",
+          "label": "Kaplan-Meier",
+          "name": "Kaplan-Meier"
+        }
+      ],
+      "outputNames": [
+        {
+          "key": "OC.median_survival",
+          "name": "die mediane Zeit bis zum Ereignis"
+        },
+        {
+          "key": "OC.contrasts_t",
+          "name": "die Differenz der Kleinste-Quadrate-Mittelwerte"
+        }
+      ],
+      "sentenceRoles": [
+        {
+          "key": "the primary analysis",
+          "text": "primäre Analyse"
+        },
+        {
+          "key": "a secondary analysis",
+          "text": "sekundäre Analyse"
+        },
+        {
+          "key": "a supporting analysis",
+          "text": "unterstützende Analyse"
+        },
+        {
+          "key": "a sensitivity analysis",
+          "text": "Sensitivitätsanalyse"
+        }
+      ],
+      "validated": false
+    }
+  ]
+}

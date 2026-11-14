@@ -65,6 +65,10 @@ CANDIDATE_CLASSES = {
     "HazardRatioEstimates": ["hazard_ratio_estimates"],
     "OddsRatioEstimates": ["odds_ratio_estimates", "odds_ratio_measures"],
 }
+PROVISIONAL_ANALYSIS = {
+    "LandmarkEstimates": ("Estimated survival probability at stated landmark times, per group.",
+                          "landmark_estimates", ["SurvivalAnalysis"], ["group", "time"]),
+}
 DIMENSION_GROUPS = {
     "ParameterDimension": ("Parameter dimension", "Any concept that says which measurement an observation is of.", ["Parameter"]),
     "VisitDimension": ("Visit dimension", "Any concept that says at which visit or timepoint an observation applies.",
@@ -104,7 +108,7 @@ def build():
     def add(key: str, /, **fields):
         if key in concepts:
             raise ValueError(f"duplicate concept {key}")
-        concepts[key] = clean({"conceptId": cid(key), **fields, "status": STATUS})
+        concepts[key] = clean({"conceptId": cid(key), **{"status": STATUS, **fields}})
 
     # ---- abstract roots and groupings -----------------------------------
     add("Observation", name="Observation", conceptRole="collected", definitionForm="none", abstract=True,
@@ -255,6 +259,24 @@ def build():
                 "optionalConstituents": [f"S.{s}" for s in p.get("optional_statistics", [])],
                 "resultDimensions": p.get("dimensions"),
                 "satisfiedBy": satisfied,
+            })
+
+    # ---- provisional analysis concepts -------------------------------------
+    # Needed by the Kaplan-Meier template proposed on estimands_01, which bound
+    # a landmark output to a concept the analysis model does not have.
+    by_id = {e["conceptId"]: e for e in classes}
+    for name, (desc, oc_name, cats, dims) in PROVISIONAL_ANALYSIS.items():
+        entry = by_id[f"OC.{oc_name}"]
+        constituents = list(entry.get("statistics", []))
+        for s in entry.get("statisticSets", []):
+            constituents += [t for t in sorted(sets[s], key=str.lower) if t not in constituents]
+        add(name, name=name, conceptRole="analysis", axis="measure", definitionForm="methodBound",
+            description=desc, broader=[cid(c) for c in cats], status="provisional",
+            methodBoundDefinition={
+                "constituents": constituents,
+                "statisticSets": entry.get("statisticSets"),
+                "resultDimensions": dims,
+                "satisfiedBy": [entry["conceptId"]],
             })
 
     write_json(LIB / "concepts" / "concepts.json", {

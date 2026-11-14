@@ -1,0 +1,305 @@
+# Analysis Concepts candidate v1 — SmartPhrase layer
+# Origin: new in candidate v1 (decision D9). The content model comes from the
+# `smartPhrases` and `roleDefinitions` sections of the Transformation Library
+# v0.7 on methods_02, and from smartphrase/REFERENCE.md on estimands_01.
+# Changes from the origin are listed in v1/docs/migration-notes.md.
+id: https://cdisc.org/ac/smartphrase
+name: ac_smartphrase
+version: "1.0.0-candidate"
+title: AC SmartPhrase Model
+description: >-
+  Schema for the SmartPhrase library. A SmartPhrase is a reusable fragment of
+  statistical analysis plan text with typed placeholders. Each plays one role
+  in a sentence. Choosing a phrase and filling its placeholders selects
+  Concepts and Methods, so the plan text and the executable specification come
+  from the same choices: text is generated from the model and never parsed.
+  A phrase binds to Concepts, Methods, method outputs and values, never to a
+  physical variable. This schema covers the library side; the study side
+  (phrase instances) is in ac_study.
+
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  ac: https://cdisc.org/ac/
+  linkml: https://w3id.org/linkml/
+
+default_prefix: ac
+default_range: string
+
+imports:
+  - linkml:types
+  - ac:ac_common
+
+enums:
+
+  ContextSourceEnum:
+    description: Where the value for a role usually comes from.
+    permissible_values:
+      endpoint:
+        description: Supplied by the endpoint specification.
+      manual:
+        description: Chosen directly by the author.
+
+  PlaceholderKindEnum:
+    description: What a binding of the placeholder must supply.
+    permissible_values:
+      concept_ref:
+        description: A study concept (a parameter, visit, population, treatment, event or intercurrent event).
+      method_ref:
+        description: A Method from the method library.
+      output_ref:
+        description: >-
+          An output of the bound Method (the Method or SubMethod that produces
+          it). It must also be an output measure of the Transformation in use.
+      value:
+        description: A literal value, checked against the placeholder's datatype and constraint.
+      extension_ref:
+        description: >-
+          An entity owned by a model that extends AC (for example an eSAP
+          model's hypothesis). AC checks only that a reference is supplied;
+          the extending model defines and checks the entity (decision D13).
+
+  RenderModeEnum:
+    description: How a bound concept or method is written in the text.
+    permissible_values:
+      label:
+        description: The short display form.
+      name:
+        description: The full name.
+      name_with_label:
+        description: The full name followed by the label in brackets.
+
+  IchE9R1StrategyEnum:
+    description: The five strategies for handling an intercurrent event in ICH E9(R1).
+    permissible_values:
+      TreatmentPolicy: {}
+      Hypothetical: {}
+      Composite: {}
+      WhileOnTreatment: {}
+      PrincipalStratum: {}
+
+  EstimandAttributeEnum:
+    description: The attribute of an ICH E9(R1) estimand that a role or phrase expresses.
+    permissible_values:
+      Treatment: {}
+      Population: {}
+      Variable: {}
+      IntercurrentEvent: {}
+      PopulationLevelSummary: {}
+
+classes:
+
+  RoleDefinition:
+    description: A role a phrase plays in an analysis sentence.
+    attributes:
+      name:
+        description: Role identifier, e.g., endpoint, method, covariate.
+        identifier: true
+        required: true
+      label:
+        required: true
+      description: {}
+      contextSource:
+        range: ContextSourceEnum
+      repeating:
+        description: True when the role may be filled more than once in one analysis.
+        range: boolean
+      estimandAttribute:
+        description: The estimand attribute this role expresses, if any.
+        range: EstimandAttributeEnum
+      definedBy:
+        description: >-
+          For a role added by a model that extends AC, the namespace IRI of
+          that model. Absent for roles of the AC library (decision D13).
+        range: uri
+      status:
+        range: EntryStatus
+
+  ConfigurationOption:
+    description: The values offered for a value placeholder of a given name, across phrases.
+    attributes:
+      name:
+        identifier: true
+        required: true
+      values:
+        multivalued: true
+        required: true
+      default: {}
+
+  ValueConstraint:
+    description: The range a numeric value must lie in.
+    attributes:
+      min:
+        range: float
+      max:
+        range: float
+
+  Placeholder:
+    description: A typed slot in a phrase template.
+    attributes:
+      name:
+        description: The token in the template, written there as {name}.
+        required: true
+      kind:
+        range: PlaceholderKindEnum
+        required: true
+      description: {}
+      required:
+        range: boolean
+      conceptConstraint:
+        description: The kind of study concept that may be bound (Parameter, Timepoint, Population, Treatment, Event, IntercurrentEvent).
+      conceptCategory:
+        description: The abstract Concept the bound study concept must belong to (a Concept identifier, e.g. C.VisitDimension).
+        pattern: "^C\\..+$"
+      conceptClass:
+        description: Informative grouping of the concepts offered to the author.
+      intentConstraint:
+        description: The analytical intent a bound Method must serve (informative).
+      valueSource:
+        description: Where candidate values are drawn from (informative).
+      datatype: {}
+      constraint:
+        range: ValueConstraint
+        inlined: true
+      renderOptions:
+        range: RenderModeEnum
+        multivalued: true
+      defaultRender:
+        range: RenderModeEnum
+      extensionType:
+        description: For an extension_ref, the IRI of the entity type in the extending model.
+        range: uri
+
+  PhraseAnchors:
+    description: What a phrase means in the model, independent of its bindings.
+    attributes:
+      producedConcept:
+        description: The Concept the phrase is about (a Concept identifier).
+        pattern: "^C\\..+$"
+      usesMethod:
+        description: The Method the phrase implies (a Method identifier).
+        pattern: "^M\\..+$"
+      icheStrategy:
+        description: The intercurrent-event strategy the phrase asserts.
+        range: IchE9R1StrategyEnum
+      implementation:
+        description: The kind of implementation the strategy needs (none, imputation, derivation, censoring, population_subsetting).
+      estimandAttribute:
+        range: EstimandAttributeEnum
+
+  SmartPhrase:
+    description: A reusable fragment of analysis plan text with typed placeholders.
+    slots:
+      - conceptId
+      - name
+      - description
+      - status
+    slot_usage:
+      conceptId:
+        description: Unique phrase identifier, e.g., SP_CFB_ENDPOINT. Study phrase instances bind by it.
+        pattern: "^SP_.+$"
+    attributes:
+      role:
+        description: The role the phrase plays (a RoleDefinition name).
+        range: RoleDefinition
+        inlined: false
+        required: true
+      phraseTemplate:
+        description: The text, with {placeholder} tokens. English is the library's base language.
+        required: true
+      anchors:
+        range: PhraseAnchors
+        inlined: true
+      placeholders:
+        range: Placeholder
+        multivalued: true
+        inlined_as_list: true
+
+  LocalisedText:
+    description: A piece of text for one key in one language.
+    attributes:
+      key:
+        description: The identifier of what is translated (a phrase, method, output class or analysis role).
+        required: true
+      text: {}
+      label: {}
+      name: {}
+
+  LanguagePack:
+    description: >-
+      What is needed to write analysis sentences in one language. The sentence
+      template owns word order, because concatenating phrases in role order is
+      correct only for some languages.
+    attributes:
+      language:
+        description: BCP 47 language tag.
+        identifier: true
+        required: true
+      name: {}
+      sentenceTemplate:
+        description: >-
+          The sentence frame: role tokens in the language's word order, literal
+          text, and optional groups in square brackets that are dropped when
+          none of their roles is filled.
+        required: true
+      roleConjunctions:
+        description: The text placed between repeated phrases of one role.
+        range: LocalisedText
+        multivalued: true
+        inlined_as_list: true
+      phraseTemplates:
+        description: Phrase templates in this language, by phrase identifier. A phrase without one falls back to the library's base text.
+        range: LocalisedText
+        multivalued: true
+        inlined_as_list: true
+      methodNames:
+        range: LocalisedText
+        multivalued: true
+        inlined_as_list: true
+      outputNames:
+        description: Reader-facing names for method outputs, by output class.
+        range: LocalisedText
+        multivalued: true
+        inlined_as_list: true
+      sentenceRoles:
+        description: Translations of the words that say what kind of analysis it is (the primary analysis, a sensitivity analysis).
+        range: LocalisedText
+        multivalued: true
+        inlined_as_list: true
+      validated:
+        description: False when the translation is illustrative and has not been reviewed by a qualified translator.
+        range: boolean
+
+  SmartPhraseLibrary:
+    tree_root: true
+    description: The SmartPhrase library.
+    slots:
+      - libraryVersion
+      - description
+    attributes:
+      roleOrder:
+        description: >-
+          The order of roles: the fallback order of phrases in a sentence, and
+          the precedence when two phrases fill a placeholder of the same name.
+        range: RoleDefinition
+        multivalued: true
+        inlined: false
+        required: true
+      roles:
+        range: RoleDefinition
+        multivalued: true
+        inlined_as_list: true
+        required: true
+      configurationOptions:
+        range: ConfigurationOption
+        multivalued: true
+        inlined_as_list: true
+      phrases:
+        range: SmartPhrase
+        multivalued: true
+        inlined_as_list: true
+        required: true
+      languagePacks:
+        range: LanguagePack
+        multivalued: true
+        inlined_as_list: true

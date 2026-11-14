@@ -9,9 +9,9 @@ so the work can be picked up from here at any point.
 | 2 Trial migration | done — no fallbacks; five small schema extensions (see migration-notes.md) |
 | 3 Method layer | done — 60 methods, 57 statistics, 13 statistic sets, 43 output classes; all validate |
 | 4 Concept layer | done — one library, 106 concepts; validates |
-| 5 Transformation layer | next |
-| 6 SmartPhrase layer | not started |
-| 7 Implementation layer | not started |
+| 5 Transformation layer | done — 26 templates; validates |
+| 6 SmartPhrase layer | done — 31 phrases, 10 roles, 3 language packs; validates |
+| 7 Implementation layer | next |
 | 8 Study layer | not started |
 | 9 Conformance | not started |
 | 10 Documentation and final report | not started |

@@ -1,0 +1,2169 @@
+{
+  "libraryVersion": "1.0.0-candidate",
+  "description": "Transformation library. Migrated from ACDC_Transformation_Library v0.7 on methods_02 (81a04b1), plus one template proposed on estimands_01 (11ab94d), marked provisional.",
+  "transformations": [
+    {
+      "conceptId": "T.BaselineSelection",
+      "status": "released",
+      "label": "Baseline Selection",
+      "shortLabel": "Baseline",
+      "transformationType": "derivation",
+      "description": "Identify the baseline record per subject per parameter using M.RecordSelection configured for baseline.",
+      "usesMethod": "M.RecordSelection",
+      "methodConfigurations": [
+        {
+          "configurationName": "selection_rule",
+          "value": "last_non_missing"
+        },
+        {
+          "configurationName": "scope",
+          "value": "pre_treatment"
+        },
+        {
+          "configurationName": "cardinality",
+          "value": "single"
+        },
+        {
+          "configurationName": "reference_event",
+          "value": "first_dose"
+        }
+      ],
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "partition",
+            "concept": "C.Subject"
+          },
+          {
+            "input": "partition",
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "input": "partition",
+            "conceptCategory": "C.VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "description": "RecordSelection operates on records, not values — no value type constraint."
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.RecordSelection",
+            "concept": "C.Flag"
+          }
+        ]
+      }
+    },
+    {
+      "conceptId": "T.ChangeFromBaseline",
+      "status": "released",
+      "label": "Change From Baseline",
+      "shortLabel": "CFB",
+      "transformationType": "derivation",
+      "description": "Calculate the arithmetic change from baseline value. Pairs every (Subject, Parameter, Visit) row with its corresponding baseline row (same Subject + Parameter, baseline visit) and subtracts.",
+      "usesMethod": "M.Subtraction",
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "input": "minuend",
+            "concept": "C.Measure",
+            "requiredValueType": "Quantity",
+            "slice": "endpoint",
+            "description": "Current visit value of the endpoint parameter."
+          },
+          {
+            "input": "subtrahend",
+            "concept": "C.Measure",
+            "requiredValueType": "Quantity",
+            "slice": "parameter_baseline",
+            "description": "Baseline-flagged value of the same parameter."
+          }
+        ],
+        "slices": [
+          {
+            "name": "endpoint",
+            "description": "Same parameter as the endpoint, at the endpoint's analysis visit.",
+            "constraints": [
+              {
+                "dimension": "C.ParameterDimension",
+                "value": "{parameter}"
+              },
+              {
+                "dimension": "C.VisitDimension",
+                "value": "{visit}"
+              }
+            ]
+          },
+          {
+            "name": "parameter_baseline",
+            "description": "Same parameter as the endpoint, at the baseline visit.",
+            "constraints": [
+              {
+                "dimension": "C.ParameterDimension",
+                "value": "{parameter}"
+              },
+              {
+                "dimension": "C.VisitDimension",
+                "value": "{baseline_visit}"
+              }
+            ]
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.Subtraction",
+            "concept": "C.Change"
+          }
+        ]
+      },
+      "sliceKeys": [
+        {
+          "dimension": "C.ParameterDimension",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "C.VisitDimension",
+          "source": "visit"
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_CFB_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_IMPUTATION"
+      ]
+    },
+    {
+      "conceptId": "T.LOCF_Imputation",
+      "status": "released",
+      "label": "LOCF Imputation",
+      "shortLabel": "LOCF",
+      "transformationType": "derivation",
+      "description": "Impute missing values by carrying forward the last non-missing observation within each subject-parameter partition, ordered by analysis visit.",
+      "usesMethod": "M.ImputedValue_LOCF",
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "partition",
+            "concept": "C.Subject"
+          },
+          {
+            "input": "partition",
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "input": "time_order",
+            "conceptCategory": "C.VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "description": "LOCF operates on records — value type is pass-through."
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.ImputedValue_LOCF",
+            "concept": "C.Measure"
+          }
+        ]
+      },
+      "validSmartPhrases": [
+        "SP_IMPUTATION"
+      ]
+    },
+    {
+      "conceptId": "T.PeakConcentration",
+      "status": "released",
+      "label": "Peak Concentration",
+      "shortLabel": "Peak",
+      "transformationType": "derivation",
+      "description": "Find the maximum concentration in a Timing-ordered PK profile per Subject/Parameter. Aggregates the Timing dim away.",
+      "usesMethod": "M.Maximum",
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "group",
+            "concept": "C.Subject"
+          },
+          {
+            "input": "group",
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "concept": "C.Timing"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "requiredValueType": "Quantity"
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.Maximum",
+            "concept": "C.PeakValue"
+          }
+        ]
+      },
+      "validSmartPhrases": [
+        "SP_PEAK_ENDPOINT",
+        "SP_PARAMETER"
+      ]
+    },
+    {
+      "conceptId": "T.ADAS_ItemMaxScore",
+      "status": "released",
+      "label": "ADAS-Cog Item Max Score",
+      "transformationType": "derivation",
+      "description": "Max possible score for each ADAS-Cog item, used as scaling denominator when items are missing.",
+      "usesMethod": "M.Aggregation",
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "max"
+        }
+      ],
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "partition",
+            "conceptCategory": "C.ParameterDimension"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "description": "11 ADAS-Cog item scores."
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "conceptCategory": "C.ParameterDimension"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.Aggregation",
+            "concept": "C.Measure"
+          }
+        ]
+      }
+    },
+    {
+      "conceptId": "T.ADAS_MissingContribution",
+      "status": "released",
+      "label": "ADAS-Cog Per-Item Missing-Capacity Contribution",
+      "transformationType": "derivation",
+      "description": "Per-row mask: if the item value is missing (NA), output the item's max possible score; else output 0. Row-wise input to T.ADAS_MissingScaleCapacity.",
+      "usesMethod": "M.ConditionalValue",
+      "methodConfigurations": [
+        {
+          "configurationName": "base",
+          "value": 0
+        }
+      ],
+      "inputDataStructure": {
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "description": "Per-row item score (raw observed value; NA when the item was not scored)."
+          },
+          {
+            "input": "alternate",
+            "concept": "C.Measure",
+            "description": "Per-item max possible score from T.ADAS_ItemMaxScore (broadcast to every row of that Parameter)."
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "measures": [
+          {
+            "output": "M.ConditionalValue",
+            "concept": "C.Measure"
+          }
+        ]
+      }
+    },
+    {
+      "conceptId": "T.ADAS_MissingScaleCapacity",
+      "status": "released",
+      "label": "ADAS-Cog Missing Scale Capacity",
+      "transformationType": "derivation",
+      "description": "Sum of max-score capacity of missing items per Subject/Visit. Equals 0 when no items are missing; equals 70 when all 11 items are missing. Used as the input to T.ADAS_ScoreableFraction.",
+      "usesMethod": "M.Aggregation",
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "sum"
+        }
+      ],
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "partition",
+            "concept": "C.Subject"
+          },
+          {
+            "input": "partition",
+            "conceptCategory": "C.VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "description": "Per-row missing-capacity contribution from T.ADAS_MissingContribution."
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.Aggregation",
+            "concept": "C.Measure"
+          }
+        ]
+      }
+    },
+    {
+      "conceptId": "T.ADAS_ScoreableFraction",
+      "status": "released",
+      "label": "ADAS-Cog Scoreable Fraction",
+      "transformationType": "derivation",
+      "description": "Per-row scoring fraction = (70 - missing_capacity) / 70. Equals 1.0 when no items are missing; decreases toward 0 as more items are missing. Computed as scale * missing_capacity + offset with scale = -1/70, offset = 1.",
+      "usesMethod": "M.AffineTransform",
+      "methodConfigurations": [
+        {
+          "configurationName": "scale",
+          "value": -0.014285714285714285
+        },
+        {
+          "configurationName": "offset",
+          "value": 1
+        }
+      ],
+      "inputDataStructure": {
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "description": "Total missing-item max-score capacity per Subject/Visit (output of T.ADAS_MissingScaleCapacity)."
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "conceptCategory": "C.ParameterDimension"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.AffineTransform",
+            "concept": "C.Measure"
+          }
+        ]
+      }
+    },
+    {
+      "conceptId": "T.ADAS_SumAvailableScores",
+      "status": "released",
+      "label": "ADAS-Cog Sum of Available Item Scores",
+      "transformationType": "derivation",
+      "description": "Sum of available (non-missing) ADAS-Cog item scores per Subject/Visit.",
+      "usesMethod": "M.Aggregation",
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "sum"
+        }
+      ],
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "partition",
+            "concept": "C.Subject"
+          },
+          {
+            "input": "partition",
+            "conceptCategory": "C.VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "description": "11 ADAS-Cog item scores (from BCs)."
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.Aggregation",
+            "concept": "C.Measure"
+          }
+        ]
+      }
+    },
+    {
+      "conceptId": "T.ADAS_NonMissingCount",
+      "status": "released",
+      "label": "ADAS-Cog Non-Missing Item Count",
+      "transformationType": "derivation",
+      "description": "Count of non-missing ADAS-Cog item scores per Subject/Visit. Used to determine if enough items are present for scoring.",
+      "usesMethod": "M.Aggregation",
+      "methodConfigurations": [
+        {
+          "configurationName": "agg_func",
+          "value": "count"
+        }
+      ],
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "partition",
+            "concept": "C.Subject"
+          },
+          {
+            "input": "partition",
+            "conceptCategory": "C.VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "description": "11 ADAS-Cog item scores (from BCs)."
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.Aggregation",
+            "concept": "C.Measure"
+          }
+        ]
+      }
+    },
+    {
+      "conceptId": "T.ADAS_ScoreableCheck",
+      "status": "released",
+      "label": "ADAS-Cog Scoreable Check",
+      "transformationType": "derivation",
+      "description": "Flag whether enough items are present to compute total. Requires >= 8 of 11 items.",
+      "usesMethod": "M.ThresholdCompare",
+      "methodConfigurations": [
+        {
+          "configurationName": "operator",
+          "value": ">="
+        },
+        {
+          "configurationName": "true_value",
+          "value": "Y"
+        },
+        {
+          "configurationName": "false_value",
+          "value": "N"
+        },
+        {
+          "configurationName": "threshold",
+          "value": 8
+        }
+      ],
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "description": "Count of non-missing items (from T.ADAS_NonMissingCount)."
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.ThresholdCompare",
+            "concept": "C.Flag"
+          }
+        ]
+      }
+    },
+    {
+      "conceptId": "T.ADAS_Cog_11_TotalScore",
+      "status": "released",
+      "label": "ADAS-Cog (11) Total Score",
+      "transformationType": "derivation",
+      "description": "total = sum_available / scoreable_fraction, where scoreable_fraction = (70 - missing_capacity) / 70. With no missing items the fraction is 1.0 and total = sum_available. The scoreable flag (from T.ADAS_ScoreableCheck) gates rows downstream of this transformation at execution time — M.Division has no filter slot, so it isn't a method input here.",
+      "usesMethod": "M.Division",
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "input": "numerator",
+            "concept": "C.Measure",
+            "description": "Sum of available item scores (from T.ADAS_SumAvailableScores)."
+          },
+          {
+            "input": "denominator",
+            "concept": "C.Measure",
+            "description": "Scoreable fraction from T.ADAS_ScoreableFraction (1.0 when no items are missing)."
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.Division",
+            "concept": "C.Measure"
+          }
+        ]
+      }
+    },
+    {
+      "conceptId": "T.UnitConversion",
+      "status": "released",
+      "label": "Unit Conversion",
+      "transformationType": "derivation",
+      "description": "Convert a numeric Observation (Quantity = value + unit) from its per-row source unit to a standardised target unit using the unit_conversions vocabulary. Generic — works for any numeric Observation whose BC carries a Result.Value + Result.Unit facet pair. Produces a derived Measure (Quantity).",
+      "usesMethod": "M.UnitConversion",
+      "methodConfigurations": [
+        {
+          "configurationName": "on_missing_factor",
+          "value": "fail",
+          "description": "Fail loudly if a factor is missing — CDISC convention prefers errors over silent NAs."
+        }
+      ],
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "requiredValueType": "Quantity",
+            "description": "Source Quantity (value + unit). Resolves via BC-to-OC instance mapping to SDTM --ORRES/--ORRESU.",
+            "conceptCategory": "C.Observation"
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.UnitConversion",
+            "concept": "C.Measure",
+            "description": "Converted Quantity (value + target unit)."
+          }
+        ]
+      },
+      "sliceKeys": [
+        {
+          "dimension": "C.ParameterDimension",
+          "source": "biomedicalConcept"
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_PARAMETER"
+      ]
+    },
+    {
+      "conceptId": "T.DeriveAnalysisVisit",
+      "status": "released",
+      "label": "Derive Analysis Visit",
+      "transformationType": "derivation",
+      "description": "Assign each observation to a scheduled analysis visit (AVISIT) via day-windows and a target-day tie-break. Default windows are for LZZT ADAS-Cog (≤1 Baseline, 2-84 Week 8, 85-140 Week 16, >140 Week 24). Consumes a pre-computed study day (SDTM --DY) relative to the randomization anchor BC.",
+      "usesMethod": "M.WindowedVisitAssignment",
+      "methodConfigurations": [
+        {
+          "configurationName": "referenceBC",
+          "value": "BiomedicalConcept_216",
+          "description": "BC providing the randomization anchor (Subject is Randomized, CDISC C114209). DSSTDTC is the per-subject anchor date."
+        },
+        {
+          "configurationName": "windows",
+          "description": "Scheduled visit windows. Edit per SAP. dayMin/dayMax=null means unbounded on that side.",
+          "valueList": [
+            {
+              "label": "Baseline",
+              "visitNumber": 3,
+              "dayMax": 1,
+              "targetDay": 1
+            },
+            {
+              "label": "Week 8",
+              "visitNumber": 8,
+              "dayMin": 2,
+              "dayMax": 84,
+              "targetDay": 56
+            },
+            {
+              "label": "Week 16",
+              "visitNumber": 10,
+              "dayMin": 85,
+              "dayMax": 140,
+              "targetDay": 112
+            },
+            {
+              "label": "Week 24",
+              "visitNumber": 12,
+              "dayMin": 141,
+              "targetDay": 168
+            }
+          ]
+        },
+        {
+          "configurationName": "tieBreak",
+          "value": "closest-to-target-then-earliest",
+          "description": "Tie-break: among windows matching a day, pick min |day−targetDay|, then min visitNumber."
+        }
+      ],
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "partition",
+            "concept": "C.Subject"
+          }
+        ],
+        "measures": [
+          {
+            "input": "day",
+            "concept": "C.Timing",
+            "description": "Study day relative to the randomization anchor (SDTM --DY)."
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Subject"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.WindowedVisitAssignment",
+            "concept": "C.AnalysisVisit",
+            "description": "The derived AVISIT column. Conceptually a dimension of downstream cubes; declared as the method's output measure here per §6.3 (method outputs always bind via outputDataStructure.measures[].output)."
+          }
+        ]
+      }
+    },
+    {
+      "conceptId": "T.CFB_MMRM_Primary",
+      "status": "released",
+      "label": "Change From Baseline MMRM Primary Analysis",
+      "shortLabel": "CFB MMRM",
+      "transformationType": "analysis",
+      "description": "Primary efficacy analysis: MMRM on change from baseline, comparing treatment groups across all visits with baseline as covariate. Visit is the repeated factor in the model, NOT a study-time slice constraint — the model fits all visits at once.",
+      "usesMethod": "M.MMRM",
+      "methodConfigurations": [
+        {
+          "configurationName": "covariance_structure",
+          "value": "UN"
+        },
+        {
+          "configurationName": "estimation_method",
+          "value": "REML"
+        },
+        {
+          "configurationName": "df_method",
+          "value": "KR"
+        }
+      ],
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "fixed_effect",
+            "concept": "C.Treatment"
+          },
+          {
+            "input": "repeated_factor",
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "input": "repeated_subject",
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "input": "response",
+            "concept": "C.Change",
+            "requiredValueType": "Quantity",
+            "slice": "endpoint"
+          },
+          {
+            "input": "covariate",
+            "concept": "C.Measure",
+            "requiredValueType": "Quantity",
+            "slice": "parameter_baseline",
+            "description": "Baseline value of the endpoint parameter."
+          }
+        ],
+        "modelInteractions": [
+          {
+            "role": "primary",
+            "label": "Treatment × AnalysisVisit",
+            "operands": [
+              {
+                "input": "fixed_effect",
+                "concept": "C.Treatment"
+              },
+              {
+                "input": "repeated_factor",
+                "conceptCategory": "C.VisitDimension"
+              }
+            ]
+          }
+        ],
+        "slices": [
+          {
+            "name": "endpoint",
+            "description": "This parameter, this population, all visits (MMRM fits across visits).",
+            "constraints": [
+              {
+                "dimension": "C.ParameterDimension",
+                "value": "{parameter}"
+              },
+              {
+                "dimension": "C.Population",
+                "value": "{population}"
+              }
+            ]
+          },
+          {
+            "name": "parameter_baseline",
+            "description": "Same parameter and population, but at the baseline visit instead.",
+            "constraints": [
+              {
+                "dimension": "C.ParameterDimension",
+                "value": "{parameter}"
+              },
+              {
+                "dimension": "C.VisitDimension",
+                "value": "{baseline_visit}"
+              },
+              {
+                "dimension": "C.Population",
+                "value": "{population}"
+              }
+            ]
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Treatment"
+          },
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "output": "SM.MMRM.LsMeans",
+            "concept": "C.LSMeans"
+          },
+          {
+            "output": "SM.MMRM.ContrastsT",
+            "concept": "C.Contrasts"
+          },
+          {
+            "output": "SM.MMRM.Type3TestsMixed",
+            "concept": "C.Type3Tests"
+          },
+          {
+            "output": "SM.MMRM.ParameterEstimatesLinear",
+            "concept": "C.ParameterEstimates"
+          },
+          {
+            "output": "SM.MMRM.FitStatisticsBasic",
+            "concept": "C.FitStatistics"
+          },
+          {
+            "output": "SM.MMRM.CovarianceParameters",
+            "concept": "C.CovarianceParameters"
+          }
+        ]
+      },
+      "sliceKeys": [
+        {
+          "dimension": "C.ParameterDimension",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "C.Population",
+          "source": "population"
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_CFB_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
+        "SP_METHOD_MMRM",
+        "SP_IMPUTATION",
+        "SP_CONFIDENCE_LEVEL",
+        "SP_COVARIATE_BASELINE"
+      ]
+    },
+    {
+      "conceptId": "T.CFB_ANCOVA",
+      "status": "released",
+      "label": "Change From Baseline ANCOVA",
+      "shortLabel": "CFB ANCOVA",
+      "transformationType": "analysis",
+      "description": "ANCOVA on change from baseline at a specific visit, comparing treatment groups with baseline as covariate.",
+      "usesMethod": "M.ANCOVA",
+      "methodConfigurations": [
+        {
+          "configurationName": "ss_type",
+          "value": "III"
+        }
+      ],
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "fixed_effect",
+            "concept": "C.Treatment"
+          },
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "input": "response",
+            "concept": "C.Change",
+            "requiredValueType": "Quantity",
+            "slice": "endpoint"
+          },
+          {
+            "input": "covariate",
+            "concept": "C.Measure",
+            "requiredValueType": "Quantity",
+            "slice": "parameter_baseline",
+            "description": "Baseline value of the endpoint parameter."
+          }
+        ],
+        "modelInteractions": [
+          {
+            "role": "slope_homogeneity_test",
+            "label": "Baseline × Treatment (homogeneity-of-slopes test)",
+            "operands": [
+              {
+                "input": "covariate",
+                "concept": "C.Measure"
+              },
+              {
+                "input": "fixed_effect",
+                "concept": "C.Treatment"
+              }
+            ]
+          }
+        ],
+        "slices": [
+          {
+            "name": "endpoint",
+            "description": "The endpoint's analysis cube: this parameter, this analysis visit, this population.",
+            "constraints": [
+              {
+                "dimension": "C.ParameterDimension",
+                "value": "{parameter}"
+              },
+              {
+                "dimension": "C.VisitDimension",
+                "value": "{visit}"
+              },
+              {
+                "dimension": "C.Population",
+                "value": "{population}"
+              }
+            ]
+          },
+          {
+            "name": "parameter_baseline",
+            "description": "Same parameter and population as the endpoint, but at the baseline visit instead of the analysis visit.",
+            "constraints": [
+              {
+                "dimension": "C.ParameterDimension",
+                "value": "{parameter}"
+              },
+              {
+                "dimension": "C.VisitDimension",
+                "value": "{baseline_visit}"
+              },
+              {
+                "dimension": "C.Population",
+                "value": "{population}"
+              }
+            ]
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Treatment"
+          },
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          },
+          {
+            "name": "contrast",
+            "concept": "C.Contrasts",
+            "contrastSpecification": {
+              "over": "C.Treatment",
+              "basis": "estimated_means",
+              "members": {
+                "generator": {
+                  "kind": "vs_reference",
+                  "reference": "{control_arm}"
+                }
+              }
+            }
+          }
+        ],
+        "measures": [
+          {
+            "output": "SM.ANCOVA.LsMeans",
+            "concept": "C.LSMeans"
+          },
+          {
+            "output": "SM.ANCOVA.ContrastsT",
+            "concept": "C.Contrasts"
+          },
+          {
+            "output": "SM.ANCOVA.Type3TestsF",
+            "concept": "C.Type3Tests"
+          },
+          {
+            "output": "SM.ANCOVA.ParameterEstimatesLinear",
+            "concept": "C.ParameterEstimates"
+          },
+          {
+            "output": "SM.ANCOVA.FitStatisticsLinear",
+            "concept": "C.FitStatistics"
+          }
+        ]
+      },
+      "sliceKeys": [
+        {
+          "dimension": "C.ParameterDimension",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "C.VisitDimension",
+          "source": "visit"
+        },
+        {
+          "dimension": "C.Population",
+          "source": "population"
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_CFB_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
+        "SP_METHOD_ANCOVA",
+        "SP_CONFIDENCE_LEVEL",
+        "SP_COVARIATE_BASELINE",
+        "SP_COVARIATE_SITE",
+        "SP_ICE_HYPOTHETICAL",
+        "SP_ICE_TREATMENT_POLICY",
+        "SP_SUMMARY_MEASURE"
+      ]
+    },
+    {
+      "conceptId": "T.OS_LogRank",
+      "status": "released",
+      "label": "Overall Survival Log-Rank Test",
+      "shortLabel": "OS Log-Rank",
+      "transformationType": "analysis",
+      "description": "Compare overall survival between treatment groups using the log-rank test.",
+      "usesMethod": "M.LogRankTest",
+      "methodConfigurations": [
+        {
+          "configurationName": "rho",
+          "value": 0
+        }
+      ],
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "fixed_effect",
+            "concept": "C.Treatment"
+          },
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "input": "time",
+            "concept": "C.TimeToEvent",
+            "requiredValueType": "Quantity",
+            "slice": "endpoint"
+          },
+          {
+            "input": "event",
+            "concept": "C.Flag",
+            "requiredValueType": "boolean",
+            "slice": "endpoint"
+          }
+        ],
+        "slices": [
+          {
+            "name": "endpoint",
+            "description": "Subjects in the chosen population.",
+            "constraints": [
+              {
+                "dimension": "C.Population",
+                "value": "{population}"
+              }
+            ]
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Treatment"
+          },
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "output": "SM.LogRankTest.ChiSquaredTestResult",
+            "concept": "C.TestResult"
+          }
+        ]
+      },
+      "sliceKeys": [
+        {
+          "dimension": "C.Population",
+          "source": "population"
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_TTE_ENDPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
+        "SP_METHOD_LOGRANK",
+        "SP_STRATIFICATION"
+      ]
+    },
+    {
+      "conceptId": "T.Count_Measure",
+      "status": "released",
+      "label": "Count (n)",
+      "shortLabel": "n",
+      "transformationType": "analysis",
+      "description": "Count of non-missing values for a measure by treatment group and visit. Output binds to DC Measure per AC_Concept_Model_v017's DescriptiveSummary rule (descriptive outputs are atomic FHIR Quantity / Count values, not structured AC patterns).",
+      "usesMethod": "M.Count",
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "group",
+            "concept": "C.Treatment"
+          },
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "requiredValueType": "Quantity",
+            "slice": "endpoint"
+          }
+        ],
+        "slices": [
+          {
+            "name": "endpoint",
+            "constraints": [
+              {
+                "dimension": "C.ParameterDimension",
+                "value": "{parameter}"
+              },
+              {
+                "dimension": "C.VisitDimension",
+                "value": "{visit}"
+              },
+              {
+                "dimension": "C.Population",
+                "value": "{population}"
+              }
+            ]
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Treatment"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.Count",
+            "concept": "C.Measure"
+          }
+        ]
+      },
+      "sliceKeys": [
+        {
+          "dimension": "C.ParameterDimension",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "C.VisitDimension",
+          "source": "visit"
+        },
+        {
+          "dimension": "C.Population",
+          "source": "population"
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ]
+    },
+    {
+      "conceptId": "T.Mean_Measure",
+      "status": "released",
+      "label": "Mean",
+      "shortLabel": "Mean",
+      "transformationType": "analysis",
+      "description": "Arithmetic mean of a measure by treatment group and visit. Output binds to DC Measure (DescriptiveSummary).",
+      "usesMethod": "M.Mean",
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "group",
+            "concept": "C.Treatment"
+          },
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "requiredValueType": "Quantity",
+            "slice": "endpoint"
+          }
+        ],
+        "slices": [
+          {
+            "name": "endpoint",
+            "constraints": [
+              {
+                "dimension": "C.ParameterDimension",
+                "value": "{parameter}"
+              },
+              {
+                "dimension": "C.VisitDimension",
+                "value": "{visit}"
+              },
+              {
+                "dimension": "C.Population",
+                "value": "{population}"
+              }
+            ]
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Treatment"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.Mean",
+            "concept": "C.Measure"
+          }
+        ]
+      },
+      "sliceKeys": [
+        {
+          "dimension": "C.ParameterDimension",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "C.VisitDimension",
+          "source": "visit"
+        },
+        {
+          "dimension": "C.Population",
+          "source": "population"
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ]
+    },
+    {
+      "conceptId": "T.SD_Measure",
+      "status": "released",
+      "label": "Standard Deviation",
+      "shortLabel": "SD",
+      "transformationType": "analysis",
+      "description": "Standard deviation of a measure by treatment group and visit. Output binds to DC Measure (DescriptiveSummary).",
+      "usesMethod": "M.StandardDeviation",
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "group",
+            "concept": "C.Treatment"
+          },
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "requiredValueType": "Quantity",
+            "slice": "endpoint"
+          }
+        ],
+        "slices": [
+          {
+            "name": "endpoint",
+            "constraints": [
+              {
+                "dimension": "C.ParameterDimension",
+                "value": "{parameter}"
+              },
+              {
+                "dimension": "C.VisitDimension",
+                "value": "{visit}"
+              },
+              {
+                "dimension": "C.Population",
+                "value": "{population}"
+              }
+            ]
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Treatment"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.StandardDeviation",
+            "concept": "C.Measure"
+          }
+        ]
+      },
+      "sliceKeys": [
+        {
+          "dimension": "C.ParameterDimension",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "C.VisitDimension",
+          "source": "visit"
+        },
+        {
+          "dimension": "C.Population",
+          "source": "population"
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ]
+    },
+    {
+      "conceptId": "T.Median_Measure",
+      "status": "released",
+      "label": "Median",
+      "shortLabel": "Median",
+      "transformationType": "analysis",
+      "description": "Median of a measure by treatment group and visit. Output binds to DC Measure (DescriptiveSummary).",
+      "usesMethod": "M.Median",
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "group",
+            "concept": "C.Treatment"
+          },
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "requiredValueType": "Quantity",
+            "slice": "endpoint"
+          }
+        ],
+        "slices": [
+          {
+            "name": "endpoint",
+            "constraints": [
+              {
+                "dimension": "C.ParameterDimension",
+                "value": "{parameter}"
+              },
+              {
+                "dimension": "C.VisitDimension",
+                "value": "{visit}"
+              },
+              {
+                "dimension": "C.Population",
+                "value": "{population}"
+              }
+            ]
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Treatment"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.Median",
+            "concept": "C.Measure"
+          }
+        ]
+      },
+      "sliceKeys": [
+        {
+          "dimension": "C.ParameterDimension",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "C.VisitDimension",
+          "source": "visit"
+        },
+        {
+          "dimension": "C.Population",
+          "source": "population"
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ]
+    },
+    {
+      "conceptId": "T.Quartile_Measure",
+      "status": "released",
+      "label": "Quartiles (Q1, Q3)",
+      "shortLabel": "Q1, Q3",
+      "transformationType": "analysis",
+      "description": "First and third quartiles of a measure by treatment group and visit. Output binds to DC Measure (DescriptiveSummary).",
+      "usesMethod": "M.Quartile",
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "group",
+            "concept": "C.Treatment"
+          },
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "requiredValueType": "Quantity",
+            "slice": "endpoint"
+          }
+        ],
+        "slices": [
+          {
+            "name": "endpoint",
+            "constraints": [
+              {
+                "dimension": "C.ParameterDimension",
+                "value": "{parameter}"
+              },
+              {
+                "dimension": "C.VisitDimension",
+                "value": "{visit}"
+              },
+              {
+                "dimension": "C.Population",
+                "value": "{population}"
+              }
+            ]
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Treatment"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.Quartile",
+            "concept": "C.Measure"
+          }
+        ]
+      },
+      "sliceKeys": [
+        {
+          "dimension": "C.ParameterDimension",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "C.VisitDimension",
+          "source": "visit"
+        },
+        {
+          "dimension": "C.Population",
+          "source": "population"
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ]
+    },
+    {
+      "conceptId": "T.Min_Measure",
+      "status": "released",
+      "label": "Minimum",
+      "shortLabel": "Min",
+      "transformationType": "analysis",
+      "description": "Minimum value of a measure by treatment group and visit. Output binds to DC Measure (DescriptiveSummary).",
+      "usesMethod": "M.Minimum",
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "group",
+            "concept": "C.Treatment"
+          },
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "requiredValueType": "Quantity",
+            "slice": "endpoint"
+          }
+        ],
+        "slices": [
+          {
+            "name": "endpoint",
+            "constraints": [
+              {
+                "dimension": "C.ParameterDimension",
+                "value": "{parameter}"
+              },
+              {
+                "dimension": "C.VisitDimension",
+                "value": "{visit}"
+              },
+              {
+                "dimension": "C.Population",
+                "value": "{population}"
+              }
+            ]
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Treatment"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.Minimum",
+            "concept": "C.Measure"
+          }
+        ]
+      },
+      "sliceKeys": [
+        {
+          "dimension": "C.ParameterDimension",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "C.VisitDimension",
+          "source": "visit"
+        },
+        {
+          "dimension": "C.Population",
+          "source": "population"
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ]
+    },
+    {
+      "conceptId": "T.Max_Measure",
+      "status": "released",
+      "label": "Maximum",
+      "shortLabel": "Max",
+      "transformationType": "analysis",
+      "description": "Maximum value of a measure by treatment group and visit. Output binds to DC Measure (DescriptiveSummary).",
+      "usesMethod": "M.Maximum",
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "group",
+            "concept": "C.Treatment"
+          },
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "input": "value",
+            "concept": "C.Measure",
+            "requiredValueType": "Quantity",
+            "slice": "endpoint"
+          }
+        ],
+        "slices": [
+          {
+            "name": "endpoint",
+            "constraints": [
+              {
+                "dimension": "C.ParameterDimension",
+                "value": "{parameter}"
+              },
+              {
+                "dimension": "C.VisitDimension",
+                "value": "{visit}"
+              },
+              {
+                "dimension": "C.Population",
+                "value": "{population}"
+              }
+            ]
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Treatment"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "output": "M.Maximum",
+            "concept": "C.Measure"
+          }
+        ]
+      },
+      "sliceKeys": [
+        {
+          "dimension": "C.ParameterDimension",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "C.VisitDimension",
+          "source": "visit"
+        },
+        {
+          "dimension": "C.Population",
+          "source": "population"
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_VALUE_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING"
+      ]
+    },
+    {
+      "conceptId": "T.Responder_ChiSq",
+      "status": "released",
+      "label": "Responder Analysis Chi-Square",
+      "shortLabel": "Responder χ²",
+      "transformationType": "analysis",
+      "description": "Compare responder proportions between treatment groups using a chi-square test.",
+      "usesMethod": "M.ChiSquaredTest",
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "fixed_effect",
+            "concept": "C.Treatment"
+          },
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "input": "response",
+            "concept": "C.Flag",
+            "requiredValueType": "CodeableConcept",
+            "slice": "endpoint"
+          }
+        ],
+        "slices": [
+          {
+            "name": "endpoint",
+            "constraints": [
+              {
+                "dimension": "C.ParameterDimension",
+                "value": "{parameter}"
+              },
+              {
+                "dimension": "C.VisitDimension",
+                "value": "{visit}"
+              },
+              {
+                "dimension": "C.Population",
+                "value": "{population}"
+              }
+            ]
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Treatment"
+          },
+          {
+            "conceptCategory": "C.ParameterDimension"
+          },
+          {
+            "conceptCategory": "C.VisitDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "output": "SM.ChiSquaredTest.ChiSquaredTestResult",
+            "concept": "C.TestResult"
+          }
+        ]
+      },
+      "sliceKeys": [
+        {
+          "dimension": "C.ParameterDimension",
+          "source": "biomedicalConcept"
+        },
+        {
+          "dimension": "C.VisitDimension",
+          "source": "visit"
+        },
+        {
+          "dimension": "C.Population",
+          "source": "population"
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_RESPONDER_ENDPOINT",
+        "SP_PARAMETER",
+        "SP_TIMEPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
+        "SP_METHOD_CHISQ"
+      ]
+    },
+    {
+      "conceptId": "T.PFS_KaplanMeier",
+      "status": "provisional",
+      "label": "Time-to-Event Kaplan-Meier Summary",
+      "shortLabel": "TTE KM",
+      "transformationType": "analysis",
+      "description": "Descriptive Kaplan-Meier summary of a time-to-event endpoint by treatment group: median time to event with confidence limits, the survival function, event counts, and landmark estimates for when the median is not reached. No hypothesis test.",
+      "usesMethod": "M.KaplanMeier",
+      "methodConfigurations": [
+        {
+          "configurationName": "conf_type",
+          "value": "log-log"
+        }
+      ],
+      "inputDataStructure": {
+        "dimensions": [
+          {
+            "input": "fixed_effect",
+            "concept": "C.Treatment"
+          },
+          {
+            "concept": "C.Subject"
+          },
+          {
+            "conceptCategory": "C.EventDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "input": "time",
+            "concept": "C.TimeToEvent",
+            "requiredValueType": "Quantity",
+            "slice": "endpoint",
+            "description": "Time from the time-origin (randomization) to the event or to censoring."
+          },
+          {
+            "input": "event",
+            "concept": "C.Flag",
+            "requiredValueType": "boolean",
+            "slice": "endpoint",
+            "description": "Event indicator; censoring is its complement."
+          }
+        ],
+        "slices": [
+          {
+            "name": "endpoint",
+            "description": "Time-to-event records for this event definition in the chosen population.",
+            "constraints": [
+              {
+                "dimension": "C.EventDimension",
+                "value": "{event}"
+              },
+              {
+                "dimension": "C.Population",
+                "value": "{population}"
+              }
+            ]
+          }
+        ]
+      },
+      "outputDataStructure": {
+        "dimensions": [
+          {
+            "concept": "C.Treatment"
+          },
+          {
+            "conceptCategory": "C.EventDimension"
+          },
+          {
+            "concept": "C.Population"
+          }
+        ],
+        "measures": [
+          {
+            "output": "SM.KaplanMeier.MedianSurvival",
+            "concept": "C.MedianSurvival"
+          },
+          {
+            "output": "SM.KaplanMeier.SurvivalTable",
+            "concept": "C.SurvivalTable"
+          },
+          {
+            "output": "SM.KaplanMeier.EventSummary",
+            "concept": "C.EventSummary"
+          },
+          {
+            "output": "SM.KaplanMeier.LandmarkEstimates",
+            "concept": "C.LandmarkEstimates"
+          }
+        ]
+      },
+      "sliceKeys": [
+        {
+          "dimension": "C.EventDimension",
+          "source": "event"
+        },
+        {
+          "dimension": "C.Population",
+          "source": "population"
+        }
+      ],
+      "validSmartPhrases": [
+        "SP_TTE_ENDPOINT",
+        "SP_POPULATION",
+        "SP_GROUPING",
+        "SP_METHOD_KM",
+        "SP_CONFIDENCE_LEVEL",
+        "SP_STRATIFICATION",
+        "SP_ICE_TREATMENT_POLICY",
+        "SP_ICE_WHILE_ON_TREATMENT",
+        "SP_SUMMARY_MEASURE",
+        "SP_CENSOR_LTFU",
+        "SP_KM_CURVES"
+      ]
+    }
+  ]
+}

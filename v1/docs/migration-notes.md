@@ -126,3 +126,71 @@ Changes to the spike schema:
    with a single CDISC data-element concept code have one.
 10. **Population is recorded as a derived dimension with no definition.**
     Analysis-set membership is defined per study, not by the library.
+
+## Transformation layer
+
+`v1/lib/transformations/transformations.json` holds 26 templates: the 25 of
+Transformation Library v0.7 on `methods_02`, and `T.PFS_KaplanMeier`, proposed
+on `estimands_01` and marked `provisional`.
+
+| `methods_02` v0.7 | Candidate v1 |
+| --- | --- |
+| `concept: "Change"` | `concept: "C.Change"` (a Concept identifier) |
+| `conceptCategory: "ParameterDimension"` | `conceptCategory: "C.ParameterDimension"` (an abstract Concept) |
+| `concept: "Observation"` | `conceptCategory: "C.Observation"` — Observation is a grouping, so it can only be referenced as a category |
+| Input measure `input: "response"` | Unchanged; it now names `Method.inputs[].role` |
+| Output measure `output: "ls_means"` | `output: "SM.ANCOVA.LsMeans"` — the SubMethod that produces it; for a method with one output, the Method itself (`M.Subtraction`) |
+| `smartPhrases`, `roleDefinitions`, `configurationOptions` in the same file | Moved to the SmartPhrase library (D9). `validSmartPhrases` stays on the template |
+| `methodConfigurations[].value` holding a list | `valueList` (a single value stays in `value`) |
+| Design-document section references (§6.3 …) in the schema | Removed; the cross-file rules are restated as T1–T10 in the schema and enforced by the validator |
+
+The schema itself is otherwise the `methods_02` transformation schema: twin
+input and output data structures, slices and slice keys, model interactions,
+contrast specifications.
+
+Two slice-key sources were added (`event`, `treatment`) for time-to-event
+templates.
+
+### Findings for the working group
+
+11. **`T.PFS_KaplanMeier` used two concepts the analysis model does not have.**
+    `SurvivalFunction` is mapped to `C.SurvivalTable`, which is the same thing.
+    `LandmarkEstimate` had no counterpart, so `C.LandmarkEstimates` is added as a
+    provisional concept.
+12. **Placeholders are not declared.** Templates use `{parameter}`, `{visit}`,
+    `{population}`, `{baseline_visit}`, `{control_arm}` and `{event}`, but only
+    the first three and `{event}` have a slice key. The validator derives the
+    full set from the template and checks that a study supplies each one.
+
+## SmartPhrase layer
+
+`v1/lib/smartphrases/smartphrases.json` holds 31 phrases in ten roles, with
+language packs for English, French and German.
+
+| Source | Candidate v1 |
+| --- | --- |
+| 23 phrases and 8 roles inside the Transformation Library v0.7 | Their own library and schema (D9, D12) |
+| 8 phrases and 2 roles (`ice_handling`, `summary_measure`) proposed on `estimands_01` | Included, marked `provisional`. The role order is the merged order the proof of concept used |
+| `oid` | `conceptId` (the shared identifier slot); values unchanged (`SP_CFB_ENDPOINT`) |
+| snake_case fields (`phrase_template`, `concept_constraint`, `default_render` …) | camelCase, as in the rest of the model |
+| `anchors.produced_concept: "Change"` | `anchors.producedConcept: "C.Change"` |
+| Language overlay (sentence templates, conjunctions, translated phrases, method and output names) | `languagePacks` in the library. Translations of *study* concepts stay with the study |
+| An `output_ref` bound to an output-class name | Bound to the producing SubMethod (see the study layer) |
+
+Added for decision D13 (extension points for an eSAP model):
+
+- a placeholder kind `extension_ref`, with `extensionType`, for a phrase slot
+  that points at an entity the extending model owns;
+- `definedBy` on a role, for a role the extending model adds.
+
+### Findings for the working group
+
+13. **Two roles repeat but were not flagged.** `covariate` and
+    `method_qualifier` are each filled several times in the worked studies. Both
+    are marked repeating.
+14. **The French and German packs are illustrative.** They are marked
+    `validated: false`. German needs case declension for the intercurrent-event
+    noun, which a single name per concept cannot give.
+15. **`population` binds an analysis set, not the estimand's target population.**
+    The role is mapped to the Population attribute of ICH E9(R1), with that
+    caveat in its description.

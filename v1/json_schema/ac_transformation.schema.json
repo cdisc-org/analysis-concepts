@@ -1,0 +1,1430 @@
+{
+    "$defs": {
+        "Any": {
+            "additionalProperties": true,
+            "description": "Any value; used for configuration values, whose type depends on the method's configuration.",
+            "title": "Any",
+            "type": [
+                "null",
+                "boolean",
+                "object",
+                "number",
+                "string"
+            ]
+        },
+        "Coding": {
+            "additionalProperties": false,
+            "description": "A reference to a code in a terminology or ontology",
+            "properties": {
+                "code": {
+                    "description": "The code value within the system (e.g., STATO_0000179)",
+                    "type": "string"
+                },
+                "display": {
+                    "description": "Human-readable label for the code",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system": {
+                    "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)",
+                    "format": "uri",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "system",
+                "code"
+            ],
+            "title": "Coding",
+            "type": "object"
+        },
+        "ConceptReference": {
+            "additionalProperties": false,
+            "description": "Abstract base for any binding that references a clinical/analysis concept OR a concept category. Enforces \"concept XOR conceptCategory\".",
+            "properties": {
+                "concept": {
+                    "description": "A concrete Concept in the concept library (a Concept identifier, e.g. C.Change). Checked across files by the validator.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "conceptCategory": {
+                    "description": "An abstract Concept that stands for a group (e.g. C.ParameterDimension, C.VisitDimension). A concrete member is chosen when a study uses the transformation.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "then": {
+                "oneOf": [
+                    {
+                        "properties": {
+                            "concept": {}
+                        },
+                        "required": [
+                            "concept"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "conceptCategory": {}
+                        },
+                        "required": [
+                            "conceptCategory"
+                        ]
+                    }
+                ]
+            },
+            "title": "ConceptReference",
+            "type": "object"
+        },
+        "ContrastBasis": {
+            "description": "",
+            "enum": [
+                "estimated_means",
+                "model_coefficients"
+            ],
+            "title": "ContrastBasis",
+            "type": "string"
+        },
+        "ContrastCell": {
+            "additionalProperties": false,
+            "description": "A weighted cell mapping each relevant factor to a level.",
+            "properties": {
+                "cell": {
+                    "description": "Map of factor (concept term) -> level.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "weight": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "weight"
+            ],
+            "title": "ContrastCell",
+            "type": "object"
+        },
+        "ContrastCoding": {
+            "description": "",
+            "enum": [
+                "reference",
+                "cell_means"
+            ],
+            "title": "ContrastCoding",
+            "type": "string"
+        },
+        "ContrastGenerator": {
+            "additionalProperties": false,
+            "description": "Study-time generator resolved against `over`'s levels into explicit members.",
+            "properties": {
+                "kind": {
+                    "$ref": "#/$defs/ContrastGeneratorKind"
+                },
+                "reference": {
+                    "description": "Comparator level (often the {control_arm} sliceKey), for vs_reference.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "kind"
+            ],
+            "title": "ContrastGenerator",
+            "type": "object"
+        },
+        "ContrastGeneratorKind": {
+            "description": "",
+            "enum": [
+                "pairwise",
+                "vs_reference",
+                "trend",
+                "custom"
+            ],
+            "title": "ContrastGeneratorKind",
+            "type": "string"
+        },
+        "ContrastMember": {
+            "additionalProperties": false,
+            "description": "One row of L \u2014 a labelled set of weights (single-factor) or cells (multi-factor).",
+            "properties": {
+                "cells": {
+                    "description": "General multi-factor cells (interaction / difference-in-differences).",
+                    "items": {
+                        "$ref": "#/$defs/ContrastCell"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "type": "string"
+                },
+                "weights": {
+                    "description": "Single-factor shorthand \u2014 map of level -> weight (omitted = 0).",
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "label"
+            ],
+            "then": {
+                "anyOf": [
+                    {
+                        "properties": {
+                            "weights": {
+                                "items": {},
+                                "type": "array"
+                            }
+                        },
+                        "required": [
+                            "weights"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "cells": {
+                                "items": {},
+                                "type": "array"
+                            }
+                        },
+                        "required": [
+                            "cells"
+                        ]
+                    }
+                ]
+            },
+            "title": "ContrastMember",
+            "type": "object"
+        },
+        "ContrastMembers": {
+            "additionalProperties": false,
+            "description": "A contrast member-set \u2014 exactly one of generator (unresolved) or memberList (resolved).",
+            "properties": {
+                "generator": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ContrastGenerator"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "memberList": {
+                    "items": {
+                        "$ref": "#/$defs/ContrastMember"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "then": {
+                "oneOf": [
+                    {
+                        "properties": {
+                            "generator": {}
+                        },
+                        "required": [
+                            "generator"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "memberList": {
+                                "items": {},
+                                "type": "array"
+                            }
+                        },
+                        "required": [
+                            "memberList"
+                        ]
+                    }
+                ]
+            },
+            "title": "ContrastMembers",
+            "type": "object"
+        },
+        "ContrastSpecification": {
+            "additionalProperties": false,
+            "description": "The coefficient matrix L defining a contrast dimension's members. `over` is expressed in concept terms (e.g. Treatment). estimated_means is the portable default; model_coefficients additionally pins coding (+reference)",
+            "if": {
+                "properties": {
+                    "basis": {
+                        "const": "model_coefficients"
+                    }
+                },
+                "required": [
+                    "basis"
+                ]
+            },
+            "properties": {
+                "at": {
+                    "description": "Optional second factor; single-factor members are replicated across its levels.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "basis": {
+                    "$ref": "#/$defs/ContrastBasis",
+                    "description": "Column space of L."
+                },
+                "coding": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ContrastCoding"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Required when basis = model_coefficients \u2014 the model parameterization."
+                },
+                "members": {
+                    "$ref": "#/$defs/ContrastMembers",
+                    "description": "Either a generator (template) or a resolved list of member rows."
+                },
+                "over": {
+                    "description": "The factor/dimension contrasted, in concept terms (e.g. \"Treatment\").",
+                    "type": "string"
+                },
+                "reference": {
+                    "description": "Required when basis = model_coefficients and coding = reference \u2014 the reference level.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "over",
+                "basis",
+                "members"
+            ],
+            "then": {
+                "properties": {
+                    "coding": {}
+                },
+                "required": [
+                    "coding"
+                ]
+            },
+            "title": "ContrastSpecification",
+            "type": "object"
+        },
+        "DataStructureDefinition": {
+            "additionalProperties": false,
+            "description": "abstract base for the input and output DSDs. Each instance IS a qb:DataStructureDefinition. Subclasses (InputDataStructure / OutputDataStructure) constrain which kinds of bindings are permitted.",
+            "properties": {
+                "attributes_": {
+                    "description": "qb:attribute components of this DSD. Reserved; typically absent.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "dimensions": {
+                    "description": "qb:dimension components of this DSD.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "measures": {
+                    "description": "qb:measure components of this DSD.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "slices": {
+                    "description": "slice templates that pre-filter cubes derived from this DSD.",
+                    "items": {
+                        "$ref": "#/$defs/Slice"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "title": "DataStructureDefinition",
+            "type": "object"
+        },
+        "DimensionBinding": {
+            "additionalProperties": false,
+            "description": "Abstract base for an entry in a DSD's dimensions[]. Subclasses constrain whether input is permitted.",
+            "properties": {
+                "concept": {
+                    "description": "A concrete Concept in the concept library (a Concept identifier, e.g. C.Change). Checked across files by the validator.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "conceptCategory": {
+                    "description": "An abstract Concept that stands for a group (e.g. C.ParameterDimension, C.VisitDimension). A concrete member is chosen when a study uses the transformation.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "input": {
+                    "description": "when present, this dim fills a specific method input slot (bound dim). When absent, the dim is pure cube context.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "then": {
+                "oneOf": [
+                    {
+                        "properties": {
+                            "concept": {}
+                        },
+                        "required": [
+                            "concept"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "conceptCategory": {}
+                        },
+                        "required": [
+                            "conceptCategory"
+                        ]
+                    }
+                ]
+            },
+            "title": "DimensionBinding",
+            "type": "object"
+        },
+        "EntryStatus": {
+            "description": "Lifecycle status of a library entry.",
+            "enum": [
+                "released",
+                "provisional",
+                "deprecated"
+            ],
+            "title": "EntryStatus",
+            "type": "string"
+        },
+        "FHIRValueType": {
+            "description": "Optional value-type constraint on an input measure binding. Mirrors the method layer's value types but listed here so the transformation schema is self-contained at validation time.",
+            "enum": [
+                "Quantity",
+                "CodeableConcept",
+                "Identifier",
+                "string",
+                "decimal",
+                "integer",
+                "boolean",
+                "NumericValue",
+                "CharacterValue",
+                "CodedResponse"
+            ],
+            "title": "FHIRValueType",
+            "type": "string"
+        },
+        "InputAttributeBinding": {
+            "additionalProperties": false,
+            "description": "Reserved (Attributes). qb:attribute on the input cube.",
+            "properties": {
+                "concept": {
+                    "description": "A concrete Concept in the concept library (a Concept identifier, e.g. C.Change). Checked across files by the validator.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "conceptCategory": {
+                    "description": "An abstract Concept that stands for a group (e.g. C.ParameterDimension, C.VisitDimension). A concrete member is chosen when a study uses the transformation.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "then": {
+                "oneOf": [
+                    {
+                        "properties": {
+                            "concept": {}
+                        },
+                        "required": [
+                            "concept"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "conceptCategory": {}
+                        },
+                        "required": [
+                            "conceptCategory"
+                        ]
+                    }
+                ]
+            },
+            "title": "InputAttributeBinding",
+            "type": "object"
+        },
+        "InputDataStructure": {
+            "additionalProperties": false,
+            "description": "DSD for the cube the transformation consumes. dimensions[] and measures[] items may carry `input` FKs; measures[] items may carry `slice`. Output-only fields are rejected.",
+            "properties": {
+                "attributes_": {
+                    "description": "qb:attribute components of this DSD. Reserved; typically absent.",
+                    "items": {
+                        "$ref": "#/$defs/InputAttributeBinding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "dimensions": {
+                    "description": "qb:dimension components of this DSD.",
+                    "items": {
+                        "$ref": "#/$defs/InputDimensionBinding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "measures": {
+                    "description": "qb:measure components of this DSD.",
+                    "items": {
+                        "$ref": "#/$defs/InputMeasureBinding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "modelInteractions": {
+                    "description": "interaction terms selected into the model RHS for this use (e.g. a treatment-by-visit interaction). Each interaction references already-bound input roles via its operands; it binds no new data. Main effects are NOT listed here \u2014 they are implied by the dimensions[]/measures[] input bindings. Empty/absent = main effects only. Validated against usesMethod's formula grammar (an interaction's operand-role multiset must match an allowed interaction production in the method's generic_expression). Input-side only (model specification is about the RHS the cube feeds), so it lives here and not on OutputDataStructure.",
+                    "items": {
+                        "$ref": "#/$defs/ModelInteraction"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "slices": {
+                    "description": "slice templates that pre-filter cubes derived from this DSD.",
+                    "items": {
+                        "$ref": "#/$defs/Slice"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "title": "InputDataStructure",
+            "type": "object"
+        },
+        "InputDimensionBinding": {
+            "additionalProperties": false,
+            "description": "a dimension on the input cube. input is optional.",
+            "properties": {
+                "concept": {
+                    "description": "A concrete Concept in the concept library (a Concept identifier, e.g. C.Change). Checked across files by the validator.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "conceptCategory": {
+                    "description": "An abstract Concept that stands for a group (e.g. C.ParameterDimension, C.VisitDimension). A concrete member is chosen when a study uses the transformation.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "input": {
+                    "description": "when present, this dim fills a specific method input slot (bound dim). When absent, the dim is pure cube context.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "then": {
+                "oneOf": [
+                    {
+                        "properties": {
+                            "concept": {}
+                        },
+                        "required": [
+                            "concept"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "conceptCategory": {}
+                        },
+                        "required": [
+                            "conceptCategory"
+                        ]
+                    }
+                ]
+            },
+            "title": "InputDimensionBinding",
+            "type": "object"
+        },
+        "InputMeasureBinding": {
+            "additionalProperties": false,
+            "description": "a measure on the input cube. Carries input; may carry slice.",
+            "properties": {
+                "concept": {
+                    "description": "A concrete Concept in the concept library (a Concept identifier, e.g. C.Change). Checked across files by the validator.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "conceptCategory": {
+                    "description": "An abstract Concept that stands for a group (e.g. C.ParameterDimension, C.VisitDimension). A concrete member is chosen when a study uses the transformation.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text note on the binding (e.g. \"Baseline value of the endpoint parameter\").",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "input": {
+                    "description": "The Method input role this measure fills (Method.inputs[].role).",
+                    "type": "string"
+                },
+                "requiredValueType": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FHIRValueType"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "optional FHIR value-type constraint on the input measure."
+                },
+                "slice": {
+                    "description": "name of a Slice in inputDataStructure.slices[] that pre-filters this measure's cube before the method sees it.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "input"
+            ],
+            "then": {
+                "oneOf": [
+                    {
+                        "properties": {
+                            "concept": {}
+                        },
+                        "required": [
+                            "concept"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "conceptCategory": {}
+                        },
+                        "required": [
+                            "conceptCategory"
+                        ]
+                    }
+                ]
+            },
+            "title": "InputMeasureBinding",
+            "type": "object"
+        },
+        "InteractionOperand": {
+            "additionalProperties": false,
+            "description": "one operand of a ModelInteraction. Identifies an existing input binding by the SAME identity it uses in dimensions[]/measures[]: its input role plus its concept (or conceptCategory). `input` alone is insufficient because `multiple`-cardinality roles (e.g. fixed_effect bound to both Treatment and Region) would be ambiguous \u2014 so the concept disambiguates which binding the operand refers to.",
+            "properties": {
+                "concept": {
+                    "description": "A concrete Concept in the concept library (a Concept identifier, e.g. C.Change). Checked across files by the validator.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "conceptCategory": {
+                    "description": "An abstract Concept that stands for a group (e.g. C.ParameterDimension, C.VisitDimension). A concrete member is chosen when a study uses the transformation.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "input": {
+                    "description": "The Method input role this operand fills (Method.inputs[].role).",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "input"
+            ],
+            "then": {
+                "oneOf": [
+                    {
+                        "properties": {
+                            "concept": {}
+                        },
+                        "required": [
+                            "concept"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "conceptCategory": {}
+                        },
+                        "required": [
+                            "conceptCategory"
+                        ]
+                    }
+                ]
+            },
+            "title": "InteractionOperand",
+            "type": "object"
+        },
+        "MeasureBinding": {
+            "additionalProperties": false,
+            "description": "Abstract base for an entry in a DSD's measures[]. Subclasses constrain direction: input measures carry input + optional slice; output measures carry output.",
+            "properties": {
+                "concept": {
+                    "description": "A concrete Concept in the concept library (a Concept identifier, e.g. C.Change). Checked across files by the validator.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "conceptCategory": {
+                    "description": "An abstract Concept that stands for a group (e.g. C.ParameterDimension, C.VisitDimension). A concrete member is chosen when a study uses the transformation.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text note on the binding (e.g. \"Baseline value of the endpoint parameter\").",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "requiredValueType": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FHIRValueType"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "optional FHIR value-type constraint on the input measure."
+                }
+            },
+            "then": {
+                "oneOf": [
+                    {
+                        "properties": {
+                            "concept": {}
+                        },
+                        "required": [
+                            "concept"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "conceptCategory": {}
+                        },
+                        "required": [
+                            "conceptCategory"
+                        ]
+                    }
+                ]
+            },
+            "title": "MeasureBinding",
+            "type": "object"
+        },
+        "MethodConfigurationOverride": {
+            "additionalProperties": false,
+            "description": "A configuration value supplied to the named method's `configurations[].name` slot.",
+            "properties": {
+                "configurationName": {
+                    "description": "FK to Method.configurations[].name (validated cross-file).",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Why this value is set.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "value": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Any"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Configuration value (type matches the configuration's dataType)."
+                },
+                "valueList": {
+                    "description": "The value of a list-valued configuration (for example a set of visit windows).",
+                    "items": {
+                        "$ref": "#/$defs/Any"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "configurationName"
+            ],
+            "title": "MethodConfigurationOverride",
+            "type": "object"
+        },
+        "ModelInteraction": {
+            "additionalProperties": false,
+            "description": "one interaction term on the model RHS, selected for this use and composed from already-bound input roles (its operands). The interaction (the `:` operator) is the only composite term selectable across the current method library; nesting/stratification (the `|` partition) is method-intrinsic, not a per-use choice, so it is not modelled here. There is therefore no `kind` discriminator: a ModelInteraction IS an interaction. If the formula grammar later gains a second selectable composition production (e.g. random effects `(slope | group)`), that is a new, separately-named construct \u2014 not a `kind` added here. The eSAP renders the model statement from these structured interactions rather than parsing a formula string.",
+            "properties": {
+                "label": {
+                    "description": "Optional human-readable label (e.g. \"Treatment \u00d7 AnalysisVisit\").",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "operands": {
+                    "description": "The two-or-more interacting factors/covariates, each a reference to an existing dimensions[]/measures[] input binding. Order is not significant (a:b == b:a).",
+                    "items": {
+                        "$ref": "#/$defs/InteractionOperand"
+                    },
+                    "type": "array"
+                },
+                "role": {
+                    "description": "Optional role marker for the interaction, e.g. \"primary\" for the treatment-by-visit term of primary interest in an MMRM.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "operands"
+            ],
+            "title": "ModelInteraction",
+            "type": "object"
+        },
+        "OutputAttributeBinding": {
+            "additionalProperties": false,
+            "description": "Reserved (Attributes). qb:attribute on the output cube.",
+            "properties": {
+                "concept": {
+                    "description": "A concrete Concept in the concept library (a Concept identifier, e.g. C.Change). Checked across files by the validator.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "conceptCategory": {
+                    "description": "An abstract Concept that stands for a group (e.g. C.ParameterDimension, C.VisitDimension). A concrete member is chosen when a study uses the transformation.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "then": {
+                "oneOf": [
+                    {
+                        "properties": {
+                            "concept": {}
+                        },
+                        "required": [
+                            "concept"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "conceptCategory": {}
+                        },
+                        "required": [
+                            "conceptCategory"
+                        ]
+                    }
+                ]
+            },
+            "title": "OutputAttributeBinding",
+            "type": "object"
+        },
+        "OutputDataStructure": {
+            "additionalProperties": false,
+            "description": "DSD for the cube the transformation produces. dimensions[] items list the output cube's qb:dimension components (no input FK on this side). measures[] items carry `output` FKs. slice is rejected on output measures.",
+            "properties": {
+                "attributes_": {
+                    "description": "qb:attribute components of this DSD. Reserved; typically absent.",
+                    "items": {
+                        "$ref": "#/$defs/OutputAttributeBinding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "dimensions": {
+                    "description": "qb:dimension components of this DSD.",
+                    "items": {
+                        "$ref": "#/$defs/OutputDimensionBinding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "measures": {
+                    "description": "qb:measure components of this DSD.",
+                    "items": {
+                        "$ref": "#/$defs/OutputMeasureBinding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "slices": {
+                    "description": "slice templates that pre-filter cubes derived from this DSD.",
+                    "items": {
+                        "$ref": "#/$defs/Slice"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "title": "OutputDataStructure",
+            "type": "object"
+        },
+        "OutputDimensionBinding": {
+            "additionalProperties": false,
+            "allOf": [
+                {
+                    "then": {
+                        "properties": {
+                            "input": {
+                                "const": ""
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "contrastSpecification": {}
+                        },
+                        "required": [
+                            "contrastSpecification"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "concept": {
+                                "const": "C.Contrasts"
+                            }
+                        },
+                        "required": [
+                            "concept"
+                        ]
+                    }
+                },
+                {
+                    "then": {
+                        "oneOf": [
+                            {
+                                "properties": {
+                                    "concept": {}
+                                },
+                                "required": [
+                                    "concept"
+                                ]
+                            },
+                            {
+                                "properties": {
+                                    "conceptCategory": {}
+                                },
+                                "required": [
+                                    "conceptCategory"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ],
+            "description": "a dimension on the output cube. input is rejected here. May instead be a derived contrast dimension carrying a contrastSpecification; in that case it is named \"contrast\" and bound to the Contrasts concept.",
+            "properties": {
+                "concept": {
+                    "description": "A concrete Concept in the concept library (a Concept identifier, e.g. C.Change). Checked across files by the validator.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "conceptCategory": {
+                    "description": "An abstract Concept that stands for a group (e.g. C.ParameterDimension, C.VisitDimension). A concrete member is chosen when a study uses the transformation.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "contrastSpecification": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ContrastSpecification"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "The coefficient-matrix recipe defining the contrast dimension's members."
+                },
+                "input": {
+                    "description": "when present, this dim fills a specific method input slot (bound dim). When absent, the dim is pure cube context.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Dimension name; \"contrast\" for a derived contrast dimension.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "OutputDimensionBinding",
+            "type": "object"
+        },
+        "OutputMeasureBinding": {
+            "additionalProperties": false,
+            "description": "a measure on the output cube. Carries output; slice is rejected.",
+            "properties": {
+                "concept": {
+                    "description": "A concrete Concept in the concept library (a Concept identifier, e.g. C.Change). Checked across files by the validator.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "conceptCategory": {
+                    "description": "An abstract Concept that stands for a group (e.g. C.ParameterDimension, C.VisitDimension). A concrete member is chosen when a study uses the transformation.",
+                    "pattern": "^C\\..+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text note on the binding (e.g. \"Baseline value of the endpoint parameter\").",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "output": {
+                    "description": "The producer of this measure: the identifier of the Method (when it has a single output) or of the SubMethod whose output it is.",
+                    "pattern": "^S?M\\..+$",
+                    "type": "string"
+                },
+                "requiredValueType": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FHIRValueType"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "optional FHIR value-type constraint on the input measure."
+                }
+            },
+            "required": [
+                "output"
+            ],
+            "then": {
+                "oneOf": [
+                    {
+                        "properties": {
+                            "concept": {}
+                        },
+                        "required": [
+                            "concept"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "conceptCategory": {}
+                        },
+                        "required": [
+                            "conceptCategory"
+                        ]
+                    }
+                ]
+            },
+            "title": "OutputMeasureBinding",
+            "type": "object"
+        },
+        "Slice": {
+            "additionalProperties": false,
+            "description": "a named, parameterized slice TEMPLATE. Instantiated to a real qb:Slice at execution time when sliceKey placeholders bind to endpoint values. Lives inside a DSD's slices[] array.",
+            "properties": {
+                "constraints": {
+                    "description": "One constraint per fixed dimension. Values may be literal or {placeholder}.",
+                    "items": {
+                        "$ref": "#/$defs/SliceConstraint"
+                    },
+                    "type": "array"
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Slice identifier within slices[]. Referenced by InputMeasureBinding.slice.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "constraints"
+            ],
+            "title": "Slice",
+            "type": "object"
+        },
+        "SliceConstraint": {
+            "additionalProperties": false,
+            "description": "one fixed dimension within a slice template.",
+            "properties": {
+                "dimension": {
+                    "description": "References a dimension name in the parent DSD's dimensions[] (concept or conceptCategory).",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "Literal value OR a {placeholder} that resolves via sliceKeys at study-spec time. Recognized placeholders include {parameter}, {visit}, {baseline_visit}, {population}.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "dimension",
+                "value"
+            ],
+            "title": "SliceConstraint",
+            "type": "object"
+        },
+        "SliceKey": {
+            "additionalProperties": false,
+            "description": "qb:SliceKey extended with `source` to declare where the fixed-dimension value comes from at study-spec time. Lives at the transformation top level.",
+            "properties": {
+                "dimension": {
+                    "description": "References a dimension in inputDataStructure.dimensions[].",
+                    "type": "string"
+                },
+                "source": {
+                    "$ref": "#/$defs/SliceKeySource",
+                    "description": "Endpoint-spec attribute name supplying the value."
+                }
+            },
+            "required": [
+                "dimension",
+                "source"
+            ],
+            "title": "SliceKey",
+            "type": "object"
+        },
+        "SliceKeySource": {
+            "description": "where a slice-key's fixed-dimension value comes from at study-spec time. Currently an informal three-value vocabulary in the existing library. Listed here as an enum so the validator can warn on unknown values.",
+            "enum": [
+                "biomedicalConcept",
+                "visit",
+                "population",
+                "event",
+                "treatment"
+            ],
+            "title": "SliceKeySource",
+            "type": "string"
+        },
+        "Transformation": {
+            "additionalProperties": false,
+            "description": "a single transformation entry.",
+            "properties": {
+                "conceptId": {
+                    "description": "canonical identifier (e.g. T.CFB_ANCOVA).",
+                    "pattern": "^T\\.[A-Za-z0-9_]+$",
+                    "type": "string"
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "inputDataStructure": {
+                    "$ref": "#/$defs/InputDataStructure",
+                    "description": "the qb:DataStructureDefinition for the cube this transformation consumes."
+                },
+                "label": {
+                    "description": "SmartPhrase-rendering label.",
+                    "type": "string"
+                },
+                "methodConfigurations": {
+                    "description": "Values for the method's configuration options.",
+                    "items": {
+                        "$ref": "#/$defs/MethodConfigurationOverride"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "outputDataStructure": {
+                    "$ref": "#/$defs/OutputDataStructure",
+                    "description": "the qb:DataStructureDefinition for the cube this transformation produces."
+                },
+                "shortLabel": {
+                    "description": "Optional compact label.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "sliceKeys": {
+                    "description": "declares how slice-template placeholders bind to the endpoint spec at study time.",
+                    "items": {
+                        "$ref": "#/$defs/SliceKey"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "status": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/EntryStatus"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Lifecycle status; `provisional` marks a template proposed during the candidate v1 build."
+                },
+                "transformationType": {
+                    "$ref": "#/$defs/TransformationType"
+                },
+                "usesMethod": {
+                    "description": "The Method this transformation applies (a Method identifier).",
+                    "pattern": "^M\\.[A-Za-z0-9_]+$",
+                    "type": "string"
+                },
+                "validSmartPhrases": {
+                    "description": "SmartPhrase OIDs compatible with this transformation.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "conceptId",
+                "label",
+                "transformationType",
+                "usesMethod",
+                "inputDataStructure",
+                "outputDataStructure"
+            ],
+            "title": "Transformation",
+            "type": "object"
+        },
+        "TransformationLibrary": {
+            "additionalProperties": false,
+            "description": "Top-level container for one or more transformations.",
+            "properties": {
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "libraryVersion": {
+                    "description": "Semantic version of the library. A study pins the version it uses (decision D6).",
+                    "type": "string"
+                },
+                "transformations": {
+                    "description": "unified array (analyses + derivations merged with a discriminator).",
+                    "items": {
+                        "$ref": "#/$defs/Transformation"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "libraryVersion"
+            ],
+            "title": "TransformationLibrary",
+            "type": "object"
+        },
+        "TransformationType": {
+            "description": "single transformations[] array with a discriminator.",
+            "enum": [
+                "derivation",
+                "analysis"
+            ],
+            "title": "TransformationType",
+            "type": "string"
+        },
+        "UnitRuleEnum": {
+            "description": "How the unit of a produced value is determined.",
+            "enum": [
+                "inherited",
+                "derived",
+                "fixed",
+                "unitless",
+                "none"
+            ],
+            "title": "UnitRuleEnum",
+            "type": "string"
+        },
+        "ValueTypeEnum": {
+            "description": "The kind of value a statistic or concept produces. Complex types follow FHIR R5 datatypes; primitive types follow FHIR primitives.",
+            "enum": [
+                "Quantity",
+                "CodeableConcept",
+                "Identifier",
+                "Range",
+                "Ratio",
+                "Count",
+                "Period",
+                "decimal",
+                "integer",
+                "boolean",
+                "string",
+                "code",
+                "date",
+                "dateTime"
+            ],
+            "title": "ValueTypeEnum",
+            "type": "string"
+        }
+    },
+    "$id": "https://cdisc.org/ac/transformation",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "additionalProperties": false,
+    "description": "Top-level container for one or more transformations.",
+    "metamodel_version": "1.12.0",
+    "properties": {
+        "description": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "libraryVersion": {
+            "description": "Semantic version of the library. A study pins the version it uses (decision D6).",
+            "type": "string"
+        },
+        "transformations": {
+            "description": "unified array (analyses + derivations merged with a discriminator).",
+            "items": {
+                "$ref": "#/$defs/Transformation"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        }
+    },
+    "required": [
+        "libraryVersion"
+    ],
+    "title": "ac_transformation",
+    "type": "object",
+    "version": "1.0.0-candidate"
+}
+
