@@ -1,0 +1,230 @@
+# Analysis Concepts candidate v1 — concept layer
+# Origin: model_alternative/linkML/acdc_concept.yaml on methods_02 (the June 2026
+# unified-concept spike, v0.0.1), revised as its findings recommended.
+# Changes from the origin are listed in v1/docs/migration-notes.md.
+id: https://cdisc.org/ac/concept
+name: ac_concept
+version: "1.0.0-candidate"
+title: AC Concept Model
+description: >-
+  Schema for the unified concept library. A Concept is a standard-agnostic
+  meaning that Transformations reference and Data Bindings map physical
+  variables to. One library spans collected (observation), derived and analysis
+  concepts. A Concept owns its meaning, never its mechanism: it is defined by
+  nothing (collected), by a closed-form identity (closed-form), or by a contract
+  that a method output satisfies (method-bound). A Concept holds no mapping to a
+  variable; that is the Data Binding's job.
+
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  ac: https://cdisc.org/ac/
+  linkml: https://w3id.org/linkml/
+  skos: http://www.w3.org/2004/02/skos/core#
+
+default_prefix: ac
+default_range: string
+
+imports:
+  - linkml:types
+  - ac:ac_common
+  - ac:ac_statistic
+  - ac:ac_statistic_set
+  - ac:ac_output_class
+
+enums:
+
+  ConceptRoleEnum:
+    description: Where in the data lifecycle a concept arises.
+    permissible_values:
+      collected:
+        description: An observed or recorded fact. It has no definition.
+      derived:
+        description: A subject-level value computed from other concepts.
+      analysis:
+        description: An aggregate statistical result.
+
+  ConceptAxisEnum:
+    description: The structural part a concept usually plays in a data structure.
+    permissible_values:
+      measure:
+        description: A value that is computed on.
+      dimension:
+        description: A value that identifies or groups observations.
+      attribute:
+        description: A value that qualifies an observation and is never computed on.
+
+  DefinitionFormEnum:
+    description: How a concept is defined.
+    permissible_values:
+      none:
+        description: Not defined by other concepts (collected facts, and abstract groupings).
+      closedForm:
+        description: Defined by an algebraic identity over operands.
+      methodBound:
+        description: Defined by a contract that a method output must satisfy.
+
+classes:
+
+  ResultContract:
+    description: What a concept produces; the structural type that an operand or a method output is matched against.
+    attributes:
+      valueTypes:
+        description: The kind(s) of value produced.
+        range: ValueTypeEnum
+        multivalued: true
+        required: true
+      unitRule:
+        range: UnitRuleEnum
+      inputUnitRelation:
+        description: Whether the inputs must share a unit (uniform) or may differ (heterogeneous).
+        range: string
+      inheritsFrom:
+        description: A concept whose unit and value type this result takes (for example a time concept).
+        range: Concept
+        inlined: false
+
+  Operand:
+    description: A named operand of a definition, typed by what it must produce.
+    attributes:
+      name:
+        required: true
+      description: {}
+      produces:
+        range: ResultContract
+        inlined: true
+
+  AlgebraicIdentity:
+    description: A closed-form definition; pure algebra over operands.
+    attributes:
+      operands:
+        range: Operand
+        multivalued: true
+        inlined_as_list: true
+        required: true
+      identity:
+        description: The identity, for example `result = value - reference`.
+        required: true
+
+  MethodBoundDefinition:
+    description: >-
+      A definition by contract. The concept says what a method must deliver;
+      it never names how. A derived concept states the operation and its
+      operands. An analysis concept states the statistics it is made of. A
+      Transformation chooses the method, and the binding is valid when the
+      method output satisfies the contract.
+    attributes:
+      operation:
+        description: The kind of operation, for example SequenceIntegral or Count.
+      operands:
+        range: Operand
+        multivalued: true
+        inlined_as_list: true
+      constituents:
+        description: The statistics a satisfying output must carry.
+        range: Statistic
+        multivalued: true
+        inlined: false
+      statisticSets:
+        description: The statistic sets the constituents are drawn from.
+        range: StatisticSet
+        multivalued: true
+        inlined: false
+      optionalConstituents:
+        description: Statistics a satisfying output may also carry.
+        range: Statistic
+        multivalued: true
+        inlined: false
+      resultDimensions:
+        description: The dimensions that index the result (for example term, level, contrast).
+        multivalued: true
+      satisfiedBy:
+        description: Output classes known to satisfy the contract.
+        range: OutputClass
+        multivalued: true
+        inlined: false
+
+  Concept:
+    description: A node in the unified concept library.
+    slots:
+      - conceptId
+      - name
+      - label
+      - description
+      - ncitCode
+      - codings
+      - abstract
+      - status
+    slot_usage:
+      conceptId:
+        description: Unique concept identifier, e.g., C.Change, C.Treatment, C.LSMeans.
+        pattern: "^C\\..+$"
+    attributes:
+      shortLabel:
+        description: A compact label for displays and generated text.
+      broader:
+        description: The abstract concept(s) this concept is a member of (a category or a dimension group).
+        range: Concept
+        multivalued: true
+        inlined: false
+      conceptRole:
+        range: ConceptRoleEnum
+        required: true
+      axis:
+        range: ConceptAxisEnum
+      definitionForm:
+        range: DefinitionFormEnum
+        required: true
+      result:
+        range: ResultContract
+        inlined: true
+      algebraicDefinition:
+        range: AlgebraicIdentity
+        inlined: true
+      methodBoundDefinition:
+        range: MethodBoundDefinition
+        inlined: true
+      mathText:
+        description: The definition in mathematical notation, for human readers.
+      examples:
+        multivalued: true
+      cardinality:
+        description: For a dimension concept, how many values apply to one observation.
+    rules:
+      - description: A closed-form concept carries an algebraic identity and no contract.
+        preconditions:
+          slot_conditions:
+            definitionForm: {equals_string: closedForm}
+        postconditions:
+          slot_conditions:
+            algebraicDefinition: {value_presence: PRESENT}
+            methodBoundDefinition: {value_presence: ABSENT}
+      - description: A method-bound concept carries a contract and no algebraic identity.
+        preconditions:
+          slot_conditions:
+            definitionForm: {equals_string: methodBound}
+        postconditions:
+          slot_conditions:
+            methodBoundDefinition: {value_presence: PRESENT}
+            algebraicDefinition: {value_presence: ABSENT}
+      - description: A concept with no definition carries neither.
+        preconditions:
+          slot_conditions:
+            definitionForm: {equals_string: none}
+        postconditions:
+          slot_conditions:
+            algebraicDefinition: {value_presence: ABSENT}
+            methodBoundDefinition: {value_presence: ABSENT}
+
+  ConceptLibrary:
+    tree_root: true
+    description: The unified concept library.
+    slots:
+      - libraryVersion
+      - description
+    attributes:
+      entries:
+        range: Concept
+        multivalued: true
+        inlined_as_list: true
+        required: true

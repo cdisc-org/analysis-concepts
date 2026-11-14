@@ -82,6 +82,14 @@ slots:
       proposed during the candidate v1 build and has not been reviewed.
     range: EntryStatus
 
+  valueType:
+    description: The kind of value produced, using FHIR datatype names.
+    range: ValueTypeEnum
+
+  unitRule:
+    description: How the unit of the value is determined.
+    range: UnitRuleEnum
+
   broader:
     description: SKOS-style parent of this entry within the same vocabulary.
     range: string
@@ -113,3 +121,44 @@ enums:
         description: Proposed during the candidate v1 build; not yet reviewed.
       deprecated:
         description: Kept for reference; do not use in new content.
+
+  ValueTypeEnum:
+    description: >-
+      The kind of value a statistic or concept produces. Complex types follow
+      FHIR R5 datatypes; primitive types follow FHIR primitives.
+    permissible_values:
+      Quantity:
+        description: A measured amount with a unit.
+      CodeableConcept:
+        description: A coded value.
+      Identifier:
+        description: An identifier.
+      Range:
+        description: A low and a high value (for example a confidence interval).
+      Ratio:
+        description: A relationship between two quantities.
+      Count:
+        description: A whole number of occurrences.
+      Period:
+        description: A start and end date/time.
+      decimal: {}
+      integer: {}
+      boolean: {}
+      string: {}
+      code: {}
+      date: {}
+      dateTime: {}
+
+  UnitRuleEnum:
+    description: How the unit of a produced value is determined.
+    permissible_values:
+      inherited:
+        description: The same unit as the input value(s).
+      derived:
+        description: A unit derived from the units of the inputs.
+      fixed:
+        description: A fixed unit.
+      unitless:
+        description: A pure number.
+      none:
+        description: Units do not apply.

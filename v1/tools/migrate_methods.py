@@ -50,8 +50,22 @@ def migrate_vocabularies():
     sets_src = git_json(METHODS_REF, "lib/vocabulary/statistic_sets.json")
     oct_src = git_json(METHODS_REF, "lib/vocabulary/output_class_templates.json")
 
+    # Value type and unit rule come from the analysis concept model, which
+    # described each statistic's value (v0.18 made them references to these terms).
+    ac_src = git_json(METHODS_REF, "lib/concepts/AC_Concept_Model_v017.json")
+    typing = {}
+    for c in ac_src["sharedStatisticsVocabulary"]["concepts"].values():
+        if not isinstance(c, dict):
+            continue
+        if c.get("term"):
+            typing[c["term"]] = (c.get("valueType"), c.get("unitRule"))
+        for leaf in c.get("leaves", []) or []:
+            # A leaf of a Range (a confidence limit) is itself a quantity.
+            typing[leaf["term"]] = ("Quantity", c.get("unitRule"))
+
     stats = []
     for key, s in stats_src["statistics"].items():
+        value_type, unit_rule = typing.get(key, (None, None))
         stats.append(clean({
             "conceptId": sid(key),
             "name": key,
@@ -59,6 +73,8 @@ def migrate_vocabularies():
             "description": s.get("description") or s.get("name"),
             "ncitCode": s.get("ncitCode"),
             "codings": s.get("codings"),
+            "valueType": value_type,
+            "unitRule": unit_rule,
             "status": STATUS,
         }))
     write_json(LIB / "statistics" / "statistics.json", {

@@ -1,0 +1,2614 @@
+{
+  "libraryVersion": "1.0.0-candidate",
+  "description": "Unified concept library. Built from OC_Recording_Model v0.17, Option_B_Clinical v0.20 and AC_Concept_Model v0.18 on methods_02 (81a04b1).",
+  "entries": [
+    {
+      "conceptId": "C.Observation",
+      "name": "Observation",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "abstract": true,
+      "description": "The atomic abstract act of recording one fact about a subject. Root of the observation tree. Every General Observation Class (Finding, Event, Intervention) inherits this spine.",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.FindingObservation",
+      "name": "Finding observation",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "abstract": true,
+      "broader": [
+        "C.Observation"
+      ],
+      "description": "A measurement, test or examination (lab, vital sign, ECG, questionnaire).",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.EventObservation",
+      "name": "Event observation",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "abstract": true,
+      "broader": [
+        "C.Observation"
+      ],
+      "description": "An occurrence or incident independent of planned study evaluations (adverse event, medical history, disposition).",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.InterventionObservation",
+      "name": "Intervention observation",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "abstract": true,
+      "broader": [
+        "C.Observation"
+      ],
+      "description": "An investigational, therapeutic or other treatment intentionally administered (exposure, concomitant medication, procedure, substance use).",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.PointComputation",
+      "name": "PointComputation",
+      "conceptRole": "derived",
+      "definitionForm": "none",
+      "abstract": true,
+      "description": "A value computed at a specific point, without reference comparison, temporal aggregation, event aggregation, or classification. Input pattern: Method-driven. The concept defines output shape only; the method determines what inputs are needed.",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Comparison",
+      "name": "Comparison",
+      "conceptRole": "derived",
+      "definitionForm": "none",
+      "abstract": true,
+      "description": "Data expressing the relationship between two values of the same parameter. Input pattern: Concept-driven. Requires 2× Measure inputs, intrinsic to the category.",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.SequenceAggregate",
+      "name": "SequenceAggregate",
+      "conceptRole": "derived",
+      "definitionForm": "none",
+      "abstract": true,
+      "description": "A summary of an ordered series of the same parameter over time. Input pattern: Concept-driven. Requires 1× Measure input; the ordered series emerges from dimensional scoping.",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.EventAggregate",
+      "name": "EventAggregate",
+      "conceptRole": "derived",
+      "definitionForm": "none",
+      "abstract": true,
+      "description": "A summary of discrete event occurrences on a timeline. Input pattern: Concept-driven. Requires 1× Observation (OC layer); the event set emerges from dimensional scoping.",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Classification",
+      "name": "Classification",
+      "conceptRole": "derived",
+      "definitionForm": "none",
+      "abstract": true,
+      "description": "A derivation mapping value(s) to a categorical assignment. Input pattern: Concept-driven. Requires 1× any concept as input (the value being classified).",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.TreatmentComparison",
+      "name": "TreatmentComparison",
+      "conceptRole": "analysis",
+      "definitionForm": "none",
+      "abstract": true,
+      "description": "A comparison of an outcome between treatment groups, producing estimated treatment effects with inference.",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.SurvivalAnalysis",
+      "name": "SurvivalAnalysis",
+      "conceptRole": "analysis",
+      "definitionForm": "none",
+      "abstract": true,
+      "description": "An analysis of time-to-event outcomes, estimating survival patterns and comparing them between groups.",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.DescriptiveSummary",
+      "name": "DescriptiveSummary",
+      "conceptRole": "analysis",
+      "definitionForm": "none",
+      "abstract": true,
+      "description": "A statistical summary of a distribution within a group. No comparison between groups required. After the FHIR-datatype retargeting pass, descriptive methods produce FHIR Quantity (or Count/Duration) atomic values directly rather than structured ResultPatterns; typicallyInvolves is empty because the per-row output isn't a multi-statistic table.",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.ParameterDimension",
+      "name": "Parameter dimension",
+      "conceptRole": "collected",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "abstract": true,
+      "description": "Any concept that says which measurement an observation is of.",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.VisitDimension",
+      "name": "Visit dimension",
+      "conceptRole": "collected",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "abstract": true,
+      "description": "Any concept that says at which visit or timepoint an observation applies.",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.EventDimension",
+      "name": "Event dimension",
+      "conceptRole": "collected",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "abstract": true,
+      "description": "Any concept that says which clinical event an observation is about.",
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Subject",
+      "name": "Subject",
+      "conceptRole": "collected",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "description": "The individual the observation is about.",
+      "cardinality": "1",
+      "result": {
+        "valueTypes": [
+          "Identifier"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Study",
+      "name": "Study",
+      "conceptRole": "collected",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "description": "The study the observation belongs to.",
+      "cardinality": "1",
+      "result": {
+        "valueTypes": [
+          "Identifier"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Site",
+      "name": "Site",
+      "conceptRole": "collected",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "description": "The investigational site, or a pooled group of sites.",
+      "cardinality": "0..1",
+      "result": {
+        "valueTypes": [
+          "Identifier"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Visit",
+      "name": "Visit",
+      "conceptRole": "collected",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "description": "The protocol-defined visit at which the observation was made.",
+      "cardinality": "0..1",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.VisitDimension"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Timepoint",
+      "name": "Timepoint",
+      "conceptRole": "collected",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "description": "A planned time point within a visit.",
+      "cardinality": "0..1",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.VisitDimension"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Treatment",
+      "name": "Treatment",
+      "conceptRole": "collected",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "description": "The treatment, planned or actual, that the subject is assigned to or receives.",
+      "cardinality": "0..1",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Population",
+      "name": "Population",
+      "conceptRole": "derived",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "description": "Membership of an analysis population (analysis set).",
+      "cardinality": "0..1",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Parameter",
+      "name": "Parameter",
+      "conceptRole": "collected",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "description": "The measurement, test or question an observation is of.",
+      "cardinality": "0..1",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.ParameterDimension"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Period",
+      "name": "Period",
+      "conceptRole": "collected",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "description": "The study period an observation falls in.",
+      "cardinality": "0..1",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Event",
+      "name": "Event",
+      "conceptRole": "collected",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "description": "The clinical event of interest that a time-to-event or event-count concept refers to (for example death or disease progression).",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.EventDimension"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Identity",
+      "name": "Identity",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "The identity of the record and its subject",
+      "broader": [
+        "C.Observation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Sequence",
+      "name": "Sequence",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Ordinal position distinguishing multiple records of the same topic for a subject",
+      "ncitCode": "C70710",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C70710"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "integer"
+        ]
+      },
+      "broader": [
+        "C.Identity"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.GroupId",
+      "name": "GroupId",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Identifier grouping related records for a subject within a domain",
+      "ncitCode": "C170996",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C170996"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "string"
+        ]
+      },
+      "broader": [
+        "C.Identity"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.ReferenceId",
+      "name": "ReferenceId",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Identifier of a source of information (e.g. lab specimen ID, waveform UUID)",
+      "ncitCode": "C82531",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C82531"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "string"
+        ]
+      },
+      "broader": [
+        "C.Identity"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.LinkId",
+      "name": "LinkId",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Identifier linking a record to one or more records in another domain",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C117050"
+        },
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C117049"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "string"
+        ]
+      },
+      "broader": [
+        "C.Identity"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Topic",
+      "name": "Topic",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Core subject matter of the recording — a test (Finding), an event term (Event), or a treatment (Intervention).",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.Observation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.TopicCode",
+      "name": "TopicCode",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Short coded form of the topic",
+      "result": {
+        "valueTypes": [
+          "code"
+        ]
+      },
+      "broader": [
+        "C.Topic"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.TopicDecode",
+      "name": "TopicDecode",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Human-readable decode of the topic code",
+      "result": {
+        "valueTypes": [
+          "code"
+        ]
+      },
+      "broader": [
+        "C.Topic"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.DictionaryCoding",
+      "name": "DictionaryCoding",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Hierarchical coded-term mapping (MedDRA, WHODrug)",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.Topic"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.PreferredTerm",
+      "name": "PreferredTerm",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Standardised dictionary term",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.DictionaryCoding"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.HierarchyLevel",
+      "name": "HierarchyLevel",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Level in dictionary tree (SOC, HLT, PT, LLT)",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.DictionaryCoding"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Timing",
+      "name": "Timing",
+      "conceptRole": "collected",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "description": "When the recording occurred. Modelled as a FHIR effective[x] choice: an instant (point-in-time) or a period (interval). --DTC and --STDTC are the SAME occurrence/start concept (both carry dec_id C82515); only --ENDTC is distinct (the period end).",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C82515"
+        }
+      ],
+      "cardinality": "1",
+      "broader": [
+        "C.Observation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Duration",
+      "name": "Duration",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Elapsed time of the period (derived from start/end)",
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ]
+      },
+      "broader": [
+        "C.Timing"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.StudyDay",
+      "name": "StudyDay",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Study day of the occurrence",
+      "result": {
+        "valueTypes": [
+          "integer"
+        ]
+      },
+      "broader": [
+        "C.Timing"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.RelativeTiming",
+      "name": "RelativeTiming",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Timing relative to a reference event or timepoint",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C82557"
+        },
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C82558"
+        },
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C82574"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.Timing"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.ObservationCategory",
+      "name": "Category",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Grouping of related recordings",
+      "ncitCode": "C25372",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C25372"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.Observation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.ObservationSubcategory",
+      "name": "Subcategory",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Further sub-grouping within a category",
+      "ncitCode": "C25692",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C25692"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.ObservationCategory"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.CollectionMethod",
+      "name": "Method",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Instrument or technique used to perform the test",
+      "ncitCode": "C82535",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C82535"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.Observation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Location",
+      "name": "Location",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Anatomical site at which the observation was performed",
+      "ncitCode": "C13717",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C13717"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.Observation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Laterality",
+      "name": "Laterality",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Side of the body (left, right, bilateral)",
+      "ncitCode": "C25185",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C25185"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.Location"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Directionality",
+      "name": "Directionality",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Directional qualifier of the anatomical location",
+      "ncitCode": "C54215",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C54215"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.Location"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Specimen",
+      "name": "Specimen",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Biological material tested",
+      "ncitCode": "C70713",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C70713"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.Observation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.EvaluatorRole",
+      "name": "EvaluatorRole",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Role of the assessor who performed the test",
+      "ncitCode": "C51824",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C51824"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.Observation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Position",
+      "name": "Position",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Subject position during performance of the test",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C62164"
+        },
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C71150"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.Observation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.FastingStatus",
+      "name": "FastingStatus",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Subject's fasting status during the test",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.Observation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Result",
+      "name": "Result",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "measure",
+      "description": "The outcome of the test — answers the Topic question.",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C70856"
+        },
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C46126"
+        },
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C91106"
+        }
+      ],
+      "broader": [
+        "C.FindingObservation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.NormalRange",
+      "name": "NormalRange",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Expected range for healthy individuals",
+      "broader": [
+        "C.Result"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Reference",
+      "name": "Reference",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Reference value for the result",
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ]
+      },
+      "broader": [
+        "C.Result"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Occurrence",
+      "name": "Occurrence",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Whether the (pre-specified) event occurred",
+      "ncitCode": "C127786",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C127786"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "boolean"
+        ]
+      },
+      "broader": [
+        "C.EventObservation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.PreSpecified",
+      "name": "PreSpecified",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Whether the event term was pre-specified on the CRF",
+      "ncitCode": "C171000",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C171000"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "boolean"
+        ]
+      },
+      "broader": [
+        "C.EventObservation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Severity",
+      "name": "Severity",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Intensity of the event",
+      "ncitCode": "C53253",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C53253"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.EventObservation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.ToxicityGrade",
+      "name": "ToxicityGrade",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Standardised grade (e.g. CTCAE 1-5)",
+      "result": {
+        "valueTypes": [
+          "integer"
+        ]
+      },
+      "broader": [
+        "C.Severity"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Seriousness",
+      "name": "Seriousness",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Whether the event met seriousness criteria (SAE)",
+      "ncitCode": "C53252",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C53252"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.EventObservation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Outcome",
+      "name": "Outcome",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "How the event resolved (recovered, ongoing, fatal)",
+      "ncitCode": "C49489",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C49489"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.EventObservation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.ActionTaken",
+      "name": "ActionTaken",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Action taken with study treatment due to the event",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C83013"
+        },
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C83109"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.EventObservation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Dose",
+      "name": "Dose",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "measure",
+      "description": "Amount of treatment administered",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C83221"
+        },
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C83416"
+        },
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C83041"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ]
+      },
+      "broader": [
+        "C.InterventionObservation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.DoseUnit",
+      "name": "DoseUnit",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Unit for the administered amount",
+      "result": {
+        "valueTypes": [
+          "code"
+        ]
+      },
+      "broader": [
+        "C.Dose"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.DoseFrequency",
+      "name": "Frequency",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "How often the amount is administered (QD, BID)",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C83044"
+        },
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C83042"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.Dose"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.DoseForm",
+      "name": "DoseForm",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Physical form of the product (tablet, injection)",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.Dose"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Route",
+      "name": "Route",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Route / anatomical site of administration",
+      "ncitCode": "C83120",
+      "codings": [
+        {
+          "system": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl",
+          "code": "C83120"
+        }
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.InterventionObservation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Indication",
+      "name": "Indication",
+      "conceptRole": "collected",
+      "definitionForm": "none",
+      "axis": "attribute",
+      "description": "Medical condition that is the reason for the treatment",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      },
+      "broader": [
+        "C.InterventionObservation"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Measure",
+      "name": "Measure",
+      "conceptRole": "derived",
+      "description": "A value produced by applying a computation to one or more source values.",
+      "mathText": "f(x₁, …, xₙ)",
+      "examples": [
+        "BMI",
+        "eGFR",
+        "QTcF",
+        "unit-converted lab",
+        "LOCF imputed value",
+        "questionnaire total score"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity",
+          "string",
+          "CodeableConcept"
+        ],
+        "unitRule": "inherited"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.PointComputation"
+      ],
+      "definitionForm": "closedForm",
+      "algebraicDefinition": {
+        "operands": [
+          {
+            "name": "source",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ],
+        "identity": "result = source"
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Change",
+      "name": "Change",
+      "conceptRole": "derived",
+      "description": "The arithmetic difference between two values of the same parameter.",
+      "mathText": "x − x_ref",
+      "examples": [
+        "change from baseline in SBP",
+        "inter-visit difference in weight",
+        "difference between duplicate measurements"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "inherited",
+        "inputUnitRelation": "uniform"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.Comparison"
+      ],
+      "definitionForm": "closedForm",
+      "algebraicDefinition": {
+        "operands": [
+          {
+            "name": "value",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          },
+          {
+            "name": "reference",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ],
+        "identity": "result = value - reference"
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.PercentChange",
+      "name": "PercentChange",
+      "label": "Percent change from baseline",
+      "shortLabel": "%CFB",
+      "conceptRole": "derived",
+      "description": "The proportional difference between two values of the same parameter, expressed as a percentage.",
+      "mathText": "(x − x_ref) / x_ref",
+      "examples": [
+        "percent change from baseline in tumor size",
+        "relative change in eGFR"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "fixed",
+        "inputUnitRelation": "uniform"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.Comparison"
+      ],
+      "definitionForm": "closedForm",
+      "algebraicDefinition": {
+        "operands": [
+          {
+            "name": "value",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          },
+          {
+            "name": "reference",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ],
+        "identity": "result = 100 * (value - reference) / reference"
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Ratio",
+      "name": "Ratio",
+      "conceptRole": "derived",
+      "description": "The quotient of two values of the same parameter.",
+      "mathText": "x / x_ref",
+      "examples": [
+        "fold change in biomarker",
+        "post/pre treatment ratio"
+      ],
+      "result": {
+        "valueTypes": [
+          "Ratio"
+        ],
+        "unitRule": "unitless",
+        "inputUnitRelation": "uniform"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.Comparison"
+      ],
+      "definitionForm": "closedForm",
+      "algebraicDefinition": {
+        "operands": [
+          {
+            "name": "value",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          },
+          {
+            "name": "reference",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ],
+        "identity": "result = value / reference"
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.LogRatio",
+      "name": "LogRatio",
+      "conceptRole": "derived",
+      "description": "The logarithm of the quotient of two values. Symmetric, additive scale.",
+      "mathText": "ln(x / x_ref)",
+      "examples": [
+        "log-fold change in gene expression",
+        "log-ratio of drug concentrations"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "unitless",
+        "inputUnitRelation": "uniform"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.Comparison"
+      ],
+      "definitionForm": "closedForm",
+      "algebraicDefinition": {
+        "operands": [
+          {
+            "name": "value",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          },
+          {
+            "name": "reference",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ],
+        "identity": "result = ln(value / reference)"
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Shift",
+      "name": "Shift",
+      "conceptRole": "derived",
+      "description": "The categorical movement between two values of the same parameter.",
+      "mathText": "class(x) vs class(x_ref)",
+      "examples": [
+        "normal-to-abnormal shift in lab",
+        "severity worsening from baseline"
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ],
+        "unitRule": "none",
+        "inputUnitRelation": "uniform"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.Comparison"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "CategoricalTransition",
+        "operands": [
+          {
+            "name": "value",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          },
+          {
+            "name": "reference",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.PeakValue",
+      "name": "PeakValue",
+      "conceptRole": "derived",
+      "description": "The highest value in an ordered series.",
+      "mathText": "sup{yᵢ}",
+      "examples": [
+        "Cmax",
+        "maximum heart rate during exercise",
+        "highest recorded SBP"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "inherited"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.SequenceAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "SequenceMaximum",
+        "operands": [
+          {
+            "name": "series",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.TroughValue",
+      "name": "TroughValue",
+      "conceptRole": "derived",
+      "description": "The lowest value in an ordered series.",
+      "mathText": "inf{yᵢ}",
+      "examples": [
+        "Ctrough",
+        "nadir neutrophil count",
+        "minimum platelet count"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "inherited"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.SequenceAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "SequenceMinimum",
+        "operands": [
+          {
+            "name": "series",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.TimeToPeak",
+      "name": "TimeToPeak",
+      "conceptRole": "derived",
+      "description": "The time at which the highest value occurs.",
+      "mathText": "argmax_t{yᵢ}",
+      "examples": [
+        "Tmax"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "inherited",
+        "inheritsFrom": "C.Timing"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.SequenceAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "SequenceArgMaximum",
+        "operands": [
+          {
+            "name": "series",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.TimeToTrough",
+      "name": "TimeToTrough",
+      "conceptRole": "derived",
+      "description": "The time at which the lowest value occurs.",
+      "mathText": "argmin_t{yᵢ}",
+      "examples": [
+        "time to nadir"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "inherited",
+        "inheritsFrom": "C.Timing"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.SequenceAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "SequenceArgMinimum",
+        "operands": [
+          {
+            "name": "series",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.AreaUnderCurve",
+      "name": "AreaUnderCurve",
+      "label": "Area under the curve",
+      "shortLabel": "AUC",
+      "conceptRole": "derived",
+      "description": "The integrated value over time.",
+      "mathText": "∫y dt",
+      "examples": [
+        "AUC₀₋₂₄",
+        "AUC₀₋∞",
+        "glucose AUC during OGTT"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "derived",
+        "inputUnitRelation": "heterogeneous"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.SequenceAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "SequenceIntegral",
+        "operands": [
+          {
+            "name": "series",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.CumulativeTotal",
+      "name": "CumulativeTotal",
+      "conceptRole": "derived",
+      "description": "The running total accumulated over time.",
+      "mathText": "Σyᵢ for i ≤ k",
+      "examples": [
+        "cumulative dose",
+        "cumulative exposure"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "inherited"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.SequenceAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "SequenceCumulativeSum",
+        "operands": [
+          {
+            "name": "series",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.RateOfChange",
+      "name": "RateOfChange",
+      "conceptRole": "derived",
+      "description": "The rate at which a value changes over a time segment.",
+      "mathText": "Δy/Δt",
+      "examples": [
+        "eGFR slope",
+        "tumor growth rate",
+        "rate of decline in FEV1"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "derived",
+        "inputUnitRelation": "heterogeneous"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.SequenceAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "SequenceRateOfChange",
+        "operands": [
+          {
+            "name": "series",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.HalfLife",
+      "name": "HalfLife",
+      "conceptRole": "derived",
+      "description": "The time for a value to decline by half.",
+      "mathText": "ln(2) / λ",
+      "examples": [
+        "drug half-life",
+        "antibody half-life"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "inherited",
+        "inheritsFrom": "C.Timing"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.SequenceAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "ExponentialDecayConstant",
+        "operands": [
+          {
+            "name": "series",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.LastValue",
+      "name": "LastValue",
+      "conceptRole": "derived",
+      "description": "The last observed value in an ordered series.",
+      "mathText": "yₙ",
+      "examples": [
+        "last observed concentration",
+        "end-of-study value"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "inherited"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.SequenceAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "SequenceTerminalValue",
+        "operands": [
+          {
+            "name": "series",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.FirstValue",
+      "name": "FirstValue",
+      "conceptRole": "derived",
+      "description": "The first value in an ordered series.",
+      "mathText": "y₁",
+      "examples": [
+        "first post-dose concentration",
+        "initial measurement"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "inherited"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.SequenceAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "SequenceInitialValue",
+        "operands": [
+          {
+            "name": "series",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.TimeInState",
+      "name": "TimeInState",
+      "conceptRole": "derived",
+      "description": "The total time spent above or below a threshold.",
+      "mathText": "measure({t : y(t) > θ})",
+      "examples": [
+        "time in therapeutic range",
+        "time above MIC",
+        "time in hypoglycemia"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "inherited",
+        "inheritsFrom": "C.Timing"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.SequenceAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "SequenceThresholdDuration",
+        "operands": [
+          {
+            "name": "series",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.TimeToThreshold",
+      "name": "TimeToThreshold",
+      "conceptRole": "derived",
+      "description": "The time at which a series first crosses a defined threshold.",
+      "mathText": "inf{t : y(t) = θ}",
+      "examples": [
+        "time to target concentration",
+        "time to normalization"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "inherited",
+        "inheritsFrom": "C.Timing"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.SequenceAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "SequenceThresholdCrossing",
+        "operands": [
+          {
+            "name": "series",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Range",
+      "name": "Range",
+      "conceptRole": "derived",
+      "description": "The difference between the highest and lowest values in a series.",
+      "mathText": "sup{yᵢ} − inf{yᵢ}",
+      "examples": [
+        "blood pressure variability",
+        "PK concentration range"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "inherited"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.SequenceAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "SequenceRange",
+        "operands": [
+          {
+            "name": "series",
+            "produces": {
+              "valueTypes": [
+                "Quantity"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.EventCount",
+      "name": "EventCount",
+      "label": "Event count",
+      "shortLabel": "n events",
+      "conceptRole": "derived",
+      "description": "The number of times an event or condition occurs.",
+      "mathText": "|{events}|",
+      "examples": [
+        "number of AEs",
+        "seizure count",
+        "number of exacerbations"
+      ],
+      "result": {
+        "valueTypes": [
+          "Count"
+        ],
+        "unitRule": "none"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.EventAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "Count",
+        "operands": [
+          {
+            "name": "events",
+            "produces": {
+              "valueTypes": [
+                "boolean"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.EventRate",
+      "name": "EventRate",
+      "label": "Event rate",
+      "shortLabel": "rate",
+      "conceptRole": "derived",
+      "description": "The number of occurrences per unit of time or exposure.",
+      "mathText": "|{events}| / T",
+      "examples": [
+        "annualized relapse rate",
+        "AE rate per patient-year"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "derived",
+        "inputUnitRelation": "heterogeneous"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.EventAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "Rate",
+        "operands": [
+          {
+            "name": "events",
+            "produces": {
+              "valueTypes": [
+                "boolean"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.TimeToEvent",
+      "name": "TimeToEvent",
+      "label": "Time to event",
+      "shortLabel": "TTE",
+      "conceptRole": "derived",
+      "description": "The duration from a defined start to event occurrence or censoring.",
+      "mathText": "inf{tᵢ}",
+      "examples": [
+        "time to first AE",
+        "overall survival",
+        "progression-free survival"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "inherited",
+        "inheritsFrom": "C.Timing"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.EventAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "TimeToEvent",
+        "operands": [
+          {
+            "name": "events",
+            "produces": {
+              "valueTypes": [
+                "boolean"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.TimeBetweenEvents",
+      "name": "TimeBetweenEvents",
+      "conceptRole": "derived",
+      "description": "The duration between consecutive recurrent events.",
+      "mathText": "t_{i+1} − tᵢ",
+      "examples": [
+        "time between seizures",
+        "inter-exacerbation interval"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "inherited",
+        "inheritsFrom": "C.Timing"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.EventAggregate"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "InterEventInterval",
+        "operands": [
+          {
+            "name": "events",
+            "produces": {
+              "valueTypes": [
+                "boolean"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Flag",
+      "name": "Flag",
+      "conceptRole": "derived",
+      "description": "A binary indicator evaluating a criterion (Y/N).",
+      "mathText": "I(criterion)",
+      "examples": [
+        "baseline flag (ABLFL)",
+        "population flag (SAFFL)",
+        "responder flag"
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept",
+          "boolean"
+        ],
+        "unitRule": "none"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.Classification"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "Indicator",
+        "operands": [
+          {
+            "name": "value"
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Category",
+      "name": "Category",
+      "conceptRole": "derived",
+      "description": "A categorical grouping derived from rules.",
+      "mathText": "f(x) → {c₁, c₂, …}",
+      "examples": [
+        "severity grade",
+        "BMI category",
+        "renal impairment stage"
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ],
+        "unitRule": "none"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.Classification"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "Classification",
+        "operands": [
+          {
+            "name": "value"
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.AnalysisVisit",
+      "name": "AnalysisVisit",
+      "conceptRole": "derived",
+      "description": "A scheduled analysis visit (label and visit number) assigned to an observation by a windowing rule that maps each observation's study day to a planned-visit category.",
+      "mathText": "f(day) → {visit_label, visit_number}",
+      "examples": [
+        "Baseline (Visit 3)",
+        "Week 8 (Visit 8)",
+        "Week 24 (Visit 12)"
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ],
+        "unitRule": "none"
+      },
+      "axis": "dimension",
+      "broader": [
+        "C.Classification",
+        "C.VisitDimension"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "Classification",
+        "operands": [
+          {
+            "name": "value"
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Rank",
+      "name": "Rank",
+      "conceptRole": "derived",
+      "description": "The ordinal position of a value within a defined scope.",
+      "mathText": "rank(x) within group",
+      "examples": [
+        "worst post-baseline rank",
+        "severity ranking"
+      ],
+      "result": {
+        "valueTypes": [
+          "Quantity"
+        ],
+        "unitRule": "unitless"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.Classification"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "Rank",
+        "operands": [
+          {
+            "name": "value"
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.QuantileGroup",
+      "name": "QuantileGroup",
+      "conceptRole": "derived",
+      "description": "A distributional bin assignment (tertiles, quartiles, quintiles).",
+      "mathText": "Qₖ where F(x) in bin k",
+      "examples": [
+        "exposure quartile",
+        "baseline severity tertile"
+      ],
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ],
+        "unitRule": "none"
+      },
+      "axis": "measure",
+      "broader": [
+        "C.Classification"
+      ],
+      "definitionForm": "methodBound",
+      "methodBoundDefinition": {
+        "operation": "Quantile",
+        "operands": [
+          {
+            "name": "value"
+          }
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.LSMeans",
+      "name": "LSMeans",
+      "conceptRole": "analysis",
+      "axis": "measure",
+      "definitionForm": "methodBound",
+      "description": "Least-squares means (adjusted marginal means) per factor level or level combination",
+      "broader": [
+        "C.TreatmentComparison"
+      ],
+      "methodBoundDefinition": {
+        "constituents": [
+          "S.CI_lower",
+          "S.CI_upper",
+          "S.df",
+          "S.estimate",
+          "S.SE"
+        ],
+        "statisticSets": [
+          "SS.ci_estimate_t_distribution"
+        ],
+        "resultDimensions": [
+          "factor",
+          "level"
+        ],
+        "satisfiedBy": [
+          "OC.ls_means"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Contrasts",
+      "name": "Contrasts",
+      "conceptRole": "analysis",
+      "axis": "measure",
+      "definitionForm": "methodBound",
+      "description": "Pairwise or custom contrasts between LS means",
+      "broader": [
+        "C.TreatmentComparison"
+      ],
+      "methodBoundDefinition": {
+        "constituents": [
+          "S.CI_lower",
+          "S.CI_upper",
+          "S.df",
+          "S.estimate",
+          "S.SE",
+          "S.p_value",
+          "S.t_statistic"
+        ],
+        "statisticSets": [
+          "SS.ci_estimate_t_distribution",
+          "SS.hypothesis_test_t_distribution"
+        ],
+        "optionalConstituents": [
+          "S.p_value_adjusted"
+        ],
+        "resultDimensions": [
+          "contrast",
+          "at_level"
+        ],
+        "satisfiedBy": [
+          "OC.contrasts_t"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.Type3Tests",
+      "name": "Type3Tests",
+      "conceptRole": "analysis",
+      "axis": "measure",
+      "definitionForm": "methodBound",
+      "description": "Type III omnibus tests, one per model term",
+      "broader": [
+        "C.TreatmentComparison"
+      ],
+      "methodBoundDefinition": {
+        "constituents": [
+          "S.df_den",
+          "S.df_num",
+          "S.F_statistic",
+          "S.p_value"
+        ],
+        "statisticSets": [
+          "SS.hypothesis_test_F_distribution"
+        ],
+        "resultDimensions": [
+          "term"
+        ],
+        "satisfiedBy": [
+          "OC.type3_tests_f",
+          "OC.type3_tests_mixed"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.ParameterEstimates",
+      "name": "ParameterEstimates",
+      "conceptRole": "analysis",
+      "axis": "measure",
+      "definitionForm": "methodBound",
+      "description": "Solution for fixed effects, one row per model coefficient",
+      "broader": [
+        "C.TreatmentComparison"
+      ],
+      "methodBoundDefinition": {
+        "constituents": [
+          "S.CI_lower",
+          "S.CI_upper",
+          "S.df",
+          "S.estimate",
+          "S.SE",
+          "S.p_value",
+          "S.t_statistic",
+          "S.coefficient"
+        ],
+        "statisticSets": [
+          "SS.ci_estimate_t_distribution",
+          "SS.hypothesis_test_t_distribution"
+        ],
+        "resultDimensions": [
+          "term",
+          "level"
+        ],
+        "satisfiedBy": [
+          "OC.parameter_estimates_linear"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.FitStatistics",
+      "name": "FitStatistics",
+      "conceptRole": "analysis",
+      "axis": "measure",
+      "definitionForm": "methodBound",
+      "description": "Overall model goodness-of-fit measures",
+      "broader": [
+        "C.TreatmentComparison"
+      ],
+      "methodBoundDefinition": {
+        "constituents": [
+          "S.AIC",
+          "S.BIC",
+          "S.minus2LogL"
+        ],
+        "satisfiedBy": [
+          "OC.fit_statistics_basic",
+          "OC.fit_statistics_linear",
+          "OC.fit_statistics_concordance"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.CovarianceParameters",
+      "name": "CovarianceParameters",
+      "conceptRole": "analysis",
+      "axis": "measure",
+      "definitionForm": "methodBound",
+      "description": "Estimated covariance/variance components",
+      "methodBoundDefinition": {
+        "constituents": [
+          "S.estimate",
+          "S.SE"
+        ],
+        "statisticSets": [
+          "SS.point_estimate_SE"
+        ],
+        "resultDimensions": [
+          "repeated_factor",
+          "cov_param"
+        ],
+        "satisfiedBy": [
+          "OC.covariance_parameters"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.TestResult",
+      "name": "TestResult",
+      "conceptRole": "analysis",
+      "axis": "measure",
+      "definitionForm": "methodBound",
+      "description": "Single overall test result",
+      "broader": [
+        "C.SurvivalAnalysis"
+      ],
+      "methodBoundDefinition": {
+        "constituents": [
+          "S.chi_squared",
+          "S.df",
+          "S.p_value"
+        ],
+        "statisticSets": [
+          "SS.hypothesis_test_chi_squared"
+        ],
+        "satisfiedBy": [
+          "OC.chi_squared_test_result",
+          "OC.homogeneity_test"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.SurvivalTable",
+      "name": "SurvivalTable",
+      "conceptRole": "analysis",
+      "axis": "measure",
+      "definitionForm": "methodBound",
+      "description": "Life table with survival estimates at each event time",
+      "broader": [
+        "C.SurvivalAnalysis"
+      ],
+      "methodBoundDefinition": {
+        "constituents": [
+          "S.CI_lower",
+          "S.CI_upper",
+          "S.estimate",
+          "S.SE",
+          "S.n_risk",
+          "S.n_event",
+          "S.n_censored"
+        ],
+        "statisticSets": [
+          "SS.ci_estimate_normal"
+        ],
+        "resultDimensions": [
+          "group",
+          "time"
+        ],
+        "satisfiedBy": [
+          "OC.survival_table"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.MedianSurvival",
+      "name": "MedianSurvival",
+      "conceptRole": "analysis",
+      "axis": "measure",
+      "definitionForm": "methodBound",
+      "description": "Median survival time per group",
+      "broader": [
+        "C.SurvivalAnalysis"
+      ],
+      "methodBoundDefinition": {
+        "constituents": [
+          "S.CI_lower",
+          "S.CI_upper",
+          "S.estimate"
+        ],
+        "statisticSets": [
+          "SS.ci_estimate"
+        ],
+        "resultDimensions": [
+          "group"
+        ],
+        "satisfiedBy": [
+          "OC.median_survival"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.EventSummary",
+      "name": "EventSummary",
+      "conceptRole": "analysis",
+      "axis": "measure",
+      "definitionForm": "methodBound",
+      "description": "Summary counts of events and censoring per group",
+      "broader": [
+        "C.SurvivalAnalysis"
+      ],
+      "methodBoundDefinition": {
+        "constituents": [
+          "S.n_risk",
+          "S.n_event",
+          "S.n_censored"
+        ],
+        "resultDimensions": [
+          "group"
+        ],
+        "satisfiedBy": [
+          "OC.event_summary"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.HazardRatioEstimates",
+      "name": "HazardRatioEstimates",
+      "conceptRole": "analysis",
+      "axis": "measure",
+      "definitionForm": "methodBound",
+      "description": "Hazard ratios with confidence intervals",
+      "broader": [
+        "C.SurvivalAnalysis"
+      ],
+      "methodBoundDefinition": {
+        "constituents": [
+          "S.CI_lower",
+          "S.CI_upper",
+          "S.hazard_ratio"
+        ],
+        "statisticSets": [
+          "SS.ci_estimate_hazard_ratio"
+        ],
+        "resultDimensions": [
+          "term",
+          "level"
+        ],
+        "satisfiedBy": [
+          "OC.hazard_ratio_estimates"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "conceptId": "C.OddsRatioEstimates",
+      "name": "OddsRatioEstimates",
+      "conceptRole": "analysis",
+      "axis": "measure",
+      "definitionForm": "methodBound",
+      "description": "Odds ratios with confidence intervals",
+      "methodBoundDefinition": {
+        "constituents": [
+          "S.CI_lower",
+          "S.CI_upper",
+          "S.odds_ratio"
+        ],
+        "statisticSets": [
+          "SS.ci_estimate_odds_ratio"
+        ],
+        "resultDimensions": [
+          "term",
+          "level"
+        ],
+        "satisfiedBy": [
+          "OC.odds_ratio_estimates",
+          "OC.odds_ratio_measures"
+        ]
+      },
+      "status": "released"
+    }
+  ]
+}

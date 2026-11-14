@@ -93,6 +93,28 @@
                         }
                     ],
                     "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+                },
+                "unitRule": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/UnitRuleEnum"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "How the unit of the value is determined."
+                },
+                "valueType": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ValueTypeEnum"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "The kind of value produced, using FHIR datatype names."
                 }
             },
             "required": [
@@ -235,6 +257,39 @@
             ],
             "title": "StatisticSetLibrary",
             "type": "object"
+        },
+        "UnitRuleEnum": {
+            "description": "How the unit of a produced value is determined.",
+            "enum": [
+                "inherited",
+                "derived",
+                "fixed",
+                "unitless",
+                "none"
+            ],
+            "title": "UnitRuleEnum",
+            "type": "string"
+        },
+        "ValueTypeEnum": {
+            "description": "The kind of value a statistic or concept produces. Complex types follow FHIR R5 datatypes; primitive types follow FHIR primitives.",
+            "enum": [
+                "Quantity",
+                "CodeableConcept",
+                "Identifier",
+                "Range",
+                "Ratio",
+                "Count",
+                "Period",
+                "decimal",
+                "integer",
+                "boolean",
+                "string",
+                "code",
+                "date",
+                "dateTime"
+            ],
+            "title": "ValueTypeEnum",
+            "type": "string"
         }
     },
     "$id": "https://cdisc.org/ac/statistic_set",

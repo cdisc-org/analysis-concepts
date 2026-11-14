@@ -76,3 +76,53 @@ None.
 6. **Configured sub-methods are inferred.** `ss_type` is attached to the type III
    test sub-method, and `alpha` / `conf_level` to every sub-method whose output
    carries a confidence interval. Other configurations are left unattached.
+
+## Concept layer
+
+The three concept models on `methods_02` are merged into one library,
+`v1/lib/concepts/concepts.json` (106 concepts), following the June 2026 spike
+and its recommended revision (decision D3).
+
+| Source | Becomes |
+| --- | --- |
+| Observation model (`OC_Recording_Model` v0.17): spine, qualifiers and class nodes | 57 collected concepts and groupings, definition form `none`. FHIR datatype leaves (`value`, `code`, `period` …) are structure, not concepts, and are left out |
+| Derivation model (`Option_B_Clinical` v0.20) | 28 derived concepts in five categories. Five are closed-form (Measure, Change, PercentChange, Ratio, LogRatio); 23 are method-bound |
+| Analysis model (`AC_Concept_Model` v0.18): result patterns and categories | 12 analysis concepts (method-bound) in three categories |
+| Shared dimensions of the observation and derivation models | One set of dimension concepts (Subject, Study, Site, Visit, Timepoint, Treatment, Population, Parameter, Period, Timing, Event) |
+| The analysis model's "statistical concepts" (Estimate, SE, ConfidenceInterval …) | Not concepts. They are the statistics vocabulary (`S.*`); their value type and unit rule moved onto the statistic |
+| Concept-to-variable provenance in the spike | Not on the concept. It is the Data Binding layer's job (decision D8) |
+
+Changes to the spike schema:
+
+- Identifiers take a `C.` prefix (`C.Change`), in line with `M.`, `T.`, `S.`.
+- Categories are abstract concepts; membership is `broader`, which may name
+  several (AnalysisVisit is both a Classification and a visit dimension).
+- A third definition form, **method-bound**, replaces the spike's "estimand
+  contract" and its forced algebraic identities for integrals, counts and
+  windowing. A method-bound concept states an operation and operands (derived)
+  or the statistics it is made of (analysis). It never names a method; the
+  Transformation chooses one, and the binding is valid when the method output
+  carries the concept's statistics. The word "estimand" is not used (D10).
+- Names that clashed across the three models were made distinct:
+  `ObservationCategory`, `ObservationSubcategory`, `CollectionMethod`,
+  `DoseFrequency`.
+
+### Findings for the working group
+
+7. **Analysis concepts are specific to one test distribution.** A result
+   pattern is defined by its statistic sets, so Contrasts needs a t-statistic and
+   degrees of freedom, Type III tests an F-statistic, and TestResult a chi-squared
+   statistic. Output classes of the same kind but another distribution do not
+   satisfy them: `contrasts_z`, `type3_tests_chi_squared`,
+   `parameter_estimates_glm`, `parameter_estimates_cox`, `t_test_result` and
+   `exact_test_result`. Either the concepts should be generalised (a test
+   statistic of any distribution) or variant concepts added. Until then an
+   analysis that produces those outputs has no analysis concept to bind to.
+8. **The older `constituents` lists disagree with the statistic sets.**
+   For example MedianSurvival listed a `median` statistic, while its statistic
+   set and the matching output class carry a generic `estimate`. The statistic
+   sets are used, as v0.18 of the analysis model intended.
+9. **Almost no concept has an NCIt code.** Only observation concepts that came
+   with a single CDISC data-element concept code have one.
+10. **Population is recorded as a derived dimension with no definition.**
+    Analysis-set membership is defined per study, not by the library.

@@ -13,6 +13,8 @@
           "display": "point estimate"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -26,6 +28,8 @@
           "display": "standard error of estimate"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -39,6 +43,8 @@
           "display": "lower confidence limit"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -52,6 +58,8 @@
           "display": "upper confidence limit"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -65,6 +73,8 @@
           "display": "number of degrees of freedom"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
@@ -78,6 +88,8 @@
           "display": "numerator degrees of freedom"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
@@ -91,6 +103,8 @@
           "display": "denominator degrees of freedom"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
@@ -104,6 +118,8 @@
           "display": "t-statistic"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
@@ -117,6 +133,8 @@
           "display": "F-statistic"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
@@ -130,6 +148,8 @@
           "display": "Z-statistic"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
@@ -143,6 +163,8 @@
           "display": "Chi-Squared statistic"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
@@ -156,18 +178,24 @@
           "display": "p-value"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
       "conceptId": "S.p_value_adjusted",
       "name": "p_value_adjusted",
       "description": "P-value after multiplicity adjustment (Bonferroni, Tukey, Holm, BH, etc.). Reported alongside the unadjusted p-value when an adjustment procedure has been applied.",
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
       "conceptId": "S.SS",
       "name": "SS",
       "description": "Sum of squares",
+      "valueType": "Quantity",
+      "unitRule": "derived",
       "status": "released"
     },
     {
@@ -181,6 +209,8 @@
           "display": "residual mean square"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "derived",
       "status": "released"
     },
     {
@@ -194,6 +224,8 @@
           "display": "odds ratio"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
@@ -207,36 +239,48 @@
           "display": "hazard ratio"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
       "conceptId": "S.coefficient",
       "name": "coefficient",
       "description": "Model coefficient (log scale for GLMs)",
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
       "conceptId": "S.n_risk",
       "name": "n_risk",
       "description": "Number at risk",
+      "valueType": "Count",
+      "unitRule": "none",
       "status": "released"
     },
     {
       "conceptId": "S.n_event",
       "name": "n_event",
       "description": "Number of events",
+      "valueType": "Count",
+      "unitRule": "none",
       "status": "released"
     },
     {
       "conceptId": "S.n_censored",
       "name": "n_censored",
       "description": "Number censored",
+      "valueType": "Count",
+      "unitRule": "none",
       "status": "released"
     },
     {
       "conceptId": "S.survival_prob",
       "name": "survival_prob",
       "description": "Estimated survival probability",
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
@@ -250,6 +294,8 @@
           "display": "center value"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -263,6 +309,8 @@
           "display": "average value"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -276,6 +324,8 @@
           "display": "Akaike information criterion"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
@@ -289,12 +339,16 @@
           "display": "Bayesian information criterion"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
       "conceptId": "S.minus2LogL",
       "name": "minus2LogL",
       "description": "-2 Log Likelihood",
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
@@ -308,18 +362,24 @@
           "display": "coefficient of determination"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
       "conceptId": "S.concordance",
       "name": "concordance",
       "description": "Concordance statistic (C-index)",
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
       "conceptId": "S.value",
       "name": "value",
       "description": "The computed/derived value",
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -333,6 +393,8 @@
           "display": "count"
         }
       ],
+      "valueType": "Count",
+      "unitRule": "none",
       "status": "released"
     },
     {
@@ -346,6 +408,8 @@
           "display": "geometric mean"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -359,18 +423,24 @@
           "display": "harmonic mean"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
       "conceptId": "S.trimmed_mean",
       "name": "trimmed_mean",
       "description": "Trimmed mean (mean after removing extreme values from each tail)",
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
       "conceptId": "S.winsorized_mean",
       "name": "winsorized_mean",
       "description": "Winsorized mean (mean after replacing extreme values with boundary values)",
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -384,6 +454,8 @@
           "display": "mode"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -397,6 +469,8 @@
           "display": "standard deviation"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -410,6 +484,8 @@
           "display": "variance"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "derived",
       "status": "released"
     },
     {
@@ -423,12 +499,16 @@
           "display": "coefficient of variation"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
       "conceptId": "S.geometric_cv",
       "name": "geometric_cv",
       "description": "Geometric coefficient of variation",
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
@@ -442,6 +522,8 @@
           "display": "range"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -455,6 +537,8 @@
           "display": "minimum observed value"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -468,6 +552,8 @@
           "display": "maximum observed value"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -481,12 +567,16 @@
           "display": "inter quartile range"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
       "conceptId": "S.sum",
       "name": "sum",
       "description": "Sum of all values",
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -500,6 +590,8 @@
           "display": "first quartile"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -513,6 +605,8 @@
           "display": "third quartile"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -526,6 +620,8 @@
           "display": "percentile"
         }
       ],
+      "valueType": "Quantity",
+      "unitRule": "inherited",
       "status": "released"
     },
     {
@@ -539,6 +635,8 @@
           "display": "skewness"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
@@ -552,6 +650,8 @@
           "display": "kurtosis"
         }
       ],
+      "valueType": "decimal",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
@@ -565,6 +665,8 @@
           "display": "frequency"
         }
       ],
+      "valueType": "Count",
+      "unitRule": "none",
       "status": "released"
     },
     {
@@ -578,36 +680,48 @@
           "display": "proportion"
         }
       ],
+      "valueType": "Ratio",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
       "conceptId": "S.pct",
       "name": "pct",
       "description": "Percentage (0–100 scale)",
+      "valueType": "decimal",
+      "unitRule": "none",
       "status": "released"
     },
     {
       "conceptId": "S.numerator",
       "name": "numerator",
       "description": "Numerator count (events of interest) for a proportion",
+      "valueType": "Quantity",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
       "conceptId": "S.denominator",
       "name": "denominator",
       "description": "Denominator count (population at risk) for a proportion",
+      "valueType": "Quantity",
+      "unitRule": "unitless",
       "status": "released"
     },
     {
       "conceptId": "S.cumulative_n",
       "name": "cumulative_n",
       "description": "Cumulative count",
+      "valueType": "Count",
+      "unitRule": "none",
       "status": "released"
     },
     {
       "conceptId": "S.cumulative_pct",
       "name": "cumulative_pct",
       "description": "Cumulative percentage",
+      "valueType": "decimal",
+      "unitRule": "none",
       "status": "released"
     }
   ]

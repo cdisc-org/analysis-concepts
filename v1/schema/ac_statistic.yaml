@@ -39,6 +39,8 @@ classes:
       - description
       - ncitCode
       - codings
+      - valueType
+      - unitRule
       - status
     slot_usage:
       conceptId:
