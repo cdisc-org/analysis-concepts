@@ -1,0 +1,458 @@
+# Analysis Concepts candidate v1 — study layer
+# Origin: new in candidate v1 (decisions D4, D5, D6, D11, D13). The content
+# model comes from the study graph and analysis instance of the SmartPhrase
+# proof of concept (smartphrase/REFERENCE.md §3 on estimands_01) and from the
+# eSAP schema v0.5.0 on methods_02.
+id: https://cdisc.org/ac/study
+name: ac_study
+version: "1.0.0-candidate"
+title: AC Study Analysis Model
+description: >-
+  Schema for a study's use of the Analysis Concepts libraries. A study analysis
+  set holds the study's Analysis Concepts and Derivation Concepts. Each is one
+  library Transformation as used in the study: the template it instantiates,
+  the values that fill the template's placeholders, the configuration values,
+  the SmartPhrases that describe it, and, for an analysis, the estimand it
+  addresses and how each intercurrent event is handled.
+
+  This is the study side of the Transformation and SmartPhrase layers. It is
+  not an electronic statistical analysis plan (eSAP): document structure, free
+  text, reporting events, hypotheses, multiplicity and the detection of
+  intercurrent events belong to an eSAP model, which builds on this one by
+  referencing its entities by identifier (decision D13).
+
+  The study definition itself (objectives, endpoints, estimands, arms, visits,
+  populations) belongs to USDM. This model points at it and never changes it.
+
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  ac: https://cdisc.org/ac/
+  linkml: https://w3id.org/linkml/
+
+default_prefix: ac
+default_range: string
+
+imports:
+  - linkml:types
+  - ac:ac_common
+  - ac:ac_smartphrase
+  - ac:ac_binding
+
+enums:
+
+  IriStatusEnum:
+    description: Whether an external identifier is real.
+    permissible_values:
+      authoritative:
+        description: A registered identifier that resolves in its source.
+      illustrative:
+        description: A plausible identifier used for illustration; not registered anywhere.
+
+  StudyConceptKindEnum:
+    description: The kinds of study concept a SmartPhrase placeholder can be bound to.
+    permissible_values:
+      Parameter: {}
+      Timepoint: {}
+      Population: {}
+      Treatment: {}
+      Event: {}
+      IntercurrentEvent: {}
+
+  AnalysisRoleEnum:
+    description: The part an analysis plays for the estimand it addresses (ICH E9(R1)).
+    permissible_values:
+      MainEstimator: {}
+      SensitivityAnalysis: {}
+      SupplementaryAnalysis: {}
+
+  HandlingBasisEnum:
+    description: Why an intercurrent event is handled as stated.
+    permissible_values:
+      statedByPhrase:
+        description: The analysis says so in a SmartPhrase.
+      studyDefault:
+        description: The analysis says nothing about the event; the study's default strategy for it applies.
+
+  DocumentRelationEnum:
+    description: How a quoted passage relates to what it anchors (an illustrative vocabulary).
+    permissible_values:
+      specification: {}
+      qualification: {}
+      definition: {}
+
+classes:
+
+  ExternalReference:
+    description: A pointer to an entity defined in another standard.
+    attributes:
+      iri:
+        required: true
+      iriStatus:
+        range: IriStatusEnum
+        required: true
+      text:
+        description: The text of the referenced entity, for readers.
+
+  DocumentAnchor:
+    description: A passage of the source document that licenses a statement in the model.
+    attributes:
+      section:
+        required: true
+      quote:
+        description: The passage, word for word.
+      relation:
+        range: DocumentRelationEnum
+
+  SourceDocument:
+    description: The document the study's anchors quote from.
+    attributes:
+      id:
+        required: true
+      title: {}
+      date: {}
+      iri: {}
+      iriStatus:
+        range: IriStatusEnum
+
+  LibraryPin:
+    description: The exact version of a library the study uses (decision D6).
+    attributes:
+      library:
+        description: The library, by the name of its folder under lib/ (methods, concepts, transformations, smartphrases, statistics, bindings).
+        required: true
+      version:
+        required: true
+
+  Translation:
+    description: The label and name of a study concept in another language.
+    attributes:
+      language:
+        required: true
+      label: {}
+      name: {}
+
+  DataSelection:
+    description: How the records for a study concept are found in the study's data.
+    attributes:
+      dataset: {}
+      datasetLabel: {}
+      file: {}
+      variable:
+        description: The variable that carries the concept, when it is a variable rather than a condition (a treatment variable).
+      conditions:
+        range: BindingCondition
+        multivalued: true
+        inlined_as_list: true
+
+  StudyConcept:
+    description: >-
+      A concept of this study that SmartPhrases and placeholders are bound to:
+      a parameter, a visit, an analysis population, a treatment comparison, an
+      event of interest or an intercurrent event. Each is an instance of a
+      library Concept and points at its definition in USDM, a terminology or a
+      Biomedical Concept.
+    attributes:
+      id:
+        identifier: true
+        required: true
+      kind:
+        range: StudyConceptKindEnum
+        required: true
+      concept:
+        description: The library Concept this is an instance of (a Concept identifier).
+        required: true
+        pattern: "^C\\..+$"
+      label:
+        description: Short display form.
+        required: true
+      name:
+        description: Full name, as written in generated text.
+        required: true
+      reference:
+        range: ExternalReference
+        inlined: true
+      sapRefs:
+        range: DocumentAnchor
+        multivalued: true
+        inlined_as_list: true
+      note: {}
+      translations:
+        range: Translation
+        multivalued: true
+        inlined_as_list: true
+      dataSelection:
+        range: DataSelection
+        inlined: true
+
+  EstimandReference:
+    description: >-
+      An estimand of the study, defined in USDM. Held here by reference, with
+      the intercurrent events in its scope, so that analyses can be checked
+      against it.
+    attributes:
+      id:
+        identifier: true
+        required: true
+      reference:
+        range: ExternalReference
+        inlined: true
+        required: true
+      label: {}
+      rank:
+        description: primary, secondary or sensitivity.
+      intercurrentEvents:
+        description: The intercurrent events in the estimand's scope (study concept identifiers). An empty list is a valid, explicit answer.
+        range: StudyConcept
+        multivalued: true
+        inlined: false
+      sapRefs:
+        range: DocumentAnchor
+        multivalued: true
+        inlined_as_list: true
+
+  PlaceholderValue:
+    description: The value that fills one placeholder of the template ({parameter}, {visit}, {population} …).
+    attributes:
+      name:
+        description: The placeholder name, without braces.
+        required: true
+      studyConcept:
+        description: The study concept that fills it.
+        range: StudyConcept
+        inlined: false
+      value:
+        description: A literal value, when the placeholder is not filled by a study concept.
+
+  ConfigurationValue:
+    description: The value of one configuration of the template's Method, as used in the study.
+    attributes:
+      name:
+        required: true
+      value:
+        range: Any
+      valueList:
+        range: Any
+        multivalued: true
+      fixedByTemplate:
+        description: True when the library template fixes the value.
+        range: boolean
+
+  Any:
+    class_uri: linkml:Any
+    description: Any value.
+
+  PhraseBinding:
+    description: What fills one placeholder of a phrase. Exactly one of the four targets is given.
+    attributes:
+      slot:
+        description: The placeholder name in the phrase.
+        required: true
+      studyConcept:
+        range: StudyConcept
+        inlined: false
+      method:
+        description: A Method identifier.
+        pattern: "^M\\..+$"
+      output:
+        description: The Method or SubMethod whose output is meant.
+        pattern: "^S?M\\..+$"
+      value: {}
+      extension:
+        description: An identifier in a model that extends AC (for an extension_ref placeholder).
+      render:
+        range: RenderModeEnum
+
+  PhraseInstance:
+    description: One use of a library SmartPhrase in an analysis.
+    attributes:
+      phrase:
+        description: The phrase used (a SmartPhrase identifier).
+        required: true
+        pattern: "^SP_.+$"
+      bindings:
+        range: PhraseBinding
+        multivalued: true
+        inlined_as_list: true
+      sapRefs:
+        range: DocumentAnchor
+        multivalued: true
+        inlined_as_list: true
+      noAnchorReason:
+        description: Why this use has no document anchor, when the study has a source document.
+
+  IceHandling:
+    description: How one intercurrent event is handled in one analysis (decision D4).
+    attributes:
+      intercurrentEvent:
+        range: StudyConcept
+        inlined: false
+        required: true
+      strategy:
+        range: IchE9R1StrategyEnum
+        required: true
+      basis:
+        range: HandlingBasisEnum
+        required: true
+      fromPhrase:
+        description: The phrase that states the strategy, when the basis is statedByPhrase.
+      implementedBy:
+        description: >-
+          The library Transformations that implement the strategy. Empty for a
+          treatment-policy strategy, where data are used as observed.
+        multivalued: true
+        pattern: "^T\\..+$"
+
+  TransformationInstance:
+    abstract: true
+    description: A library Transformation as used in a study.
+    attributes:
+      id:
+        identifier: true
+        required: true
+      label: {}
+      template:
+        description: The library Transformation instantiated (a Transformation identifier). Its version is pinned by the set's library pins.
+        required: true
+        pattern: "^T\\..+$"
+      placeholderValues:
+        range: PlaceholderValue
+        multivalued: true
+        inlined_as_list: true
+      configurationValues:
+        range: ConfigurationValue
+        multivalued: true
+        inlined_as_list: true
+      dependsOn:
+        description: The derivations whose results this instance reads.
+        range: DerivationConcept
+        multivalued: true
+        inlined: false
+      sapRefs:
+        range: DocumentAnchor
+        multivalued: true
+        inlined_as_list: true
+
+  DerivationConcept:
+    description: A derivation-type Transformation as used in a study (decision D11).
+    is_a: TransformationInstance
+    attributes:
+      purpose:
+        description: Why the study needs this derivation.
+
+  AnalysisConcept:
+    description: >-
+      An analysis-type Transformation as used in a study, with the estimand it
+      addresses, how intercurrent events are handled, and the SmartPhrases that
+      describe it (decision D11).
+    is_a: TransformationInstance
+    attributes:
+      reference:
+        description: An identifier for this analysis in the AC namespace.
+        range: ExternalReference
+        inlined: true
+      addressesEstimand:
+        description: The estimand the analysis addresses (decision D5).
+        range: EstimandReference
+        inlined: false
+      addressesObjective:
+        description: The USDM objective the analysis serves.
+        range: ExternalReference
+        inlined: true
+      arsAnalysis:
+        description: The ARS analysis this corresponds to.
+        range: ExternalReference
+        inlined: true
+      analysisRole:
+        range: AnalysisRoleEnum
+      sentenceRole:
+        description: The words that say what kind of analysis this is in generated text (the primary analysis).
+      phrases:
+        range: PhraseInstance
+        multivalued: true
+        inlined_as_list: true
+      iceHandlings:
+        description: One entry for every intercurrent event in the addressed estimand's scope.
+        range: IceHandling
+        multivalued: true
+        inlined_as_list: true
+      summaryOutput:
+        description: The output that carries the population-level summary (the Method or SubMethod that produces it).
+        pattern: "^S?M\\..+$"
+
+  MethodGrounding:
+    description: External identifiers for a Method as used in the study.
+    attributes:
+      method:
+        required: true
+        pattern: "^M\\..+$"
+      reference:
+        range: ExternalReference
+        inlined: true
+      arsMethod:
+        range: ExternalReference
+        inlined: true
+
+  ExtensionDeclaration:
+    description: A model that extends this study analysis set (decision D13).
+    attributes:
+      namespace:
+        description: The IRI under which the extending model mints its identifiers.
+        range: uri
+        required: true
+      description: {}
+      location:
+        description: Where the extension's content for this study is held.
+
+  StudyAnalysisSet:
+    tree_root: true
+    description: A study's Analysis Concepts and Derivation Concepts.
+    attributes:
+      id:
+        required: true
+      description: {}
+      study:
+        description: The USDM study this set belongs to.
+        range: ExternalReference
+        inlined: true
+        required: true
+      studyTitle: {}
+      libraryPins:
+        range: LibraryPin
+        multivalued: true
+        inlined_as_list: true
+        required: true
+      sourceDocument:
+        range: SourceDocument
+        inlined: true
+      sourceDocumentNote:
+        description: Why the study has no source document, when it has none.
+      studyConcepts:
+        range: StudyConcept
+        multivalued: true
+        inlined_as_list: true
+      estimands:
+        range: EstimandReference
+        multivalued: true
+        inlined_as_list: true
+      methodGroundings:
+        range: MethodGrounding
+        multivalued: true
+        inlined_as_list: true
+      derivations:
+        range: DerivationConcept
+        multivalued: true
+        inlined_as_list: true
+      analyses:
+        range: AnalysisConcept
+        multivalued: true
+        inlined_as_list: true
+      dataBindings:
+        description: Value-level data bindings for this study (decision D8).
+        range: DataBinding
+        multivalued: true
+        inlined_as_list: true
+      extensions:
+        range: ExtensionDeclaration
+        multivalued: true
+        inlined_as_list: true

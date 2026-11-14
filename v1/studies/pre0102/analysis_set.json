@@ -1,0 +1,1217 @@
+{
+  "id": "PRE0102.analyses",
+  "description": "Worked example. Built from the study graph of the SmartPhrase proof of concept on estimands_01 (11ab94d). Identifiers marked illustrative are not registered.",
+  "study": {
+    "iri": "usdm:Study/PRE0102",
+    "iriStatus": "illustrative"
+  },
+  "studyTitle": "Randomized, Double-Blind, Placebo-Controlled Phase II Trial of Fulvestrant (Faslodex) plus Everolimus in Post-Menopausal Patients with Hormone-Receptor Positive Metastatic Breast Cancer Resistant to Aromatase Inhibitor Therapy",
+  "libraryPins": [
+    {
+      "library": "transformations",
+      "version": "1.0.0-candidate"
+    },
+    {
+      "library": "smartphrases",
+      "version": "1.0.0-candidate"
+    },
+    {
+      "library": "concepts",
+      "version": "1.0.0-candidate"
+    },
+    {
+      "library": "statistics",
+      "version": "1.0.0-candidate"
+    },
+    {
+      "library": "methods",
+      "version": "1.0.0-candidate"
+    },
+    {
+      "library": "bindings",
+      "version": "1.0.0-candidate"
+    }
+  ],
+  "sourceDocument": {
+    "id": "PRE0102-SAP-001",
+    "title": "PrE0102 Final Statistical Analysis Plan",
+    "date": "2014-03-24",
+    "iri": "acdc:document/PRE0102-SAP-001",
+    "iriStatus": "illustrative"
+  },
+  "studyConcepts": [
+    {
+      "id": "EVENT.PFS",
+      "kind": "Event",
+      "concept": "C.Event",
+      "label": "PFS",
+      "name": "disease progression or death",
+      "reference": {
+        "iri": "ncit:C18215",
+        "iriStatus": "illustrative"
+      },
+      "sapRefs": [
+        {
+          "section": "5.3",
+          "quote": "the duration of time from time of randomization to time of progression or death, whichever occurs first",
+          "relation": "definition"
+        },
+        {
+          "section": "7.7.2",
+          "quote": "PFS = time from randomization to documented disease progression or death",
+          "relation": "definition"
+        }
+      ],
+      "translations": [
+        {
+          "language": "fr",
+          "label": "SSP",
+          "name": "la progression de la maladie ou le décès"
+        },
+        {
+          "language": "de",
+          "label": "PFS",
+          "name": "zur Krankheitsprogression oder zum Tod"
+        }
+      ],
+      "dataSelection": {
+        "dataset": "ADTTE",
+        "datasetLabel": "ADaM time-to-event analysis dataset",
+        "file": "adtte.xpt",
+        "conditions": [
+          {
+            "variable": "PARAMCD",
+            "comparator": "EQ",
+            "values": [
+              "PFS"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "EVENT.OS",
+      "kind": "Event",
+      "concept": "C.Event",
+      "label": "OS",
+      "name": "death from any cause",
+      "reference": {
+        "iri": "ncit:C16952",
+        "iriStatus": "illustrative"
+      },
+      "sapRefs": [
+        {
+          "section": "5.3",
+          "quote": "the time from randomization until death or censored at the date of last follow-up",
+          "relation": "definition"
+        },
+        {
+          "section": "7.7.2",
+          "quote": "OS = time from randomization until death",
+          "relation": "definition"
+        }
+      ],
+      "translations": [
+        {
+          "language": "fr",
+          "label": "SG",
+          "name": "le décès, toutes causes confondues"
+        },
+        {
+          "language": "de",
+          "label": "OS",
+          "name": "zum Tod jeglicher Ursache"
+        }
+      ],
+      "dataSelection": {
+        "dataset": "ADTTE",
+        "datasetLabel": "ADaM time-to-event analysis dataset",
+        "file": "adtte.xpt",
+        "conditions": [
+          {
+            "variable": "PARAMCD",
+            "comparator": "EQ",
+            "values": [
+              "OS"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "EVENT.TTP",
+      "kind": "Event",
+      "concept": "C.Event",
+      "label": "TTP",
+      "name": "disease progression",
+      "reference": {
+        "iri": "acdc:event/TimeToProgression",
+        "iriStatus": "illustrative"
+      },
+      "sapRefs": [
+        {
+          "section": "5.3",
+          "quote": "the time from randomization until progression of the disease",
+          "relation": "definition"
+        },
+        {
+          "section": "7.7.2",
+          "quote": "TTP = time from randomization until progression of disease",
+          "relation": "definition"
+        }
+      ],
+      "translations": [
+        {
+          "language": "fr",
+          "label": "DJP",
+          "name": "la progression de la maladie"
+        },
+        {
+          "language": "de",
+          "label": "TTP",
+          "name": "zur Krankheitsprogression"
+        }
+      ],
+      "dataSelection": {
+        "dataset": "ADTTE",
+        "datasetLabel": "ADaM time-to-event analysis dataset",
+        "file": "adtte.xpt",
+        "conditions": [
+          {
+            "variable": "PARAMCD",
+            "comparator": "EQ",
+            "values": [
+              "TTP"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "POP.EVAL_EFFICACY",
+      "kind": "Population",
+      "concept": "C.Population",
+      "label": "EFF",
+      "name": "eligible, treated",
+      "reference": {
+        "iri": "usdm:AnalysisPopulation/PRE0102-POP-EFF",
+        "iriStatus": "illustrative"
+      },
+      "sapRefs": [
+        {
+          "section": "7.2",
+          "quote": "The primary efficacy analysis will be done including eligible, treated subjects.",
+          "relation": "definition"
+        },
+        {
+          "section": "7.7.2",
+          "quote": "for all eligible, treated subjects",
+          "relation": "specification"
+        }
+      ],
+      "translations": [
+        {
+          "language": "fr",
+          "label": "EFF",
+          "name": "éligible et traitée"
+        },
+        {
+          "language": "de",
+          "label": "EFF",
+          "name": "auswertbaren, behandelten Population"
+        }
+      ],
+      "dataSelection": {
+        "conditions": [
+          {
+            "variable": "EFFIFL",
+            "comparator": "EQ",
+            "values": [
+              "Y"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "POP.ITT",
+      "kind": "Population",
+      "concept": "C.Population",
+      "label": "ITT",
+      "name": "intent-to-treat",
+      "reference": {
+        "iri": "usdm:AnalysisPopulation/PRE0102-POP-ITT",
+        "iriStatus": "illustrative"
+      },
+      "sapRefs": [
+        {
+          "section": "7.2",
+          "quote": "Intent-to-treat (ITT) analysis population includes all subjects as randomized."
+        }
+      ],
+      "translations": [
+        {
+          "language": "fr",
+          "label": "ITT",
+          "name": "en intention de traiter"
+        },
+        {
+          "language": "de",
+          "label": "ITT",
+          "name": "Intention-to-Treat-Population"
+        }
+      ],
+      "dataSelection": {
+        "conditions": [
+          {
+            "variable": "ITTFL",
+            "comparator": "EQ",
+            "values": [
+              "Y"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ICE.TOX_DISCONT",
+      "kind": "IntercurrentEvent",
+      "concept": "C.IntercurrentEvent",
+      "label": "everolimus discontinuation",
+      "name": "discontinuation of everolimus for suspected toxicity",
+      "reference": {
+        "iri": "usdm:IntercurrentEvent/PRE0102-ICE-TOXDISC",
+        "iriStatus": "illustrative"
+      },
+      "sapRefs": [
+        {
+          "section": "4.3",
+          "quote": "Subjects who discontinue everolimus/placebo because of suspected everolimus-associated toxicity should continue treatment with fulvestrant alone until disease progression"
+        }
+      ],
+      "translations": [
+        {
+          "language": "fr",
+          "label": "arrêt de l'évérolimus",
+          "name": "l'arrêt de l'évérolimus pour toxicité suspectée"
+        },
+        {
+          "language": "de",
+          "label": "Everolimus-Absetzen",
+          "name": "das Absetzen von Everolimus bei Verdacht auf Toxizität"
+        }
+      ],
+      "dataSelection": {
+        "dataset": "ADSL",
+        "datasetLabel": "Subject-Level Analysis Dataset",
+        "file": "adsl.xpt",
+        "variable": "DCTREAS"
+      }
+    },
+    {
+      "id": "TRT.PRE0102",
+      "kind": "Treatment",
+      "concept": "C.Treatment",
+      "label": "treatment",
+      "name": "fulvestrant plus everolimus and fulvestrant plus placebo",
+      "reference": {
+        "iri": "usdm:StudyArm/PRE0102-ARM-SET",
+        "iriStatus": "illustrative"
+      },
+      "sapRefs": [
+        {
+          "section": "4.1",
+          "quote": "Subjects will be randomized (1:1) to receive everolimus or placebo after consideration of stratification factors"
+        }
+      ],
+      "translations": [
+        {
+          "language": "fr",
+          "label": "traitement"
+        },
+        {
+          "language": "de",
+          "label": "Behandlung"
+        }
+      ],
+      "dataSelection": {
+        "variable": "TRTP"
+      }
+    }
+  ],
+  "estimands": [
+    {
+      "id": "EST.PFS",
+      "reference": {
+        "iri": "usdm:Estimand/PRE0102-EST-PFS",
+        "iriStatus": "illustrative"
+      },
+      "label": "Primary estimand — progression-free survival",
+      "rank": "primary",
+      "sapRefs": [
+        {
+          "section": "3.1",
+          "quote": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+        }
+      ],
+      "intercurrentEvents": [
+        "ICE.TOX_DISCONT"
+      ]
+    },
+    {
+      "id": "EST.OS",
+      "reference": {
+        "iri": "usdm:Estimand/PRE0102-EST-OS",
+        "iriStatus": "illustrative"
+      },
+      "label": "Secondary estimand — overall survival",
+      "rank": "secondary",
+      "sapRefs": [
+        {
+          "section": "3.2",
+          "quote": "To describe the safety profile, objective response rate, time to progression and overall survival"
+        }
+      ],
+      "intercurrentEvents": []
+    },
+    {
+      "id": "EST.TTP",
+      "reference": {
+        "iri": "usdm:Estimand/PRE0102-EST-TTP",
+        "iriStatus": "illustrative"
+      },
+      "label": "Secondary estimand — time to progression",
+      "rank": "secondary",
+      "sapRefs": [
+        {
+          "section": "3.2",
+          "quote": "To describe the safety profile, objective response rate, time to progression and overall survival"
+        }
+      ],
+      "intercurrentEvents": []
+    }
+  ],
+  "methodGroundings": [
+    {
+      "method": "M.KaplanMeier",
+      "reference": {
+        "iri": "acdc:method/KaplanMeier",
+        "iriStatus": "illustrative"
+      },
+      "arsMethod": {
+        "iri": "ars:method/MTH-KM-TTE",
+        "iriStatus": "illustrative"
+      }
+    }
+  ],
+  "analyses": [
+    {
+      "id": "AC.PRIMARY.PFS",
+      "label": "Primary efficacy analysis — PFS",
+      "template": "T.PFS_KaplanMeier",
+      "reference": {
+        "iri": "acdc:instance/PRE0102-AC-PRIMARY-PFS",
+        "iriStatus": "illustrative"
+      },
+      "addressesEstimand": "EST.PFS",
+      "addressesObjective": {
+        "iri": "usdm:Objective/PRE0102-OBJ-PRIMARY-1",
+        "iriStatus": "illustrative",
+        "text": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+      },
+      "arsAnalysis": {
+        "iri": "ars:analysis/PRE0102-AN-7.07.02-PFS",
+        "iriStatus": "illustrative"
+      },
+      "analysisRole": "MainEstimator",
+      "sentenceRole": "the primary analysis",
+      "placeholderValues": [
+        {
+          "name": "event",
+          "studyConcept": "EVENT.PFS"
+        },
+        {
+          "name": "population",
+          "studyConcept": "POP.EVAL_EFFICACY"
+        },
+        {
+          "name": "treatment",
+          "studyConcept": "TRT.PRE0102"
+        }
+      ],
+      "configurationValues": [
+        {
+          "name": "conf_type",
+          "value": "log-log",
+          "fixedByTemplate": true
+        }
+      ],
+      "phrases": [
+        {
+          "phrase": "SP_TTE_ENDPOINT",
+          "bindings": [
+            {
+              "slot": "event",
+              "render": "name_with_label",
+              "studyConcept": "EVENT.PFS"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_POPULATION",
+          "bindings": [
+            {
+              "slot": "population",
+              "render": "name",
+              "studyConcept": "POP.EVAL_EFFICACY"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_GROUPING",
+          "bindings": [
+            {
+              "slot": "treatment",
+              "render": "label",
+              "studyConcept": "TRT.PRE0102"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_METHOD_KM",
+          "bindings": [
+            {
+              "slot": "method",
+              "render": "label",
+              "method": "M.KaplanMeier"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+            }
+          ]
+        },
+        {
+          "phrase": "SP_CONFIDENCE_LEVEL",
+          "bindings": [
+            {
+              "slot": "conf_level",
+              "value": "90"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+            }
+          ]
+        },
+        {
+          "phrase": "SP_ICE_TREATMENT_POLICY",
+          "bindings": [
+            {
+              "slot": "ice",
+              "render": "name",
+              "studyConcept": "ICE.TOX_DISCONT"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "4.3",
+              "quote": "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons."
+            }
+          ]
+        },
+        {
+          "phrase": "SP_CENSOR_LTFU",
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_KM_CURVES",
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves."
+            }
+          ]
+        },
+        {
+          "phrase": "SP_SUMMARY_MEASURE",
+          "bindings": [
+            {
+              "slot": "summary",
+              "output": "SM.KaplanMeier.MedianSurvival"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+              "relation": "specification"
+            },
+            {
+              "section": "7.7.2",
+              "quote": "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals",
+              "relation": "qualification"
+            }
+          ]
+        }
+      ],
+      "summaryOutput": "SM.KaplanMeier.MedianSurvival",
+      "sapRefs": [
+        {
+          "section": "7.7.2",
+          "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        }
+      ],
+      "iceHandlings": [
+        {
+          "intercurrentEvent": "ICE.TOX_DISCONT",
+          "strategy": "TreatmentPolicy",
+          "basis": "statedByPhrase",
+          "fromPhrase": "SP_ICE_TREATMENT_POLICY",
+          "implementedBy": []
+        }
+      ]
+    },
+    {
+      "id": "AC.SENS.PFS.ITT",
+      "label": "Sensitivity analysis — PFS, ITT population",
+      "template": "T.PFS_KaplanMeier",
+      "reference": {
+        "iri": "acdc:instance/PRE0102-AC-SENS-PFS-ITT",
+        "iriStatus": "illustrative"
+      },
+      "addressesEstimand": "EST.PFS",
+      "addressesObjective": {
+        "iri": "usdm:Objective/PRE0102-OBJ-PRIMARY-1",
+        "iriStatus": "illustrative",
+        "text": "To assess progression-free survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+      },
+      "arsAnalysis": {
+        "iri": "ars:analysis/PRE0102-AN-7.07.02-PFS-ITT",
+        "iriStatus": "illustrative"
+      },
+      "analysisRole": "SensitivityAnalysis",
+      "sentenceRole": "a sensitivity analysis",
+      "placeholderValues": [
+        {
+          "name": "event",
+          "studyConcept": "EVENT.PFS"
+        },
+        {
+          "name": "population",
+          "studyConcept": "POP.ITT"
+        },
+        {
+          "name": "treatment",
+          "studyConcept": "TRT.PRE0102"
+        }
+      ],
+      "configurationValues": [
+        {
+          "name": "conf_type",
+          "value": "log-log",
+          "fixedByTemplate": true
+        }
+      ],
+      "phrases": [
+        {
+          "phrase": "SP_TTE_ENDPOINT",
+          "bindings": [
+            {
+              "slot": "event",
+              "render": "name_with_label",
+              "studyConcept": "EVENT.PFS"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_POPULATION",
+          "bindings": [
+            {
+              "slot": "population",
+              "render": "name",
+              "studyConcept": "POP.ITT"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "will be repeated for the as-randomized population (intent-to-treat analysis)",
+              "relation": "specification"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_GROUPING",
+          "bindings": [
+            {
+              "slot": "treatment",
+              "render": "label",
+              "studyConcept": "TRT.PRE0102"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_METHOD_KM",
+          "bindings": [
+            {
+              "slot": "method",
+              "render": "label",
+              "method": "M.KaplanMeier"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+            }
+          ]
+        },
+        {
+          "phrase": "SP_CONFIDENCE_LEVEL",
+          "bindings": [
+            {
+              "slot": "conf_level",
+              "value": "90"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+            }
+          ]
+        },
+        {
+          "phrase": "SP_ICE_TREATMENT_POLICY",
+          "bindings": [
+            {
+              "slot": "ice",
+              "render": "name",
+              "studyConcept": "ICE.TOX_DISCONT"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "4.3",
+              "quote": "All subjects who have discontinued protocol therapy will be followed for survival and for progression, even if protocol therapy was discontinued because of toxicity or for other reasons."
+            }
+          ]
+        },
+        {
+          "phrase": "SP_CENSOR_LTFU",
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_KM_CURVES",
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves."
+            }
+          ]
+        },
+        {
+          "phrase": "SP_SUMMARY_MEASURE",
+          "bindings": [
+            {
+              "slot": "summary",
+              "output": "SM.KaplanMeier.MedianSurvival"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+              "relation": "specification"
+            },
+            {
+              "section": "7.7.2",
+              "quote": "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals",
+              "relation": "qualification"
+            }
+          ]
+        }
+      ],
+      "summaryOutput": "SM.KaplanMeier.MedianSurvival",
+      "sapRefs": [
+        {
+          "section": "7.7.2",
+          "quote": "As a sensitivity analysis, all of the above analyses described in Section 7.6.2 will be repeated for the as-randomized population (intent-to-treat analysis)."
+        }
+      ],
+      "iceHandlings": [
+        {
+          "intercurrentEvent": "ICE.TOX_DISCONT",
+          "strategy": "TreatmentPolicy",
+          "basis": "statedByPhrase",
+          "fromPhrase": "SP_ICE_TREATMENT_POLICY",
+          "implementedBy": []
+        }
+      ]
+    },
+    {
+      "id": "AC.SEC.OS",
+      "label": "Secondary analysis — overall survival",
+      "template": "T.PFS_KaplanMeier",
+      "reference": {
+        "iri": "acdc:instance/PRE0102-AC-SEC-OS",
+        "iriStatus": "illustrative"
+      },
+      "addressesEstimand": "EST.OS",
+      "addressesObjective": {
+        "iri": "usdm:Objective/PRE0102-OBJ-SECONDARY-1",
+        "iriStatus": "illustrative",
+        "text": "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+      },
+      "arsAnalysis": {
+        "iri": "ars:analysis/PRE0102-AN-7.07.02-OS",
+        "iriStatus": "illustrative"
+      },
+      "analysisRole": "MainEstimator",
+      "sentenceRole": "a secondary analysis",
+      "placeholderValues": [
+        {
+          "name": "event",
+          "studyConcept": "EVENT.OS"
+        },
+        {
+          "name": "population",
+          "studyConcept": "POP.EVAL_EFFICACY"
+        },
+        {
+          "name": "treatment",
+          "studyConcept": "TRT.PRE0102"
+        }
+      ],
+      "configurationValues": [
+        {
+          "name": "conf_type",
+          "value": "log-log",
+          "fixedByTemplate": true
+        }
+      ],
+      "phrases": [
+        {
+          "phrase": "SP_TTE_ENDPOINT",
+          "bindings": [
+            {
+              "slot": "event",
+              "render": "name_with_label",
+              "studyConcept": "EVENT.OS"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_POPULATION",
+          "bindings": [
+            {
+              "slot": "population",
+              "render": "name",
+              "studyConcept": "POP.EVAL_EFFICACY"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_GROUPING",
+          "bindings": [
+            {
+              "slot": "treatment",
+              "render": "label",
+              "studyConcept": "TRT.PRE0102"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_METHOD_KM",
+          "bindings": [
+            {
+              "slot": "method",
+              "render": "label",
+              "method": "M.KaplanMeier"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+            }
+          ]
+        },
+        {
+          "phrase": "SP_CONFIDENCE_LEVEL",
+          "bindings": [
+            {
+              "slot": "conf_level",
+              "value": "90"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+            }
+          ]
+        },
+        {
+          "phrase": "SP_CENSOR_LTFU",
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "at the time of the last known contact for OS"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_KM_CURVES",
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "In addition to the summary table, PFS and OS will be displayed by treatment arm using Kaplan-Meier survival curves."
+            }
+          ]
+        },
+        {
+          "phrase": "SP_SUMMARY_MEASURE",
+          "bindings": [
+            {
+              "slot": "summary",
+              "output": "SM.KaplanMeier.MedianSurvival"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+              "relation": "specification"
+            },
+            {
+              "section": "7.7.2",
+              "quote": "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals",
+              "relation": "qualification"
+            }
+          ]
+        }
+      ],
+      "summaryOutput": "SM.KaplanMeier.MedianSurvival",
+      "sapRefs": [
+        {
+          "section": "7.7.2",
+          "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        }
+      ]
+    },
+    {
+      "id": "AC.SEC.TTP",
+      "label": "Secondary analysis — time to progression",
+      "template": "T.PFS_KaplanMeier",
+      "reference": {
+        "iri": "acdc:instance/PRE0102-AC-SEC-TTP",
+        "iriStatus": "illustrative"
+      },
+      "addressesEstimand": "EST.TTP",
+      "addressesObjective": {
+        "iri": "usdm:Objective/PRE0102-OBJ-SECONDARY-1",
+        "iriStatus": "illustrative",
+        "text": "To describe the safety profile, objective response rate, time to progression and overall survival in post-menopausal patients with hormone-receptor positive metastatic breast cancer that is resistant to aromatase inhibitor (AI) therapy treated with fulvestrant and everolimus compared to fulvestrant alone."
+      },
+      "arsAnalysis": {
+        "iri": "ars:analysis/PRE0102-AN-7.07.02-TTP",
+        "iriStatus": "illustrative"
+      },
+      "analysisRole": "MainEstimator",
+      "sentenceRole": "a secondary analysis",
+      "placeholderValues": [
+        {
+          "name": "event",
+          "studyConcept": "EVENT.TTP"
+        },
+        {
+          "name": "population",
+          "studyConcept": "POP.EVAL_EFFICACY"
+        },
+        {
+          "name": "treatment",
+          "studyConcept": "TRT.PRE0102"
+        }
+      ],
+      "configurationValues": [
+        {
+          "name": "conf_type",
+          "value": "log-log",
+          "fixedByTemplate": true
+        }
+      ],
+      "phrases": [
+        {
+          "phrase": "SP_TTE_ENDPOINT",
+          "bindings": [
+            {
+              "slot": "event",
+              "render": "name_with_label",
+              "studyConcept": "EVENT.TTP"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_POPULATION",
+          "bindings": [
+            {
+              "slot": "population",
+              "render": "name",
+              "studyConcept": "POP.EVAL_EFFICACY"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_GROUPING",
+          "bindings": [
+            {
+              "slot": "treatment",
+              "render": "label",
+              "studyConcept": "TRT.PRE0102"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_METHOD_KM",
+          "bindings": [
+            {
+              "slot": "method",
+              "render": "label",
+              "method": "M.KaplanMeier"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+            }
+          ]
+        },
+        {
+          "phrase": "SP_CONFIDENCE_LEVEL",
+          "bindings": [
+            {
+              "slot": "conf_level",
+              "value": "90"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+            }
+          ]
+        },
+        {
+          "phrase": "SP_CENSOR_LTFU",
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Subjects who are lost to follow-up are censored at the time of last tumor assessment for TTP and PFS"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_SUMMARY_MEASURE",
+          "bindings": [
+            {
+              "slot": "summary",
+              "output": "SM.KaplanMeier.MedianSurvival"
+            }
+          ],
+          "sapRefs": [
+            {
+              "section": "7.7.2",
+              "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates.",
+              "relation": "specification"
+            },
+            {
+              "section": "7.7.2",
+              "quote": "If medians have not been reached, 2-year PFS, TTP and OS should be reported instead, with 90% confidence intervals",
+              "relation": "qualification"
+            }
+          ]
+        }
+      ],
+      "summaryOutput": "SM.KaplanMeier.MedianSurvival",
+      "sapRefs": [
+        {
+          "section": "7.7.2",
+          "quote": "Median time and 90% confidence interval for PFS, TTP, and OS will be summarized for all eligible, treated subjects by treatment arm using Kaplan-Meier estimates."
+        }
+      ]
+    }
+  ],
+  "dataBindings": [
+    {
+      "id": "PRE0102.EVENT.PFS.TimeToEvent",
+      "concept": "C.TimeToEvent",
+      "studyConcept": "EVENT.PFS",
+      "level": "valueLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "dataset": "ADTTE",
+        "variable": "AVAL"
+      },
+      "conditions": [
+        {
+          "variable": "PARAMCD",
+          "comparator": "EQ",
+          "values": [
+            "PFS"
+          ]
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "id": "PRE0102.EVENT.PFS.EventIndicator",
+      "concept": "C.Flag",
+      "studyConcept": "EVENT.PFS",
+      "level": "valueLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "dataset": "ADTTE",
+        "variable": "CNSR"
+      },
+      "conditions": [
+        {
+          "variable": "PARAMCD",
+          "comparator": "EQ",
+          "values": [
+            "PFS"
+          ]
+        }
+      ],
+      "qualifiers": [
+        {
+          "name": "meaning",
+          "value": "censoring indicator"
+        }
+      ],
+      "description": "0 = event, 1 = censored; the event indicator is its complement.",
+      "status": "released"
+    },
+    {
+      "id": "PRE0102.EVENT.OS.TimeToEvent",
+      "concept": "C.TimeToEvent",
+      "studyConcept": "EVENT.OS",
+      "level": "valueLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "dataset": "ADTTE",
+        "variable": "AVAL"
+      },
+      "conditions": [
+        {
+          "variable": "PARAMCD",
+          "comparator": "EQ",
+          "values": [
+            "OS"
+          ]
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "id": "PRE0102.EVENT.OS.EventIndicator",
+      "concept": "C.Flag",
+      "studyConcept": "EVENT.OS",
+      "level": "valueLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "dataset": "ADTTE",
+        "variable": "CNSR"
+      },
+      "conditions": [
+        {
+          "variable": "PARAMCD",
+          "comparator": "EQ",
+          "values": [
+            "OS"
+          ]
+        }
+      ],
+      "qualifiers": [
+        {
+          "name": "meaning",
+          "value": "censoring indicator"
+        }
+      ],
+      "description": "0 = event, 1 = censored; the event indicator is its complement.",
+      "status": "released"
+    },
+    {
+      "id": "PRE0102.EVENT.TTP.TimeToEvent",
+      "concept": "C.TimeToEvent",
+      "studyConcept": "EVENT.TTP",
+      "level": "valueLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "dataset": "ADTTE",
+        "variable": "AVAL"
+      },
+      "conditions": [
+        {
+          "variable": "PARAMCD",
+          "comparator": "EQ",
+          "values": [
+            "TTP"
+          ]
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "id": "PRE0102.EVENT.TTP.EventIndicator",
+      "concept": "C.Flag",
+      "studyConcept": "EVENT.TTP",
+      "level": "valueLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "dataset": "ADTTE",
+        "variable": "CNSR"
+      },
+      "conditions": [
+        {
+          "variable": "PARAMCD",
+          "comparator": "EQ",
+          "values": [
+            "TTP"
+          ]
+        }
+      ],
+      "qualifiers": [
+        {
+          "name": "meaning",
+          "value": "censoring indicator"
+        }
+      ],
+      "description": "0 = event, 1 = censored; the event indicator is its complement.",
+      "status": "released"
+    }
+  ],
+  "extensions": [
+    {
+      "namespace": "https://example.org/esap/",
+      "description": "Example of what an eSAP model would add for this study.",
+      "location": "esap-extension.example.json"
+    }
+  ]
+}

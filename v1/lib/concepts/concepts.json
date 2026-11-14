@@ -311,6 +311,20 @@
       ]
     },
     {
+      "conceptId": "C.IntercurrentEvent",
+      "status": "provisional",
+      "name": "Intercurrent event",
+      "conceptRole": "collected",
+      "axis": "dimension",
+      "definitionForm": "none",
+      "description": "An event occurring after treatment initiation that affects either the interpretation or the existence of the measurements associated with the clinical question of interest (ICH E9(R1)). Study intercurrent events are instances of this concept; they are defined in USDM.",
+      "result": {
+        "valueTypes": [
+          "CodeableConcept"
+        ]
+      }
+    },
+    {
       "conceptId": "C.Identity",
       "status": "released",
       "name": "Identity",

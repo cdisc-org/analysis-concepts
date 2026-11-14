@@ -54,12 +54,19 @@ def read_json(path: Path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
+# Keys for which an empty list is a meaningful, explicit answer and is kept.
+KEEP_EMPTY = {"intercurrentEvents", "implementedBy"}
+
+
 def clean(d):
     """Drop keys whose value is None, an empty list or an empty dict (recursively)."""
     if isinstance(d, dict):
         out = {}
         for k, v in d.items():
             v = clean(v)
+            if v == [] and k in KEEP_EMPTY:
+                out[k] = v
+                continue
             if v is None or v == [] or v == {}:
                 continue
             out[k] = v
@@ -98,3 +105,10 @@ def schema_errors(instance, schema_name: str, class_name: str) -> list[str]:
         where = "/".join(str(p) for p in e.path) or "(root)"
         errors.append(f"{where}: {e.message[:200]}")
     return errors
+
+
+def template_placeholders(transformation: dict) -> list[str]:
+    """The {placeholders} a Transformation template leaves for a study to fill."""
+    import re
+
+    return sorted(set(re.findall(r"\{(\w+)\}", json.dumps(transformation))))

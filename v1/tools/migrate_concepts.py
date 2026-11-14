@@ -155,6 +155,13 @@ def build():
                     "(for example death or disease progression).",
         result={"valueTypes": ["CodeableConcept"]}, broader=[cid("EventDimension")])
 
+    add("IntercurrentEvent", name="Intercurrent event", conceptRole="collected", axis="dimension",
+        definitionForm="none", status="provisional",
+        description="An event occurring after treatment initiation that affects either the interpretation or the "
+                    "existence of the measurements associated with the clinical question of interest (ICH E9(R1)). "
+                    "Study intercurrent events are instances of this concept; they are defined in USDM.",
+        result={"valueTypes": ["CodeableConcept"]})
+
     # ---- collected concepts from the observation (Recording) model ---------
     def walk(node, parent: str, cls_parent: str | None):
         if isinstance(node, dict):

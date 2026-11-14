@@ -1,0 +1,45 @@
+{
+  "_note": "Non-normative example of an eSAP extension. AC defines none of this. It shows the two rules an extending model follows: it refers to AC entities by identifier, and it mints its own identifiers in its own namespace.",
+  "namespace": "https://example.org/esap/",
+  "extends": "CDISCPILOT01.analyses",
+  "reportingEvents": [
+    {
+      "id": "https://example.org/esap/CDISCPILOT01/reporting-event/final",
+      "label": "Final analysis",
+      "analyses": [
+        "AC.PRIMARY.ADASCOG",
+        "AC.SEC.NPIX",
+        "AC.SUPP.ADASCOG.WK16",
+        "AC.SENS.ADASCOG.TP"
+      ]
+    }
+  ],
+  "iceAscertainments": [
+    {
+      "id": "https://example.org/esap/CDISCPILOT01/ice-ascertainment/ICE.TRT_DISCONT",
+      "forIntercurrentEvent": "ICE.TRT_DISCONT",
+      "arm": "collected",
+      "criteria": [
+        {
+          "property": "BC_DS_001/Disposition Event",
+          "operator": "equals",
+          "responseCode": "Treatment Discontinued"
+        }
+      ],
+      "timingVariable": "EOSDT"
+    },
+    {
+      "id": "https://example.org/esap/CDISCPILOT01/ice-ascertainment/ICE.CONMED",
+      "forIntercurrentEvent": "ICE.CONMED",
+      "arm": "collected",
+      "criteria": [
+        {
+          "property": "BC_CM_001/Category",
+          "operator": "in",
+          "responseCode": "AD THERAPY"
+        }
+      ],
+      "timingVariable": "ASTDT"
+    }
+  ]
+}

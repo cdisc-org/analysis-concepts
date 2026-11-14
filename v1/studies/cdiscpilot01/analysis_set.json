@@ -1,0 +1,1425 @@
+{
+  "id": "CDISCPILOT01.analyses",
+  "description": "Worked example. Built from the study graph of the SmartPhrase proof of concept on estimands_01 (11ab94d). Identifiers marked illustrative are not registered.",
+  "study": {
+    "iri": "usdm:Study/CDISCPILOT01",
+    "iriStatus": "illustrative"
+  },
+  "studyTitle": "Safety and Efficacy of the Xanomeline Transdermal Therapeutic System in Patients with Mild to Moderate Alzheimer's Disease",
+  "libraryPins": [
+    {
+      "library": "transformations",
+      "version": "1.0.0-candidate"
+    },
+    {
+      "library": "smartphrases",
+      "version": "1.0.0-candidate"
+    },
+    {
+      "library": "concepts",
+      "version": "1.0.0-candidate"
+    },
+    {
+      "library": "statistics",
+      "version": "1.0.0-candidate"
+    },
+    {
+      "library": "methods",
+      "version": "1.0.0-candidate"
+    },
+    {
+      "library": "bindings",
+      "version": "1.0.0-candidate"
+    }
+  ],
+  "sourceDocumentNote": "Illustrative study layer with no source SAP; document-anchoring coverage is not gated for this study.",
+  "studyConcepts": [
+    {
+      "id": "PARAM.ADASCOG11",
+      "kind": "Parameter",
+      "concept": "C.Parameter",
+      "label": "ADAS-Cog(11)",
+      "name": "Alzheimer's Disease Assessment Scale - Cognitive Subscale (11 items)",
+      "reference": {
+        "iri": "ncit:C168804",
+        "iriStatus": "illustrative"
+      },
+      "translations": [
+        {
+          "language": "fr",
+          "name": "l'échelle d'évaluation de la maladie d'Alzheimer – sous-échelle cognitive (11 items)"
+        },
+        {
+          "language": "de",
+          "name": "Alzheimer's Disease Assessment Scale – kognitive Subskala (11 Items)"
+        }
+      ],
+      "dataSelection": {
+        "dataset": "ADQSADAS",
+        "datasetLabel": "ADaM ADAS-Cog analysis dataset",
+        "file": "adqsadas.xpt",
+        "conditions": [
+          {
+            "variable": "PARAMCD",
+            "comparator": "EQ",
+            "values": [
+              "ACTOT"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "PARAM.NPIX",
+      "kind": "Parameter",
+      "concept": "C.Parameter",
+      "label": "NPI-X",
+      "name": "Neuropsychiatric Inventory - Revised, mean domain total score",
+      "reference": {
+        "iri": "acdc:param/NPIX",
+        "iriStatus": "illustrative"
+      },
+      "translations": [
+        {
+          "language": "fr",
+          "name": "l'inventaire neuropsychiatrique révisé, score total moyen des domaines"
+        },
+        {
+          "language": "de",
+          "name": "Neuropsychiatrisches Inventar – revidiert, mittlerer Domänen-Gesamtscore"
+        }
+      ],
+      "dataSelection": {
+        "dataset": "ADNPIX",
+        "datasetLabel": "ADaM NPI-X analysis dataset",
+        "file": "adnpix.xpt",
+        "conditions": [
+          {
+            "variable": "PARAMCD",
+            "comparator": "EQ",
+            "values": [
+              "NPTOT"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "VISIT.WK24",
+      "kind": "Timepoint",
+      "concept": "C.AnalysisVisit",
+      "label": "Week 24",
+      "name": "Week 24 (end of double-blind treatment period)",
+      "reference": {
+        "iri": "usdm:ScheduledActivityInstance/SAI-WK24",
+        "iriStatus": "illustrative"
+      },
+      "translations": [
+        {
+          "language": "fr",
+          "label": "semaine 24",
+          "name": "semaine 24 (fin de la période de traitement en double aveugle)"
+        },
+        {
+          "language": "de",
+          "label": "Woche 24",
+          "name": "Woche 24 (Ende der doppelblinden Behandlungsphase)"
+        }
+      ],
+      "dataSelection": {
+        "conditions": [
+          {
+            "variable": "AVISITN",
+            "comparator": "EQ",
+            "values": [
+              "24"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "VISIT.WK16",
+      "kind": "Timepoint",
+      "concept": "C.AnalysisVisit",
+      "label": "Week 16",
+      "name": "Week 16",
+      "reference": {
+        "iri": "usdm:ScheduledActivityInstance/SAI-WK16",
+        "iriStatus": "illustrative"
+      },
+      "translations": [
+        {
+          "language": "fr",
+          "label": "semaine 16",
+          "name": "semaine 16"
+        },
+        {
+          "language": "de",
+          "label": "Woche 16",
+          "name": "Woche 16"
+        }
+      ],
+      "dataSelection": {
+        "conditions": [
+          {
+            "variable": "AVISITN",
+            "comparator": "EQ",
+            "values": [
+              "16"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "VISIT.WK8",
+      "kind": "Timepoint",
+      "concept": "C.AnalysisVisit",
+      "label": "Week 8",
+      "name": "Week 8",
+      "reference": {
+        "iri": "usdm:ScheduledActivityInstance/SAI-WK8",
+        "iriStatus": "illustrative"
+      },
+      "translations": [
+        {
+          "language": "fr",
+          "label": "semaine 8",
+          "name": "semaine 8"
+        },
+        {
+          "language": "de",
+          "label": "Woche 8",
+          "name": "Woche 8"
+        }
+      ],
+      "dataSelection": {
+        "conditions": [
+          {
+            "variable": "AVISITN",
+            "comparator": "EQ",
+            "values": [
+              "8"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "VISIT.BASELINE",
+      "kind": "Timepoint",
+      "concept": "C.AnalysisVisit",
+      "label": "Baseline",
+      "name": "Baseline (Week 0)",
+      "reference": {
+        "iri": "usdm:ScheduledActivityInstance/SAI-BL",
+        "iriStatus": "illustrative"
+      },
+      "translations": [
+        {
+          "language": "fr",
+          "label": "valeur initiale",
+          "name": "valeur initiale (semaine 0)"
+        },
+        {
+          "language": "de",
+          "label": "Ausgangswert",
+          "name": "Ausgangswert (Woche 0)"
+        }
+      ],
+      "dataSelection": {
+        "conditions": [
+          {
+            "variable": "AVISITN",
+            "comparator": "EQ",
+            "values": [
+              "0"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "POP.EFFICACY",
+      "kind": "Population",
+      "concept": "C.Population",
+      "label": "EFF",
+      "name": "efficacy (intent-to-treat)",
+      "reference": {
+        "iri": "usdm:AnalysisPopulation/POP-EFF",
+        "iriStatus": "illustrative"
+      },
+      "translations": [
+        {
+          "language": "fr",
+          "name": "d'efficacité (intention de traiter)"
+        },
+        {
+          "language": "de",
+          "name": "Wirksamkeitspopulation (Intention-to-Treat)"
+        }
+      ],
+      "dataSelection": {
+        "conditions": [
+          {
+            "variable": "ITTFL",
+            "comparator": "EQ",
+            "values": [
+              "Y"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "POP.PP",
+      "kind": "Population",
+      "concept": "C.Population",
+      "label": "PP",
+      "name": "per-protocol",
+      "reference": {
+        "iri": "usdm:AnalysisPopulation/POP-PP",
+        "iriStatus": "illustrative"
+      },
+      "translations": [
+        {
+          "language": "fr",
+          "name": "per protocole"
+        },
+        {
+          "language": "de",
+          "name": "Per-Protocol-Population"
+        }
+      ],
+      "dataSelection": {
+        "conditions": [
+          {
+            "variable": "PPROTFL",
+            "comparator": "EQ",
+            "values": [
+              "Y"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "POP.SAFETY",
+      "kind": "Population",
+      "concept": "C.Population",
+      "label": "SAF",
+      "name": "safety",
+      "reference": {
+        "iri": "usdm:AnalysisPopulation/POP-SAF",
+        "iriStatus": "illustrative"
+      },
+      "translations": [
+        {
+          "language": "fr",
+          "name": "de tolérance"
+        },
+        {
+          "language": "de",
+          "name": "Sicherheitspopulation"
+        }
+      ],
+      "dataSelection": {
+        "conditions": [
+          {
+            "variable": "SAFFL",
+            "comparator": "EQ",
+            "values": [
+              "Y"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ICE.TRT_DISCONT",
+      "kind": "IntercurrentEvent",
+      "concept": "C.IntercurrentEvent",
+      "label": "treatment discontinuation",
+      "name": "discontinuation of study treatment",
+      "reference": {
+        "iri": "usdm:IntercurrentEvent/CDISCPILOT01-ICE-DISC",
+        "iriStatus": "illustrative"
+      },
+      "note": "Constructed for issue #11; the CDISC Pilot has no protocol-defined ICE list.",
+      "translations": [
+        {
+          "language": "fr",
+          "label": "arrêt du traitement",
+          "name": "l'arrêt du traitement à l'étude"
+        },
+        {
+          "language": "de",
+          "label": "Behandlungsabbruch",
+          "name": "das Absetzen der Studienbehandlung"
+        }
+      ],
+      "dataSelection": {
+        "dataset": "ADSL",
+        "datasetLabel": "Subject-Level Analysis Dataset",
+        "file": "adsl.xpt",
+        "variable": "DCSREAS"
+      }
+    },
+    {
+      "id": "ICE.CONMED",
+      "kind": "IntercurrentEvent",
+      "concept": "C.IntercurrentEvent",
+      "label": "concomitant AD medication",
+      "name": "use of concomitant AD medication",
+      "reference": {
+        "iri": "usdm:IntercurrentEvent/CDISCPILOT01-ICE-CONMED",
+        "iriStatus": "illustrative"
+      },
+      "note": "Constructed for issue #11; the CDISC Pilot has no protocol-defined ICE list.",
+      "translations": [
+        {
+          "language": "fr",
+          "label": "médicaments concomitants",
+          "name": "l'utilisation de médicaments concomitants contre la maladie d'Alzheimer"
+        },
+        {
+          "language": "de",
+          "label": "Begleitmedikation",
+          "name": "die Anwendung von Begleitmedikation gegen Alzheimer"
+        }
+      ],
+      "dataSelection": {
+        "dataset": "ADCM",
+        "datasetLabel": "Concomitant Medications Analysis Dataset",
+        "file": "adcm.xpt",
+        "variable": "CMCAT"
+      }
+    },
+    {
+      "id": "TRT.ALL",
+      "kind": "Treatment",
+      "concept": "C.Treatment",
+      "label": "treatment",
+      "name": "Placebo, Xanomeline Low Dose and Xanomeline High Dose",
+      "reference": {
+        "iri": "usdm:StudyArm/ARM-SET-ALL",
+        "iriStatus": "illustrative"
+      },
+      "translations": [
+        {
+          "language": "fr",
+          "label": "traitement"
+        },
+        {
+          "language": "de",
+          "label": "Behandlung"
+        }
+      ],
+      "dataSelection": {
+        "variable": "TRTP"
+      }
+    }
+  ],
+  "estimands": [
+    {
+      "id": "EST.PRIMARY",
+      "reference": {
+        "iri": "usdm:Estimand/CDISCPILOT01-EST-PRIMARY",
+        "iriStatus": "illustrative"
+      },
+      "label": "Primary estimand — ADAS-Cog(11) change at Week 24",
+      "rank": "primary",
+      "intercurrentEvents": [
+        "ICE.TRT_DISCONT",
+        "ICE.CONMED"
+      ]
+    },
+    {
+      "id": "EST.SENS.TP",
+      "reference": {
+        "iri": "usdm:Estimand/CDISCPILOT01-EST-SENS-TP",
+        "iriStatus": "illustrative"
+      },
+      "label": "Sensitivity estimand — treatment policy for discontinuation",
+      "rank": "sensitivity",
+      "intercurrentEvents": [
+        "ICE.TRT_DISCONT",
+        "ICE.CONMED"
+      ]
+    },
+    {
+      "id": "EST.SECONDARY.NPIX",
+      "reference": {
+        "iri": "usdm:Estimand/CDISCPILOT01-EST-SECONDARY-NPIX",
+        "iriStatus": "illustrative"
+      },
+      "label": "Secondary estimand — NPI-X change at Week 24",
+      "rank": "secondary",
+      "intercurrentEvents": []
+    }
+  ],
+  "methodGroundings": [
+    {
+      "method": "M.ANCOVA",
+      "reference": {
+        "iri": "stato:STATO_0000176",
+        "iriStatus": "authoritative"
+      },
+      "arsMethod": {
+        "iri": "ars:method/MTH-ANCOVA-CFB",
+        "iriStatus": "illustrative"
+      }
+    }
+  ],
+  "derivations": [
+    {
+      "id": "DC.BASELINE.ADASCOG11",
+      "label": "Baseline record for ADAS-Cog(11)",
+      "template": "T.BaselineSelection",
+      "purpose": "Flags the baseline record that the change and the covariate are taken from.",
+      "placeholderValues": [
+        {
+          "name": "parameter",
+          "studyConcept": "PARAM.ADASCOG11"
+        }
+      ],
+      "configurationValues": [
+        {
+          "name": "selection_rule",
+          "value": "last_non_missing",
+          "fixedByTemplate": true
+        },
+        {
+          "name": "scope",
+          "value": "pre_treatment",
+          "fixedByTemplate": true
+        },
+        {
+          "name": "cardinality",
+          "value": "single",
+          "fixedByTemplate": true
+        },
+        {
+          "name": "reference_event",
+          "value": "first_dose",
+          "fixedByTemplate": true
+        }
+      ]
+    },
+    {
+      "id": "DC.LOCF.ADASCOG11",
+      "label": "LOCF-imputed ADAS-Cog(11)",
+      "template": "T.LOCF_Imputation",
+      "purpose": "Implements the hypothetical strategy for an intercurrent event by carrying the last observation forward.",
+      "placeholderValues": [
+        {
+          "name": "parameter",
+          "studyConcept": "PARAM.ADASCOG11"
+        }
+      ]
+    },
+    {
+      "id": "DC.CHG.ADASCOG11.WK24.LOCF",
+      "label": "Change from baseline in ADAS-Cog(11) at Week 24 (LOCF-imputed)",
+      "template": "T.ChangeFromBaseline",
+      "purpose": "The response analysed.",
+      "placeholderValues": [
+        {
+          "name": "parameter",
+          "studyConcept": "PARAM.ADASCOG11"
+        },
+        {
+          "name": "visit",
+          "studyConcept": "VISIT.WK24"
+        },
+        {
+          "name": "baseline_visit",
+          "studyConcept": "VISIT.BASELINE"
+        }
+      ],
+      "dependsOn": [
+        "DC.BASELINE.ADASCOG11",
+        "DC.LOCF.ADASCOG11"
+      ]
+    },
+    {
+      "id": "DC.BASELINE.NPIX",
+      "label": "Baseline record for NPI-X",
+      "template": "T.BaselineSelection",
+      "purpose": "Flags the baseline record that the change and the covariate are taken from.",
+      "placeholderValues": [
+        {
+          "name": "parameter",
+          "studyConcept": "PARAM.NPIX"
+        }
+      ],
+      "configurationValues": [
+        {
+          "name": "selection_rule",
+          "value": "last_non_missing",
+          "fixedByTemplate": true
+        },
+        {
+          "name": "scope",
+          "value": "pre_treatment",
+          "fixedByTemplate": true
+        },
+        {
+          "name": "cardinality",
+          "value": "single",
+          "fixedByTemplate": true
+        },
+        {
+          "name": "reference_event",
+          "value": "first_dose",
+          "fixedByTemplate": true
+        }
+      ]
+    },
+    {
+      "id": "DC.CHG.NPIX.WK24",
+      "label": "Change from baseline in NPI-X at Week 24",
+      "template": "T.ChangeFromBaseline",
+      "purpose": "The response analysed.",
+      "placeholderValues": [
+        {
+          "name": "parameter",
+          "studyConcept": "PARAM.NPIX"
+        },
+        {
+          "name": "visit",
+          "studyConcept": "VISIT.WK24"
+        },
+        {
+          "name": "baseline_visit",
+          "studyConcept": "VISIT.BASELINE"
+        }
+      ],
+      "dependsOn": [
+        "DC.BASELINE.NPIX"
+      ]
+    },
+    {
+      "id": "DC.CHG.ADASCOG11.WK16.LOCF",
+      "label": "Change from baseline in ADAS-Cog(11) at Week 16 (LOCF-imputed)",
+      "template": "T.ChangeFromBaseline",
+      "purpose": "The response analysed.",
+      "placeholderValues": [
+        {
+          "name": "parameter",
+          "studyConcept": "PARAM.ADASCOG11"
+        },
+        {
+          "name": "visit",
+          "studyConcept": "VISIT.WK16"
+        },
+        {
+          "name": "baseline_visit",
+          "studyConcept": "VISIT.BASELINE"
+        }
+      ],
+      "dependsOn": [
+        "DC.BASELINE.ADASCOG11",
+        "DC.LOCF.ADASCOG11"
+      ]
+    },
+    {
+      "id": "DC.CHG.ADASCOG11.WK24",
+      "label": "Change from baseline in ADAS-Cog(11) at Week 24",
+      "template": "T.ChangeFromBaseline",
+      "purpose": "The response analysed.",
+      "placeholderValues": [
+        {
+          "name": "parameter",
+          "studyConcept": "PARAM.ADASCOG11"
+        },
+        {
+          "name": "visit",
+          "studyConcept": "VISIT.WK24"
+        },
+        {
+          "name": "baseline_visit",
+          "studyConcept": "VISIT.BASELINE"
+        }
+      ],
+      "dependsOn": [
+        "DC.BASELINE.ADASCOG11"
+      ]
+    }
+  ],
+  "analyses": [
+    {
+      "id": "AC.PRIMARY.ADASCOG",
+      "label": "Primary efficacy analysis",
+      "template": "T.CFB_ANCOVA",
+      "reference": {
+        "iri": "acdc:instance/AC-PRIMARY-ADASCOG",
+        "iriStatus": "illustrative"
+      },
+      "addressesEstimand": "EST.PRIMARY",
+      "addressesObjective": {
+        "iri": "usdm:Objective/OBJ-PRIMARY-1",
+        "iriStatus": "illustrative",
+        "text": "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
+      },
+      "arsAnalysis": {
+        "iri": "ars:analysis/AN-3.02.01",
+        "iriStatus": "illustrative"
+      },
+      "analysisRole": "MainEstimator",
+      "sentenceRole": "the primary analysis",
+      "placeholderValues": [
+        {
+          "name": "parameter",
+          "studyConcept": "PARAM.ADASCOG11"
+        },
+        {
+          "name": "visit",
+          "studyConcept": "VISIT.WK24"
+        },
+        {
+          "name": "population",
+          "studyConcept": "POP.EFFICACY"
+        },
+        {
+          "name": "treatment",
+          "studyConcept": "TRT.ALL"
+        },
+        {
+          "name": "baseline_visit",
+          "studyConcept": "VISIT.BASELINE"
+        },
+        {
+          "name": "control_arm",
+          "value": "Placebo"
+        }
+      ],
+      "configurationValues": [
+        {
+          "name": "ss_type",
+          "value": "III",
+          "fixedByTemplate": true
+        },
+        {
+          "name": "alpha",
+          "value": 0.05
+        }
+      ],
+      "phrases": [
+        {
+          "phrase": "SP_CFB_ENDPOINT",
+          "bindings": [
+            {
+              "slot": "parameter",
+              "render": "name_with_label",
+              "studyConcept": "PARAM.ADASCOG11"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_TIMEPOINT",
+          "bindings": [
+            {
+              "slot": "visit",
+              "render": "label",
+              "studyConcept": "VISIT.WK24"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_POPULATION",
+          "bindings": [
+            {
+              "slot": "population",
+              "render": "name",
+              "studyConcept": "POP.EFFICACY"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_GROUPING",
+          "bindings": [
+            {
+              "slot": "treatment",
+              "render": "label",
+              "studyConcept": "TRT.ALL"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_METHOD_ANCOVA",
+          "bindings": [
+            {
+              "slot": "method",
+              "render": "label",
+              "method": "M.ANCOVA"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_CONFIDENCE_LEVEL",
+          "bindings": [
+            {
+              "slot": "conf_level",
+              "value": "95"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_COVARIATE_BASELINE",
+          "bindings": [
+            {
+              "slot": "parameter",
+              "render": "label",
+              "studyConcept": "PARAM.ADASCOG11"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_ICE_HYPOTHETICAL",
+          "bindings": [
+            {
+              "slot": "ice",
+              "render": "name",
+              "studyConcept": "ICE.TRT_DISCONT"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_ICE_TREATMENT_POLICY",
+          "bindings": [
+            {
+              "slot": "ice",
+              "render": "name",
+              "studyConcept": "ICE.CONMED"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_SUMMARY_MEASURE",
+          "bindings": [
+            {
+              "slot": "summary",
+              "output": "SM.ANCOVA.ContrastsT"
+            }
+          ]
+        }
+      ],
+      "summaryOutput": "SM.ANCOVA.ContrastsT",
+      "dependsOn": [
+        "DC.CHG.ADASCOG11.WK24.LOCF"
+      ],
+      "iceHandlings": [
+        {
+          "intercurrentEvent": "ICE.TRT_DISCONT",
+          "strategy": "Hypothetical",
+          "basis": "statedByPhrase",
+          "fromPhrase": "SP_ICE_HYPOTHETICAL",
+          "implementedBy": [
+            "T.LOCF_Imputation"
+          ]
+        },
+        {
+          "intercurrentEvent": "ICE.CONMED",
+          "strategy": "TreatmentPolicy",
+          "basis": "statedByPhrase",
+          "fromPhrase": "SP_ICE_TREATMENT_POLICY",
+          "implementedBy": []
+        }
+      ]
+    },
+    {
+      "id": "AC.SEC.NPIX",
+      "label": "Secondary efficacy analysis — behaviour",
+      "template": "T.CFB_ANCOVA",
+      "reference": {
+        "iri": "acdc:instance/AC-SEC-NPIX",
+        "iriStatus": "illustrative"
+      },
+      "addressesEstimand": "EST.SECONDARY.NPIX",
+      "addressesObjective": {
+        "iri": "usdm:Objective/OBJ-SECONDARY-1",
+        "iriStatus": "illustrative",
+        "text": "To evaluate the effect of xanomeline TTS on behavioural disturbance"
+      },
+      "arsAnalysis": {
+        "iri": "ars:analysis/AN-3.03.01",
+        "iriStatus": "illustrative"
+      },
+      "analysisRole": "MainEstimator",
+      "sentenceRole": "a secondary analysis",
+      "placeholderValues": [
+        {
+          "name": "parameter",
+          "studyConcept": "PARAM.NPIX"
+        },
+        {
+          "name": "visit",
+          "studyConcept": "VISIT.WK24"
+        },
+        {
+          "name": "population",
+          "studyConcept": "POP.EFFICACY"
+        },
+        {
+          "name": "treatment",
+          "studyConcept": "TRT.ALL"
+        },
+        {
+          "name": "baseline_visit",
+          "studyConcept": "VISIT.BASELINE"
+        },
+        {
+          "name": "control_arm",
+          "value": "Placebo"
+        }
+      ],
+      "configurationValues": [
+        {
+          "name": "ss_type",
+          "value": "III",
+          "fixedByTemplate": true
+        }
+      ],
+      "phrases": [
+        {
+          "phrase": "SP_CFB_ENDPOINT",
+          "bindings": [
+            {
+              "slot": "parameter",
+              "render": "name_with_label",
+              "studyConcept": "PARAM.NPIX"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_TIMEPOINT",
+          "bindings": [
+            {
+              "slot": "visit",
+              "render": "label",
+              "studyConcept": "VISIT.WK24"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_POPULATION",
+          "bindings": [
+            {
+              "slot": "population",
+              "render": "name",
+              "studyConcept": "POP.EFFICACY"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_GROUPING",
+          "bindings": [
+            {
+              "slot": "treatment",
+              "render": "label",
+              "studyConcept": "TRT.ALL"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_METHOD_ANCOVA",
+          "bindings": [
+            {
+              "slot": "method",
+              "render": "label",
+              "method": "M.ANCOVA"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_COVARIATE_BASELINE",
+          "bindings": [
+            {
+              "slot": "parameter",
+              "render": "label",
+              "studyConcept": "PARAM.NPIX"
+            }
+          ]
+        }
+      ],
+      "dependsOn": [
+        "DC.CHG.NPIX.WK24"
+      ]
+    },
+    {
+      "id": "AC.SUPP.ADASCOG.WK16",
+      "label": "Supporting analysis — earlier timepoint",
+      "template": "T.CFB_ANCOVA",
+      "reference": {
+        "iri": "acdc:instance/AC-SUPP-ADASCOG-WK16",
+        "iriStatus": "illustrative"
+      },
+      "addressesEstimand": "EST.PRIMARY",
+      "addressesObjective": {
+        "iri": "usdm:Objective/OBJ-PRIMARY-1",
+        "iriStatus": "illustrative",
+        "text": "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
+      },
+      "arsAnalysis": {
+        "iri": "ars:analysis/AN-3.02.02",
+        "iriStatus": "illustrative"
+      },
+      "analysisRole": "SupplementaryAnalysis",
+      "sentenceRole": "a supporting analysis",
+      "placeholderValues": [
+        {
+          "name": "parameter",
+          "studyConcept": "PARAM.ADASCOG11"
+        },
+        {
+          "name": "visit",
+          "studyConcept": "VISIT.WK16"
+        },
+        {
+          "name": "population",
+          "studyConcept": "POP.EFFICACY"
+        },
+        {
+          "name": "treatment",
+          "studyConcept": "TRT.ALL"
+        },
+        {
+          "name": "baseline_visit",
+          "studyConcept": "VISIT.BASELINE"
+        },
+        {
+          "name": "control_arm",
+          "value": "Placebo"
+        }
+      ],
+      "configurationValues": [
+        {
+          "name": "ss_type",
+          "value": "III",
+          "fixedByTemplate": true
+        },
+        {
+          "name": "alpha",
+          "value": 0.05
+        }
+      ],
+      "phrases": [
+        {
+          "phrase": "SP_CFB_ENDPOINT",
+          "bindings": [
+            {
+              "slot": "parameter",
+              "render": "name_with_label",
+              "studyConcept": "PARAM.ADASCOG11"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_TIMEPOINT",
+          "bindings": [
+            {
+              "slot": "visit",
+              "render": "label",
+              "studyConcept": "VISIT.WK16"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_POPULATION",
+          "bindings": [
+            {
+              "slot": "population",
+              "render": "name",
+              "studyConcept": "POP.EFFICACY"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_GROUPING",
+          "bindings": [
+            {
+              "slot": "treatment",
+              "render": "label",
+              "studyConcept": "TRT.ALL"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_METHOD_ANCOVA",
+          "bindings": [
+            {
+              "slot": "method",
+              "render": "label",
+              "method": "M.ANCOVA"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_CONFIDENCE_LEVEL",
+          "bindings": [
+            {
+              "slot": "conf_level",
+              "value": "95"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_COVARIATE_BASELINE",
+          "bindings": [
+            {
+              "slot": "parameter",
+              "render": "label",
+              "studyConcept": "PARAM.ADASCOG11"
+            }
+          ]
+        }
+      ],
+      "dependsOn": [
+        "DC.CHG.ADASCOG11.WK16.LOCF"
+      ],
+      "iceHandlings": [
+        {
+          "intercurrentEvent": "ICE.TRT_DISCONT",
+          "strategy": "Hypothetical",
+          "basis": "studyDefault",
+          "implementedBy": [
+            "T.LOCF_Imputation"
+          ]
+        },
+        {
+          "intercurrentEvent": "ICE.CONMED",
+          "strategy": "TreatmentPolicy",
+          "basis": "studyDefault",
+          "implementedBy": []
+        }
+      ]
+    },
+    {
+      "id": "AC.SENS.ADASCOG.TP",
+      "label": "Sensitivity analysis — treatment policy for discontinuation",
+      "template": "T.CFB_ANCOVA",
+      "reference": {
+        "iri": "acdc:instance/AC-SENS-ADASCOG-TP",
+        "iriStatus": "illustrative"
+      },
+      "addressesEstimand": "EST.SENS.TP",
+      "addressesObjective": {
+        "iri": "usdm:Objective/OBJ-PRIMARY-1",
+        "iriStatus": "illustrative",
+        "text": "To evaluate the efficacy of xanomeline TTS on cognition in mild to moderate Alzheimer's disease"
+      },
+      "arsAnalysis": {
+        "iri": "ars:analysis/AN-SENS-TP",
+        "iriStatus": "illustrative"
+      },
+      "analysisRole": "MainEstimator",
+      "sentenceRole": "a sensitivity analysis",
+      "placeholderValues": [
+        {
+          "name": "parameter",
+          "studyConcept": "PARAM.ADASCOG11"
+        },
+        {
+          "name": "visit",
+          "studyConcept": "VISIT.WK24"
+        },
+        {
+          "name": "population",
+          "studyConcept": "POP.EFFICACY"
+        },
+        {
+          "name": "treatment",
+          "studyConcept": "TRT.ALL"
+        },
+        {
+          "name": "baseline_visit",
+          "studyConcept": "VISIT.BASELINE"
+        },
+        {
+          "name": "control_arm",
+          "value": "Placebo"
+        }
+      ],
+      "configurationValues": [
+        {
+          "name": "ss_type",
+          "value": "III",
+          "fixedByTemplate": true
+        },
+        {
+          "name": "alpha",
+          "value": 0.05
+        }
+      ],
+      "phrases": [
+        {
+          "phrase": "SP_CFB_ENDPOINT",
+          "bindings": [
+            {
+              "slot": "parameter",
+              "render": "name_with_label",
+              "studyConcept": "PARAM.ADASCOG11"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_TIMEPOINT",
+          "bindings": [
+            {
+              "slot": "visit",
+              "render": "label",
+              "studyConcept": "VISIT.WK24"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_POPULATION",
+          "bindings": [
+            {
+              "slot": "population",
+              "render": "name",
+              "studyConcept": "POP.EFFICACY"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_GROUPING",
+          "bindings": [
+            {
+              "slot": "treatment",
+              "render": "label",
+              "studyConcept": "TRT.ALL"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_METHOD_ANCOVA",
+          "bindings": [
+            {
+              "slot": "method",
+              "render": "label",
+              "method": "M.ANCOVA"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_CONFIDENCE_LEVEL",
+          "bindings": [
+            {
+              "slot": "conf_level",
+              "value": "95"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_COVARIATE_BASELINE",
+          "bindings": [
+            {
+              "slot": "parameter",
+              "render": "label",
+              "studyConcept": "PARAM.ADASCOG11"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_ICE_TREATMENT_POLICY",
+          "bindings": [
+            {
+              "slot": "ice",
+              "render": "name",
+              "studyConcept": "ICE.TRT_DISCONT"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_ICE_TREATMENT_POLICY",
+          "bindings": [
+            {
+              "slot": "ice",
+              "render": "name",
+              "studyConcept": "ICE.CONMED"
+            }
+          ]
+        },
+        {
+          "phrase": "SP_SUMMARY_MEASURE",
+          "bindings": [
+            {
+              "slot": "summary",
+              "output": "SM.ANCOVA.ContrastsT"
+            }
+          ]
+        }
+      ],
+      "summaryOutput": "SM.ANCOVA.ContrastsT",
+      "dependsOn": [
+        "DC.CHG.ADASCOG11.WK24"
+      ],
+      "iceHandlings": [
+        {
+          "intercurrentEvent": "ICE.TRT_DISCONT",
+          "strategy": "TreatmentPolicy",
+          "basis": "statedByPhrase",
+          "fromPhrase": "SP_ICE_TREATMENT_POLICY",
+          "implementedBy": []
+        },
+        {
+          "intercurrentEvent": "ICE.CONMED",
+          "strategy": "TreatmentPolicy",
+          "basis": "statedByPhrase",
+          "fromPhrase": "SP_ICE_TREATMENT_POLICY",
+          "implementedBy": []
+        }
+      ]
+    }
+  ],
+  "dataBindings": [
+    {
+      "id": "CDISCPILOT01.PARAM.ADASCOG11.Measure",
+      "concept": "C.Measure",
+      "studyConcept": "PARAM.ADASCOG11",
+      "level": "valueLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "dataset": "ADQSADAS",
+        "variable": "AVAL"
+      },
+      "conditions": [
+        {
+          "variable": "PARAMCD",
+          "comparator": "EQ",
+          "values": [
+            "ACTOT"
+          ]
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "id": "CDISCPILOT01.PARAM.ADASCOG11.Baseline",
+      "concept": "C.Measure",
+      "studyConcept": "PARAM.ADASCOG11",
+      "level": "valueLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "dataset": "ADQSADAS",
+        "variable": "BASE"
+      },
+      "conditions": [
+        {
+          "variable": "PARAMCD",
+          "comparator": "EQ",
+          "values": [
+            "ACTOT"
+          ]
+        }
+      ],
+      "qualifiers": [
+        {
+          "name": "reference",
+          "value": "baseline"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "id": "CDISCPILOT01.PARAM.ADASCOG11.Change",
+      "concept": "C.Change",
+      "studyConcept": "PARAM.ADASCOG11",
+      "level": "valueLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "dataset": "ADQSADAS",
+        "variable": "CHG"
+      },
+      "conditions": [
+        {
+          "variable": "PARAMCD",
+          "comparator": "EQ",
+          "values": [
+            "ACTOT"
+          ]
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "id": "CDISCPILOT01.PARAM.NPIX.Measure",
+      "concept": "C.Measure",
+      "studyConcept": "PARAM.NPIX",
+      "level": "valueLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "dataset": "ADNPIX",
+        "variable": "AVAL"
+      },
+      "conditions": [
+        {
+          "variable": "PARAMCD",
+          "comparator": "EQ",
+          "values": [
+            "NPTOT"
+          ]
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "id": "CDISCPILOT01.PARAM.NPIX.Baseline",
+      "concept": "C.Measure",
+      "studyConcept": "PARAM.NPIX",
+      "level": "valueLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "dataset": "ADNPIX",
+        "variable": "BASE"
+      },
+      "conditions": [
+        {
+          "variable": "PARAMCD",
+          "comparator": "EQ",
+          "values": [
+            "NPTOT"
+          ]
+        }
+      ],
+      "qualifiers": [
+        {
+          "name": "reference",
+          "value": "baseline"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "id": "CDISCPILOT01.PARAM.NPIX.Change",
+      "concept": "C.Change",
+      "studyConcept": "PARAM.NPIX",
+      "level": "valueLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "dataset": "ADNPIX",
+        "variable": "CHG"
+      },
+      "conditions": [
+        {
+          "variable": "PARAMCD",
+          "comparator": "EQ",
+          "values": [
+            "NPTOT"
+          ]
+        }
+      ],
+      "status": "released"
+    }
+  ],
+  "extensions": [
+    {
+      "namespace": "https://example.org/esap/",
+      "description": "Example of what an eSAP model would add for this study.",
+      "location": "esap-extension.example.json"
+    }
+  ]
+}

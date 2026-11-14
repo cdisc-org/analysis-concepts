@@ -11,9 +11,9 @@ so the work can be picked up from here at any point.
 | 4 Concept layer | done — one library, 106 concepts; validates |
 | 5 Transformation layer | done — 26 templates; validates |
 | 6 SmartPhrase layer | done — 31 phrases, 10 roles, 3 language packs; validates |
-| 7 Implementation layer | next |
-| 8 Study layer | not started |
-| 9 Conformance | not started |
+| 7 Implementation layer | done — 49 ADaM and 72 SDTM class-level bindings; R (19) and SAS (11) catalogues, informative |
+| 8 Study layer | done — CDISC Pilot (4 analyses, 7 derivations) and PrE0102 (4 analyses); validate against schema |
+| 9 Conformance | next |
 | 10 Documentation and final report | not started |
 
 ## Notes for resuming
