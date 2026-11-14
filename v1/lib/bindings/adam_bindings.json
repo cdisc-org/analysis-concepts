@@ -1,0 +1,757 @@
+{
+  "libraryVersion": "1.0.0-candidate",
+  "description": "Class-level ADaM data bindings. Migrated from concept-variable-mappings.json on methods_02 (81a04b1). A variable that carries more than one Concept is marked parameterDependent; a value-level binding in the study resolves it.",
+  "standard": "ADaM",
+  "standardVersions": [
+    "ADaMIG v1.3",
+    "ADaM OCCDS v1.1"
+  ],
+  "bindings": [
+    {
+      "id": "ADaM.Measure.AVAL",
+      "concept": "C.Measure",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "AVAL"
+      },
+      "facet": "value",
+      "dataType": "decimal",
+      "parameterDependent": true,
+      "description": "Analysis value (numeric or character). BASE is the baseline value. Facets map the Measure concept's structural parts (Result.Value, Result.Unit) to the corresponding ADaM variables.",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Measure.BASE.baseline",
+      "concept": "C.Measure",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "BASE"
+      },
+      "dataType": "decimal",
+      "qualifiers": [
+        {
+          "name": "reference",
+          "value": "baseline"
+        }
+      ],
+      "description": "Analysis value (numeric or character). BASE is the baseline value. Facets map the Measure concept's structural parts (Result.Value, Result.Unit) to the corresponding ADaM variables.",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Measure.AVALC",
+      "concept": "C.Measure",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "AVALC"
+      },
+      "dataType": "code",
+      "parameterDependent": true,
+      "description": "Analysis value (numeric or character). BASE is the baseline value. Facets map the Measure concept's structural parts (Result.Value, Result.Unit) to the corresponding ADaM variables.",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Measure.AVALU",
+      "concept": "C.Measure",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "AVALU"
+      },
+      "facet": "unit",
+      "description": "Analysis value (numeric or character). BASE is the baseline value. Facets map the Measure concept's structural parts (Result.Value, Result.Unit) to the corresponding ADaM variables.",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Change.CHG",
+      "concept": "C.Change",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "CHG"
+      },
+      "dataType": "decimal",
+      "description": "Change from baseline",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.PercentChange.PCHG",
+      "concept": "C.PercentChange",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "PCHG"
+      },
+      "dataType": "decimal",
+      "description": "Percent change from baseline",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Shift.AVALC",
+      "concept": "C.Shift",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "AVALC"
+      },
+      "dataType": "code",
+      "parameterDependent": true,
+      "description": "Shift category (character)",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.PeakValue.AVAL",
+      "concept": "C.PeakValue",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "AVAL"
+      },
+      "dataType": "decimal",
+      "parameterDependent": true,
+      "description": "Peak/extreme analysis value",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.AreaUnderCurve.AVAL",
+      "concept": "C.AreaUnderCurve",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "AVAL"
+      },
+      "dataType": "decimal",
+      "parameterDependent": true,
+      "description": "AUC-derived analysis value",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.EventCount.AVAL",
+      "concept": "C.EventCount",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "AVAL"
+      },
+      "dataType": "decimal",
+      "parameterDependent": true,
+      "description": "Count of events",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.TimeToEvent.AVAL",
+      "concept": "C.TimeToEvent",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "AVAL"
+      },
+      "dataType": "decimal",
+      "parameterDependent": true,
+      "description": "Time-to-event duration",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Flag.AVALC",
+      "concept": "C.Flag",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "AVALC"
+      },
+      "dataType": "code",
+      "parameterDependent": true,
+      "description": "Flag indicator variable",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Flag.xxxFL",
+      "concept": "C.Flag",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "SubjectLevel",
+        "variable": "xxxFL"
+      },
+      "dataType": "boolean",
+      "description": "Flag indicator variable",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Category.AVALC",
+      "concept": "C.Category",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "AVALC"
+      },
+      "dataType": "code",
+      "parameterDependent": true,
+      "description": "Categorized analysis value",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Topic.--TERM",
+      "concept": "C.Topic",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "OccurrenceDataStructure",
+        "variable": "--TERM"
+      },
+      "facet": "qualifier",
+      "facetName": "Identification.ReportedTerm",
+      "dataType": "string",
+      "description": "ADaM OCCDS occurrence term. --TERM is the reported term; --DECOD is the dictionary-derived preferred term. MedDRA hierarchy facets provide multi-level coding. Used in ADAE, ADCM, and similar occurrence datasets. The -- prefix is substituted with the dataset-specific prefix (AE, CM, etc.).",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Topic.--DECOD",
+      "concept": "C.Topic",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "OccurrenceDataStructure",
+        "variable": "--DECOD"
+      },
+      "facet": "qualifier",
+      "facetName": "Coding.PreferredTerm",
+      "dataType": "code",
+      "description": "ADaM OCCDS occurrence term. --TERM is the reported term; --DECOD is the dictionary-derived preferred term. MedDRA hierarchy facets provide multi-level coding. Used in ADAE, ADCM, and similar occurrence datasets. The -- prefix is substituted with the dataset-specific prefix (AE, CM, etc.).",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Topic.--BODSYS",
+      "concept": "C.Topic",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "OccurrenceDataStructure",
+        "variable": "--BODSYS"
+      },
+      "facet": "qualifier",
+      "facetName": "Coding.BodySystem",
+      "description": "ADaM OCCDS occurrence term. --TERM is the reported term; --DECOD is the dictionary-derived preferred term. MedDRA hierarchy facets provide multi-level coding. Used in ADAE, ADCM, and similar occurrence datasets. The -- prefix is substituted with the dataset-specific prefix (AE, CM, etc.).",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Topic.--HLT",
+      "concept": "C.Topic",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "OccurrenceDataStructure",
+        "variable": "--HLT"
+      },
+      "facet": "qualifier",
+      "facetName": "Coding.HighLevelTerm",
+      "description": "ADaM OCCDS occurrence term. --TERM is the reported term; --DECOD is the dictionary-derived preferred term. MedDRA hierarchy facets provide multi-level coding. Used in ADAE, ADCM, and similar occurrence datasets. The -- prefix is substituted with the dataset-specific prefix (AE, CM, etc.).",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Topic.--HLGT",
+      "concept": "C.Topic",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "OccurrenceDataStructure",
+        "variable": "--HLGT"
+      },
+      "facet": "qualifier",
+      "facetName": "Coding.HighLevelGroupTerm",
+      "description": "ADaM OCCDS occurrence term. --TERM is the reported term; --DECOD is the dictionary-derived preferred term. MedDRA hierarchy facets provide multi-level coding. Used in ADAE, ADCM, and similar occurrence datasets. The -- prefix is substituted with the dataset-specific prefix (AE, CM, etc.).",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Topic.--LLT",
+      "concept": "C.Topic",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "OccurrenceDataStructure",
+        "variable": "--LLT"
+      },
+      "facet": "qualifier",
+      "facetName": "Coding.LowLevelTerm",
+      "description": "ADaM OCCDS occurrence term. --TERM is the reported term; --DECOD is the dictionary-derived preferred term. MedDRA hierarchy facets provide multi-level coding. Used in ADAE, ADCM, and similar occurrence datasets. The -- prefix is substituted with the dataset-specific prefix (AE, CM, etc.).",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Subject.USUBJID",
+      "concept": "C.Subject",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "SubjectLevel",
+        "variable": "USUBJID"
+      },
+      "dataType": "id",
+      "description": "Unique subject identifier",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Parameter.PARAMCD",
+      "concept": "C.Parameter",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "PARAMCD"
+      },
+      "facet": "code",
+      "dataType": "code",
+      "description": "Parameter code and label",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Parameter.PARAM",
+      "concept": "C.Parameter",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "PARAM"
+      },
+      "facet": "decode",
+      "dataType": "string",
+      "description": "Parameter code and label",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Timing.ADT",
+      "concept": "C.Timing",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "ADT"
+      },
+      "dataType": "date",
+      "description": "Analysis date, day, or timepoint",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Timing.ADY",
+      "concept": "C.Timing",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "ADY"
+      },
+      "dataType": "integer",
+      "description": "Analysis date, day, or timepoint",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Timing.ATPT",
+      "concept": "C.Timing",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "ATPT"
+      },
+      "dataType": "string",
+      "parameterDependent": true,
+      "description": "Analysis date, day, or timepoint",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.AnalysisVisit.AVISIT",
+      "concept": "C.AnalysisVisit",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "AVISIT"
+      },
+      "dataType": "code",
+      "description": "Analysis visit (character/numeric)",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.AnalysisVisit.AVISITN",
+      "concept": "C.AnalysisVisit",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "AVISITN"
+      },
+      "dataType": "decimal",
+      "description": "Analysis visit (character/numeric)",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Treatment.TRTP.Planned",
+      "concept": "C.Treatment",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "TRTP"
+      },
+      "dataType": "code",
+      "qualifiers": [
+        {
+          "name": "intent",
+          "value": "Planned"
+        }
+      ],
+      "alternativeVariables": [
+        "TRT01A",
+        "TRT01P",
+        "TRT01AN",
+        "TRT01PN",
+        "ARM",
+        "ACTARM",
+        "ARMCD",
+        "ACTARMCD"
+      ],
+      "description": "Record-level treatment for BDS. TRTP/TRTA are planned/actual treatment labels. IntentType qualifier selects Planned vs Actual. Subject-level treatment (ARM/TRTxxP/TRTxxA) is in ADSL — listed under alternativeVariables for cross-dataset selection.",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Treatment.TRTPN.Planned",
+      "concept": "C.Treatment",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "TRTPN"
+      },
+      "facet": "number",
+      "dataType": "integer",
+      "qualifiers": [
+        {
+          "name": "intent",
+          "value": "Planned"
+        }
+      ],
+      "description": "Record-level treatment for BDS. TRTP/TRTA are planned/actual treatment labels. IntentType qualifier selects Planned vs Actual. Subject-level treatment (ARM/TRTxxP/TRTxxA) is in ADSL — listed under alternativeVariables for cross-dataset selection.",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Treatment.TRTA.Actual",
+      "concept": "C.Treatment",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "TRTA"
+      },
+      "dataType": "code",
+      "qualifiers": [
+        {
+          "name": "intent",
+          "value": "Actual"
+        }
+      ],
+      "description": "Record-level treatment for BDS. TRTP/TRTA are planned/actual treatment labels. IntentType qualifier selects Planned vs Actual. Subject-level treatment (ARM/TRTxxP/TRTxxA) is in ADSL — listed under alternativeVariables for cross-dataset selection.",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Treatment.TRTAN.Actual",
+      "concept": "C.Treatment",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "TRTAN"
+      },
+      "facet": "number",
+      "dataType": "integer",
+      "qualifiers": [
+        {
+          "name": "intent",
+          "value": "Actual"
+        }
+      ],
+      "description": "Record-level treatment for BDS. TRTP/TRTA are planned/actual treatment labels. IntentType qualifier selects Planned vs Actual. Subject-level treatment (ARM/TRTxxP/TRTxxA) is in ADSL — listed under alternativeVariables for cross-dataset selection.",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Population.ITTFL.intent_to_treat",
+      "concept": "C.Population",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "SubjectLevel",
+        "variable": "ITTFL"
+      },
+      "dataType": "code",
+      "qualifiers": [
+        {
+          "name": "population",
+          "value": "intent_to_treat"
+        }
+      ],
+      "description": "Population flag variables (Y/N) from ADSL. Standard flags: ITTFL (Intent-to-Treat), SAFFL (Safety), FASFL (Full Analysis Set), PPROTFL (Per-Protocol), COMPLFL (Completers), RANDFL (Randomized), ENRLFL (Enrolled).",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Population.SAFFL.safety",
+      "concept": "C.Population",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "SubjectLevel",
+        "variable": "SAFFL"
+      },
+      "dataType": "code",
+      "qualifiers": [
+        {
+          "name": "population",
+          "value": "safety"
+        }
+      ],
+      "description": "Population flag variables (Y/N) from ADSL. Standard flags: ITTFL (Intent-to-Treat), SAFFL (Safety), FASFL (Full Analysis Set), PPROTFL (Per-Protocol), COMPLFL (Completers), RANDFL (Randomized), ENRLFL (Enrolled).",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Population.EFFFL.efficacy",
+      "concept": "C.Population",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "SubjectLevel",
+        "variable": "EFFFL"
+      },
+      "dataType": "code",
+      "qualifiers": [
+        {
+          "name": "population",
+          "value": "efficacy"
+        }
+      ],
+      "description": "Population flag variables (Y/N) from ADSL. Standard flags: ITTFL (Intent-to-Treat), SAFFL (Safety), FASFL (Full Analysis Set), PPROTFL (Per-Protocol), COMPLFL (Completers), RANDFL (Randomized), ENRLFL (Enrolled).",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Population.FASFL.full_analysis_set",
+      "concept": "C.Population",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "SubjectLevel",
+        "variable": "FASFL"
+      },
+      "dataType": "code",
+      "qualifiers": [
+        {
+          "name": "population",
+          "value": "full_analysis_set"
+        }
+      ],
+      "description": "Population flag variables (Y/N) from ADSL. Standard flags: ITTFL (Intent-to-Treat), SAFFL (Safety), FASFL (Full Analysis Set), PPROTFL (Per-Protocol), COMPLFL (Completers), RANDFL (Randomized), ENRLFL (Enrolled).",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Population.PPROTFL.per_protocol",
+      "concept": "C.Population",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "SubjectLevel",
+        "variable": "PPROTFL"
+      },
+      "dataType": "code",
+      "qualifiers": [
+        {
+          "name": "population",
+          "value": "per_protocol"
+        }
+      ],
+      "description": "Population flag variables (Y/N) from ADSL. Standard flags: ITTFL (Intent-to-Treat), SAFFL (Safety), FASFL (Full Analysis Set), PPROTFL (Per-Protocol), COMPLFL (Completers), RANDFL (Randomized), ENRLFL (Enrolled).",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Population.COMPLFL.completers",
+      "concept": "C.Population",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "SubjectLevel",
+        "variable": "COMPLFL"
+      },
+      "dataType": "code",
+      "qualifiers": [
+        {
+          "name": "population",
+          "value": "completers"
+        }
+      ],
+      "description": "Population flag variables (Y/N) from ADSL. Standard flags: ITTFL (Intent-to-Treat), SAFFL (Safety), FASFL (Full Analysis Set), PPROTFL (Per-Protocol), COMPLFL (Completers), RANDFL (Randomized), ENRLFL (Enrolled).",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Population.RANDFL.randomized",
+      "concept": "C.Population",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "SubjectLevel",
+        "variable": "RANDFL"
+      },
+      "dataType": "code",
+      "qualifiers": [
+        {
+          "name": "population",
+          "value": "randomized"
+        }
+      ],
+      "description": "Population flag variables (Y/N) from ADSL. Standard flags: ITTFL (Intent-to-Treat), SAFFL (Safety), FASFL (Full Analysis Set), PPROTFL (Per-Protocol), COMPLFL (Completers), RANDFL (Randomized), ENRLFL (Enrolled).",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Population.ENRLFL.enrolled",
+      "concept": "C.Population",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "SubjectLevel",
+        "variable": "ENRLFL"
+      },
+      "dataType": "code",
+      "qualifiers": [
+        {
+          "name": "population",
+          "value": "enrolled"
+        }
+      ],
+      "description": "Population flag variables (Y/N) from ADSL. Standard flags: ITTFL (Intent-to-Treat), SAFFL (Safety), FASFL (Full Analysis Set), PPROTFL (Per-Protocol), COMPLFL (Completers), RANDFL (Randomized), ENRLFL (Enrolled).",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Period.APERIOD",
+      "concept": "C.Period",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "APERIOD"
+      },
+      "dataType": "integer",
+      "description": "Analysis period (numeric/character)",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Period.APERIODC",
+      "concept": "C.Period",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "APERIODC"
+      },
+      "dataType": "code",
+      "description": "Analysis period (numeric/character)",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Site.SITEID",
+      "concept": "C.Site",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "SubjectLevel",
+        "variable": "SITEID"
+      },
+      "dataType": "id",
+      "description": "Study site identifier (SITEID) or pooled site group (SITEGR1)",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Site.SITEGR1",
+      "concept": "C.Site",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "variable": "SITEGR1"
+      },
+      "dataType": "code",
+      "description": "Study site identifier (SITEID) or pooled site group (SITEGR1)",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Visit.VISIT",
+      "concept": "C.Visit",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "variable": "VISIT"
+      },
+      "dataType": "code",
+      "description": "Protocol-defined visit (character/numeric)",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Visit.VISITNUM",
+      "concept": "C.Visit",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "variable": "VISITNUM"
+      },
+      "dataType": "integer",
+      "description": "Protocol-defined visit (character/numeric)",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Study.STUDYID",
+      "concept": "C.Study",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "SubjectLevel",
+        "variable": "STUDYID"
+      },
+      "dataType": "id",
+      "description": "Study identifier",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Timepoint.ATPT",
+      "concept": "C.Timepoint",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "ATPT"
+      },
+      "dataType": "code",
+      "parameterDependent": true,
+      "description": "Analysis timepoint (character/numeric)",
+      "status": "released"
+    },
+    {
+      "id": "ADaM.Timepoint.ATPTN",
+      "concept": "C.Timepoint",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "BasicDataStructure",
+        "variable": "ATPTN"
+      },
+      "dataType": "integer",
+      "description": "Analysis timepoint (character/numeric)",
+      "status": "released"
+    }
+  ]
+}

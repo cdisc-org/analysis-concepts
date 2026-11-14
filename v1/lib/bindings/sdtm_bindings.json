@@ -1,0 +1,1060 @@
+{
+  "libraryVersion": "1.0.0-candidate",
+  "description": "Class-level SDTM data bindings, held by reference to the CDISC SDTM Dataset Specialisations: each records the data element concept code(s) its variable carries there. Built from the observation model and concept-variable-mappings.json on methods_02 (81a04b1).",
+  "standard": "SDTM",
+  "standardVersions": [
+    "SDTM v2.0",
+    "SDTMIG v3.4"
+  ],
+  "bindings": [
+    {
+      "id": "SDTM.Sequence.--SEQ",
+      "concept": "C.Sequence",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--SEQ"
+      },
+      "dataType": "integer",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C70710"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.GroupId.--GRPID",
+      "concept": "C.GroupId",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--GRPID"
+      },
+      "dataType": "string",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C170996"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.ReferenceId.--REFID",
+      "concept": "C.ReferenceId",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--REFID"
+      },
+      "dataType": "string",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C82531"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.LinkId.--LNKID",
+      "concept": "C.LinkId",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--LNKID"
+      },
+      "dataType": "string",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C117050",
+          "C117049"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.LinkId.--LNKGRP",
+      "concept": "C.LinkId",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--LNKGRP"
+      },
+      "dataType": "string",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C117050",
+          "C117049"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Topic.--TESTCD",
+      "concept": "C.Topic",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--TESTCD"
+      },
+      "dataType": "CodeableConcept",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Topic.--TERM",
+      "concept": "C.Topic",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--TERM"
+      },
+      "dataType": "CodeableConcept",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Topic.--TRT",
+      "concept": "C.Topic",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--TRT"
+      },
+      "dataType": "CodeableConcept",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Topic.--PARMCD",
+      "concept": "C.Topic",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--PARMCD"
+      },
+      "dataType": "CodeableConcept",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.TopicCode.--TESTCD",
+      "concept": "C.TopicCode",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--TESTCD"
+      },
+      "dataType": "code",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.TopicCode.--TRT",
+      "concept": "C.TopicCode",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--TRT"
+      },
+      "dataType": "code",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.TopicCode.--PARMCD",
+      "concept": "C.TopicCode",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--PARMCD"
+      },
+      "dataType": "code",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.TopicDecode.--TEST",
+      "concept": "C.TopicDecode",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--TEST"
+      },
+      "dataType": "code",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.TopicDecode.--PARM",
+      "concept": "C.TopicDecode",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--PARM"
+      },
+      "dataType": "code",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.TopicDecode.--DECOD",
+      "concept": "C.TopicDecode",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--DECOD"
+      },
+      "dataType": "code",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.PreferredTerm.--DECOD",
+      "concept": "C.PreferredTerm",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--DECOD"
+      },
+      "dataType": "CodeableConcept",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Duration.--DUR",
+      "concept": "C.Duration",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--DUR"
+      },
+      "dataType": "Quantity",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.StudyDay.--DY",
+      "concept": "C.StudyDay",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--DY"
+      },
+      "dataType": "integer",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.StudyDay.--STDY",
+      "concept": "C.StudyDay",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--STDY"
+      },
+      "dataType": "integer",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.RelativeTiming.--ENRF",
+      "concept": "C.RelativeTiming",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--ENRF"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C82557",
+          "C82558",
+          "C82574"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.RelativeTiming.--ENRTPT",
+      "concept": "C.RelativeTiming",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--ENRTPT"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C82557",
+          "C82558",
+          "C82574"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.RelativeTiming.--ENTPT",
+      "concept": "C.RelativeTiming",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--ENTPT"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C82557",
+          "C82558",
+          "C82574"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.ObservationCategory.--CAT",
+      "concept": "C.ObservationCategory",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--CAT"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C25372"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.ObservationSubcategory.--SCAT",
+      "concept": "C.ObservationSubcategory",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--SCAT"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C25692"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.CollectionMethod.--METHOD",
+      "concept": "C.CollectionMethod",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--METHOD"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C82535"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Location.--LOC",
+      "concept": "C.Location",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--LOC"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C13717"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Laterality.--LAT",
+      "concept": "C.Laterality",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--LAT"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C25185"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Directionality.--DIR",
+      "concept": "C.Directionality",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--DIR"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C54215"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Specimen.--SPEC",
+      "concept": "C.Specimen",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--SPEC"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C70713"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.EvaluatorRole.--EVAL",
+      "concept": "C.EvaluatorRole",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--EVAL"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C51824"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Position.--POS",
+      "concept": "C.Position",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--POS"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C62164",
+          "C71150"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.FastingStatus.--FAST",
+      "concept": "C.FastingStatus",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--FAST"
+      },
+      "dataType": "CodeableConcept",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Result.--ORRES",
+      "concept": "C.Result",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--ORRES"
+      },
+      "specialisation": {
+        "dataElementConceptId": [
+          "C70856",
+          "C46126",
+          "C91106"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Result.--STRESC",
+      "concept": "C.Result",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--STRESC"
+      },
+      "specialisation": {
+        "dataElementConceptId": [
+          "C70856",
+          "C46126",
+          "C91106"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Result.--STRESN",
+      "concept": "C.Result",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--STRESN"
+      },
+      "specialisation": {
+        "dataElementConceptId": [
+          "C70856",
+          "C46126",
+          "C91106"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Reference.--ORREF",
+      "concept": "C.Reference",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--ORREF"
+      },
+      "dataType": "Quantity",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Reference.--STREFP",
+      "concept": "C.Reference",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--STREFP"
+      },
+      "dataType": "Quantity",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Occurrence.--OCCUR",
+      "concept": "C.Occurrence",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Events",
+        "variable": "--OCCUR"
+      },
+      "dataType": "boolean",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C127786"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.PreSpecified.--PRESP",
+      "concept": "C.PreSpecified",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Events",
+        "variable": "--PRESP"
+      },
+      "dataType": "boolean",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C171000"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Severity.--SEV",
+      "concept": "C.Severity",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Events",
+        "variable": "--SEV"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C53253"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.ToxicityGrade.--TOXGR",
+      "concept": "C.ToxicityGrade",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Events",
+        "variable": "--TOXGR"
+      },
+      "dataType": "integer",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Seriousness.--SER",
+      "concept": "C.Seriousness",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Events",
+        "variable": "--SER"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C53252"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Outcome.--OUT",
+      "concept": "C.Outcome",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Events",
+        "variable": "--OUT"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C49489"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.ActionTaken.--ACN",
+      "concept": "C.ActionTaken",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Events",
+        "variable": "--ACN"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C83013",
+          "C83109"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.ActionTaken.--ACNOTH",
+      "concept": "C.ActionTaken",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Events",
+        "variable": "--ACNOTH"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C83013",
+          "C83109"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Dose.--DOSE",
+      "concept": "C.Dose",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Interventions",
+        "variable": "--DOSE"
+      },
+      "dataType": "Quantity",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C83221",
+          "C83416",
+          "C83041"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Dose.--DOSTXT",
+      "concept": "C.Dose",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Interventions",
+        "variable": "--DOSTXT"
+      },
+      "dataType": "Quantity",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C83221",
+          "C83416",
+          "C83041"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.DoseUnit.--DOSU",
+      "concept": "C.DoseUnit",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Interventions",
+        "variable": "--DOSU"
+      },
+      "dataType": "code",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.DoseFrequency.--DOSFRQ",
+      "concept": "C.DoseFrequency",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Interventions",
+        "variable": "--DOSFRQ"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C83044",
+          "C83042"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.DoseForm.--DOSFRM",
+      "concept": "C.DoseForm",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Interventions",
+        "variable": "--DOSFRM"
+      },
+      "dataType": "CodeableConcept",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Route.--ROUTE",
+      "concept": "C.Route",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Interventions",
+        "variable": "--ROUTE"
+      },
+      "dataType": "CodeableConcept",
+      "specialisation": {
+        "dataElementConceptId": [
+          "C83120"
+        ]
+      },
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Indication.--INDC",
+      "concept": "C.Indication",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Interventions",
+        "variable": "--INDC"
+      },
+      "dataType": "CodeableConcept",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Subject.USUBJID",
+      "concept": "C.Subject",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "USUBJID"
+      },
+      "dataType": "Identifier",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Subject.SUBJID",
+      "concept": "C.Subject",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "SUBJID"
+      },
+      "dataType": "Identifier",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Study.STUDYID",
+      "concept": "C.Study",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "STUDYID"
+      },
+      "dataType": "Identifier",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Site.SITEID",
+      "concept": "C.Site",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "SITEID"
+      },
+      "dataType": "Identifier",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Visit.VISIT",
+      "concept": "C.Visit",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "VISIT"
+      },
+      "dataType": "CodeableConcept",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Visit.VISITNUM",
+      "concept": "C.Visit",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "VISITNUM"
+      },
+      "dataType": "CodeableConcept",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Timepoint.--TPT",
+      "concept": "C.Timepoint",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--TPT"
+      },
+      "dataType": "CodeableConcept",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Timepoint.--TPTNUM",
+      "concept": "C.Timepoint",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--TPTNUM"
+      },
+      "dataType": "CodeableConcept",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Result.--ORRESU",
+      "concept": "C.Result",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--ORRESU"
+      },
+      "dataType": "code",
+      "description": "SDTM raw observation (Findings class). --ORRES is the original result as collected (may have mixed units across rows); --ORRESU the original unit. Used as INPUT by T.UnitConversion. The -- prefix is a placeholder substituted with the domain code (VS/LB/EG/etc.).",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Measure.--STRESN",
+      "concept": "C.Measure",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--STRESN"
+      },
+      "dataType": "decimal",
+      "description": "SDTM standardized result (Findings class). --STRESN holds the unit-converted numeric value; --STRESU the standardized unit code. Natural OUTPUT for T.UnitConversion.",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Measure.--STRESC",
+      "concept": "C.Measure",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--STRESC"
+      },
+      "dataType": "code",
+      "description": "SDTM standardized result (Findings class). --STRESN holds the unit-converted numeric value; --STRESU the standardized unit code. Natural OUTPUT for T.UnitConversion.",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Measure.--STRESU",
+      "concept": "C.Measure",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--STRESU"
+      },
+      "facet": "unit",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Topic.--DECOD",
+      "concept": "C.Topic",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--DECOD"
+      },
+      "dataType": "code",
+      "description": "SDTM event observation (Events class). --TERM is the reported/verbatim term (Topic); --DECOD is the dictionary-derived preferred term. MedDRA hierarchy facets provide multi-level coding. The -- prefix is substituted with domain code (AE/MH/CE/etc.).",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Topic.--DOSE",
+      "concept": "C.Topic",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "Findings",
+        "variable": "--DOSE"
+      },
+      "dataType": "decimal",
+      "description": "SDTM intervention record (Interventions class). --TRT is the reported treatment name (Topic); --DECOD is the standardized/coded name. The -- prefix is substituted with domain code (CM/EX/EC/SU/etc.).",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Parameter.--TESTCD",
+      "concept": "C.Parameter",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--TESTCD"
+      },
+      "dataType": "code",
+      "description": "Test code and label. Domain-prefixed (VSTESTCD/VSTEST for VS, LBTESTCD/LBTEST for LB, etc.)",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Parameter.--TEST",
+      "concept": "C.Parameter",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--TEST"
+      },
+      "dataType": "string",
+      "description": "Test code and label. Domain-prefixed (VSTESTCD/VSTEST for VS, LBTESTCD/LBTEST for LB, etc.)",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Timing.--DTC",
+      "concept": "C.Timing",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--DTC"
+      },
+      "dataType": "date",
+      "description": "Collection date/time (VSDTC, LBDTC, etc.)",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Treatment.ARMCD",
+      "concept": "C.Treatment",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "ARMCD"
+      },
+      "dataType": "code",
+      "description": "Treatment arm from DM domain. Not domain-prefixed. IntentType qualifier selects Planned (ARM) vs Actual (ACTARM).",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Treatment.ARM",
+      "concept": "C.Treatment",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "ARM"
+      },
+      "dataType": "string",
+      "description": "Treatment arm from DM domain. Not domain-prefixed. IntentType qualifier selects Planned (ARM) vs Actual (ACTARM).",
+      "status": "released"
+    },
+    {
+      "id": "SDTM.Category.--CAT",
+      "concept": "C.Category",
+      "level": "classLevel",
+      "locator": {
+        "locatorType": "tabular",
+        "datasetClass": "General Observations",
+        "variable": "--CAT"
+      },
+      "dataType": "code",
+      "description": "Category grouping variable. --CAT is the primary category. Present in Events, Findings, and Interventions classes. Domain-prefixed.",
+      "status": "released"
+    }
+  ]
+}

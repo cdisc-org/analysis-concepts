@@ -1,0 +1,603 @@
+{
+  "libraryVersion": "1.0.0-candidate",
+  "description": "Informative R implementations of methods. Migrated from lib/method_implementations/r_implementations.json v0.1.0 (model-schema lineage).",
+  "language": "R",
+  "implementations": [
+    {
+      "method": "M.PairedTTest",
+      "language": "R",
+      "package": "stats",
+      "function": "t.test",
+      "callTemplate": "t.test(`<response>` ~ `<fixed_effect>`, data = <dataset>, paired = TRUE, var.equal = FALSE, conf.level = <conf_level>)",
+      "outputMapping": [
+        {
+          "producer": "SM.PairedTTest.TTestResult",
+          "sourceName": "test_result",
+          "resultColumns": [
+            {
+              "name": "estimate",
+              "statistic": "S.estimate",
+              "column": "estimate"
+            },
+            {
+              "name": "t_statistic",
+              "statistic": "S.t_statistic",
+              "column": "statistic"
+            },
+            {
+              "name": "df",
+              "statistic": "S.df",
+              "column": "parameter"
+            },
+            {
+              "name": "p_value",
+              "statistic": "S.p_value",
+              "column": "p.value"
+            },
+            {
+              "name": "CI_lower",
+              "statistic": "S.CI_lower",
+              "column": "conf.int[1]"
+            },
+            {
+              "name": "CI_upper",
+              "statistic": "S.CI_upper",
+              "column": "conf.int[2]"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/t.test.html",
+      "notes": "Paired t-test via formula interface. The repeated_subject pairing is implicit in data ordering or handled via the paired=TRUE argument."
+    },
+    {
+      "method": "M.OneSampleTTest",
+      "language": "R",
+      "package": "stats",
+      "function": "t.test",
+      "callTemplate": "t.test(x = `<response>`, mu = <mu>, alternative = <alternative>, conf.level = <conf_level>)",
+      "outputMapping": [
+        {
+          "producer": "SM.OneSampleTTest.TTestResult",
+          "sourceName": "test_result",
+          "resultColumns": [
+            {
+              "name": "estimate",
+              "statistic": "S.estimate",
+              "column": "estimate"
+            },
+            {
+              "name": "t_statistic",
+              "statistic": "S.t_statistic",
+              "column": "statistic"
+            },
+            {
+              "name": "df",
+              "statistic": "S.df",
+              "column": "parameter"
+            },
+            {
+              "name": "p_value",
+              "statistic": "S.p_value",
+              "column": "p.value"
+            },
+            {
+              "name": "CI_lower",
+              "statistic": "S.CI_lower",
+              "column": "conf.int[1]"
+            },
+            {
+              "name": "CI_upper",
+              "statistic": "S.CI_upper",
+              "column": "conf.int[2]"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/t.test.html",
+      "notes": "One-sample t-test. Tests whether the mean of x differs from mu."
+    },
+    {
+      "method": "M.TwoSampleTTest",
+      "language": "R",
+      "package": "stats",
+      "function": "t.test",
+      "callTemplate": "t.test(`<response>` ~ `<fixed_effect>`, data = <dataset>, paired = FALSE, var.equal = FALSE, alternative = <alternative>, conf.level = <conf_level>)",
+      "outputMapping": [
+        {
+          "producer": "SM.TwoSampleTTest.TTestResult",
+          "sourceName": "test_result",
+          "resultColumns": [
+            {
+              "name": "estimate",
+              "statistic": "S.estimate",
+              "column": "estimate"
+            },
+            {
+              "name": "t_statistic",
+              "statistic": "S.t_statistic",
+              "column": "statistic"
+            },
+            {
+              "name": "df",
+              "statistic": "S.df",
+              "column": "parameter"
+            },
+            {
+              "name": "p_value",
+              "statistic": "S.p_value",
+              "column": "p.value"
+            },
+            {
+              "name": "CI_lower",
+              "statistic": "S.CI_lower",
+              "column": "conf.int[1]"
+            },
+            {
+              "name": "CI_upper",
+              "statistic": "S.CI_upper",
+              "column": "conf.int[2]"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/t.test.html",
+      "notes": "Two-sample (Welch) t-test via formula interface. fixed_effect must have exactly two levels."
+    },
+    {
+      "method": "M.FisherExactTest",
+      "language": "R",
+      "package": "stats",
+      "function": "fisher.test",
+      "callTemplate": "fisher.test(table(`<response>`, `<fixed_effect>`))",
+      "outputMapping": [
+        {
+          "producer": "SM.FisherExactTest.ExactTestResult",
+          "sourceName": "test_result",
+          "resultColumns": [
+            {
+              "name": "p_value",
+              "statistic": "S.p_value",
+              "column": "p.value"
+            },
+            {
+              "name": "estimate",
+              "statistic": "S.estimate",
+              "column": "estimate"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/fisher.test.html",
+      "notes": "Fisher's exact test for 2x2 contingency tables. Both response and fixed_effect must be categorical/binary."
+    },
+    {
+      "method": "M.Count",
+      "language": "R",
+      "package": "stats",
+      "function": "aggregate",
+      "callTemplate": "result <- aggregate(`<response>` ~ `<group>`, data = <dataset>, FUN = function(x) sum(!is.na(x)))",
+      "outputMapping": [
+        {
+          "producer": "M.Count",
+          "sourceName": "computed_value",
+          "resultColumns": [
+            {
+              "name": "dim_1",
+              "column": "if (ncol(result) >= 2) as.character(result[[1]]) else rep('Overall', nrow(result))"
+            },
+            {
+              "name": "dim_2",
+              "column": "if (ncol(result) >= 3) as.character(result[[2]]) else rep(NA_character_, nrow(result))"
+            },
+            {
+              "name": "dim_3",
+              "column": "if (ncol(result) >= 4) as.character(result[[3]]) else rep(NA_character_, nrow(result))"
+            },
+            {
+              "name": "value",
+              "statistic": "S.value",
+              "column": "as.numeric(result[[ncol(result)]])"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/aggregate.html",
+      "notes": "Count of non-missing values via aggregate() with formula interface. <fixed_effect> expands to Treatment + Visit (etc.) via the engine's ' + ' role separator."
+    },
+    {
+      "method": "M.Mean",
+      "language": "R",
+      "package": "stats",
+      "function": "aggregate",
+      "callTemplate": "result <- aggregate(`<response>` ~ `<group>`, data = <dataset>, FUN = function(x) mean(x, na.rm = TRUE))",
+      "outputMapping": [
+        {
+          "producer": "M.Mean",
+          "sourceName": "computed_value",
+          "resultColumns": [
+            {
+              "name": "dim_1",
+              "column": "if (ncol(result) >= 2) as.character(result[[1]]) else rep('Overall', nrow(result))"
+            },
+            {
+              "name": "dim_2",
+              "column": "if (ncol(result) >= 3) as.character(result[[2]]) else rep(NA_character_, nrow(result))"
+            },
+            {
+              "name": "dim_3",
+              "column": "if (ncol(result) >= 4) as.character(result[[3]]) else rep(NA_character_, nrow(result))"
+            },
+            {
+              "name": "value",
+              "statistic": "S.value",
+              "column": "as.numeric(result[[ncol(result)]])"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/aggregate.html",
+      "notes": "Grouped arithmetic mean via aggregate() with formula interface."
+    },
+    {
+      "method": "M.StandardDeviation",
+      "language": "R",
+      "package": "stats",
+      "function": "aggregate",
+      "callTemplate": "result <- aggregate(`<response>` ~ `<group>`, data = <dataset>, FUN = function(x) sd(x, na.rm = TRUE))",
+      "outputMapping": [
+        {
+          "producer": "M.StandardDeviation",
+          "sourceName": "computed_value",
+          "resultColumns": [
+            {
+              "name": "dim_1",
+              "column": "if (ncol(result) >= 2) as.character(result[[1]]) else rep('Overall', nrow(result))"
+            },
+            {
+              "name": "dim_2",
+              "column": "if (ncol(result) >= 3) as.character(result[[2]]) else rep(NA_character_, nrow(result))"
+            },
+            {
+              "name": "dim_3",
+              "column": "if (ncol(result) >= 4) as.character(result[[3]]) else rep(NA_character_, nrow(result))"
+            },
+            {
+              "name": "value",
+              "statistic": "S.value",
+              "column": "as.numeric(result[[ncol(result)]])"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/sd.html",
+      "notes": "Grouped sample standard deviation via aggregate() with formula interface."
+    },
+    {
+      "method": "M.Median",
+      "language": "R",
+      "package": "stats",
+      "function": "aggregate",
+      "callTemplate": "result <- aggregate(`<response>` ~ `<group>`, data = <dataset>, FUN = function(x) median(x, na.rm = TRUE))",
+      "outputMapping": [
+        {
+          "producer": "M.Median",
+          "sourceName": "computed_value",
+          "resultColumns": [
+            {
+              "name": "dim_1",
+              "column": "if (ncol(result) >= 2) as.character(result[[1]]) else rep('Overall', nrow(result))"
+            },
+            {
+              "name": "dim_2",
+              "column": "if (ncol(result) >= 3) as.character(result[[2]]) else rep(NA_character_, nrow(result))"
+            },
+            {
+              "name": "dim_3",
+              "column": "if (ncol(result) >= 4) as.character(result[[3]]) else rep(NA_character_, nrow(result))"
+            },
+            {
+              "name": "value",
+              "statistic": "S.value",
+              "column": "as.numeric(result[[ncol(result)]])"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/median.html",
+      "notes": "Grouped median via aggregate() with formula interface."
+    },
+    {
+      "method": "M.Minimum",
+      "language": "R",
+      "package": "base",
+      "function": "aggregate",
+      "callTemplate": "result <- aggregate(`<response>` ~ `<group>`, data = <dataset>, FUN = function(x) { v <- x[!is.na(x)]; if (length(v) == 0) NA_real_ else min(v) })",
+      "outputMapping": [
+        {
+          "producer": "M.Minimum",
+          "sourceName": "computed_value",
+          "resultColumns": [
+            {
+              "name": "dim_1",
+              "column": "if (ncol(result) >= 2) as.character(result[[1]]) else rep('Overall', nrow(result))"
+            },
+            {
+              "name": "dim_2",
+              "column": "if (ncol(result) >= 3) as.character(result[[2]]) else rep(NA_character_, nrow(result))"
+            },
+            {
+              "name": "dim_3",
+              "column": "if (ncol(result) >= 4) as.character(result[[3]]) else rep(NA_character_, nrow(result))"
+            },
+            {
+              "name": "value",
+              "statistic": "S.value",
+              "column": "as.numeric(result[[ncol(result)]])"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/base/html/Extremes.html",
+      "notes": "Grouped minimum via aggregate() with formula interface. The wrapper guards against empty all-NA groups (min(numeric(0)) warns with Inf)."
+    },
+    {
+      "method": "M.Maximum",
+      "language": "R",
+      "package": "base",
+      "function": "aggregate",
+      "callTemplate": "result <- aggregate(`<response>` ~ `<group>`, data = <dataset>, FUN = function(x) { v <- x[!is.na(x)]; if (length(v) == 0) NA_real_ else max(v) })",
+      "outputMapping": [
+        {
+          "producer": "M.Maximum",
+          "sourceName": "computed_value",
+          "resultColumns": [
+            {
+              "name": "dim_1",
+              "column": "if (ncol(result) >= 2) as.character(result[[1]]) else rep('Overall', nrow(result))"
+            },
+            {
+              "name": "dim_2",
+              "column": "if (ncol(result) >= 3) as.character(result[[2]]) else rep(NA_character_, nrow(result))"
+            },
+            {
+              "name": "dim_3",
+              "column": "if (ncol(result) >= 4) as.character(result[[3]]) else rep(NA_character_, nrow(result))"
+            },
+            {
+              "name": "value",
+              "statistic": "S.value",
+              "column": "as.numeric(result[[ncol(result)]])"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/base/html/Extremes.html",
+      "notes": "Grouped maximum via aggregate() with formula interface. The wrapper guards against empty all-NA groups."
+    },
+    {
+      "method": "M.ANCOVA",
+      "language": "R",
+      "packages": [
+        "stats",
+        "car",
+        "emmeans"
+      ],
+      "function": "lm",
+      "callTemplate": "model <- lm(`<response>` ~ `<covariate>` + `<fixed_effect>`, data = <dataset>)\nmodel_summary <- summary(model)\nanova_result <- car::Anova(model, type = \"<ss_type>\")\nlsm <- emmeans::emmeans(model, ~ `<fixed_effect>`)\nlsm_df <- as.data.frame(summary(lsm, infer = TRUE, level = 1 - <alpha>))\ncontr <- pairs(lsm, adjust = \"<multiplicity_adjustment>\")\ncontr_df <- as.data.frame(summary(contr, infer = TRUE, level = 1 - <alpha>))",
+      "outputMapping": [
+        {
+          "producer": "SM.ANCOVA.FitStatisticsLinear",
+          "sourceName": "fit_statistics",
+          "resultColumns": [
+            {
+              "name": "R_squared",
+              "statistic": "S.R_squared",
+              "column": "model_summary$r.squared"
+            },
+            {
+              "name": "Adj_R_squared",
+              "column": "model_summary$adj.r.squared"
+            },
+            {
+              "name": "AIC",
+              "statistic": "S.AIC",
+              "column": "AIC(model)"
+            },
+            {
+              "name": "BIC",
+              "statistic": "S.BIC",
+              "column": "BIC(model)"
+            }
+          ]
+        },
+        {
+          "producer": "SM.ANCOVA.Type3TestsF",
+          "sourceName": "type3_tests",
+          "resultColumns": [
+            {
+              "name": "Term",
+              "column": "rownames(anova_result)"
+            },
+            {
+              "name": "SS",
+              "statistic": "S.SS",
+              "column": "anova_result[['Sum Sq']]"
+            },
+            {
+              "name": "df",
+              "statistic": "S.df",
+              "column": "anova_result[['Df']]"
+            },
+            {
+              "name": "F_statistic",
+              "statistic": "S.F_statistic",
+              "column": "anova_result[['F value']]"
+            },
+            {
+              "name": "p_value",
+              "statistic": "S.p_value",
+              "column": "anova_result[['Pr(>F)']]"
+            }
+          ]
+        },
+        {
+          "producer": "SM.ANCOVA.LsMeans",
+          "sourceName": "ls_means",
+          "resultColumns": [
+            {
+              "name": "Group",
+              "column": "lsm_df[[1]]"
+            },
+            {
+              "name": "estimate",
+              "statistic": "S.estimate",
+              "column": "lsm_df$emmean"
+            },
+            {
+              "name": "SE",
+              "statistic": "S.SE",
+              "column": "lsm_df$SE"
+            },
+            {
+              "name": "df",
+              "statistic": "S.df",
+              "column": "lsm_df$df"
+            },
+            {
+              "name": "CI_lower",
+              "statistic": "S.CI_lower",
+              "column": "lsm_df$lower.CL"
+            },
+            {
+              "name": "CI_upper",
+              "statistic": "S.CI_upper",
+              "column": "lsm_df$upper.CL"
+            }
+          ]
+        },
+        {
+          "producer": "SM.ANCOVA.ContrastsT",
+          "sourceName": "contrasts",
+          "resultColumns": [
+            {
+              "name": "Contrast",
+              "column": "as.character(contr_df$contrast)"
+            },
+            {
+              "name": "estimate",
+              "statistic": "S.estimate",
+              "column": "contr_df$estimate"
+            },
+            {
+              "name": "SE",
+              "statistic": "S.SE",
+              "column": "contr_df$SE"
+            },
+            {
+              "name": "df",
+              "statistic": "S.df",
+              "column": "contr_df$df"
+            },
+            {
+              "name": "CI_lower",
+              "statistic": "S.CI_lower",
+              "column": "contr_df$lower.CL"
+            },
+            {
+              "name": "CI_upper",
+              "statistic": "S.CI_upper",
+              "column": "contr_df$upper.CL"
+            },
+            {
+              "name": "t_statistic",
+              "statistic": "S.t_statistic",
+              "column": "contr_df$t.ratio"
+            },
+            {
+              "name": "p_value",
+              "statistic": "S.p_value",
+              "column": "contr_df$p.value"
+            }
+          ]
+        },
+        {
+          "producer": "M.ANCOVA",
+          "sourceName": "covariance_parameters",
+          "resultColumns": [
+            {
+              "name": "residual_variance",
+              "column": "sum(model$residuals^2) / model$df.residual"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://stat.ethz.ch/R-manual/R-patched/library/stats/html/lm.html",
+      "notes": "ANCOVA via lm() with Type III SS from car::Anova() and LS means from emmeans. Covariate adjusts the group comparison."
+    },
+    {
+      "method": "M.Subtraction",
+      "language": "R",
+      "package": "base",
+      "callTemplate": "concept_data[[\"<difference>\"]] <- as.numeric(concept_data[[\"<minuend>\"]]) - as.numeric(concept_data[[\"<subtrahend>\"]])",
+      "derivationKind": "rowwise_mutate",
+      "notes": "Row-wise subtraction: difference = minuend - subtrahend. Used by T.ChangeFromBaseline (Change = current value - baseline value). Operates on concept-keyed columns."
+    },
+    {
+      "method": "M.Division",
+      "language": "R",
+      "package": "base",
+      "callTemplate": "num <- as.numeric(concept_data[[\"<numerator>\"]])\nden <- as.numeric(concept_data[[\"<denominator>\"]])\nconcept_data[[\"<quotient>\"]] <- ifelse(den != 0 & !is.na(den), num / den, NA_real_)",
+      "derivationKind": "rowwise_mutate",
+      "notes": "Row-wise division: quotient = numerator / denominator. Handles division by zero (returns NA). Used by T.ADAS_Cog_11_TotalScore (total = sum_available / capacity_fraction)."
+    },
+    {
+      "method": "M.Aggregation",
+      "language": "R",
+      "package": "base",
+      "callTemplate": "agg_fn <- switch(\"<agg_func>\",\n  sum = function(x) sum(x, na.rm = TRUE),\n  count = function(x) sum(!is.na(x)),\n  mean = function(x) mean(x, na.rm = TRUE),\n  max = function(x) max(x, na.rm = TRUE),\n  min = function(x) min(x, na.rm = TRUE),\n  function(x) sum(x, na.rm = TRUE)\n)\npartition_cols <- strsplit(\"<partition>\", \" \\\\+ \")[[1]]\npartition_cols <- partition_cols[partition_cols %in% colnames(concept_data)]\nval_col <- \"<value>\"\nresult_col <- \"<result>\"\n# Source for aggregation: prefer the leaf snapshot if it has the value column\n# (sibling aggregations after upstream rollups would otherwise have nothing\n# to aggregate), else fall back to the running cube (for aggregations over\n# upstream-derived columns whose leaf form doesn't exist).\nsrc <- if (!is.null(concept_data_leaf) && val_col %in% colnames(concept_data_leaf)) concept_data_leaf else concept_data\nif (!(val_col %in% colnames(src))) {\n  stop(sprintf(\"M.Aggregation: value column '%s' not found. concept_data: %s. concept_data_leaf: %s\", val_col, paste(colnames(concept_data), collapse=\", \"), if (is.null(concept_data_leaf)) \"<null>\" else paste(colnames(concept_data_leaf), collapse=\", \")))\n}\nif (length(partition_cols) > 0) {\n  agg_result <- aggregate(\n    stats::as.formula(paste0(\"`\", val_col, \"` ~ \", paste0(\"`\", partition_cols, \"`\", collapse = \" + \"))),\n    data = src, FUN = agg_fn\n  )\n  colnames(agg_result)[colnames(agg_result) == val_col] <- result_col\n  # Broadcast the per-group aggregate back onto the running cube. Cube\n  # collapse + slice projection happen ONCE at chain end (in the engine\n  # post-processing), not here — different aggregations in a chain may\n  # partition on different dimensions (e.g. per-Parameter max, per-Subject\n  # sum), so collapsing at each step would destroy lookups for siblings.\n  if (result_col %in% colnames(concept_data)) concept_data[[result_col]] <- NULL\n  concept_data <- merge(concept_data, agg_result, by = partition_cols, all.x = TRUE)\n} else {\n  concept_data[[result_col]] <- agg_fn(as.numeric(src[[val_col]]))\n}",
+      "derivationKind": "rowwise_mutate",
+      "notes": "Aggregation within partition groups. Config <agg_func> selects function (sum, count, mean, max, min). Result is merged back as a new column. Used by ADAS-Cog sub-derivations (sum of available scores, non-missing count, missing scale capacity, item max score)."
+    },
+    {
+      "method": "M.ThresholdCompare",
+      "language": "R",
+      "package": "base",
+      "callTemplate": "val <- as.numeric(concept_data[[\"<value>\"]])\nthresh <- <threshold>\nop <- \"<operator>\"\ntrue_val <- \"<true_value>\"\nfalse_val <- \"<false_value>\"\ncmp <- switch(op,\n  \">=\"  = val >= thresh,\n  \">\"   = val > thresh,\n  \"<=\"  = val <= thresh,\n  \"<\"   = val < thresh,\n  \"==\"  = val == thresh,\n  \"!=\"  = val != thresh,\n  val >= thresh\n)\nconcept_data[[\"<result>\"]] <- ifelse(cmp, true_val, false_val)",
+      "derivationKind": "rowwise_mutate",
+      "notes": "Row-wise threshold comparison producing a flag column. Used by T.ADAS_ScoreableCheck (checks if non-missing count meets minimum threshold for scoring)."
+    },
+    {
+      "method": "M.WindowedVisitAssignment",
+      "language": "R",
+      "package": "base",
+      "callTemplate": "# Windowed visit assignment. Reads a pre-computed study day (SDTM --DY,\n# concept-keyed as <day>) and for each row finds the scheduled visit whose\n# window contains that day. Ties broken by |day - targetDay| then min visitNumber.\n# <day> → concept-keyed column name (e.g. 'Timing', materialised from QSDY).\n# <analysisVisit>, <analysisVisitNumber>, <analysisDay> → output columns.\n# configs$windows is a list of list(label, visitNumber, dayMin, dayMax, targetDay).\nwindows_def <- configs$windows\nif (is.null(windows_def) || length(windows_def) == 0) stop(\"M.WindowedVisitAssignment: configs$windows is empty.\")\nday_raw <- concept_data[[\"<day>\"]]\nif (is.null(day_raw)) stop(sprintf(\"M.WindowedVisitAssignment: missing column '<day>'. have=%s\", paste(colnames(concept_data), collapse=\", \")))\nday_num <- suppressWarnings(as.numeric(day_raw))\n# Normalise windows_def → vectors for faster lookups.\nw_label <- vapply(windows_def, function(w) as.character(w$label %||% \"\"), character(1))\nw_vnum  <- vapply(windows_def, function(w) { v <- w$visitNumber; if (is.null(v)) NA_real_ else as.numeric(v) }, numeric(1))\nw_min   <- vapply(windows_def, function(w) { v <- w$dayMin; if (is.null(v)) -Inf else as.numeric(v) }, numeric(1))\nw_max   <- vapply(windows_def, function(w) { v <- w$dayMax; if (is.null(v))  Inf else as.numeric(v) }, numeric(1))\nw_tgt   <- vapply(windows_def, function(w) { v <- w$targetDay; if (is.null(v)) NA_real_ else as.numeric(v) }, numeric(1))\nassign_one <- function(d) {\n  if (is.na(d)) return(c(NA_character_, NA_real_))\n  hits <- which(d >= w_min & d <= w_max)\n  if (length(hits) == 0) return(c(NA_character_, NA_real_))\n  if (length(hits) > 1) {\n    dist <- abs(d - w_tgt[hits])\n    hits <- hits[dist == min(dist, na.rm = TRUE)]\n    if (length(hits) > 1) {\n      hits <- hits[which.min(w_vnum[hits])]\n    }\n  }\n  c(w_label[hits], w_vnum[hits])\n}\nassigned <- vapply(day_num, assign_one, character(2))\nconcept_data[[\"<analysisVisit>\"]]       <- assigned[1, ]\nconcept_data[[\"<analysisVisitNumber>\"]] <- suppressWarnings(as.numeric(assigned[2, ]))\nconcept_data[[\"<analysisDay>\"]]         <- day_num\n",
+      "derivationKind": "rowwise_mutate",
+      "notes": "Row-wise visit assignment on a pre-computed study day (<day>, e.g. the Timing concept = SDTM QSDY). Reads configs$windows (not a template placeholder — arrays can't be stringified, so they're bound directly to the R env). Output columns are concept-keyed (<analysisVisit> substituted with e.g. 'AnalysisVisit'). `%||%` is defined in acdc_engine.R. The referenceBC method config is metadata only — the SAP anchor is already encoded in --DY at ingest time."
+    },
+    {
+      "method": "M.ConditionalValue",
+      "language": "R",
+      "package": "base",
+      "callTemplate": "concept_data[[\"<result>\"]] <- ifelse(\n  is.na(concept_data[[\"<value>\"]]),\n  as.numeric(concept_data[[\"<alternate>\"]]),\n  <base>\n)",
+      "derivationKind": "rowwise_mutate",
+      "notes": "Row-wise conditional. If <value> is NA, output <alternate>; else output <base> (numeric, default 0). Used by T.ADAS_MissingContribution to mask each row's item-max-score by item presence: missing → max-score, present → 0. Then aggregating that sum per Subject×Visit gives the total scale capacity of missing items."
+    },
+    {
+      "method": "M.AffineTransform",
+      "language": "R",
+      "package": "base",
+      "callTemplate": "concept_data[[\"<result>\"]] <- <scale> * as.numeric(concept_data[[\"<value>\"]]) + <offset>",
+      "derivationKind": "rowwise_mutate",
+      "notes": "Row-wise affine transform: result = scale * value + offset. Used by T.ADAS_ScoreableFraction with scale = -1/70 and offset = 1 to compute (70 - missing_capacity) / 70. Generic enough to cover any linear rescaling on a single column (e.g. NPI-X, CIBIC+ scoring fractions, percent-of-max conversions)."
+    },
+    {
+      "method": "M.UnitConversion",
+      "language": "R",
+      "package": "base",
+      "callTemplate": "# Row-wise unit conversion operating on concept-keyed columns.\n# Placeholders <value>, <source_unit>, <result_value>, <result_unit>\n# are substituted with concept names (e.g. 'Observation.Result.Value')\n# which ARE the internal dataframe column names after the load phase.\nuc <- unit_conversions$conversions\ntarget <- \"<target_unit>\"\nprecision <- <precision>\nrounding_method <- \"<rounding_method>\"\non_missing <- \"<on_missing_factor>\"\nfactor_for <- function(src) {\n  for (row in uc) {\n    if ((tolower(row$from_code) == tolower(src) || tolower(row$from_name) == tolower(src)) &&\n        (tolower(row$to_code) == tolower(target) || tolower(row$to_name) == tolower(target))) return(row$factor)\n  }\n  return(NA_real_)\n}\nsrc <- as.character(concept_data[[\"<source_unit>\"]])\nval <- as.numeric(concept_data[[\"<value>\"]])\nf <- vapply(src, factor_for, numeric(1))\nmissing_idx <- which(is.na(f) & !is.na(val))\nif (length(missing_idx) > 0) {\n  msg <- sprintf(\"Missing unit conversion factor for source values: %s (target=%s)\",\n                 paste(unique(src[missing_idx]), collapse = \", \"), target)\n  if (on_missing == \"fail\") stop(msg)\n  if (on_missing == \"na\") val[missing_idx] <- NA_real_\n  if (on_missing == \"passthrough\") f[missing_idx] <- 1\n}\nresult_value <- val * f\nif (!is.null(precision) && !is.na(precision)) {\n  result_value <- switch(rounding_method,\n    half_up   = round(result_value, precision),\n    half_even = round(result_value, precision),\n    half_down = sign(result_value) * floor(abs(result_value) * 10^precision + 0.5 - 1e-9) / 10^precision,\n    floor     = floor(result_value * 10^precision) / 10^precision,\n    ceiling   = ceiling(result_value * 10^precision) / 10^precision,\n    round(result_value, precision)\n  )\n}\nconcept_data[[\"<result_value>\"]] <- result_value\nconcept_data[[\"<result_unit>\"]]  <- target\n# Stamp the endpoint-defined Parameter label on every converted row so the\n# downstream analysis cube can filter by Parameter == <parameter_label>.\nconcept_data[[\"Parameter\"]] <- \"<parameter_label>\"",
+      "derivationKind": "rowwise_mutate",
+      "notes": "Generic row-wise unit conversion. Reads from concept-keyed columns <value> and <source_unit>, writes concept-keyed columns <result_value> and <result_unit>. Substitution of placeholders with concept names (e.g. Observation.Result.Value, Measure.Result.Value) is done by the engine's execute phase based on the transformation's bindings. Config placeholders (<target_unit>, <precision>, <rounding_method>, <on_missing_factor>) are substituted from the endpoint's resolved configurationValues. Requires `unit_conversions` (loaded from model/vocabularies/unit_conversions.json) and `concept_data` (the concept-keyed internal representation after the load phase) to be present in the R eval env. derivationKind='rowwise_mutate' tells the engine this is a pre-analysis dataframe mutation, not an analysis aggregation."
+    }
+  ]
+}

@@ -1,0 +1,517 @@
+{
+  "libraryVersion": "1.0.0-candidate",
+  "description": "Informative SAS implementations of methods. Migrated from lib/method_implementations/sas_implementations.json v0.1.0 (model-schema lineage).",
+  "language": "SAS",
+  "implementations": [
+    {
+      "method": "M.PairedTTest",
+      "language": "SAS",
+      "package": "SAS/STAT",
+      "procedure": "PROC TTEST",
+      "callTemplate": "proc ttest data=<dataset> alpha=<alpha>;\n  paired <response>*<fixed_effect>;\nrun;",
+      "outputMapping": [
+        {
+          "producer": "SM.PairedTTest.TTestResult",
+          "sourceName": "test_result",
+          "resultColumns": [
+            {
+              "name": "estimate",
+              "statistic": "S.estimate",
+              "column": "Statistics.Mean"
+            },
+            {
+              "name": "t_statistic",
+              "statistic": "S.t_statistic",
+              "column": "TTests.tValue"
+            },
+            {
+              "name": "df",
+              "statistic": "S.df",
+              "column": "TTests.DF"
+            },
+            {
+              "name": "p_value",
+              "statistic": "S.p_value",
+              "column": "TTests.Probt"
+            },
+            {
+              "name": "CI_lower",
+              "statistic": "S.CI_lower",
+              "column": "ConfLimits.LowerCLMean"
+            },
+            {
+              "name": "CI_upper",
+              "statistic": "S.CI_upper",
+              "column": "ConfLimits.UpperCLMean"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_ttest_overview.htm",
+      "notes": "PROC TTEST with PAIRED statement. The PAIRED statement expects var1*var2 syntax where var1 and var2 are the two measurement variables. ODS tables: Statistics, TTests, ConfLimits."
+    },
+    {
+      "method": "M.OneSampleTTest",
+      "language": "SAS",
+      "package": "SAS/STAT",
+      "procedure": "PROC TTEST",
+      "callTemplate": "proc ttest data=<dataset> h0=<mu> alpha=<alpha> sides=<alternative>;\n  var <response>;\nrun;",
+      "outputMapping": [
+        {
+          "producer": "SM.OneSampleTTest.TTestResult",
+          "sourceName": "test_result",
+          "resultColumns": [
+            {
+              "name": "estimate",
+              "statistic": "S.estimate",
+              "column": "Statistics.Mean"
+            },
+            {
+              "name": "t_statistic",
+              "statistic": "S.t_statistic",
+              "column": "TTests.tValue"
+            },
+            {
+              "name": "df",
+              "statistic": "S.df",
+              "column": "TTests.DF"
+            },
+            {
+              "name": "p_value",
+              "statistic": "S.p_value",
+              "column": "TTests.Probt"
+            },
+            {
+              "name": "CI_lower",
+              "statistic": "S.CI_lower",
+              "column": "ConfLimits.LowerCLMean"
+            },
+            {
+              "name": "CI_upper",
+              "statistic": "S.CI_upper",
+              "column": "ConfLimits.UpperCLMean"
+            }
+          ]
+        }
+      ],
+      "configurationMappings": {
+        "alternative_mapping": {
+          "two.sided": "2",
+          "less": "L",
+          "greater": "U"
+        }
+      },
+      "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_ttest_overview.htm",
+      "notes": "One-sample PROC TTEST with H0= option. The SIDES= option maps: two.sided→2, less→L, greater→U. ODS tables: Statistics, TTests, ConfLimits."
+    },
+    {
+      "method": "M.TwoSampleTTest",
+      "language": "SAS",
+      "package": "SAS/STAT",
+      "procedure": "PROC TTEST",
+      "callTemplate": "proc ttest data=<dataset> alpha=<alpha> sides=<alternative>;\n  class <fixed_effect>;\n  var <response>;\nrun;",
+      "outputMapping": [
+        {
+          "producer": "SM.TwoSampleTTest.TTestResult",
+          "sourceName": "test_result",
+          "resultColumns": [
+            {
+              "name": "estimate",
+              "statistic": "S.estimate",
+              "column": "Statistics.Mean"
+            },
+            {
+              "name": "t_statistic",
+              "statistic": "S.t_statistic",
+              "column": "TTests.tValue"
+            },
+            {
+              "name": "df",
+              "statistic": "S.df",
+              "column": "TTests.DF"
+            },
+            {
+              "name": "p_value",
+              "statistic": "S.p_value",
+              "column": "TTests.Probt"
+            },
+            {
+              "name": "CI_lower",
+              "statistic": "S.CI_lower",
+              "column": "ConfLimits.LowerCLMean"
+            },
+            {
+              "name": "CI_upper",
+              "statistic": "S.CI_upper",
+              "column": "ConfLimits.UpperCLMean"
+            }
+          ],
+          "extractionCode": "where Method='Satterthwaite'"
+        }
+      ],
+      "configurationMappings": {
+        "alternative_mapping": {
+          "two.sided": "2",
+          "less": "L",
+          "greater": "U"
+        }
+      },
+      "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_ttest_overview.htm",
+      "notes": "Two-sample PROC TTEST with CLASS statement. Defaults to Satterthwaite (Welch) DF matching the R var.equal=FALSE default. For equal-variance assumption, filter ODS output where Method='Pooled'. ODS tables: Statistics, TTests, ConfLimits, Equality."
+    },
+    {
+      "method": "M.FisherExactTest",
+      "language": "SAS",
+      "package": "SAS/STAT",
+      "procedure": "PROC FREQ",
+      "callTemplate": "proc freq data=<dataset>;\n  tables <response> * <fixed_effect> / fisher;\nrun;",
+      "outputMapping": [
+        {
+          "producer": "SM.FisherExactTest.ExactTestResult",
+          "sourceName": "test_result",
+          "resultColumns": [
+            {
+              "name": "p_value",
+              "statistic": "S.p_value",
+              "column": "FishersExact.cValue1"
+            },
+            {
+              "name": "estimate",
+              "statistic": "S.estimate",
+              "column": "CommonRelRisks.RelativeRisk"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_freq_overview.htm",
+      "notes": "PROC FREQ with FISHER option on the TABLES statement. For 2x2 tables, ODS table FishersExact contains the two-sided exact p-value. For odds ratio, add the OR option to the TABLES statement."
+    },
+    {
+      "method": "M.Count",
+      "language": "SAS",
+      "package": "Base SAS",
+      "procedure": "PROC MEANS",
+      "callTemplate": "proc means data=<dataset> n noprint;\n  class <group>;\n  var <response>;\n  output out=result(where=(_type_>0)) n=value;\nrun;",
+      "outputMapping": [
+        {
+          "producer": "M.Count",
+          "sourceName": "computed_value",
+          "resultColumns": [
+            {
+              "name": "dim_1",
+              "column": "result.<group>"
+            },
+            {
+              "name": "value",
+              "statistic": "S.value",
+              "column": "result.value"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_means_overview.htm",
+      "notes": "PROC MEANS N with CLASS for grouping; the where=(_type_>0) filter drops the grand-total row produced by the class hierarchy. Uses <group> because the M.Count method declares its grouping input_role as name='group'."
+    },
+    {
+      "method": "M.Mean",
+      "language": "SAS",
+      "package": "Base SAS",
+      "procedure": "PROC MEANS",
+      "callTemplate": "proc means data=<dataset> mean noprint;\n  class <group>;\n  var <response>;\n  output out=result(where=(_type_>0)) mean=value;\nrun;",
+      "outputMapping": [
+        {
+          "producer": "M.Mean",
+          "sourceName": "computed_value",
+          "resultColumns": [
+            {
+              "name": "dim_1",
+              "column": "result.<group>"
+            },
+            {
+              "name": "value",
+              "statistic": "S.value",
+              "column": "result.value"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_means_overview.htm",
+      "notes": "PROC MEANS MEAN with CLASS for grouping."
+    },
+    {
+      "method": "M.StandardDeviation",
+      "language": "SAS",
+      "package": "Base SAS",
+      "procedure": "PROC MEANS",
+      "callTemplate": "proc means data=<dataset> std noprint;\n  class <group>;\n  var <response>;\n  output out=result(where=(_type_>0)) std=value;\nrun;",
+      "outputMapping": [
+        {
+          "producer": "M.StandardDeviation",
+          "sourceName": "computed_value",
+          "resultColumns": [
+            {
+              "name": "dim_1",
+              "column": "result.<group>"
+            },
+            {
+              "name": "value",
+              "statistic": "S.value",
+              "column": "result.value"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_means_overview.htm",
+      "notes": "PROC MEANS STD with CLASS for grouping (sample standard deviation)."
+    },
+    {
+      "method": "M.Median",
+      "language": "SAS",
+      "package": "Base SAS",
+      "procedure": "PROC MEANS",
+      "callTemplate": "proc means data=<dataset> median noprint;\n  class <group>;\n  var <response>;\n  output out=result(where=(_type_>0)) median=value;\nrun;",
+      "outputMapping": [
+        {
+          "producer": "M.Median",
+          "sourceName": "computed_value",
+          "resultColumns": [
+            {
+              "name": "dim_1",
+              "column": "result.<group>"
+            },
+            {
+              "name": "value",
+              "statistic": "S.value",
+              "column": "result.value"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_means_overview.htm",
+      "notes": "PROC MEANS MEDIAN with CLASS for grouping."
+    },
+    {
+      "method": "M.Minimum",
+      "language": "SAS",
+      "package": "Base SAS",
+      "procedure": "PROC MEANS",
+      "callTemplate": "proc means data=<dataset> min noprint;\n  class <group>;\n  var <response>;\n  output out=result(where=(_type_>0)) min=value;\nrun;",
+      "outputMapping": [
+        {
+          "producer": "M.Minimum",
+          "sourceName": "computed_value",
+          "resultColumns": [
+            {
+              "name": "dim_1",
+              "column": "result.<group>"
+            },
+            {
+              "name": "value",
+              "statistic": "S.value",
+              "column": "result.value"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_means_overview.htm",
+      "notes": "PROC MEANS MIN with CLASS for grouping."
+    },
+    {
+      "method": "M.Maximum",
+      "language": "SAS",
+      "package": "Base SAS",
+      "procedure": "PROC MEANS",
+      "callTemplate": "proc means data=<dataset> max noprint;\n  class <group>;\n  var <response>;\n  output out=result(where=(_type_>0)) max=value;\nrun;",
+      "outputMapping": [
+        {
+          "producer": "M.Maximum",
+          "sourceName": "computed_value",
+          "resultColumns": [
+            {
+              "name": "dim_1",
+              "column": "result.<group>"
+            },
+            {
+              "name": "value",
+              "statistic": "S.value",
+              "column": "result.value"
+            }
+          ]
+        }
+      ],
+      "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_means_overview.htm",
+      "notes": "PROC MEANS MAX with CLASS for grouping."
+    },
+    {
+      "method": "M.ANCOVA",
+      "language": "SAS",
+      "package": "SAS/STAT",
+      "procedure": "PROC GLM",
+      "callTemplate": "proc glm data=<dataset>;\n  class <fixed_effect>;\n  model <response> = <covariate> <fixed_effect> / ss<ss_type> solution;\n  lsmeans <fixed_effect> / pdiff cl alpha=<alpha> adjust=<multiplicity_adjustment>;\nrun;\nquit;",
+      "outputMapping": [
+        {
+          "producer": "SM.ANCOVA.FitStatisticsLinear",
+          "sourceName": "fit_statistics",
+          "resultColumns": [
+            {
+              "name": "R_squared",
+              "statistic": "S.R_squared",
+              "column": "FitStatistics.RSquare"
+            },
+            {
+              "name": "Adj_R_squared",
+              "column": "FitStatistics.AdjRSq"
+            },
+            {
+              "name": "AIC",
+              "statistic": "S.AIC",
+              "column": "FitStatistics.AIC"
+            },
+            {
+              "name": "BIC",
+              "statistic": "S.BIC",
+              "column": "FitStatistics.BIC"
+            }
+          ]
+        },
+        {
+          "producer": "SM.ANCOVA.Type3TestsF",
+          "sourceName": "type3_tests",
+          "resultColumns": [
+            {
+              "name": "Term",
+              "column": "ModelANOVA.Source"
+            },
+            {
+              "name": "SS",
+              "statistic": "S.SS",
+              "column": "ModelANOVA.SS"
+            },
+            {
+              "name": "df",
+              "statistic": "S.df",
+              "column": "ModelANOVA.DF"
+            },
+            {
+              "name": "F_statistic",
+              "statistic": "S.F_statistic",
+              "column": "ModelANOVA.FValue"
+            },
+            {
+              "name": "p_value",
+              "statistic": "S.p_value",
+              "column": "ModelANOVA.ProbF"
+            }
+          ]
+        },
+        {
+          "producer": "SM.ANCOVA.LsMeans",
+          "sourceName": "ls_means",
+          "resultColumns": [
+            {
+              "name": "Group",
+              "column": "LSMeans.<fixed_effect>"
+            },
+            {
+              "name": "estimate",
+              "statistic": "S.estimate",
+              "column": "LSMeans.LSMean"
+            },
+            {
+              "name": "SE",
+              "statistic": "S.SE",
+              "column": "LSMeans.StdErr"
+            },
+            {
+              "name": "df",
+              "statistic": "S.df",
+              "column": "LSMeans.DF"
+            },
+            {
+              "name": "CI_lower",
+              "statistic": "S.CI_lower",
+              "column": "LSMeans.LowerCL"
+            },
+            {
+              "name": "CI_upper",
+              "statistic": "S.CI_upper",
+              "column": "LSMeans.UpperCL"
+            }
+          ]
+        },
+        {
+          "producer": "SM.ANCOVA.ContrastsT",
+          "sourceName": "contrasts",
+          "resultColumns": [
+            {
+              "name": "Contrast",
+              "column": "LSMeanDiffCL.Effect"
+            },
+            {
+              "name": "estimate",
+              "statistic": "S.estimate",
+              "column": "LSMeanDiffCL.Difference"
+            },
+            {
+              "name": "SE",
+              "statistic": "S.SE",
+              "column": "LSMeanDiffCL.StdErr"
+            },
+            {
+              "name": "df",
+              "statistic": "S.df",
+              "column": "LSMeanDiffCL.DF"
+            },
+            {
+              "name": "CI_lower",
+              "statistic": "S.CI_lower",
+              "column": "LSMeanDiffCL.LowerCL"
+            },
+            {
+              "name": "CI_upper",
+              "statistic": "S.CI_upper",
+              "column": "LSMeanDiffCL.UpperCL"
+            },
+            {
+              "name": "t_statistic",
+              "statistic": "S.t_statistic",
+              "column": "LSMeanDiffCL.tValue"
+            },
+            {
+              "name": "p_value",
+              "statistic": "S.p_value",
+              "column": "LSMeanDiffCL.Probt"
+            }
+          ]
+        },
+        {
+          "producer": "M.ANCOVA",
+          "sourceName": "covariance_parameters",
+          "resultColumns": [
+            {
+              "name": "residual_variance",
+              "column": "FitStatistics.RootMSE"
+            }
+          ]
+        }
+      ],
+      "configurationMappings": {
+        "multiplicity_adjustment_mapping": {
+          "none": "none",
+          "tukey": "tukey",
+          "bonferroni": "bon",
+          "holm": "simulate",
+          "dunnett": "dunnett",
+          "sidak": "sidak"
+        },
+        "ss_type_mapping": {
+          "I": "1",
+          "II": "2",
+          "III": "3"
+        }
+      },
+      "documentation": "https://documentation.sas.com/doc/en/statug/15.2/statug_glm_overview.htm",
+      "notes": "PROC GLM with CLASS, MODEL (SSn + SOLUTION), and LSMEANS/PDIFF/CL. The SS type maps to SS1/SS2/SS3. Multiplicity adjustments map to SAS keywords (bonferroni→BON, holm→SIMULATE). ODS tables: FitStatistics, ModelANOVA, LSMeans, LSMeanDiffCL. Note: covariance_parameters maps to Root MSE — square it for residual variance."
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+# Analysis Concepts candidate v1 — implementation layer: code (informative)
+# Origin: lib/method_implementations/*.json and
+# model/method/method_implementation_catalog.schema.json on model-schema (v0.1.0).
+id: https://cdisc.org/ac/implementation
+name: ac_implementation
+version: "1.0.0-candidate"
+title: AC Method Implementation Model (informative)
+description: >-
+  Schema for method implementation catalogues: how a Method is run in a given
+  language, and where each statistic of its outputs is found in what the code
+  returns. This part of the implementation layer is informative (decision D8).
+  A standard that mandated code would tie itself to language and package
+  versions; the catalogues are examples that tools may use.
+
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  ac: https://cdisc.org/ac/
+  linkml: https://w3id.org/linkml/
+
+default_prefix: ac
+default_range: string
+
+imports:
+  - linkml:types
+  - ac:ac_common
+
+classes:
+
+  Any:
+    class_uri: linkml:Any
+    description: Any value.
+
+  ResultColumn:
+    description: Where one value of an output is found in what the code returns.
+    attributes:
+      name:
+        description: The name the catalogue gives the value.
+        required: true
+      statistic:
+        description: The statistic the value is (a Statistic identifier), when it is one.
+        pattern: "^S\\..+$"
+      column:
+        description: The element of the returned object that holds it.
+        required: true
+
+  OutputMapping:
+    description: How one output of the method is read from what the code returns.
+    attributes:
+      producer:
+        description: The Method or SubMethod whose output this is.
+        required: true
+        pattern: "^S?M\\..+$"
+      sourceName:
+        description: The name the source catalogue used for this output.
+      resultColumns:
+        range: ResultColumn
+        multivalued: true
+        inlined_as_list: true
+      extractionCode: {}
+
+  MethodImplementation:
+    description: One way of running a Method in one language.
+    attributes:
+      method:
+        description: The Method implemented (a Method identifier).
+        required: true
+        pattern: "^M\\..+$"
+      language:
+        required: true
+      package: {}
+      packages:
+        multivalued: true
+      procedure: {}
+      function: {}
+      callTemplate:
+        description: The call, with the Method's input roles and configurations as <placeholders>.
+        required: true
+      roleSeparator: {}
+      derivationKind: {}
+      outputMapping:
+        range: OutputMapping
+        multivalued: true
+        inlined_as_list: true
+      configurationMappings:
+        description: How configuration values are written in this language.
+        range: Any
+      documentation: {}
+      notes: {}
+
+  MethodImplementationCatalogue:
+    tree_root: true
+    slots:
+      - libraryVersion
+      - description
+    attributes:
+      language:
+        required: true
+      implementations:
+        range: MethodImplementation
+        multivalued: true
+        inlined_as_list: true
+        required: true

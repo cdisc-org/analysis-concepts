@@ -1,0 +1,200 @@
+# Analysis Concepts candidate v1 — implementation layer: data binding
+# Origin: new in candidate v1 (decision D8). The approach follows CDISC
+# Biomedical Concept Dataset Specialisations; the content comes from
+# lib/concepts/concept-variable-mappings.json and the observation model on
+# methods_02.
+id: https://cdisc.org/ac/binding
+name: ac_binding
+version: "1.0.0-candidate"
+title: AC Data Binding Model
+description: >-
+  Schema for Data Bindings. A Data Binding says which physical variable of a
+  data standard carries a Concept, and under what conditions. It is the only
+  place where the model names a variable: Concepts, Methods, Transformations
+  and SmartPhrases never do. Bindings point at Concepts, not the other way
+  round, so supporting another standard adds bindings and changes nothing else.
+
+  Bindings come at two levels. A class-level binding is published in a library
+  and holds for a standard as a whole (Change is carried by CHG in an ADaM basic
+  data structure). A value-level binding belongs to a study or a
+  therapeutic-area package and holds for one parameter or condition (time to
+  progression is AVAL where PARAMCD is PFS). Where one variable carries several
+  Concepts, the class-level binding is marked parameter-dependent and a
+  value-level binding resolves it.
+
+  Candidate v1 covers CDISC standards. The locator is typed so that standards
+  that are not tabular can be added later without changing the model.
+
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  ac: https://cdisc.org/ac/
+  linkml: https://w3id.org/linkml/
+
+default_prefix: ac
+default_range: string
+
+imports:
+  - linkml:types
+  - ac:ac_common
+
+enums:
+
+  BindingLevelEnum:
+    permissible_values:
+      classLevel:
+        description: Holds for the standard as a whole; published in a library.
+      valueLevel:
+        description: Holds for one parameter or condition; belongs to a study or a therapeutic-area package.
+
+  LocatorTypeEnum:
+    description: How a locator addresses data. Only `tabular` is defined in candidate v1.
+    permissible_values:
+      tabular:
+        description: A variable (column) of a dataset.
+      path:
+        description: Reserved for standards addressed by a path expression (for example FHIR). Not defined in candidate v1.
+
+  ComparatorEnum:
+    description: Comparison operators, as used in Define-XML and Dataset Specialisations.
+    permissible_values:
+      EQ: {}
+      NE: {}
+      IN: {}
+      NOTIN: {}
+      LT: {}
+      LE: {}
+      GT: {}
+      GE: {}
+
+  FacetEnum:
+    description: The part of a Concept a variable carries.
+    permissible_values:
+      value:
+        description: The value itself.
+      unit:
+        description: The unit of the value.
+      code:
+        description: The coded form.
+      decode:
+        description: The decoded (display) form.
+      number:
+        description: A numeric rendering of a coded value.
+      qualifier:
+        description: A named sub-part of the concept, stated in `facetName`.
+
+classes:
+
+  Locator:
+    description: Where the data is.
+    attributes:
+      locatorType:
+        range: LocatorTypeEnum
+        required: true
+      datasetClass:
+        description: The class of dataset in the standard (for example BasicDataStructure, SubjectLevel, Findings).
+      dataset:
+        description: The dataset name, for a study-level binding (for example ADQSADAS).
+      variable:
+        description: >-
+          The variable name. A leading `--` stands for the two-letter domain
+          prefix of an SDTM variable (`--ORRES`).
+        required: true
+
+  BindingCondition:
+    description: A condition on another variable of the same dataset that must hold for the binding to apply.
+    attributes:
+      variable:
+        required: true
+      comparator:
+        range: ComparatorEnum
+        required: true
+      values:
+        multivalued: true
+        required: true
+
+  BindingQualifier:
+    description: A named qualification of what the variable carries (for example intent = Planned for a treatment variable).
+    attributes:
+      name:
+        required: true
+      value:
+        required: true
+
+  SpecialisationReference:
+    description: >-
+      The CDISC Dataset Specialisation element this binding corresponds to.
+      SDTM bindings are held by reference: the specialisation is the source of
+      truth, and this records which data element concept the variable carries.
+    attributes:
+      dataElementConceptId:
+        description: NCIt code of the data element concept (the `dec_id` of the specialisation variable).
+        multivalued: true
+      note: {}
+
+  DataBinding:
+    description: One variable carrying one Concept (or one part of it).
+    attributes:
+      id:
+        identifier: true
+        required: true
+      concept:
+        description: The Concept carried (a Concept identifier).
+        required: true
+        pattern: "^C\\..+$"
+      studyConcept:
+        description: For a value-level binding in a study, the study concept it applies to (for example PARAM.ADASCOG11).
+      level:
+        range: BindingLevelEnum
+        required: true
+      locator:
+        range: Locator
+        inlined: true
+        required: true
+      facet:
+        range: FacetEnum
+      facetName:
+        description: The name of the sub-part carried, when `facet` is `qualifier`.
+      dataType:
+        description: The data type of the variable's values.
+      qualifiers:
+        range: BindingQualifier
+        multivalued: true
+        inlined_as_list: true
+      conditions:
+        range: BindingCondition
+        multivalued: true
+        inlined_as_list: true
+      parameterDependent:
+        description: >-
+          True when this variable carries the Concept only for some parameters,
+          so that a value-level binding is needed to apply it.
+        range: boolean
+      alternativeVariables:
+        description: Other variables of the standard that may carry the Concept, depending on the study's design.
+        multivalued: true
+      specialisation:
+        range: SpecialisationReference
+        inlined: true
+      description: {}
+      status:
+        range: EntryStatus
+
+  DataBindingLibrary:
+    tree_root: true
+    description: The Data Bindings for one data standard.
+    slots:
+      - libraryVersion
+      - description
+    attributes:
+      standard:
+        description: The data standard bound to, for example ADaM or SDTM.
+        required: true
+      standardVersions:
+        description: The versions of the standard the bindings were written against.
+        multivalued: true
+      bindings:
+        range: DataBinding
+        multivalued: true
+        inlined_as_list: true
+        required: true
