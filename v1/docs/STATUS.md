@@ -13,7 +13,7 @@ so the work can be picked up from here at any point.
 | 6 SmartPhrase layer | done — 31 phrases, 10 roles, 3 language packs; validates |
 | 7 Implementation layer | done — 49 ADaM and 72 SDTM class-level bindings; R (19) and SAS (11) catalogues, informative |
 | 8 Study layer | done — CDISC Pilot (4 analyses, 7 derivations) and PrE0102 (4 analyses); validate against schema |
-| 9 Conformance | done — validator (v1/tools/validate.py) and 69 tests; 0 errors, 40 warnings |
+| 9 Conformance | done — validator (v1/tools/validate.py) and 72 tests; 0 errors, 40 warnings |
 | 10 Documentation and final report | done — see final-report.md |
 
 The build is complete against its definition of done. What remains is review; see [gaps.md](gaps.md).

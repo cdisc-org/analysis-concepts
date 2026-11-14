@@ -1,5 +1,9 @@
 # Analysis Concepts candidate v1 — overview
 
+> New to Analysis Concepts? The [implementation guide](guide/README.md) walks
+> through the model step by step, starting from a SAP sentence, a table shell
+> and an ADaM dataset.
+
 Analysis Concepts (AC) is a model for saying, in a form a machine can read, how
 clinical trial data is derived and analysed. It sits between the study
 definition (USDM), which states the question, and the analysis results (ARS),

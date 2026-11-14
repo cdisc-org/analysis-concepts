@@ -8,7 +8,9 @@ data is derived and analysed. This tree brings the model work on three branches
 (`model-schema`, `methods_02`, `estimands_01`) into one LinkML model with five
 layers, its libraries, two worked studies and a conformance suite.
 
-Start with **[docs/overview.md](docs/overview.md)**.
+Start with **[docs/overview.md](docs/overview.md)**. If you are a statistical
+programmer new to Analysis Concepts, start with the step-by-step
+**[implementation guide](docs/guide/README.md)** instead.
 
 ## What is here
 
@@ -24,19 +26,20 @@ Start with **[docs/overview.md](docs/overview.md)**.
 | `lib/bindings/` | Class-level data bindings: 49 ADaM, 72 SDTM |
 | `lib/implementations/` | R and SAS method implementations (informative) |
 | `studies/` | CDISC Pilot and PrE0102, as study analysis sets |
-| `tools/` | Migration scripts, validator, sentence renderer, dependency and data resolver |
-| `tests/` | 69 conformance tests |
-| `docs/` | Overview, model reference, worked examples, conformance rules, decisions, migration notes, gaps, glossary |
+| `tools/` | Migration scripts, validator, sentence renderer, dependency and data resolver, downstream generator (`downstream.py`) |
+| `tests/` | 72 conformance tests |
+| `docs/` | Implementation guide (`docs/guide/`), overview, model reference, worked examples, conformance rules, decisions, migration notes, gaps, glossary |
 
 ## Check it
 
 ```
 uv venv .venv --python 3.12 && source .venv/bin/activate
 uv pip install linkml pytest
-python -m pytest v1/tests -q          # 69 tests
+python -m pytest v1/tests -q          # 72 tests
 python v1/tools/validate.py --all     # 0 errors; warnings listed
 python v1/tools/render.py cdiscpilot01 fr     # the analysis sentences, in French
 python v1/tools/resolve.py pre0102            # derivations and study variables per analysis
+python v1/tools/downstream.py cdiscpilot01 adam   # variables the analyses need
 ```
 
 To rebuild the libraries from the source branches (needs `git fetch origin`

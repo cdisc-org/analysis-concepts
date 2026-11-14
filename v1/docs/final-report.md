@@ -17,7 +17,7 @@ two studies are carried end to end, and a conformance suite checks the result.
 | LinkML schemas for all five layers, generating JSON Schema | 11 schema files in `v1/schema/`; 10 generated JSON Schemas |
 | Libraries migrated and validating | 60 methods, 57 statistics, 13 statistic sets, 43 output classes, 108 concepts, 26 transformations, 31 SmartPhrases, 121 data bindings |
 | Study analysis instance, with two worked studies | CDISC Pilot (4 Analysis Concepts, 7 Derivation Concepts); PrE0102 (4 Analysis Concepts) |
-| Conformance tests, run by one command | `python -m pytest v1/tests -q`: 69 tests pass. Validator: 0 errors, 40 warnings |
+| Conformance tests, run by one command | `python -m pytest v1/tests -q`: 72 tests pass. Validator: 0 errors, 40 warnings |
 | Documentation | Overview, generated model reference, worked examples, conformance rules, glossary, gaps |
 | Final report | This file |
 

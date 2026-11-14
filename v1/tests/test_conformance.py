@@ -25,6 +25,7 @@ import validate  # noqa: E402
 from common import STUDIES, V1, read_json  # noqa: E402
 from render import Renderer  # noqa: E402
 from resolve import data_requirements, derivation_order  # noqa: E402
+import downstream  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -361,3 +362,38 @@ def test_same_template_serves_several_analyses():
     assert {a["template"] for a in study["analyses"]} == {"T.PFS_KaplanMeier"}
     events = {next(v["studyConcept"] for v in a["placeholderValues"] if v["name"] == "event") for a in study["analyses"]}
     assert events == {"EVENT.PFS", "EVENT.OS", "EVENT.TTP"}
+
+
+# --------------------------------------------------------------------------
+# Downstream artefacts
+# --------------------------------------------------------------------------
+
+def test_adam_requirements_name_the_variables_the_analyses_read():
+    study = read_json(STUDIES / "cdiscpilot01" / "analysis_set.json")
+    rows = {(r["dataset"], r["variable"]): r for r in downstream.adam_requirements(study, downstream.Libraries())}
+    chg = rows[("ADQSADAS", "CHG")]
+    assert chg["carries"] == ["C.Change"]
+    assert "AC.PRIMARY.ADASCOG" in chg["neededBy"]
+    assert any(p.startswith("DC.CHG.ADASCOG11.WK24") for p in chg["producedBy"])
+    for selection in ("PARAMCD", "AVISITN", "ITTFL"):
+        assert rows[("ADQSADAS", selection)]["use"] == ["record selection"]
+
+
+def test_analysis_results_metadata_for_the_primary_analysis():
+    study = read_json(STUDIES / "cdiscpilot01" / "analysis_set.json")
+    m = downstream.analysis_results_metadata(study, downstream.Libraries(), "AC.PRIMARY.ADASCOG")
+    assert m["dataset"] == "ADQSADAS"
+    assert m["where"] == "PARAMCD = 'ACTOT' AND AVISITN = 24 AND ITTFL = 'Y'"
+    assert m["variables"] == "CHG, BASE"
+    code, unresolved = m["code"]["sas"]
+    assert "model CHG = BASE TRTP / ss3 solution;" in code
+    assert "where PARAMCD = 'ACTOT' and AVISITN = 24 and ITTFL = 'Y';" in code
+    assert unresolved == ["multiplicity_adjustment"]
+
+
+def test_shell_content_lists_the_statistics_of_each_output():
+    study = read_json(STUDIES / "pre0102" / "analysis_set.json")
+    rows = {r["producer"]: r for r in downstream.shell_content(study, downstream.Libraries(), "AC.PRIMARY.PFS")}
+    median = rows["SM.KaplanMeier.MedianSurvival"]
+    assert median["summary"] is True
+    assert [s["id"] for s in median["statistics"]] == ["S.estimate", "S.CI_lower", "S.CI_upper"]
