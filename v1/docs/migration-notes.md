@@ -194,3 +194,75 @@ Added for decision D13 (extension points for an eSAP model):
 15. **`population` binds an analysis set, not the estimand's target population.**
     The role is mapped to the Population attribute of ICH E9(R1), with that
     caveat in its description.
+
+## Implementation layer
+
+### Data bindings (normative)
+
+| Source | Candidate v1 |
+| --- | --- |
+| `concept-variable-mappings.json` on `methods_02` — the ADaM section | `v1/lib/bindings/adam_bindings.json`, 49 class-level bindings. One binding per variable, with its facet (value, unit, code, decode), data type and qualifiers (intent Planned or Actual; which population) |
+| The observation model's SDTM variable aliases and data-element-concept codes, and the SDTM section of the mapping file | `v1/lib/bindings/sdtm_bindings.json`, 72 class-level bindings. Each records the data-element-concept code(s) the variable carries in the SDTM Dataset Specialisations, so the specialisations remain the source of truth |
+| The OMOP and FHIR sections of the mapping file | Not migrated. Non-CDISC standards are out of scope for v1 (D8). The locator is typed (`tabular`, with `path` reserved) so that they can be added without changing the model |
+| A variable listed for several concepts, with nothing to tell them apart (`AVAL` for Measure, PeakValue, AreaUnderCurve, EventCount, TimeToEvent) | Each such binding is marked `parameterDependent`. A value-level binding in the study says which Concept the variable carries for which parameter |
+
+### Implementation catalogues (informative)
+
+The R (19 methods) and SAS (11 methods) catalogues on the `model-schema`
+lineage are carried into `v1/lib/implementations/`. Each output mapping now
+names the Method or sub-method that produces it, and each result column the
+statistic it holds where there is one.
+
+### Findings for the working group
+
+16. **Five ADaM concepts had nowhere to bind.** The mapping file binds Age, Sex,
+    Race, Region and Epoch, but no concept model defines them. They are not
+    migrated; demographic and epoch concepts are a gap in the concept library.
+17. **The catalogues are out of step with the methods.** Their call templates
+    use role names the methods no longer have (33 warnings, rule I4), and both
+    map a `covariance_parameters` output for ANCOVA that the method does not
+    produce. They need revising against the migrated methods.
+18. **SDTM bindings are by reference in intent, not yet in mechanism.** They
+    carry data-element-concept codes copied from the observation model. A
+    production library would resolve them against the CDISC Library.
+
+## Study layer
+
+The two study graphs of the SmartPhrase proof of concept become study analysis
+sets (`v1/studies/<study>/analysis_set.json`).
+
+| Proof of concept | Candidate v1 |
+| --- | --- |
+| Analysis instance | `AnalysisConcept` (D11) |
+| `estimand` | `addressesEstimand` (D5) |
+| Slice values implied by phrase bindings | Stated as `placeholderValues`, one per template placeholder |
+| Intercurrent-event strategy and `implementedBy` on the event concept; the analysis inheriting a study default | Resolved onto every Analysis Concept as `iceHandlings`, one per event in the estimand's scope, each saying whether a phrase states it or the study default applies (D4) |
+| `ascertainedBy` on the event concept | Moved to the non-normative eSAP extension example. How an event is detected is not AC's (D13) |
+| An `output_ref` bound to an output-class name (`contrasts_t`) | Bound to the sub-method that produces it (`SM.ANCOVA.ContrastsT`) |
+| `data` hooks on concepts and free-text trace templates | `dataSelection` on the study concept (dataset, conditions) and value-level data bindings (D8) |
+| Translations of study concepts in the language overlay | `translations` on the study concept |
+| Templates copied into the study | Referenced; the study pins library versions (D6) |
+| — | Derivation Concepts. The proof of concept had none. The build added the baseline, LOCF and change-from-baseline derivations that the CDISC Pilot analyses depend on |
+
+### Findings for the working group
+
+19. **`{control_arm}` had no value.** `T.CFB_ANCOVA` needs a control arm for its
+    contrasts, and the proof-of-concept study had only one treatment concept
+    covering all arms. The build supplies the literal `Placebo`. A study needs
+    arm-level concepts.
+20. **The library has no derivations for time-to-event data.** The PrE0102
+    analyses read time to event and the event indicator straight from the
+    analysis dataset; there is nothing to say how they are derived or censored.
+21. **`M.KaplanMeier` cannot carry a confidence level.** PrE0102 states 90%
+    confidence intervals, but the method has no such configuration (4 warnings,
+    rule Y9).
+22. **A "PFS" template is used for overall survival and time to progression.**
+    It works, because the event is a placeholder, but `T.PFS_KaplanMeier` is
+    misnamed. `T.TTE_KaplanMeier` would be accurate.
+23. **LOCF as the hypothetical strategy is a doubt carried over, not settled.**
+    It is the only imputation derivation the library has. Whether it is an
+    acceptable implementation of a hypothetical strategy is a statistical
+    question for the working group.
+24. **The ANCOVA STATO code differs between sources.** The method carries
+    `STATO_0000179`; the study grounding carries `STATO_0000176`. Both are kept
+    as found. One of them is wrong.

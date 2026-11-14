@@ -32,5 +32,20 @@ Two kinds of decision are recorded here.
 | B1 | The candidate lives in a self-contained `v1/` tree. Existing content on the branch is left in place as legacy reference | A reviewer can read `v1/` on its own; nothing by other contributors is deleted |
 | B2 | Schema files from `model-schema` are copied into `v1/schema/` and evolved there, with their origin stated in each file header | The originals stay intact for comparison |
 | B3 | Migration is scripted (`v1/tools/`), from the head of `origin/methods_02` and `origin/estimands_01` | Repeatable and reviewable |
-
-Further build decisions are appended below as they are taken.
+| B4 | Methods written in Wilkinson–Rogers or survival notation are model-based methods, including hypothesis tests | The base schema carries that notation only on a model-based method (migration-notes, finding 1) |
+| B5 | Concept identifiers take a `C.` prefix. Categories are abstract concepts, joined by `broader`; the parts of an observation are joined by `partOf` | One namespace and one mechanism for "is a kind of", another for "is a part of" |
+| B6 | A method-bound concept states a contract and names no method. Concepts reference only concepts, statistics and output classes | Keeps the Concept layer independent of the Method layer |
+| B7 | An analysis concept's statistics come from its statistic sets, not the older `constituents` list | v0.18 of the analysis model made the sets the definition (finding 8) |
+| B8 | A Transformation names an output by the Method or sub-method that produces it | The base schema gives outputs to sub-methods, not names to outputs |
+| B9 | SmartPhrase fields are camelCase and the identifier slot is `conceptId` | Consistency with the rest of the model (D10) |
+| B10 | The `covariate` and `method_qualifier` roles repeat | The worked studies fill each several times |
+| B11 | Data bindings have two levels: class-level in a library, value-level in a study. A study concept states how its records are selected | Follows the Dataset Specialisation pattern (D8) |
+| B12 | Each Analysis Concept carries a handling for every intercurrent event in its estimand's scope, with the basis (a phrase, or the study default) | D4 puts handling on the analysis; stating the basis keeps an inherited default visible |
+| B13 | How an intercurrent event is detected is shown only in a non-normative eSAP extension example | D13 |
+| B14 | Content proposed on `estimands_01` (one template, two roles, eight phrases) is included and marked `provisional`; two concepts it needed are added, also provisional | It is needed by the worked studies; the status keeps it distinguishable |
+| B15 | The estimands of a study are held by reference to USDM, with the intercurrent events in scope mirrored for checking | AC does not own the estimand (D5) |
+| B16 | Derivation Concepts were added to the CDISC Pilot study by the build | The source study had none, and analyses must be able to state what they depend on |
+| B17 | Language packs belong to the SmartPhrase library; translations of study concepts belong to the study | A library cannot translate a study's parameters |
+| B18 | OMOP and FHIR mappings are not migrated | D8 limits v1 to CDISC standards |
+| B19 | The literal `Placebo` fills `{control_arm}` in the CDISC Pilot analyses | The source study has no arm-level concept (finding 19) |
+| B20 | Reference tools are included: a validator, a sentence renderer and a dependency and data resolver | They show that the model works, and give the tests something to check |

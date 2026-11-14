@@ -1,5 +1,11 @@
 # Analysis Concepts (AC/DC Framework)
 
+> **Candidate v1.** This branch (`candidate_v1`) carries a proposed first version of the Analysis Concepts model
+> in the self-contained [`v1/`](v1/README.md) folder: one LinkML model, its libraries, two worked studies and a
+> conformance suite. It is a proposal for working-group review (issue
+> [#15](https://github.com/cdisc-org/analysis-concepts/issues/15)). Everything outside `v1/` is earlier content,
+> kept for reference.
+
 The main purpose of the Analysis Concepts project is to define and model concepts representing the derivation and analysis of data to support end-to-end automation and the CDISC 360i project.
 
 The AC/DC (Analysis Concepts / Derivation Concepts) Framework provides a metadata-driven architecture for specifying, configuring, and executing statistical analyses for clinical trials. It separates *what* needs to be analyzed from *how* it is computed, enabling interchange, automation, and reuse across organizations and programming languages.
