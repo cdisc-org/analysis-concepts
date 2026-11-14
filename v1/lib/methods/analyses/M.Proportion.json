@@ -1,0 +1,78 @@
+{
+  "conceptId": "M.Proportion",
+  "name": "Proportion",
+  "label": "Proportion",
+  "description": "Computes the proportion and percentage per category of a categorical variable",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000607",
+      "display": "proportion"
+    }
+  ],
+  "status": "released",
+  "methodType": "AggregationMethod",
+  "configurations": [
+    {
+      "name": "ci_method",
+      "description": "Method for confidence interval calculation",
+      "dataType": "code",
+      "defaultValue": "exact_clopper_pearson",
+      "enumValues": [
+        "exact_clopper_pearson",
+        "wilson",
+        "wald",
+        "agresti_coull",
+        "jeffreys"
+      ]
+    },
+    {
+      "name": "ci_level",
+      "description": "Confidence level",
+      "dataType": "decimal",
+      "defaultValue": 0.95
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "CategoricalVariable",
+      "role": "value",
+      "description": "The categorical variable to summarize",
+      "dataType": "code",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "value_level",
+          "description": "A level of the value variable"
+        }
+      ]
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "group",
+      "description": "Optional grouping variable(s)",
+      "dataType": "code",
+      "required": false,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "group_level",
+          "description": "A level of the group variable"
+        }
+      ]
+    }
+  ],
+  "formula": {
+    "notation": "aggregation",
+    "text": "result := PROP(<value>) OVER (<group>*)",
+    "defaultExpression": "result := PROP(value) OVER (group)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

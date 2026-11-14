@@ -1,0 +1,158 @@
+{
+  "conceptId": "M.CMH",
+  "name": "Cochran-Mantel-Haenszel Test",
+  "label": "CMH",
+  "description": "Stratified analysis for 2x2xK tables controlling for strata. Tests the null hypothesis of no association between response and group after adjusting for strata.",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000074",
+      "display": "Cochran-Mantel-Haenzel test for repeated tests of independence"
+    }
+  ],
+  "status": "released",
+  "methodType": "ModelBasedMethod",
+  "configurations": [
+    {
+      "name": "or_type",
+      "description": "Odds ratio reporting type",
+      "dataType": "code",
+      "defaultValue": "common",
+      "enumValues": [
+        "common",
+        "stratum_specific"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "CategoricalVariable",
+      "role": "response",
+      "description": "Binary response variable",
+      "dataType": "code",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "response_level",
+          "description": "A level of the response variable"
+        }
+      ]
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "fixed_effect",
+      "description": "Treatment group (binary)",
+      "dataType": "code",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "fixed_effect_level",
+          "description": "A level of the fixed_effect variable"
+        }
+      ]
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "strata",
+      "description": "Stratification variable(s)",
+      "dataType": "code",
+      "required": true,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "strata_level",
+          "description": "A level of the strata variable"
+        }
+      ]
+    }
+  ],
+  "statisticalModel": {
+    "name": "CMH model",
+    "description": "The '|' denotes stratification. Multiple strata variables produce cross-classified strata.",
+    "formula": {
+      "notation": "wilkinson_rogers",
+      "text": "<response> ~ <fixed_effect> | <strata>+",
+      "defaultExpression": "response ~ fixed_effect | strata"
+    },
+    "isModelFor": [
+      "response"
+    ],
+    "modelTerms": [
+      {
+        "name": "fixed_effect",
+        "description": "Main effect of fixed_effect",
+        "forInputs": [
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_effect",
+            "description": "Effect of a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "strata",
+        "description": "Conditioning structure defined by strata (strata or repeated subject)",
+        "forInputs": [
+          "strata"
+        ],
+        "parameters": [
+          {
+            "name": "strata_grouping",
+            "description": "The grouping of observations by strata",
+            "forInputVariables": [
+              "strata"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "subMethods": [
+    {
+      "conceptId": "SM.CMH.ChiSquaredTestResult",
+      "name": "Chi-squared test result",
+      "description": "Single chi-squared test result.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.chi_squared_test_result",
+        "statisticSets": [
+          "SS.hypothesis_test_chi_squared"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.CMH.OddsRatioMeasures",
+      "name": "Odds ratio measures",
+      "description": "Odds ratio with confidence interval (CMH common OR or per-stratum, Fisher OR). Forms: common_odds_ratio (Pooled MH odds ratio); stratum_specific_odds_ratios (Odds ratio within each stratum).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.odds_ratio_measures",
+        "statisticSets": [
+          "SS.ci_estimate_odds_ratio"
+        ],
+        "forModelTerms": [
+          "strata"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.CMH.HomogeneityTest",
+      "name": "Homogeneity test",
+      "description": "Breslow-Day test for homogeneity of odds ratios across strata.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.homogeneity_test",
+        "statisticSets": [
+          "SS.hypothesis_test_chi_squared"
+        ]
+      }
+    }
+  ]
+}

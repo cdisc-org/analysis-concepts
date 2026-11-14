@@ -1,0 +1,69 @@
+{
+  "conceptId": "M.WindowLookup",
+  "name": "Window Lookup",
+  "label": "Window Lookup",
+  "description": "Retrieves value from another row within partition",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "configurations": [
+    {
+      "name": "window_func",
+      "description": "Window function type",
+      "dataType": "code",
+      "defaultValue": "lag",
+      "enumValues": [
+        "lag",
+        "lead",
+        "first",
+        "last"
+      ]
+    },
+    {
+      "name": "offset",
+      "description": "Row offset for lag/lead",
+      "dataType": "decimal",
+      "defaultValue": 1
+    },
+    {
+      "name": "order_by",
+      "description": "Variable defining row order within partition",
+      "dataType": "code"
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "Value to look up",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "partition",
+      "description": "Partitioning variables",
+      "dataType": "code",
+      "required": true,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "partition_level",
+          "description": "A level of the partition variable"
+        }
+      ]
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "result := <window_func>(<value>, <offset>?) OVER (<partition>+ ORDER BY <order_by>)",
+    "defaultExpression": "result := LAG(value, 1) OVER (partition ORDER BY order_by)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

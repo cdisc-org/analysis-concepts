@@ -1,0 +1,52 @@
+{
+  "conceptId": "M.WinsorizedMean",
+  "name": "Winsorized Mean",
+  "label": "Winsorized Mean",
+  "description": "Computes the Winsorized mean after replacing extreme values with boundary values",
+  "status": "released",
+  "methodType": "AggregationMethod",
+  "configurations": [
+    {
+      "name": "winsor_fraction",
+      "description": "Fraction to Winsorize from each tail (0 to 0.5)",
+      "dataType": "decimal",
+      "defaultValue": 0.05
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "The variable to summarize",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "group",
+      "description": "Optional grouping variable(s)",
+      "dataType": "code",
+      "required": false,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "group_level",
+          "description": "A level of the group variable"
+        }
+      ]
+    }
+  ],
+  "formula": {
+    "notation": "aggregation",
+    "text": "result := WINMEAN(<value>, <winsor_fraction>) OVER (<group>*)",
+    "defaultExpression": "result := WINMEAN(value, winsor_fraction) OVER (group)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

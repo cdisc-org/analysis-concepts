@@ -1,0 +1,170 @@
+{
+  "conceptId": "M.TwoSampleTTest",
+  "name": "Two-Sample t-Test",
+  "label": "2-sample t",
+  "description": "Tests whether means of two independent samples differ significantly",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000304",
+      "display": "two sample t-test"
+    }
+  ],
+  "status": "released",
+  "methodType": "ModelBasedMethod",
+  "configurations": [
+    {
+      "name": "var_equal",
+      "description": "Assume equal variances (true=pooled, false=Welch)",
+      "dataType": "boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "alternative",
+      "description": "Direction of alternative hypothesis",
+      "dataType": "code",
+      "defaultValue": "two_sided",
+      "enumValues": [
+        "two_sided",
+        "less",
+        "greater"
+      ]
+    },
+    {
+      "name": "conf_level",
+      "dataType": "string",
+      "conformsTo": "conf_level",
+      "configuredSubMethods": [
+        "SM.TwoSampleTTest.LsMeans",
+        "SM.TwoSampleTTest.ContrastsT"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "response",
+      "description": "The response variable",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "fixed_effect",
+      "description": "Grouping variable (exactly two levels)",
+      "dataType": "code",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "fixed_effect_level",
+          "description": "A level of the fixed_effect variable"
+        }
+      ]
+    }
+  ],
+  "statisticalModel": {
+    "name": "2-sample t model",
+    "description": "Single factor with exactly two levels",
+    "formula": {
+      "notation": "wilkinson_rogers",
+      "text": "<response> ~ <fixed_effect>",
+      "defaultExpression": "response ~ fixed_effect"
+    },
+    "isModelFor": [
+      "response"
+    ],
+    "modelTerms": [
+      {
+        "name": "fixed_effect",
+        "description": "Main effect of fixed_effect",
+        "forInputs": [
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_effect",
+            "description": "Effect of a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          },
+          {
+            "name": "fixed_effect_ls_mean",
+            "description": "Estimated marginal mean for a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          },
+          {
+            "name": "fixed_effect_contrast",
+            "description": "Contrast between levels of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "subMethods": [
+    {
+      "conceptId": "SM.TwoSampleTTest.TTestResult",
+      "name": "T-test result",
+      "description": "Single t-test result (one-sample, paired, or two-sample).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.t_test_result",
+        "statisticSets": [
+          "SS.hypothesis_test_t_distribution"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.TwoSampleTTest.LsMeans",
+      "name": "Least-squares means",
+      "description": "Least-squares means (adjusted marginal means) per factor level or level combination.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.ls_means",
+        "statisticSets": [
+          "SS.ci_estimate_t_distribution"
+        ],
+        "forModelParameters": [
+          "fixed_effect_ls_mean"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.TwoSampleTTest.ContrastsT",
+      "name": "T-based contrasts",
+      "description": "Contrasts from linear models with t-based inference.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.contrasts_t",
+        "statisticSets": [
+          "SS.ci_estimate_t_distribution",
+          "SS.hypothesis_test_t_distribution"
+        ],
+        "statistics": [
+          "S.p_value_adjusted"
+        ],
+        "optionalStatistics": [
+          "S.p_value_adjusted"
+        ],
+        "forModelParameters": [
+          "fixed_effect_contrast"
+        ]
+      },
+      "inputs": [
+        {
+          "role": "estimated_means",
+          "description": "The estimated marginal means the contrast is formed from",
+          "subMethodId": "SM.TwoSampleTTest.LsMeans",
+          "statisticId": "S.estimate"
+        }
+      ]
+    }
+  ]
+}

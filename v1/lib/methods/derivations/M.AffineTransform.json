@@ -1,0 +1,44 @@
+{
+  "conceptId": "M.AffineTransform",
+  "name": "Affine Transformation",
+  "label": "Affine Transform",
+  "description": "Per-row affine transform: result = scale * value + offset. Used for any linear rescaling on a single column (e.g. (70 - x)/70 with scale=-1/70, offset=1, percent-of-max conversions, unit shifts).",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "configurations": [
+    {
+      "name": "scale",
+      "description": "Multiplier applied to the input value",
+      "dataType": "decimal",
+      "defaultValue": 1
+    },
+    {
+      "name": "offset",
+      "description": "Constant added after the multiplication",
+      "dataType": "decimal",
+      "defaultValue": 0
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "Per-row numeric input to be rescaled",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "result := <scale> * <value> + <offset>",
+    "defaultExpression": "result := scale * value + offset"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

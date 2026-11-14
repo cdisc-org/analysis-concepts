@@ -1,0 +1,38 @@
+{
+  "conceptId": "M.Subtraction",
+  "name": "Subtraction",
+  "label": "Subtraction",
+  "description": "Computes the difference between two numeric values",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "minuend",
+      "description": "The value to subtract from",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "ContinuousVariable",
+      "role": "subtrahend",
+      "description": "The value to subtract",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "result := <minuend> - <subtrahend>",
+    "defaultExpression": "result := minuend - subtrahend"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

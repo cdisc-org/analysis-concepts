@@ -1,0 +1,53 @@
+{
+  "conceptId": "M.ImputedValue_LOCF",
+  "name": "Last Observation Carried Forward",
+  "label": "LOCF",
+  "description": "Computes the last non-missing observed value within a partition, ordered by a time variable. The result carries forward the most recent non-missing value and is intended as input to M.Imputation.",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "Source value to carry forward (may contain missing values)",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "partition",
+      "description": "Grouping variables defining the carry-forward scope (typically subject, parameter)",
+      "dataType": "code",
+      "required": true,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "partition_level",
+          "description": "A level of the partition variable"
+        }
+      ]
+    },
+    {
+      "inputType": "ContinuousVariable",
+      "role": "time_order",
+      "description": "Variable defining the temporal ordering within partition (e.g., AVISITN, ADY)",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "imputed_value := LOCF(<value>) OVER (<partition>+ ORDER BY <time_order>)",
+    "defaultExpression": "imputed_value := LOCF(value) OVER (partition ORDER BY time_order)",
+    "notes": "LOCF scans backwards in time_order within each partition and returns the most recent non-missing value. If no prior non-missing value exists, the result is missing."
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

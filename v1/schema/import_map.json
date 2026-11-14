@@ -1,0 +1,13 @@
+{
+  "ac:ac_common": "ac_common",
+  "ac:ac_statistic": "ac_statistic",
+  "ac:ac_statistic_set": "ac_statistic_set",
+  "ac:ac_output_class": "ac_output_class",
+  "ac:ac_method": "ac_method",
+  "ac:ac_concept": "ac_concept",
+  "ac:ac_transformation": "ac_transformation",
+  "ac:ac_smartphrase": "ac_smartphrase",
+  "ac:ac_binding": "ac_binding",
+  "ac:ac_study": "ac_study",
+  "ac:ac_implementation": "ac_implementation"
+}

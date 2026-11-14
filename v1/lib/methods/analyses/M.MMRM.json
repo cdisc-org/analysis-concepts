@@ -1,0 +1,387 @@
+{
+  "conceptId": "M.MMRM",
+  "name": "Mixed Model for Repeated Measures",
+  "label": "MMRM",
+  "description": "Linear mixed model for longitudinal data with structured R-side covariance. No random effects (G-side); within-subject correlation modeled through the residual covariance structure.",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000189",
+      "display": "MMRM"
+    }
+  ],
+  "status": "released",
+  "methodType": "ModelBasedMethod",
+  "configurations": [
+    {
+      "name": "covariance_structure",
+      "description": "Within-subject (R-side) covariance structure",
+      "dataType": "code",
+      "defaultValue": "UN",
+      "enumValues": [
+        "UN",
+        "CS",
+        "AR1",
+        "TOEP",
+        "CSH",
+        "ARH1"
+      ]
+    },
+    {
+      "name": "estimation_method",
+      "description": "Estimation method",
+      "dataType": "code",
+      "defaultValue": "REML",
+      "enumValues": [
+        "REML",
+        "ML"
+      ]
+    },
+    {
+      "name": "df_method",
+      "description": "Degrees of freedom method",
+      "dataType": "code",
+      "defaultValue": "KR",
+      "enumValues": [
+        "KR",
+        "Satterthwaite",
+        "Containment"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "response",
+      "description": "The response variable at each timepoint (e.g., change from baseline)",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "ContinuousVariable",
+      "role": "covariate",
+      "description": "Continuous covariate(s) (e.g., baseline value, age, weight)",
+      "dataType": "decimal",
+      "required": false,
+      "multivalued": true
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "repeated_factor",
+      "description": "Timepoint/visit variable defining the repeated dimension",
+      "dataType": "code",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "repeated_factor_level",
+          "description": "A level of the repeated_factor variable"
+        }
+      ]
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "fixed_effect",
+      "description": "Treatment group (and optionally additional factors like region, sex)",
+      "dataType": "code",
+      "required": true,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "fixed_effect_level",
+          "description": "A level of the fixed_effect variable"
+        }
+      ]
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "repeated_subject",
+      "description": "Subject identifier for the repeated measures clustering",
+      "dataType": "id",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "repeated_subject_level",
+          "description": "A level of the repeated_subject variable"
+        }
+      ]
+    }
+  ],
+  "statisticalModel": {
+    "name": "MMRM model",
+    "description": "The part after '|' specifies the repeated measures structure: subject is the clustering unit, time is the repeated factor within subject. Multiple covariates and fixed effects are supported. The time:group interaction is typically the term of primary interest for treatment comparison at each visit.",
+    "formula": {
+      "notation": "wilkinson_rogers",
+      "text": "<response> ~ <covariate>* + <repeated_factor> + <fixed_effect>+ + (<fixed_effect>:<repeated_factor>)* + (<covariate>:<fixed_effect>)* | <repeated_subject> / <repeated_factor>",
+      "defaultExpression": "response ~ covariate + repeated_factor + fixed_effect + repeated_factor:fixed_effect | repeated_subject / repeated_factor"
+    },
+    "isModelFor": [
+      "response"
+    ],
+    "modelTerms": [
+      {
+        "name": "covariate",
+        "description": "Main effect of covariate",
+        "forInputs": [
+          "covariate"
+        ],
+        "parameters": [
+          {
+            "name": "covariate_coefficient",
+            "description": "Regression coefficient for covariate",
+            "forInputVariables": [
+              "covariate"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "repeated_factor",
+        "description": "Main effect of repeated_factor",
+        "forInputs": [
+          "repeated_factor"
+        ],
+        "parameters": [
+          {
+            "name": "repeated_factor_effect",
+            "description": "Effect of a level of repeated_factor",
+            "forFactorLevels": [
+              "repeated_factor_level"
+            ]
+          },
+          {
+            "name": "repeated_factor_ls_mean",
+            "description": "Estimated marginal mean for a level of repeated_factor",
+            "forFactorLevels": [
+              "repeated_factor_level"
+            ]
+          },
+          {
+            "name": "repeated_factor_contrast",
+            "description": "Contrast between levels of repeated_factor",
+            "forFactorLevels": [
+              "repeated_factor_level"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "fixed_effect",
+        "description": "Main effect of fixed_effect",
+        "forInputs": [
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_effect",
+            "description": "Effect of a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          },
+          {
+            "name": "fixed_effect_ls_mean",
+            "description": "Estimated marginal mean for a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          },
+          {
+            "name": "fixed_effect_contrast",
+            "description": "Contrast between levels of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "fixed_effect:repeated_factor",
+        "description": "Interaction between fixed_effect and repeated_factor",
+        "forInputs": [
+          "fixed_effect",
+          "repeated_factor"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_repeated_factor_interaction_effect",
+            "description": "Effect of the interaction between fixed_effect and repeated_factor",
+            "forFactorLevelCombination": {
+              "name": "fixed_effect_repeated_factor_combination",
+              "description": "A combination of levels of the interacting factors of fixed_effect:repeated_factor",
+              "factors": [
+                "fixed_effect",
+                "repeated_factor"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "covariate:fixed_effect",
+        "description": "Interaction between covariate and fixed_effect",
+        "forInputs": [
+          "covariate",
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "covariate_fixed_effect_interaction_effect",
+            "description": "Effect of the interaction between covariate and fixed_effect",
+            "forFactorLevelCombination": {
+              "name": "covariate_fixed_effect_combination",
+              "description": "A combination of levels of the interacting factors of covariate:fixed_effect",
+              "factors": [
+                "fixed_effect"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "repeated_subject",
+        "description": "Conditioning structure defined by repeated_subject (strata or repeated subject)",
+        "forInputs": [
+          "repeated_subject"
+        ],
+        "parameters": [
+          {
+            "name": "repeated_subject_grouping",
+            "description": "The grouping of observations by repeated_subject",
+            "forInputVariables": [
+              "repeated_subject"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "subMethods": [
+    {
+      "conceptId": "SM.MMRM.FitStatisticsBasic",
+      "name": "Basic fit statistics",
+      "description": "Basic model fit indices common to most likelihood-based models.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.fit_statistics_basic",
+        "statistics": [
+          "S.AIC",
+          "S.BIC",
+          "S.minus2LogL"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.MMRM.Type3TestsMixed",
+      "name": "Type III F-tests (mixed/multivariate)",
+      "description": "Type III F-tests for mixed and multivariate models (no SS/MS exposure).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.type3_tests_mixed",
+        "statisticSets": [
+          "SS.hypothesis_test_F_distribution"
+        ],
+        "forModelTerms": [
+          "covariate",
+          "repeated_factor",
+          "fixed_effect",
+          "fixed_effect:repeated_factor",
+          "covariate:fixed_effect"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.MMRM.ParameterEstimatesLinear",
+      "name": "Linear-model parameter estimates",
+      "description": "Linear-model coefficients with t-based inference.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.parameter_estimates_linear",
+        "statisticSets": [
+          "SS.ci_estimate_t_distribution",
+          "SS.hypothesis_test_t_distribution"
+        ],
+        "statistics": [
+          "S.coefficient"
+        ],
+        "forModelParameters": [
+          "covariate_coefficient",
+          "repeated_factor_effect",
+          "fixed_effect_effect",
+          "fixed_effect_repeated_factor_interaction_effect",
+          "covariate_fixed_effect_interaction_effect"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.MMRM.LsMeans",
+      "name": "Least-squares means",
+      "description": "Least-squares means (adjusted marginal means) per factor level or level combination. Forms: ls_means_by_group_time (LS means for each group at each timepoint); ls_means_by_group (Marginal LS means averaged over time); ls_means_by_time (Marginal LS means averaged over group).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.ls_means",
+        "statisticSets": [
+          "SS.ci_estimate_t_distribution"
+        ],
+        "forModelParameters": [
+          "repeated_factor_ls_mean",
+          "fixed_effect_ls_mean"
+        ],
+        "forModelTerms": [
+          "fixed_effect:repeated_factor",
+          "fixed_effect",
+          "repeated_factor"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.MMRM.ContrastsT",
+      "name": "T-based contrasts",
+      "description": "Contrasts from linear models with t-based inference. Forms: group_contrast_at_time (Group difference at a specific timepoint (e.g., Treatment vs Placebo at Week 24)); time_contrast_within_group (Change over time within a group (e.g., Week 24 vs Week 4 within Treatment)); overall_group_contrast (Overall group difference marginalized over time).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.contrasts_t",
+        "statisticSets": [
+          "SS.ci_estimate_t_distribution",
+          "SS.hypothesis_test_t_distribution"
+        ],
+        "statistics": [
+          "S.p_value_adjusted"
+        ],
+        "optionalStatistics": [
+          "S.p_value_adjusted"
+        ],
+        "forModelParameters": [
+          "repeated_factor_contrast",
+          "fixed_effect_contrast"
+        ],
+        "forModelTerms": [
+          "fixed_effect:repeated_factor",
+          "fixed_effect"
+        ]
+      },
+      "inputs": [
+        {
+          "role": "estimated_means",
+          "description": "The estimated marginal means the contrast is formed from",
+          "subMethodId": "SM.MMRM.LsMeans",
+          "statisticId": "S.estimate"
+        }
+      ]
+    },
+    {
+      "conceptId": "SM.MMRM.CovarianceParameters",
+      "name": "Covariance parameters",
+      "description": "Estimated covariance/variance components of the random-effects structure.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.covariance_parameters",
+        "statisticSets": [
+          "SS.point_estimate_SE"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "conceptId": "M.RecordSelection",
+  "name": "Record Selection",
+  "label": "Record Selection",
+  "description": "Identifies one or more records within a partition that satisfy a selection rule and flags them. In a graph context, downstream transformations resolve values by traversing to the flagged record(s) — no value copying is required. Covers baseline selection (ABLFL), analysis record flags (ANL01FL), worst/best post-baseline selection, and any other record-level flagging pattern.",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "configurations": [
+    {
+      "name": "selection_rule",
+      "description": "Rule for selecting record(s) within the partition",
+      "dataType": "code",
+      "defaultValue": "last_non_missing",
+      "enumValues": [
+        "last_non_missing",
+        "first_non_missing",
+        "worst",
+        "best",
+        "closest_to_target",
+        "all_matching"
+      ]
+    },
+    {
+      "name": "scope",
+      "description": "Which records are eligible for selection",
+      "dataType": "code",
+      "defaultValue": "pre_treatment",
+      "enumValues": [
+        "pre_treatment",
+        "post_baseline",
+        "on_treatment",
+        "all",
+        "custom"
+      ]
+    },
+    {
+      "name": "cardinality",
+      "description": "Whether the rule selects one record or multiple records per partition",
+      "dataType": "code",
+      "defaultValue": "single",
+      "enumValues": [
+        "single",
+        "multiple"
+      ]
+    },
+    {
+      "name": "reference_event",
+      "description": "The event that defines scope boundaries (e.g. first dose date, randomisation date)",
+      "dataType": "code",
+      "defaultValue": "first_dose"
+    },
+    {
+      "name": "target_value",
+      "description": "Target value for closest_to_target rule",
+      "dataType": "decimal"
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "The observed values to evaluate for selection",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "partition",
+      "description": "Variables defining the selection scope (e.g. subject, parameter)",
+      "dataType": "code",
+      "required": true,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "partition_level",
+          "description": "A level of the partition variable"
+        }
+      ]
+    },
+    {
+      "inputType": "ContinuousVariable",
+      "role": "time_order",
+      "description": "Variable defining temporal ordering within partition (e.g. visit number, analysis date)",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "<flag> := IF(<selection_rule>(<value>, <time_order>) OVER (<partition>+), 'Y', '')",
+    "defaultExpression": "flag := IF(selection_rule(value, time_order) OVER (partition), 'Y', '')",
+    "notes": "The selection rule is applied within each partition. Cardinality configuration controls whether one or multiple records can be flagged per partition. Scope configuration controls which records are eligible for selection."
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "code"
+  }
+}

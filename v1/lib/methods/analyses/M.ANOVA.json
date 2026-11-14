@@ -1,0 +1,202 @@
+{
+  "conceptId": "M.ANOVA",
+  "name": "Analysis of Variance",
+  "label": "ANOVA",
+  "description": "Analysis of Variance - compares means across multiple groups",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000048",
+      "display": "ANOVA"
+    }
+  ],
+  "status": "released",
+  "methodType": "ModelBasedMethod",
+  "configurations": [
+    {
+      "name": "ss_type",
+      "description": "Sum of squares type",
+      "dataType": "code",
+      "defaultValue": "III",
+      "enumValues": [
+        "I",
+        "II",
+        "III",
+        "IV"
+      ],
+      "configuredSubMethods": [
+        "SM.ANOVA.Type3TestsF"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "response",
+      "description": "The response variable",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "fixed_effect",
+      "description": "Grouping/factor variable(s)",
+      "dataType": "code",
+      "required": true,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "fixed_effect_level",
+          "description": "A level of the fixed_effect variable"
+        }
+      ]
+    }
+  ],
+  "statisticalModel": {
+    "name": "ANOVA model",
+    "description": "One or more factors; interactions can be added with ':' or '*' operator",
+    "formula": {
+      "notation": "wilkinson_rogers",
+      "text": "<response> ~ <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)*",
+      "defaultExpression": "response ~ fixed_effect"
+    },
+    "isModelFor": [
+      "response"
+    ],
+    "modelTerms": [
+      {
+        "name": "fixed_effect",
+        "description": "Main effect of fixed_effect",
+        "forInputs": [
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_effect",
+            "description": "Effect of a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          },
+          {
+            "name": "fixed_effect_ls_mean",
+            "description": "Estimated marginal mean for a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          },
+          {
+            "name": "fixed_effect_contrast",
+            "description": "Contrast between levels of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "fixed_effect:fixed_effect",
+        "description": "Interaction between fixed_effect and fixed_effect",
+        "forInputs": [
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_fixed_effect_interaction_effect",
+            "description": "Effect of the interaction between fixed_effect and fixed_effect",
+            "forFactorLevelCombination": {
+              "name": "fixed_effect_fixed_effect_combination",
+              "description": "A combination of levels of the interacting factors of fixed_effect:fixed_effect",
+              "factors": [
+                "fixed_effect"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "subMethods": [
+    {
+      "conceptId": "SM.ANOVA.FitStatisticsLinear",
+      "name": "Linear-model fit statistics",
+      "description": "Linear-model fit indices including R-squared.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.fit_statistics_linear",
+        "statistics": [
+          "S.AIC",
+          "S.BIC",
+          "S.minus2LogL",
+          "S.R_squared"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.ANOVA.Type3TestsF",
+      "name": "Type III F-tests",
+      "description": "Type III F-tests with sums-of-squares decomposition (linear models).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.type3_tests_f",
+        "statisticSets": [
+          "SS.hypothesis_test_F_distribution"
+        ],
+        "statistics": [
+          "S.SS",
+          "S.MS"
+        ],
+        "forModelTerms": [
+          "fixed_effect",
+          "fixed_effect:fixed_effect"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.ANOVA.LsMeans",
+      "name": "Least-squares means",
+      "description": "Least-squares means (adjusted marginal means) per factor level or level combination.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.ls_means",
+        "statisticSets": [
+          "SS.ci_estimate_t_distribution"
+        ],
+        "forModelParameters": [
+          "fixed_effect_ls_mean"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.ANOVA.ContrastsT",
+      "name": "T-based contrasts",
+      "description": "Contrasts from linear models with t-based inference.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.contrasts_t",
+        "statisticSets": [
+          "SS.ci_estimate_t_distribution",
+          "SS.hypothesis_test_t_distribution"
+        ],
+        "statistics": [
+          "S.p_value_adjusted"
+        ],
+        "optionalStatistics": [
+          "S.p_value_adjusted"
+        ],
+        "forModelParameters": [
+          "fixed_effect_contrast"
+        ]
+      },
+      "inputs": [
+        {
+          "role": "estimated_means",
+          "description": "The estimated marginal means the contrast is formed from",
+          "subMethodId": "SM.ANOVA.LsMeans",
+          "statisticId": "S.estimate"
+        }
+      ]
+    }
+  ]
+}

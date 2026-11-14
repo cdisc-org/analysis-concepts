@@ -1,0 +1,67 @@
+{
+  "conceptId": "M.UnitConversion",
+  "name": "Unit Conversion",
+  "label": "Unit Conv",
+  "description": "Convert a numeric value from its per-row source unit to a fixed target unit, using a scalar factor looked up in the unit_conversions vocabulary keyed by (source_unit, target_unit). Linear conversions only — non-linear conversions (e.g. temperature) require a different method.",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "configurations": [
+    {
+      "name": "target_unit",
+      "description": "Target unit code. Valid values are resolved at runtime from the distinct to_code / to_name entries in unit_conversions.json, filtered by the physical dimension of the source measure. No default — must be chosen per transformation.",
+      "dataType": "code"
+    },
+    {
+      "name": "precision",
+      "description": "Number of decimal places to round result to after multiplication. If null/unset, no rounding is applied. For complex rounding rules, leave null and chain M.Rounding downstream.",
+      "dataType": "integer"
+    },
+    {
+      "name": "rounding_method",
+      "description": "Rounding convention when precision is set. Same enum as M.Rounding. Ignored when precision is null.",
+      "dataType": "code",
+      "defaultValue": "half_up",
+      "enumValues": [
+        "half_up",
+        "half_even",
+        "half_down",
+        "floor",
+        "ceiling"
+      ]
+    },
+    {
+      "name": "on_missing_factor",
+      "description": "Behaviour when no (source_unit, target_unit) entry is found in the vocabulary. fail: raise an error. na: set result to NA. passthrough: keep the original value unchanged.",
+      "dataType": "code",
+      "defaultValue": "fail",
+      "enumValues": [
+        "fail",
+        "na",
+        "passthrough"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "The Quantity to convert (value + unit). Algorithm reads both .value (decimal) and .unit (code) fields. Resolves via Observation.Result facet → SDTM --ORRES + --ORRESU.",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "result := round(<value>.value * factor(<value>.unit, <target_unit>), <precision>, <rounding_method>) [<target_unit>]",
+    "defaultExpression": "result := round(value.value * factor(value.unit, target_unit), precision, rounding_method) [target_unit]",
+    "notes": "Algorithm reads the input Quantity's .value (decimal) and .unit (code) fields, applies the scalar factor from the unit_conversions vocabulary, and produces a Quantity with the target unit. Single Quantity output combines the converted value and target unit."
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

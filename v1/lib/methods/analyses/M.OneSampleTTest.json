@@ -1,0 +1,105 @@
+{
+  "conceptId": "M.OneSampleTTest",
+  "name": "One-Sample t-Test",
+  "label": "1-sample t",
+  "description": "Tests whether the mean of a single sample differs from a hypothesized value",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000302",
+      "display": "one sample t-test"
+    }
+  ],
+  "status": "released",
+  "methodType": "ModelBasedMethod",
+  "configurations": [
+    {
+      "name": "mu",
+      "description": "Hypothesized population mean",
+      "dataType": "decimal",
+      "defaultValue": 0
+    },
+    {
+      "name": "alternative",
+      "description": "Direction of alternative hypothesis",
+      "dataType": "code",
+      "defaultValue": "two_sided",
+      "enumValues": [
+        "two_sided",
+        "less",
+        "greater"
+      ]
+    },
+    {
+      "name": "conf_level",
+      "dataType": "string",
+      "conformsTo": "conf_level",
+      "configuredSubMethods": [
+        "SM.OneSampleTTest.PointEstimate"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "response",
+      "description": "The sample data",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    }
+  ],
+  "statisticalModel": {
+    "name": "1-sample t model",
+    "description": "Intercept-only model; the test is against the hypothesized mu",
+    "formula": {
+      "notation": "wilkinson_rogers",
+      "text": "<response> ~ 1",
+      "defaultExpression": "response ~ 1"
+    },
+    "isModelFor": [
+      "response"
+    ],
+    "modelTerms": [
+      {
+        "name": "intercept",
+        "description": "The overall level of the response",
+        "parameters": [
+          {
+            "name": "intercept",
+            "description": "Overall mean of the response"
+          }
+        ]
+      }
+    ]
+  },
+  "subMethods": [
+    {
+      "conceptId": "SM.OneSampleTTest.TTestResult",
+      "name": "T-test result",
+      "description": "Single t-test result (one-sample, paired, or two-sample).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.t_test_result",
+        "statisticSets": [
+          "SS.hypothesis_test_t_distribution"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.OneSampleTTest.PointEstimate",
+      "name": "Point estimate",
+      "description": "Estimated mean (or paired-difference mean) with inference.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.point_estimate",
+        "statisticSets": [
+          "SS.ci_estimate_normal"
+        ],
+        "forModelParameters": [
+          "intercept"
+        ]
+      }
+    }
+  ]
+}

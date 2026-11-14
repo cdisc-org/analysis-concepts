@@ -1,0 +1,81 @@
+# Analysis Concepts candidate v1 — output classes
+# Origin: new in candidate v1; content model from lib/vocabulary/output_class_templates.json on methods_02 (v0.7.0)
+# Changes from the origin are listed in v1/docs/migration-notes.md.
+id: https://cdisc.org/ac/output_class
+name: ac_output_class
+version: "1.0.0-candidate"
+title: AC Output Class Model
+description: >-
+  Schema for output classes: named kinds of method output (LS means, contrasts,
+  type III tests, a survival table). An output class says which statistics an
+  output of that kind carries. A method's output or sub-method output names its
+  output class; an analysis concept is satisfied by an output class.
+
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  ac: https://cdisc.org/ac/
+  linkml: https://w3id.org/linkml/
+  skos: http://www.w3.org/2004/02/skos/core#
+
+default_prefix: ac
+default_range: string
+
+imports:
+  - linkml:types
+  - ac:ac_common
+  - ac:ac_statistic
+  - ac:ac_statistic_set
+
+classes:
+
+  OutputClass:
+    description: A named kind of method output and the statistics it carries.
+    slots:
+      - conceptId
+      - name
+      - label
+      - description
+      - ncitCode
+      - codings
+      - broader
+      - abstract
+      - statisticSets
+      - statistics
+      - optionalStatistics
+      - status
+    slot_usage:
+      conceptId:
+        description: Unique output class identifier, e.g., OC.ls_means.
+        pattern: "^OC\\..+$"
+      broader:
+        description: The abstract family this output class belongs to (an OutputClass identifier).
+      statistics:
+        description: Statistics carried in addition to those of the statistic sets.
+
+  OutputClassLibrary:
+    tree_root: true
+    description: The vocabulary of output classes.
+    slots:
+      - libraryVersion
+      - description
+    attributes:
+      entries:
+        description: The output classes.
+        range: OutputClass
+        multivalued: true
+        inlined_as_list: true
+        required: true
+
+slots:
+
+  optionalStatistics:
+    description: Statistics an output of this kind may carry, depending on configuration (for example an adjusted p-value).
+    multivalued: true
+    range: Statistic
+    inlined: false
+
+  outputClass:
+    description: The output class this output is an instance of.
+    range: OutputClass
+    inlined: false

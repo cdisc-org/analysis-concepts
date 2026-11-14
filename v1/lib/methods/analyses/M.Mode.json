@@ -1,0 +1,51 @@
+{
+  "conceptId": "M.Mode",
+  "name": "Mode",
+  "label": "Mode",
+  "description": "Determines the most frequently occurring value",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000033",
+      "display": "mode"
+    }
+  ],
+  "status": "released",
+  "methodType": "AggregationMethod",
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "The variable to summarize",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "group",
+      "description": "Optional grouping variable(s)",
+      "dataType": "code",
+      "required": false,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "group_level",
+          "description": "A level of the group variable"
+        }
+      ]
+    }
+  ],
+  "formula": {
+    "notation": "aggregation",
+    "text": "result := MODE(<value>) OVER (<group>*)",
+    "defaultExpression": "result := MODE(value) OVER (group)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

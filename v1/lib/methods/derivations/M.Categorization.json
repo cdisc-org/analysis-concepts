@@ -1,0 +1,47 @@
+{
+  "conceptId": "M.Categorization",
+  "name": "Categorization",
+  "label": "Categorization",
+  "description": "Maps continuous or discrete values to categories",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "configurations": [
+    {
+      "name": "conditions",
+      "description": "Condition expressions (e.g., 'value < 30, value < 70, value >= 70')",
+      "dataType": "string"
+    },
+    {
+      "name": "categories",
+      "description": "Category labels (e.g., 'Low, Medium, High')",
+      "dataType": "code"
+    },
+    {
+      "name": "default_category",
+      "description": "Category when no condition matches",
+      "dataType": "code"
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "Value to categorize",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "result := CASE WHEN <conditions> THEN <categories> ELSE <default_category> END",
+    "defaultExpression": "result := CASE WHEN conditions THEN categories END"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "code"
+  }
+}

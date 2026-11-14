@@ -1,0 +1,229 @@
+{
+  "conceptId": "M.LogisticRegression",
+  "name": "Logistic Regression",
+  "label": "logistic regression",
+  "description": "Models binary outcome as function of predictors via a link function (logit by default)",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000149",
+      "display": "binomial logistic regression for analysis of dichotomous dependent variable"
+    }
+  ],
+  "status": "released",
+  "methodType": "ModelBasedMethod",
+  "configurations": [
+    {
+      "name": "link",
+      "description": "Link function",
+      "dataType": "code",
+      "defaultValue": "logit",
+      "enumValues": [
+        "logit",
+        "probit",
+        "cloglog"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "CategoricalVariable",
+      "role": "response",
+      "description": "Binary response variable (0/1 or event/no-event)",
+      "dataType": "code",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "response_level",
+          "description": "A level of the response variable"
+        }
+      ]
+    },
+    {
+      "inputType": "ContinuousVariable",
+      "role": "covariate",
+      "description": "Continuous covariate(s)",
+      "dataType": "decimal",
+      "required": false,
+      "multivalued": true
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "fixed_effect",
+      "description": "Treatment group and/or other categorical factors",
+      "dataType": "code",
+      "required": true,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "fixed_effect_level",
+          "description": "A level of the fixed_effect variable"
+        }
+      ]
+    }
+  ],
+  "statisticalModel": {
+    "name": "logistic regression model",
+    "description": "Generalized linear model with binomial family. Multiple covariates and factors supported. For stratified analyses, can include strata as a fixed effect.",
+    "formula": {
+      "notation": "wilkinson_rogers",
+      "text": "<response> ~ <covariate>* + <fixed_effect>+ + (<covariate>:<fixed_effect>)* + (<fixed_effect>:<fixed_effect>)*",
+      "defaultExpression": "response ~ covariate + fixed_effect"
+    },
+    "isModelFor": [
+      "response"
+    ],
+    "modelTerms": [
+      {
+        "name": "covariate",
+        "description": "Main effect of covariate",
+        "forInputs": [
+          "covariate"
+        ],
+        "parameters": [
+          {
+            "name": "covariate_coefficient",
+            "description": "Regression coefficient for covariate",
+            "forInputVariables": [
+              "covariate"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "fixed_effect",
+        "description": "Main effect of fixed_effect",
+        "forInputs": [
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_effect",
+            "description": "Effect of a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "covariate:fixed_effect",
+        "description": "Interaction between covariate and fixed_effect",
+        "forInputs": [
+          "covariate",
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "covariate_fixed_effect_interaction_effect",
+            "description": "Effect of the interaction between covariate and fixed_effect",
+            "forFactorLevelCombination": {
+              "name": "covariate_fixed_effect_combination",
+              "description": "A combination of levels of the interacting factors of covariate:fixed_effect",
+              "factors": [
+                "fixed_effect"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "fixed_effect:fixed_effect",
+        "description": "Interaction between fixed_effect and fixed_effect",
+        "forInputs": [
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_fixed_effect_interaction_effect",
+            "description": "Effect of the interaction between fixed_effect and fixed_effect",
+            "forFactorLevelCombination": {
+              "name": "fixed_effect_fixed_effect_combination",
+              "description": "A combination of levels of the interacting factors of fixed_effect:fixed_effect",
+              "factors": [
+                "fixed_effect"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "subMethods": [
+    {
+      "conceptId": "SM.LogisticRegression.FitStatisticsConcordance",
+      "name": "Concordance-based fit statistics",
+      "description": "Fit indices including the concordance statistic (logistic regression, Cox PH).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.fit_statistics_concordance",
+        "statistics": [
+          "S.AIC",
+          "S.BIC",
+          "S.minus2LogL",
+          "S.concordance"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.LogisticRegression.Type3TestsChiSquared",
+      "name": "Type III chi-squared tests",
+      "description": "Type III Wald or LR chi-squared tests (logistic regression, Cox PH).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.type3_tests_chi_squared",
+        "statisticSets": [
+          "SS.hypothesis_test_chi_squared"
+        ],
+        "forModelTerms": [
+          "covariate",
+          "fixed_effect",
+          "covariate:fixed_effect",
+          "fixed_effect:fixed_effect"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.LogisticRegression.ParameterEstimatesGlm",
+      "name": "GLM parameter estimates",
+      "description": "GLM coefficients with z-based inference; includes odds_ratio for logistic.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.parameter_estimates_glm",
+        "statisticSets": [
+          "SS.point_estimate_SE",
+          "SS.hypothesis_test_normal",
+          "SS.ci_estimate_odds_ratio"
+        ],
+        "statistics": [
+          "S.coefficient"
+        ],
+        "forModelParameters": [
+          "covariate_coefficient",
+          "fixed_effect_effect",
+          "covariate_fixed_effect_interaction_effect",
+          "fixed_effect_fixed_effect_interaction_effect"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.LogisticRegression.OddsRatioEstimates",
+      "name": "Odds ratio estimates",
+      "description": "Odds ratios with confidence intervals (exponentiated logistic coefficients).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.odds_ratio_estimates",
+        "statisticSets": [
+          "SS.ci_estimate_odds_ratio"
+        ],
+        "forModelParameters": [
+          "covariate_coefficient",
+          "fixed_effect_effect",
+          "covariate_fixed_effect_interaction_effect",
+          "fixed_effect_fixed_effect_interaction_effect"
+        ]
+      }
+    }
+  ]
+}

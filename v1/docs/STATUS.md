@@ -6,9 +6,9 @@ so the work can be picked up from here at any point.
 | Phase | State |
 | --- | --- |
 | 1 Plan and decisions | done |
-| 2 Trial migration | next |
-| 3 Method layer | not started |
-| 4 Concept layer | not started |
+| 2 Trial migration | done — no fallbacks; five small schema extensions (see migration-notes.md) |
+| 3 Method layer | done — 60 methods, 57 statistics, 13 statistic sets, 43 output classes; all validate |
+| 4 Concept layer | next |
 | 5 Transformation layer | not started |
 | 6 SmartPhrase layer | not started |
 | 7 Implementation layer | not started |

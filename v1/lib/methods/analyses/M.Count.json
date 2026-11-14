@@ -1,0 +1,51 @@
+{
+  "conceptId": "M.Count",
+  "name": "Count",
+  "label": "Count",
+  "description": "Counts non-missing observations",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000047",
+      "display": "count"
+    }
+  ],
+  "status": "released",
+  "methodType": "AggregationMethod",
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "The variable to summarize",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "group",
+      "description": "Optional grouping variable(s)",
+      "dataType": "code",
+      "required": false,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "group_level",
+          "description": "A level of the group variable"
+        }
+      ]
+    }
+  ],
+  "formula": {
+    "notation": "aggregation",
+    "text": "result := COUNT(<value>) OVER (<group>*)",
+    "defaultExpression": "result := COUNT(value) OVER (group)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "integer"
+  }
+}

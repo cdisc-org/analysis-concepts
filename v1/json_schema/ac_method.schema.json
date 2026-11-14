@@ -1,0 +1,2224 @@
+{
+    "$defs": {
+        "AggregationFormulaNotation": {
+            "description": "The notation system used for aggregation formulas",
+            "enum": [
+                "aggregation"
+            ],
+            "title": "AggregationFormulaNotation",
+            "type": "string"
+        },
+        "AggregationFormulaSpec": {
+            "additionalProperties": false,
+            "description": "Specifies the formula notation and text for an aggregation method",
+            "properties": {
+                "defaultExpression": {
+                    "description": "The formula in its most common form, without repetition markers, e.g., response ~ covariate + fixed_effect.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "notation": {
+                    "$ref": "#/$defs/AggregationFormulaNotation",
+                    "description": "The formula notation system used"
+                },
+                "notes": {
+                    "description": "Guidance on using or extending the formula.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "text": {
+                    "description": "Template formula expression with role-tagged placeholders, e.g., <response> ~ <covariate>",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "notation",
+                "text"
+            ],
+            "title": "AggregationFormulaSpec",
+            "type": "object"
+        },
+        "AggregationMethod": {
+            "additionalProperties": false,
+            "description": "A method that aggregates or summarizes data, such as mean, median, or sum.",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conceptId": {
+                    "description": "Unique method identifier, e.g., M.ANCOVA, M.Subtraction",
+                    "pattern": "^M\\..+$",
+                    "type": "string"
+                },
+                "configurations": {
+                    "description": "Configurable parameters for the method.",
+                    "items": {
+                        "$ref": "#/$defs/Configuration"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text explanation of what the method does",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "formula": {
+                    "$ref": "#/$defs/AggregationFormulaSpec",
+                    "description": "Formula specification including notation and expressions."
+                },
+                "inputs": {
+                    "description": "Input data specifications for roles defined in the formula for the method.",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/InputValue"
+                            },
+                            {
+                                "$ref": "#/$defs/InputVariable"
+                            },
+                            {
+                                "$ref": "#/$defs/ContinuousVariable"
+                            },
+                            {
+                                "$ref": "#/$defs/CategoricalVariable"
+                            }
+                        ]
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "description": "Short label for display",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "methodType": {
+                    "description": "Indicates whether this is a model-based, aggregation or derivation method",
+                    "enum": [
+                        "AggregationMethod"
+                    ],
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Human-readable method name",
+                    "type": "string"
+                },
+                "ncitCode": {
+                    "description": "NCIt code",
+                    "pattern": "^(C[0-9]+(_NEW)?)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "output": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/OutputSpec"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Specification of the output of a single method or sub-method."
+                },
+                "status": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/EntryStatus"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+                },
+                "subMethods": {
+                    "description": "Sub-methods that are part of this method.",
+                    "items": {
+                        "$ref": "#/$defs/SubMethod"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "formula",
+                "conceptId",
+                "name",
+                "methodType"
+            ],
+            "title": "AggregationMethod",
+            "type": "object"
+        },
+        "Any": {
+            "additionalProperties": true,
+            "description": "Class defined to allow any value for a slot, used for flexible configuration values",
+            "title": "Any",
+            "type": [
+                "null",
+                "boolean",
+                "object",
+                "number",
+                "string"
+            ]
+        },
+        "CategoricalVariable": {
+            "additionalProperties": false,
+            "description": "An input variable that is categorical.",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "dataType": {
+                    "$ref": "#/$defs/DataTypeEnum",
+                    "description": "The data type of the input variable or value."
+                },
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "inputType": {
+                    "description": "The type of input, either a variable or a value.",
+                    "enum": [
+                        "CategoricalVariable"
+                    ],
+                    "type": "string"
+                },
+                "label": {
+                    "description": "Short label for display",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "levels": {
+                    "description": "The levels of a categorical input variable (factor).",
+                    "items": {
+                        "$ref": "#/$defs/FactorLevel"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "multivalued": {
+                    "description": "Indicates whether there can be multiple occurrences of the input.",
+                    "type": "boolean"
+                },
+                "required": {
+                    "description": "Indicates whether this input is mandatory",
+                    "type": "boolean"
+                },
+                "role": {
+                    "description": "The role specified in the formula for the method that is performed by this input.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "inputType",
+                "role",
+                "dataType",
+                "required",
+                "multivalued"
+            ],
+            "title": "CategoricalVariable",
+            "type": "object"
+        },
+        "Coding": {
+            "additionalProperties": false,
+            "description": "A reference to a code in a terminology or ontology",
+            "properties": {
+                "code": {
+                    "description": "The code value within the system (e.g., STATO_0000179)",
+                    "type": "string"
+                },
+                "display": {
+                    "description": "Human-readable label for the code",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system": {
+                    "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)",
+                    "format": "uri",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "system",
+                "code"
+            ],
+            "title": "Coding",
+            "type": "object"
+        },
+        "CompositeMethod": {
+            "additionalProperties": false,
+            "description": "A method that is composed of multiple sub-methods.",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conceptId": {
+                    "description": "Unique method identifier, e.g., M.ANCOVA, M.Subtraction",
+                    "pattern": "^M\\..+$",
+                    "type": "string"
+                },
+                "configurations": {
+                    "description": "Configurable parameters for the method.",
+                    "items": {
+                        "$ref": "#/$defs/Configuration"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text explanation of what the method does",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "inputs": {
+                    "description": "Input data specifications for roles defined in the formula for the method.",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/InputValue"
+                            },
+                            {
+                                "$ref": "#/$defs/InputVariable"
+                            },
+                            {
+                                "$ref": "#/$defs/ContinuousVariable"
+                            },
+                            {
+                                "$ref": "#/$defs/CategoricalVariable"
+                            }
+                        ]
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "description": "Short label for display",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "methodType": {
+                    "description": "Indicates whether this is a model-based, aggregation or derivation method",
+                    "enum": [
+                        "CompositeMethod"
+                    ],
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Human-readable method name",
+                    "type": "string"
+                },
+                "ncitCode": {
+                    "description": "NCIt code",
+                    "pattern": "^(C[0-9]+(_NEW)?)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "output": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/OutputSpec"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Specification of the output of a single method or sub-method."
+                },
+                "status": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/EntryStatus"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+                },
+                "subMethods": {
+                    "description": "Sub-methods that are part of this method.",
+                    "items": {
+                        "$ref": "#/$defs/SubMethod"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "subMethods",
+                "conceptId",
+                "name",
+                "methodType"
+            ],
+            "title": "CompositeMethod",
+            "type": "object"
+        },
+        "Configuration": {
+            "additionalProperties": false,
+            "description": "A configurable parameter for a method",
+            "properties": {
+                "configuredSubMethods": {
+                    "description": "The specific sub-method(s) that are configured by this configuration parameter.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conformsTo": {
+                    "description": "The shared configuration concept this parameter is an instance of (for example `alpha`), so that the same setting is recognised across methods.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "dataType": {
+                    "$ref": "#/$defs/DataTypeEnum",
+                    "description": "Data type of the configuration value"
+                },
+                "defaultValue": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Default value if not specified."
+                },
+                "description": {
+                    "description": "Explanation of this configuration parameter",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "enumValues": {
+                    "description": "Allowed values for the configuration parameter or input value.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Configuration parameter name",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "dataType",
+                "name"
+            ],
+            "title": "Configuration",
+            "type": "object"
+        },
+        "ContinuousVariable": {
+            "additionalProperties": false,
+            "description": "An input variable that is continuous (numeric)",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "dataType": {
+                    "$ref": "#/$defs/DataTypeEnum",
+                    "description": "The data type of the input variable or value."
+                },
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "inputType": {
+                    "description": "The type of input, either a variable or a value.",
+                    "enum": [
+                        "ContinuousVariable"
+                    ],
+                    "type": "string"
+                },
+                "label": {
+                    "description": "Short label for display",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "multivalued": {
+                    "description": "Indicates whether there can be multiple occurrences of the input.",
+                    "type": "boolean"
+                },
+                "required": {
+                    "description": "Indicates whether this input is mandatory",
+                    "type": "boolean"
+                },
+                "role": {
+                    "description": "The role specified in the formula for the method that is performed by this input.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "inputType",
+                "role",
+                "dataType",
+                "required",
+                "multivalued"
+            ],
+            "title": "ContinuousVariable",
+            "type": "object"
+        },
+        "DataTypeEnum": {
+            "description": "FHIR primitive data types for method inputs and outputs",
+            "enum": [
+                "decimal",
+                "integer",
+                "code",
+                "string",
+                "boolean",
+                "date",
+                "datetime",
+                "id",
+                "object"
+            ],
+            "title": "DataTypeEnum",
+            "type": "string"
+        },
+        "DerivationFormulaNotation": {
+            "description": "The notation system used for derivation formulas",
+            "enum": [
+                "derivation"
+            ],
+            "title": "DerivationFormulaNotation",
+            "type": "string"
+        },
+        "DerivationFormulaSpec": {
+            "additionalProperties": false,
+            "description": "Specifies the formula notation and text for a derivation method",
+            "properties": {
+                "defaultExpression": {
+                    "description": "The formula in its most common form, without repetition markers, e.g., response ~ covariate + fixed_effect.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "notation": {
+                    "$ref": "#/$defs/DerivationFormulaNotation",
+                    "description": "The formula notation system used"
+                },
+                "notes": {
+                    "description": "Guidance on using or extending the formula.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "text": {
+                    "description": "Template formula expression with role-tagged placeholders, e.g., <response> ~ <covariate>",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "notation",
+                "text"
+            ],
+            "title": "DerivationFormulaSpec",
+            "type": "object"
+        },
+        "DerivationMethod": {
+            "additionalProperties": false,
+            "description": "A method that derives new variables from existing data, such as subtraction, imputation, or transformation.",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conceptId": {
+                    "description": "Unique method identifier, e.g., M.ANCOVA, M.Subtraction",
+                    "pattern": "^M\\..+$",
+                    "type": "string"
+                },
+                "configurations": {
+                    "description": "Configurable parameters for the method.",
+                    "items": {
+                        "$ref": "#/$defs/Configuration"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text explanation of what the method does",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "formula": {
+                    "$ref": "#/$defs/DerivationFormulaSpec",
+                    "description": "Formula specification including notation and expressions."
+                },
+                "inputs": {
+                    "description": "Input data specifications for roles defined in the formula for the method.",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/InputValue"
+                            },
+                            {
+                                "$ref": "#/$defs/InputVariable"
+                            },
+                            {
+                                "$ref": "#/$defs/ContinuousVariable"
+                            },
+                            {
+                                "$ref": "#/$defs/CategoricalVariable"
+                            }
+                        ]
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "description": "Short label for display",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "methodType": {
+                    "description": "Indicates whether this is a model-based, aggregation or derivation method",
+                    "enum": [
+                        "DerivationMethod"
+                    ],
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Human-readable method name",
+                    "type": "string"
+                },
+                "ncitCode": {
+                    "description": "NCIt code",
+                    "pattern": "^(C[0-9]+(_NEW)?)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "output": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/OutputSpec"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Specification of the output of a single method or sub-method."
+                },
+                "status": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/EntryStatus"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+                },
+                "subMethods": {
+                    "description": "Sub-methods that are part of this method.",
+                    "items": {
+                        "$ref": "#/$defs/SubMethod"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "formula",
+                "conceptId",
+                "name",
+                "methodType"
+            ],
+            "title": "DerivationMethod",
+            "type": "object"
+        },
+        "EntryStatus": {
+            "description": "Lifecycle status of a library entry.",
+            "enum": [
+                "released",
+                "provisional",
+                "deprecated"
+            ],
+            "title": "EntryStatus",
+            "type": "string"
+        },
+        "FactorLevel": {
+            "additionalProperties": false,
+            "description": "A level of a categorical input variable (factor).",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Human-readable name",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "title": "FactorLevel",
+            "type": "object"
+        },
+        "FactorLevelCombinationSpec": {
+            "additionalProperties": false,
+            "description": "A combination of levels of one or more categorical input variables (factors).",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "combinedLevels": {
+                    "description": "The factor levels that are combined in this factor level combination.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "factors": {
+                    "description": "The role(s) of the input categorical variable (factor) whose levels are combined in this factor level combination.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "name": {
+                    "description": "Human-readable name",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "factors",
+                "name"
+            ],
+            "title": "FactorLevelCombinationSpec",
+            "type": "object"
+        },
+        "FormulaSpec": {
+            "additionalProperties": false,
+            "description": "Specifies the formula notation and text for a method",
+            "properties": {
+                "defaultExpression": {
+                    "description": "The formula in its most common form, without repetition markers, e.g., response ~ covariate + fixed_effect.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "notation": {
+                    "description": "The formula notation system used",
+                    "type": "string"
+                },
+                "notes": {
+                    "description": "Guidance on using or extending the formula.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "text": {
+                    "description": "Template formula expression with role-tagged placeholders, e.g., <response> ~ <covariate>",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "notation",
+                "text"
+            ],
+            "title": "FormulaSpec",
+            "type": "object"
+        },
+        "Input": {
+            "additionalProperties": false,
+            "description": "Specification of one input variable or value referenced by name in the formula for the method.",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "dataType": {
+                    "$ref": "#/$defs/DataTypeEnum",
+                    "description": "The data type of the input variable or value."
+                },
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "inputType": {
+                    "description": "The type of input, either a variable or a value.",
+                    "enum": [
+                        "Input"
+                    ],
+                    "type": "string"
+                },
+                "label": {
+                    "description": "Short label for display",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "multivalued": {
+                    "description": "Indicates whether there can be multiple occurrences of the input.",
+                    "type": "boolean"
+                },
+                "required": {
+                    "description": "Indicates whether this input is mandatory",
+                    "type": "boolean"
+                },
+                "role": {
+                    "description": "The role specified in the formula for the method that is performed by this input.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "inputType",
+                "role",
+                "dataType",
+                "required",
+                "multivalued"
+            ],
+            "title": "Input",
+            "type": "object"
+        },
+        "InputStatistic": {
+            "additionalProperties": false,
+            "description": "An input statistic that performs one of the roles defined in the formula for the sub-method.",
+            "properties": {
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "role": {
+                    "description": "The role specified in the formula for the method that is performed by this input.",
+                    "type": "string"
+                },
+                "statisticId": {
+                    "description": "The statistic produced by the referenced sub-method that performs the input role.",
+                    "type": "string"
+                },
+                "subMethodId": {
+                    "description": "The sub-method that produces the referenced output statistic.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "role",
+                "subMethodId",
+                "statisticId"
+            ],
+            "title": "InputStatistic",
+            "type": "object"
+        },
+        "InputValue": {
+            "additionalProperties": false,
+            "description": "An input value that performs one of the roles defined in the formula for the method.",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "dataType": {
+                    "$ref": "#/$defs/DataTypeEnum",
+                    "description": "The data type of the input variable or value."
+                },
+                "defaultValue": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Default value if not specified."
+                },
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "enumValues": {
+                    "description": "Allowed values for the configuration parameter or input value.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "inputType": {
+                    "description": "The type of input, either a variable or a value.",
+                    "enum": [
+                        "InputValue"
+                    ],
+                    "type": "string"
+                },
+                "label": {
+                    "description": "Short label for display",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "multivalued": {
+                    "description": "Indicates whether there can be multiple occurrences of the input.",
+                    "type": "boolean"
+                },
+                "required": {
+                    "description": "Indicates whether this input is mandatory",
+                    "type": "boolean"
+                },
+                "role": {
+                    "description": "The role specified in the formula for the method that is performed by this input.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "inputType",
+                "role",
+                "dataType",
+                "required",
+                "multivalued"
+            ],
+            "title": "InputValue",
+            "type": "object"
+        },
+        "InputVariable": {
+            "additionalProperties": false,
+            "description": "An input variable that performs one of the roles defined in the formula for the method.",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "dataType": {
+                    "$ref": "#/$defs/DataTypeEnum",
+                    "description": "The data type of the input variable or value."
+                },
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "inputType": {
+                    "description": "The type of input, either a variable or a value.",
+                    "enum": [
+                        "InputVariable"
+                    ],
+                    "type": "string"
+                },
+                "label": {
+                    "description": "Short label for display",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "multivalued": {
+                    "description": "Indicates whether there can be multiple occurrences of the input.",
+                    "type": "boolean"
+                },
+                "required": {
+                    "description": "Indicates whether this input is mandatory",
+                    "type": "boolean"
+                },
+                "role": {
+                    "description": "The role specified in the formula for the method that is performed by this input.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "inputType",
+                "role",
+                "dataType",
+                "required",
+                "multivalued"
+            ],
+            "title": "InputVariable",
+            "type": "object"
+        },
+        "Method": {
+            "additionalProperties": false,
+            "description": "A reusable statistical or derivation method definition.",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conceptId": {
+                    "description": "Unique method identifier, e.g., M.ANCOVA, M.Subtraction",
+                    "pattern": "^M\\..+$",
+                    "type": "string"
+                },
+                "configurations": {
+                    "description": "Configurable parameters for the method.",
+                    "items": {
+                        "$ref": "#/$defs/Configuration"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text explanation of what the method does",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "inputs": {
+                    "description": "Input data specifications for roles defined in the formula for the method.",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/InputValue"
+                            },
+                            {
+                                "$ref": "#/$defs/InputVariable"
+                            },
+                            {
+                                "$ref": "#/$defs/ContinuousVariable"
+                            },
+                            {
+                                "$ref": "#/$defs/CategoricalVariable"
+                            }
+                        ]
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "description": "Short label for display",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "methodType": {
+                    "description": "Indicates whether this is a model-based, aggregation or derivation method",
+                    "enum": [
+                        "Method"
+                    ],
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Human-readable method name",
+                    "type": "string"
+                },
+                "ncitCode": {
+                    "description": "NCIt code",
+                    "pattern": "^(C[0-9]+(_NEW)?)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "output": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/OutputSpec"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Specification of the output of a single method or sub-method."
+                },
+                "status": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/EntryStatus"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+                },
+                "subMethods": {
+                    "description": "Sub-methods that are part of this method.",
+                    "items": {
+                        "$ref": "#/$defs/SubMethod"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "conceptId",
+                "name",
+                "methodType"
+            ],
+            "title": "Method",
+            "type": "object"
+        },
+        "ModelBasedFormulaNotation": {
+            "description": "The notation system used for model-based formulas",
+            "enum": [
+                "wilkinson_rogers",
+                "survival"
+            ],
+            "title": "ModelBasedFormulaNotation",
+            "type": "string"
+        },
+        "ModelBasedFormulaSpec": {
+            "additionalProperties": false,
+            "description": "Specifies the formula notation and text for a model-based method",
+            "properties": {
+                "defaultExpression": {
+                    "description": "The formula in its most common form, without repetition markers, e.g., response ~ covariate + fixed_effect.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "notation": {
+                    "$ref": "#/$defs/ModelBasedFormulaNotation",
+                    "description": "The formula notation system used"
+                },
+                "notes": {
+                    "description": "Guidance on using or extending the formula.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "text": {
+                    "description": "Template formula expression with role-tagged placeholders, e.g., <response> ~ <covariate>",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "notation",
+                "text"
+            ],
+            "title": "ModelBasedFormulaSpec",
+            "type": "object"
+        },
+        "ModelBasedMethod": {
+            "additionalProperties": false,
+            "description": "A method that is based on a statistical model, such as ANCOVA or Cox PH.",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conceptId": {
+                    "description": "Unique method identifier, e.g., M.ANCOVA, M.Subtraction",
+                    "pattern": "^M\\..+$",
+                    "type": "string"
+                },
+                "configurations": {
+                    "description": "Configurable parameters for the method.",
+                    "items": {
+                        "$ref": "#/$defs/Configuration"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text explanation of what the method does",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "inputs": {
+                    "description": "Input data specifications for roles defined in the formula for the method.",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/InputValue"
+                            },
+                            {
+                                "$ref": "#/$defs/InputVariable"
+                            },
+                            {
+                                "$ref": "#/$defs/ContinuousVariable"
+                            },
+                            {
+                                "$ref": "#/$defs/CategoricalVariable"
+                            }
+                        ]
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "description": "Short label for display",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "methodType": {
+                    "description": "Indicates whether this is a model-based, aggregation or derivation method",
+                    "enum": [
+                        "ModelBasedMethod"
+                    ],
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Human-readable method name",
+                    "type": "string"
+                },
+                "ncitCode": {
+                    "description": "NCIt code",
+                    "pattern": "^(C[0-9]+(_NEW)?)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "output": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/OutputSpec"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Specification of the output of a single method or sub-method."
+                },
+                "statisticalModel": {
+                    "$ref": "#/$defs/StatisticalModelSpec",
+                    "description": "The statistical model associated with this method, if applicable."
+                },
+                "status": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/EntryStatus"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+                },
+                "subMethods": {
+                    "description": "Sub-methods that are part of this method.",
+                    "items": {
+                        "$ref": "#/$defs/SubMethod"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "statisticalModel",
+                "subMethods",
+                "conceptId",
+                "name",
+                "methodType"
+            ],
+            "title": "ModelBasedMethod",
+            "type": "object"
+        },
+        "ModelParameter": {
+            "additionalProperties": false,
+            "description": "A parameter associated with a model term.",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "forFactorLevelCombination": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FactorLevelCombinationSpec"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "The factor level combination with which the model parameter is associated."
+                },
+                "forFactorLevels": {
+                    "description": "The factor level(s) with which this model parameter is associated.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "forInputVariables": {
+                    "description": "The input variable(s) with which this model parameter is associated.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Human-readable name",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "title": "ModelParameter",
+            "type": "object"
+        },
+        "ModelTerm": {
+            "additionalProperties": false,
+            "description": "A term (variable) used in a statistical model.",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "forInputs": {
+                    "description": "The input study design independent variable(s) or value(s) that this model term is intended to describe.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Human-readable name",
+                    "type": "string"
+                },
+                "parameters": {
+                    "description": "The parameters associated with the model term.",
+                    "items": {
+                        "$ref": "#/$defs/ModelParameter"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                }
+            },
+            "required": [
+                "parameters",
+                "name"
+            ],
+            "title": "ModelTerm",
+            "type": "object"
+        },
+        "NameAsIdentifier": {
+            "additionalProperties": false,
+            "description": "A mixin class for any named method component that is referenced by name.",
+            "properties": {
+                "name": {
+                    "description": "Human-readable name",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "title": "NameAsIdentifier",
+            "type": "object"
+        },
+        "OutputClass": {
+            "additionalProperties": false,
+            "description": "A named kind of method output and the statistics it carries.",
+            "properties": {
+                "abstract": {
+                    "description": "True for a grouping entry that is never used directly.",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "broader": {
+                    "description": "The abstract family this output class belongs to (an OutputClass identifier).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conceptId": {
+                    "description": "Unique output class identifier, e.g., OC.ls_means.",
+                    "pattern": "^OC\\..+$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "description": "Short label for display",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Human-readable name",
+                    "type": "string"
+                },
+                "ncitCode": {
+                    "description": "NCIt code",
+                    "pattern": "^(C[0-9]+(_NEW)?)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "optionalStatistics": {
+                    "description": "Statistics an output of this kind may carry, depending on configuration (for example an adjusted p-value).",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "statisticSets": {
+                    "description": "The predefined set of statistics produced by this method, referencing the statistic set vocabulary.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "statistics": {
+                    "description": "Statistics carried in addition to those of the statistic sets.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "status": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/EntryStatus"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+                }
+            },
+            "required": [
+                "conceptId",
+                "name"
+            ],
+            "title": "OutputClass",
+            "type": "object"
+        },
+        "OutputClassLibrary": {
+            "additionalProperties": false,
+            "description": "The vocabulary of output classes.",
+            "properties": {
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "entries": {
+                    "description": "The output classes.",
+                    "items": {
+                        "$ref": "#/$defs/OutputClass"
+                    },
+                    "type": "array"
+                },
+                "libraryVersion": {
+                    "description": "Semantic version of a library file.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "libraryVersion",
+                "entries"
+            ],
+            "title": "OutputClassLibrary",
+            "type": "object"
+        },
+        "OutputSpec": {
+            "additionalProperties": false,
+            "description": "A set of statistics produced by a method or sub-method that is associated with one or more components of the method.",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "dataType": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DataTypeEnum"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Data type of the produced value, for an output that is a single value."
+                },
+                "forInputVariables": {
+                    "description": "The input variable(s) with which this model component is associated.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "forModelParameters": {
+                    "description": "The model parameter(s) with which the output is associated.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "forModelTerms": {
+                    "description": "The model term(s) with which the output is associated.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "forStudyGroupPopulation": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/StudyGroupPopulation"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "The study group population with which this model component is associated."
+                },
+                "optionalStatistics": {
+                    "description": "Statistics an output of this kind may carry, depending on configuration (for example an adjusted p-value).",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "outputClass": {
+                    "description": "The output class this output is an instance of.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "statisticSets": {
+                    "description": "The predefined set of statistics produced by this method, referencing the statistic set vocabulary.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "statistics": {
+                    "description": "The statistics produced by this method, referencing the statistics vocabulary.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "title": "OutputSpec",
+            "type": "object"
+        },
+        "Statistic": {
+            "additionalProperties": false,
+            "description": "A reusable statistic/measure definition in the vocabulary",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conceptId": {
+                    "description": "Unique statistic identifier, e.g., S.AIC, S.BIC",
+                    "pattern": "^S\\..+$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "What this statistic measures",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "description": "Short label for display",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Statistic identifier, e.g., estimate, p_value, F_statistic",
+                    "type": "string"
+                },
+                "ncitCode": {
+                    "description": "NCIt code",
+                    "pattern": "^(C[0-9]+(_NEW)?)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "status": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/EntryStatus"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+                }
+            },
+            "required": [
+                "conceptId",
+                "name"
+            ],
+            "title": "Statistic",
+            "type": "object"
+        },
+        "StatisticLibrary": {
+            "additionalProperties": false,
+            "description": "The vocabulary of statistics that methods produce and analysis concepts are made of.",
+            "properties": {
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "entries": {
+                    "description": "The statistics in the vocabulary.",
+                    "items": {
+                        "$ref": "#/$defs/Statistic"
+                    },
+                    "type": "array"
+                },
+                "libraryVersion": {
+                    "description": "Semantic version of a library file.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "libraryVersion",
+                "entries"
+            ],
+            "title": "StatisticLibrary",
+            "type": "object"
+        },
+        "StatisticSet": {
+            "additionalProperties": false,
+            "description": "A predefined set of statistics produced by a method or sub-method.",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conceptId": {
+                    "description": "Unique statistic set identifier.",
+                    "pattern": "^SS\\..+$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "What this statistic set contains.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "description": "Short label for display",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "The Statistic set identifier.",
+                    "type": "string"
+                },
+                "ncitCode": {
+                    "description": "NCIt code",
+                    "pattern": "^(C[0-9]+(_NEW)?)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "statistics": {
+                    "description": "The statistics produced by this method, referencing the statistics vocabulary.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "status": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/EntryStatus"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+                }
+            },
+            "required": [
+                "conceptId",
+                "name"
+            ],
+            "title": "StatisticSet",
+            "type": "object"
+        },
+        "StatisticSetLibrary": {
+            "additionalProperties": false,
+            "description": "The predefined sets of statistics that are produced and interpreted together.",
+            "properties": {
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "entries": {
+                    "description": "The statistic sets.",
+                    "items": {
+                        "$ref": "#/$defs/StatisticSet"
+                    },
+                    "type": "array"
+                },
+                "libraryVersion": {
+                    "description": "Semantic version of a library file.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "libraryVersion",
+                "entries"
+            ],
+            "title": "StatisticSetLibrary",
+            "type": "object"
+        },
+        "StatisticalModelSpec": {
+            "additionalProperties": false,
+            "description": "A statistical model that describes the relationship between variables. Examples include linear regression, logistic regression, and Cox proportional hazards models.",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "formula": {
+                    "$ref": "#/$defs/ModelBasedFormulaSpec",
+                    "description": "Formula specification including notation and expressions."
+                },
+                "isModelFor": {
+                    "description": "The input study design dependent variable that this model is intended to describe.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "modelTerms": {
+                    "description": "The terms (variables) used in the statistical model, if applicable.",
+                    "items": {
+                        "$ref": "#/$defs/ModelTerm"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                },
+                "name": {
+                    "description": "Human-readable name",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "formula",
+                "isModelFor",
+                "modelTerms",
+                "name"
+            ],
+            "title": "StatisticalModelSpec",
+            "type": "object"
+        },
+        "StudyGroupPopulation": {
+            "additionalProperties": false,
+            "description": "A study group population that is denoted by a combination of input categorical variable values (factor levels).",
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text explanation or description",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "factorLevelCombination": {
+                    "$ref": "#/$defs/FactorLevelCombinationSpec",
+                    "description": "The combination of factor levels that denote the study group population."
+                },
+                "name": {
+                    "description": "Human-readable name",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "factorLevelCombination",
+                "name"
+            ],
+            "title": "StudyGroupPopulation",
+            "type": "object"
+        },
+        "SubMethod": {
+            "additionalProperties": false,
+            "description": "A method that is part of a composite method",
+            "not": {
+                "required": [
+                    "configurations"
+                ]
+            },
+            "properties": {
+                "codings": {
+                    "description": "Mappings to external terminology or ontology codes",
+                    "items": {
+                        "$ref": "#/$defs/Coding"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "conceptId": {
+                    "description": "Unique sub-method identifier, e.g., M.ANCOVA, M.Subtraction",
+                    "pattern": "^(S)?M\\..+$",
+                    "type": "string"
+                },
+                "configurations": {
+                    "description": "Configurable parameters for the method.",
+                    "items": {
+                        "$ref": "#/$defs/Configuration"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Free-text explanation of what the sub-method does.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "inputs": {
+                    "description": "Statistic value(s) produced by other sub-method(s) within the same composite method used for roles defined in the formula for the sub-method.",
+                    "items": {
+                        "$ref": "#/$defs/InputStatistic"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "label": {
+                    "description": "Short label for display",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "methodType": {
+                    "description": "Indicates whether this is a model-based, aggregation or derivation method",
+                    "enum": [
+                        "SubMethod"
+                    ],
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Human-readable sub-method name.",
+                    "type": "string"
+                },
+                "ncitCode": {
+                    "description": "NCIt code",
+                    "pattern": "^(C[0-9]+(_NEW)?)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "output": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/OutputSpec"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Specification of the output of a single method or sub-method."
+                },
+                "status": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/EntryStatus"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+                },
+                "subMethods": {
+                    "description": "Sub-methods that are part of this method.",
+                    "items": {
+                        "$ref": "#/$defs/SubMethod"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "conceptId",
+                "name",
+                "methodType"
+            ],
+            "title": "SubMethod",
+            "type": "object"
+        }
+    },
+    "$id": "https://cdisc.org/ac/method",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "additionalProperties": false,
+    "description": "The vocabulary of statistics that methods produce and analysis concepts are made of.",
+    "metamodel_version": "1.12.0",
+    "properties": {
+        "description": {
+            "description": "Free-text explanation or description",
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "entries": {
+            "description": "The statistics in the vocabulary.",
+            "items": {
+                "$ref": "#/$defs/Statistic"
+            },
+            "type": "array"
+        },
+        "libraryVersion": {
+            "description": "Semantic version of a library file.",
+            "type": "string"
+        }
+    },
+    "required": [
+        "libraryVersion",
+        "entries"
+    ],
+    "title": "ac_method",
+    "type": "object",
+    "version": "1.0.0-candidate"
+}
+

@@ -1,0 +1,75 @@
+# Analysis Concepts candidate v1 — statistic sets
+# Origin: model/schema/statistic_set.yaml on model-schema (v0.9.0)
+# Changes from the origin are listed in v1/docs/migration-notes.md.
+id: https://cdisc.org/ac/statistic_set
+name: ac_statistic_set
+version: "1.0.0-candidate"
+title: AC Statistic Set Model
+description: >-
+  Schema for AC (Analysis Concepts) predefined 
+  statistic set definitions.
+
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  ac: https://cdisc.org/ac/
+  linkml: https://w3id.org/linkml/
+  obo: http://purl.obolibrary.org/obo/
+
+default_prefix: ac
+default_range: string
+
+imports:
+  - linkml:types
+  - ac:ac_common
+  - ac:ac_statistic
+
+classes:
+
+  StatisticSet:
+    description: A predefined set of statistics produced by a method or sub-method.
+    slots:      
+      - conceptId
+      - name
+      - label
+      - description
+      - ncitCode
+      - codings
+      - statistics
+      - status
+    slot_usage:
+      conceptId:
+        description: Unique statistic set identifier.
+        pattern: "^SS\\..+$"
+      name:
+        description: The Statistic set identifier.
+      description:
+        description: What this statistic set contains.
+
+  StatisticSetLibrary:
+    tree_root: true
+    description: The predefined sets of statistics that are produced and interpreted together.
+    slots:
+      - libraryVersion
+      - description
+    attributes:
+      entries:
+        description: The statistic sets.
+        range: StatisticSet
+        multivalued: true
+        inlined_as_list: true
+        required: true
+
+# ──────────────────────────────────────────────
+# Slots
+# ──────────────────────────────────────────────
+
+slots:
+
+  statisticSets:
+    exact_mappings:
+      - obo:OBI_0000299 # "has specified output"
+    description: The predefined set of statistics produced by this method, referencing the statistic set vocabulary.
+    range: StatisticSet
+    inlined: false
+    multivalued: true

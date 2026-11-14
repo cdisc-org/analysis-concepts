@@ -1,0 +1,51 @@
+{
+  "conceptId": "M.Skewness",
+  "name": "Skewness",
+  "label": "Skewness",
+  "description": "Computes the skewness (measure of asymmetry) of the distribution of a numeric variable",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000068",
+      "display": "skewness"
+    }
+  ],
+  "status": "released",
+  "methodType": "AggregationMethod",
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "The variable to summarize",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "group",
+      "description": "Optional grouping variable(s)",
+      "dataType": "code",
+      "required": false,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "group_level",
+          "description": "A level of the group variable"
+        }
+      ]
+    }
+  ],
+  "formula": {
+    "notation": "aggregation",
+    "text": "result := SKEWNESS(<value>) OVER (<group>*)",
+    "defaultExpression": "result := SKEWNESS(value) OVER (group)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

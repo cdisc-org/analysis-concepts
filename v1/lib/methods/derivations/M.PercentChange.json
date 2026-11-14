@@ -1,0 +1,38 @@
+{
+  "conceptId": "M.PercentChange",
+  "name": "Percent Change",
+  "label": "% Change",
+  "description": "Computes proportional change as a percentage",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "pre",
+      "description": "The baseline/reference value",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "ContinuousVariable",
+      "role": "post",
+      "description": "The post-baseline value",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "result := 100 * (<post> - <pre>) / <pre>",
+    "defaultExpression": "result := 100 * (post - pre) / pre"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

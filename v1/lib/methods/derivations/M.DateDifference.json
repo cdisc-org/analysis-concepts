@@ -1,0 +1,52 @@
+{
+  "conceptId": "M.DateDifference",
+  "name": "Date Difference",
+  "label": "Date Difference",
+  "description": "Computes the difference between two dates in specified units",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "configurations": [
+    {
+      "name": "unit",
+      "description": "Unit for the result",
+      "dataType": "code",
+      "defaultValue": "days",
+      "enumValues": [
+        "days",
+        "weeks",
+        "months",
+        "years"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "InputVariable",
+      "role": "start_date",
+      "description": "The starting date",
+      "dataType": "date",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "InputVariable",
+      "role": "end_date",
+      "description": "The ending date",
+      "dataType": "date",
+      "required": true,
+      "multivalued": false
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "result := date_diff(<end_date>, <start_date>, <unit>)",
+    "defaultExpression": "result := date_diff(end_date, start_date, unit)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

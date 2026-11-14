@@ -1,0 +1,114 @@
+{
+  "conceptId": "M.FisherExactTest",
+  "name": "Fisher Exact Test",
+  "label": "Fisher's exact",
+  "description": "Exact test of independence for 2x2 contingency tables. Preferred over chi-squared when expected cell counts are small.",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000073",
+      "display": "Fisher's exact test"
+    }
+  ],
+  "status": "released",
+  "methodType": "ModelBasedMethod",
+  "configurations": [
+    {
+      "name": "alternative",
+      "description": "Direction of alternative hypothesis",
+      "dataType": "code",
+      "defaultValue": "two_sided",
+      "enumValues": [
+        "two_sided",
+        "less",
+        "greater"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "CategoricalVariable",
+      "role": "response",
+      "description": "Binary response variable (e.g., responder flag)",
+      "dataType": "code",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "response_level",
+          "description": "A level of the response variable"
+        }
+      ]
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "fixed_effect",
+      "description": "Treatment grouping variable",
+      "dataType": "code",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "fixed_effect_level",
+          "description": "A level of the fixed_effect variable"
+        }
+      ]
+    }
+  ],
+  "statisticalModel": {
+    "name": "Fisher's exact model",
+    "description": "Both variables must be binary for the standard 2x2 Fisher test.",
+    "formula": {
+      "notation": "wilkinson_rogers",
+      "text": "<response> ~ <fixed_effect>",
+      "defaultExpression": "response ~ fixed_effect"
+    },
+    "isModelFor": [
+      "response"
+    ],
+    "modelTerms": [
+      {
+        "name": "fixed_effect",
+        "description": "Main effect of fixed_effect",
+        "forInputs": [
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_effect",
+            "description": "Effect of a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "subMethods": [
+    {
+      "conceptId": "SM.FisherExactTest.ExactTestResult",
+      "name": "Exact test result",
+      "description": "Exact test result (Fisher exact) — p-value only.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.exact_test_result",
+        "statisticSets": [
+          "SS.hypothesis_test_p_value"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.FisherExactTest.OddsRatioMeasures",
+      "name": "Odds ratio measures",
+      "description": "Odds ratio with confidence interval (CMH common OR or per-stratum, Fisher OR).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.odds_ratio_measures",
+        "statisticSets": [
+          "SS.ci_estimate_odds_ratio"
+        ]
+      }
+    }
+  ]
+}

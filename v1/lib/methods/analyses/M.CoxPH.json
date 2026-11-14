@@ -1,0 +1,250 @@
+{
+  "conceptId": "M.CoxPH",
+  "name": "Cox Proportional Hazards Regression",
+  "label": "Cox PH",
+  "description": "Semi-parametric regression for survival data modeling the hazard function",
+  "status": "released",
+  "methodType": "ModelBasedMethod",
+  "configurations": [
+    {
+      "name": "ties",
+      "description": "Method for handling tied event times",
+      "dataType": "code",
+      "defaultValue": "efron",
+      "enumValues": [
+        "efron",
+        "breslow",
+        "exact"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "time",
+      "description": "Time to event or censoring",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "event",
+      "description": "Event indicator",
+      "dataType": "boolean",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "event_level",
+          "description": "A level of the event variable"
+        }
+      ]
+    },
+    {
+      "inputType": "ContinuousVariable",
+      "role": "covariate",
+      "description": "Continuous covariate(s)",
+      "dataType": "decimal",
+      "required": false,
+      "multivalued": true
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "fixed_effect",
+      "description": "Treatment group and/or other categorical factors",
+      "dataType": "code",
+      "required": true,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "fixed_effect_level",
+          "description": "A level of the fixed_effect variable"
+        }
+      ]
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "strata",
+      "description": "Stratification variable(s) for stratified Cox model",
+      "dataType": "code",
+      "required": false,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "strata_level",
+          "description": "A level of the strata variable"
+        }
+      ]
+    }
+  ],
+  "statisticalModel": {
+    "name": "Cox PH model",
+    "description": "Multiple covariates, factors, and interactions supported. The strata() function creates a stratified baseline hazard (one per stratum level) without estimating a coefficient for that variable.",
+    "formula": {
+      "notation": "survival",
+      "text": "Surv(<time>, <event>) ~ <covariate>* + <fixed_effect>+ + (<covariate>:<fixed_effect>)* + strata(<strata>)*",
+      "defaultExpression": "Surv(time, event) ~ covariate + fixed_effect"
+    },
+    "isModelFor": [
+      "time",
+      "event"
+    ],
+    "modelTerms": [
+      {
+        "name": "covariate",
+        "description": "Main effect of covariate",
+        "forInputs": [
+          "covariate"
+        ],
+        "parameters": [
+          {
+            "name": "covariate_coefficient",
+            "description": "Regression coefficient for covariate",
+            "forInputVariables": [
+              "covariate"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "fixed_effect",
+        "description": "Main effect of fixed_effect",
+        "forInputs": [
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_effect",
+            "description": "Effect of a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "covariate:fixed_effect",
+        "description": "Interaction between covariate and fixed_effect",
+        "forInputs": [
+          "covariate",
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "covariate_fixed_effect_interaction_effect",
+            "description": "Effect of the interaction between covariate and fixed_effect",
+            "forFactorLevelCombination": {
+              "name": "covariate_fixed_effect_combination",
+              "description": "A combination of levels of the interacting factors of covariate:fixed_effect",
+              "factors": [
+                "fixed_effect"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "strata",
+        "description": "Conditioning structure defined by strata (strata or repeated subject)",
+        "forInputs": [
+          "strata"
+        ],
+        "parameters": [
+          {
+            "name": "strata_grouping",
+            "description": "The grouping of observations by strata",
+            "forInputVariables": [
+              "strata"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "subMethods": [
+    {
+      "conceptId": "SM.CoxPH.FitStatisticsConcordance",
+      "name": "Concordance-based fit statistics",
+      "description": "Fit indices including the concordance statistic (logistic regression, Cox PH).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.fit_statistics_concordance",
+        "statistics": [
+          "S.AIC",
+          "S.BIC",
+          "S.minus2LogL",
+          "S.concordance"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.CoxPH.GlobalTests",
+      "name": "Global tests",
+      "description": "Overall model significance tests (likelihood ratio, Wald, score). Tests: likelihood_ratio, wald, score.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.global_tests",
+        "statisticSets": [
+          "SS.hypothesis_test_chi_squared"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.CoxPH.Type3TestsChiSquared",
+      "name": "Type III chi-squared tests",
+      "description": "Type III Wald or LR chi-squared tests (logistic regression, Cox PH).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.type3_tests_chi_squared",
+        "statisticSets": [
+          "SS.hypothesis_test_chi_squared"
+        ],
+        "forModelTerms": [
+          "covariate",
+          "fixed_effect",
+          "covariate:fixed_effect"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.CoxPH.ParameterEstimatesCox",
+      "name": "Cox PH parameter estimates",
+      "description": "Cox PH coefficients with z-based inference; includes hazard_ratio.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.parameter_estimates_cox",
+        "statisticSets": [
+          "SS.point_estimate_SE",
+          "SS.hypothesis_test_normal",
+          "SS.ci_estimate_hazard_ratio"
+        ],
+        "statistics": [
+          "S.coefficient"
+        ],
+        "forModelParameters": [
+          "covariate_coefficient",
+          "fixed_effect_effect",
+          "covariate_fixed_effect_interaction_effect"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.CoxPH.HazardRatioEstimates",
+      "name": "Hazard ratio estimates",
+      "description": "Hazard ratios with confidence intervals (exponentiated Cox coefficients).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.hazard_ratio_estimates",
+        "statisticSets": [
+          "SS.ci_estimate_hazard_ratio"
+        ],
+        "forModelParameters": [
+          "covariate_coefficient",
+          "fixed_effect_effect",
+          "covariate_fixed_effect_interaction_effect"
+        ]
+      }
+    }
+  ]
+}

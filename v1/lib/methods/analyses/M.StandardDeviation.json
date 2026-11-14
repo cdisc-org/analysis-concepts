@@ -1,0 +1,51 @@
+{
+  "conceptId": "M.StandardDeviation",
+  "name": "Standard Deviation",
+  "label": "SD",
+  "description": "Computes the standard deviation of a numeric variable",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000237",
+      "display": "standard deviation"
+    }
+  ],
+  "status": "released",
+  "methodType": "AggregationMethod",
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "The variable to summarize",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "group",
+      "description": "Optional grouping variable(s)",
+      "dataType": "code",
+      "required": false,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "group_level",
+          "description": "A level of the group variable"
+        }
+      ]
+    }
+  ],
+  "formula": {
+    "notation": "aggregation",
+    "text": "result := SD(<value>) OVER (<group>*)",
+    "defaultExpression": "result := SD(value) OVER (group)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

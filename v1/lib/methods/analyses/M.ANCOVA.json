@@ -1,0 +1,283 @@
+{
+  "conceptId": "M.ANCOVA",
+  "name": "Analysis of Covariance",
+  "label": "ANCOVA",
+  "description": "Analysis of Covariance - ANOVA with continuous covariate adjustment",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000179",
+      "display": "ANCOVA"
+    }
+  ],
+  "status": "released",
+  "methodType": "ModelBasedMethod",
+  "configurations": [
+    {
+      "name": "ss_type",
+      "description": "Sum of squares type",
+      "dataType": "code",
+      "defaultValue": "III",
+      "enumValues": [
+        "I",
+        "II",
+        "III",
+        "IV"
+      ],
+      "configuredSubMethods": [
+        "SM.ANCOVA.Type3TestsF"
+      ]
+    },
+    {
+      "name": "alpha",
+      "description": "Type I error rate for confidence intervals; 1-alpha is the confidence level.",
+      "dataType": "decimal",
+      "defaultValue": 0.05,
+      "conformsTo": "alpha",
+      "configuredSubMethods": [
+        "SM.ANCOVA.ParameterEstimatesLinear",
+        "SM.ANCOVA.LsMeans",
+        "SM.ANCOVA.ContrastsT"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "response",
+      "description": "The response/dependent variable",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "ContinuousVariable",
+      "role": "covariate",
+      "description": "Continuous covariate(s) for adjustment (e.g., baseline value, age)",
+      "dataType": "decimal",
+      "required": false,
+      "multivalued": true
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "fixed_effect",
+      "description": "Grouping/factor variable(s) (e.g., treatment arm, region)",
+      "dataType": "code",
+      "required": true,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "fixed_effect_level",
+          "description": "A level of the fixed_effect variable"
+        }
+      ]
+    }
+  ],
+  "statisticalModel": {
+    "name": "ANCOVA model",
+    "description": "Covariates adjust the group comparison. Adding covariate:fixed_effect interaction tests homogeneity of regression slopes. Multiple covariates and factors are supported.",
+    "formula": {
+      "notation": "wilkinson_rogers",
+      "text": "<response> ~ <covariate>* + <fixed_effect>+ + (<fixed_effect>:<fixed_effect>)* + (<covariate>:<fixed_effect>)*",
+      "defaultExpression": "response ~ covariate + fixed_effect"
+    },
+    "isModelFor": [
+      "response"
+    ],
+    "modelTerms": [
+      {
+        "name": "covariate",
+        "description": "Main effect of covariate",
+        "forInputs": [
+          "covariate"
+        ],
+        "parameters": [
+          {
+            "name": "covariate_coefficient",
+            "description": "Regression coefficient for covariate",
+            "forInputVariables": [
+              "covariate"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "fixed_effect",
+        "description": "Main effect of fixed_effect",
+        "forInputs": [
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_effect",
+            "description": "Effect of a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          },
+          {
+            "name": "fixed_effect_ls_mean",
+            "description": "Estimated marginal mean for a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          },
+          {
+            "name": "fixed_effect_contrast",
+            "description": "Contrast between levels of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "fixed_effect:fixed_effect",
+        "description": "Interaction between fixed_effect and fixed_effect",
+        "forInputs": [
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_fixed_effect_interaction_effect",
+            "description": "Effect of the interaction between fixed_effect and fixed_effect",
+            "forFactorLevelCombination": {
+              "name": "fixed_effect_fixed_effect_combination",
+              "description": "A combination of levels of the interacting factors of fixed_effect:fixed_effect",
+              "factors": [
+                "fixed_effect"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "covariate:fixed_effect",
+        "description": "Interaction between covariate and fixed_effect",
+        "forInputs": [
+          "covariate",
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "covariate_fixed_effect_interaction_effect",
+            "description": "Effect of the interaction between covariate and fixed_effect",
+            "forFactorLevelCombination": {
+              "name": "covariate_fixed_effect_combination",
+              "description": "A combination of levels of the interacting factors of covariate:fixed_effect",
+              "factors": [
+                "fixed_effect"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "subMethods": [
+    {
+      "conceptId": "SM.ANCOVA.FitStatisticsLinear",
+      "name": "Linear-model fit statistics",
+      "description": "Linear-model fit indices including R-squared.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.fit_statistics_linear",
+        "statistics": [
+          "S.AIC",
+          "S.BIC",
+          "S.minus2LogL",
+          "S.R_squared"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.ANCOVA.Type3TestsF",
+      "name": "Type III F-tests",
+      "description": "Type III F-tests with sums-of-squares decomposition (linear models).",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.type3_tests_f",
+        "statisticSets": [
+          "SS.hypothesis_test_F_distribution"
+        ],
+        "statistics": [
+          "S.SS",
+          "S.MS"
+        ],
+        "forModelTerms": [
+          "covariate",
+          "fixed_effect",
+          "fixed_effect:fixed_effect",
+          "covariate:fixed_effect"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.ANCOVA.ParameterEstimatesLinear",
+      "name": "Linear-model parameter estimates",
+      "description": "Linear-model coefficients with t-based inference.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.parameter_estimates_linear",
+        "statisticSets": [
+          "SS.ci_estimate_t_distribution",
+          "SS.hypothesis_test_t_distribution"
+        ],
+        "statistics": [
+          "S.coefficient"
+        ],
+        "forModelParameters": [
+          "covariate_coefficient",
+          "fixed_effect_effect",
+          "fixed_effect_fixed_effect_interaction_effect",
+          "covariate_fixed_effect_interaction_effect"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.ANCOVA.LsMeans",
+      "name": "Least-squares means",
+      "description": "Least-squares means (adjusted marginal means) per factor level or level combination.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.ls_means",
+        "statisticSets": [
+          "SS.ci_estimate_t_distribution"
+        ],
+        "forModelParameters": [
+          "fixed_effect_ls_mean"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.ANCOVA.ContrastsT",
+      "name": "T-based contrasts",
+      "description": "Contrasts from linear models with t-based inference.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.contrasts_t",
+        "statisticSets": [
+          "SS.ci_estimate_t_distribution",
+          "SS.hypothesis_test_t_distribution"
+        ],
+        "statistics": [
+          "S.p_value_adjusted"
+        ],
+        "optionalStatistics": [
+          "S.p_value_adjusted"
+        ],
+        "forModelParameters": [
+          "fixed_effect_contrast"
+        ]
+      },
+      "inputs": [
+        {
+          "role": "estimated_means",
+          "description": "The estimated marginal means the contrast is formed from",
+          "subMethodId": "SM.ANCOVA.LsMeans",
+          "statisticId": "S.estimate"
+        }
+      ]
+    }
+  ]
+}

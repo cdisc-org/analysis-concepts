@@ -1,0 +1,148 @@
+{
+  "conceptId": "M.KaplanMeier",
+  "name": "Kaplan-Meier Estimation",
+  "label": "KM",
+  "description": "Non-parametric survival function estimation with optional grouping",
+  "status": "released",
+  "methodType": "ModelBasedMethod",
+  "configurations": [
+    {
+      "name": "conf_type",
+      "description": "Confidence interval transformation type",
+      "dataType": "code",
+      "defaultValue": "log-log",
+      "enumValues": [
+        "log-log",
+        "log",
+        "plain",
+        "arcsin"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "time",
+      "description": "Time to event or censoring",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "event",
+      "description": "Event indicator (1=event, 0=censored)",
+      "dataType": "boolean",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "event_level",
+          "description": "A level of the event variable"
+        }
+      ]
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "fixed_effect",
+      "description": "Optional grouping variable for stratified curves",
+      "dataType": "code",
+      "required": false,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "fixed_effect_level",
+          "description": "A level of the fixed_effect variable"
+        }
+      ]
+    }
+  ],
+  "statisticalModel": {
+    "name": "KM model",
+    "description": "If no group is specified, estimates a single survival curve. With a group variable, produces stratified curves.",
+    "formula": {
+      "notation": "survival",
+      "text": "Surv(<time>, <event>) ~ <fixed_effect>?",
+      "defaultExpression": "Surv(time, event) ~ fixed_effect"
+    },
+    "isModelFor": [
+      "time",
+      "event"
+    ],
+    "modelTerms": [
+      {
+        "name": "fixed_effect",
+        "description": "Main effect of fixed_effect",
+        "forInputs": [
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_effect",
+            "description": "Effect of a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "subMethods": [
+    {
+      "conceptId": "SM.KaplanMeier.EventSummary",
+      "name": "Event summary",
+      "description": "Summary counts of events and censoring per group.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.event_summary",
+        "statistics": [
+          "S.n_risk",
+          "S.n_event",
+          "S.n_censored"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.KaplanMeier.SurvivalTable",
+      "name": "Survival table",
+      "description": "Life table with survival estimates at each event time.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.survival_table",
+        "statisticSets": [
+          "SS.ci_estimate_normal"
+        ],
+        "statistics": [
+          "S.n_risk",
+          "S.n_event",
+          "S.n_censored"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.KaplanMeier.MedianSurvival",
+      "name": "Median survival",
+      "description": "Median survival time per group.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.median_survival",
+        "statisticSets": [
+          "SS.ci_estimate"
+        ]
+      }
+    },
+    {
+      "conceptId": "SM.KaplanMeier.LandmarkEstimates",
+      "name": "Landmark estimates",
+      "description": "Survival probability at specific landmark times.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.landmark_estimates",
+        "statisticSets": [
+          "SS.ci_estimate_normal"
+        ]
+      }
+    }
+  ]
+}

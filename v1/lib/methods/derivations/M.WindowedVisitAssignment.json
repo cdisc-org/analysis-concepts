@@ -1,0 +1,62 @@
+{
+  "conceptId": "M.WindowedVisitAssignment",
+  "name": "Windowed Visit Assignment",
+  "label": "Windowed Visit Assignment",
+  "description": "Assign each observation to a scheduled analysis visit using day-windows and a target-day tie-break. SAP-style AVISIT derivation. Consumes a pre-computed study day (SDTM --DY) relative to the randomization anchor; no date subtraction inside the method.",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "configurations": [
+    {
+      "name": "referenceBC",
+      "description": "Identifier of the BC that provides the randomization anchor (e.g. BiomedicalConcept_216 'Subject is Randomized'). Documents the SAP's day-zero; not consumed at runtime because --DY is already relative to this anchor.",
+      "dataType": "code"
+    },
+    {
+      "name": "windows",
+      "description": "Scheduled visit windows: array of { label, visitNumber, dayMin, dayMax, targetDay }. dayMin/dayMax=null means unbounded.",
+      "dataType": "object"
+    },
+    {
+      "name": "tieBreak",
+      "description": "Tie-break rule when multiple windows match the day.",
+      "dataType": "code",
+      "defaultValue": "closest-to-target-then-earliest"
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "day",
+      "description": "Pre-computed study day (SDTM --DY column) relative to the randomization anchor. Positive = after anchor, zero/negative = at/before anchor.",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "partition",
+      "description": "Subject-level partitioning. Not used by the default template (assignment is row-wise on day).",
+      "dataType": "code",
+      "required": false,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "partition_level",
+          "description": "A level of the partition variable"
+        }
+      ]
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "analysisVisit := FIND WINDOW(<windows>) MATCHING <day>",
+    "defaultExpression": "analysisVisit := window.label WHERE day ∈ [window.dayMin, window.dayMax], tie-break closest(|day-targetDay|) then min(visitNumber)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "code"
+  }
+}

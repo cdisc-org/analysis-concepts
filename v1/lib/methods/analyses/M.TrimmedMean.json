@@ -1,0 +1,52 @@
+{
+  "conceptId": "M.TrimmedMean",
+  "name": "Trimmed Mean",
+  "label": "Trimmed Mean",
+  "description": "Computes the trimmed mean after removing a fraction of extreme values from each tail",
+  "status": "released",
+  "methodType": "AggregationMethod",
+  "configurations": [
+    {
+      "name": "trim_fraction",
+      "description": "Fraction to trim from each tail (0 to 0.5)",
+      "dataType": "decimal",
+      "defaultValue": 0.05
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "The variable to summarize",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "group",
+      "description": "Optional grouping variable(s)",
+      "dataType": "code",
+      "required": false,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "group_level",
+          "description": "A level of the group variable"
+        }
+      ]
+    }
+  ],
+  "formula": {
+    "notation": "aggregation",
+    "text": "result := TRIMMEAN(<value>, <trim_fraction>) OVER (<group>*)",
+    "defaultExpression": "result := TRIMMEAN(value, trim_fraction) OVER (group)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

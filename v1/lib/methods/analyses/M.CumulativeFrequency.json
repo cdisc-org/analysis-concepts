@@ -1,0 +1,50 @@
+{
+  "conceptId": "M.CumulativeFrequency",
+  "name": "Cumulative Frequency",
+  "label": "Cumulative Frequency",
+  "description": "Computes cumulative frequency and percentage across ordered categories",
+  "status": "released",
+  "methodType": "AggregationMethod",
+  "inputs": [
+    {
+      "inputType": "CategoricalVariable",
+      "role": "value",
+      "description": "The categorical variable to summarize",
+      "dataType": "code",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "value_level",
+          "description": "A level of the value variable"
+        }
+      ]
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "group",
+      "description": "Optional grouping variable(s)",
+      "dataType": "code",
+      "required": false,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "group_level",
+          "description": "A level of the group variable"
+        }
+      ]
+    }
+  ],
+  "formula": {
+    "notation": "aggregation",
+    "text": "result := CUMFREQ(<value>) OVER (<group>*)",
+    "defaultExpression": "result := CUMFREQ(value) OVER (group)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

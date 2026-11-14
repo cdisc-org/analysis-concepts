@@ -1,0 +1,502 @@
+{
+  "libraryVersion": "1.0.0-candidate",
+  "description": "Output classes. Migrated from output_class_templates.json v0.7.0 on methods_02 (81a04b1).",
+  "entries": [
+    {
+      "conceptId": "OC.fit_statistics",
+      "name": "fit_statistics",
+      "label": "Fit statistics",
+      "description": "Family of overall model goodness-of-fit summary tables.",
+      "abstract": true,
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.fit_statistics_basic",
+      "name": "fit_statistics_basic",
+      "label": "Basic fit statistics",
+      "description": "Basic model fit indices common to most likelihood-based models.",
+      "broader": "OC.fit_statistics",
+      "statistics": [
+        "S.AIC",
+        "S.BIC",
+        "S.minus2LogL"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.fit_statistics_linear",
+      "name": "fit_statistics_linear",
+      "label": "Linear-model fit statistics",
+      "description": "Linear-model fit indices including R-squared.",
+      "broader": "OC.fit_statistics",
+      "statistics": [
+        "S.AIC",
+        "S.BIC",
+        "S.minus2LogL",
+        "S.R_squared"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.fit_statistics_concordance",
+      "name": "fit_statistics_concordance",
+      "label": "Concordance-based fit statistics",
+      "description": "Fit indices including the concordance statistic (logistic regression, Cox PH).",
+      "broader": "OC.fit_statistics",
+      "statistics": [
+        "S.AIC",
+        "S.BIC",
+        "S.minus2LogL",
+        "S.concordance"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.type3_tests",
+      "name": "type3_tests",
+      "label": "Type III tests",
+      "description": "Family of per-term omnibus tests.",
+      "abstract": true,
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.type3_tests_f",
+      "name": "type3_tests_f",
+      "label": "Type III F-tests",
+      "description": "Type III F-tests with sums-of-squares decomposition (linear models).",
+      "broader": "OC.type3_tests",
+      "statisticSets": [
+        "SS.hypothesis_test_F_distribution"
+      ],
+      "statistics": [
+        "S.SS",
+        "S.MS"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.type3_tests_mixed",
+      "name": "type3_tests_mixed",
+      "label": "Type III F-tests (mixed/multivariate)",
+      "description": "Type III F-tests for mixed and multivariate models (no SS/MS exposure).",
+      "broader": "OC.type3_tests",
+      "statisticSets": [
+        "SS.hypothesis_test_F_distribution"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.type3_tests_chi_squared",
+      "name": "type3_tests_chi_squared",
+      "label": "Type III chi-squared tests",
+      "description": "Type III Wald or LR chi-squared tests (logistic regression, Cox PH).",
+      "broader": "OC.type3_tests",
+      "statisticSets": [
+        "SS.hypothesis_test_chi_squared"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.test_result",
+      "name": "test_result",
+      "label": "Test result",
+      "description": "Family of single-row test result tables.",
+      "abstract": true,
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.chi_squared_test_result",
+      "name": "chi_squared_test_result",
+      "label": "Chi-squared test result",
+      "description": "Single chi-squared test result.",
+      "broader": "OC.test_result",
+      "statisticSets": [
+        "SS.hypothesis_test_chi_squared"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.t_test_result",
+      "name": "t_test_result",
+      "label": "T-test result",
+      "description": "Single t-test result (one-sample, paired, or two-sample).",
+      "broader": "OC.test_result",
+      "statisticSets": [
+        "SS.hypothesis_test_t_distribution"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.exact_test_result",
+      "name": "exact_test_result",
+      "label": "Exact test result",
+      "description": "Exact test result (Fisher exact) — p-value only.",
+      "broader": "OC.test_result",
+      "statisticSets": [
+        "SS.hypothesis_test_p_value"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.homogeneity_test",
+      "name": "homogeneity_test",
+      "label": "Homogeneity test",
+      "description": "Breslow-Day test for homogeneity of odds ratios across strata.",
+      "broader": "OC.test_result",
+      "statisticSets": [
+        "SS.hypothesis_test_chi_squared"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.parameter_estimates",
+      "name": "parameter_estimates",
+      "label": "Parameter estimates",
+      "description": "Family of per-coefficient model parameter tables.",
+      "abstract": true,
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.parameter_estimates_linear",
+      "name": "parameter_estimates_linear",
+      "label": "Linear-model parameter estimates",
+      "description": "Linear-model coefficients with t-based inference.",
+      "broader": "OC.parameter_estimates",
+      "statisticSets": [
+        "SS.ci_estimate_t_distribution",
+        "SS.hypothesis_test_t_distribution"
+      ],
+      "statistics": [
+        "S.coefficient"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.parameter_estimates_glm",
+      "name": "parameter_estimates_glm",
+      "label": "GLM parameter estimates",
+      "description": "GLM coefficients with z-based inference; includes odds_ratio for logistic.",
+      "broader": "OC.parameter_estimates",
+      "statisticSets": [
+        "SS.point_estimate_SE",
+        "SS.hypothesis_test_normal",
+        "SS.ci_estimate_odds_ratio"
+      ],
+      "statistics": [
+        "S.coefficient"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.parameter_estimates_cox",
+      "name": "parameter_estimates_cox",
+      "label": "Cox PH parameter estimates",
+      "description": "Cox PH coefficients with z-based inference; includes hazard_ratio.",
+      "broader": "OC.parameter_estimates",
+      "statisticSets": [
+        "SS.point_estimate_SE",
+        "SS.hypothesis_test_normal",
+        "SS.ci_estimate_hazard_ratio"
+      ],
+      "statistics": [
+        "S.coefficient"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.covariance_parameters",
+      "name": "covariance_parameters",
+      "label": "Covariance parameters",
+      "description": "Estimated covariance/variance components of the random-effects structure.",
+      "broader": "OC.parameter_estimates",
+      "statisticSets": [
+        "SS.point_estimate_SE"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.contrasts",
+      "name": "contrasts",
+      "label": "Contrasts",
+      "description": "Family of contrast tables — linear combinations of model coefficients with inference.",
+      "abstract": true,
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.contrasts_t",
+      "name": "contrasts_t",
+      "label": "T-based contrasts",
+      "description": "Contrasts from linear models with t-based inference.",
+      "broader": "OC.contrasts",
+      "statisticSets": [
+        "SS.ci_estimate_t_distribution",
+        "SS.hypothesis_test_t_distribution"
+      ],
+      "statistics": [
+        "S.p_value_adjusted"
+      ],
+      "optionalStatistics": [
+        "S.p_value_adjusted"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.contrasts_z",
+      "name": "contrasts_z",
+      "label": "Z-based contrasts",
+      "description": "Contrasts from GLM or Cox PH with z-based inference.",
+      "broader": "OC.contrasts",
+      "statisticSets": [
+        "SS.ci_estimate_normal",
+        "SS.hypothesis_test_normal"
+      ],
+      "statistics": [
+        "S.p_value_adjusted"
+      ],
+      "optionalStatistics": [
+        "S.p_value_adjusted"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.association_measures",
+      "name": "association_measures",
+      "label": "Association measures",
+      "description": "Family of effect-size / association measure tables with inference.",
+      "abstract": true,
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.odds_ratio_measures",
+      "name": "odds_ratio_measures",
+      "label": "Odds ratio measures",
+      "description": "Odds ratio with confidence interval (CMH common OR or per-stratum, Fisher OR).",
+      "broader": "OC.association_measures",
+      "statisticSets": [
+        "SS.ci_estimate_odds_ratio"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.marginal_estimates",
+      "name": "marginal_estimates",
+      "label": "Marginal estimates",
+      "description": "Family of model-derived estimates at specific factor levels — adjusted means and predictions from a fitted model, distinct from raw coefficient estimates.",
+      "abstract": true,
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.ls_means",
+      "name": "ls_means",
+      "label": "Least-squares means",
+      "description": "Least-squares means (adjusted marginal means) per factor level or level combination.",
+      "broader": "OC.marginal_estimates",
+      "statisticSets": [
+        "SS.ci_estimate_t_distribution"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.point_estimate",
+      "name": "point_estimate",
+      "label": "Point estimate",
+      "description": "Estimated mean (or paired-difference mean) with inference.",
+      "broader": "OC.marginal_estimates",
+      "statisticSets": [
+        "SS.ci_estimate_normal"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.exponentiated_estimates",
+      "name": "exponentiated_estimates",
+      "label": "Exponentiated estimates",
+      "description": "Family of coefficients exponentiated from a transformed scale (log, logit) back to the natural scale of multiplicative effects.",
+      "abstract": true,
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.odds_ratio_estimates",
+      "name": "odds_ratio_estimates",
+      "label": "Odds ratio estimates",
+      "description": "Odds ratios with confidence intervals (exponentiated logistic coefficients).",
+      "broader": "OC.exponentiated_estimates",
+      "statisticSets": [
+        "SS.ci_estimate_odds_ratio"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.hazard_ratio_estimates",
+      "name": "hazard_ratio_estimates",
+      "label": "Hazard ratio estimates",
+      "description": "Hazard ratios with confidence intervals (exponentiated Cox coefficients).",
+      "broader": "OC.exponentiated_estimates",
+      "statisticSets": [
+        "SS.ci_estimate_hazard_ratio"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.omnibus_tests",
+      "name": "omnibus_tests",
+      "label": "Omnibus tests",
+      "description": "Family of overall-model significance tests indexed by test type (Wilks, Pillai, likelihood ratio, Wald, score, etc.), distinct from per-term tests.",
+      "abstract": true,
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.multivariate_tests",
+      "name": "multivariate_tests",
+      "label": "Multivariate tests",
+      "description": "Multivariate test statistics for overall hypothesis (Wilks, Pillai, Hotelling-Lawley, Roy).",
+      "broader": "OC.omnibus_tests",
+      "statisticSets": [
+        "SS.hypothesis_test_F_distribution"
+      ],
+      "statistics": [
+        "S.estimate"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.global_tests",
+      "name": "global_tests",
+      "label": "Global tests",
+      "description": "Overall model significance tests (likelihood ratio, Wald, score).",
+      "broader": "OC.omnibus_tests",
+      "statisticSets": [
+        "SS.hypothesis_test_chi_squared"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.survival_outputs",
+      "name": "survival_outputs",
+      "label": "Survival outputs",
+      "description": "Family of outputs from time-to-event analyses — life tables, median survival, event counts, landmark estimates.",
+      "abstract": true,
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.survival_table",
+      "name": "survival_table",
+      "label": "Survival table",
+      "description": "Life table with survival estimates at each event time.",
+      "broader": "OC.survival_outputs",
+      "statisticSets": [
+        "SS.ci_estimate_normal"
+      ],
+      "statistics": [
+        "S.n_risk",
+        "S.n_event",
+        "S.n_censored"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.median_survival",
+      "name": "median_survival",
+      "label": "Median survival",
+      "description": "Median survival time per group.",
+      "broader": "OC.survival_outputs",
+      "statisticSets": [
+        "SS.ci_estimate"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.event_summary",
+      "name": "event_summary",
+      "label": "Event summary",
+      "description": "Summary counts of events and censoring per group.",
+      "broader": "OC.survival_outputs",
+      "statistics": [
+        "S.n_risk",
+        "S.n_event",
+        "S.n_censored"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.landmark_estimates",
+      "name": "landmark_estimates",
+      "label": "Landmark estimates",
+      "description": "Survival probability at specific landmark times.",
+      "broader": "OC.survival_outputs",
+      "statisticSets": [
+        "SS.ci_estimate_normal"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.group_summaries",
+      "name": "group_summaries",
+      "label": "Group summaries",
+      "description": "Family of descriptive summaries broken down by group — proportions, frequency tables, quartile estimates. No model fit involved.",
+      "abstract": true,
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.proportion_estimate",
+      "name": "proportion_estimate",
+      "label": "Proportion estimate",
+      "description": "Group-wise proportion with optional confidence interval.",
+      "broader": "OC.group_summaries",
+      "statisticSets": [
+        "SS.proportion_estimate"
+      ],
+      "optionalStatistics": [
+        "S.CI_lower",
+        "S.CI_upper"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.frequency_table",
+      "name": "frequency_table",
+      "label": "Frequency table",
+      "description": "Counts of response categories per group.",
+      "broader": "OC.group_summaries",
+      "statistics": [
+        "S.frequency",
+        "S.n"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.cumulative_frequency_table",
+      "name": "cumulative_frequency_table",
+      "label": "Cumulative frequency table",
+      "description": "Cumulative counts and percentages of response categories per group.",
+      "broader": "OC.group_summaries",
+      "statistics": [
+        "S.cumulative_n",
+        "S.cumulative_pct"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.quartile_estimates",
+      "name": "quartile_estimates",
+      "label": "Quartile estimates",
+      "description": "Q1 and Q3 quartile estimates per group.",
+      "broader": "OC.group_summaries",
+      "statistics": [
+        "S.Q1",
+        "S.Q3"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "OC.computed_value",
+      "name": "computed_value",
+      "label": "Computed value",
+      "description": "Family of single-value atomic outputs (one value per row) produced by descriptive statistics and derivations. The FHIR datatype is supplied by the bound concept at transformation time via concept.result.valueType — the template carries the shape only, not the type.",
+      "statisticSets": [
+        "SS.computed_value"
+      ],
+      "status": "released"
+    }
+  ]
+}

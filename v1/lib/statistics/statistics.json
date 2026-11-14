@@ -1,0 +1,614 @@
+{
+  "libraryVersion": "1.0.0-candidate",
+  "description": "Statistics vocabulary. Migrated from statistics_vocabulary.json v0.6.0 on methods_02 (81a04b1).",
+  "entries": [
+    {
+      "conceptId": "S.estimate",
+      "name": "estimate",
+      "description": "Point estimate of the quantity",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000599",
+          "display": "point estimate"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.SE",
+      "name": "SE",
+      "description": "Standard error of the estimate",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000562",
+          "display": "standard error of estimate"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.CI_lower",
+      "name": "CI_lower",
+      "description": "Lower bound of confidence interval",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000315",
+          "display": "lower confidence limit"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.CI_upper",
+      "name": "CI_upper",
+      "description": "Upper bound of confidence interval",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000314",
+          "display": "upper confidence limit"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.df",
+      "name": "df",
+      "description": "Degrees of freedom",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000069",
+          "display": "number of degrees of freedom"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.df_num",
+      "name": "df_num",
+      "description": "Numerator degrees of freedom",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000498",
+          "display": "numerator degrees of freedom"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.df_den",
+      "name": "df_den",
+      "description": "Denominator degrees of freedom",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000527",
+          "display": "denominator degrees of freedom"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.t_statistic",
+      "name": "t_statistic",
+      "description": "t test statistic",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000176",
+          "display": "t-statistic"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.F_statistic",
+      "name": "F_statistic",
+      "description": "F test statistic",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000282",
+          "display": "F-statistic"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.z_statistic",
+      "name": "z_statistic",
+      "description": "z test statistic",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000376",
+          "display": "Z-statistic"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.chi_squared",
+      "name": "chi_squared",
+      "description": "Chi-squared test statistic",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000030",
+          "display": "Chi-Squared statistic"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.p_value",
+      "name": "p_value",
+      "description": "P-value for the test",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000700",
+          "display": "p-value"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.p_value_adjusted",
+      "name": "p_value_adjusted",
+      "description": "P-value after multiplicity adjustment (Bonferroni, Tukey, Holm, BH, etc.). Reported alongside the unadjusted p-value when an adjustment procedure has been applied.",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.SS",
+      "name": "SS",
+      "description": "Sum of squares",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.MS",
+      "name": "MS",
+      "description": "Mean square",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000375",
+          "display": "residual mean square"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.odds_ratio",
+      "name": "odds_ratio",
+      "description": "Odds ratio (exp of log-odds coefficient)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000182",
+          "display": "odds ratio"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.hazard_ratio",
+      "name": "hazard_ratio",
+      "description": "Hazard ratio (exp of Cox coefficient)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000677",
+          "display": "hazard ratio"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.coefficient",
+      "name": "coefficient",
+      "description": "Model coefficient (log scale for GLMs)",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.n_risk",
+      "name": "n_risk",
+      "description": "Number at risk",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.n_event",
+      "name": "n_event",
+      "description": "Number of events",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.n_censored",
+      "name": "n_censored",
+      "description": "Number censored",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.survival_prob",
+      "name": "survival_prob",
+      "description": "Estimated survival probability",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.median",
+      "name": "median",
+      "description": "Median estimate",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000574",
+          "display": "center value"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.mean",
+      "name": "mean",
+      "description": "Mean estimate",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000573",
+          "display": "average value"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.AIC",
+      "name": "AIC",
+      "description": "Akaike Information Criterion",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000325",
+          "display": "Akaike information criterion"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.BIC",
+      "name": "BIC",
+      "description": "Bayesian Information Criterion",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000327",
+          "display": "Bayesian information criterion"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.minus2LogL",
+      "name": "minus2LogL",
+      "description": "-2 Log Likelihood",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.R_squared",
+      "name": "R_squared",
+      "description": "Coefficient of determination",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000564",
+          "display": "coefficient of determination"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.concordance",
+      "name": "concordance",
+      "description": "Concordance statistic (C-index)",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.value",
+      "name": "value",
+      "description": "The computed/derived value",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.n",
+      "name": "n",
+      "description": "Count of non-missing observations",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000047",
+          "display": "count"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.geometric_mean",
+      "name": "geometric_mean",
+      "description": "Geometric mean (exp of mean of log values)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000396",
+          "display": "geometric mean"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.harmonic_mean",
+      "name": "harmonic_mean",
+      "description": "Harmonic mean (reciprocal of mean of reciprocals)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000397",
+          "display": "harmonic mean"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.trimmed_mean",
+      "name": "trimmed_mean",
+      "description": "Trimmed mean (mean after removing extreme values from each tail)",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.winsorized_mean",
+      "name": "winsorized_mean",
+      "description": "Winsorized mean (mean after replacing extreme values with boundary values)",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.mode",
+      "name": "mode",
+      "description": "Most frequently occurring value",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000033",
+          "display": "mode"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.sd",
+      "name": "sd",
+      "description": "Standard deviation",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000237",
+          "display": "standard deviation"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.variance",
+      "name": "variance",
+      "description": "Variance",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000113",
+          "display": "variance"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.cv",
+      "name": "cv",
+      "description": "Coefficient of variation (SD/mean × 100)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000236",
+          "display": "coefficient of variation"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.geometric_cv",
+      "name": "geometric_cv",
+      "description": "Geometric coefficient of variation",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.range",
+      "name": "range",
+      "description": "Range (max − min)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000035",
+          "display": "range"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.min",
+      "name": "min",
+      "description": "Minimum observed value",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000150",
+          "display": "minimum observed value"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.max",
+      "name": "max",
+      "description": "Maximum observed value",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000151",
+          "display": "maximum observed value"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.iqr",
+      "name": "iqr",
+      "description": "Interquartile range (Q3 − Q1)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000164",
+          "display": "inter quartile range"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.sum",
+      "name": "sum",
+      "description": "Sum of all values",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.Q1",
+      "name": "Q1",
+      "description": "First quartile (25th percentile)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000167",
+          "display": "first quartile"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.Q3",
+      "name": "Q3",
+      "description": "Third quartile (75th percentile)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000170",
+          "display": "third quartile"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.percentile",
+      "name": "percentile",
+      "description": "Percentile value at a specified rank",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000293",
+          "display": "percentile"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.skewness",
+      "name": "skewness",
+      "description": "Skewness (measure of asymmetry of the distribution)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000068",
+          "display": "skewness"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.kurtosis",
+      "name": "kurtosis",
+      "description": "Kurtosis (measure of tailedness of the distribution)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000178",
+          "display": "kurtosis"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.frequency",
+      "name": "frequency",
+      "description": "Frequency count per category",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000674",
+          "display": "frequency"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.proportion",
+      "name": "proportion",
+      "description": "Proportion (0–1 scale)",
+      "codings": [
+        {
+          "system": "http://purl.obolibrary.org/obo/stato",
+          "code": "STATO_0000607",
+          "display": "proportion"
+        }
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "S.pct",
+      "name": "pct",
+      "description": "Percentage (0–100 scale)",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.numerator",
+      "name": "numerator",
+      "description": "Numerator count (events of interest) for a proportion",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.denominator",
+      "name": "denominator",
+      "description": "Denominator count (population at risk) for a proportion",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.cumulative_n",
+      "name": "cumulative_n",
+      "description": "Cumulative count",
+      "status": "released"
+    },
+    {
+      "conceptId": "S.cumulative_pct",
+      "name": "cumulative_pct",
+      "description": "Cumulative percentage",
+      "status": "released"
+    }
+  ]
+}

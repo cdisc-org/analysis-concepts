@@ -1,0 +1,38 @@
+{
+  "conceptId": "M.Division",
+  "name": "Division",
+  "label": "Division",
+  "description": "Computes the quotient of two numeric values",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "numerator",
+      "description": "The value to divide",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "ContinuousVariable",
+      "role": "denominator",
+      "description": "The value to divide by",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "result := <numerator> / <denominator>",
+    "defaultExpression": "result := numerator / denominator"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

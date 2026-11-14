@@ -1,0 +1,136 @@
+{
+  "conceptId": "M.LogRankTest",
+  "name": "Log-Rank Test",
+  "label": "log-rank",
+  "description": "Compares survival distributions between groups using a rank-based test",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000640",
+      "display": "log-rank test"
+    }
+  ],
+  "status": "released",
+  "methodType": "ModelBasedMethod",
+  "configurations": [
+    {
+      "name": "rho",
+      "description": "Weight parameter: 0 = log-rank (default), 1 = Wilcoxon/Peto",
+      "dataType": "decimal",
+      "defaultValue": 0
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "time",
+      "description": "Time to event or censoring",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "event",
+      "description": "Event indicator",
+      "dataType": "boolean",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "event_level",
+          "description": "A level of the event variable"
+        }
+      ]
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "fixed_effect",
+      "description": "Grouping variable",
+      "dataType": "code",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "fixed_effect_level",
+          "description": "A level of the fixed_effect variable"
+        }
+      ]
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "strata",
+      "description": "Optional stratification variables",
+      "dataType": "code",
+      "required": false,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "strata_level",
+          "description": "A level of the strata variable"
+        }
+      ]
+    }
+  ],
+  "statisticalModel": {
+    "name": "log-rank model",
+    "description": "Multiple group factors can be included. Strata variables (after adjusting) produce stratified log-rank tests.",
+    "formula": {
+      "notation": "survival",
+      "text": "Surv(<time>, <event>) ~ <fixed_effect>+ + <strata>*",
+      "defaultExpression": "Surv(time, event) ~ fixed_effect"
+    },
+    "isModelFor": [
+      "time",
+      "event"
+    ],
+    "modelTerms": [
+      {
+        "name": "fixed_effect",
+        "description": "Main effect of fixed_effect",
+        "forInputs": [
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_effect",
+            "description": "Effect of a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "strata",
+        "description": "Main effect of strata",
+        "forInputs": [
+          "strata"
+        ],
+        "parameters": [
+          {
+            "name": "strata_effect",
+            "description": "Effect of a level of strata",
+            "forFactorLevels": [
+              "strata_level"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "subMethods": [
+    {
+      "conceptId": "SM.LogRankTest.ChiSquaredTestResult",
+      "name": "Chi-squared test result",
+      "description": "Single chi-squared test result.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.chi_squared_test_result",
+        "statisticSets": [
+          "SS.hypothesis_test_chi_squared"
+        ]
+      }
+    }
+  ]
+}

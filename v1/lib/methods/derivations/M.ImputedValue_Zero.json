@@ -1,0 +1,29 @@
+{
+  "conceptId": "M.ImputedValue_Zero",
+  "name": "Zero Imputation",
+  "label": "Zero Imp",
+  "description": "Uses a fixed constant (default 0) as the imputed value for all missing observations. Simplest strategy; appropriate when missingness can be interpreted as absence of the measured quantity (e.g., zero cost, zero count).",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "configurations": [
+    {
+      "name": "constant",
+      "description": "The fixed value to use for imputation. Defaults to 0 but can be set to any value (e.g., 999 for sentinel, or a clinically meaningful default).",
+      "dataType": "decimal",
+      "defaultValue": 0
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "imputed_value := <constant>",
+    "defaultExpression": "imputed_value := 0",
+    "notes": "No data-dependent computation. The constant is always used regardless of observed values."
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

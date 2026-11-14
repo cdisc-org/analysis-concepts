@@ -1,0 +1,51 @@
+{
+  "conceptId": "M.Rounding",
+  "name": "Rounding",
+  "label": "Rounding",
+  "description": "Rounds numeric value to specified precision",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "configurations": [
+    {
+      "name": "decimals",
+      "description": "Number of decimal places",
+      "dataType": "decimal",
+      "defaultValue": ""
+    },
+    {
+      "name": "method",
+      "description": "Rounding method for tie-breaking",
+      "dataType": "code",
+      "defaultValue": "half_up",
+      "enumValues": [
+        "half_up",
+        "half_even",
+        "half_down",
+        "floor",
+        "ceiling"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "Value to round",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "result := ROUND(<value>, <decimals>)",
+    "defaultExpression": "result := ROUND(value, decimals)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "conceptId": "M.ThresholdCompare",
+  "name": "Threshold Comparison",
+  "label": "Threshold Comparison",
+  "description": "Compares value against threshold and returns result",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "configurations": [
+    {
+      "name": "operator",
+      "description": "Comparison operator",
+      "dataType": "code",
+      "defaultValue": ">=",
+      "enumValues": [
+        ">=",
+        ">",
+        "<=",
+        "<",
+        "==",
+        "!="
+      ]
+    },
+    {
+      "name": "threshold",
+      "description": "Threshold value compared against the input value",
+      "dataType": "decimal",
+      "defaultValue": 0
+    },
+    {
+      "name": "true_value",
+      "description": "Value when condition is true",
+      "dataType": "code",
+      "defaultValue": "Y"
+    },
+    {
+      "name": "false_value",
+      "description": "Value when condition is false",
+      "dataType": "code",
+      "defaultValue": "N"
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "Value to compare",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "result := IF(<value> <operator> <threshold>, <true_value>, <false_value>)",
+    "defaultExpression": "result := IF(value >= threshold, true_value, false_value)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "code"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "conceptId": "M.ConditionalValue",
+  "name": "Conditional Value",
+  "label": "Conditional Value",
+  "description": "Per-row conditional. If the input value is NA (missing), output the alternate value; else output the configured base value (default 0).",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "configurations": [
+    {
+      "name": "base",
+      "description": "Value emitted when the input is NOT missing",
+      "dataType": "decimal",
+      "defaultValue": 0
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "Per-row value tested for missingness (NA)",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "ContinuousVariable",
+      "role": "alternate",
+      "description": "Per-row replacement value used when value is NA",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "result := IF(IS_NA(<value>), <alternate>, <base>)",
+    "defaultExpression": "result := IF(IS_NA(value), alternate, base)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

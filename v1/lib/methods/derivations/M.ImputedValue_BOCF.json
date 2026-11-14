@@ -1,0 +1,45 @@
+{
+  "conceptId": "M.ImputedValue_BOCF",
+  "name": "Baseline Observation Carried Forward",
+  "label": "BOCF",
+  "description": "Uses the baseline value as the imputed value for all missing post-baseline observations within a partition. Conservative strategy assuming return to baseline.",
+  "status": "released",
+  "methodType": "DerivationMethod",
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "baseline_value",
+      "description": "The baseline value for the subject/parameter (typically BASE or value at ABLFL='Y')",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "partition",
+      "description": "Grouping variables defining scope (typically subject, parameter)",
+      "dataType": "code",
+      "required": true,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "partition_level",
+          "description": "A level of the partition variable"
+        }
+      ]
+    }
+  ],
+  "formula": {
+    "notation": "derivation",
+    "text": "imputed_value := <baseline_value> OVER (<partition>+)",
+    "defaultExpression": "imputed_value := baseline_value",
+    "notes": "The baseline value is propagated to all rows within the partition. This is a lookup, not a carry-forward — the imputed value is the same regardless of when the observation is missing."
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

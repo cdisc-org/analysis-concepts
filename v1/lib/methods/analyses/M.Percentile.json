@@ -1,0 +1,70 @@
+{
+  "conceptId": "M.Percentile",
+  "name": "Percentile",
+  "label": "Percentile",
+  "description": "Computes the value at a specified percentile rank",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000293",
+      "display": "percentile"
+    }
+  ],
+  "status": "released",
+  "methodType": "AggregationMethod",
+  "configurations": [
+    {
+      "name": "percentile_value",
+      "description": "Percentile rank (0 to 100)",
+      "dataType": "decimal",
+      "defaultValue": 50
+    },
+    {
+      "name": "percentile_method",
+      "description": "Interpolation method (type_2 = SAS default, type_7 = R default)",
+      "dataType": "code",
+      "defaultValue": "type_2",
+      "enumValues": [
+        "type_2",
+        "type_6",
+        "type_7"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "ContinuousVariable",
+      "role": "value",
+      "description": "The variable to summarize",
+      "dataType": "decimal",
+      "required": true,
+      "multivalued": false
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "group",
+      "description": "Optional grouping variable(s)",
+      "dataType": "code",
+      "required": false,
+      "multivalued": true,
+      "levels": [
+        {
+          "name": "group_level",
+          "description": "A level of the group variable"
+        }
+      ]
+    }
+  ],
+  "formula": {
+    "notation": "aggregation",
+    "text": "result := PERCENTILE(<value>, <percentile_value>) OVER (<group>*)",
+    "defaultExpression": "result := PERCENTILE(value, percentile_value) OVER (group)"
+  },
+  "output": {
+    "outputClass": "OC.computed_value",
+    "statisticSets": [
+      "SS.computed_value"
+    ],
+    "dataType": "decimal"
+  }
+}

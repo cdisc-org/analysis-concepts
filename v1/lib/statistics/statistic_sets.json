@@ -1,0 +1,161 @@
+{
+  "libraryVersion": "1.0.0-candidate",
+  "description": "Statistic sets. Migrated from statistic_sets.json v0.1.0 on methods_02 (81a04b1).",
+  "entries": [
+    {
+      "conceptId": "SS.hypothesis_test_F_distribution",
+      "name": "hypothesis_test_F_distribution",
+      "label": "F-test",
+      "description": "Test statistics for an F-distributed omnibus/term test.",
+      "statistics": [
+        "S.F_statistic",
+        "S.p_value",
+        "S.df_num",
+        "S.df_den"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "SS.hypothesis_test_t_distribution",
+      "name": "hypothesis_test_t_distribution",
+      "label": "t-test",
+      "description": "Test statistics for a t-distributed test.",
+      "statistics": [
+        "S.t_statistic",
+        "S.p_value",
+        "S.df"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "SS.hypothesis_test_chi_squared",
+      "name": "hypothesis_test_chi_squared",
+      "label": "Chi-squared test",
+      "description": "Test statistics for a chi-squared test.",
+      "statistics": [
+        "S.chi_squared",
+        "S.p_value",
+        "S.df"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "SS.hypothesis_test_normal",
+      "name": "hypothesis_test_normal",
+      "label": "z-test",
+      "description": "Test statistics for a normal-approximation (z) test.",
+      "statistics": [
+        "S.z_statistic",
+        "S.p_value"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "SS.hypothesis_test_p_value",
+      "name": "hypothesis_test_p_value",
+      "label": "Exact test",
+      "description": "P-value-only result (e.g. exact tests).",
+      "statistics": [
+        "S.p_value"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "SS.ci_estimate",
+      "name": "ci_estimate",
+      "label": "Estimate + CI",
+      "description": "A point estimate with its confidence interval bounds.",
+      "statistics": [
+        "S.estimate",
+        "S.CI_lower",
+        "S.CI_upper"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "SS.ci_estimate_normal",
+      "name": "ci_estimate_normal",
+      "label": "Estimate + CI + SE",
+      "description": "Point estimate, CI bounds and standard error (normal-based inference).",
+      "statistics": [
+        "S.estimate",
+        "S.CI_lower",
+        "S.CI_upper",
+        "S.SE"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "SS.ci_estimate_t_distribution",
+      "name": "ci_estimate_t_distribution",
+      "label": "Estimate + CI + SE + df",
+      "description": "Point estimate, CI bounds, standard error and degrees of freedom (t-based inference).",
+      "statistics": [
+        "S.estimate",
+        "S.CI_lower",
+        "S.CI_upper",
+        "S.SE",
+        "S.df"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "SS.ci_estimate_odds_ratio",
+      "name": "ci_estimate_odds_ratio",
+      "label": "OR + CI",
+      "description": "Odds ratio with confidence interval.",
+      "statistics": [
+        "S.odds_ratio",
+        "S.CI_lower",
+        "S.CI_upper"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "SS.ci_estimate_hazard_ratio",
+      "name": "ci_estimate_hazard_ratio",
+      "label": "HR + CI",
+      "description": "Hazard ratio with confidence interval.",
+      "statistics": [
+        "S.hazard_ratio",
+        "S.CI_lower",
+        "S.CI_upper"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "SS.point_estimate_SE",
+      "name": "point_estimate_SE",
+      "label": "Estimate + SE",
+      "description": "A point estimate with its standard error.",
+      "statistics": [
+        "S.estimate",
+        "S.SE"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "SS.proportion_estimate",
+      "name": "proportion_estimate",
+      "label": "Proportion",
+      "description": "A proportion expressed as numerator/denominator with proportion and percentage.",
+      "statistics": [
+        "S.numerator",
+        "S.denominator",
+        "S.proportion",
+        "S.pct"
+      ],
+      "status": "released"
+    },
+    {
+      "conceptId": "SS.computed_value",
+      "name": "computed_value",
+      "label": "Computed value",
+      "description": "A single computed/derived scalar value.",
+      "statistics": [
+        "S.value"
+      ],
+      "status": "released"
+    }
+  ]
+}

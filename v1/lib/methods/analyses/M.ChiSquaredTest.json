@@ -1,0 +1,101 @@
+{
+  "conceptId": "M.ChiSquaredTest",
+  "name": "Chi-Squared Test",
+  "label": "chi-square",
+  "description": "Tests association between two categorical variables using Pearson's chi-squared statistic",
+  "codings": [
+    {
+      "system": "http://purl.obolibrary.org/obo/stato",
+      "code": "STATO_0000081",
+      "display": "Pearson's Chi square test of independence between categorical variables"
+    }
+  ],
+  "status": "released",
+  "methodType": "ModelBasedMethod",
+  "configurations": [
+    {
+      "name": "correction",
+      "description": "Continuity correction (applicable for 2x2 tables)",
+      "dataType": "code",
+      "defaultValue": "none",
+      "enumValues": [
+        "none",
+        "yates"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "inputType": "CategoricalVariable",
+      "role": "response",
+      "description": "Response category variable",
+      "dataType": "code",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "response_level",
+          "description": "A level of the response variable"
+        }
+      ]
+    },
+    {
+      "inputType": "CategoricalVariable",
+      "role": "fixed_effect",
+      "description": "Grouping variable",
+      "dataType": "code",
+      "required": true,
+      "multivalued": false,
+      "levels": [
+        {
+          "name": "fixed_effect_level",
+          "description": "A level of the fixed_effect variable"
+        }
+      ]
+    }
+  ],
+  "statisticalModel": {
+    "name": "chi-square model",
+    "description": "Both response and fixed_effect are categorical. For RxC tables (more than 2x2).",
+    "formula": {
+      "notation": "wilkinson_rogers",
+      "text": "<response> ~ <fixed_effect>",
+      "defaultExpression": "response ~ fixed_effect"
+    },
+    "isModelFor": [
+      "response"
+    ],
+    "modelTerms": [
+      {
+        "name": "fixed_effect",
+        "description": "Main effect of fixed_effect",
+        "forInputs": [
+          "fixed_effect"
+        ],
+        "parameters": [
+          {
+            "name": "fixed_effect_effect",
+            "description": "Effect of a level of fixed_effect",
+            "forFactorLevels": [
+              "fixed_effect_level"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "subMethods": [
+    {
+      "conceptId": "SM.ChiSquaredTest.ChiSquaredTestResult",
+      "name": "Chi-squared test result",
+      "description": "Single chi-squared test result.",
+      "methodType": "SubMethod",
+      "output": {
+        "outputClass": "OC.chi_squared_test_result",
+        "statisticSets": [
+          "SS.hypothesis_test_chi_squared"
+        ]
+      }
+    }
+  ]
+}
