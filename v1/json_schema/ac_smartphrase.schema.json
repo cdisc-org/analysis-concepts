@@ -1,720 +1,719 @@
 {
-    "$defs": {
-        "Coding": {
-            "additionalProperties": false,
-            "description": "A reference to a code in a terminology or ontology",
-            "properties": {
-                "code": {
-                    "description": "The code value within the system (e.g., STATO_0000179)",
-                    "type": "string"
-                },
-                "display": {
-                    "description": "Human-readable label for the code",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "system": {
-                    "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)",
-                    "format": "uri",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "system",
-                "code"
-            ],
-            "title": "Coding",
-            "type": "object"
+  "$defs": {
+    "Coding": {
+      "additionalProperties": false,
+      "description": "A reference to a code in a terminology or ontology",
+      "properties": {
+        "code": {
+          "description": "The code value within the system (e.g., STATO_0000179)",
+          "type": "string"
         },
-        "ConfigurationOption": {
-            "additionalProperties": false,
-            "description": "The values offered for a value placeholder of a given name, across phrases.",
-            "properties": {
-                "default": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "name": {
-                    "type": "string"
-                },
-                "values": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                }
-            },
-            "required": [
-                "name",
-                "values"
-            ],
-            "title": "ConfigurationOption",
-            "type": "object"
+        "display": {
+          "description": "Human-readable label for the code",
+          "type": [
+            "string",
+            "null"
+          ]
         },
-        "ContextSourceEnum": {
-            "description": "Where the value for a role usually comes from.",
-            "enum": [
-                "endpoint",
-                "manual"
-            ],
-            "title": "ContextSourceEnum",
-            "type": "string"
-        },
-        "EntryStatus": {
-            "description": "Lifecycle status of a library entry.",
-            "enum": [
-                "released",
-                "provisional",
-                "deprecated"
-            ],
-            "title": "EntryStatus",
-            "type": "string"
-        },
-        "EstimandAttributeEnum": {
-            "description": "The attribute of an ICH E9(R1) estimand that a role or phrase expresses.",
-            "enum": [
-                "Treatment",
-                "Population",
-                "Variable",
-                "IntercurrentEvent",
-                "PopulationLevelSummary"
-            ],
-            "title": "EstimandAttributeEnum",
-            "type": "string"
-        },
-        "IchE9R1StrategyEnum": {
-            "description": "The five strategies for handling an intercurrent event in ICH E9(R1).",
-            "enum": [
-                "TreatmentPolicy",
-                "Hypothetical",
-                "Composite",
-                "WhileOnTreatment",
-                "PrincipalStratum"
-            ],
-            "title": "IchE9R1StrategyEnum",
-            "type": "string"
-        },
-        "LanguagePack": {
-            "additionalProperties": false,
-            "description": "What is needed to write analysis sentences in one language. The sentence template owns word order, because concatenating phrases in role order is correct only for some languages.",
-            "properties": {
-                "language": {
-                    "description": "BCP 47 language tag.",
-                    "type": "string"
-                },
-                "methodNames": {
-                    "items": {
-                        "$ref": "#/$defs/LocalisedText"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "name": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "outputNames": {
-                    "description": "Reader-facing names for method outputs, by output class.",
-                    "items": {
-                        "$ref": "#/$defs/LocalisedText"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "phraseTemplates": {
-                    "description": "Phrase templates in this language, by phrase identifier. A phrase without one falls back to the library's base text.",
-                    "items": {
-                        "$ref": "#/$defs/LocalisedText"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "roleConjunctions": {
-                    "description": "The text placed between repeated phrases of one role.",
-                    "items": {
-                        "$ref": "#/$defs/LocalisedText"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "sentenceRoles": {
-                    "description": "Translations of the words that say what kind of analysis it is (the primary analysis, a sensitivity analysis).",
-                    "items": {
-                        "$ref": "#/$defs/LocalisedText"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "sentenceTemplate": {
-                    "description": "The sentence frame: role tokens in the language's word order, literal text, and optional groups in square brackets that are dropped when none of their roles is filled.",
-                    "type": "string"
-                },
-                "validated": {
-                    "description": "False when the translation is illustrative and has not been reviewed by a qualified translator.",
-                    "type": [
-                        "boolean",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "language",
-                "sentenceTemplate"
-            ],
-            "title": "LanguagePack",
-            "type": "object"
-        },
-        "LocalisedText": {
-            "additionalProperties": false,
-            "description": "A piece of text for one key in one language.",
-            "properties": {
-                "key": {
-                    "description": "The identifier of what is translated (a phrase, method, output class or analysis role).",
-                    "type": "string"
-                },
-                "label": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "name": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "text": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "key"
-            ],
-            "title": "LocalisedText",
-            "type": "object"
-        },
-        "PhraseAnchors": {
-            "additionalProperties": false,
-            "description": "What a phrase means in the model, independent of its bindings.",
-            "properties": {
-                "estimandAttribute": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EstimandAttributeEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "icheStrategy": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/IchE9R1StrategyEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "The intercurrent-event strategy the phrase asserts."
-                },
-                "implementation": {
-                    "description": "The kind of implementation the strategy needs (none, imputation, derivation, censoring, population_subsetting).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "producedConcept": {
-                    "description": "The Concept the phrase is about (a Concept identifier).",
-                    "pattern": "^C\\..+$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "usesMethod": {
-                    "description": "The Method the phrase implies (a Method identifier).",
-                    "pattern": "^M\\..+$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "title": "PhraseAnchors",
-            "type": "object"
-        },
-        "Placeholder": {
-            "additionalProperties": false,
-            "description": "A typed slot in a phrase template.",
-            "properties": {
-                "conceptCategory": {
-                    "description": "The abstract Concept the bound study concept must belong to (a Concept identifier, e.g. C.VisitDimension).",
-                    "pattern": "^C\\..+$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "conceptClass": {
-                    "description": "Informative grouping of the concepts offered to the author.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "conceptConstraint": {
-                    "description": "The kind of study concept that may be bound (Parameter, Timepoint, Population, Treatment, Event, IntercurrentEvent).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "constraint": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ValueConstraint"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "datatype": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "defaultRender": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/RenderModeEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "description": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "extensionType": {
-                    "description": "For an extension_ref, the IRI of the entity type in the extending model.",
-                    "format": "uri",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "intentConstraint": {
-                    "description": "The analytical intent a bound Method must serve (informative).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "kind": {
-                    "$ref": "#/$defs/PlaceholderKindEnum"
-                },
-                "name": {
-                    "description": "The token in the template, written there as {name}.",
-                    "type": "string"
-                },
-                "renderOptions": {
-                    "items": {
-                        "$ref": "#/$defs/RenderModeEnum"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "required": {
-                    "type": [
-                        "boolean",
-                        "null"
-                    ]
-                },
-                "valueSource": {
-                    "description": "Where candidate values are drawn from (informative).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "name",
-                "kind"
-            ],
-            "title": "Placeholder",
-            "type": "object"
-        },
-        "PlaceholderKindEnum": {
-            "description": "What a binding of the placeholder must supply.",
-            "enum": [
-                "concept_ref",
-                "method_ref",
-                "output_ref",
-                "value",
-                "extension_ref"
-            ],
-            "title": "PlaceholderKindEnum",
-            "type": "string"
-        },
-        "RenderModeEnum": {
-            "description": "How a bound concept or method is written in the text.",
-            "enum": [
-                "label",
-                "name",
-                "name_with_label"
-            ],
-            "title": "RenderModeEnum",
-            "type": "string"
-        },
-        "RoleDefinition": {
-            "additionalProperties": false,
-            "description": "A role a phrase plays in an analysis sentence.",
-            "properties": {
-                "contextSource": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ContextSourceEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "definedBy": {
-                    "description": "For a role added by a model that extends AC, the namespace IRI of that model. Absent for roles of the AC library (decision D13).",
-                    "format": "uri",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "description": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "estimandAttribute": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EstimandAttributeEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "The estimand attribute this role expresses, if any."
-                },
-                "label": {
-                    "type": "string"
-                },
-                "name": {
-                    "description": "Role identifier, e.g., endpoint, method, covariate.",
-                    "type": "string"
-                },
-                "repeating": {
-                    "description": "True when the role may be filled more than once in one analysis.",
-                    "type": [
-                        "boolean",
-                        "null"
-                    ]
-                },
-                "status": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EntryStatus"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                }
-            },
-            "required": [
-                "name",
-                "label"
-            ],
-            "title": "RoleDefinition",
-            "type": "object"
-        },
-        "SmartPhrase": {
-            "additionalProperties": false,
-            "description": "A reusable fragment of analysis plan text with typed placeholders.",
-            "properties": {
-                "anchors": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/PhraseAnchors"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "conceptId": {
-                    "description": "Unique phrase identifier, e.g., SP_CFB_ENDPOINT. Study phrase instances bind by it.",
-                    "pattern": "^SP_.+$",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "Free-text explanation or description",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "name": {
-                    "description": "Human-readable name",
-                    "type": "string"
-                },
-                "phraseTemplate": {
-                    "description": "The text, with {placeholder} tokens. English is the library's base language.",
-                    "type": "string"
-                },
-                "placeholders": {
-                    "items": {
-                        "$ref": "#/$defs/Placeholder"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "role": {
-                    "description": "The role the phrase plays (a RoleDefinition name).",
-                    "type": "string"
-                },
-                "status": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EntryStatus"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
-                }
-            },
-            "required": [
-                "conceptId",
-                "name",
-                "role",
-                "phraseTemplate"
-            ],
-            "title": "SmartPhrase",
-            "type": "object"
-        },
-        "SmartPhraseLibrary": {
-            "additionalProperties": false,
-            "description": "The SmartPhrase library.",
-            "properties": {
-                "configurationOptions": {
-                    "items": {
-                        "$ref": "#/$defs/ConfigurationOption"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "description": {
-                    "description": "Free-text explanation or description",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "languagePacks": {
-                    "items": {
-                        "$ref": "#/$defs/LanguagePack"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "libraryVersion": {
-                    "description": "Semantic version of a library file.",
-                    "type": "string"
-                },
-                "phrases": {
-                    "items": {
-                        "$ref": "#/$defs/SmartPhrase"
-                    },
-                    "type": "array"
-                },
-                "roleOrder": {
-                    "description": "The order of roles: the fallback order of phrases in a sentence, and the precedence when two phrases fill a placeholder of the same name.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                },
-                "roles": {
-                    "items": {
-                        "$ref": "#/$defs/RoleDefinition"
-                    },
-                    "type": "array"
-                }
-            },
-            "required": [
-                "libraryVersion",
-                "roleOrder",
-                "roles",
-                "phrases"
-            ],
-            "title": "SmartPhraseLibrary",
-            "type": "object"
-        },
-        "UnitRuleEnum": {
-            "description": "How the unit of a produced value is determined.",
-            "enum": [
-                "inherited",
-                "derived",
-                "fixed",
-                "unitless",
-                "none"
-            ],
-            "title": "UnitRuleEnum",
-            "type": "string"
-        },
-        "ValueConstraint": {
-            "additionalProperties": false,
-            "description": "The range a numeric value must lie in.",
-            "properties": {
-                "max": {
-                    "type": [
-                        "number",
-                        "null"
-                    ]
-                },
-                "min": {
-                    "type": [
-                        "number",
-                        "null"
-                    ]
-                }
-            },
-            "title": "ValueConstraint",
-            "type": "object"
-        },
-        "ValueTypeEnum": {
-            "description": "The kind of value a statistic or concept produces. Complex types follow FHIR R5 datatypes; primitive types follow FHIR primitives.",
-            "enum": [
-                "Quantity",
-                "CodeableConcept",
-                "Identifier",
-                "Range",
-                "Ratio",
-                "Count",
-                "Period",
-                "decimal",
-                "integer",
-                "boolean",
-                "string",
-                "code",
-                "date",
-                "dateTime"
-            ],
-            "title": "ValueTypeEnum",
-            "type": "string"
+        "system": {
+          "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)",
+          "format": "uri",
+          "type": "string"
         }
+      },
+      "required": [
+        "system",
+        "code"
+      ],
+      "title": "Coding",
+      "type": "object"
     },
-    "$id": "https://cdisc.org/ac/smartphrase",
-    "$schema": "https://json-schema.org/draft/2019-09/schema",
-    "additionalProperties": false,
-    "description": "The SmartPhrase library.",
-    "metamodel_version": "1.12.0",
-    "properties": {
-        "configurationOptions": {
-            "items": {
-                "$ref": "#/$defs/ConfigurationOption"
+    "ConfigurationOption": {
+      "additionalProperties": false,
+      "description": "The values offered for a value placeholder of a given name, across phrases.",
+      "properties": {
+        "default": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "values"
+      ],
+      "title": "ConfigurationOption",
+      "type": "object"
+    },
+    "ContextSourceEnum": {
+      "description": "Where the value for a role usually comes from.",
+      "enum": [
+        "endpoint",
+        "manual"
+      ],
+      "title": "ContextSourceEnum",
+      "type": "string"
+    },
+    "EntryStatus": {
+      "description": "Lifecycle status of a library entry.",
+      "enum": [
+        "released",
+        "provisional",
+        "deprecated"
+      ],
+      "title": "EntryStatus",
+      "type": "string"
+    },
+    "EstimandAttributeEnum": {
+      "description": "The attribute of an ICH E9(R1) estimand that a role or phrase expresses.",
+      "enum": [
+        "Treatment",
+        "Population",
+        "Variable",
+        "IntercurrentEvent",
+        "PopulationLevelSummary"
+      ],
+      "title": "EstimandAttributeEnum",
+      "type": "string"
+    },
+    "IchE9R1StrategyEnum": {
+      "description": "The five strategies for handling an intercurrent event in ICH E9(R1).",
+      "enum": [
+        "TreatmentPolicy",
+        "Hypothetical",
+        "Composite",
+        "WhileOnTreatment",
+        "PrincipalStratum"
+      ],
+      "title": "IchE9R1StrategyEnum",
+      "type": "string"
+    },
+    "LanguagePack": {
+      "additionalProperties": false,
+      "description": "What is needed to write analysis sentences in one language. The sentence template owns word order, because concatenating phrases in role order is correct only for some languages.",
+      "properties": {
+        "language": {
+          "description": "BCP 47 language tag.",
+          "type": "string"
+        },
+        "methodNames": {
+          "items": {
+            "$ref": "#/$defs/LocalisedText"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "outputNames": {
+          "description": "Reader-facing names for method outputs, by output class.",
+          "items": {
+            "$ref": "#/$defs/LocalisedText"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "phraseTemplates": {
+          "description": "Phrase templates in this language, by phrase identifier. A phrase without one falls back to the library's base text.",
+          "items": {
+            "$ref": "#/$defs/LocalisedText"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "roleConjunctions": {
+          "description": "The text placed between repeated phrases of one role.",
+          "items": {
+            "$ref": "#/$defs/LocalisedText"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "sentenceRoles": {
+          "description": "Translations of the words that say what kind of analysis it is (the primary analysis, a sensitivity analysis).",
+          "items": {
+            "$ref": "#/$defs/LocalisedText"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "sentenceTemplate": {
+          "description": "The sentence frame: role tokens in the language's word order, literal text, and optional groups in square brackets that are dropped when none of their roles is filled.",
+          "type": "string"
+        },
+        "validated": {
+          "description": "False when the translation is illustrative and has not been reviewed by a qualified translator.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "language",
+        "sentenceTemplate"
+      ],
+      "title": "LanguagePack",
+      "type": "object"
+    },
+    "LocalisedText": {
+      "additionalProperties": false,
+      "description": "A piece of text for one key in one language.",
+      "properties": {
+        "key": {
+          "description": "The identifier of what is translated (a phrase, method, output class or analysis role).",
+          "type": "string"
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "LocalisedText",
+      "type": "object"
+    },
+    "PhraseAnchors": {
+      "additionalProperties": false,
+      "description": "What a phrase means in the model, independent of its bindings.",
+      "properties": {
+        "estimandAttribute": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EstimandAttributeEnum"
             },
-            "type": [
-                "array",
-                "null"
-            ]
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "icheStrategy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IchE9R1StrategyEnum"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The intercurrent-event strategy the phrase asserts."
+        },
+        "implementation": {
+          "description": "The kind of implementation the strategy needs (none, imputation, derivation, censoring, population_subsetting).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "producedConcept": {
+          "description": "The Concept the phrase is about (a Concept identifier).",
+          "pattern": "^C\\..+$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "usesMethod": {
+          "description": "The Method the phrase implies (a Method identifier).",
+          "pattern": "^M\\..+$",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "title": "PhraseAnchors",
+      "type": "object"
+    },
+    "Placeholder": {
+      "additionalProperties": false,
+      "description": "A typed slot in a phrase template.",
+      "properties": {
+        "conceptCategory": {
+          "description": "The abstract Concept the bound study concept must belong to (a Concept identifier, e.g. C.VisitDimension).",
+          "pattern": "^C\\..+$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "conceptClass": {
+          "description": "Informative grouping of the concepts offered to the author.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "conceptConstraint": {
+          "description": "The kind of study concept that may be bound (Parameter, Timepoint, Population, Treatment, Event, IntercurrentEvent).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "constraint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValueConstraint"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "datatype": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "defaultRender": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RenderModeEnum"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "description": {
-            "description": "Free-text explanation or description",
-            "type": [
-                "string",
-                "null"
-            ]
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "extensionType": {
+          "description": "For an extension_ref, the IRI of the entity type in the extending model.",
+          "format": "uri",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "intentConstraint": {
+          "description": "The analytical intent a bound Method must serve (informative).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "$ref": "#/$defs/PlaceholderKindEnum"
+        },
+        "name": {
+          "description": "The token in the template, written there as {name}.",
+          "type": "string"
+        },
+        "renderOptions": {
+          "items": {
+            "$ref": "#/$defs/RenderModeEnum"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "required": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "valueSource": {
+          "description": "Where candidate values are drawn from (informative).",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "kind"
+      ],
+      "title": "Placeholder",
+      "type": "object"
+    },
+    "PlaceholderKindEnum": {
+      "description": "What a binding of the placeholder must supply.",
+      "enum": [
+        "concept_ref",
+        "method_ref",
+        "output_ref",
+        "value",
+        "extension_ref"
+      ],
+      "title": "PlaceholderKindEnum",
+      "type": "string"
+    },
+    "RenderModeEnum": {
+      "description": "How a bound concept or method is written in the text.",
+      "enum": [
+        "label",
+        "name",
+        "name_with_label"
+      ],
+      "title": "RenderModeEnum",
+      "type": "string"
+    },
+    "RoleDefinition": {
+      "additionalProperties": false,
+      "description": "A role a phrase plays in an analysis sentence.",
+      "properties": {
+        "contextSource": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContextSourceEnum"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "definedBy": {
+          "description": "For a role added by a model that extends AC, the namespace IRI of that model. Absent for roles of the AC library (decision D13).",
+          "format": "uri",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "estimandAttribute": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EstimandAttributeEnum"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The estimand attribute this role expresses, if any."
+        },
+        "label": {
+          "type": "string"
+        },
+        "name": {
+          "description": "Role identifier, e.g., endpoint, method, covariate.",
+          "type": "string"
+        },
+        "repeating": {
+          "description": "True when the role may be filled more than once in one analysis.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntryStatus"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "label"
+      ],
+      "title": "RoleDefinition",
+      "type": "object"
+    },
+    "SmartPhrase": {
+      "additionalProperties": false,
+      "description": "A reusable fragment of analysis plan text with typed placeholders.",
+      "properties": {
+        "anchors": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PhraseAnchors"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "conceptId": {
+          "description": "Unique phrase identifier, e.g., SP_CFB_ENDPOINT. Study phrase instances bind by it.",
+          "pattern": "^SP_.+$",
+          "type": "string"
+        },
+        "description": {
+          "description": "Free-text explanation or description",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "description": "Human-readable name",
+          "type": "string"
+        },
+        "phraseTemplate": {
+          "description": "The text, with {placeholder} tokens. English is the library's base language.",
+          "type": "string"
+        },
+        "placeholders": {
+          "items": {
+            "$ref": "#/$defs/Placeholder"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "role": {
+          "description": "The role the phrase plays (a RoleDefinition name).",
+          "type": "string"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntryStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+        }
+      },
+      "required": [
+        "conceptId",
+        "name",
+        "role",
+        "phraseTemplate"
+      ],
+      "title": "SmartPhrase",
+      "type": "object"
+    },
+    "SmartPhraseLibrary": {
+      "additionalProperties": false,
+      "description": "The SmartPhrase library.",
+      "properties": {
+        "configurationOptions": {
+          "items": {
+            "$ref": "#/$defs/ConfigurationOption"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "description": {
+          "description": "Free-text explanation or description",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "languagePacks": {
-            "items": {
-                "$ref": "#/$defs/LanguagePack"
-            },
-            "type": [
-                "array",
-                "null"
-            ]
+          "items": {
+            "$ref": "#/$defs/LanguagePack"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
         },
         "libraryVersion": {
-            "description": "Semantic version of a library file.",
-            "type": "string"
+          "description": "Semantic version of a library file.",
+          "type": "string"
         },
         "phrases": {
-            "items": {
-                "$ref": "#/$defs/SmartPhrase"
-            },
-            "type": "array"
+          "items": {
+            "$ref": "#/$defs/SmartPhrase"
+          },
+          "type": "array"
         },
         "roleOrder": {
-            "description": "The order of roles: the fallback order of phrases in a sentence, and the precedence when two phrases fill a placeholder of the same name.",
-            "items": {
-                "type": "string"
-            },
-            "type": "array"
+          "description": "The order of roles: the fallback order of phrases in a sentence, and the precedence when two phrases fill a placeholder of the same name.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "roles": {
-            "items": {
-                "$ref": "#/$defs/RoleDefinition"
-            },
-            "type": "array"
+          "items": {
+            "$ref": "#/$defs/RoleDefinition"
+          },
+          "type": "array"
         }
-    },
-    "required": [
+      },
+      "required": [
         "libraryVersion",
         "roleOrder",
         "roles",
         "phrases"
-    ],
-    "title": "ac_smartphrase",
-    "type": "object",
-    "version": "1.0.0-candidate"
+      ],
+      "title": "SmartPhraseLibrary",
+      "type": "object"
+    },
+    "UnitRuleEnum": {
+      "description": "How the unit of a produced value is determined.",
+      "enum": [
+        "inherited",
+        "derived",
+        "fixed",
+        "unitless",
+        "none"
+      ],
+      "title": "UnitRuleEnum",
+      "type": "string"
+    },
+    "ValueConstraint": {
+      "additionalProperties": false,
+      "description": "The range a numeric value must lie in.",
+      "properties": {
+        "max": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "min": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "title": "ValueConstraint",
+      "type": "object"
+    },
+    "ValueTypeEnum": {
+      "description": "The kind of value a statistic or concept produces. Complex types follow FHIR R5 datatypes; primitive types follow FHIR primitives.",
+      "enum": [
+        "Quantity",
+        "CodeableConcept",
+        "Identifier",
+        "Range",
+        "Ratio",
+        "Count",
+        "Period",
+        "decimal",
+        "integer",
+        "boolean",
+        "string",
+        "code",
+        "date",
+        "dateTime"
+      ],
+      "title": "ValueTypeEnum",
+      "type": "string"
+    }
+  },
+  "$id": "https://cdisc.org/ac/smartphrase",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "additionalProperties": false,
+  "description": "The SmartPhrase library.",
+  "metamodel_version": "1.12.0",
+  "properties": {
+    "configurationOptions": {
+      "items": {
+        "$ref": "#/$defs/ConfigurationOption"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "description": {
+      "description": "Free-text explanation or description",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "languagePacks": {
+      "items": {
+        "$ref": "#/$defs/LanguagePack"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "libraryVersion": {
+      "description": "Semantic version of a library file.",
+      "type": "string"
+    },
+    "phrases": {
+      "items": {
+        "$ref": "#/$defs/SmartPhrase"
+      },
+      "type": "array"
+    },
+    "roleOrder": {
+      "description": "The order of roles: the fallback order of phrases in a sentence, and the precedence when two phrases fill a placeholder of the same name.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "roles": {
+      "items": {
+        "$ref": "#/$defs/RoleDefinition"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "libraryVersion",
+    "roleOrder",
+    "roles",
+    "phrases"
+  ],
+  "title": "ac_smartphrase",
+  "type": "object",
+  "version": "1.0.0-candidate"
 }
-

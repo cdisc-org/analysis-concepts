@@ -1,432 +1,431 @@
 {
-    "$defs": {
-        "BindingCondition": {
-            "additionalProperties": false,
-            "description": "A condition on another variable of the same dataset that must hold for the binding to apply.",
-            "properties": {
-                "comparator": {
-                    "$ref": "#/$defs/ComparatorEnum"
-                },
-                "values": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                },
-                "variable": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "variable",
-                "comparator",
-                "values"
-            ],
-            "title": "BindingCondition",
-            "type": "object"
+  "$defs": {
+    "BindingCondition": {
+      "additionalProperties": false,
+      "description": "A condition on another variable of the same dataset that must hold for the binding to apply.",
+      "properties": {
+        "comparator": {
+          "$ref": "#/$defs/ComparatorEnum"
         },
-        "BindingLevelEnum": {
-            "description": "",
-            "enum": [
-                "classLevel",
-                "valueLevel"
-            ],
-            "title": "BindingLevelEnum",
+        "values": {
+          "items": {
             "type": "string"
+          },
+          "type": "array"
         },
-        "BindingQualifier": {
-            "additionalProperties": false,
-            "description": "A named qualification of what the variable carries (for example intent = Planned for a treatment variable).",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "name",
-                "value"
-            ],
-            "title": "BindingQualifier",
-            "type": "object"
-        },
-        "Coding": {
-            "additionalProperties": false,
-            "description": "A reference to a code in a terminology or ontology",
-            "properties": {
-                "code": {
-                    "description": "The code value within the system (e.g., STATO_0000179)",
-                    "type": "string"
-                },
-                "display": {
-                    "description": "Human-readable label for the code",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "system": {
-                    "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)",
-                    "format": "uri",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "system",
-                "code"
-            ],
-            "title": "Coding",
-            "type": "object"
-        },
-        "ComparatorEnum": {
-            "description": "Comparison operators, as used in Define-XML and Dataset Specialisations.",
-            "enum": [
-                "EQ",
-                "NE",
-                "IN",
-                "NOTIN",
-                "LT",
-                "LE",
-                "GT",
-                "GE"
-            ],
-            "title": "ComparatorEnum",
-            "type": "string"
-        },
-        "DataBinding": {
-            "additionalProperties": false,
-            "description": "One variable carrying one Concept (or one part of it).",
-            "properties": {
-                "alternativeVariables": {
-                    "description": "Other variables of the standard that may carry the Concept, depending on the study's design.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "concept": {
-                    "description": "The Concept carried (a Concept identifier).",
-                    "pattern": "^C\\..+$",
-                    "type": "string"
-                },
-                "conditions": {
-                    "items": {
-                        "$ref": "#/$defs/BindingCondition"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "dataType": {
-                    "description": "The data type of the variable's values.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "description": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "facet": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/FacetEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "facetName": {
-                    "description": "The name of the sub-part carried, when `facet` is `qualifier`.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "id": {
-                    "type": "string"
-                },
-                "level": {
-                    "$ref": "#/$defs/BindingLevelEnum"
-                },
-                "locator": {
-                    "$ref": "#/$defs/Locator"
-                },
-                "parameterDependent": {
-                    "description": "True when this variable carries the Concept only for some parameters, so that a value-level binding is needed to apply it.",
-                    "type": [
-                        "boolean",
-                        "null"
-                    ]
-                },
-                "qualifiers": {
-                    "items": {
-                        "$ref": "#/$defs/BindingQualifier"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "specialisation": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/SpecialisationReference"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "status": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EntryStatus"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "studyConcept": {
-                    "description": "For a value-level binding in a study, the study concept it applies to (for example PARAM.ADASCOG11).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "id",
-                "concept",
-                "level",
-                "locator"
-            ],
-            "title": "DataBinding",
-            "type": "object"
-        },
-        "DataBindingLibrary": {
-            "additionalProperties": false,
-            "description": "The Data Bindings for one data standard.",
-            "properties": {
-                "bindings": {
-                    "items": {
-                        "$ref": "#/$defs/DataBinding"
-                    },
-                    "type": "array"
-                },
-                "description": {
-                    "description": "Free-text explanation or description",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "libraryVersion": {
-                    "description": "Semantic version of a library file.",
-                    "type": "string"
-                },
-                "standard": {
-                    "description": "The data standard bound to, for example ADaM or SDTM.",
-                    "type": "string"
-                },
-                "standardVersions": {
-                    "description": "The versions of the standard the bindings were written against.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "libraryVersion",
-                "standard",
-                "bindings"
-            ],
-            "title": "DataBindingLibrary",
-            "type": "object"
-        },
-        "EntryStatus": {
-            "description": "Lifecycle status of a library entry.",
-            "enum": [
-                "released",
-                "provisional",
-                "deprecated"
-            ],
-            "title": "EntryStatus",
-            "type": "string"
-        },
-        "FacetEnum": {
-            "description": "The part of a Concept a variable carries.",
-            "enum": [
-                "value",
-                "unit",
-                "code",
-                "decode",
-                "number",
-                "qualifier"
-            ],
-            "title": "FacetEnum",
-            "type": "string"
-        },
-        "Locator": {
-            "additionalProperties": false,
-            "description": "Where the data is.",
-            "properties": {
-                "dataset": {
-                    "description": "The dataset name, for a study-level binding (for example ADQSADAS).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "datasetClass": {
-                    "description": "The class of dataset in the standard (for example BasicDataStructure, SubjectLevel, Findings).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "locatorType": {
-                    "$ref": "#/$defs/LocatorTypeEnum"
-                },
-                "variable": {
-                    "description": "The variable name. A leading `--` stands for the two-letter domain prefix of an SDTM variable (`--ORRES`).",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "locatorType",
-                "variable"
-            ],
-            "title": "Locator",
-            "type": "object"
-        },
-        "LocatorTypeEnum": {
-            "description": "How a locator addresses data. Only `tabular` is defined in candidate v1.",
-            "enum": [
-                "tabular",
-                "path"
-            ],
-            "title": "LocatorTypeEnum",
-            "type": "string"
-        },
-        "SpecialisationReference": {
-            "additionalProperties": false,
-            "description": "The CDISC Dataset Specialisation element this binding corresponds to. SDTM bindings are held by reference: the specialisation is the source of truth, and this records which data element concept the variable carries.",
-            "properties": {
-                "dataElementConceptId": {
-                    "description": "NCIt code of the data element concept (the `dec_id` of the specialisation variable).",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "note": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "title": "SpecialisationReference",
-            "type": "object"
-        },
-        "UnitRuleEnum": {
-            "description": "How the unit of a produced value is determined.",
-            "enum": [
-                "inherited",
-                "derived",
-                "fixed",
-                "unitless",
-                "none"
-            ],
-            "title": "UnitRuleEnum",
-            "type": "string"
-        },
-        "ValueTypeEnum": {
-            "description": "The kind of value a statistic or concept produces. Complex types follow FHIR R5 datatypes; primitive types follow FHIR primitives.",
-            "enum": [
-                "Quantity",
-                "CodeableConcept",
-                "Identifier",
-                "Range",
-                "Ratio",
-                "Count",
-                "Period",
-                "decimal",
-                "integer",
-                "boolean",
-                "string",
-                "code",
-                "date",
-                "dateTime"
-            ],
-            "title": "ValueTypeEnum",
-            "type": "string"
+        "variable": {
+          "type": "string"
         }
+      },
+      "required": [
+        "variable",
+        "comparator",
+        "values"
+      ],
+      "title": "BindingCondition",
+      "type": "object"
     },
-    "$id": "https://cdisc.org/ac/binding",
-    "$schema": "https://json-schema.org/draft/2019-09/schema",
-    "additionalProperties": false,
-    "description": "The Data Bindings for one data standard.",
-    "metamodel_version": "1.12.0",
-    "properties": {
-        "bindings": {
-            "items": {
-                "$ref": "#/$defs/DataBinding"
-            },
-            "type": "array"
+    "BindingLevelEnum": {
+      "description": "",
+      "enum": [
+        "classLevel",
+        "valueLevel"
+      ],
+      "title": "BindingLevelEnum",
+      "type": "string"
+    },
+    "BindingQualifier": {
+      "additionalProperties": false,
+      "description": "A named qualification of what the variable carries (for example intent = Planned for a treatment variable).",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ],
+      "title": "BindingQualifier",
+      "type": "object"
+    },
+    "Coding": {
+      "additionalProperties": false,
+      "description": "A reference to a code in a terminology or ontology",
+      "properties": {
+        "code": {
+          "description": "The code value within the system (e.g., STATO_0000179)",
+          "type": "string"
+        },
+        "display": {
+          "description": "Human-readable label for the code",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "system": {
+          "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)",
+          "format": "uri",
+          "type": "string"
+        }
+      },
+      "required": [
+        "system",
+        "code"
+      ],
+      "title": "Coding",
+      "type": "object"
+    },
+    "ComparatorEnum": {
+      "description": "Comparison operators, as used in Define-XML and Dataset Specialisations.",
+      "enum": [
+        "EQ",
+        "NE",
+        "IN",
+        "NOTIN",
+        "LT",
+        "LE",
+        "GT",
+        "GE"
+      ],
+      "title": "ComparatorEnum",
+      "type": "string"
+    },
+    "DataBinding": {
+      "additionalProperties": false,
+      "description": "One variable carrying one Concept (or one part of it).",
+      "properties": {
+        "alternativeVariables": {
+          "description": "Other variables of the standard that may carry the Concept, depending on the study's design.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "concept": {
+          "description": "The Concept carried (a Concept identifier).",
+          "pattern": "^C\\..+$",
+          "type": "string"
+        },
+        "conditions": {
+          "items": {
+            "$ref": "#/$defs/BindingCondition"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "dataType": {
+          "description": "The data type of the variable's values.",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "description": {
-            "description": "Free-text explanation or description",
-            "type": [
-                "string",
-                "null"
-            ]
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "facet": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FacetEnum"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "facetName": {
+          "description": "The name of the sub-part carried, when `facet` is `qualifier`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "level": {
+          "$ref": "#/$defs/BindingLevelEnum"
+        },
+        "locator": {
+          "$ref": "#/$defs/Locator"
+        },
+        "parameterDependent": {
+          "description": "True when this variable carries the Concept only for some parameters, so that a value-level binding is needed to apply it.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "qualifiers": {
+          "items": {
+            "$ref": "#/$defs/BindingQualifier"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "specialisation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SpecialisationReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntryStatus"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "studyConcept": {
+          "description": "For a value-level binding in a study, the study concept it applies to (for example PARAM.ADASCOG11).",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "concept",
+        "level",
+        "locator"
+      ],
+      "title": "DataBinding",
+      "type": "object"
+    },
+    "DataBindingLibrary": {
+      "additionalProperties": false,
+      "description": "The Data Bindings for one data standard.",
+      "properties": {
+        "bindings": {
+          "items": {
+            "$ref": "#/$defs/DataBinding"
+          },
+          "type": "array"
+        },
+        "description": {
+          "description": "Free-text explanation or description",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "libraryVersion": {
-            "description": "Semantic version of a library file.",
-            "type": "string"
+          "description": "Semantic version of a library file.",
+          "type": "string"
         },
         "standard": {
-            "description": "The data standard bound to, for example ADaM or SDTM.",
-            "type": "string"
+          "description": "The data standard bound to, for example ADaM or SDTM.",
+          "type": "string"
         },
         "standardVersions": {
-            "description": "The versions of the standard the bindings were written against.",
-            "items": {
-                "type": "string"
-            },
-            "type": [
-                "array",
-                "null"
-            ]
+          "description": "The versions of the standard the bindings were written against.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
         }
-    },
-    "required": [
+      },
+      "required": [
         "libraryVersion",
         "standard",
         "bindings"
-    ],
-    "title": "ac_binding",
-    "type": "object",
-    "version": "1.0.0-candidate"
+      ],
+      "title": "DataBindingLibrary",
+      "type": "object"
+    },
+    "EntryStatus": {
+      "description": "Lifecycle status of a library entry.",
+      "enum": [
+        "released",
+        "provisional",
+        "deprecated"
+      ],
+      "title": "EntryStatus",
+      "type": "string"
+    },
+    "FacetEnum": {
+      "description": "The part of a Concept a variable carries.",
+      "enum": [
+        "value",
+        "unit",
+        "code",
+        "decode",
+        "number",
+        "qualifier"
+      ],
+      "title": "FacetEnum",
+      "type": "string"
+    },
+    "Locator": {
+      "additionalProperties": false,
+      "description": "Where the data is.",
+      "properties": {
+        "dataset": {
+          "description": "The dataset name, for a study-level binding (for example ADQSADAS).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "datasetClass": {
+          "description": "The class of dataset in the standard (for example BasicDataStructure, SubjectLevel, Findings).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "locatorType": {
+          "$ref": "#/$defs/LocatorTypeEnum"
+        },
+        "variable": {
+          "description": "The variable name. A leading `--` stands for the two-letter domain prefix of an SDTM variable (`--ORRES`).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "locatorType",
+        "variable"
+      ],
+      "title": "Locator",
+      "type": "object"
+    },
+    "LocatorTypeEnum": {
+      "description": "How a locator addresses data. Only `tabular` is defined in candidate v1.",
+      "enum": [
+        "tabular",
+        "path"
+      ],
+      "title": "LocatorTypeEnum",
+      "type": "string"
+    },
+    "SpecialisationReference": {
+      "additionalProperties": false,
+      "description": "The CDISC Dataset Specialisation element this binding corresponds to. SDTM bindings are held by reference: the specialisation is the source of truth, and this records which data element concept the variable carries.",
+      "properties": {
+        "dataElementConceptId": {
+          "description": "NCIt code of the data element concept (the `dec_id` of the specialisation variable).",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "title": "SpecialisationReference",
+      "type": "object"
+    },
+    "UnitRuleEnum": {
+      "description": "How the unit of a produced value is determined.",
+      "enum": [
+        "inherited",
+        "derived",
+        "fixed",
+        "unitless",
+        "none"
+      ],
+      "title": "UnitRuleEnum",
+      "type": "string"
+    },
+    "ValueTypeEnum": {
+      "description": "The kind of value a statistic or concept produces. Complex types follow FHIR R5 datatypes; primitive types follow FHIR primitives.",
+      "enum": [
+        "Quantity",
+        "CodeableConcept",
+        "Identifier",
+        "Range",
+        "Ratio",
+        "Count",
+        "Period",
+        "decimal",
+        "integer",
+        "boolean",
+        "string",
+        "code",
+        "date",
+        "dateTime"
+      ],
+      "title": "ValueTypeEnum",
+      "type": "string"
+    }
+  },
+  "$id": "https://cdisc.org/ac/binding",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "additionalProperties": false,
+  "description": "The Data Bindings for one data standard.",
+  "metamodel_version": "1.12.0",
+  "properties": {
+    "bindings": {
+      "items": {
+        "$ref": "#/$defs/DataBinding"
+      },
+      "type": "array"
+    },
+    "description": {
+      "description": "Free-text explanation or description",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "libraryVersion": {
+      "description": "Semantic version of a library file.",
+      "type": "string"
+    },
+    "standard": {
+      "description": "The data standard bound to, for example ADaM or SDTM.",
+      "type": "string"
+    },
+    "standardVersions": {
+      "description": "The versions of the standard the bindings were written against.",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "libraryVersion",
+    "standard",
+    "bindings"
+  ],
+  "title": "ac_binding",
+  "type": "object",
+  "version": "1.0.0-candidate"
 }
-

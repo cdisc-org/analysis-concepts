@@ -259,7 +259,8 @@ def build_study(study_id: str, g: dict, lib: dict, overlay: dict):
                              "rank": e.get("rank"), "sapRefs": anchors(e.get("sapRefs"))})
                       | {"intercurrentEvents": e.get("intercurrentEvents", [])}
                       for k, e in g["estimands"].items()],
-        "methodGroundings": [clean({"method": m, "reference": ext(v.get("iri"), v.get("iri_status")),
+        "methodGroundings": [clean({"method": m, "label": v.get("label"), "name": v.get("name"),
+                                    "reference": ext(v.get("iri"), v.get("iri_status")),
                                     "arsMethod": ext(v.get("ars"), v.get("ars_status"))})
                              for m, v in (g.get("methodGrounding") or {}).items()],
         "derivations": list(derivations.values()),
@@ -296,7 +297,23 @@ def build_study(study_id: str, g: dict, lib: dict, overlay: dict):
     return len(analyses), len(derivations)
 
 
+def sentence_goldens():
+    """The sentences the proof of concept generates, kept as the expected output of v1's renderer."""
+    from common import git_json
+    src = git_json(SMARTPHRASE_REF, "smartphrase/tools/goldens.json")
+    out = {}
+    for key, value in src.items():
+        parts = key.split("/")
+        if len(parts) == 4 and parts[2] == "sentence":
+            out.setdefault(parts[0].lower(), {}).setdefault(parts[1], {})[parts[3]] = value
+    write_json(V1 / "tests" / "data" / "sentence_goldens.json", {
+        "_source": f"smartphrase/tools/goldens.json on estimands_01 ({git_rev(SMARTPHRASE_REF)})",
+        "sentences": out,
+    })
+
+
 def build():
+    sentence_goldens()
     cache = read_json(V1 / "tools" / ".cache" / "smartphrase_sources.json")
     sp = read_json(LIB / "smartphrases" / "smartphrases.json")
     tl = read_json(LIB / "transformations" / "transformations.json")

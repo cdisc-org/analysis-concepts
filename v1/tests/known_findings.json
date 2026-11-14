@@ -1,0 +1,4 @@
+{
+  "_comment": "Errors the validator reports that are accepted for now, each with a reason. A known finding that stops occurring makes the build fail, so this list stays honest.",
+  "known": []
+}

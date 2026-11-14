@@ -394,6 +394,8 @@
   "methodGroundings": [
     {
       "method": "M.KaplanMeier",
+      "label": "Kaplan-Meier",
+      "name": "Kaplan-Meier estimation",
       "reference": {
         "iri": "acdc:method/KaplanMeier",
         "iriStatus": "illustrative"

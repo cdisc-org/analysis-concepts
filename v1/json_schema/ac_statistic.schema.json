@@ -1,224 +1,223 @@
 {
-    "$defs": {
-        "Coding": {
-            "additionalProperties": false,
-            "description": "A reference to a code in a terminology or ontology",
-            "properties": {
-                "code": {
-                    "description": "The code value within the system (e.g., STATO_0000179)",
-                    "type": "string"
-                },
-                "display": {
-                    "description": "Human-readable label for the code",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "system": {
-                    "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)",
-                    "format": "uri",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "system",
-                "code"
-            ],
-            "title": "Coding",
-            "type": "object"
+  "$defs": {
+    "Coding": {
+      "additionalProperties": false,
+      "description": "A reference to a code in a terminology or ontology",
+      "properties": {
+        "code": {
+          "description": "The code value within the system (e.g., STATO_0000179)",
+          "type": "string"
         },
-        "EntryStatus": {
-            "description": "Lifecycle status of a library entry.",
-            "enum": [
-                "released",
-                "provisional",
-                "deprecated"
-            ],
-            "title": "EntryStatus",
-            "type": "string"
+        "display": {
+          "description": "Human-readable label for the code",
+          "type": [
+            "string",
+            "null"
+          ]
         },
-        "Statistic": {
-            "additionalProperties": false,
-            "description": "A reusable statistic/measure definition in the vocabulary",
-            "properties": {
-                "codings": {
-                    "description": "Mappings to external terminology or ontology codes",
-                    "items": {
-                        "$ref": "#/$defs/Coding"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "conceptId": {
-                    "description": "Unique statistic identifier, e.g., S.AIC, S.BIC",
-                    "pattern": "^S\\..+$",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "What this statistic measures",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "label": {
-                    "description": "Short label for display",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "name": {
-                    "description": "Statistic identifier, e.g., estimate, p_value, F_statistic",
-                    "type": "string"
-                },
-                "ncitCode": {
-                    "description": "NCIt code",
-                    "pattern": "^(C[0-9]+(_NEW)?)$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "status": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EntryStatus"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
-                },
-                "unitRule": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/UnitRuleEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "How the unit of the value is determined."
-                },
-                "valueType": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ValueTypeEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "The kind of value produced, using FHIR datatype names."
-                }
-            },
-            "required": [
-                "conceptId",
-                "name"
-            ],
-            "title": "Statistic",
-            "type": "object"
-        },
-        "StatisticLibrary": {
-            "additionalProperties": false,
-            "description": "The vocabulary of statistics that methods produce and analysis concepts are made of.",
-            "properties": {
-                "description": {
-                    "description": "Free-text explanation or description",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "entries": {
-                    "description": "The statistics in the vocabulary.",
-                    "items": {
-                        "$ref": "#/$defs/Statistic"
-                    },
-                    "type": "array"
-                },
-                "libraryVersion": {
-                    "description": "Semantic version of a library file.",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "libraryVersion",
-                "entries"
-            ],
-            "title": "StatisticLibrary",
-            "type": "object"
-        },
-        "UnitRuleEnum": {
-            "description": "How the unit of a produced value is determined.",
-            "enum": [
-                "inherited",
-                "derived",
-                "fixed",
-                "unitless",
-                "none"
-            ],
-            "title": "UnitRuleEnum",
-            "type": "string"
-        },
-        "ValueTypeEnum": {
-            "description": "The kind of value a statistic or concept produces. Complex types follow FHIR R5 datatypes; primitive types follow FHIR primitives.",
-            "enum": [
-                "Quantity",
-                "CodeableConcept",
-                "Identifier",
-                "Range",
-                "Ratio",
-                "Count",
-                "Period",
-                "decimal",
-                "integer",
-                "boolean",
-                "string",
-                "code",
-                "date",
-                "dateTime"
-            ],
-            "title": "ValueTypeEnum",
-            "type": "string"
+        "system": {
+          "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)",
+          "format": "uri",
+          "type": "string"
         }
+      },
+      "required": [
+        "system",
+        "code"
+      ],
+      "title": "Coding",
+      "type": "object"
     },
-    "$id": "https://cdisc.org/ac/statistic",
-    "$schema": "https://json-schema.org/draft/2019-09/schema",
-    "additionalProperties": false,
-    "description": "The vocabulary of statistics that methods produce and analysis concepts are made of.",
-    "metamodel_version": "1.12.0",
-    "properties": {
+    "EntryStatus": {
+      "description": "Lifecycle status of a library entry.",
+      "enum": [
+        "released",
+        "provisional",
+        "deprecated"
+      ],
+      "title": "EntryStatus",
+      "type": "string"
+    },
+    "Statistic": {
+      "additionalProperties": false,
+      "description": "A reusable statistic/measure definition in the vocabulary",
+      "properties": {
+        "codings": {
+          "description": "Mappings to external terminology or ontology codes",
+          "items": {
+            "$ref": "#/$defs/Coding"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "conceptId": {
+          "description": "Unique statistic identifier, e.g., S.AIC, S.BIC",
+          "pattern": "^S\\..+$",
+          "type": "string"
+        },
         "description": {
-            "description": "Free-text explanation or description",
-            "type": [
-                "string",
-                "null"
-            ]
+          "description": "What this statistic measures",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label": {
+          "description": "Short label for display",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "description": "Statistic identifier, e.g., estimate, p_value, F_statistic",
+          "type": "string"
+        },
+        "ncitCode": {
+          "description": "NCIt code",
+          "pattern": "^(C[0-9]+(_NEW)?)$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntryStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+        },
+        "unitRule": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UnitRuleEnum"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "How the unit of the value is determined."
+        },
+        "valueType": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValueTypeEnum"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The kind of value produced, using FHIR datatype names."
+        }
+      },
+      "required": [
+        "conceptId",
+        "name"
+      ],
+      "title": "Statistic",
+      "type": "object"
+    },
+    "StatisticLibrary": {
+      "additionalProperties": false,
+      "description": "The vocabulary of statistics that methods produce and analysis concepts are made of.",
+      "properties": {
+        "description": {
+          "description": "Free-text explanation or description",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "entries": {
-            "description": "The statistics in the vocabulary.",
-            "items": {
-                "$ref": "#/$defs/Statistic"
-            },
-            "type": "array"
+          "description": "The statistics in the vocabulary.",
+          "items": {
+            "$ref": "#/$defs/Statistic"
+          },
+          "type": "array"
         },
         "libraryVersion": {
-            "description": "Semantic version of a library file.",
-            "type": "string"
+          "description": "Semantic version of a library file.",
+          "type": "string"
         }
-    },
-    "required": [
+      },
+      "required": [
         "libraryVersion",
         "entries"
-    ],
-    "title": "ac_statistic",
-    "type": "object",
-    "version": "1.0.0-candidate"
+      ],
+      "title": "StatisticLibrary",
+      "type": "object"
+    },
+    "UnitRuleEnum": {
+      "description": "How the unit of a produced value is determined.",
+      "enum": [
+        "inherited",
+        "derived",
+        "fixed",
+        "unitless",
+        "none"
+      ],
+      "title": "UnitRuleEnum",
+      "type": "string"
+    },
+    "ValueTypeEnum": {
+      "description": "The kind of value a statistic or concept produces. Complex types follow FHIR R5 datatypes; primitive types follow FHIR primitives.",
+      "enum": [
+        "Quantity",
+        "CodeableConcept",
+        "Identifier",
+        "Range",
+        "Ratio",
+        "Count",
+        "Period",
+        "decimal",
+        "integer",
+        "boolean",
+        "string",
+        "code",
+        "date",
+        "dateTime"
+      ],
+      "title": "ValueTypeEnum",
+      "type": "string"
+    }
+  },
+  "$id": "https://cdisc.org/ac/statistic",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "additionalProperties": false,
+  "description": "The vocabulary of statistics that methods produce and analysis concepts are made of.",
+  "metamodel_version": "1.12.0",
+  "properties": {
+    "description": {
+      "description": "Free-text explanation or description",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "entries": {
+      "description": "The statistics in the vocabulary.",
+      "items": {
+        "$ref": "#/$defs/Statistic"
+      },
+      "type": "array"
+    },
+    "libraryVersion": {
+      "description": "Semantic version of a library file.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "libraryVersion",
+    "entries"
+  ],
+  "title": "ac_statistic",
+  "type": "object",
+  "version": "1.0.0-candidate"
 }
-

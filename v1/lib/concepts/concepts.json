@@ -356,8 +356,11 @@
           "integer"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Identity"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -380,8 +383,11 @@
           "string"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Identity"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -404,8 +410,11 @@
           "string"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Identity"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -431,8 +440,11 @@
           "string"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Identity"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -465,8 +477,11 @@
           "code"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Topic"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -482,8 +497,11 @@
           "code"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Topic"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -499,8 +517,11 @@
           "CodeableConcept"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Topic"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -516,8 +537,11 @@
           "CodeableConcept"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.DictionaryCoding"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -533,8 +557,11 @@
           "CodeableConcept"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.DictionaryCoding"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -569,8 +596,11 @@
           "Quantity"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Timing"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -586,8 +616,11 @@
           "integer"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Timing"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -617,8 +650,11 @@
           "CodeableConcept"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Timing"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -665,8 +701,11 @@
           "CodeableConcept"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.ObservationCategory"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -737,8 +776,11 @@
           "CodeableConcept"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Location"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -761,8 +803,11 @@
           "CodeableConcept"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Location"
+      ],
+      "broader": [
+        "C.Observation"
       ]
     },
     {
@@ -891,8 +936,11 @@
       "definitionForm": "none",
       "axis": "attribute",
       "description": "Expected range for healthy individuals",
-      "broader": [
+      "partOf": [
         "C.Result"
+      ],
+      "broader": [
+        "C.FindingObservation"
       ]
     },
     {
@@ -908,8 +956,11 @@
           "Quantity"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Result"
+      ],
+      "broader": [
+        "C.FindingObservation"
       ]
     },
     {
@@ -997,8 +1048,11 @@
           "integer"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Severity"
+      ],
+      "broader": [
+        "C.EventObservation"
       ]
     },
     {
@@ -1120,8 +1174,11 @@
           "code"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Dose"
+      ],
+      "broader": [
+        "C.InterventionObservation"
       ]
     },
     {
@@ -1147,8 +1204,11 @@
           "CodeableConcept"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Dose"
+      ],
+      "broader": [
+        "C.InterventionObservation"
       ]
     },
     {
@@ -1164,8 +1224,11 @@
           "CodeableConcept"
         ]
       },
-      "broader": [
+      "partOf": [
         "C.Dose"
+      ],
+      "broader": [
+        "C.InterventionObservation"
       ]
     },
     {

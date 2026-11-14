@@ -1,318 +1,317 @@
 {
-    "$defs": {
-        "Any": {
-            "additionalProperties": true,
-            "description": "Any value.",
-            "title": "Any",
-            "type": [
-                "null",
-                "boolean",
-                "object",
-                "number",
-                "string"
-            ]
-        },
-        "Coding": {
-            "additionalProperties": false,
-            "description": "A reference to a code in a terminology or ontology",
-            "properties": {
-                "code": {
-                    "description": "The code value within the system (e.g., STATO_0000179)",
-                    "type": "string"
-                },
-                "display": {
-                    "description": "Human-readable label for the code",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "system": {
-                    "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)",
-                    "format": "uri",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "system",
-                "code"
-            ],
-            "title": "Coding",
-            "type": "object"
-        },
-        "EntryStatus": {
-            "description": "Lifecycle status of a library entry.",
-            "enum": [
-                "released",
-                "provisional",
-                "deprecated"
-            ],
-            "title": "EntryStatus",
-            "type": "string"
-        },
-        "MethodImplementation": {
-            "additionalProperties": false,
-            "description": "One way of running a Method in one language.",
-            "properties": {
-                "callTemplate": {
-                    "description": "The call, with the Method's input roles and configurations as <placeholders>.",
-                    "type": "string"
-                },
-                "configurationMappings": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/Any"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "How configuration values are written in this language."
-                },
-                "derivationKind": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "documentation": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "function": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "language": {
-                    "type": "string"
-                },
-                "method": {
-                    "description": "The Method implemented (a Method identifier).",
-                    "pattern": "^M\\..+$",
-                    "type": "string"
-                },
-                "notes": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "outputMapping": {
-                    "items": {
-                        "$ref": "#/$defs/OutputMapping"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "package": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "packages": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "procedure": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "roleSeparator": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "method",
-                "language",
-                "callTemplate"
-            ],
-            "title": "MethodImplementation",
-            "type": "object"
-        },
-        "MethodImplementationCatalogue": {
-            "additionalProperties": false,
-            "description": "",
-            "properties": {
-                "description": {
-                    "description": "Free-text explanation or description",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "implementations": {
-                    "items": {
-                        "$ref": "#/$defs/MethodImplementation"
-                    },
-                    "type": "array"
-                },
-                "language": {
-                    "type": "string"
-                },
-                "libraryVersion": {
-                    "description": "Semantic version of a library file.",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "libraryVersion",
-                "language",
-                "implementations"
-            ],
-            "title": "MethodImplementationCatalogue",
-            "type": "object"
-        },
-        "OutputMapping": {
-            "additionalProperties": false,
-            "description": "How one output of the method is read from what the code returns.",
-            "properties": {
-                "extractionCode": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "producer": {
-                    "description": "The Method or SubMethod whose output this is.",
-                    "pattern": "^S?M\\..+$",
-                    "type": "string"
-                },
-                "resultColumns": {
-                    "items": {
-                        "$ref": "#/$defs/ResultColumn"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "sourceName": {
-                    "description": "The name the source catalogue used for this output.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "producer"
-            ],
-            "title": "OutputMapping",
-            "type": "object"
-        },
-        "ResultColumn": {
-            "additionalProperties": false,
-            "description": "Where one value of an output is found in what the code returns.",
-            "properties": {
-                "column": {
-                    "description": "The element of the returned object that holds it.",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "The name the catalogue gives the value.",
-                    "type": "string"
-                },
-                "statistic": {
-                    "description": "The statistic the value is (a Statistic identifier), when it is one.",
-                    "pattern": "^S\\..+$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "name",
-                "column"
-            ],
-            "title": "ResultColumn",
-            "type": "object"
-        },
-        "UnitRuleEnum": {
-            "description": "How the unit of a produced value is determined.",
-            "enum": [
-                "inherited",
-                "derived",
-                "fixed",
-                "unitless",
-                "none"
-            ],
-            "title": "UnitRuleEnum",
-            "type": "string"
-        },
-        "ValueTypeEnum": {
-            "description": "The kind of value a statistic or concept produces. Complex types follow FHIR R5 datatypes; primitive types follow FHIR primitives.",
-            "enum": [
-                "Quantity",
-                "CodeableConcept",
-                "Identifier",
-                "Range",
-                "Ratio",
-                "Count",
-                "Period",
-                "decimal",
-                "integer",
-                "boolean",
-                "string",
-                "code",
-                "date",
-                "dateTime"
-            ],
-            "title": "ValueTypeEnum",
-            "type": "string"
-        }
+  "$defs": {
+    "Any": {
+      "additionalProperties": true,
+      "description": "Any value.",
+      "title": "Any",
+      "type": [
+        "null",
+        "boolean",
+        "object",
+        "number",
+        "string"
+      ]
     },
-    "$id": "https://cdisc.org/ac/implementation",
-    "$schema": "https://json-schema.org/draft/2019-09/schema",
-    "additionalProperties": false,
-    "description": "",
-    "metamodel_version": "1.12.0",
-    "properties": {
-        "description": {
-            "description": "Free-text explanation or description",
-            "type": [
-                "string",
-                "null"
-            ]
+    "Coding": {
+      "additionalProperties": false,
+      "description": "A reference to a code in a terminology or ontology",
+      "properties": {
+        "code": {
+          "description": "The code value within the system (e.g., STATO_0000179)",
+          "type": "string"
         },
-        "implementations": {
-            "items": {
-                "$ref": "#/$defs/MethodImplementation"
+        "display": {
+          "description": "Human-readable label for the code",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "system": {
+          "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)",
+          "format": "uri",
+          "type": "string"
+        }
+      },
+      "required": [
+        "system",
+        "code"
+      ],
+      "title": "Coding",
+      "type": "object"
+    },
+    "EntryStatus": {
+      "description": "Lifecycle status of a library entry.",
+      "enum": [
+        "released",
+        "provisional",
+        "deprecated"
+      ],
+      "title": "EntryStatus",
+      "type": "string"
+    },
+    "MethodImplementation": {
+      "additionalProperties": false,
+      "description": "One way of running a Method in one language.",
+      "properties": {
+        "callTemplate": {
+          "description": "The call, with the Method's input roles and configurations as <placeholders>.",
+          "type": "string"
+        },
+        "configurationMappings": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Any"
             },
-            "type": "array"
+            {
+              "type": "null"
+            }
+          ],
+          "description": "How configuration values are written in this language."
+        },
+        "derivationKind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "documentation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "function": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "language": {
+          "type": "string"
+        },
+        "method": {
+          "description": "The Method implemented (a Method identifier).",
+          "pattern": "^M\\..+$",
+          "type": "string"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "outputMapping": {
+          "items": {
+            "$ref": "#/$defs/OutputMapping"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "package": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "packages": {
+          "items": {
             "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "procedure": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "roleSeparator": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "method",
+        "language",
+        "callTemplate"
+      ],
+      "title": "MethodImplementation",
+      "type": "object"
+    },
+    "MethodImplementationCatalogue": {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "description": {
+          "description": "Free-text explanation or description",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "implementations": {
+          "items": {
+            "$ref": "#/$defs/MethodImplementation"
+          },
+          "type": "array"
+        },
+        "language": {
+          "type": "string"
         },
         "libraryVersion": {
-            "description": "Semantic version of a library file.",
-            "type": "string"
+          "description": "Semantic version of a library file.",
+          "type": "string"
         }
-    },
-    "required": [
+      },
+      "required": [
         "libraryVersion",
         "language",
         "implementations"
-    ],
-    "title": "ac_implementation",
-    "type": "object",
-    "version": "1.0.0-candidate"
+      ],
+      "title": "MethodImplementationCatalogue",
+      "type": "object"
+    },
+    "OutputMapping": {
+      "additionalProperties": false,
+      "description": "How one output of the method is read from what the code returns.",
+      "properties": {
+        "extractionCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "producer": {
+          "description": "The Method or SubMethod whose output this is.",
+          "pattern": "^S?M\\..+$",
+          "type": "string"
+        },
+        "resultColumns": {
+          "items": {
+            "$ref": "#/$defs/ResultColumn"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "sourceName": {
+          "description": "The name the source catalogue used for this output.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "producer"
+      ],
+      "title": "OutputMapping",
+      "type": "object"
+    },
+    "ResultColumn": {
+      "additionalProperties": false,
+      "description": "Where one value of an output is found in what the code returns.",
+      "properties": {
+        "column": {
+          "description": "The element of the returned object that holds it.",
+          "type": "string"
+        },
+        "name": {
+          "description": "The name the catalogue gives the value.",
+          "type": "string"
+        },
+        "statistic": {
+          "description": "The statistic the value is (a Statistic identifier), when it is one.",
+          "pattern": "^S\\..+$",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "column"
+      ],
+      "title": "ResultColumn",
+      "type": "object"
+    },
+    "UnitRuleEnum": {
+      "description": "How the unit of a produced value is determined.",
+      "enum": [
+        "inherited",
+        "derived",
+        "fixed",
+        "unitless",
+        "none"
+      ],
+      "title": "UnitRuleEnum",
+      "type": "string"
+    },
+    "ValueTypeEnum": {
+      "description": "The kind of value a statistic or concept produces. Complex types follow FHIR R5 datatypes; primitive types follow FHIR primitives.",
+      "enum": [
+        "Quantity",
+        "CodeableConcept",
+        "Identifier",
+        "Range",
+        "Ratio",
+        "Count",
+        "Period",
+        "decimal",
+        "integer",
+        "boolean",
+        "string",
+        "code",
+        "date",
+        "dateTime"
+      ],
+      "title": "ValueTypeEnum",
+      "type": "string"
+    }
+  },
+  "$id": "https://cdisc.org/ac/implementation",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "additionalProperties": false,
+  "description": "",
+  "metamodel_version": "1.12.0",
+  "properties": {
+    "description": {
+      "description": "Free-text explanation or description",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "implementations": {
+      "items": {
+        "$ref": "#/$defs/MethodImplementation"
+      },
+      "type": "array"
+    },
+    "language": {
+      "type": "string"
+    },
+    "libraryVersion": {
+      "description": "Semantic version of a library file.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "libraryVersion",
+    "language",
+    "implementations"
+  ],
+  "title": "ac_implementation",
+  "type": "object",
+  "version": "1.0.0-candidate"
 }
-

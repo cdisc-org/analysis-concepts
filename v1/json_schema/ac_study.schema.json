@@ -1,2079 +1,2092 @@
 {
-    "$defs": {
-        "AnalysisConcept": {
-            "additionalProperties": false,
-            "description": "An analysis-type Transformation as used in a study, with the estimand it addresses, how intercurrent events are handled, and the SmartPhrases that describe it (decision D11).",
-            "properties": {
-                "addressesEstimand": {
-                    "description": "The estimand the analysis addresses (decision D5).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "addressesObjective": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ExternalReference"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "The USDM objective the analysis serves."
-                },
-                "analysisRole": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/AnalysisRoleEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "arsAnalysis": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ExternalReference"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "The ARS analysis this corresponds to."
-                },
-                "configurationValues": {
-                    "items": {
-                        "$ref": "#/$defs/ConfigurationValue"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "dependsOn": {
-                    "description": "The derivations whose results this instance reads.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "iceHandlings": {
-                    "description": "One entry for every intercurrent event in the addressed estimand's scope.",
-                    "items": {
-                        "$ref": "#/$defs/IceHandling"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "id": {
-                    "type": "string"
-                },
-                "label": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "phrases": {
-                    "items": {
-                        "$ref": "#/$defs/PhraseInstance"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "placeholderValues": {
-                    "items": {
-                        "$ref": "#/$defs/PlaceholderValue"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "reference": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ExternalReference"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "An identifier for this analysis in the AC namespace."
-                },
-                "sapRefs": {
-                    "items": {
-                        "$ref": "#/$defs/DocumentAnchor"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "sentenceRole": {
-                    "description": "The words that say what kind of analysis this is in generated text (the primary analysis).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "summaryOutput": {
-                    "description": "The output that carries the population-level summary (the Method or SubMethod that produces it).",
-                    "pattern": "^S?M\\..+$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "template": {
-                    "description": "The library Transformation instantiated (a Transformation identifier). Its version is pinned by the set's library pins.",
-                    "pattern": "^T\\..+$",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "id",
-                "template"
-            ],
-            "title": "AnalysisConcept",
-            "type": "object"
+  "$defs": {
+    "AnalysisConcept": {
+      "additionalProperties": false,
+      "description": "An analysis-type Transformation as used in a study, with the estimand it addresses, how intercurrent events are handled, and the SmartPhrases that describe it (decision D11).",
+      "properties": {
+        "addressesEstimand": {
+          "description": "The estimand the analysis addresses (decision D5).",
+          "type": [
+            "string",
+            "null"
+          ]
         },
-        "AnalysisRoleEnum": {
-            "description": "The part an analysis plays for the estimand it addresses (ICH E9(R1)).",
-            "enum": [
-                "MainEstimator",
-                "SensitivityAnalysis",
-                "SupplementaryAnalysis"
-            ],
-            "title": "AnalysisRoleEnum",
+        "addressesObjective": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExternalReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The USDM objective the analysis serves."
+        },
+        "analysisRole": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AnalysisRoleEnum"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "arsAnalysis": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExternalReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The ARS analysis this corresponds to."
+        },
+        "configurationValues": {
+          "items": {
+            "$ref": "#/$defs/ConfigurationValue"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "dependsOn": {
+          "description": "The derivations whose results this instance reads.",
+          "items": {
             "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
         },
-        "Any": {
-            "additionalProperties": true,
-            "description": "Any value.",
-            "title": "Any",
-            "type": [
-                "null",
-                "boolean",
-                "object",
-                "number",
-                "string"
-            ]
+        "iceHandlings": {
+          "description": "One entry for every intercurrent event in the addressed estimand's scope.",
+          "items": {
+            "$ref": "#/$defs/IceHandling"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
         },
-        "BindingCondition": {
-            "additionalProperties": false,
-            "description": "A condition on another variable of the same dataset that must hold for the binding to apply.",
-            "properties": {
-                "comparator": {
-                    "$ref": "#/$defs/ComparatorEnum"
-                },
-                "values": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                },
-                "variable": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "variable",
-                "comparator",
-                "values"
-            ],
-            "title": "BindingCondition",
-            "type": "object"
+        "id": {
+          "type": "string"
         },
-        "BindingLevelEnum": {
-            "description": "",
-            "enum": [
-                "classLevel",
-                "valueLevel"
-            ],
-            "title": "BindingLevelEnum",
-            "type": "string"
-        },
-        "BindingQualifier": {
-            "additionalProperties": false,
-            "description": "A named qualification of what the variable carries (for example intent = Planned for a treatment variable).",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "name",
-                "value"
-            ],
-            "title": "BindingQualifier",
-            "type": "object"
-        },
-        "Coding": {
-            "additionalProperties": false,
-            "description": "A reference to a code in a terminology or ontology",
-            "properties": {
-                "code": {
-                    "description": "The code value within the system (e.g., STATO_0000179)",
-                    "type": "string"
-                },
-                "display": {
-                    "description": "Human-readable label for the code",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "system": {
-                    "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)",
-                    "format": "uri",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "system",
-                "code"
-            ],
-            "title": "Coding",
-            "type": "object"
-        },
-        "ComparatorEnum": {
-            "description": "Comparison operators, as used in Define-XML and Dataset Specialisations.",
-            "enum": [
-                "EQ",
-                "NE",
-                "IN",
-                "NOTIN",
-                "LT",
-                "LE",
-                "GT",
-                "GE"
-            ],
-            "title": "ComparatorEnum",
-            "type": "string"
-        },
-        "ConfigurationOption": {
-            "additionalProperties": false,
-            "description": "The values offered for a value placeholder of a given name, across phrases.",
-            "properties": {
-                "default": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "name": {
-                    "type": "string"
-                },
-                "values": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                }
-            },
-            "required": [
-                "name",
-                "values"
-            ],
-            "title": "ConfigurationOption",
-            "type": "object"
-        },
-        "ConfigurationValue": {
-            "additionalProperties": false,
-            "description": "The value of one configuration of the template's Method, as used in the study.",
-            "properties": {
-                "fixedByTemplate": {
-                    "description": "True when the library template fixes the value.",
-                    "type": [
-                        "boolean",
-                        "null"
-                    ]
-                },
-                "name": {
-                    "type": "string"
-                },
-                "value": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/Any"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "valueList": {
-                    "items": {
-                        "$ref": "#/$defs/Any"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "name"
-            ],
-            "title": "ConfigurationValue",
-            "type": "object"
-        },
-        "ContextSourceEnum": {
-            "description": "Where the value for a role usually comes from.",
-            "enum": [
-                "endpoint",
-                "manual"
-            ],
-            "title": "ContextSourceEnum",
-            "type": "string"
-        },
-        "DataBinding": {
-            "additionalProperties": false,
-            "description": "One variable carrying one Concept (or one part of it).",
-            "properties": {
-                "alternativeVariables": {
-                    "description": "Other variables of the standard that may carry the Concept, depending on the study's design.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "concept": {
-                    "description": "The Concept carried (a Concept identifier).",
-                    "pattern": "^C\\..+$",
-                    "type": "string"
-                },
-                "conditions": {
-                    "items": {
-                        "$ref": "#/$defs/BindingCondition"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "dataType": {
-                    "description": "The data type of the variable's values.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "description": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "facet": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/FacetEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "facetName": {
-                    "description": "The name of the sub-part carried, when `facet` is `qualifier`.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "id": {
-                    "type": "string"
-                },
-                "level": {
-                    "$ref": "#/$defs/BindingLevelEnum"
-                },
-                "locator": {
-                    "$ref": "#/$defs/Locator"
-                },
-                "parameterDependent": {
-                    "description": "True when this variable carries the Concept only for some parameters, so that a value-level binding is needed to apply it.",
-                    "type": [
-                        "boolean",
-                        "null"
-                    ]
-                },
-                "qualifiers": {
-                    "items": {
-                        "$ref": "#/$defs/BindingQualifier"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "specialisation": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/SpecialisationReference"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "status": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EntryStatus"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "studyConcept": {
-                    "description": "For a value-level binding in a study, the study concept it applies to (for example PARAM.ADASCOG11).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "id",
-                "concept",
-                "level",
-                "locator"
-            ],
-            "title": "DataBinding",
-            "type": "object"
-        },
-        "DataBindingLibrary": {
-            "additionalProperties": false,
-            "description": "The Data Bindings for one data standard.",
-            "properties": {
-                "bindings": {
-                    "items": {
-                        "$ref": "#/$defs/DataBinding"
-                    },
-                    "type": "array"
-                },
-                "description": {
-                    "description": "Free-text explanation or description",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "libraryVersion": {
-                    "description": "Semantic version of a library file.",
-                    "type": "string"
-                },
-                "standard": {
-                    "description": "The data standard bound to, for example ADaM or SDTM.",
-                    "type": "string"
-                },
-                "standardVersions": {
-                    "description": "The versions of the standard the bindings were written against.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "libraryVersion",
-                "standard",
-                "bindings"
-            ],
-            "title": "DataBindingLibrary",
-            "type": "object"
-        },
-        "DataSelection": {
-            "additionalProperties": false,
-            "description": "How the records for a study concept are found in the study's data.",
-            "properties": {
-                "conditions": {
-                    "items": {
-                        "$ref": "#/$defs/BindingCondition"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "dataset": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "datasetLabel": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "file": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "variable": {
-                    "description": "The variable that carries the concept, when it is a variable rather than a condition (a treatment variable).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "title": "DataSelection",
-            "type": "object"
-        },
-        "DerivationConcept": {
-            "additionalProperties": false,
-            "description": "A derivation-type Transformation as used in a study (decision D11).",
-            "properties": {
-                "configurationValues": {
-                    "items": {
-                        "$ref": "#/$defs/ConfigurationValue"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "dependsOn": {
-                    "description": "The derivations whose results this instance reads.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "id": {
-                    "type": "string"
-                },
-                "label": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "placeholderValues": {
-                    "items": {
-                        "$ref": "#/$defs/PlaceholderValue"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "purpose": {
-                    "description": "Why the study needs this derivation.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "sapRefs": {
-                    "items": {
-                        "$ref": "#/$defs/DocumentAnchor"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "template": {
-                    "description": "The library Transformation instantiated (a Transformation identifier). Its version is pinned by the set's library pins.",
-                    "pattern": "^T\\..+$",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "id",
-                "template"
-            ],
-            "title": "DerivationConcept",
-            "type": "object"
-        },
-        "DocumentAnchor": {
-            "additionalProperties": false,
-            "description": "A passage of the source document that licenses a statement in the model.",
-            "properties": {
-                "quote": {
-                    "description": "The passage, word for word.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "relation": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DocumentRelationEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "section": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "section"
-            ],
-            "title": "DocumentAnchor",
-            "type": "object"
-        },
-        "DocumentRelationEnum": {
-            "description": "How a quoted passage relates to what it anchors (an illustrative vocabulary).",
-            "enum": [
-                "specification",
-                "qualification",
-                "definition"
-            ],
-            "title": "DocumentRelationEnum",
-            "type": "string"
-        },
-        "EntryStatus": {
-            "description": "Lifecycle status of a library entry.",
-            "enum": [
-                "released",
-                "provisional",
-                "deprecated"
-            ],
-            "title": "EntryStatus",
-            "type": "string"
-        },
-        "EstimandAttributeEnum": {
-            "description": "The attribute of an ICH E9(R1) estimand that a role or phrase expresses.",
-            "enum": [
-                "Treatment",
-                "Population",
-                "Variable",
-                "IntercurrentEvent",
-                "PopulationLevelSummary"
-            ],
-            "title": "EstimandAttributeEnum",
-            "type": "string"
-        },
-        "EstimandReference": {
-            "additionalProperties": false,
-            "description": "An estimand of the study, defined in USDM. Held here by reference, with the intercurrent events in its scope, so that analyses can be checked against it.",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "intercurrentEvents": {
-                    "description": "The intercurrent events in the estimand's scope (study concept identifiers). An empty list is a valid, explicit answer.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "label": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "rank": {
-                    "description": "primary, secondary or sensitivity.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "reference": {
-                    "$ref": "#/$defs/ExternalReference"
-                },
-                "sapRefs": {
-                    "items": {
-                        "$ref": "#/$defs/DocumentAnchor"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "id",
-                "reference"
-            ],
-            "title": "EstimandReference",
-            "type": "object"
-        },
-        "ExtensionDeclaration": {
-            "additionalProperties": false,
-            "description": "A model that extends this study analysis set (decision D13).",
-            "properties": {
-                "description": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "location": {
-                    "description": "Where the extension's content for this study is held.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "namespace": {
-                    "description": "The IRI under which the extending model mints its identifiers.",
-                    "format": "uri",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "namespace"
-            ],
-            "title": "ExtensionDeclaration",
-            "type": "object"
-        },
-        "ExternalReference": {
-            "additionalProperties": false,
-            "description": "A pointer to an entity defined in another standard.",
-            "properties": {
-                "iri": {
-                    "type": "string"
-                },
-                "iriStatus": {
-                    "$ref": "#/$defs/IriStatusEnum"
-                },
-                "text": {
-                    "description": "The text of the referenced entity, for readers.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "iri",
-                "iriStatus"
-            ],
-            "title": "ExternalReference",
-            "type": "object"
-        },
-        "FacetEnum": {
-            "description": "The part of a Concept a variable carries.",
-            "enum": [
-                "value",
-                "unit",
-                "code",
-                "decode",
-                "number",
-                "qualifier"
-            ],
-            "title": "FacetEnum",
-            "type": "string"
-        },
-        "HandlingBasisEnum": {
-            "description": "Why an intercurrent event is handled as stated.",
-            "enum": [
-                "statedByPhrase",
-                "studyDefault"
-            ],
-            "title": "HandlingBasisEnum",
-            "type": "string"
-        },
-        "IceHandling": {
-            "additionalProperties": false,
-            "description": "How one intercurrent event is handled in one analysis (decision D4).",
-            "properties": {
-                "basis": {
-                    "$ref": "#/$defs/HandlingBasisEnum"
-                },
-                "fromPhrase": {
-                    "description": "The phrase that states the strategy, when the basis is statedByPhrase.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "implementedBy": {
-                    "description": "The library Transformations that implement the strategy. Empty for a treatment-policy strategy, where data are used as observed.",
-                    "items": {
-                        "pattern": "^T\\..+$",
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "intercurrentEvent": {
-                    "type": "string"
-                },
-                "strategy": {
-                    "$ref": "#/$defs/IchE9R1StrategyEnum"
-                }
-            },
-            "required": [
-                "intercurrentEvent",
-                "strategy",
-                "basis"
-            ],
-            "title": "IceHandling",
-            "type": "object"
-        },
-        "IchE9R1StrategyEnum": {
-            "description": "The five strategies for handling an intercurrent event in ICH E9(R1).",
-            "enum": [
-                "TreatmentPolicy",
-                "Hypothetical",
-                "Composite",
-                "WhileOnTreatment",
-                "PrincipalStratum"
-            ],
-            "title": "IchE9R1StrategyEnum",
-            "type": "string"
-        },
-        "IriStatusEnum": {
-            "description": "Whether an external identifier is real.",
-            "enum": [
-                "authoritative",
-                "illustrative"
-            ],
-            "title": "IriStatusEnum",
-            "type": "string"
-        },
-        "LanguagePack": {
-            "additionalProperties": false,
-            "description": "What is needed to write analysis sentences in one language. The sentence template owns word order, because concatenating phrases in role order is correct only for some languages.",
-            "properties": {
-                "language": {
-                    "description": "BCP 47 language tag.",
-                    "type": "string"
-                },
-                "methodNames": {
-                    "items": {
-                        "$ref": "#/$defs/LocalisedText"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "name": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "outputNames": {
-                    "description": "Reader-facing names for method outputs, by output class.",
-                    "items": {
-                        "$ref": "#/$defs/LocalisedText"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "phraseTemplates": {
-                    "description": "Phrase templates in this language, by phrase identifier. A phrase without one falls back to the library's base text.",
-                    "items": {
-                        "$ref": "#/$defs/LocalisedText"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "roleConjunctions": {
-                    "description": "The text placed between repeated phrases of one role.",
-                    "items": {
-                        "$ref": "#/$defs/LocalisedText"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "sentenceRoles": {
-                    "description": "Translations of the words that say what kind of analysis it is (the primary analysis, a sensitivity analysis).",
-                    "items": {
-                        "$ref": "#/$defs/LocalisedText"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "sentenceTemplate": {
-                    "description": "The sentence frame: role tokens in the language's word order, literal text, and optional groups in square brackets that are dropped when none of their roles is filled.",
-                    "type": "string"
-                },
-                "validated": {
-                    "description": "False when the translation is illustrative and has not been reviewed by a qualified translator.",
-                    "type": [
-                        "boolean",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "language",
-                "sentenceTemplate"
-            ],
-            "title": "LanguagePack",
-            "type": "object"
-        },
-        "LibraryPin": {
-            "additionalProperties": false,
-            "description": "The exact version of a library the study uses (decision D6).",
-            "properties": {
-                "library": {
-                    "description": "The library, by the name of its folder under lib/ (methods, concepts, transformations, smartphrases, statistics, bindings).",
-                    "type": "string"
-                },
-                "version": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "library",
-                "version"
-            ],
-            "title": "LibraryPin",
-            "type": "object"
-        },
-        "LocalisedText": {
-            "additionalProperties": false,
-            "description": "A piece of text for one key in one language.",
-            "properties": {
-                "key": {
-                    "description": "The identifier of what is translated (a phrase, method, output class or analysis role).",
-                    "type": "string"
-                },
-                "label": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "name": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "text": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "key"
-            ],
-            "title": "LocalisedText",
-            "type": "object"
-        },
-        "Locator": {
-            "additionalProperties": false,
-            "description": "Where the data is.",
-            "properties": {
-                "dataset": {
-                    "description": "The dataset name, for a study-level binding (for example ADQSADAS).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "datasetClass": {
-                    "description": "The class of dataset in the standard (for example BasicDataStructure, SubjectLevel, Findings).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "locatorType": {
-                    "$ref": "#/$defs/LocatorTypeEnum"
-                },
-                "variable": {
-                    "description": "The variable name. A leading `--` stands for the two-letter domain prefix of an SDTM variable (`--ORRES`).",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "locatorType",
-                "variable"
-            ],
-            "title": "Locator",
-            "type": "object"
-        },
-        "LocatorTypeEnum": {
-            "description": "How a locator addresses data. Only `tabular` is defined in candidate v1.",
-            "enum": [
-                "tabular",
-                "path"
-            ],
-            "title": "LocatorTypeEnum",
-            "type": "string"
-        },
-        "MethodGrounding": {
-            "additionalProperties": false,
-            "description": "External identifiers for a Method as used in the study.",
-            "properties": {
-                "arsMethod": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ExternalReference"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "method": {
-                    "pattern": "^M\\..+$",
-                    "type": "string"
-                },
-                "reference": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ExternalReference"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                }
-            },
-            "required": [
-                "method"
-            ],
-            "title": "MethodGrounding",
-            "type": "object"
-        },
-        "PhraseAnchors": {
-            "additionalProperties": false,
-            "description": "What a phrase means in the model, independent of its bindings.",
-            "properties": {
-                "estimandAttribute": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EstimandAttributeEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "icheStrategy": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/IchE9R1StrategyEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "The intercurrent-event strategy the phrase asserts."
-                },
-                "implementation": {
-                    "description": "The kind of implementation the strategy needs (none, imputation, derivation, censoring, population_subsetting).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "producedConcept": {
-                    "description": "The Concept the phrase is about (a Concept identifier).",
-                    "pattern": "^C\\..+$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "usesMethod": {
-                    "description": "The Method the phrase implies (a Method identifier).",
-                    "pattern": "^M\\..+$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "title": "PhraseAnchors",
-            "type": "object"
-        },
-        "PhraseBinding": {
-            "additionalProperties": false,
-            "description": "What fills one placeholder of a phrase. Exactly one of the four targets is given.",
-            "properties": {
-                "extension": {
-                    "description": "An identifier in a model that extends AC (for an extension_ref placeholder).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "method": {
-                    "description": "A Method identifier.",
-                    "pattern": "^M\\..+$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "output": {
-                    "description": "The Method or SubMethod whose output is meant.",
-                    "pattern": "^S?M\\..+$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "render": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/RenderModeEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "slot": {
-                    "description": "The placeholder name in the phrase.",
-                    "type": "string"
-                },
-                "studyConcept": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "value": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "slot"
-            ],
-            "title": "PhraseBinding",
-            "type": "object"
-        },
-        "PhraseInstance": {
-            "additionalProperties": false,
-            "description": "One use of a library SmartPhrase in an analysis.",
-            "properties": {
-                "bindings": {
-                    "items": {
-                        "$ref": "#/$defs/PhraseBinding"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "noAnchorReason": {
-                    "description": "Why this use has no document anchor, when the study has a source document.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "phrase": {
-                    "description": "The phrase used (a SmartPhrase identifier).",
-                    "pattern": "^SP_.+$",
-                    "type": "string"
-                },
-                "sapRefs": {
-                    "items": {
-                        "$ref": "#/$defs/DocumentAnchor"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "phrase"
-            ],
-            "title": "PhraseInstance",
-            "type": "object"
-        },
-        "Placeholder": {
-            "additionalProperties": false,
-            "description": "A typed slot in a phrase template.",
-            "properties": {
-                "conceptCategory": {
-                    "description": "The abstract Concept the bound study concept must belong to (a Concept identifier, e.g. C.VisitDimension).",
-                    "pattern": "^C\\..+$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "conceptClass": {
-                    "description": "Informative grouping of the concepts offered to the author.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "conceptConstraint": {
-                    "description": "The kind of study concept that may be bound (Parameter, Timepoint, Population, Treatment, Event, IntercurrentEvent).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "constraint": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ValueConstraint"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "datatype": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "defaultRender": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/RenderModeEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "description": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "extensionType": {
-                    "description": "For an extension_ref, the IRI of the entity type in the extending model.",
-                    "format": "uri",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "intentConstraint": {
-                    "description": "The analytical intent a bound Method must serve (informative).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "kind": {
-                    "$ref": "#/$defs/PlaceholderKindEnum"
-                },
-                "name": {
-                    "description": "The token in the template, written there as {name}.",
-                    "type": "string"
-                },
-                "renderOptions": {
-                    "items": {
-                        "$ref": "#/$defs/RenderModeEnum"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "required": {
-                    "type": [
-                        "boolean",
-                        "null"
-                    ]
-                },
-                "valueSource": {
-                    "description": "Where candidate values are drawn from (informative).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "name",
-                "kind"
-            ],
-            "title": "Placeholder",
-            "type": "object"
-        },
-        "PlaceholderKindEnum": {
-            "description": "What a binding of the placeholder must supply.",
-            "enum": [
-                "concept_ref",
-                "method_ref",
-                "output_ref",
-                "value",
-                "extension_ref"
-            ],
-            "title": "PlaceholderKindEnum",
-            "type": "string"
-        },
-        "PlaceholderValue": {
-            "additionalProperties": false,
-            "description": "The value that fills one placeholder of the template ({parameter}, {visit}, {population} \u2026).",
-            "properties": {
-                "name": {
-                    "description": "The placeholder name, without braces.",
-                    "type": "string"
-                },
-                "studyConcept": {
-                    "description": "The study concept that fills it.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "value": {
-                    "description": "A literal value, when the placeholder is not filled by a study concept.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "name"
-            ],
-            "title": "PlaceholderValue",
-            "type": "object"
-        },
-        "RenderModeEnum": {
-            "description": "How a bound concept or method is written in the text.",
-            "enum": [
-                "label",
-                "name",
-                "name_with_label"
-            ],
-            "title": "RenderModeEnum",
-            "type": "string"
-        },
-        "RoleDefinition": {
-            "additionalProperties": false,
-            "description": "A role a phrase plays in an analysis sentence.",
-            "properties": {
-                "contextSource": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ContextSourceEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "definedBy": {
-                    "description": "For a role added by a model that extends AC, the namespace IRI of that model. Absent for roles of the AC library (decision D13).",
-                    "format": "uri",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "description": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "estimandAttribute": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EstimandAttributeEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "The estimand attribute this role expresses, if any."
-                },
-                "label": {
-                    "type": "string"
-                },
-                "name": {
-                    "description": "Role identifier, e.g., endpoint, method, covariate.",
-                    "type": "string"
-                },
-                "repeating": {
-                    "description": "True when the role may be filled more than once in one analysis.",
-                    "type": [
-                        "boolean",
-                        "null"
-                    ]
-                },
-                "status": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EntryStatus"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                }
-            },
-            "required": [
-                "name",
-                "label"
-            ],
-            "title": "RoleDefinition",
-            "type": "object"
-        },
-        "SmartPhrase": {
-            "additionalProperties": false,
-            "description": "A reusable fragment of analysis plan text with typed placeholders.",
-            "properties": {
-                "anchors": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/PhraseAnchors"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "conceptId": {
-                    "description": "Unique phrase identifier, e.g., SP_CFB_ENDPOINT. Study phrase instances bind by it.",
-                    "pattern": "^SP_.+$",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "Free-text explanation or description",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "name": {
-                    "description": "Human-readable name",
-                    "type": "string"
-                },
-                "phraseTemplate": {
-                    "description": "The text, with {placeholder} tokens. English is the library's base language.",
-                    "type": "string"
-                },
-                "placeholders": {
-                    "items": {
-                        "$ref": "#/$defs/Placeholder"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "role": {
-                    "description": "The role the phrase plays (a RoleDefinition name).",
-                    "type": "string"
-                },
-                "status": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EntryStatus"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
-                }
-            },
-            "required": [
-                "conceptId",
-                "name",
-                "role",
-                "phraseTemplate"
-            ],
-            "title": "SmartPhrase",
-            "type": "object"
-        },
-        "SmartPhraseLibrary": {
-            "additionalProperties": false,
-            "description": "The SmartPhrase library.",
-            "properties": {
-                "configurationOptions": {
-                    "items": {
-                        "$ref": "#/$defs/ConfigurationOption"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "description": {
-                    "description": "Free-text explanation or description",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "languagePacks": {
-                    "items": {
-                        "$ref": "#/$defs/LanguagePack"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "libraryVersion": {
-                    "description": "Semantic version of a library file.",
-                    "type": "string"
-                },
-                "phrases": {
-                    "items": {
-                        "$ref": "#/$defs/SmartPhrase"
-                    },
-                    "type": "array"
-                },
-                "roleOrder": {
-                    "description": "The order of roles: the fallback order of phrases in a sentence, and the precedence when two phrases fill a placeholder of the same name.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                },
-                "roles": {
-                    "items": {
-                        "$ref": "#/$defs/RoleDefinition"
-                    },
-                    "type": "array"
-                }
-            },
-            "required": [
-                "libraryVersion",
-                "roleOrder",
-                "roles",
-                "phrases"
-            ],
-            "title": "SmartPhraseLibrary",
-            "type": "object"
-        },
-        "SourceDocument": {
-            "additionalProperties": false,
-            "description": "The document the study's anchors quote from.",
-            "properties": {
-                "date": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "id": {
-                    "type": "string"
-                },
-                "iri": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "iriStatus": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/IriStatusEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "title": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "id"
-            ],
-            "title": "SourceDocument",
-            "type": "object"
-        },
-        "SpecialisationReference": {
-            "additionalProperties": false,
-            "description": "The CDISC Dataset Specialisation element this binding corresponds to. SDTM bindings are held by reference: the specialisation is the source of truth, and this records which data element concept the variable carries.",
-            "properties": {
-                "dataElementConceptId": {
-                    "description": "NCIt code of the data element concept (the `dec_id` of the specialisation variable).",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "note": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "title": "SpecialisationReference",
-            "type": "object"
-        },
-        "StudyAnalysisSet": {
-            "additionalProperties": false,
-            "description": "A study's Analysis Concepts and Derivation Concepts.",
-            "properties": {
-                "analyses": {
-                    "items": {
-                        "$ref": "#/$defs/AnalysisConcept"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "dataBindings": {
-                    "description": "Value-level data bindings for this study (decision D8).",
-                    "items": {
-                        "$ref": "#/$defs/DataBinding"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "derivations": {
-                    "items": {
-                        "$ref": "#/$defs/DerivationConcept"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "description": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "estimands": {
-                    "items": {
-                        "$ref": "#/$defs/EstimandReference"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "extensions": {
-                    "items": {
-                        "$ref": "#/$defs/ExtensionDeclaration"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "id": {
-                    "type": "string"
-                },
-                "libraryPins": {
-                    "items": {
-                        "$ref": "#/$defs/LibraryPin"
-                    },
-                    "type": "array"
-                },
-                "methodGroundings": {
-                    "items": {
-                        "$ref": "#/$defs/MethodGrounding"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "sourceDocument": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/SourceDocument"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "sourceDocumentNote": {
-                    "description": "Why the study has no source document, when it has none.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "study": {
-                    "$ref": "#/$defs/ExternalReference",
-                    "description": "The USDM study this set belongs to."
-                },
-                "studyConcepts": {
-                    "items": {
-                        "$ref": "#/$defs/StudyConcept"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "studyTitle": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "id",
-                "study",
-                "libraryPins"
-            ],
-            "title": "StudyAnalysisSet",
-            "type": "object"
-        },
-        "StudyConcept": {
-            "additionalProperties": false,
-            "description": "A concept of this study that SmartPhrases and placeholders are bound to: a parameter, a visit, an analysis population, a treatment comparison, an event of interest or an intercurrent event. Each is an instance of a library Concept and points at its definition in USDM, a terminology or a Biomedical Concept.",
-            "properties": {
-                "concept": {
-                    "description": "The library Concept this is an instance of (a Concept identifier).",
-                    "pattern": "^C\\..+$",
-                    "type": "string"
-                },
-                "dataSelection": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DataSelection"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "id": {
-                    "type": "string"
-                },
-                "kind": {
-                    "$ref": "#/$defs/StudyConceptKindEnum"
-                },
-                "label": {
-                    "description": "Short display form.",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "Full name, as written in generated text.",
-                    "type": "string"
-                },
-                "note": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "reference": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ExternalReference"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "sapRefs": {
-                    "items": {
-                        "$ref": "#/$defs/DocumentAnchor"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "translations": {
-                    "items": {
-                        "$ref": "#/$defs/Translation"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "id",
-                "kind",
-                "concept",
-                "label",
-                "name"
-            ],
-            "title": "StudyConcept",
-            "type": "object"
-        },
-        "StudyConceptKindEnum": {
-            "description": "The kinds of study concept a SmartPhrase placeholder can be bound to.",
-            "enum": [
-                "Parameter",
-                "Timepoint",
-                "Population",
-                "Treatment",
-                "Event",
-                "IntercurrentEvent"
-            ],
-            "title": "StudyConceptKindEnum",
-            "type": "string"
-        },
-        "TransformationInstance": {
-            "additionalProperties": false,
-            "description": "A library Transformation as used in a study.",
-            "properties": {
-                "configurationValues": {
-                    "items": {
-                        "$ref": "#/$defs/ConfigurationValue"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "dependsOn": {
-                    "description": "The derivations whose results this instance reads.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "id": {
-                    "type": "string"
-                },
-                "label": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "placeholderValues": {
-                    "items": {
-                        "$ref": "#/$defs/PlaceholderValue"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "sapRefs": {
-                    "items": {
-                        "$ref": "#/$defs/DocumentAnchor"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "template": {
-                    "description": "The library Transformation instantiated (a Transformation identifier). Its version is pinned by the set's library pins.",
-                    "pattern": "^T\\..+$",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "id",
-                "template"
-            ],
-            "title": "TransformationInstance",
-            "type": "object"
-        },
-        "Translation": {
-            "additionalProperties": false,
-            "description": "The label and name of a study concept in another language.",
-            "properties": {
-                "label": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "language": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "language"
-            ],
-            "title": "Translation",
-            "type": "object"
-        },
-        "UnitRuleEnum": {
-            "description": "How the unit of a produced value is determined.",
-            "enum": [
-                "inherited",
-                "derived",
-                "fixed",
-                "unitless",
-                "none"
-            ],
-            "title": "UnitRuleEnum",
-            "type": "string"
-        },
-        "ValueConstraint": {
-            "additionalProperties": false,
-            "description": "The range a numeric value must lie in.",
-            "properties": {
-                "max": {
-                    "type": [
-                        "number",
-                        "null"
-                    ]
-                },
-                "min": {
-                    "type": [
-                        "number",
-                        "null"
-                    ]
-                }
-            },
-            "title": "ValueConstraint",
-            "type": "object"
-        },
-        "ValueTypeEnum": {
-            "description": "The kind of value a statistic or concept produces. Complex types follow FHIR R5 datatypes; primitive types follow FHIR primitives.",
-            "enum": [
-                "Quantity",
-                "CodeableConcept",
-                "Identifier",
-                "Range",
-                "Ratio",
-                "Count",
-                "Period",
-                "decimal",
-                "integer",
-                "boolean",
-                "string",
-                "code",
-                "date",
-                "dateTime"
-            ],
-            "title": "ValueTypeEnum",
-            "type": "string"
-        }
-    },
-    "$id": "https://cdisc.org/ac/study",
-    "$schema": "https://json-schema.org/draft/2019-09/schema",
-    "additionalProperties": false,
-    "description": "The SmartPhrase library.",
-    "metamodel_version": "1.12.0",
-    "properties": {
-        "configurationOptions": {
-            "items": {
-                "$ref": "#/$defs/ConfigurationOption"
-            },
-            "type": [
-                "array",
-                "null"
-            ]
-        },
-        "description": {
-            "description": "Free-text explanation or description",
-            "type": [
-                "string",
-                "null"
-            ]
-        },
-        "languagePacks": {
-            "items": {
-                "$ref": "#/$defs/LanguagePack"
-            },
-            "type": [
-                "array",
-                "null"
-            ]
-        },
-        "libraryVersion": {
-            "description": "Semantic version of a library file.",
-            "type": "string"
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "phrases": {
-            "items": {
-                "$ref": "#/$defs/SmartPhrase"
+          "items": {
+            "$ref": "#/$defs/PhraseInstance"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "placeholderValues": {
+          "items": {
+            "$ref": "#/$defs/PlaceholderValue"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExternalReference"
             },
-            "type": "array"
+            {
+              "type": "null"
+            }
+          ],
+          "description": "An identifier for this analysis in the AC namespace."
+        },
+        "sapRefs": {
+          "items": {
+            "$ref": "#/$defs/DocumentAnchor"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "sentenceRole": {
+          "description": "The words that say what kind of analysis this is in generated text (the primary analysis).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "summaryOutput": {
+          "description": "The output that carries the population-level summary (the Method or SubMethod that produces it).",
+          "pattern": "^S?M\\..+$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "template": {
+          "description": "The library Transformation instantiated (a Transformation identifier). Its version is pinned by the set's library pins.",
+          "pattern": "^T\\..+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "template"
+      ],
+      "title": "AnalysisConcept",
+      "type": "object"
+    },
+    "AnalysisRoleEnum": {
+      "description": "The part an analysis plays for the estimand it addresses (ICH E9(R1)).",
+      "enum": [
+        "MainEstimator",
+        "SensitivityAnalysis",
+        "SupplementaryAnalysis"
+      ],
+      "title": "AnalysisRoleEnum",
+      "type": "string"
+    },
+    "Any": {
+      "additionalProperties": true,
+      "description": "Any value.",
+      "title": "Any",
+      "type": [
+        "null",
+        "boolean",
+        "object",
+        "number",
+        "string"
+      ]
+    },
+    "BindingCondition": {
+      "additionalProperties": false,
+      "description": "A condition on another variable of the same dataset that must hold for the binding to apply.",
+      "properties": {
+        "comparator": {
+          "$ref": "#/$defs/ComparatorEnum"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "variable": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "variable",
+        "comparator",
+        "values"
+      ],
+      "title": "BindingCondition",
+      "type": "object"
+    },
+    "BindingLevelEnum": {
+      "description": "",
+      "enum": [
+        "classLevel",
+        "valueLevel"
+      ],
+      "title": "BindingLevelEnum",
+      "type": "string"
+    },
+    "BindingQualifier": {
+      "additionalProperties": false,
+      "description": "A named qualification of what the variable carries (for example intent = Planned for a treatment variable).",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ],
+      "title": "BindingQualifier",
+      "type": "object"
+    },
+    "Coding": {
+      "additionalProperties": false,
+      "description": "A reference to a code in a terminology or ontology",
+      "properties": {
+        "code": {
+          "description": "The code value within the system (e.g., STATO_0000179)",
+          "type": "string"
+        },
+        "display": {
+          "description": "Human-readable label for the code",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "system": {
+          "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)",
+          "format": "uri",
+          "type": "string"
+        }
+      },
+      "required": [
+        "system",
+        "code"
+      ],
+      "title": "Coding",
+      "type": "object"
+    },
+    "ComparatorEnum": {
+      "description": "Comparison operators, as used in Define-XML and Dataset Specialisations.",
+      "enum": [
+        "EQ",
+        "NE",
+        "IN",
+        "NOTIN",
+        "LT",
+        "LE",
+        "GT",
+        "GE"
+      ],
+      "title": "ComparatorEnum",
+      "type": "string"
+    },
+    "ConfigurationOption": {
+      "additionalProperties": false,
+      "description": "The values offered for a value placeholder of a given name, across phrases.",
+      "properties": {
+        "default": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "values"
+      ],
+      "title": "ConfigurationOption",
+      "type": "object"
+    },
+    "ConfigurationValue": {
+      "additionalProperties": false,
+      "description": "The value of one configuration of the template's Method, as used in the study.",
+      "properties": {
+        "fixedByTemplate": {
+          "description": "True when the library template fixes the value.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Any"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "valueList": {
+          "items": {
+            "$ref": "#/$defs/Any"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "ConfigurationValue",
+      "type": "object"
+    },
+    "ContextSourceEnum": {
+      "description": "Where the value for a role usually comes from.",
+      "enum": [
+        "endpoint",
+        "manual"
+      ],
+      "title": "ContextSourceEnum",
+      "type": "string"
+    },
+    "DataBinding": {
+      "additionalProperties": false,
+      "description": "One variable carrying one Concept (or one part of it).",
+      "properties": {
+        "alternativeVariables": {
+          "description": "Other variables of the standard that may carry the Concept, depending on the study's design.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "concept": {
+          "description": "The Concept carried (a Concept identifier).",
+          "pattern": "^C\\..+$",
+          "type": "string"
+        },
+        "conditions": {
+          "items": {
+            "$ref": "#/$defs/BindingCondition"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "dataType": {
+          "description": "The data type of the variable's values.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "facet": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FacetEnum"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "facetName": {
+          "description": "The name of the sub-part carried, when `facet` is `qualifier`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "level": {
+          "$ref": "#/$defs/BindingLevelEnum"
+        },
+        "locator": {
+          "$ref": "#/$defs/Locator"
+        },
+        "parameterDependent": {
+          "description": "True when this variable carries the Concept only for some parameters, so that a value-level binding is needed to apply it.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "qualifiers": {
+          "items": {
+            "$ref": "#/$defs/BindingQualifier"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "specialisation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SpecialisationReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntryStatus"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "studyConcept": {
+          "description": "For a value-level binding in a study, the study concept it applies to (for example PARAM.ADASCOG11).",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "concept",
+        "level",
+        "locator"
+      ],
+      "title": "DataBinding",
+      "type": "object"
+    },
+    "DataBindingLibrary": {
+      "additionalProperties": false,
+      "description": "The Data Bindings for one data standard.",
+      "properties": {
+        "bindings": {
+          "items": {
+            "$ref": "#/$defs/DataBinding"
+          },
+          "type": "array"
+        },
+        "description": {
+          "description": "Free-text explanation or description",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "libraryVersion": {
+          "description": "Semantic version of a library file.",
+          "type": "string"
+        },
+        "standard": {
+          "description": "The data standard bound to, for example ADaM or SDTM.",
+          "type": "string"
+        },
+        "standardVersions": {
+          "description": "The versions of the standard the bindings were written against.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "libraryVersion",
+        "standard",
+        "bindings"
+      ],
+      "title": "DataBindingLibrary",
+      "type": "object"
+    },
+    "DataSelection": {
+      "additionalProperties": false,
+      "description": "How the records for a study concept are found in the study's data.",
+      "properties": {
+        "conditions": {
+          "items": {
+            "$ref": "#/$defs/BindingCondition"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "dataset": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "datasetLabel": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "file": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "variable": {
+          "description": "The variable that carries the concept, when it is a variable rather than a condition (a treatment variable).",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "title": "DataSelection",
+      "type": "object"
+    },
+    "DerivationConcept": {
+      "additionalProperties": false,
+      "description": "A derivation-type Transformation as used in a study (decision D11).",
+      "properties": {
+        "configurationValues": {
+          "items": {
+            "$ref": "#/$defs/ConfigurationValue"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "dependsOn": {
+          "description": "The derivations whose results this instance reads.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "placeholderValues": {
+          "items": {
+            "$ref": "#/$defs/PlaceholderValue"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "purpose": {
+          "description": "Why the study needs this derivation.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sapRefs": {
+          "items": {
+            "$ref": "#/$defs/DocumentAnchor"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "template": {
+          "description": "The library Transformation instantiated (a Transformation identifier). Its version is pinned by the set's library pins.",
+          "pattern": "^T\\..+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "template"
+      ],
+      "title": "DerivationConcept",
+      "type": "object"
+    },
+    "DocumentAnchor": {
+      "additionalProperties": false,
+      "description": "A passage of the source document that licenses a statement in the model.",
+      "properties": {
+        "quote": {
+          "description": "The passage, word for word.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "relation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DocumentRelationEnum"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "section": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "section"
+      ],
+      "title": "DocumentAnchor",
+      "type": "object"
+    },
+    "DocumentRelationEnum": {
+      "description": "How a quoted passage relates to what it anchors (an illustrative vocabulary).",
+      "enum": [
+        "specification",
+        "qualification",
+        "definition"
+      ],
+      "title": "DocumentRelationEnum",
+      "type": "string"
+    },
+    "EntryStatus": {
+      "description": "Lifecycle status of a library entry.",
+      "enum": [
+        "released",
+        "provisional",
+        "deprecated"
+      ],
+      "title": "EntryStatus",
+      "type": "string"
+    },
+    "EstimandAttributeEnum": {
+      "description": "The attribute of an ICH E9(R1) estimand that a role or phrase expresses.",
+      "enum": [
+        "Treatment",
+        "Population",
+        "Variable",
+        "IntercurrentEvent",
+        "PopulationLevelSummary"
+      ],
+      "title": "EstimandAttributeEnum",
+      "type": "string"
+    },
+    "EstimandReference": {
+      "additionalProperties": false,
+      "description": "An estimand of the study, defined in USDM. Held here by reference, with the intercurrent events in its scope, so that analyses can be checked against it.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "intercurrentEvents": {
+          "description": "The intercurrent events in the estimand's scope (study concept identifiers). An empty list is a valid, explicit answer.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rank": {
+          "description": "primary, secondary or sensitivity.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reference": {
+          "$ref": "#/$defs/ExternalReference"
+        },
+        "sapRefs": {
+          "items": {
+            "$ref": "#/$defs/DocumentAnchor"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "reference"
+      ],
+      "title": "EstimandReference",
+      "type": "object"
+    },
+    "ExtensionDeclaration": {
+      "additionalProperties": false,
+      "description": "A model that extends this study analysis set (decision D13).",
+      "properties": {
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "location": {
+          "description": "Where the extension's content for this study is held.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "description": "The IRI under which the extending model mints its identifiers.",
+          "format": "uri",
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace"
+      ],
+      "title": "ExtensionDeclaration",
+      "type": "object"
+    },
+    "ExternalReference": {
+      "additionalProperties": false,
+      "description": "A pointer to an entity defined in another standard.",
+      "properties": {
+        "iri": {
+          "type": "string"
+        },
+        "iriStatus": {
+          "$ref": "#/$defs/IriStatusEnum"
+        },
+        "text": {
+          "description": "The text of the referenced entity, for readers.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "iri",
+        "iriStatus"
+      ],
+      "title": "ExternalReference",
+      "type": "object"
+    },
+    "FacetEnum": {
+      "description": "The part of a Concept a variable carries.",
+      "enum": [
+        "value",
+        "unit",
+        "code",
+        "decode",
+        "number",
+        "qualifier"
+      ],
+      "title": "FacetEnum",
+      "type": "string"
+    },
+    "HandlingBasisEnum": {
+      "description": "Why an intercurrent event is handled as stated.",
+      "enum": [
+        "statedByPhrase",
+        "studyDefault"
+      ],
+      "title": "HandlingBasisEnum",
+      "type": "string"
+    },
+    "IceHandling": {
+      "additionalProperties": false,
+      "description": "How one intercurrent event is handled in one analysis (decision D4).",
+      "properties": {
+        "basis": {
+          "$ref": "#/$defs/HandlingBasisEnum"
+        },
+        "fromPhrase": {
+          "description": "The phrase that states the strategy, when the basis is statedByPhrase.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "implementedBy": {
+          "description": "The library Transformations that implement the strategy. Empty for a treatment-policy strategy, where data are used as observed.",
+          "items": {
+            "pattern": "^T\\..+$",
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "intercurrentEvent": {
+          "type": "string"
+        },
+        "strategy": {
+          "$ref": "#/$defs/IchE9R1StrategyEnum"
+        }
+      },
+      "required": [
+        "intercurrentEvent",
+        "strategy",
+        "basis"
+      ],
+      "title": "IceHandling",
+      "type": "object"
+    },
+    "IchE9R1StrategyEnum": {
+      "description": "The five strategies for handling an intercurrent event in ICH E9(R1).",
+      "enum": [
+        "TreatmentPolicy",
+        "Hypothetical",
+        "Composite",
+        "WhileOnTreatment",
+        "PrincipalStratum"
+      ],
+      "title": "IchE9R1StrategyEnum",
+      "type": "string"
+    },
+    "IriStatusEnum": {
+      "description": "Whether an external identifier is real.",
+      "enum": [
+        "authoritative",
+        "illustrative"
+      ],
+      "title": "IriStatusEnum",
+      "type": "string"
+    },
+    "LanguagePack": {
+      "additionalProperties": false,
+      "description": "What is needed to write analysis sentences in one language. The sentence template owns word order, because concatenating phrases in role order is correct only for some languages.",
+      "properties": {
+        "language": {
+          "description": "BCP 47 language tag.",
+          "type": "string"
+        },
+        "methodNames": {
+          "items": {
+            "$ref": "#/$defs/LocalisedText"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "outputNames": {
+          "description": "Reader-facing names for method outputs, by output class.",
+          "items": {
+            "$ref": "#/$defs/LocalisedText"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "phraseTemplates": {
+          "description": "Phrase templates in this language, by phrase identifier. A phrase without one falls back to the library's base text.",
+          "items": {
+            "$ref": "#/$defs/LocalisedText"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "roleConjunctions": {
+          "description": "The text placed between repeated phrases of one role.",
+          "items": {
+            "$ref": "#/$defs/LocalisedText"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "sentenceRoles": {
+          "description": "Translations of the words that say what kind of analysis it is (the primary analysis, a sensitivity analysis).",
+          "items": {
+            "$ref": "#/$defs/LocalisedText"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "sentenceTemplate": {
+          "description": "The sentence frame: role tokens in the language's word order, literal text, and optional groups in square brackets that are dropped when none of their roles is filled.",
+          "type": "string"
+        },
+        "validated": {
+          "description": "False when the translation is illustrative and has not been reviewed by a qualified translator.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "language",
+        "sentenceTemplate"
+      ],
+      "title": "LanguagePack",
+      "type": "object"
+    },
+    "LibraryPin": {
+      "additionalProperties": false,
+      "description": "The exact version of a library the study uses (decision D6).",
+      "properties": {
+        "library": {
+          "description": "The library, by the name of its folder under lib/ (methods, concepts, transformations, smartphrases, statistics, bindings).",
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "library",
+        "version"
+      ],
+      "title": "LibraryPin",
+      "type": "object"
+    },
+    "LocalisedText": {
+      "additionalProperties": false,
+      "description": "A piece of text for one key in one language.",
+      "properties": {
+        "key": {
+          "description": "The identifier of what is translated (a phrase, method, output class or analysis role).",
+          "type": "string"
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "LocalisedText",
+      "type": "object"
+    },
+    "Locator": {
+      "additionalProperties": false,
+      "description": "Where the data is.",
+      "properties": {
+        "dataset": {
+          "description": "The dataset name, for a study-level binding (for example ADQSADAS).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "datasetClass": {
+          "description": "The class of dataset in the standard (for example BasicDataStructure, SubjectLevel, Findings).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "locatorType": {
+          "$ref": "#/$defs/LocatorTypeEnum"
+        },
+        "variable": {
+          "description": "The variable name. A leading `--` stands for the two-letter domain prefix of an SDTM variable (`--ORRES`).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "locatorType",
+        "variable"
+      ],
+      "title": "Locator",
+      "type": "object"
+    },
+    "LocatorTypeEnum": {
+      "description": "How a locator addresses data. Only `tabular` is defined in candidate v1.",
+      "enum": [
+        "tabular",
+        "path"
+      ],
+      "title": "LocatorTypeEnum",
+      "type": "string"
+    },
+    "MethodGrounding": {
+      "additionalProperties": false,
+      "description": "External identifiers for a Method as used in the study, and how the study names it in text.",
+      "properties": {
+        "arsMethod": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExternalReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "label": {
+          "description": "The short form of the method's name, as the study writes it.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "method": {
+          "pattern": "^M\\..+$",
+          "type": "string"
+        },
+        "name": {
+          "description": "The full form of the method's name, as the study writes it.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExternalReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "title": "MethodGrounding",
+      "type": "object"
+    },
+    "PhraseAnchors": {
+      "additionalProperties": false,
+      "description": "What a phrase means in the model, independent of its bindings.",
+      "properties": {
+        "estimandAttribute": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EstimandAttributeEnum"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "icheStrategy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IchE9R1StrategyEnum"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The intercurrent-event strategy the phrase asserts."
+        },
+        "implementation": {
+          "description": "The kind of implementation the strategy needs (none, imputation, derivation, censoring, population_subsetting).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "producedConcept": {
+          "description": "The Concept the phrase is about (a Concept identifier).",
+          "pattern": "^C\\..+$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "usesMethod": {
+          "description": "The Method the phrase implies (a Method identifier).",
+          "pattern": "^M\\..+$",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "title": "PhraseAnchors",
+      "type": "object"
+    },
+    "PhraseBinding": {
+      "additionalProperties": false,
+      "description": "What fills one placeholder of a phrase. Exactly one of the four targets is given.",
+      "properties": {
+        "extension": {
+          "description": "An identifier in a model that extends AC (for an extension_ref placeholder).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "method": {
+          "description": "A Method identifier.",
+          "pattern": "^M\\..+$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output": {
+          "description": "The Method or SubMethod whose output is meant.",
+          "pattern": "^S?M\\..+$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "render": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RenderModeEnum"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "slot": {
+          "description": "The placeholder name in the phrase.",
+          "type": "string"
+        },
+        "studyConcept": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "slot"
+      ],
+      "title": "PhraseBinding",
+      "type": "object"
+    },
+    "PhraseInstance": {
+      "additionalProperties": false,
+      "description": "One use of a library SmartPhrase in an analysis.",
+      "properties": {
+        "bindings": {
+          "items": {
+            "$ref": "#/$defs/PhraseBinding"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "noAnchorReason": {
+          "description": "Why this use has no document anchor, when the study has a source document.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phrase": {
+          "description": "The phrase used (a SmartPhrase identifier).",
+          "pattern": "^SP_.+$",
+          "type": "string"
+        },
+        "sapRefs": {
+          "items": {
+            "$ref": "#/$defs/DocumentAnchor"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "phrase"
+      ],
+      "title": "PhraseInstance",
+      "type": "object"
+    },
+    "Placeholder": {
+      "additionalProperties": false,
+      "description": "A typed slot in a phrase template.",
+      "properties": {
+        "conceptCategory": {
+          "description": "The abstract Concept the bound study concept must belong to (a Concept identifier, e.g. C.VisitDimension).",
+          "pattern": "^C\\..+$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "conceptClass": {
+          "description": "Informative grouping of the concepts offered to the author.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "conceptConstraint": {
+          "description": "The kind of study concept that may be bound (Parameter, Timepoint, Population, Treatment, Event, IntercurrentEvent).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "constraint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValueConstraint"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "datatype": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "defaultRender": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RenderModeEnum"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "extensionType": {
+          "description": "For an extension_ref, the IRI of the entity type in the extending model.",
+          "format": "uri",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "intentConstraint": {
+          "description": "The analytical intent a bound Method must serve (informative).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "$ref": "#/$defs/PlaceholderKindEnum"
+        },
+        "name": {
+          "description": "The token in the template, written there as {name}.",
+          "type": "string"
+        },
+        "renderOptions": {
+          "items": {
+            "$ref": "#/$defs/RenderModeEnum"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "required": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "valueSource": {
+          "description": "Where candidate values are drawn from (informative).",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "kind"
+      ],
+      "title": "Placeholder",
+      "type": "object"
+    },
+    "PlaceholderKindEnum": {
+      "description": "What a binding of the placeholder must supply.",
+      "enum": [
+        "concept_ref",
+        "method_ref",
+        "output_ref",
+        "value",
+        "extension_ref"
+      ],
+      "title": "PlaceholderKindEnum",
+      "type": "string"
+    },
+    "PlaceholderValue": {
+      "additionalProperties": false,
+      "description": "The value that fills one placeholder of the template ({parameter}, {visit}, {population} \u2026).",
+      "properties": {
+        "name": {
+          "description": "The placeholder name, without braces.",
+          "type": "string"
+        },
+        "studyConcept": {
+          "description": "The study concept that fills it.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "value": {
+          "description": "A literal value, when the placeholder is not filled by a study concept.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "PlaceholderValue",
+      "type": "object"
+    },
+    "RenderModeEnum": {
+      "description": "How a bound concept or method is written in the text.",
+      "enum": [
+        "label",
+        "name",
+        "name_with_label"
+      ],
+      "title": "RenderModeEnum",
+      "type": "string"
+    },
+    "RoleDefinition": {
+      "additionalProperties": false,
+      "description": "A role a phrase plays in an analysis sentence.",
+      "properties": {
+        "contextSource": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContextSourceEnum"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "definedBy": {
+          "description": "For a role added by a model that extends AC, the namespace IRI of that model. Absent for roles of the AC library (decision D13).",
+          "format": "uri",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "estimandAttribute": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EstimandAttributeEnum"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The estimand attribute this role expresses, if any."
+        },
+        "label": {
+          "type": "string"
+        },
+        "name": {
+          "description": "Role identifier, e.g., endpoint, method, covariate.",
+          "type": "string"
+        },
+        "repeating": {
+          "description": "True when the role may be filled more than once in one analysis.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntryStatus"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "label"
+      ],
+      "title": "RoleDefinition",
+      "type": "object"
+    },
+    "SmartPhrase": {
+      "additionalProperties": false,
+      "description": "A reusable fragment of analysis plan text with typed placeholders.",
+      "properties": {
+        "anchors": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PhraseAnchors"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "conceptId": {
+          "description": "Unique phrase identifier, e.g., SP_CFB_ENDPOINT. Study phrase instances bind by it.",
+          "pattern": "^SP_.+$",
+          "type": "string"
+        },
+        "description": {
+          "description": "Free-text explanation or description",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "description": "Human-readable name",
+          "type": "string"
+        },
+        "phraseTemplate": {
+          "description": "The text, with {placeholder} tokens. English is the library's base language.",
+          "type": "string"
+        },
+        "placeholders": {
+          "items": {
+            "$ref": "#/$defs/Placeholder"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "role": {
+          "description": "The role the phrase plays (a RoleDefinition name).",
+          "type": "string"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntryStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+        }
+      },
+      "required": [
+        "conceptId",
+        "name",
+        "role",
+        "phraseTemplate"
+      ],
+      "title": "SmartPhrase",
+      "type": "object"
+    },
+    "SmartPhraseLibrary": {
+      "additionalProperties": false,
+      "description": "The SmartPhrase library.",
+      "properties": {
+        "configurationOptions": {
+          "items": {
+            "$ref": "#/$defs/ConfigurationOption"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "description": {
+          "description": "Free-text explanation or description",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "languagePacks": {
+          "items": {
+            "$ref": "#/$defs/LanguagePack"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "libraryVersion": {
+          "description": "Semantic version of a library file.",
+          "type": "string"
+        },
+        "phrases": {
+          "items": {
+            "$ref": "#/$defs/SmartPhrase"
+          },
+          "type": "array"
         },
         "roleOrder": {
-            "description": "The order of roles: the fallback order of phrases in a sentence, and the precedence when two phrases fill a placeholder of the same name.",
-            "items": {
-                "type": "string"
-            },
-            "type": "array"
+          "description": "The order of roles: the fallback order of phrases in a sentence, and the precedence when two phrases fill a placeholder of the same name.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "roles": {
-            "items": {
-                "$ref": "#/$defs/RoleDefinition"
-            },
-            "type": "array"
+          "items": {
+            "$ref": "#/$defs/RoleDefinition"
+          },
+          "type": "array"
         }
-    },
-    "required": [
+      },
+      "required": [
         "libraryVersion",
         "roleOrder",
         "roles",
         "phrases"
-    ],
-    "title": "ac_study",
-    "type": "object",
-    "version": "1.0.0-candidate"
+      ],
+      "title": "SmartPhraseLibrary",
+      "type": "object"
+    },
+    "SourceDocument": {
+      "additionalProperties": false,
+      "description": "The document the study's anchors quote from.",
+      "properties": {
+        "date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "iri": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "iriStatus": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IriStatusEnum"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "SourceDocument",
+      "type": "object"
+    },
+    "SpecialisationReference": {
+      "additionalProperties": false,
+      "description": "The CDISC Dataset Specialisation element this binding corresponds to. SDTM bindings are held by reference: the specialisation is the source of truth, and this records which data element concept the variable carries.",
+      "properties": {
+        "dataElementConceptId": {
+          "description": "NCIt code of the data element concept (the `dec_id` of the specialisation variable).",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "title": "SpecialisationReference",
+      "type": "object"
+    },
+    "StudyAnalysisSet": {
+      "additionalProperties": false,
+      "description": "A study's Analysis Concepts and Derivation Concepts.",
+      "properties": {
+        "analyses": {
+          "items": {
+            "$ref": "#/$defs/AnalysisConcept"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "dataBindings": {
+          "description": "Value-level data bindings for this study (decision D8).",
+          "items": {
+            "$ref": "#/$defs/DataBinding"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "derivations": {
+          "items": {
+            "$ref": "#/$defs/DerivationConcept"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "estimands": {
+          "items": {
+            "$ref": "#/$defs/EstimandReference"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "extensions": {
+          "items": {
+            "$ref": "#/$defs/ExtensionDeclaration"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "libraryPins": {
+          "items": {
+            "$ref": "#/$defs/LibraryPin"
+          },
+          "type": "array"
+        },
+        "methodGroundings": {
+          "items": {
+            "$ref": "#/$defs/MethodGrounding"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "sourceDocument": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceDocument"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceDocumentNote": {
+          "description": "Why the study has no source document, when it has none.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "study": {
+          "$ref": "#/$defs/ExternalReference",
+          "description": "The USDM study this set belongs to."
+        },
+        "studyConcepts": {
+          "items": {
+            "$ref": "#/$defs/StudyConcept"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "studyTitle": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "study",
+        "libraryPins"
+      ],
+      "title": "StudyAnalysisSet",
+      "type": "object"
+    },
+    "StudyConcept": {
+      "additionalProperties": false,
+      "description": "A concept of this study that SmartPhrases and placeholders are bound to: a parameter, a visit, an analysis population, a treatment comparison, an event of interest or an intercurrent event. Each is an instance of a library Concept and points at its definition in USDM, a terminology or a Biomedical Concept.",
+      "properties": {
+        "concept": {
+          "description": "The library Concept this is an instance of (a Concept identifier).",
+          "pattern": "^C\\..+$",
+          "type": "string"
+        },
+        "dataSelection": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DataSelection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/StudyConceptKindEnum"
+        },
+        "label": {
+          "description": "Short display form.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Full name, as written in generated text.",
+          "type": "string"
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExternalReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sapRefs": {
+          "items": {
+            "$ref": "#/$defs/DocumentAnchor"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "translations": {
+          "items": {
+            "$ref": "#/$defs/Translation"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "concept",
+        "label",
+        "name"
+      ],
+      "title": "StudyConcept",
+      "type": "object"
+    },
+    "StudyConceptKindEnum": {
+      "description": "The kinds of study concept a SmartPhrase placeholder can be bound to.",
+      "enum": [
+        "Parameter",
+        "Timepoint",
+        "Population",
+        "Treatment",
+        "Event",
+        "IntercurrentEvent"
+      ],
+      "title": "StudyConceptKindEnum",
+      "type": "string"
+    },
+    "TransformationInstance": {
+      "additionalProperties": false,
+      "description": "A library Transformation as used in a study.",
+      "properties": {
+        "configurationValues": {
+          "items": {
+            "$ref": "#/$defs/ConfigurationValue"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "dependsOn": {
+          "description": "The derivations whose results this instance reads.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "placeholderValues": {
+          "items": {
+            "$ref": "#/$defs/PlaceholderValue"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "sapRefs": {
+          "items": {
+            "$ref": "#/$defs/DocumentAnchor"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "template": {
+          "description": "The library Transformation instantiated (a Transformation identifier). Its version is pinned by the set's library pins.",
+          "pattern": "^T\\..+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "template"
+      ],
+      "title": "TransformationInstance",
+      "type": "object"
+    },
+    "Translation": {
+      "additionalProperties": false,
+      "description": "The label and name of a study concept in another language.",
+      "properties": {
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "language": {
+          "type": "string"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "language"
+      ],
+      "title": "Translation",
+      "type": "object"
+    },
+    "UnitRuleEnum": {
+      "description": "How the unit of a produced value is determined.",
+      "enum": [
+        "inherited",
+        "derived",
+        "fixed",
+        "unitless",
+        "none"
+      ],
+      "title": "UnitRuleEnum",
+      "type": "string"
+    },
+    "ValueConstraint": {
+      "additionalProperties": false,
+      "description": "The range a numeric value must lie in.",
+      "properties": {
+        "max": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "min": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "title": "ValueConstraint",
+      "type": "object"
+    },
+    "ValueTypeEnum": {
+      "description": "The kind of value a statistic or concept produces. Complex types follow FHIR R5 datatypes; primitive types follow FHIR primitives.",
+      "enum": [
+        "Quantity",
+        "CodeableConcept",
+        "Identifier",
+        "Range",
+        "Ratio",
+        "Count",
+        "Period",
+        "decimal",
+        "integer",
+        "boolean",
+        "string",
+        "code",
+        "date",
+        "dateTime"
+      ],
+      "title": "ValueTypeEnum",
+      "type": "string"
+    }
+  },
+  "$id": "https://cdisc.org/ac/study",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "additionalProperties": false,
+  "description": "The SmartPhrase library.",
+  "metamodel_version": "1.12.0",
+  "properties": {
+    "configurationOptions": {
+      "items": {
+        "$ref": "#/$defs/ConfigurationOption"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "description": {
+      "description": "Free-text explanation or description",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "languagePacks": {
+      "items": {
+        "$ref": "#/$defs/LanguagePack"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "libraryVersion": {
+      "description": "Semantic version of a library file.",
+      "type": "string"
+    },
+    "phrases": {
+      "items": {
+        "$ref": "#/$defs/SmartPhrase"
+      },
+      "type": "array"
+    },
+    "roleOrder": {
+      "description": "The order of roles: the fallback order of phrases in a sentence, and the precedence when two phrases fill a placeholder of the same name.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "roles": {
+      "items": {
+        "$ref": "#/$defs/RoleDefinition"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "libraryVersion",
+    "roleOrder",
+    "roles",
+    "phrases"
+  ],
+  "title": "ac_study",
+  "type": "object",
+  "version": "1.0.0-candidate"
 }
-

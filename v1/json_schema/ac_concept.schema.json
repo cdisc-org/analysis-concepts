@@ -1,930 +1,939 @@
 {
-    "$defs": {
-        "AlgebraicIdentity": {
-            "additionalProperties": false,
-            "description": "A closed-form definition; pure algebra over operands.",
-            "properties": {
-                "identity": {
-                    "description": "The identity, for example `result = value - reference`.",
-                    "type": "string"
-                },
-                "operands": {
-                    "items": {
-                        "$ref": "#/$defs/Operand"
-                    },
-                    "type": "array"
-                }
-            },
-            "required": [
-                "operands",
-                "identity"
-            ],
-            "title": "AlgebraicIdentity",
-            "type": "object"
+  "$defs": {
+    "AlgebraicIdentity": {
+      "additionalProperties": false,
+      "description": "A closed-form definition; pure algebra over operands.",
+      "properties": {
+        "identity": {
+          "description": "The identity, for example `result = value - reference`.",
+          "type": "string"
         },
-        "Coding": {
-            "additionalProperties": false,
-            "description": "A reference to a code in a terminology or ontology",
-            "properties": {
-                "code": {
-                    "description": "The code value within the system (e.g., STATO_0000179)",
-                    "type": "string"
-                },
-                "display": {
-                    "description": "Human-readable label for the code",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "system": {
-                    "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)",
-                    "format": "uri",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "system",
-                "code"
-            ],
-            "title": "Coding",
-            "type": "object"
-        },
-        "Concept": {
-            "additionalProperties": false,
-            "allOf": [
-                {
-                    "if": {
-                        "properties": {
-                            "definitionForm": {
-                                "const": "closedForm"
-                            }
-                        },
-                        "required": [
-                            "definitionForm"
-                        ]
-                    },
-                    "then": {
-                        "not": {
-                            "required": [
-                                "methodBoundDefinition"
-                            ]
-                        },
-                        "properties": {
-                            "algebraicDefinition": {},
-                            "methodBoundDefinition": {}
-                        },
-                        "required": [
-                            "algebraicDefinition"
-                        ]
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {
-                            "definitionForm": {
-                                "const": "methodBound"
-                            }
-                        },
-                        "required": [
-                            "definitionForm"
-                        ]
-                    },
-                    "then": {
-                        "not": {
-                            "required": [
-                                "algebraicDefinition"
-                            ]
-                        },
-                        "properties": {
-                            "algebraicDefinition": {},
-                            "methodBoundDefinition": {}
-                        },
-                        "required": [
-                            "methodBoundDefinition"
-                        ]
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {
-                            "definitionForm": {
-                                "const": "none"
-                            }
-                        },
-                        "required": [
-                            "definitionForm"
-                        ]
-                    },
-                    "then": {
-                        "not": {
-                            "required": [
-                                "algebraicDefinition",
-                                "methodBoundDefinition"
-                            ]
-                        },
-                        "properties": {
-                            "algebraicDefinition": {},
-                            "methodBoundDefinition": {}
-                        }
-                    }
-                }
-            ],
-            "description": "A node in the unified concept library.",
-            "properties": {
-                "abstract": {
-                    "description": "True for a grouping entry that is never used directly.",
-                    "type": [
-                        "boolean",
-                        "null"
-                    ]
-                },
-                "algebraicDefinition": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/AlgebraicIdentity"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "axis": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ConceptAxisEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "broader": {
-                    "description": "The abstract concept(s) this concept is a member of (a category or a dimension group).",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "cardinality": {
-                    "description": "For a dimension concept, how many values apply to one observation.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "codings": {
-                    "description": "Mappings to external terminology or ontology codes",
-                    "items": {
-                        "$ref": "#/$defs/Coding"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "conceptId": {
-                    "description": "Unique concept identifier, e.g., C.Change, C.Treatment, C.LSMeans.",
-                    "pattern": "^C\\..+$",
-                    "type": "string"
-                },
-                "conceptRole": {
-                    "$ref": "#/$defs/ConceptRoleEnum"
-                },
-                "definitionForm": {
-                    "$ref": "#/$defs/DefinitionFormEnum"
-                },
-                "description": {
-                    "description": "Free-text explanation or description",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "examples": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "label": {
-                    "description": "Short label for display",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "mathText": {
-                    "description": "The definition in mathematical notation, for human readers.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "methodBoundDefinition": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodBoundDefinition"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "name": {
-                    "description": "Human-readable name",
-                    "type": "string"
-                },
-                "ncitCode": {
-                    "description": "NCIt code",
-                    "pattern": "^(C[0-9]+(_NEW)?)$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "result": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResultContract"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "shortLabel": {
-                    "description": "A compact label for displays and generated text.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "status": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EntryStatus"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
-                }
-            },
-            "required": [
-                "conceptId",
-                "name",
-                "conceptRole",
-                "definitionForm"
-            ],
-            "title": "Concept",
-            "type": "object"
-        },
-        "ConceptAxisEnum": {
-            "description": "The structural part a concept usually plays in a data structure.",
-            "enum": [
-                "measure",
-                "dimension",
-                "attribute"
-            ],
-            "title": "ConceptAxisEnum",
-            "type": "string"
-        },
-        "ConceptLibrary": {
-            "additionalProperties": false,
-            "description": "The unified concept library.",
-            "properties": {
-                "description": {
-                    "description": "Free-text explanation or description",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "entries": {
-                    "items": {
-                        "$ref": "#/$defs/Concept"
-                    },
-                    "type": "array"
-                },
-                "libraryVersion": {
-                    "description": "Semantic version of a library file.",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "libraryVersion",
-                "entries"
-            ],
-            "title": "ConceptLibrary",
-            "type": "object"
-        },
-        "ConceptRoleEnum": {
-            "description": "Where in the data lifecycle a concept arises.",
-            "enum": [
-                "collected",
-                "derived",
-                "analysis"
-            ],
-            "title": "ConceptRoleEnum",
-            "type": "string"
-        },
-        "DefinitionFormEnum": {
-            "description": "How a concept is defined.",
-            "enum": [
-                "none",
-                "closedForm",
-                "methodBound"
-            ],
-            "title": "DefinitionFormEnum",
-            "type": "string"
-        },
-        "EntryStatus": {
-            "description": "Lifecycle status of a library entry.",
-            "enum": [
-                "released",
-                "provisional",
-                "deprecated"
-            ],
-            "title": "EntryStatus",
-            "type": "string"
-        },
-        "MethodBoundDefinition": {
-            "additionalProperties": false,
-            "description": "A definition by contract. The concept says what a method must deliver; it never names how. A derived concept states the operation and its operands. An analysis concept states the statistics it is made of. A Transformation chooses the method, and the binding is valid when the method output satisfies the contract.",
-            "properties": {
-                "constituents": {
-                    "description": "The statistics a satisfying output must carry.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "operands": {
-                    "items": {
-                        "$ref": "#/$defs/Operand"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "operation": {
-                    "description": "The kind of operation, for example SequenceIntegral or Count.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "optionalConstituents": {
-                    "description": "Statistics a satisfying output may also carry.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "resultDimensions": {
-                    "description": "The dimensions that index the result (for example term, level, contrast).",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "satisfiedBy": {
-                    "description": "Output classes known to satisfy the contract.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "statisticSets": {
-                    "description": "The statistic sets the constituents are drawn from.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                }
-            },
-            "title": "MethodBoundDefinition",
-            "type": "object"
-        },
-        "Operand": {
-            "additionalProperties": false,
-            "description": "A named operand of a definition, typed by what it must produce.",
-            "properties": {
-                "description": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "name": {
-                    "type": "string"
-                },
-                "produces": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResultContract"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                }
-            },
-            "required": [
-                "name"
-            ],
-            "title": "Operand",
-            "type": "object"
-        },
-        "OutputClass": {
-            "additionalProperties": false,
-            "description": "A named kind of method output and the statistics it carries.",
-            "properties": {
-                "abstract": {
-                    "description": "True for a grouping entry that is never used directly.",
-                    "type": [
-                        "boolean",
-                        "null"
-                    ]
-                },
-                "broader": {
-                    "description": "The abstract family this output class belongs to (an OutputClass identifier).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "codings": {
-                    "description": "Mappings to external terminology or ontology codes",
-                    "items": {
-                        "$ref": "#/$defs/Coding"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "conceptId": {
-                    "description": "Unique output class identifier, e.g., OC.ls_means.",
-                    "pattern": "^OC\\..+$",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "Free-text explanation or description",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "label": {
-                    "description": "Short label for display",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "name": {
-                    "description": "Human-readable name",
-                    "type": "string"
-                },
-                "ncitCode": {
-                    "description": "NCIt code",
-                    "pattern": "^(C[0-9]+(_NEW)?)$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "optionalStatistics": {
-                    "description": "Statistics an output of this kind may carry, depending on configuration (for example an adjusted p-value).",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "statisticSets": {
-                    "description": "The predefined set of statistics produced by this method, referencing the statistic set vocabulary.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "statistics": {
-                    "description": "Statistics carried in addition to those of the statistic sets.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "status": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EntryStatus"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
-                }
-            },
-            "required": [
-                "conceptId",
-                "name"
-            ],
-            "title": "OutputClass",
-            "type": "object"
-        },
-        "OutputClassLibrary": {
-            "additionalProperties": false,
-            "description": "The vocabulary of output classes.",
-            "properties": {
-                "description": {
-                    "description": "Free-text explanation or description",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "entries": {
-                    "description": "The output classes.",
-                    "items": {
-                        "$ref": "#/$defs/OutputClass"
-                    },
-                    "type": "array"
-                },
-                "libraryVersion": {
-                    "description": "Semantic version of a library file.",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "libraryVersion",
-                "entries"
-            ],
-            "title": "OutputClassLibrary",
-            "type": "object"
-        },
-        "ResultContract": {
-            "additionalProperties": false,
-            "description": "What a concept produces; the structural type that an operand or a method output is matched against.",
-            "properties": {
-                "inheritsFrom": {
-                    "description": "A concept whose unit and value type this result takes (for example a time concept).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "inputUnitRelation": {
-                    "description": "Whether the inputs must share a unit (uniform) or may differ (heterogeneous).",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "unitRule": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/UnitRuleEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "valueTypes": {
-                    "description": "The kind(s) of value produced.",
-                    "items": {
-                        "$ref": "#/$defs/ValueTypeEnum"
-                    },
-                    "type": "array"
-                }
-            },
-            "required": [
-                "valueTypes"
-            ],
-            "title": "ResultContract",
-            "type": "object"
-        },
-        "Statistic": {
-            "additionalProperties": false,
-            "description": "A reusable statistic/measure definition in the vocabulary",
-            "properties": {
-                "codings": {
-                    "description": "Mappings to external terminology or ontology codes",
-                    "items": {
-                        "$ref": "#/$defs/Coding"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "conceptId": {
-                    "description": "Unique statistic identifier, e.g., S.AIC, S.BIC",
-                    "pattern": "^S\\..+$",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "What this statistic measures",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "label": {
-                    "description": "Short label for display",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "name": {
-                    "description": "Statistic identifier, e.g., estimate, p_value, F_statistic",
-                    "type": "string"
-                },
-                "ncitCode": {
-                    "description": "NCIt code",
-                    "pattern": "^(C[0-9]+(_NEW)?)$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "status": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EntryStatus"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
-                },
-                "unitRule": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/UnitRuleEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "How the unit of the value is determined."
-                },
-                "valueType": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ValueTypeEnum"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "The kind of value produced, using FHIR datatype names."
-                }
-            },
-            "required": [
-                "conceptId",
-                "name"
-            ],
-            "title": "Statistic",
-            "type": "object"
-        },
-        "StatisticLibrary": {
-            "additionalProperties": false,
-            "description": "The vocabulary of statistics that methods produce and analysis concepts are made of.",
-            "properties": {
-                "description": {
-                    "description": "Free-text explanation or description",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "entries": {
-                    "description": "The statistics in the vocabulary.",
-                    "items": {
-                        "$ref": "#/$defs/Statistic"
-                    },
-                    "type": "array"
-                },
-                "libraryVersion": {
-                    "description": "Semantic version of a library file.",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "libraryVersion",
-                "entries"
-            ],
-            "title": "StatisticLibrary",
-            "type": "object"
-        },
-        "StatisticSet": {
-            "additionalProperties": false,
-            "description": "A predefined set of statistics produced by a method or sub-method.",
-            "properties": {
-                "codings": {
-                    "description": "Mappings to external terminology or ontology codes",
-                    "items": {
-                        "$ref": "#/$defs/Coding"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "conceptId": {
-                    "description": "Unique statistic set identifier.",
-                    "pattern": "^SS\\..+$",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "What this statistic set contains.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "label": {
-                    "description": "Short label for display",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "name": {
-                    "description": "The Statistic set identifier.",
-                    "type": "string"
-                },
-                "ncitCode": {
-                    "description": "NCIt code",
-                    "pattern": "^(C[0-9]+(_NEW)?)$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "statistics": {
-                    "description": "The statistics produced by this method, referencing the statistics vocabulary.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "status": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/EntryStatus"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
-                }
-            },
-            "required": [
-                "conceptId",
-                "name"
-            ],
-            "title": "StatisticSet",
-            "type": "object"
-        },
-        "StatisticSetLibrary": {
-            "additionalProperties": false,
-            "description": "The predefined sets of statistics that are produced and interpreted together.",
-            "properties": {
-                "description": {
-                    "description": "Free-text explanation or description",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "entries": {
-                    "description": "The statistic sets.",
-                    "items": {
-                        "$ref": "#/$defs/StatisticSet"
-                    },
-                    "type": "array"
-                },
-                "libraryVersion": {
-                    "description": "Semantic version of a library file.",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "libraryVersion",
-                "entries"
-            ],
-            "title": "StatisticSetLibrary",
-            "type": "object"
-        },
-        "UnitRuleEnum": {
-            "description": "How the unit of a produced value is determined.",
-            "enum": [
-                "inherited",
-                "derived",
-                "fixed",
-                "unitless",
-                "none"
-            ],
-            "title": "UnitRuleEnum",
-            "type": "string"
-        },
-        "ValueTypeEnum": {
-            "description": "The kind of value a statistic or concept produces. Complex types follow FHIR R5 datatypes; primitive types follow FHIR primitives.",
-            "enum": [
-                "Quantity",
-                "CodeableConcept",
-                "Identifier",
-                "Range",
-                "Ratio",
-                "Count",
-                "Period",
-                "decimal",
-                "integer",
-                "boolean",
-                "string",
-                "code",
-                "date",
-                "dateTime"
-            ],
-            "title": "ValueTypeEnum",
-            "type": "string"
+        "operands": {
+          "items": {
+            "$ref": "#/$defs/Operand"
+          },
+          "type": "array"
         }
+      },
+      "required": [
+        "operands",
+        "identity"
+      ],
+      "title": "AlgebraicIdentity",
+      "type": "object"
     },
-    "$id": "https://cdisc.org/ac/concept",
-    "$schema": "https://json-schema.org/draft/2019-09/schema",
-    "additionalProperties": false,
-    "description": "The vocabulary of statistics that methods produce and analysis concepts are made of.",
-    "metamodel_version": "1.12.0",
-    "properties": {
-        "description": {
-            "description": "Free-text explanation or description",
-            "type": [
-                "string",
-                "null"
+    "Coding": {
+      "additionalProperties": false,
+      "description": "A reference to a code in a terminology or ontology",
+      "properties": {
+        "code": {
+          "description": "The code value within the system (e.g., STATO_0000179)",
+          "type": "string"
+        },
+        "display": {
+          "description": "Human-readable label for the code",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "system": {
+          "description": "URI identifying the coding system (e.g., http://purl.obolibrary.org/obo/)",
+          "format": "uri",
+          "type": "string"
+        }
+      },
+      "required": [
+        "system",
+        "code"
+      ],
+      "title": "Coding",
+      "type": "object"
+    },
+    "Concept": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "definitionForm": {
+                "const": "closedForm"
+              }
+            },
+            "required": [
+              "definitionForm"
             ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "methodBoundDefinition"
+              ]
+            },
+            "properties": {
+              "algebraicDefinition": {},
+              "methodBoundDefinition": {}
+            },
+            "required": [
+              "algebraicDefinition"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "definitionForm": {
+                "const": "methodBound"
+              }
+            },
+            "required": [
+              "definitionForm"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "algebraicDefinition"
+              ]
+            },
+            "properties": {
+              "algebraicDefinition": {},
+              "methodBoundDefinition": {}
+            },
+            "required": [
+              "methodBoundDefinition"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "definitionForm": {
+                "const": "none"
+              }
+            },
+            "required": [
+              "definitionForm"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "algebraicDefinition",
+                "methodBoundDefinition"
+              ]
+            },
+            "properties": {
+              "algebraicDefinition": {},
+              "methodBoundDefinition": {}
+            }
+          }
+        }
+      ],
+      "description": "A node in the unified concept library.",
+      "properties": {
+        "abstract": {
+          "description": "True for a grouping entry that is never used directly.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "algebraicDefinition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AlgebraicIdentity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "axis": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConceptAxisEnum"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "broader": {
+          "description": "The abstract concept(s) this concept is a member of (a category or a dimension group).",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "cardinality": {
+          "description": "For a dimension concept, how many values apply to one observation.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "codings": {
+          "description": "Mappings to external terminology or ontology codes",
+          "items": {
+            "$ref": "#/$defs/Coding"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "conceptId": {
+          "description": "Unique concept identifier, e.g., C.Change, C.Treatment, C.LSMeans.",
+          "pattern": "^C\\..+$",
+          "type": "string"
+        },
+        "conceptRole": {
+          "$ref": "#/$defs/ConceptRoleEnum"
+        },
+        "definitionForm": {
+          "$ref": "#/$defs/DefinitionFormEnum"
+        },
+        "description": {
+          "description": "Free-text explanation or description",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "examples": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "label": {
+          "description": "Short label for display",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mathText": {
+          "description": "The definition in mathematical notation, for human readers.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "methodBoundDefinition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MethodBoundDefinition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "description": "Human-readable name",
+          "type": "string"
+        },
+        "ncitCode": {
+          "description": "NCIt code",
+          "pattern": "^(C[0-9]+(_NEW)?)$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "partOf": {
+          "description": "The concept this one is a part or a qualifier of (a topic's code, a result's reference range, a dose's unit). Unlike `broader`, the target is an ordinary concept, not a grouping.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResultContract"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "shortLabel": {
+          "description": "A compact label for displays and generated text.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntryStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+        }
+      },
+      "required": [
+        "conceptId",
+        "name",
+        "conceptRole",
+        "definitionForm"
+      ],
+      "title": "Concept",
+      "type": "object"
+    },
+    "ConceptAxisEnum": {
+      "description": "The structural part a concept usually plays in a data structure.",
+      "enum": [
+        "measure",
+        "dimension",
+        "attribute"
+      ],
+      "title": "ConceptAxisEnum",
+      "type": "string"
+    },
+    "ConceptLibrary": {
+      "additionalProperties": false,
+      "description": "The unified concept library.",
+      "properties": {
+        "description": {
+          "description": "Free-text explanation or description",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "entries": {
-            "description": "The statistics in the vocabulary.",
-            "items": {
-                "$ref": "#/$defs/Statistic"
-            },
-            "type": "array"
+          "items": {
+            "$ref": "#/$defs/Concept"
+          },
+          "type": "array"
         },
         "libraryVersion": {
-            "description": "Semantic version of a library file.",
-            "type": "string"
+          "description": "Semantic version of a library file.",
+          "type": "string"
         }
-    },
-    "required": [
+      },
+      "required": [
         "libraryVersion",
         "entries"
-    ],
-    "title": "ac_concept",
-    "type": "object",
-    "version": "1.0.0-candidate"
+      ],
+      "title": "ConceptLibrary",
+      "type": "object"
+    },
+    "ConceptRoleEnum": {
+      "description": "Where in the data lifecycle a concept arises.",
+      "enum": [
+        "collected",
+        "derived",
+        "analysis"
+      ],
+      "title": "ConceptRoleEnum",
+      "type": "string"
+    },
+    "DefinitionFormEnum": {
+      "description": "How a concept is defined.",
+      "enum": [
+        "none",
+        "closedForm",
+        "methodBound"
+      ],
+      "title": "DefinitionFormEnum",
+      "type": "string"
+    },
+    "EntryStatus": {
+      "description": "Lifecycle status of a library entry.",
+      "enum": [
+        "released",
+        "provisional",
+        "deprecated"
+      ],
+      "title": "EntryStatus",
+      "type": "string"
+    },
+    "MethodBoundDefinition": {
+      "additionalProperties": false,
+      "description": "A definition by contract. The concept says what a method must deliver; it never names how. A derived concept states the operation and its operands. An analysis concept states the statistics it is made of. A Transformation chooses the method, and the binding is valid when the method output satisfies the contract.",
+      "properties": {
+        "constituents": {
+          "description": "The statistics a satisfying output must carry.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "operands": {
+          "items": {
+            "$ref": "#/$defs/Operand"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "operation": {
+          "description": "The kind of operation, for example SequenceIntegral or Count.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "optionalConstituents": {
+          "description": "Statistics a satisfying output may also carry.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "resultDimensions": {
+          "description": "The dimensions that index the result (for example term, level, contrast).",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "satisfiedBy": {
+          "description": "Output classes known to satisfy the contract.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "statisticSets": {
+          "description": "The statistic sets the constituents are drawn from.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "title": "MethodBoundDefinition",
+      "type": "object"
+    },
+    "Operand": {
+      "additionalProperties": false,
+      "description": "A named operand of a definition, typed by what it must produce.",
+      "properties": {
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "produces": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResultContract"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Operand",
+      "type": "object"
+    },
+    "OutputClass": {
+      "additionalProperties": false,
+      "description": "A named kind of method output and the statistics it carries.",
+      "properties": {
+        "abstract": {
+          "description": "True for a grouping entry that is never used directly.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "broader": {
+          "description": "The abstract family this output class belongs to (an OutputClass identifier).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "codings": {
+          "description": "Mappings to external terminology or ontology codes",
+          "items": {
+            "$ref": "#/$defs/Coding"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "conceptId": {
+          "description": "Unique output class identifier, e.g., OC.ls_means.",
+          "pattern": "^OC\\..+$",
+          "type": "string"
+        },
+        "description": {
+          "description": "Free-text explanation or description",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label": {
+          "description": "Short label for display",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "description": "Human-readable name",
+          "type": "string"
+        },
+        "ncitCode": {
+          "description": "NCIt code",
+          "pattern": "^(C[0-9]+(_NEW)?)$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "optionalStatistics": {
+          "description": "Statistics an output of this kind may carry, depending on configuration (for example an adjusted p-value).",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "statisticSets": {
+          "description": "The predefined set of statistics produced by this method, referencing the statistic set vocabulary.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "statistics": {
+          "description": "Statistics carried in addition to those of the statistic sets.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntryStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+        }
+      },
+      "required": [
+        "conceptId",
+        "name"
+      ],
+      "title": "OutputClass",
+      "type": "object"
+    },
+    "OutputClassLibrary": {
+      "additionalProperties": false,
+      "description": "The vocabulary of output classes.",
+      "properties": {
+        "description": {
+          "description": "Free-text explanation or description",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "entries": {
+          "description": "The output classes.",
+          "items": {
+            "$ref": "#/$defs/OutputClass"
+          },
+          "type": "array"
+        },
+        "libraryVersion": {
+          "description": "Semantic version of a library file.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "libraryVersion",
+        "entries"
+      ],
+      "title": "OutputClassLibrary",
+      "type": "object"
+    },
+    "ResultContract": {
+      "additionalProperties": false,
+      "description": "What a concept produces; the structural type that an operand or a method output is matched against.",
+      "properties": {
+        "inheritsFrom": {
+          "description": "A concept whose unit and value type this result takes (for example a time concept).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inputUnitRelation": {
+          "description": "Whether the inputs must share a unit (uniform) or may differ (heterogeneous).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "unitRule": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UnitRuleEnum"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "valueTypes": {
+          "description": "The kind(s) of value produced.",
+          "items": {
+            "$ref": "#/$defs/ValueTypeEnum"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "valueTypes"
+      ],
+      "title": "ResultContract",
+      "type": "object"
+    },
+    "Statistic": {
+      "additionalProperties": false,
+      "description": "A reusable statistic/measure definition in the vocabulary",
+      "properties": {
+        "codings": {
+          "description": "Mappings to external terminology or ontology codes",
+          "items": {
+            "$ref": "#/$defs/Coding"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "conceptId": {
+          "description": "Unique statistic identifier, e.g., S.AIC, S.BIC",
+          "pattern": "^S\\..+$",
+          "type": "string"
+        },
+        "description": {
+          "description": "What this statistic measures",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label": {
+          "description": "Short label for display",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "description": "Statistic identifier, e.g., estimate, p_value, F_statistic",
+          "type": "string"
+        },
+        "ncitCode": {
+          "description": "NCIt code",
+          "pattern": "^(C[0-9]+(_NEW)?)$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntryStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+        },
+        "unitRule": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UnitRuleEnum"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "How the unit of the value is determined."
+        },
+        "valueType": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValueTypeEnum"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The kind of value produced, using FHIR datatype names."
+        }
+      },
+      "required": [
+        "conceptId",
+        "name"
+      ],
+      "title": "Statistic",
+      "type": "object"
+    },
+    "StatisticLibrary": {
+      "additionalProperties": false,
+      "description": "The vocabulary of statistics that methods produce and analysis concepts are made of.",
+      "properties": {
+        "description": {
+          "description": "Free-text explanation or description",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "entries": {
+          "description": "The statistics in the vocabulary.",
+          "items": {
+            "$ref": "#/$defs/Statistic"
+          },
+          "type": "array"
+        },
+        "libraryVersion": {
+          "description": "Semantic version of a library file.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "libraryVersion",
+        "entries"
+      ],
+      "title": "StatisticLibrary",
+      "type": "object"
+    },
+    "StatisticSet": {
+      "additionalProperties": false,
+      "description": "A predefined set of statistics produced by a method or sub-method.",
+      "properties": {
+        "codings": {
+          "description": "Mappings to external terminology or ontology codes",
+          "items": {
+            "$ref": "#/$defs/Coding"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "conceptId": {
+          "description": "Unique statistic set identifier.",
+          "pattern": "^SS\\..+$",
+          "type": "string"
+        },
+        "description": {
+          "description": "What this statistic set contains.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label": {
+          "description": "Short label for display",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "description": "The Statistic set identifier.",
+          "type": "string"
+        },
+        "ncitCode": {
+          "description": "NCIt code",
+          "pattern": "^(C[0-9]+(_NEW)?)$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "statistics": {
+          "description": "The statistics produced by this method, referencing the statistics vocabulary.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntryStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Lifecycle status of a library entry. `provisional` marks content that was proposed during the candidate v1 build and has not been reviewed."
+        }
+      },
+      "required": [
+        "conceptId",
+        "name"
+      ],
+      "title": "StatisticSet",
+      "type": "object"
+    },
+    "StatisticSetLibrary": {
+      "additionalProperties": false,
+      "description": "The predefined sets of statistics that are produced and interpreted together.",
+      "properties": {
+        "description": {
+          "description": "Free-text explanation or description",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "entries": {
+          "description": "The statistic sets.",
+          "items": {
+            "$ref": "#/$defs/StatisticSet"
+          },
+          "type": "array"
+        },
+        "libraryVersion": {
+          "description": "Semantic version of a library file.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "libraryVersion",
+        "entries"
+      ],
+      "title": "StatisticSetLibrary",
+      "type": "object"
+    },
+    "UnitRuleEnum": {
+      "description": "How the unit of a produced value is determined.",
+      "enum": [
+        "inherited",
+        "derived",
+        "fixed",
+        "unitless",
+        "none"
+      ],
+      "title": "UnitRuleEnum",
+      "type": "string"
+    },
+    "ValueTypeEnum": {
+      "description": "The kind of value a statistic or concept produces. Complex types follow FHIR R5 datatypes; primitive types follow FHIR primitives.",
+      "enum": [
+        "Quantity",
+        "CodeableConcept",
+        "Identifier",
+        "Range",
+        "Ratio",
+        "Count",
+        "Period",
+        "decimal",
+        "integer",
+        "boolean",
+        "string",
+        "code",
+        "date",
+        "dateTime"
+      ],
+      "title": "ValueTypeEnum",
+      "type": "string"
+    }
+  },
+  "$id": "https://cdisc.org/ac/concept",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "additionalProperties": false,
+  "description": "The vocabulary of statistics that methods produce and analysis concepts are made of.",
+  "metamodel_version": "1.12.0",
+  "properties": {
+    "description": {
+      "description": "Free-text explanation or description",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "entries": {
+      "description": "The statistics in the vocabulary.",
+      "items": {
+        "$ref": "#/$defs/Statistic"
+      },
+      "type": "array"
+    },
+    "libraryVersion": {
+      "description": "Semantic version of a library file.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "libraryVersion",
+    "entries"
+  ],
+  "title": "ac_concept",
+  "type": "object",
+  "version": "1.0.0-candidate"
 }
-

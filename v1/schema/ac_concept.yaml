@@ -167,6 +167,14 @@ classes:
         range: Concept
         multivalued: true
         inlined: false
+      partOf:
+        description: >-
+          The concept this one is a part or a qualifier of (a topic's code, a
+          result's reference range, a dose's unit). Unlike `broader`, the
+          target is an ordinary concept, not a grouping.
+        range: Concept
+        multivalued: true
+        inlined: false
       conceptRole:
         range: ConceptRoleEnum
         required: true

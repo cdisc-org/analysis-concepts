@@ -381,11 +381,15 @@ classes:
         pattern: "^S?M\\..+$"
 
   MethodGrounding:
-    description: External identifiers for a Method as used in the study.
+    description: External identifiers for a Method as used in the study, and how the study names it in text.
     attributes:
       method:
         required: true
         pattern: "^M\\..+$"
+      label:
+        description: The short form of the method's name, as the study writes it.
+      name:
+        description: The full form of the method's name, as the study writes it.
       reference:
         range: ExternalReference
         inlined: true

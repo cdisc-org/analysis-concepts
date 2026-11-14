@@ -183,7 +183,8 @@ def build():
                         ncitCode=dec[0] if len(dec) == 1 else None,
                         codings=codings(dec),
                         result=result_of(node),
-                        broader=[cid(parent or cls_parent or "Observation")])
+                        partOf=[cid(parent)] if parent else None,
+                        broader=[cid(cls_parent or "Observation")])
             for k, v in node.items():
                 walk(v, here, cls_parent)
         elif isinstance(node, list):

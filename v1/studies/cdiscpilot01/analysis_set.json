@@ -462,6 +462,8 @@
   "methodGroundings": [
     {
       "method": "M.ANCOVA",
+      "label": "ANCOVA",
+      "name": "analysis of covariance",
       "reference": {
         "iri": "stato:STATO_0000176",
         "iriStatus": "authoritative"
